@@ -281,7 +281,7 @@ public class ComponentEffectTest {
             assertEquals("Effect should not be run until component is attached",
                     0, count.get());
 
-            signal.value("test");
+            signal.set("test");
             assertEquals(
                     "Effect should not be run until component is attached even after signal value change",
                     0, count.get());
@@ -292,13 +292,13 @@ public class ComponentEffectTest {
             assertEquals("Effect should be run once component is attached", 1,
                     count.get());
 
-            signal.value("test2");
+            signal.set("test2");
             assertEquals("Effect should be run when signal value is chaged", 2,
                     count.get());
 
             ui.remove(component);
 
-            signal.value("test3");
+            signal.set("test3");
             assertEquals("Effect should not be run after detach", 2,
                     count.get());
 
@@ -306,7 +306,7 @@ public class ComponentEffectTest {
             assertEquals("Effect should be run after attach", 3, count.get());
 
             registration.remove();
-            signal.value("test4");
+            signal.set("test4");
             assertEquals("Effect should not be run after remove", 3,
                     count.get());
         });
@@ -328,13 +328,13 @@ public class ComponentEffectTest {
                     component.getValue());
 
             // Change signal value
-            signal.value("new value");
+            signal.set("new value");
 
             assertEquals("Component should be updated with new value",
                     "new value", component.getValue());
 
             // Change signal value again
-            signal.value("another value");
+            signal.set("another value");
 
             assertEquals("Component should be updated with another value",
                     "another value", component.getValue());
@@ -342,7 +342,7 @@ public class ComponentEffectTest {
             registration.remove();
 
             // Change signal value after registration is removed
-            signal.value("final value");
+            signal.set("final value");
 
             assertEquals(
                     "Component should not be updated after registration is removed",

@@ -36,7 +36,7 @@ import com.vaadin.signals.Signal;
  * MyComponent component = new MyComponent();
  * add(component);
  * component.bindTextContent(signal);
- * signal.value("Hello"); // component content showing now "Content: Hello" text
+ * signal.set("Hello"); // component content showing now "Content: Hello" text
  * </pre>
  * 
  * <pre>

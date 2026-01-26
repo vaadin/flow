@@ -41,7 +41,7 @@ public class UsageTrackerTest extends SignalTestBase {
         });
 
         Signal.runInTransaction(() -> {
-            signal.value("changed");
+            signal.set("changed");
 
             assertTrue(usage.hasChanges());
 
@@ -67,7 +67,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertTrue(usage.hasChanges());
     }
 
@@ -79,7 +79,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peek();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -91,7 +91,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peekConfirmed();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -106,7 +106,7 @@ public class UsageTrackerTest extends SignalTestBase {
             });
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -116,12 +116,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value("update");
+                signal.set("update");
                 return null;
             });
         });
 
-        signal.value("another");
+        signal.set("another");
         assertFalse(usage.hasChanges());
     }
 

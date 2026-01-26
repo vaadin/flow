@@ -68,10 +68,10 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("foo", input.getValue());
 
         // "foo" -> "bar"
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("bar", input.getValue());
 
-        signal.value(null);
+        signal.set(null);
         assertNull(input.getValue());
         assertEquals(3, input.setValueCounter);
     }
@@ -81,7 +81,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal);
-        signal.value("bar");
+        signal.set("bar");
 
         assertEquals("", input.getValue());
     }
@@ -93,7 +93,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal);
         input.removeFromParent();
-        signal.value("bar"); // ignored
+        signal.set("bar"); // ignored
 
         assertEquals("foo", input.getValue());
     }
@@ -105,7 +105,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal);
         input.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         UI.getCurrent().add(input);
 
         assertEquals("bar", input.getValue());
@@ -143,7 +143,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("foo", input.getValue());
 
         input.bindValue(null); // remove binding
-        signal.value("bar"); // no effect
+        signal.set("bar"); // no effect
         assertEquals("foo", input.getValue());
 
         input.setValue("bar");
@@ -197,7 +197,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
                 event -> listenerValue.set(event.getValue()));
 
         Assert.assertNull(listenerValue.get());
-        signal.value("bar");
+        signal.set("bar");
         Assert.assertEquals("bar", listenerValue.get());
     }
 
@@ -244,7 +244,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.setValue("foo");
         Assert.assertEquals(3, counter.get());
 
-        signal.value("baz");
+        signal.set("baz");
         Assert.assertEquals(4, counter.get());
 
         input.setValue("baz");
@@ -270,12 +270,12 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("foo", listenerValue.get());
 
         // value after signal value change
-        signal.value("bar");
+        signal.set("bar");
         Assert.assertEquals("bar", input.getValue());
         Assert.assertEquals("bar", listenerValue.get());
 
         // null is not allowed in TestPropertyInput. Default value is "".
-        signal.value(null);
+        signal.set(null);
         // value doesn't change
         Assert.assertEquals("bar", input.getValue());
         Assert.assertEquals("bar", listenerValue.get());

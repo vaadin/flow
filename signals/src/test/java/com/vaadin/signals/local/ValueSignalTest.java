@@ -59,7 +59,7 @@ public class ValueSignalTest extends SignalTestBase {
     @Test
     void setValue_valueUsed() {
         ValueSignal<String> signal = new ValueSignal<>();
-        signal.value("value");
+        signal.set("value");
 
         assertEquals("value", signal.value());
     }
@@ -68,7 +68,7 @@ public class ValueSignalTest extends SignalTestBase {
     void setValue_oldValueInResult() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        SignalOperation<String> operation = signal.value("update");
+        SignalOperation<String> operation = signal.set("update");
 
         String resultValue = TestUtil.assertSuccess(operation);
         assertEquals("initial", resultValue);
@@ -151,7 +151,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
-        signal.value("update");
+        signal.set("update");
         assertEquals("update", readonly.value());
     }
 
@@ -172,7 +172,7 @@ public class ValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("update");
+        signal.set("update");
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
@@ -207,7 +207,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.value("update");
+        signal.set("update");
 
         AtomicBoolean invoked = new AtomicBoolean(false);
         usage.onNextChange(initial -> {
@@ -227,7 +227,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.value("update1");
+        signal.set("update1");
 
         AtomicInteger count = new AtomicInteger();
         usage.onNextChange(ignore -> {
@@ -236,11 +236,11 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         // Verify preserving after initial and trigger subsequent update
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(2, count.get());
 
         // Verify subsequent update
-        signal.value("update3");
+        signal.set("update3");
         assertEquals(3, count.get());
     }
 
@@ -252,7 +252,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.value("update1");
+        signal.set("update1");
 
         AtomicInteger count = new AtomicInteger();
         usage.onNextChange(ignore -> {
@@ -262,7 +262,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertEquals(1, count.intValue());
 
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(1, count.intValue());
     }
 
@@ -280,10 +280,10 @@ public class ValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("update1");
+        signal.set("update1");
         assertEquals(1, count.intValue());
 
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(1, count.intValue());
     }
 
@@ -340,7 +340,7 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         Thread.startVirtualThread(() -> {
-            signal.value("update");
+            signal.set("update");
             completed.incrementAndGet();
         });
 
@@ -405,7 +405,7 @@ public class ValueSignalTest extends SignalTestBase {
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.peek());
         assertThrows(ConcurrentModificationException.class,
-                () -> signal.value("update"));
+                () -> signal.set("update"));
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.replace("foo", "bar"));
         assertThrows(ConcurrentModificationException.class,
@@ -434,7 +434,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
     }

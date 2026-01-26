@@ -183,7 +183,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
     }
 
     @Override
-    public SignalOperation<T> value(T value) {
+    public SignalOperation<T> set(T value) {
         lock.lock();
         try {
             checkPreconditions();

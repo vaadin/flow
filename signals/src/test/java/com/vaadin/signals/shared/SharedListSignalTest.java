@@ -148,7 +148,7 @@ public class SharedListSignalTest extends SignalTestBase {
             assertEquals(0, signal.peekConfirmed().size());
             assertNull(childInner.peekConfirmed());
 
-            childInner.value("update");
+            childInner.set("update");
 
             return childInner;
         }).returnValue();
@@ -313,7 +313,7 @@ public class SharedListSignalTest extends SignalTestBase {
         assertInstanceOf(SignalCommand.InsertCommand.class,
                 validatedCommands.get(0));
 
-        child.value("update");
+        child.set("update");
         assertEquals(2, validatedCommands.size());
         assertInstanceOf(SignalCommand.ValueCommand.class,
                 validatedCommands.get(1));
@@ -333,7 +333,7 @@ public class SharedListSignalTest extends SignalTestBase {
         assertChildren(signal, "child");
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            readonlyChild.value("update");
+            readonlyChild.set("update");
         });
         assertChildren(signal, "child");
     }
@@ -346,7 +346,7 @@ public class SharedListSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.asNode().asValue(String.class).value("value");
+        signal.asNode().asValue(String.class).set("value");
         assertFalse(usage.hasChanges());
 
         signal.insertLast("insert");

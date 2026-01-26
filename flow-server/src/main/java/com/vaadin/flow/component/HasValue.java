@@ -255,7 +255,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Input component = new Input();
      * add(component);
      * component.bindValue(signal);
-     * signal.value("Hello"); // The input's value changes
+     * signal.set("Hello"); // The input's value changes
      * </pre>
      *
      * @param valueSignal
@@ -290,7 +290,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Input component = new Input();
      * add(component);
      * component.bindReadOnly(signal);
-     * signal.value(true); // The input becomes read-only
+     * signal.set(true); // The input becomes read-only
      * </pre>
      *
      * @param readOnlySignal

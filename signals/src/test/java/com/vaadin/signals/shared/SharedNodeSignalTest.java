@@ -76,7 +76,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedValueSignal<String> asValue = signal.asValue(String.class);
         assertEquals(null, asValue.value());
 
-        asValue.value("update");
+        asValue.set("update");
         assertEquals("update", signal.value().value(String.class));
     }
 
@@ -85,7 +85,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
 
         SharedValueSignal<String> asString = signal.asValue(String.class);
-        asString.value("update");
+        asString.set("update");
 
         assertThrows(RuntimeException.class, () -> {
             signal.value().value(Double.class);
@@ -376,7 +376,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         SharedNodeSignalState value = signal.value();
 
-        signal.asValue(String.class).value("value");
+        signal.asValue(String.class).set("value");
         signal.insertChild(ListPosition.last());
         signal.putChildIfAbsent("key");
 
@@ -402,7 +402,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         assertInstanceOf(SignalCommand.InsertCommand.class,
                 validatedCommands.get(0));
 
-        child.asValue(String.class).value("update");
+        child.asValue(String.class).set("update");
         assertEquals(2, validatedCommands.size());
         assertInstanceOf(SignalCommand.ValueCommand.class,
                 validatedCommands.get(1));
@@ -422,7 +422,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         assertEquals(List.of(readonlyChild), readonly.value().listChildren());
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            readonlyChild.asValue(String.class).value("update");
+            readonlyChild.asValue(String.class).set("update");
         });
         assertEquals("child", readonlyChild.value().value(String.class));
     }
@@ -435,7 +435,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.asValue(String.class).value("value");
+        signal.asValue(String.class).set("value");
         assertTrue(usage.hasChanges());
 
         usage = UsageTracker.track(() -> {
@@ -507,7 +507,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         assertEquals("SharedNodeSignal[]", signal.toString());
 
-        signal.asValue(String.class).value("value");
+        signal.asValue(String.class).set("value");
         assertEquals("SharedNodeSignal[value: \"value\"]", signal.toString());
 
         signal.insertChildWithValue("listChild", ListPosition.last());

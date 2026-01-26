@@ -59,7 +59,7 @@ public class BindValueView extends Div {
         changeInputValueButton.setId("change-value-button");
 
         NativeButton changeSignalValueButton = new NativeButton(
-                "signal.value(\"bar\")", e -> signal.value("bar"));
+                "signal.set(\"bar\")", e -> signal.set("bar"));
         changeSignalValueButton.setId("change-signal-value-button");
 
         NativeButton changeValueInternallyButton = new NativeButton(

@@ -118,8 +118,8 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Double> value(int value) {
-        return value(Double.valueOf(value));
+    public SignalOperation<Double> set(int value) {
+        return set(Double.valueOf(value));
     }
 
     /**

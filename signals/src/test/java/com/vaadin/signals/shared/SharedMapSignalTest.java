@@ -116,7 +116,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertEquals("value", child.value());
         assertChildren(signal, "key", "value");
 
-        child.value("update");
+        child.set("update");
         assertChildren(signal, "key", "update");
     }
 
@@ -136,7 +136,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertEquals("value", insertChild.value());
         assertChildren(signal, "key", "value");
 
-        insertChild.value("update");
+        insertChild.set("update");
         assertEquals("update", child.value());
         assertChildren(signal, "key", "update");
     }
@@ -284,7 +284,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertInstanceOf(SignalCommand.PutCommand.class,
                 validatedCommands.get(0));
 
-        wrapper.value().get("key").value("update");
+        wrapper.value().get("key").set("update");
         assertEquals(2, validatedCommands.size());
         assertInstanceOf(SignalCommand.ValueCommand.class,
                 validatedCommands.get(1));
@@ -304,7 +304,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertChildren(signal, "key", "value");
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            readonlyChild.value("update");
+            readonlyChild.set("update");
         });
         assertChildren(signal, "key", "value");
     }
@@ -317,7 +317,7 @@ public class SharedMapSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        signal.asNode().asValue(String.class).value("value");
+        signal.asNode().asValue(String.class).set("value");
         assertFalse(usage.hasChanges());
 
         signal.put("key", "value");

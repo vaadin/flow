@@ -69,7 +69,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         assertEquals("b", html.getElement().getAttribute("id"));
 
         // update value while attached
-        signal.value("<div id='c'>v2</div>");
+        signal.set("<div id='c'>v2</div>");
         assertEquals("v2", html.getInnerHtml());
         assertEquals("c", html.getElement().getAttribute("id"));
     }
@@ -82,7 +82,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.bindHtmlContent(signal);
 
         // change ignored while not attached
-        signal.value("<div id='c'>ignored</div>");
+        signal.set("<div id='c'>ignored</div>");
 
         assertEquals("init", html.getInnerHtml());
         assertEquals("a", html.getElement().getAttribute("id"));
@@ -99,7 +99,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.getElement().removeFromParent();
 
         // change ignored while detached
-        signal.value("<div id='c'>ignored</div>");
+        signal.set("<div id='c'>ignored</div>");
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
@@ -116,7 +116,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.getElement().removeFromParent();
 
         // change while detached
-        signal.value("<div id='c'>after2</div>");
+        signal.set("<div id='c'>after2</div>");
         // re-attach
         UI.getCurrent().add(html);
 
@@ -135,7 +135,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // sending null will cause NPE in setHtmlContent inside effect function;
         // state should not change, and an error should be captured by
         // SignalsUnitTest error handler
-        signal.value(null);
+        signal.set(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
@@ -159,7 +159,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // remove binding
         html.bindHtmlContent(null);
         // further changes are ignored
-        signal.value("<div id='c'>ignored</div>");
+        signal.set("<div id='c'>ignored</div>");
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
     }

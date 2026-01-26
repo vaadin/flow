@@ -594,7 +594,7 @@ public abstract class Component
      * Span component = new Span();
      * add(component);
      * component.bindVisible(signal);
-     * signal.value(false); // The component is set hidden
+     * signal.set(false); // The component is set hidden
      * </pre>
      *
      * or with the multiple boolean conditions:

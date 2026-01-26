@@ -79,7 +79,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
     void value_intOverload_setsTheValue() {
         SharedNumberSignal signal = new SharedNumberSignal();
 
-        signal.value(2);
+        signal.set(2);
 
         assertEquals(2, signal.value());
     }
@@ -119,7 +119,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
         Signal<Integer> doubled = signal.mapIntValue(value -> value * 2);
         assertEquals(0, doubled.value());
 
-        signal.value(5);
+        signal.set(5);
         assertEquals(10, doubled.value());
     }
 

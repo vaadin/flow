@@ -115,7 +115,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("", field.getValue());
         Assert.assertEquals("", signal.peek());
 
-        signal.value("Hello Cool World");
+        signal.set("Hello Cool World");
         // setValue for CompositeField's components value change listeners
         // update the value by internal setModelValue method
         field.rest.setValue("");

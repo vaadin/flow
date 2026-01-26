@@ -47,7 +47,7 @@ public class ClassListBindView extends Div {
 
         NativeButton toggle = new NativeButton("Toggle highlight", event -> {
             Boolean current = highlight.value();
-            highlight.value(current == null ? Boolean.TRUE : !current);
+            highlight.set(current == null ? Boolean.TRUE : !current);
         });
         toggle.setId("toggle");
 

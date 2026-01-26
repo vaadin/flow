@@ -68,11 +68,11 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         assertTrue(component.isReadOnly());
 
         // true -> false
-        signal.value(false);
+        signal.set(false);
         assertFalse(component.isReadOnly());
 
         // false -> true
-        signal.value(true);
+        signal.set(true);
         assertTrue(component.isReadOnly());
     }
 
@@ -81,7 +81,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindReadOnly(signal);
-        signal.value(false);
+        signal.set(false);
 
         assertFalse(component.isReadOnly());
     }
@@ -93,7 +93,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindReadOnly(signal);
         component.removeFromParent();
-        signal.value(false); // ignored
+        signal.set(false); // ignored
 
         assertTrue(component.isReadOnly());
     }
@@ -105,7 +105,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindReadOnly(signal);
         component.removeFromParent();
-        signal.value(false);
+        signal.set(false);
         UI.getCurrent().add(component);
 
         assertFalse(component.isReadOnly());
@@ -133,7 +133,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         assertTrue(component.isReadOnly());
 
         component.bindReadOnly(null); // remove binding
-        signal.value(false); // no effect
+        signal.set(false); // no effect
         assertTrue(component.isReadOnly());
 
         component.setReadOnly(false);
@@ -163,7 +163,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         assertTrue(component.isReadOnly());
 
         // null transforms to false (default value for boolean property)
-        signal.value(null);
+        signal.set(null);
         assertFalse(component.isReadOnly());
     }
 
@@ -175,13 +175,13 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         component.bindReadOnly(signal);
         assertFalse(component.isReadOnly());
 
-        signal.value(true);
+        signal.set(true);
         assertTrue(component.isReadOnly());
 
-        signal.value(false);
+        signal.set(false);
         assertFalse(component.isReadOnly());
 
-        signal.value(true);
+        signal.set(true);
         assertTrue(component.isReadOnly());
     }
 
