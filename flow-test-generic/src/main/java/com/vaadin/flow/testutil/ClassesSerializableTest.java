@@ -125,6 +125,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.hotswap\\.Hotswap.*Event(\\$.*)?",
                 "com\\.vaadin\\.flow\\.hotswap\\.Hotswapper",
                 "com\\.vaadin\\.flow\\.hotswap\\.VaadinHotswapper",
+                "com\\.vaadin\\.flow\\.hotswap\\.impl\\.ErrorViewHotswapper",
                 "com\\.vaadin\\.flow\\.i18n\\.DefaultTranslationsHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccessor",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccess",

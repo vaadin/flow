@@ -18,3 +18,4 @@ com.vaadin.flow.component.internal.StyleSheetHotswapper
 com.vaadin.flow.internal.ReflectionCacheHotswapper
 com.vaadin.flow.i18n.DefaultTranslationsHotswapper
 com.vaadin.flow.router.internal.RouteRegistryHotswapper
+com.vaadin.flow.hotswap.impl.ErrorViewHotswapper
