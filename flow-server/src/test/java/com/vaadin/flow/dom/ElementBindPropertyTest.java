@@ -698,7 +698,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<List<?>> signal = new ValueSignal<>(
+        ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 Arrays.asList(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -712,10 +712,8 @@ public class ElementBindPropertyTest {
         signal.value(Arrays.asList(createJack(), createJohn()));
 
         // assert signal value updated
-        assertEquals("Jack",
-                ((JacksonUtilsTest.Person) signal.peek().getFirst()).name());
-        assertEquals("John",
-                ((JacksonUtilsTest.Person) signal.peek().getLast()).name());
+        assertEquals("Jack", (signal.peek().getFirst()).name());
+        assertEquals("John", (signal.peek().getLast()).name());
         // assert property value not updated
         assertEquals("John",
                 getFromList(component, "foo", 0).get("name").asString());
@@ -738,7 +736,7 @@ public class ElementBindPropertyTest {
     public void bindMapProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -750,7 +748,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
         assertEquals("John",
@@ -790,7 +788,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -804,10 +802,8 @@ public class ElementBindPropertyTest {
         signal.value(createPersonMap(createJack(), createJohn()));
 
         // assert signal value updated
-        assertEquals("Jack",
-                ((JacksonUtilsTest.Person) signal.peek().get("0")).name());
-        assertEquals("John",
-                ((JacksonUtilsTest.Person) signal.peek().get("1")).name());
+        assertEquals("Jack", (signal.peek().get("0")).name());
+        assertEquals("John", (signal.peek().get("1")).name());
         // assert property value not updated
         assertEquals("John",
                 getFromMap(component, "foo", "0").get("name").asString());
@@ -844,8 +840,9 @@ public class ElementBindPropertyTest {
         return createPerson("Jack", 52, false);
     }
 
-    private Map createPersonMap(JacksonUtilsTest.Person... persons) {
-        Map map = new HashMap<>();
+    private Map<String, JacksonUtilsTest.Person> createPersonMap(
+            JacksonUtilsTest.Person... persons) {
+        Map<String, JacksonUtilsTest.Person> map = new HashMap<>();
         for (int i = 0; i < persons.length; i++) {
             map.put(String.valueOf(i), persons[i]);
         }
