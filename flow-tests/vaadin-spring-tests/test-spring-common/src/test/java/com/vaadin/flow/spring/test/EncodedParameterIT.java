@@ -44,8 +44,7 @@ public class EncodedParameterIT extends AbstractSpringTest {
 
         element = $(DivElement.class).id(DECODED_CONTENT);
 
-        Assert.assertEquals(
-                "Element parameter should decode to +.", "a+b",
+        Assert.assertEquals("Element parameter should decode to +.", "a+b",
                 element.getText());
     }
 
