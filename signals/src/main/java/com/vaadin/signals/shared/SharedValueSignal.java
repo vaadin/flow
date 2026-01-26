@@ -170,10 +170,10 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     /**
      * Checks that this signal has the expected value. This operation is only
      * meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
-     * of the returned operation will be resolved as successful if the expected
-     * value was present and resolved as unsuccessful if any other value was
-     * present when the operation is processed.
+     * {@link com.vaadin.signals.Signal#runInTransaction(TransactionTask)
+     * transaction}. The result of the returned operation will be resolved as
+     * successful if the expected value was present and resolved as unsuccessful
+     * if any other value was present when the operation is processed.
      *
      * @param expectedValue
      *            the expected value
