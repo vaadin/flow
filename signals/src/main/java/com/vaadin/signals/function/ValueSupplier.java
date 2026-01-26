@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.function;
 
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Supplies a value within a specific context such as a transaction or

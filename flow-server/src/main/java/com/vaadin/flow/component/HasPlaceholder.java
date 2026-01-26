@@ -16,7 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * A component which supports a placeholder.

@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.core.WritableSignal;
+import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.TransactionTask;

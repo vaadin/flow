@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which handles shadow root nodes.

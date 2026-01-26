@@ -16,7 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * A component that has a value.

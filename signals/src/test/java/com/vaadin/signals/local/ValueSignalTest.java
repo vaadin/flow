@@ -23,10 +23,10 @@ import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.core.Signal;
-import com.vaadin.signals.core.WritableSignal;
+import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;

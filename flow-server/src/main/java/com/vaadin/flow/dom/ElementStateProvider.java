@@ -25,7 +25,7 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Handles storing and retrieval of the state information for an element using a

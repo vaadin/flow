@@ -22,11 +22,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;

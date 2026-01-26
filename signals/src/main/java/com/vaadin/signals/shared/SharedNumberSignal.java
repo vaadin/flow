@@ -19,8 +19,8 @@ import java.util.Objects;
 import java.util.function.IntFunction;
 
 import com.vaadin.signals.Id;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.operations.SignalOperation;

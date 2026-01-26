@@ -36,8 +36,8 @@ import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
-import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * A state node feature that structures data as a map.

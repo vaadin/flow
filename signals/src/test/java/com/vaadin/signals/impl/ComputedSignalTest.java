@@ -24,8 +24,8 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
-import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.shared.AbstractSignal;
 import com.vaadin.signals.shared.SharedValueSignal;

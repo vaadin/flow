@@ -17,7 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Node feature for binding a {@link Signal} to the text content of a node.

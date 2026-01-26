@@ -32,7 +32,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not

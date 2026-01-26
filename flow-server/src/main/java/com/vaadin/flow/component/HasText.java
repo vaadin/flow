@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * A component that supports text content.

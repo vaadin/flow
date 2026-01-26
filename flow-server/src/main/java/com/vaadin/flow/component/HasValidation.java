@@ -17,7 +17,7 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * A component that supports input validation.

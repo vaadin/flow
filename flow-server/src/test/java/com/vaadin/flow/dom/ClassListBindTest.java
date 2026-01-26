@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.local.ValueSignal;
 
 /**

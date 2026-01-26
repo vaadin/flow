@@ -18,7 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.Signal;
 
 /**
  * Mixin interface for field components that have helper text as property and

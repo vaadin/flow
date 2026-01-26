@@ -20,10 +20,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.operations.SignalOperation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

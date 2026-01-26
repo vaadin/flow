@@ -32,8 +32,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.core.WritableSignal;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Encapsulates all the logic required for a typical field implementation. This

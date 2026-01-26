@@ -23,8 +23,8 @@ import tools.jackson.databind.node.POJONode;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
-import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;
