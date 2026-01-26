@@ -18,8 +18,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow-server</artifactId>
+        <groupId>com.vaadin</groupId>        <artifactId>flow-server</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
