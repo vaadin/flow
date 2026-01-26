@@ -27,12 +27,15 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -285,8 +288,12 @@ public abstract class ReactAdapterComponent extends Component {
             SerializableConsumer<T> listener) {
         return getElement().addPropertyChangeListener(stateName,
                 stateName + "-changed", (event -> {
+                    Serializable value = event.getValue();
+                    if (value instanceof JsonValue elemental) {
+                        value = JacksonUtils.mapElemental(elemental);
+                    }
                     JsonNode newStateJson = JacksonCodec
-                            .encodeWithoutTypeInfo(event.getValue());
+                            .encodeWithoutTypeInfo(value);
                     T newState = jsonReader.apply(newStateJson);
                     listener.accept(newState);
                 }));
