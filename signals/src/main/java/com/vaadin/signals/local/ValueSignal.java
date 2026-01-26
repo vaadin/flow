@@ -54,7 +54,6 @@ import com.vaadin.signals.operations.SignalOperation;
  *
  * @param <T>
  *            the signal value type
- * @since 24.8
  */
 public class ValueSignal<T> implements WritableSignal<T> {
 
