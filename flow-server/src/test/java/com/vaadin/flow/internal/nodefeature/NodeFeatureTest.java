@@ -98,6 +98,8 @@ public class NodeFeatureTest {
         expectedIds.put(TextBindingFeature.class, NodeFeatures.TEXT_BINDING);
         expectedIds.put(SignalBindingFeature.class,
                 NodeFeatures.SIGNAL_BINDING);
+        expectedIds.put(ChildrenBindingFeature.class,
+                NodeFeatures.CHILDREN_BINDING);
 
         return expectedIds;
     }

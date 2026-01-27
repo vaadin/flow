@@ -152,6 +152,11 @@ public final class NodeFeatures {
      */
     public static final int SIGNAL_BINDING = 28;
 
+    /**
+     * Id for {@link ChildrenBindingFeature}.
+     */
+    public static final int CHILDREN_BINDING = 29;
+
     private NodeFeatures() {
         // Only static
     }
