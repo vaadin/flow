@@ -20,7 +20,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * View for testing binding value state to a Signal.
@@ -59,7 +59,7 @@ public class BindValueView extends Div {
         changeInputValueButton.setId("change-value-button");
 
         NativeButton changeSignalValueButton = new NativeButton(
-                "signal.value(\"bar\")", e -> signal.value("bar"));
+                "signal.set(\"bar\")", e -> signal.set("bar"));
         changeSignalValueButton.setId("change-signal-value-button");
 
         NativeButton changeValueInternallyButton = new NativeButton(

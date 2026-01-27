@@ -37,7 +37,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    SignalOperation<T> value(T value);
+    SignalOperation<T> set(T value);
 
     /**
      * Sets the value of this signal if and only if the signal has the expected

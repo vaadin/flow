@@ -272,7 +272,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindAttribute("mol", signal);
-     * signal.value("42"); // The element now has attribute mol="42"
+     * signal.set("42"); // The element now has attribute mol="42"
      * </pre>
      *
      * @param attribute
@@ -878,7 +878,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindProperty("mol", signal);
-     * signal.value("42"); // The element now has property mol="42"
+     * signal.set("42"); // The element now has property mol="42"
      * </pre>
      *
      * @param name
@@ -1334,7 +1334,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindText(signal);
-     * signal.value("text"); // The element text content is set to "text"
+     * signal.set("text"); // The element text content is set to "text"
      * </pre>
      *
      * @param signal
@@ -1819,7 +1819,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindVisible(signal);
-     * signal.value(false); // The element is set hidden
+     * signal.set(false); // The element is set hidden
      * </pre>
      *
      * @param visibleSignal
@@ -1877,7 +1877,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindEnabled(signal);
-     * signal.value(false); // The element is disabled
+     * signal.set(false); // The element is disabled
      * </pre>
      *
      * @param enabledSignal

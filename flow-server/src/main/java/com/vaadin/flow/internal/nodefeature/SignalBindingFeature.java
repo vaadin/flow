@@ -139,7 +139,7 @@ public class SignalBindingFeature extends ServerSideFeature {
         if (hasBinding(SignalBindingFeature.VALUE)) {
             Signal<T> signal = getSignal(key);
             if (signal instanceof WritableSignal<T> writableSignal) {
-                writableSignal.value(value);
+                writableSignal.set(value);
             }
         }
     }

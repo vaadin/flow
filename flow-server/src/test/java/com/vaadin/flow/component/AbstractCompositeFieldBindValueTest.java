@@ -21,8 +21,8 @@ import org.junit.Test;
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
@@ -115,7 +115,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("", field.getValue());
         Assert.assertEquals("", signal.peek());
 
-        signal.value("Hello Cool World");
+        signal.set("Hello Cool World");
         // setValue for CompositeField's components value change listeners
         // update the value by internal setModelValue method
         field.rest.setValue("");

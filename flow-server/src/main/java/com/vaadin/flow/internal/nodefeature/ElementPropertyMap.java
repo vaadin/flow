@@ -615,7 +615,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             putResult = putWithDeferredChangeEvent(key, new SignalBinding(
                     binding.signal(), binding.registration(), value), false);
             if (binding.signal() instanceof WritableSignal valueSignal) {
-                valueSignal.value(value);
+                valueSignal.set(value);
             } else {
                 throw new PropertyChangeDeniedException(String.format(
                         "Signal bound to property '%s' is not a WritableSignal, "

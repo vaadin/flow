@@ -19,7 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * View for testing binding enabled state to a Signal.
@@ -49,12 +49,12 @@ public class BindEnabledView extends Div {
 
         NativeButton toggleChildButton = new NativeButton(
                 "Toggle enabled Signal value",
-                e -> signal1.value(!signal1.peek()));
+                e -> signal1.set(!signal1.peek()));
         toggleChildButton.setId("toggle-button-child");
 
         NativeButton toggleParentButton = new NativeButton(
                 "Toggle parent enabled Signal value",
-                e -> signal2.value(!signal2.peek()));
+                e -> signal2.set(!signal2.peek()));
         toggleParentButton.setId("toggle-button-parent");
 
         parent.add(targetEnabledInitially);

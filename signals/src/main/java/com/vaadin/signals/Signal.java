@@ -17,17 +17,13 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 
+import com.vaadin.signals.Transaction.Type;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;
 import com.vaadin.signals.function.SignalMapper;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.function.ValueSupplier;
-import com.vaadin.signals.impl.ComputedSignal;
-import com.vaadin.signals.impl.Effect;
-import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.Transaction.Type;
-import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.operations.TransactionOperation;
 
 /**
@@ -243,9 +239,9 @@ public interface Signal<T> {
 
     /**
      * Runs the given supplier without tracking dependencies for signals that
-     * are read within the supplier. This has the same effect as
-     * {@link AbstractSignal#peek()} but is effective for an entire code block
-     * rather than just a single invocation.
+     * are read within the supplier. This has the same effect as {@link #peek()}
+     * but is effective for an entire code block rather than just a single
+     * invocation.
      *
      * @param <T>
      *            the supplier type

@@ -22,7 +22,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ElementPropertySignalBindingView", layout = ViewTestLayout.class)
 public class ElementPropertySignalBindingView extends AbstractDivView {
