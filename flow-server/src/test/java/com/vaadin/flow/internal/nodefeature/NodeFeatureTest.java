@@ -142,6 +142,7 @@ public class NodeFeatureTest {
 
                 /* Signal binding feature */
                 TextBindingFeature.class, SignalBindingFeature.class,
+                ChildrenBindingFeature.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,

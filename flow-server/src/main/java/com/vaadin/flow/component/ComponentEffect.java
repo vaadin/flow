@@ -28,10 +28,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ChildrenBindingFeature;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
@@ -186,8 +183,6 @@ public final class ComponentEffect {
      *         function
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
-     * @throws BindingActiveException
-     *             thrown if a binding is already active
      */
     public static <T, PARENT extends Component & HasComponents> Registration bindChildren(
             PARENT parent, ListSignal<T> list,
@@ -223,17 +218,9 @@ public final class ComponentEffect {
         // effect runs due to signal changes.
         HashMap<ValueSignal<T>, Element> valueSignalToChildCache = new HashMap<>();
 
-        StateNode parentNode = parent.getNode();
-        ChildrenBindingFeature feature = parentNode
-                .getFeature(ChildrenBindingFeature.class);
-        if (feature.hasBinding() && parentNode.isAttached()) {
-            throw new BindingActiveException();
-        }
-        Registration registration = ComponentEffect.effect(parentComponent,
+        return ComponentEffect.effect(parentComponent,
                 () -> runEffect(new BindChildrenEffectContext<>(parent,
                         list.value(), childFactory, valueSignalToChildCache)));
-        feature.setBinding(registration, list);
-        return Registration.combine(registration, feature::removeBinding);
     }
 
     private static <T> void runEffect(BindChildrenEffectContext<T> context) {

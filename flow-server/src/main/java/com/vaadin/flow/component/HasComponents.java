@@ -254,12 +254,17 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default <T> Registration bindChildren(ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Component> childFactory) {
-        if (this instanceof Component) {
-            var parent = (Component & HasComponents) this;
-            return ComponentEffect.bindChildren(parent, list, childFactory);
-        } else {
-            throw new UnsupportedOperationException(
-                    "bindChildren can only be used with components");
+        Objects.requireNonNull(list, "ListSignal cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child element factory cannot be null");
+        var self = (Component & HasComponents) this;
+        var node = self.getElement().getNode();
+        var feature = node.getFeature(ChildrenBindingFeature.class);
+        if (feature.hasBinding() && node.isAttached()) {
+            throw new BindingActiveException();
         }
+        var binding = ComponentEffect.bindChildren(self, list, childFactory);
+        feature.setBinding(binding, list);
+        return Registration.combine(binding, feature::removeBinding);
     }
 }
