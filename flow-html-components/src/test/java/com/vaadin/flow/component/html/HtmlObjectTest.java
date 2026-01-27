@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +25,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamResourceWriter;
@@ -109,6 +112,11 @@ public class HtmlObjectTest extends ComponentTest {
     @Test
     public void downloadHandler_isSetToInline() {
         Element element = Mockito.mock(Element.class);
+        StateNode node = Mockito.mock(StateNode.class);
+        Mockito.when(element.getNode()).thenReturn(node);
+        Mockito.when(node.getFeatureIfInitialized(Mockito.any())).thenReturn(
+                Optional.empty());
+
         class TestHtmlObject extends HtmlObject {
             public TestHtmlObject(DownloadHandler downloadHandler) {
                 super(downloadHandler);
