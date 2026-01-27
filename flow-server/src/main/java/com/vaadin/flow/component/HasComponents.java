@@ -261,6 +261,6 @@ public interface HasComponents extends HasElement, HasEnabled {
         }
         var binding = ComponentEffect.bindChildren(self, list, childFactory);
         feature.setBinding(binding, list);
-        return Registration.combine(binding, feature::removeBinding);
+        return feature::removeBinding;
     }
 }
