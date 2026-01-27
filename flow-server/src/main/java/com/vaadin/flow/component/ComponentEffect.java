@@ -160,11 +160,7 @@ public final class ComponentEffect {
      *
      * UnorderedList component = new UnorderedList();
      *
-     * ComponentEffect.bindChildren(component, taskList, taskValueSignal -> {
-     *     var listItem = new ListItem();
-     *     ComponentEffect.bind(listItem, taskValueSignal, HasString::setText);
-     *     return listItem;
-     * });
+     * ComponentEffect.bindChildren(component, taskList, ListItem::new);
      * </pre>
      *
      * @param parent

@@ -231,11 +231,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * UnorderedList component = new UnorderedList();
      *
-     * component.bindChildren(taskList, taskValueSignal -> {
-     *     var listItem = new ListItem();
-     *     ComponentEffect.bind(listItem, taskValueSignal, HasString::setText);
-     *     return listItem;
-     * });
+     * component.bindChildren(taskList, ListItem::new);
      * </pre>
      *
      * @param list
