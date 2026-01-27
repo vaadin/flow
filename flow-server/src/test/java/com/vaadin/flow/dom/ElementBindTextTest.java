@@ -178,7 +178,7 @@ public class ElementBindTextTest {
     public void bindText_initialNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>(null);
+        ValueSignal<String> signal = new ValueSignal<>();
         element.bindText(signal);
         assertEquals("", element.getText());
         Assert.assertTrue(events.isEmpty());
