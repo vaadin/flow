@@ -600,9 +600,8 @@ public abstract class Component
      * or with the multiple boolean conditions:
      *
      * <pre>
-     * WritableSignal&lt;Boolean&gt; needsVisaSignal = new ReferenceSignal&lt;&gt;(false);
-     * WritableSignal&lt;VisaType&gt; visaTypeSignal = new ReferenceSignal&lt;&gt;(
-     *         VisaType.H1B);
+     * ValueSignal&lt;Boolean&gt; needsVisaSignal = new ValueSignal&lt;&gt;(false);
+     * ValueSignal&lt;VisaType&gt; visaTypeSignal = new ValueSignal&lt;&gt;(VisaType.H1B);
      * VerticalLayout visaSection = new VerticalLayout();
      * add(visaSection);
      * // using lambda expression as a computed signal
