@@ -24,7 +24,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -195,7 +195,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
             items.insertLast("second");
             items.insertLast("third");
@@ -219,7 +220,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
 
             container.bindChildren(items,
@@ -245,7 +247,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
 
             Registration registration = container.bindChildren(items,
@@ -269,7 +272,8 @@ public class HasComponentsTest {
             new MockUI().add(container);
             container.add(new TestComponent("existing"));
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
 
             assertThrows(IllegalStateException.class,
                     () -> container.bindChildren(items,
@@ -283,12 +287,14 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
 
             container.bindChildren(items,
                     item -> new TestComponent(item.value()));
 
-            ListSignal<String> otherItems = new ListSignal<>(String.class);
+            SharedListSignal<String> otherItems = new SharedListSignal<>(
+                    String.class);
             assertThrows(BindingActiveException.class,
                     () -> container.bindChildren(otherItems,
                             item -> new TestComponent(item.value())));
@@ -301,7 +307,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
 
             container.bindChildren(items,
@@ -319,7 +326,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
 
             container.bindChildren(items,
@@ -339,7 +347,8 @@ public class HasComponentsTest {
             TestComponent container = new TestComponent();
             new MockUI().add(container);
 
-            ListSignal<String> items = new ListSignal<>(String.class);
+            SharedListSignal<String> items = new SharedListSignal<>(
+                    String.class);
             items.insertFirst("first");
 
             Registration registration = container.bindChildren(items,
