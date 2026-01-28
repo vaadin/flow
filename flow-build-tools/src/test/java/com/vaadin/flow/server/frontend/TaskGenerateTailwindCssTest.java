@@ -187,6 +187,86 @@ public class TaskGenerateTailwindCssTest {
     }
 
     @Test
+    public void should_includeThemeImport_whenJarPackagedThemeStylesCssExists()
+            throws Exception {
+        // Create JAR resources folder with theme styles.css
+        String themeName = "jar-theme";
+        File jarResourcesFolder = new File(frontendGeneratedFolder,
+                "jar-resources");
+        File themesFolder = new File(jarResourcesFolder, "themes");
+        File themeFolder = new File(themesFolder, themeName);
+        themeFolder.mkdirs();
+        File stylesCss = new File(themeFolder, "styles.css");
+        Files.writeString(stylesCss.toPath(),
+                ".jar-class { @apply text-red-500; }");
+
+        ThemeDefinition themeDefinition = Mockito.mock(ThemeDefinition.class);
+        Mockito.when(frontendDependenciesScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+        Mockito.when(themeDefinition.getName()).thenReturn(themeName);
+
+        // Recreate task with JAR resources folder
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder)
+                .withJarFrontendResourcesFolder(jarResourcesFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        String content = task.getFileContent();
+        Assert.assertTrue("Should have JAR theme styles.css import",
+                content.contains(
+                        "@import './jar-resources/themes/jar-theme/styles.css';"));
+        Assert.assertFalse("Should not contain backslashes in import path",
+                content.contains("\\"));
+    }
+
+    @Test
+    public void should_preferLocalTheme_overJarPackagedTheme()
+            throws Exception {
+        // Create both local and JAR-packaged theme with same name
+        String themeName = "shared-theme";
+
+        // Local theme
+        File localThemesFolder = new File(frontendFolder, "themes");
+        File localThemeFolder = new File(localThemesFolder, themeName);
+        localThemeFolder.mkdirs();
+        File localStylesCss = new File(localThemeFolder, "styles.css");
+        Files.writeString(localStylesCss.toPath(),
+                ".local-class { @apply text-blue-500; }");
+
+        // JAR-packaged theme
+        File jarResourcesFolder = new File(frontendGeneratedFolder,
+                "jar-resources");
+        File jarThemesFolder = new File(jarResourcesFolder, "themes");
+        File jarThemeFolder = new File(jarThemesFolder, themeName);
+        jarThemeFolder.mkdirs();
+        File jarStylesCss = new File(jarThemeFolder, "styles.css");
+        Files.writeString(jarStylesCss.toPath(),
+                ".jar-class { @apply text-red-500; }");
+
+        ThemeDefinition themeDefinition = Mockito.mock(ThemeDefinition.class);
+        Mockito.when(frontendDependenciesScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+        Mockito.when(themeDefinition.getName()).thenReturn(themeName);
+
+        // Recreate task with both folders
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDependenciesScanner(frontendDependenciesScanner)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder)
+                .withJarFrontendResourcesFolder(jarResourcesFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        String content = task.getFileContent();
+        // Should prefer local theme over JAR theme
+        Assert.assertTrue("Should have local theme styles.css import", content
+                .contains("@import '../themes/shared-theme/styles.css';"));
+        Assert.assertFalse("Should not have JAR theme import", content
+                .contains("./jar-resources/themes/shared-theme/styles.css"));
+    }
+
+    @Test
     public void should_includeCssImport_whenJarResourceCssExists()
             throws Exception {
         // Create theme folder without styles.css
@@ -207,8 +287,8 @@ public class TaskGenerateTailwindCssTest {
         TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
 
         String content = task.getFileContent();
-        Assert.assertFalse("Should have add-on.css import", content
-                .contains("Frontend/generated/jar-resources/add-on.css"));
+        Assert.assertFalse("Should have add-on.css import",
+                content.contains("./jar-resources/add-on.css"));
     }
 
     private void verifyTailwindCss(String tailwindCssContent,

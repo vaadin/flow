@@ -134,7 +134,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
     /**
      * Add import to theme style.css if a legacy style theme is used.
-     * 
+     *
      * @param options
      *            the task options
      * @param imports
@@ -154,17 +154,29 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
         // Import theme's styles.css if theme exists
         if (themeName != null && !themeName.isEmpty()) {
-            File themesFolder = new File(options.getFrontendDirectory(),
-                    "themes");
-            File themeFolder = new File(themesFolder, themeName);
+            String themePath = "themes/" + themeName + "/" + STYLES_CSS;
+            Path frontendGeneratedFolder = options.getFrontendGeneratedFolder()
+                    .toPath();
 
-            // Import styles.css if it exists
-            File stylesCss = new File(themeFolder, STYLES_CSS);
+            // Try frontend directory first
+            File stylesCss = new File(options.getFrontendDirectory(),
+                    themePath);
             if (stylesCss.exists()) {
-                String relativePath = options.getFrontendGeneratedFolder()
-                        .toPath().relativize(stylesCss.toPath()).toString()
+                String relativePath = frontendGeneratedFolder
+                        .relativize(stylesCss.toPath()).toString()
                         .replace(File.separator, "/");
                 imports.append("@import '").append(relativePath).append("';\n");
+            } else if (options.getJarFrontendResourcesFolder() != null) {
+                // Try JAR resources folder
+                stylesCss = new File(options.getJarFrontendResourcesFolder(),
+                        themePath);
+                if (stylesCss.exists()) {
+                    String relativePath = frontendGeneratedFolder
+                            .relativize(stylesCss.toPath()).toString()
+                            .replace(File.separator, "/");
+                    imports.append("@import './").append(relativePath)
+                            .append("';\n");
+                }
             }
         }
     }
@@ -206,7 +218,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
         }
 
         Path frontendGeneratedFolder = options.getFrontendGeneratedFolder()
-                .getParentFile().toPath();
+                .toPath();
 
         // Try frontend directory first
         File cssFile = new File(options.getFrontendDirectory(), cssPath);
@@ -214,7 +226,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
             String relativePath = frontendGeneratedFolder
                     .relativize(cssFile.toPath()).toString()
                     .replace(File.separator, "/");
-            return "Frontend/" + relativePath;
+            return "./" + relativePath;
         }
         // Try jar resources folder
         if (options.getJarFrontendResourcesFolder() != null) {
@@ -224,7 +236,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
                 String relativePath = frontendGeneratedFolder
                         .relativize(cssFile.toPath()).toString()
                         .replace(File.separator, "/");
-                return "Frontend/" + relativePath;
+                return "./" + relativePath;
             }
         }
         // Try resources directory
