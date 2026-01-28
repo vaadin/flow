@@ -305,10 +305,10 @@ public class DefaultDeploymentConfiguration
         productionMode = getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (log) {
+            info.add(UNMAINTAINED_VERSION_WARNING);
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
-                info.add(UNMAINTAINED_VERSION_WARNING);
                 if (enableDevServer()) {
                     info.add(NOT_PRODUCTION_MODE_INFO);
                 } else {
