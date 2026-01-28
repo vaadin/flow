@@ -942,7 +942,8 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_registrationRemove_effectRemoved() {
         runWithFeatureFlagEnabled(() -> {
-            ListSignal<String> taskList = new ListSignal<>(String.class);
+            SharedListSignal<String> taskList = new SharedListSignal<>(
+                    String.class);
             taskList.insertFirst("first");
             taskList.insertLast("second");
 
