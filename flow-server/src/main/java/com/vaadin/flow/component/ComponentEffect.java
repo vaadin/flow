@@ -127,26 +127,26 @@ public final class ComponentEffect {
     }
 
     /**
-     * Binds a list {@link Signal} to a parent component using a child component
-     * factory. Each item {@link Signal} in the list corresponds to a child
+     * Binds a list signal containing child signals to a parent component using
+     * a child component factory. Each signal in the list corresponds to a child
      * component within the parent.
      * <p>
      * The parent component is automatically updated to reflect the structure of
-     * the list. Changes to the list, such as additions, removals, or
+     * the list signal. Changes to the list, such as additions, removals, or
      * reordering, will update the parent's children accordingly.
      * <p>
      * The parent component must not contain any children that are not part of
-     * the list. If the parent has existing children when this method is called,
-     * or if it contains unrelated children after the list changes, an
+     * the list signal. If the parent has existing children when this method is
+     * called, or if it contains unrelated children after the list changes, an
      * {@link IllegalStateException} will be thrown.
      * <p>
      * New child components are created using the provided
-     * <code>childFactory</code> function. This function takes a {@link Signal}
-     * from the list and returns a corresponding {@link Component}. It shouldn't
-     * return <code>null</code>. The {@link Signal} can be further bound to the
-     * returned component as needed. Note that <code>childFactory</code> is run
-     * inside a {@link Effect}, and therefore {@link Signal#value()} calls makes
-     * effect re-run automatically on signal value change.
+     * <code>childFactory</code> function. This function takes a signal from the
+     * list and returns a corresponding {@link Component}. It shouldn't return
+     * <code>null</code>. The signal can be further bound to the returned
+     * component as needed. Note that <code>childFactory</code> is run inside a
+     * {@link Effect}, and therefore {@link Signal#value()} calls makes effect
+     * re-run automatically on signal value change.
      * <p>
      * Example of usage:
      *
@@ -171,8 +171,6 @@ public final class ComponentEffect {
      *            the type of the {@link Signal}s in the list
      * @param <P>
      *            the type of the parent component
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
      */
