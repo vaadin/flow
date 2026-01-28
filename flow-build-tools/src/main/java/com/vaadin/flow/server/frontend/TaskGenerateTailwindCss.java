@@ -58,9 +58,9 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
     private static final Logger log = LoggerFactory
             .getLogger(TaskGenerateTailwindCss.class);
 
-    private String relativeSourcePath;
-    private String customImportReplacement;
-    private String themeImportReplacement;
+    private final String relativeSourcePath;
+    private final String customImportReplacement;
+    private final String themeImportReplacement;
 
     private final File tailwindCss;
 
@@ -76,9 +76,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
                 TAILWIND_CSS);
         relativeSourcePath = options.getFrontendGeneratedFolder().toPath()
                 .relativize(options.getNpmFolder().toPath().resolve("src"))
-                .toString();
-        // Use forward slash as a separator
-        relativeSourcePath = relativeSourcePath.replace(File.separator, "/");
+                .toString().replace(File.separator, "/");
 
         // Check if custom Tailwind CSS file exists
         File customCssFile = new File(options.getFrontendDirectory(),
@@ -148,11 +146,10 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
         FrontendDependenciesScanner frontendDependenciesScanner = options
                 .getFrontendDependenciesScanner();
         String themeName = "";
-        if (frontendDependenciesScanner != null) {
-            if (frontendDependenciesScanner.getThemeDefinition() != null) {
-                themeName = frontendDependenciesScanner.getThemeDefinition()
-                        .getName();
-            }
+        if (frontendDependenciesScanner != null
+                && frontendDependenciesScanner.getThemeDefinition() != null) {
+            themeName = frontendDependenciesScanner.getThemeDefinition()
+                    .getName();
         }
 
         // Import theme's styles.css if theme exists
@@ -188,16 +185,11 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
         cssImports.addAll(collectStyleSheetAnnotations(options));
 
         // Import all @CssImport CSS files that exist in the frontend directory
-        if (cssImports != null) {
-            Path frontendFolder = options.getFrontendGeneratedFolder()
-                    .getParentFile().toPath();
-            for (String cssPath : cssImports) {
-                if (cssPath != null && !cssPath.isEmpty()) {
-                    String cssFile = resolveCssFile(options, cssPath);
-                    if (cssFile != null) {
-                        imports.append("@import '").append(cssFile)
-                                .append("';\n");
-                    }
+        for (String cssPath : cssImports) {
+            if (cssPath != null && !cssPath.isEmpty()) {
+                String cssFile = resolveCssFile(options, cssPath);
+                if (cssFile != null) {
+                    imports.append("@import '").append(cssFile).append("';\n");
                 }
             }
         }
@@ -213,14 +205,15 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
             cssPath = cssPath.substring(2);
         }
 
-        Path frontendFolder = options.getFrontendGeneratedFolder()
+        Path frontendGeneratedFolder = options.getFrontendGeneratedFolder()
                 .getParentFile().toPath();
 
         // Try frontend directory first
         File cssFile = new File(options.getFrontendDirectory(), cssPath);
         if (cssFile.exists()) {
-            String relativePath = frontendFolder.relativize(cssFile.toPath())
-                    .toString().replace(File.separator, "/");
+            String relativePath = frontendGeneratedFolder
+                    .relativize(cssFile.toPath()).toString()
+                    .replace(File.separator, "/");
             return "Frontend/" + relativePath;
         }
         // Try jar resources folder
@@ -228,21 +221,18 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
             cssFile = new File(options.getJarFrontendResourcesFolder(),
                     cssPath);
             if (cssFile.exists()) {
-                String relativePath = frontendFolder
+                String relativePath = frontendGeneratedFolder
                         .relativize(cssFile.toPath()).toString()
                         .replace(File.separator, "/");
                 return "Frontend/" + relativePath;
             }
         }
         // Try resources directory
-        File resourcesFolder = options.getJavaResourceFolder();
-        if (resourcesFolder == null) {
-            resourcesFolder = options.getNpmFolder().toPath()
-                    .resolve("src/main/resources").toFile();
-        }
-        if (resourcesFolder != null && resourcesFolder.exists()) {
-            cssFile = new File(resourcesFolder,
-                    "META-INF/resources/" + cssPath);
+        File resourcesFolder = options.getNpmFolder().toPath()
+                .resolve("src/main/resources/META-INF/resources/").toFile();
+
+        if (resourcesFolder.exists()) {
+            cssFile = new File(resourcesFolder, cssPath);
             if (cssFile.exists()) {
                 return options.getFrontendGeneratedFolder().toPath()
                         .relativize(cssFile.toPath()).toString()
