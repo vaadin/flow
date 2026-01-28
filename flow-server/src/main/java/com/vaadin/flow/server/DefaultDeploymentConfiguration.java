@@ -41,6 +41,25 @@ public class DefaultDeploymentConfiguration
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features." + SEPARATOR;
 
+    static final String UNMAINTAINED_VERSION_WARNING = "\n"
+            + " .:::::::::::::::::::::::  WARNING  :::::::::::::::::::::::. \n"
+            + "::'                                                       '::\n"
+            + "::                                                         ::\n"
+            + "::                  P L E A S E   N O T E                  ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::   This is an unmaintained version of Vaadin Framework   ::\n"
+            + "::               with known security issues.               ::\n"
+            + "::                                                         ::\n"
+            + "::        To upgrade to a maintained version, go to        ::\n"
+            + "::                                                         ::\n"
+            + "::              https://vaadin.com/maintenance             ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::.                                                       .::\n"
+            + " ':::::::::::::::::::::::  WARNING  :::::::::::::::::::::::' \n"
+            + "\n";
+
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
             + SEPARATOR;
@@ -298,6 +317,7 @@ public class DefaultDeploymentConfiguration
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
+            getLogger().info(UNMAINTAINED_VERSION_WARNING);
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
