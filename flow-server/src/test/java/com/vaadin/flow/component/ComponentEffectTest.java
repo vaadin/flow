@@ -939,6 +939,48 @@ public class ComponentEffectTest {
         });
     }
 
+    @Test
+    public void bindChildren_withLocalValueSignalList_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ValueSignal<String> first = new ValueSignal<>("first");
+            ValueSignal<String> second = new ValueSignal<>("second");
+
+            ValueSignal<List<ValueSignal<String>>> listSignal = new ValueSignal<>(
+                    new ArrayList<>(List.of(first)));
+
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, listSignal,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            assertEquals(1, parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+
+            // Add second item
+            listSignal.value(new ArrayList<>(List.of(first, second)));
+
+            assertEquals(2, parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+            assertEquals("second", ((TestComponent) parentComponent
+                    .getChildren().toList().get(1)).getValue());
+
+            // Remove first item
+            listSignal.value(new ArrayList<>(List.of(second)));
+
+            assertEquals(1, parentComponent.getComponentCount());
+            assertEquals("second", ((TestComponent) parentComponent
+                    .getChildren().toList().get(0)).getValue());
+
+            // Clear list
+            listSignal.value(new ArrayList<>());
+
+            assertEquals(0, parentComponent.getComponentCount());
+        });
+    }
+
     private TestLayout prepareTestLayout(SharedListSignal<String> listSignal) {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);

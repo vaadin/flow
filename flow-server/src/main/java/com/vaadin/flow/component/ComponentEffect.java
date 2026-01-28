@@ -354,9 +354,9 @@ public final class ComponentEffect {
     }
 
     /**
-     * Record for
-     * {@link #bindChildren(Component, Signal, SerializableFunction)} effect to
-     * update children of a parent element according to a list of child signals.
+     * Record for {@link #bindChildren(Component, Signal, SerializableFunction)}
+     * effect to update children of a parent element according to a list of
+     * child signals.
      *
      * @param parentElement
      *            parent element to update children for
