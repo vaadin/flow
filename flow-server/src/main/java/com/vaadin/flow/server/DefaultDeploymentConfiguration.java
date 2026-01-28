@@ -47,6 +47,25 @@ public class DefaultDeploymentConfiguration
             + "See http://vaadin.com/docs for more information.\n\n"
             + "Note: WebJars/Bower support has been deprecated and will be removed in the near future.";
 
+    static final String UNMAINTAINED_VERSION_WARNING = "\n"
+            + " .:::::::::::::::::::::::  WARNING  :::::::::::::::::::::::. \n"
+            + "::'                                                       '::\n"
+            + "::                                                         ::\n"
+            + "::                  P L E A S E   N O T E                  ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::   This is an unmaintained version of Vaadin Framework   ::\n"
+            + "::               with known security issues.               ::\n"
+            + "::                                                         ::\n"
+            + "::        To upgrade to a maintained version, go to        ::\n"
+            + "::                                                         ::\n"
+            + "::              https://vaadin.com/maintenance             ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::.                                                       .::\n"
+            + " ':::::::::::::::::::::::  WARNING  :::::::::::::::::::::::' \n"
+            + "\n";
+
     public static final String WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER = "Server-side and offline new license checking features are enabled "
             + "while the development mode live reload is not available.\n"
             + "New license checking requires enabled live reload and would fallback to old license checker otherwise.\n"
@@ -289,6 +308,7 @@ public class DefaultDeploymentConfiguration
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
+                info.add(UNMAINTAINED_VERSION_WARNING);
                 if (enableDevServer()) {
                     info.add(NOT_PRODUCTION_MODE_INFO);
                 } else {
