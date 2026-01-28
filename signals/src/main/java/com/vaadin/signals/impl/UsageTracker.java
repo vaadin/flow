@@ -80,10 +80,14 @@ public class UsageTracker {
 
                 private void close() {
                     synchronized (lock) {
+                        if (closed) {
+                            return;
+                        }
                         closed = true;
-                        cleanups.forEach(CleanupCallback::cleanup);
-                        cleanups.clear();
                     }
+                    // Important release the lock before calling signal methods
+                    cleanups.forEach(CleanupCallback::cleanup);
+                    cleanups.clear();
                 }
 
                 @Override
