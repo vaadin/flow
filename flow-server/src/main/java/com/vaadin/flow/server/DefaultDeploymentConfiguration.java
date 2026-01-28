@@ -314,10 +314,10 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode() {
+        getLogger().info(UNMAINTAINED_VERSION_WARNING);
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
-            getLogger().info(UNMAINTAINED_VERSION_WARNING);
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
