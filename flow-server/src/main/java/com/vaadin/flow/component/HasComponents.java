@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.nodefeature.ChildrenBindingFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
@@ -76,9 +76,9 @@ public interface HasComponents extends HasElement, HasEnabled {
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         getElement().getNode()
-                .getFeatureIfInitialized(ChildrenBindingFeature.class)
+                .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding()) {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
                         throw new BindingActiveException(
                                 "add is not allowed while a binding for children exists.");
                     }
@@ -125,9 +125,9 @@ public interface HasComponents extends HasElement, HasEnabled {
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         getElement().getNode()
-                .getFeatureIfInitialized(ChildrenBindingFeature.class)
+                .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding()) {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
                         throw new BindingActiveException(
                                 "remove is not allowed while a binding for children exists.");
                     }
@@ -255,12 +255,12 @@ public interface HasComponents extends HasElement, HasEnabled {
                 "Child element factory cannot be null");
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
-        var feature = node.getFeature(ChildrenBindingFeature.class);
-        if (feature.hasBinding() && node.isAttached()) {
+        var feature = node.getFeature(SignalBindingFeature.class);
+        if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
             throw new BindingActiveException();
         }
         var binding = ComponentEffect.bindChildren(self, list, childFactory);
-        feature.setBinding(binding, list);
-        return feature::removeBinding;
+        feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
+        return () -> feature.removeBinding(SignalBindingFeature.CHILDREN);
     }
 }

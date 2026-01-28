@@ -76,8 +76,6 @@ public class NodeFeatureRegistry {
                 NodeFeatures.TEXT_BINDING);
         registerFeature(SignalBindingFeature.class, SignalBindingFeature::new,
                 NodeFeatures.SIGNAL_BINDING);
-        registerFeature(ChildrenBindingFeature.class,
-                ChildrenBindingFeature::new, NodeFeatures.CHILDREN_BINDING);
 
         /* Common element features */
         registerFeature(ElementChildrenList.class, ElementChildrenList::new,
