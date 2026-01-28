@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -74,10 +75,6 @@ public class NativeLabel extends HtmlContainer {
     /**
      * Creates a new label with its text content bound to the given signal.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the text content. When unbinding, the current text content is left
-     * unchanged.
-     * <p>
      * While a binding for the text content is active, any attempt to set the
      * text manually throws {@link com.vaadin.signals.BindingActiveException}.
      * The same happens when trying to bind a new Signal while one is already
@@ -88,16 +85,13 @@ public class NativeLabel extends HtmlContainer {
      * detached state.
      *
      * @param textSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is already an existing binding
-     * @see #setText(String)
+     *            the signal to bind, not <code>null</code>
      * @see #bindText(Signal)
      *
      * @since 25.1
      */
     public NativeLabel(Signal<String> textSignal) {
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
         bindText(textSignal);
     }
 

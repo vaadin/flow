@@ -85,10 +85,6 @@ public class NativeDetails extends HtmlComponent
      * Binds a signal's value to the summary text so that the text is updated
      * when the signal's value is updated.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the summary text. When unbinding, the current summary text is left
-     * unchanged.
-     * <p>
      * While a binding for the summary text is active, any attempt to set the
      * text manually throws {@link com.vaadin.signals.BindingActiveException}.
      * The same happens when trying to bind a new Signal while one is already
@@ -99,17 +95,14 @@ public class NativeDetails extends HtmlComponent
      * detached state.
      *
      * @param summarySignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is already an existing binding
-     * @see #setSummaryText(String)
+     *            the signal to bind, not <code>null</code>
      * @see Element#bindText(Signal)
      *
      * @since 25.1
      */
     public NativeDetails(Signal<String> summarySignal) {
         this();
+        Objects.requireNonNull(summarySignal, "summarySignal must not be null");
         bindSummaryText(summarySignal);
     }
 
@@ -141,12 +134,9 @@ public class NativeDetails extends HtmlComponent
      * Creates a new details using the provided summary signal and content.
      *
      * @param summarySignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @param content
      *            the content component to set.
-     * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is already an existing binding
      * @see #bindSummaryText(Signal)
      *
      * @since 25.1
