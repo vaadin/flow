@@ -16,3 +16,4 @@
 
 com.vaadin.flow.router.internal.RouteRegistryHotswapper
 com.vaadin.flow.internal.ReflectionCacheHotswapper
+com.vaadin.flow.hotswap.impl.ErrorViewHotswapper
