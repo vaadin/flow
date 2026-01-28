@@ -43,6 +43,25 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
+    static final String UNMAINTAINED_VERSION_WARNING = "\n"
+            + " .:::::::::::::::::::::::  WARNING  :::::::::::::::::::::::. \n"
+            + "::'                                                       '::\n"
+            + "::                                                         ::\n"
+            + "::                  P L E A S E   N O T E                  ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::   This is an unmaintained version of Vaadin Framework   ::\n"
+            + "::               with known security issues.               ::\n"
+            + "::                                                         ::\n"
+            + "::        To upgrade to a maintained version, go to        ::\n"
+            + "::                                                         ::\n"
+            + "::              https://vaadin.com/maintenance             ::\n"
+            + "::                                                         ::\n"
+            + "::                                                         ::\n"
+            + "::.                                                       .::\n"
+            + " ':::::::::::::::::::::::  WARNING  :::::::::::::::::::::::' \n"
+            + "\n";
+
     public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
             + "Client-side views written in TypeScript are not supported.";
 
@@ -281,6 +300,7 @@ public class DefaultDeploymentConfiguration
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
+                info.add(UNMAINTAINED_VERSION_WARNING);
                 info.add(NOT_PRODUCTION_MODE_INFO);
             }
         }
