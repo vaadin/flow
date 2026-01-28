@@ -64,8 +64,8 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data
@@ -1488,11 +1488,11 @@ public class Binder<BEAN> implements Serializable {
 
         private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
 
-        private Registration signalRegistration;
+        private transient Registration signalRegistration;
 
         private boolean initialSignalRegistration = true;
 
-        private WritableSignal<Boolean> internalValidationTriggerSignal;
+        private transient WritableSignal<Boolean> internalValidationTriggerSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,

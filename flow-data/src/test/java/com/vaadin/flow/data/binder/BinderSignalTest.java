@@ -25,7 +25,7 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.tests.data.bean.Person;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Tests for Binder and Binding integration with Signals.
