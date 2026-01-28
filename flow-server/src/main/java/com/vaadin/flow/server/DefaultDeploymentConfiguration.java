@@ -47,6 +47,27 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
+    static final String UNMAINTAINED_VERSION_WARNING = """
+
+             .:::::::::::::::::::::::  WARNING  :::::::::::::::::::::::.\s
+            ::'                                                       '::
+            ::                                                         ::
+            ::                  P L E A S E   N O T E                  ::
+            ::                                                         ::
+            ::                                                         ::
+            ::   This is an unmaintained version of Vaadin Framework   ::
+            ::               with known security issues.               ::
+            ::                                                         ::
+            ::        To upgrade to a maintained version, go to        ::
+            ::                                                         ::
+            ::              https://vaadin.com/maintenance             ::
+            ::                                                         ::
+            ::                                                         ::
+            ::.                                                       .::
+             ':::::::::::::::::::::::  WARNING  :::::::::::::::::::::::'\s
+
+            """;
+
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
@@ -297,6 +318,7 @@ public class DefaultDeploymentConfiguration
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
+                info.add(UNMAINTAINED_VERSION_WARNING);
                 info.add(NOT_PRODUCTION_MODE_INFO);
             }
         }
