@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.List;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.shared.SharedListSignal;
 
 /**
  * Node feature for binding a {@link Signal} to the children of a node.
@@ -38,10 +39,10 @@ public class ChildrenBindingFeature extends ServerSideFeature {
     }
 
     private Registration registration;
-    private SharedListSignal<?> listSignal;
+    private Signal<?> listSignal;
 
-    public void setBinding(Registration registration,
-            SharedListSignal<?> listSignal) {
+    public <S extends Signal<?>> void setBinding(Registration registration,
+            Signal<List<S>> listSignal) {
         this.registration = registration;
         this.listSignal = listSignal;
     }

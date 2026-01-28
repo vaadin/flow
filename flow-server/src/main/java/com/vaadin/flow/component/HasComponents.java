@@ -28,9 +28,8 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.ChildrenBindingFeature;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.impl.Effect;
-import com.vaadin.signals.shared.SharedListSignal;
-import com.vaadin.signals.shared.SharedValueSignal;
 
 /**
  * A component to which the user can add and remove child components.
@@ -202,28 +201,26 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Binds a {@link SharedListSignal} to this component using a child
-     * component factory. Each {@link SharedValueSignal} in the list corresponds
-     * to a child component within this component.
+     * Binds a list {@link Signal} to this component using a child component
+     * factory. Each item {@link Signal} in the list corresponds to a child
+     * component within this component.
      * <p>
      * This component is automatically updated to reflect the structure of the
-     * {@link SharedListSignal}. Changes to the list, such as additions,
-     * removals, or reordering, will update this component's children
-     * accordingly.
+     * list. Changes to the list, such as additions, removals, or reordering,
+     * will update this component's children accordingly.
      * <p>
      * This component must not contain any children that are not part of the
-     * {@link SharedListSignal}. If this component has existing children when
-     * this method is called, or if it contains unrelated children after the
-     * list changes, an {@link IllegalStateException} will be thrown.
+     * list. If this component has existing children when this method is called,
+     * or if it contains unrelated children after the list changes, an
+     * {@link IllegalStateException} will be thrown.
      * <p>
      * New child components are created using the provided
-     * <code>childFactory</code> function. This function takes a
-     * {@link SharedValueSignal} from the {@link SharedListSignal} and returns a
-     * corresponding {@link Component}. It shouldn't return <code>null</code>.
-     * The {@link SharedValueSignal} can be further bound to the returned
-     * component as needed. Note that <code>childFactory</code> is run inside a
-     * {@link Effect}, and therefore {@link SharedValueSignal#value()} calls
-     * makes effect re-run automatically on signal value change.
+     * <code>childFactory</code> function. This function takes a {@link Signal}
+     * from the list and returns a corresponding {@link Component}. It shouldn't
+     * return <code>null</code>. The {@link Signal} can be further bound to the
+     * returned component as needed. Note that <code>childFactory</code> is run
+     * inside a {@link Effect}, and therefore {@link Signal#value()} calls makes
+     * effect re-run automatically on signal value change.
      * <p>
      * Example of usage:
      *
@@ -241,16 +238,18 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param childFactory
      *            factory to create new component, must not be <code>null</code>
      * @param <T>
-     *            the value type of the {@link SharedValueSignal}s in the
-     *            {@link SharedListSignal}
+     *            the value type of the {@link Signal}s in the list
+     * @param <S>
+     *            the type of the {@link Signal}s in the list
      * @return a registration that can be used to remove the binding
      * @throws IllegalStateException
      *             thrown if this component isn't empty
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
      */
-    default <T> Registration bindChildren(SharedListSignal<T> list,
-            SerializableFunction<SharedValueSignal<T>, Component> childFactory) {
+    default <T, S extends Signal<T>> Registration bindChildren(
+            Signal<List<S>> list,
+            SerializableFunction<S, Component> childFactory) {
         Objects.requireNonNull(list, "ListSignal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
