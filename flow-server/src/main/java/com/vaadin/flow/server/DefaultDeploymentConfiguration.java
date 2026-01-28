@@ -297,10 +297,10 @@ public class DefaultDeploymentConfiguration
             productionMode = getParentConfiguration().isProductionMode();
         }
         if (log) {
+            info.add(UNMAINTAINED_VERSION_WARNING);
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
-                info.add(UNMAINTAINED_VERSION_WARNING);
                 info.add(NOT_PRODUCTION_MODE_INFO);
             }
         }
