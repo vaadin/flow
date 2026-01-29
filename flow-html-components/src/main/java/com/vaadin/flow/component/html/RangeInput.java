@@ -29,8 +29,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.NumberSignal;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.shared.SharedNumberSignal;
 
 /**
  * Creates a new input element with type "range".
@@ -175,7 +175,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      *
      * @since 25.1
      */
-    public void bindMin(NumberSignal minSignal) {
+    public void bindMin(SharedNumberSignal minSignal) {
         getElement().bindAttribute("min",
                 minSignal == null ? null : minSignal.map(Object::toString));
     }
@@ -226,7 +226,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      *
      * @since 25.1
      */
-    public void bindMax(NumberSignal maxSignal) {
+    public void bindMax(SharedNumberSignal maxSignal) {
         getElement().bindAttribute("max",
                 maxSignal == null ? null : maxSignal.map(Object::toString));
     }
