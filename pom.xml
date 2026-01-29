@@ -25,7 +25,6 @@
         <module>flow-html-components-testbench</module>
         <module>flow-theme-integrations</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-components-parent</module>
         <module>flow-maven-plugin</module>
@@ -488,6 +487,17 @@
     </build>
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
+        </profile>
+        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
@@ -582,7 +592,6 @@
                 <module>flow-client</module>
                 <module>flow-html-components</module>
                 <module>flow-test-util</module>
-                <module>flow-tests</module>
                 <module>flow-server-production-mode</module>
                 <module>flow-components-parent</module>
                 <module>build-tools</module>
