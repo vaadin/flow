@@ -758,13 +758,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable, 
                             .getPushMode() == PushMode.AUTOMATIC) {
                         Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
                                 .setCurrent(ui);
-                        ui.runPendingAccessTasks();
                         try {
-                            ui.push();
+                            ui.accessSynchronously(()->{});
                         } finally {
-                            if (!ui.getPendingAccessQueue().isEmpty()) {
-                                ui.ensureAccessQueuePurged();
-                            }
                             CurrentInstance.restoreInstances(oldCurrent);
                         }
                     }

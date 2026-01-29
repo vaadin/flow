@@ -2203,6 +2203,23 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Checks that another {@link UI} instance is not locked. This is
+     * internally used by {@link UI#accessSynchronously(Command)} and
+     * {@link UI#accessSynchronously(Command)} to help avoid causing deadlocks.
+     *
+     * @param ui
+     *            the session that is being locked
+     * @throws IllegalStateException
+     *             if the current thread holds the lock for another session
+     */
+    public static void verifyNoOtherUILocked(UI ui) {
+        if (isOtherUILocked(ui)) {
+            throw new IllegalStateException(
+                    "Can't access UI while another UI is locked by the same thread. This restriction is intended to help avoid deadlocks.");
+        }
+    }
+
+    /**
      * Checks whether there might be some {@link VaadinSession} other than the
      * provided one for which the current thread holds a lock. This method might
      * not detect all cases where some other session is locked, but it should
@@ -2219,6 +2236,25 @@ public abstract class VaadinService implements Serializable {
             return false;
         }
         return otherSession.hasLock();
+    }
+
+    /**
+     * Checks whether there might be some {@link UI} other than the
+     * provided one for which the current thread holds a lock. This method might
+     * not detect all cases where some other UI is locked, but it should
+     * cover the most typical situations.
+     *
+     * @param ui
+     *            the UI that is expected to be locked
+     * @return <code>true</code> if another session is also locked by the
+     *         current thread; <code>false</code> if no such session was found
+     */
+    public static boolean isOtherUILocked(UI ui) {
+        UI otherUI = UI.getCurrent();
+        if (otherUI == null || otherUI == ui) {
+            return false;
+        }
+        return otherUI.hasLock();
     }
 
     /**

@@ -37,7 +37,7 @@ public class UIFutureAccess extends AbstractFutureAccess{
 		 * the check is always done as the deterministic behavior makes it
 		 * easier to detect potential problems.
 		 */
-		ui.checkHasLock();
+		VaadinService.isOtherUILocked(this.ui);
 		return super.get();
 	}
 

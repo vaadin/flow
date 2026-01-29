@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.server.*;
+import com.vaadin.flow.shared.communication.PushMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -373,7 +374,6 @@ public class UI extends Component
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
 
-            // Can't use UI.push() directly since it checks for a valid session
             this.runPendingAccessTasks();
             pushConnection.push();
         }
@@ -482,7 +482,7 @@ public class UI extends Component
             return;
         }
         this.checkHasLock();
-        this.getLockInstance().lock();
+        this.lock();
         try {
             if (!this.isAttached()) {
                 // UI was detached after fetching the session but before we
@@ -492,7 +492,7 @@ public class UI extends Component
             }
             command.execute();
         } finally {
-            this.getLockInstance().unlock();
+            this.unlock();
         }
 
     }
@@ -506,6 +506,7 @@ public class UI extends Component
 
     @Override
     public void lock() {
+        VaadinService.verifyNoOtherUILocked(this);
         this.getLockInstance().lock();
         this.lastLocked = System.currentTimeMillis();
     }
@@ -514,32 +515,30 @@ public class UI extends Component
     @Override
     public void unlock() {
         this.checkHasLock();
-        boolean ultimateRelease = false;
         try {
             /*
              * Run pending tasks and push if the reentrant lock will actually be
              * released by this unlock() invocation.
              */
             if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
-                ultimateRelease = true;
-                runPendingAccessTasks();
-                this.push();
+                if (this.getPushConfiguration().getPushMode() == PushMode.AUTOMATIC) {
+                    this.push();
+                    /*
+                     * If the session is locked when a new access task is added, it is
+                     * assumed that the queue will be purged when the lock is released. This
+                     * might however not happen if a task is enqueued between the moment
+                     * when unlock() purges the queue and the moment when the lock is
+                     * actually released. This means that the queue should be purged again
+                     * if it is not empty after unlocking.
+                     */
+                    if (!getPendingAccessQueue().isEmpty()) {
+                        this.ensureAccessQueuePurged();
+                    }
+                }
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
             getLockInstance().unlock();
-        }
-
-        /*
-         * If the session is locked when a new access task is added, it is
-         * assumed that the queue will be purged when the lock is released. This
-         * might however not happen if a task is enqueued between the moment
-         * when unlock() purges the queue and the moment when the lock is
-         * actually released. This means that the queue should be purged again
-         * if it is not empty after unlocking.
-         */
-        if (ultimateRelease && !getPendingAccessQueue().isEmpty()) {
-            this.ensureAccessQueuePurged();
         }
     }
 
@@ -849,6 +848,7 @@ public class UI extends Component
      *
      */
     public void push() {
+        VaadinService.verifyNoOtherUILocked(this);
         VaadinSession session = getSession();
 
         if (session == null) {
