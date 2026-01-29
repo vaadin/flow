@@ -940,6 +940,44 @@ public class ComponentEffectTest {
     }
 
     @Test
+    public void bindChildren_registrationRemove_effectRemoved() {
+        runWithFeatureFlagEnabled(() -> {
+            SharedListSignal<String> taskList = new SharedListSignal<>(
+                    String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("second");
+
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            Registration registration = ComponentEffect.bindChildren(
+                    parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            assertEquals("Parent should have initial children", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+            assertEquals("second", ((TestComponent) parentComponent
+                    .getChildren().toList().get(1)).getValue());
+
+            // Remove the registration
+            registration.remove();
+
+            // Modify the list signal after removing registration
+            taskList.insertLast("third");
+
+            // Parent should not be updated after registration is removed
+            assertEquals("Parent should still have only 2 children", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+            assertEquals("second", ((TestComponent) parentComponent
+                    .getChildren().toList().get(1)).getValue());
+        });
+    }
+
+    @Test
     public void bindChildren_withLocalValueSignalList_parentUpdated() {
         runWithFeatureFlagEnabled(() -> {
             ValueSignal<String> first = new ValueSignal<>("first");
