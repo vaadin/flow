@@ -17,6 +17,7 @@ package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.ValueSupplier;
@@ -196,11 +197,34 @@ public class UsageTracker {
         assert task != null;
         assert tracker != null;
 
+        track(() -> {
+            task.run();
+            return null;
+        }, tracker);
+    }
+
+    /**
+     * Runs the given task with return value while reacting to all cases where a
+     * managed value is used.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @param tracker
+     *            a consumer that receives all usages as they happen, not
+     *            <code>null</code>
+     * @param <T>
+     *            the task return type
+     * @return the value returned from the task
+     */
+    public static <T> T track(Supplier<T> task, UsageRegistrar tracker) {
+        assert task != null;
+        assert tracker != null;
+
         var previousTracker = currentTracker.get();
         try {
             currentTracker.set(tracker);
 
-            task.run();
+            return task.get();
         } finally {
             currentTracker.set(previousTracker);
         }

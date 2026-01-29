@@ -64,7 +64,9 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -2100,6 +2102,15 @@ public class Binder<BEAN> implements Serializable {
     private boolean changeDetectionEnabled = false;
 
     /**
+     * Error thrown when a signal is used incorrectly.
+     */
+    public static class InvalidSignalUsageError extends Error {
+        public InvalidSignalUsageError(String message) {
+            super(message);
+        }
+    }
+
+    /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
      * {@link #bindInstanceFields(Object)}, {@link #bind(HasValue, String)} and
@@ -3092,6 +3103,8 @@ public class Binder<BEAN> implements Serializable {
      * @param validator
      *            the validator to add, not null
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(Validator<? super BEAN> validator) {
         Objects.requireNonNull(validator, "validator cannot be null");
@@ -3099,7 +3112,15 @@ public class Binder<BEAN> implements Serializable {
             if (isValidatorsDisabled()) {
                 return ValidationResult.ok();
             } else {
-                return validator.apply(value, context);
+                // Track Signal usage and throw exception to help to detect
+                // attempt to use signals reactively without an active effect.
+                return UsageTracker.track(() -> validator.apply(value, context),
+                        usage -> {
+                            throw new InvalidSignalUsageError(
+                                    "Detected Signal.value() call inside a bean level validator. "
+                                            + "This is not supported since bean level validators "
+                                            + "are not run inside a reactive effect.");
+                        });
             }
         });
         validators.add(wrappedValidator);
@@ -3124,6 +3145,8 @@ public class Binder<BEAN> implements Serializable {
      * @param message
      *            the error message to report in case validation failure
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
             String message) {
@@ -3149,6 +3172,8 @@ public class Binder<BEAN> implements Serializable {
      * @param errorMessageProvider
      *            the provider to generate error messages, not null
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
             ErrorMessageProvider errorMessageProvider) {

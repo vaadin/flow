@@ -670,4 +670,30 @@ public class BinderSignalTest extends SignalsUnitTest {
         firstNameSignal.value("");
         Assert.assertFalse(lastNameField.isInvalid());
     }
+
+    @Test
+    public void beanLevelValidator_throwWhenSignalIsUsed() {
+        item.setFirstName("Alice");
+        var firstNameSignal = new ValueSignal<>("");
+        UI.getCurrent().add(firstNameField);
+        binder.forField(firstNameField).bind("firstName");
+        binder.setBean(item);
+
+        binder.withValidator(bean -> {
+            firstNameSignal.peek(); // ok
+            return true;
+        }, "Bean level validation failed");
+
+        Assert.assertTrue(binder.isValid());
+
+        binder.withValidator(bean -> {
+            firstNameSignal.value(); // causes error
+            return true;
+        }, "Bean level validation with a signal failed");
+
+        Assert.assertThrows(Binder.InvalidSignalUsageError.class,
+                () -> binder.validate());
+        Assert.assertThrows(Binder.InvalidSignalUsageError.class,
+                () -> binder.isValid());
+    }
 }
