@@ -88,7 +88,8 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     @Override
     public SignalOperation<Void> replace(C expectedValue, C newValue) {
-        AtomicReference<SignalOperation.ResultOrError<Void>> resultRef = new AtomicReference<>();
+        AtomicReference<SignalOperation.ResultOrError<Void>> resultRef =
+                new AtomicReference<>();
 
         CancelableOperation<P> parentOp = parent.update(parentValue -> {
             C currentChildValue = getter.map(parentValue);
@@ -134,8 +135,8 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
         SignalOperation<C> childOp = new SignalOperation<>();
         parentOp.result().thenAccept(parentResult -> {
             if (parentResult.successful()) {
-                childOp.result()
-                        .complete(new SignalOperation.Result<>(oldChildValue.get()));
+                childOp.result().complete(
+                        new SignalOperation.Result<>(oldChildValue.get()));
             } else {
                 childOp.result().complete(new SignalOperation.Error<>(
                         ((SignalOperation.Error<?>) parentResult).reason()));
@@ -161,8 +162,8 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
         };
         parentOp.result().thenAccept(parentResult -> {
             if (parentResult.successful()) {
-                childOp.result()
-                        .complete(new SignalOperation.Result<>(oldChildValue.get()));
+                childOp.result().complete(
+                        new SignalOperation.Result<>(oldChildValue.get()));
             } else {
                 childOp.result().complete(new SignalOperation.Error<>(
                         ((SignalOperation.Error<?>) parentResult).reason()));

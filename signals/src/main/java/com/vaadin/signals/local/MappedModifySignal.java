@@ -76,15 +76,18 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     @Override
     public SignalOperation<C> value(C newChildValue) {
         C oldChildValue = getter.map(parent.peek());
-        parent.modify(parentValue -> modifier.modify(parentValue, newChildValue));
-        return new SignalOperation<>(new SignalOperation.Result<>(oldChildValue));
+        parent.modify(
+                parentValue -> modifier.modify(parentValue, newChildValue));
+        return new SignalOperation<>(
+                new SignalOperation.Result<>(oldChildValue));
     }
 
     @Override
     public SignalOperation<Void> replace(C expectedValue, C newValue) {
         C currentChildValue = getter.map(parent.peek());
         if (Objects.equals(expectedValue, currentChildValue)) {
-            parent.modify(parentValue -> modifier.modify(parentValue, newValue));
+            parent.modify(
+                    parentValue -> modifier.modify(parentValue, newValue));
             return new SignalOperation<>(new SignalOperation.Result<>(null));
         } else {
             return new SignalOperation<>(
@@ -97,7 +100,8 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
         Objects.requireNonNull(childUpdater);
         C currentChildValue = getter.map(parent.peek());
         C newChildValue = childUpdater.update(currentChildValue);
-        parent.modify(parentValue -> modifier.modify(parentValue, newChildValue));
+        parent.modify(
+                parentValue -> modifier.modify(parentValue, newChildValue));
 
         CancelableOperation<C> operation = new CancelableOperation<>();
         operation.result()

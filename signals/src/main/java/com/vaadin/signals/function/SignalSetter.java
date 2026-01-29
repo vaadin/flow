@@ -34,8 +34,10 @@ import com.vaadin.signals.WritableSignal;
  *     }
  * }
  *
- * WritableSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo("Buy milk", false));
- * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done, Todo::withDone);
+ * WritableSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
+ *         new Todo("Buy milk", false));
+ * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(
+ *         Todo::done, Todo::withDone);
  *
  * doneSignal.value(true); // Updates todoSignal to Todo("Buy milk", true)
  * </pre>
