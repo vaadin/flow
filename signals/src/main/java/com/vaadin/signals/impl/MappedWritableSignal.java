@@ -32,7 +32,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * parent signal with the new child value.
  * <p>
  * This enables patterns like mapping a single field from a record or bean to a
- * separate signal that can be used with two-way bindings.
+ * separate writable signal that can be used with two-way bindings.
  *
  * @param <P>
  *            the parent signal value type
