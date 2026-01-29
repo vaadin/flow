@@ -123,9 +123,7 @@ public final class ComponentEffect {
      */
     public static <C extends Component, T> Registration bind(C owner,
             Signal<T> signal, SerializableBiConsumer<C, T> setter) {
-        return effect(owner, () -> {
-            setter.accept(owner, signal.value());
-        });
+        return effect(owner, () -> setter.accept(owner, signal.value()));
     }
 
     /**
@@ -157,13 +155,7 @@ public final class ComponentEffect {
      *
      * UnorderedList component = new UnorderedList();
      *
-     * ComponentEffect.bindChildren(component, taskList,
-     *         taskSharedValueSignal -> {
-     *             var listItem = new ListItem();
-     *             ComponentEffect.bind(listItem, taskSharedValueSignal,
-     *                     HasString::setText);
-     *             return listItem;
-     *         });
+     * ComponentEffect.bindChildren(component, taskList, ListItem::new);
      * </pre>
      *
      * @param parent
@@ -174,21 +166,22 @@ public final class ComponentEffect {
      * @param childFactory
      *            factory to create new component, must not be <code>null</code>
      * @param <T>
-     *            the value type of the signals in the list
+     *            the value type of the {@link Signal}s in the list
      * @param <S>
-     *            the signal type contained in the list
-     * @param <PARENT>
+     *            the type of the {@link Signal}s in the list
+     * @param <P>
      *            the type of the parent component
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
      */
-    public static <T, S extends Signal<T>, PARENT extends Component & HasComponents> void bindChildren(
-            PARENT parent, Signal<List<S>> list,
+    public static <T, S extends Signal<T>, P extends Component & HasComponents> Registration bindChildren(
+            P parent, Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
         Objects.requireNonNull(parent, "Parent component cannot be null");
+        Objects.requireNonNull(list, "List signal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
-        bindChildren(parent, parent.getElement(), list,
+        return bindChildren(parent, parent.getElement(), list,
                 // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
@@ -197,8 +190,8 @@ public final class ComponentEffect {
                                 "ComponentEffect.bindChildren childFactory must not return null")));
     }
 
-    private static <S> void bindChildren(Component parentComponent,
-            Element parent, Signal<List<S>> list,
+    private static <T, S extends Signal<T>> Registration bindChildren(
+            Component parentComponent, Element parent, Signal<List<S>> list,
             SerializableFunction<S, Element> childFactory) {
         Objects.requireNonNull(parentComponent,
                 "Parent component cannot be null");
@@ -209,19 +202,20 @@ public final class ComponentEffect {
 
         if (parent.getChildCount() > 0) {
             throw new IllegalStateException(
-                    "Parent element must not have children when binding list signal to it");
+                    "Parent element must not have children when binding a list signal to it");
         }
         // Create a child element cache outside the effect to persist elements
         // created by the child factory and avoid recreating them each time the
         // effect runs due to signal changes.
         HashMap<S, Element> valueSignalToChildCache = new HashMap<>();
 
-        ComponentEffect.effect(parentComponent,
-                () -> runEffect(new BindChildrenEffectContext<>(parent,
+        return ComponentEffect.effect(parentComponent,
+                () -> runEffect(new BindChildrenEffectContext<T, S>(parent,
                         list.value(), childFactory, valueSignalToChildCache)));
     }
 
-    private static <S> void runEffect(BindChildrenEffectContext<S> context) {
+    private static <T, S extends Signal<T>> void runEffect(
+            BindChildrenEffectContext<T, S> context) {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
                 .parentChildrenToLinkedList();
@@ -253,7 +247,8 @@ public final class ComponentEffect {
      * Validate that parent element has no children not belonging to the list of
      * child signals.
      */
-    private static <S> void validate(BindChildrenEffectContext<S> context) {
+    private static <T, S extends Signal<T>> void validate(
+            BindChildrenEffectContext<T, S> context) {
         LinkedList<Element> children = context.parentChildrenToLinkedList();
         int index = 0;
         for (Element actualElement : children) {
@@ -282,8 +277,8 @@ public final class ComponentEffect {
      * Remove all existing children in valueSignalToChildCache map that are no
      * longer present in the list of child signals.
      */
-    private static <S> void removeNotPresentChildren(
-            BindChildrenEffectContext<S> context,
+    private static <T, S extends Signal<T>> void removeNotPresentChildren(
+            BindChildrenEffectContext<T, S> context,
             HashSet<Element> remainingChildrenSet) {
         var toRemove = new HashSet<>(context.valueSignalToChildCache.keySet());
         context.childSignalsList.forEach(toRemove::remove);
@@ -300,8 +295,8 @@ public final class ComponentEffect {
      * removing any existing elements. Creates new elements with the element
      * factory if not found from the cache.
      */
-    private static <S> void updateByChildSignals(
-            BindChildrenEffectContext<S> context,
+    private static <T, S extends Signal<T>> void updateByChildSignals(
+            BindChildrenEffectContext<T, S> context,
             LinkedList<Element> remainingChildren,
             HashSet<Element> remainingChildrenSet) {
 
@@ -365,12 +360,14 @@ public final class ComponentEffect {
      * @param childElementFactory
      *            factory to create new child element
      * @param valueSignalToChildCache
-     *            map to store existing child elements by signal
+     *            map to store existing child elements by value signal
+     * @param <T>
+     *            the value type of the list signal to update by
      * @param <S>
-     *            the signal type contained in the list
+     *            the type of the signal in the list
      */
-    private record BindChildrenEffectContext<S>(Element parentElement,
-            List<S> childSignalsList,
+    private record BindChildrenEffectContext<T, S extends Signal<T>>(
+            Element parentElement, List<S> childSignalsList,
             SerializableFunction<S, Element> childElementFactory,
             HashMap<S, Element> valueSignalToChildCache)
             implements
