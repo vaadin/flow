@@ -317,6 +317,10 @@ public class ValueSignal<T> implements WritableSignal<T> {
      * a child value. Writing to the mapped signal uses the modifier function to
      * update this signal's value in place.
      * <p>
+     * This method is named differently from
+     * {@link WritableSignal#map(SignalMapper, SignalSetter)} to avoid ambiguity
+     * in method overload resolution when using method references or lambdas.
+     * <p>
      * This is useful for mutable bean patterns where the parent object's
      * properties are modified directly using setters. For example:
      *
@@ -335,7 +339,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
      * }
      *
      * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
-     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(
+     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(
      *         Todo::isDone, Todo::setDone);
      *
      * checkbox.bindValue(doneSignal); // Two-way binding
@@ -352,7 +356,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
      * @return a two-way mapped signal using in-place modification, not
      *         <code>null</code>
      */
-    public <C> WritableSignal<C> map(SignalMapper<T, C> getter,
+    public <C> WritableSignal<C> mapMutable(SignalMapper<T, C> getter,
             SignalModifier<T, C> modifier) {
         return new MappedModifySignal<>(this, getter, modifier);
     }
