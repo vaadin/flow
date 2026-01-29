@@ -26,7 +26,7 @@ import com.vaadin.signals.operations.SignalOperation;
 
 /**
  * A signal to which a new value can be directly written.
- * 
+ *
  * @param <T>
  *            the signal value type
  */
