@@ -37,7 +37,7 @@ public class UIFutureAccess extends AbstractFutureAccess{
 		 * the check is always done as the deterministic behavior makes it
 		 * easier to detect potential problems.
 		 */
-		ui.checkHasLock();
+		this.ui.checkHasLock();
 		return super.get();
 	}
 
@@ -49,15 +49,13 @@ public class UIFutureAccess extends AbstractFutureAccess{
 	 */
 	public void handleError(Exception exception) {
 		try {
-			if (command instanceof ErrorHandlingCommand) {
-				ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
-
+			if (command instanceof ErrorHandlingCommand errorHandlingCommand) {
 				errorHandlingCommand.handleError(exception);
 			} else {
-				ErrorEvent errorEvent = new ErrorEvent(exception);
+				final ErrorEvent errorEvent = new ErrorEvent(exception);
 
 				ErrorHandler errorHandler = ErrorEvent
-						.findErrorHandler(ui.getSession());
+						.findErrorHandler(this.ui.getSession());
 
 				if (errorHandler == null) {
 					errorHandler = new DefaultErrorHandler();

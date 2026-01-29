@@ -139,7 +139,7 @@ public class UI extends Component
 
     private transient ConcurrentLinkedQueue<AbstractFutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
-    private UILockCheckStrategy uiLockCheckStrategy = UILockCheckStrategy.ASSERT;
+    private final UILockCheckStrategy uiLockCheckStrategy = UILockCheckStrategy.ASSERT;
 
 
     /**
@@ -375,9 +375,7 @@ public class UI extends Component
             // the UI is detached and cleaned up.
 
             // Can't use UI.push() directly since it checks for a valid session
-            if (getSession() != null) {
-                getSession().getService().runPendingAccessTasks(getSession());
-            }
+            this.runPendingAccessTasks();
             pushConnection.push();
         }
 

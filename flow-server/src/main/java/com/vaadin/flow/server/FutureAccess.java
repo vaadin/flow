@@ -71,10 +71,8 @@ public class FutureAccess extends AbstractFutureAccess {
      */
     public void handleError(Exception exception) {
         try {
-            if (command instanceof ErrorHandlingCommand) {
-                ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
-
-                errorHandlingCommand.handleError(exception);
+            if (command instanceof ErrorHandlingCommand errorHandlingCommand) {
+				errorHandlingCommand.handleError(exception);
             } else {
                 ErrorEvent errorEvent = new ErrorEvent(exception);
 
