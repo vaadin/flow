@@ -61,8 +61,8 @@ public enum UILockCheckStrategy {
      * Potentially checks whether this session is currently locked by the
      * current thread
      *
-     * @param session
-     *            the session to check the lock for, not null.
+     * @param ui
+     *            the UI to check the lock for, not null.
      * @param message
      *            the error message to include when failing if the check is done
      *            and the session is not locked

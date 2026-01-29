@@ -762,6 +762,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable, 
                         try {
                             ui.push();
                         } finally {
+                            if (!ui.getPendingAccessQueue().isEmpty()) {
+                                ui.ensureAccessQueuePurged();
+                            }
                             CurrentInstance.restoreInstances(oldCurrent);
                         }
                     }

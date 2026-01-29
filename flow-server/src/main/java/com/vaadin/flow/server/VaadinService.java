@@ -2330,7 +2330,7 @@ public abstract class VaadinService implements Serializable {
             return;
         }
 
-        FutureAccess pendingAccess;
+        AbstractFutureAccess pendingAccess;
 
         // Dump all current instances, not only the ones dumped by setCurrent
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
