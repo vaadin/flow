@@ -179,8 +179,8 @@ public class MappedModifySignalTest extends SignalTestBase {
     @Test
     void map_update_modifiesInPlace() {
         MutablePair<Integer, String> pair = new MutablePair<>(5, "hello");
-        ValueSignal<MutablePair<Integer, String>> pairSignal = new ValueSignal<>(
-                pair);
+        ValueSignal<MutablePair<Integer, String>> pairSignal =
+                new ValueSignal<>(pair);
         WritableSignal<Integer> firstSignal = pairSignal
                 .map(MutablePair::getFirst, MutablePair::setFirst);
 
@@ -197,8 +197,8 @@ public class MappedModifySignalTest extends SignalTestBase {
     @Test
     void map_update_preservesOtherFields() {
         MutablePair<Integer, String> pair = new MutablePair<>(5, "hello");
-        ValueSignal<MutablePair<Integer, String>> pairSignal = new ValueSignal<>(
-                pair);
+        ValueSignal<MutablePair<Integer, String>> pairSignal =
+                new ValueSignal<>(pair);
         WritableSignal<Integer> firstSignal = pairSignal
                 .map(MutablePair::getFirst, MutablePair::setFirst);
 
