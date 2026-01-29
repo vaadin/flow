@@ -76,8 +76,8 @@ public class Param extends HtmlComponent {
     }
 
     /**
-     * Binds a signal's value to the "value" attribute so that the attribute is
-     * updated when the signal's value is updated.
+     * Binds a signal's value to the "value" attribute as a one-way binding, so
+     * that the attribute is updated when the signal's value is updated.
      * <p>
      * Passing {@code null} as the {@code signal} removes any existing binding
      * for the "value" attribute. When unbinding, the current attribute value is
@@ -117,8 +117,8 @@ public class Param extends HtmlComponent {
     }
 
     /**
-     * Binds a signal's value to the "name" attribute so that the attribute is
-     * updated when the signal's value is updated.
+     * Binds a signal's value to the "name" attribute as a one-way binding, so
+     * that the attribute is updated when the signal's value is updated.
      * <p>
      * Passing {@code null} as the {@code signal} removes any existing binding
      * for the "name" attribute. When unbinding, the current attribute value is
