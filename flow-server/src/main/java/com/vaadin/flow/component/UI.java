@@ -854,7 +854,7 @@ public class UI extends Component
         if (session == null) {
             throw new UIDetachedException("Cannot push a detached UI");
         }
-        session.checkHasLock();
+        this.checkHasLock();
 
         if (!getPushConfiguration().getPushMode().isEnabled()) {
             throw new IllegalStateException("Push not enabled");
@@ -868,7 +868,7 @@ public class UI extends Component
          * when the push would otherwise be ignored because there are no changes
          * to push.
          */
-        session.getService().runPendingAccessTasks(session);
+        this.runPendingAccessTasks();
 
         if (!getInternals().isDirty()
                 || getInternals().getStateTree().isPreparingForResync()) {
