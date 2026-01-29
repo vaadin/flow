@@ -54,6 +54,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -86,6 +88,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Default locale of the session.
      */
     private Locale locale = Locale.getDefault();
+
+    private transient ValueSignal<Locale> localeSignal;
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -387,6 +391,28 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets a read-only signal that reflects the current locale of this session.
+     * <p>
+     * The signal is automatically updated when the locale changes via
+     * {@link #setLocale(Locale)}. Components can use this signal to reactively
+     * respond to locale changes.
+     * <p>
+     * The returned signal is read-only. To change the locale, use
+     * {@link #setLocale(Locale)} instead.
+     *
+     * @return a read-only signal reflecting the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public Signal<Locale> localeSignal() {
+        checkHasLock();
+        if (localeSignal == null) {
+            localeSignal = new ValueSignal<>(locale);
+        }
+        return localeSignal;
+    }
+
+    /**
      * Sets the default locale for this session.
      * <p>
      * Setting the locale of a session will also override any custom locale
@@ -400,6 +426,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
         checkHasLock();
         this.locale = locale;
+        if (localeSignal != null) {
+            localeSignal.value(locale);
+        }
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance

@@ -83,6 +83,8 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -126,6 +128,8 @@ public class UI extends Component
     private PushConfiguration pushConfiguration;
 
     private Locale locale = Locale.getDefault();
+
+    private ValueSignal<Locale> localeSignal;
 
     private final UIInternals internals;
 
@@ -810,6 +814,27 @@ public class UI extends Component
     }
 
     /**
+     * Gets a read-only signal that reflects the current locale of this UI.
+     * <p>
+     * The signal is automatically updated when the locale changes via
+     * {@link #setLocale(Locale)}. Components can use this signal to reactively
+     * respond to locale changes.
+     * <p>
+     * The returned signal is read-only. To change the locale, use
+     * {@link #setLocale(Locale)} instead.
+     *
+     * @return a read-only signal reflecting the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public Signal<Locale> localeSignal() {
+        if (localeSignal == null) {
+            localeSignal = new ValueSignal<>(locale);
+        }
+        return localeSignal;
+    }
+
+    /**
      * Sets the locale for this UI.
      * <p>
      * Note that {@link VaadinSession#setLocale(Locale)} will set the locale for
@@ -823,6 +848,9 @@ public class UI extends Component
         assert locale != null : "Null locale is not supported!";
         if (!this.locale.equals(locale)) {
             this.locale = locale;
+            if (localeSignal != null) {
+                localeSignal.value(locale);
+            }
             EventUtil.informLocaleChangeObservers(this);
         }
     }
