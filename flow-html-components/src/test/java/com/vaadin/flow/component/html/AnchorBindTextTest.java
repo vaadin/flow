@@ -25,7 +25,7 @@ import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
