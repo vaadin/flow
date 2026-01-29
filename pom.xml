@@ -685,7 +685,6 @@
                 <module>flow-tests</module>
             </modules>
         </profile>
-        
         <profile>
             <id>validation</id>
             <properties>
