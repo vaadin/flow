@@ -54,8 +54,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -89,7 +89,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private Locale locale = Locale.getDefault();
 
-    private transient ValueSignal<Locale> localeSignal;
+    private transient SharedValueSignal<Locale> localeSignal;
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -387,27 +387,27 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Locale getLocale() {
         checkHasLock();
+        if (localeSignal != null) {
+            return localeSignal.value();
+        }
         return locale;
     }
 
     /**
-     * Gets a read-only signal that reflects the current locale of this session.
+     * Gets a signal that reflects the current locale of this session.
      * <p>
      * The signal is automatically updated when the locale changes via
      * {@link #setLocale(Locale)}. Components can use this signal to reactively
      * respond to locale changes.
-     * <p>
-     * The returned signal is read-only. To change the locale, use
-     * {@link #setLocale(Locale)} instead.
      *
-     * @return a read-only signal reflecting the current locale, never null
+     * @return a writable signal reflecting the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public Signal<Locale> localeSignal() {
+    public WritableSignal<Locale> localeSignal() {
         checkHasLock();
         if (localeSignal == null) {
-            localeSignal = new ValueSignal<>(locale);
+            localeSignal = new SharedValueSignal<>(locale);
         }
         return localeSignal;
     }
@@ -425,9 +425,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
-        this.locale = locale;
         if (localeSignal != null) {
             localeSignal.value(locale);
+        } else {
+            this.locale = locale;
         }
 
         getUIs().forEach(ui -> {

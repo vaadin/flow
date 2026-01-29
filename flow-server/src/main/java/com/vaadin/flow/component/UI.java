@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -84,6 +85,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -810,26 +812,36 @@ public class UI extends Component
      */
     @Override
     public Locale getLocale() {
+        if (localeSignal != null) {
+            return localeSignal.value();
+        }
         return locale;
     }
 
     /**
-     * Gets a read-only signal that reflects the current locale of this UI.
+     * Gets a signal that reflects the current locale of this UI.
      * <p>
      * The signal is automatically updated when the locale changes via
      * {@link #setLocale(Locale)}. Components can use this signal to reactively
      * respond to locale changes.
-     * <p>
-     * The returned signal is read-only. To change the locale, use
-     * {@link #setLocale(Locale)} instead.
      *
-     * @return a read-only signal reflecting the current locale, never null
+     * @return a writable signal reflecting the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public Signal<Locale> localeSignal() {
+    public WritableSignal<Locale> localeSignal() {
         if (localeSignal == null) {
             localeSignal = new ValueSignal<>(locale);
+            // Track the last locale to detect actual changes and notify
+            // observers
+            AtomicReference<Locale> lastNotified = new AtomicReference<>(locale);
+            Signal.effect(() -> {
+                Locale current = localeSignal.value();
+                if (!current.equals(lastNotified.get())) {
+                    lastNotified.set(current);
+                    EventUtil.informLocaleChangeObservers(this);
+                }
+            });
         }
         return localeSignal;
     }
@@ -846,12 +858,13 @@ public class UI extends Component
      */
     public void setLocale(Locale locale) {
         assert locale != null : "Null locale is not supported!";
-        if (!this.locale.equals(locale)) {
-            this.locale = locale;
+        if (!getLocale().equals(locale)) {
             if (localeSignal != null) {
                 localeSignal.value(locale);
+            } else {
+                this.locale = locale;
+                EventUtil.informLocaleChangeObservers(this);
             }
-            EventUtil.informLocaleChangeObservers(this);
         }
     }
 
