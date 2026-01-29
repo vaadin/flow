@@ -261,7 +261,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         final String serviceUrl = getServiceUrl(request, response);
 
-        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
+        BootstrapContext context = super.createAndInitUI(uiClass,
                 request, response, session);
         ObjectNode config = context.getApplicationParameters();
 
