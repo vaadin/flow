@@ -15,16 +15,21 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.tests.data.bean.Person;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -695,5 +700,62 @@ public class BinderSignalTest extends SignalsUnitTest {
                 () -> binder.validate());
         Assert.assertThrows(Binder.InvalidSignalUsageError.class,
                 () -> binder.isValid());
+    }
+
+    @Test
+    public void getValidationStatus_signalInitialized() {
+        Signal<BinderValidationStatus<Person>> statusSignal = binder
+                .getValidationStatus();
+        Assert.assertNotNull(
+                "getValidationStatus() should setup validation status signal",
+                statusSignal);
+        Assert.assertNotNull(
+                "validation status signal value should not be null initially",
+                statusSignal.value());
+    }
+
+    @Test
+    public void getValidationStatus_signalIsReadOnly() {
+        Signal<BinderValidationStatus<Person>> statusSignal = binder
+                .getValidationStatus();
+        Assert.assertThrows(ClassCastException.class,
+                () -> ((WritableSignal<BinderValidationStatus<Person>>) statusSignal)
+                        .value(null));
+    }
+
+    @Test
+    public void getValidationStatus_statusChangeUpdatesSignal() {
+        item.setFirstName("Alice");
+        UI.getCurrent().add(firstNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binder.setBean(item);
+
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+
+        firstNameField.setValue("");
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        firstNameField.setValue("foo");
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+    }
+
+    @Test
+    public void getValidationStatus_statusChange_runEffects() {
+        item.setFirstName("Alice");
+        UI.getCurrent().add(firstNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binder.setBean(item);
+
+        AtomicInteger effectCalled = new AtomicInteger(0);
+        ComponentEffect.effect(firstNameField, () -> {
+            binder.getValidationStatus().value();
+            effectCalled.incrementAndGet();
+        });
+        firstNameField.setValue("");
+
+        Assert.assertEquals(2, effectCalled.get());
+        firstNameField.setValue("foo");
+        Assert.assertEquals(3, effectCalled.get());
     }
 }
