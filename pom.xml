@@ -28,7 +28,6 @@
         <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
         <module>flow-component-demo-helpers</module>
@@ -627,8 +626,13 @@
         <profile>
             <id>default</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!release</name>
+                </property>
             </activation>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
             <properties>
                 <test.excludegroup>
                     com.vaadin.flow.testcategory.ThemeLiveReloadTests
