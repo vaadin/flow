@@ -65,10 +65,21 @@ public class NativeTableCell extends HtmlContainer
 
     /**
      * Creates a new table cell with its text content bound to the given signal.
+     * <p>
+     * While a binding for the text content is active, any attempt to set the
+     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
+     * The same happens when trying to bind a new Signal while one is already
+     * bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
      *
      * @param textSignal
-     *            the signal to bind, not {@code null}
+     *            the signal to bind, not <code>null</code>
      * @see #bindText(Signal)
+     *
+     * @since 25.1
      */
     public NativeTableCell(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");
