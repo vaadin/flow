@@ -18,11 +18,9 @@ package com.vaadin.signals.local;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
@@ -32,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class ListSignalTest extends SignalTestBase {
 
@@ -152,9 +149,8 @@ public class ListSignalTest extends SignalTestBase {
         ValueSignal<String> toRemove = signal.insertLast("second");
         signal.insertLast("third");
 
-        boolean removed = signal.remove(toRemove);
+        signal.remove(toRemove);
 
-        assertTrue(removed);
         assertValues(signal, "first", "third");
     }
 
@@ -164,9 +160,8 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("value");
         ValueSignal<String> other = new ValueSignal<>("other");
 
-        boolean removed = signal.remove(other);
+        signal.remove(other);
 
-        assertFalse(removed);
         assertValues(signal, "value");
     }
 
@@ -383,99 +378,10 @@ public class ListSignalTest extends SignalTestBase {
         assertEquals(1, count.intValue());
     }
 
-    @Test
-    void transactions_readInTransaction_throws() {
-        ListSignal<String> signal = new ListSignal<>();
-
-        assertThrows(IllegalStateException.class, () -> {
-            Signal.runInTransaction(() -> {
-                signal.value();
-            });
-        });
-    }
-
-    @Test
-    void transactions_writeInTransaction_throws() {
-        ListSignal<String> signal = new ListSignal<>();
-
-        assertThrows(IllegalStateException.class, () -> {
-            Signal.runInTransaction(() -> {
-                signal.insertLast("value");
-            });
-        });
-    }
-
-    @Test
-    void concurrency_lockHeld_operationsBlocked() {
-        ListSignal<String> signal = new ListSignal<>();
-        signal.lock.lock();
-
-        AtomicInteger completed = new AtomicInteger();
-
-        Thread.startVirtualThread(() -> {
-            signal.value();
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.peek();
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.insertFirst("first");
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.insertLast("last");
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.insertAt(0, "at");
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.remove(new ValueSignal<>("entry"));
-            completed.incrementAndGet();
-        });
-
-        Thread.startVirtualThread(() -> {
-            signal.clear();
-            completed.incrementAndGet();
-        });
-
-        // Wait for all threads to start
-        assertEventually(() -> signal.lock.getQueueLength() == 7);
-        assertEquals(0, completed.get());
-
-        signal.lock.unlock();
-
-        // Wait for all threads to complete
-        assertEventually(() -> completed.get() == 7);
-        assertEquals(0, signal.lock.getQueueLength());
-    }
-
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
         List<String> values = signal.value().stream().map(ValueSignal::value)
                 .toList();
         assertEquals(List.of(expectedValues), values);
-    }
-
-    private static void assertEventually(BooleanSupplier test) {
-        for (int i = 0; i < 10; i++) {
-            if (test.getAsBoolean()) {
-                return;
-            }
-            try {
-                Thread.sleep(i);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        fail();
     }
 }

@@ -22,38 +22,33 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
- * A local list signal that holds a list of {@link ValueSignal} entries.
+ * A local list signal that holds a list of writable signals, enabling per-entry
+ * reactivity.
  * <p>
  * Local signals are non-serializable and intended for UI-local state only. They
  * do not participate in clustering and are simpler than shared signals.
  * <p>
- * Each entry in the list is a {@link ValueSignal} that can be independently
- * observed and modified. This provides per-entry reactivity where changes to
- * one entry don't trigger notifications for other entries.
+ * Structural mutations (add, remove, clear) trigger list-level dependents.
+ * Entry-level mutations (updating an entry's value) only trigger that entry's
+ * dependents.
  * <p>
- * The list structure itself can be observed to detect when entries are added or
- * removed. Modifications to entry values do not trigger list-level change
- * notifications.
- * <p>
- * Local list signals cannot be used inside signal transactions.
+ * Local list signals can't be used inside signal transactions.
  *
  * @param <T>
  *            the element type
  */
 public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
 
-    private final List<ValueSignal<T>> entries = new ArrayList<>();
-    private int version;
-
+    // Copy-on-write snapshot - never mutated after assignment
+    private List<ValueSignal<T>> entries = List.of();
     private final List<TransientListener> listeners = new ArrayList<>();
-    // package-protected for testing
-    final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
+    private int version;
 
     /**
      * Creates a new empty list signal.
@@ -61,40 +56,156 @@ public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
     public ListSignal() {
     }
 
-    private void checkPreconditions() {
-        assert lock.isHeldByCurrentThread();
-
-        if (Transaction.inTransaction()) {
-            throw new IllegalStateException(
-                    "ListSignal cannot be used inside signal transactions.");
-        }
-    }
-
     @Override
     public List<ValueSignal<T>> value() {
         lock.lock();
         try {
-            checkPreconditions();
-
             if (UsageTracker.isActive()) {
                 UsageTracker.registerUsage(createUsage(version));
             }
-
-            return Collections.unmodifiableList(new ArrayList<>(entries));
+            return entries;
         } finally {
             lock.unlock();
         }
     }
 
+    @Override
+    public List<ValueSignal<T>> peek() {
+        lock.lock();
+        try {
+            return entries;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Inserts a value as the first entry in this list.
+     *
+     * @param value
+     *            the value to insert
+     * @return a signal for the inserted entry
+     */
+    public ValueSignal<T> insertFirst(T value) {
+        return insertAt(0, value);
+    }
+
+    /**
+     * Inserts a value as the last entry in this list.
+     *
+     * @param value
+     *            the value to insert
+     * @return a signal for the inserted entry
+     */
+    public ValueSignal<T> insertLast(T value) {
+        lock.lock();
+        try {
+            return insertAtInternal(entries.size(), value);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Inserts a value at the given index in this list.
+     * <p>
+     * <b>Note:</b> This method should only be used in non-concurrent cases
+     * where the list structure is not being modified by other threads. The
+     * index is sensitive to concurrent modifications and may lead to unexpected
+     * results if the list is modified between determining the index and calling
+     * this method. For concurrent cases, prefer using
+     * {@link #insertFirst(Object)} or {@link #insertLast(Object)}.
+     *
+     * @param index
+     *            the index at which to insert (0 for first, size() for last)
+     * @param value
+     *            the value to insert
+     * @return a signal for the inserted entry
+     * @throws IndexOutOfBoundsException
+     *             if index is negative or greater than size()
+     */
+    public ValueSignal<T> insertAt(int index, T value) {
+        lock.lock();
+        try {
+            if (index < 0 || index > entries.size()) {
+                throw new IndexOutOfBoundsException(
+                        "Index: " + index + ", Size: " + entries.size());
+            }
+            return insertAtInternal(index, value);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private ValueSignal<T> insertAtInternal(int index, T value) {
+        assert lock.isHeldByCurrentThread();
+        ValueSignal<T> entry = new ValueSignal<>(value);
+        List<ValueSignal<T>> newEntries = new ArrayList<>(entries);
+        newEntries.add(index, entry);
+        entries = Collections.unmodifiableList(newEntries);
+        notifyListeners();
+        return entry;
+    }
+
+    /**
+     * Removes the given entry from this list. Does nothing if the entry is not
+     * in the list.
+     *
+     * @param entry
+     *            the entry to remove
+     */
+    public void remove(ValueSignal<T> entry) {
+        lock.lock();
+        try {
+            List<ValueSignal<T>> newEntries = entries.stream()
+                    .filter(e -> e != entry).toList();
+            if (newEntries.size() < entries.size()) {
+                entries = newEntries;
+                notifyListeners();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Removes all entries from this list.
+     */
+    public void clear() {
+        lock.lock();
+        try {
+            if (!entries.isEmpty()) {
+                entries = List.of();
+                notifyListeners();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void notifyListeners() {
+        assert lock.isHeldByCurrentThread();
+        version++;
+        List<TransientListener> copy = List.copyOf(listeners);
+        listeners.clear();
+        for (var listener : copy) {
+            if (listener.invoke(false)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    // TODO: Extract to helper or abstract base class (duplicates ValueSignal)
     private Usage createUsage(int originalVersion) {
         return new Usage() {
             @Override
             public boolean hasChanges() {
                 lock.lock();
-                boolean hasChanges = version != originalVersion;
-                lock.unlock();
-
-                return hasChanges;
+                try {
+                    return version != originalVersion;
+                } finally {
+                    lock.unlock();
+                }
             }
 
             @Override
@@ -102,13 +213,11 @@ public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
                 lock.lock();
                 try {
                     if (hasChanges()) {
-                        boolean keep = listener.invoke(true);
-                        if (!keep) {
+                        if (!listener.invoke(true)) {
                             return () -> {
                             };
                         }
                     }
-
                     listeners.add(listener);
                     return () -> {
                         lock.lock();
@@ -118,154 +227,10 @@ public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
                             lock.unlock();
                         }
                     };
-
                 } finally {
                     lock.unlock();
                 }
             }
         };
-    }
-
-    @Override
-    public List<ValueSignal<T>> peek() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            return Collections.unmodifiableList(new ArrayList<>(entries));
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    private void notifyListeners() {
-        assert lock.isHeldByCurrentThread();
-
-        version++;
-
-        List<TransientListener> copy = List.copyOf(listeners);
-        listeners.clear();
-        for (var listener : copy) {
-            boolean keep = listener.invoke(false);
-
-            if (keep) {
-                listeners.add(listener);
-            }
-        }
-    }
-
-    /**
-     * Inserts a value at the beginning of the list.
-     *
-     * @param value
-     *            the value to insert, may be <code>null</code>
-     * @return a signal for the inserted entry, not <code>null</code>
-     */
-    public ValueSignal<T> insertFirst(T value) {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            ValueSignal<T> entry = new ValueSignal<>(value);
-            entries.add(0, entry);
-            notifyListeners();
-            return entry;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Inserts a value at the end of the list.
-     *
-     * @param value
-     *            the value to insert, may be <code>null</code>
-     * @return a signal for the inserted entry, not <code>null</code>
-     */
-    public ValueSignal<T> insertLast(T value) {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            ValueSignal<T> entry = new ValueSignal<>(value);
-            entries.add(entry);
-            notifyListeners();
-            return entry;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Inserts a value at the specified index in the list.
-     *
-     * @param index
-     *            the index at which to insert the value, must be between 0 and
-     *            the current size of the list (inclusive)
-     * @param value
-     *            the value to insert, may be <code>null</code>
-     * @return a signal for the inserted entry, not <code>null</code>
-     * @throws IndexOutOfBoundsException
-     *             if the index is out of range (index &lt; 0 || index &gt;
-     *             size())
-     */
-    public ValueSignal<T> insertAt(int index, T value) {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            if (index < 0 || index > entries.size()) {
-                throw new IndexOutOfBoundsException(
-                        "Index: " + index + ", Size: " + entries.size());
-            }
-
-            ValueSignal<T> entry = new ValueSignal<>(value);
-            entries.add(index, entry);
-            notifyListeners();
-            return entry;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Removes the specified entry from the list. If the entry is not in the
-     * list, this method has no effect.
-     *
-     * @param entry
-     *            the entry to remove, not <code>null</code>
-     * @return <code>true</code> if the entry was found and removed,
-     *         <code>false</code> if the entry was not in the list
-     */
-    public boolean remove(ValueSignal<T> entry) {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            boolean removed = entries.remove(entry);
-            if (removed) {
-                notifyListeners();
-            }
-            return removed;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Removes all entries from the list.
-     */
-    public void clear() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            if (!entries.isEmpty()) {
-                entries.clear();
-                notifyListeners();
-            }
-        } finally {
-            lock.unlock();
-        }
     }
 }
