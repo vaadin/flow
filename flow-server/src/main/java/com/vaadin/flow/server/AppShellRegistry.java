@@ -75,12 +75,13 @@ public class AppShellRegistry implements Serializable {
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
-    private static final String AURA_STYLESHEET = "@vaadin/aura/aura.css";
+    private static final String AURA_STYLESHEET = "aura/aura.css";
     private static final Logger log = LoggerFactory
             .getLogger(AppShellRegistry.class);
 
     private Class<? extends AppShellConfigurator> appShellClass;
     private boolean auraAutoLoadWarningLogged = false;
+    private boolean hasAnyStyleSheet = false;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
@@ -129,6 +130,19 @@ public class AppShellRegistry implements Serializable {
      */
     public void reset() {
         this.appShellClass = null;
+        this.hasAnyStyleSheet = false;
+    }
+
+    /**
+     * Sets whether any {@link StyleSheet} annotation was found in the
+     * application. When set to true, Aura auto-loading is disabled since
+     * the application has explicit stylesheet configuration.
+     *
+     * @param hasStyleSheets
+     *            true if any @StyleSheet annotation exists
+     */
+    public void setHasStyleSheetAnnotations(boolean hasStyleSheets) {
+        this.hasAnyStyleSheet = hasStyleSheets;
     }
 
     /**
@@ -235,8 +249,9 @@ public class AppShellRegistry implements Serializable {
             }
         }
 
-        // Auto-load Aura if no AppShellConfigurator is defined and Aura is available
-        if (appShellClass == null) {
+        // Auto-load Aura if no AppShellConfigurator is defined, no @StyleSheet
+        // annotations exist anywhere, and Aura is available
+        if (appShellClass == null && !hasAnyStyleSheet) {
             String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                     + AURA_STYLESHEET;
             VaadinService service = request.getService();
@@ -247,15 +262,17 @@ public class AppShellRegistry implements Serializable {
                     stylesheets.put(auraHref, defaultStylesheet);
                     if (!auraAutoLoadWarningLogged) {
                         auraAutoLoadWarningLogged = true;
-                        log.warn(String.format("""
-                                There is no AppShellConfigurator implementation \
-                                available, auto loading the Aura theme. Add an \
-                                AppShellConfigurator to define the theme to use, e.g.
+                        log.warn(String.format(
+                                """
+                                        There is no AppShellConfigurator implementation \
+                                        available, auto loading the Aura theme. Add an \
+                                        AppShellConfigurator to define the theme to use, e.g.
 
-                                @StyleSheet("%s")
-                                public class Application implements AppShellConfigurator {
-                                }
-                                """, AURA_STYLESHEET));
+                                        @StyleSheet("%s")
+                                        public class Application implements AppShellConfigurator {
+                                        }
+                                        """,
+                                AURA_STYLESHEET));
                     }
                 }
             }

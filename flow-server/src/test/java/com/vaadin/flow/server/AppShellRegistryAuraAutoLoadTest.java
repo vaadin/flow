@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.ServletContext;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import jakarta.servlet.ServletContext;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -39,6 +40,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 public class AppShellRegistryAuraAutoLoadTest {
 
     public static class MyAppShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet("lumo.css")
+    public static class MyLayout {
     }
 
     private VaadinServletContext context;
@@ -70,8 +75,8 @@ public class AppShellRegistryAuraAutoLoadTest {
         Mockito.when(deploymentConfig.isProductionMode()).thenReturn(false);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfig);
-        Mockito.when(service.getInstantiator())
-                .thenReturn(Mockito.mock(com.vaadin.flow.di.Instantiator.class));
+        Mockito.when(service.getInstantiator()).thenReturn(
+                Mockito.mock(com.vaadin.flow.di.Instantiator.class));
     }
 
     @After
@@ -85,7 +90,7 @@ public class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource availability
-        Mockito.when(service.isResourceAvailable("@vaadin/aura/aura.css"))
+        Mockito.when(service.isResourceAvailable("aura/aura.css"))
                 .thenReturn(true);
 
         VaadinServletRequest request = createRequest("/", "");
@@ -96,7 +101,7 @@ public class AppShellRegistryAuraAutoLoadTest {
                 links.size());
 
         Element aura = links.get(0);
-        Assert.assertEquals("@vaadin/aura/aura.css",
+        Assert.assertEquals("aura/aura.css",
                 aura.attr("data-file-path"));
         Assert.assertTrue("Aura href should contain aura.css",
                 aura.attr("href").contains("aura.css"));
@@ -108,16 +113,15 @@ public class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource NOT available
-        Mockito.when(service.isResourceAvailable("@vaadin/aura/aura.css"))
+        Mockito.when(service.isResourceAvailable("aura/aura.css"))
                 .thenReturn(false);
 
         VaadinServletRequest request = createRequest("/", "");
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assert.assertEquals(
-                "Aura should NOT be auto-loaded when not available", 0,
-                links.size());
+        Assert.assertEquals("Aura should NOT be auto-loaded when not available",
+                0, links.size());
     }
 
     @Test
@@ -139,14 +143,35 @@ public class AppShellRegistryAuraAutoLoadTest {
             VaadinServletRequest request = createRequest("/", "");
             registry.modifyIndexHtml(document, request);
 
-            List<Element> links = document.head().select("link[rel=stylesheet]");
-            // Empty AppShellConfigurator has no stylesheets, but Aura should NOT be auto-added
+            List<Element> links = document.head()
+                    .select("link[rel=stylesheet]");
+            // Empty AppShellConfigurator has no stylesheets, but Aura should
+            // NOT be auto-added
             Assert.assertEquals(
                     "Aura should NOT be auto-loaded when AppShellConfigurator exists",
                     0, links.size());
         } finally {
             VaadinService.setCurrent(null);
         }
+    }
+
+    @Test
+    public void styleSheetOnAnyClass_auraNotAutoLoaded() {
+        // No AppShellConfigurator, but @StyleSheet exists on some class
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setHasStyleSheetAnnotations(true);
+
+        // Mock Aura resource availability
+        Mockito.when(service.isResourceAvailable("aura/aura.css"))
+                .thenReturn(true);
+
+        VaadinServletRequest request = createRequest("/", "");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        Assert.assertEquals(
+                "Aura should NOT be auto-loaded when @StyleSheet exists on any class",
+                0, links.size());
     }
 
     private VaadinServletRequest createRequest(String pathInfo,
