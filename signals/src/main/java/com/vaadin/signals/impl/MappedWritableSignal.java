@@ -16,7 +16,6 @@
 package com.vaadin.signals.impl;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.SignalMapper;
@@ -83,31 +82,14 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     @Override
     public SignalOperation<Void> replace(C expectedValue, C newValue) {
-        AtomicReference<SignalOperation.ResultOrError<Void>> resultRef =
-                new AtomicReference<>();
-
-        CancelableOperation<P> parentOp = parent.update(parentValue -> {
-            C currentChildValue = getter.map(parentValue);
-            if (Objects.equals(expectedValue, currentChildValue)) {
-                resultRef.set(new SignalOperation.Result<>(null));
-                return setter.set(parentValue, newValue);
-            } else {
-                resultRef.set(
-                        new SignalOperation.Error<>("Unexpected child value"));
-                return parentValue;
-            }
-        });
-
-        SignalOperation<Void> result = new SignalOperation<>();
-        parentOp.result().thenAccept(parentResult -> {
-            if (parentResult.successful()) {
-                result.result().complete(resultRef.get());
-            } else {
-                result.result().complete(new SignalOperation.Error<>(
-                        ((SignalOperation.Error<?>) parentResult).reason()));
-            }
-        });
-        return result;
+        P originalParentValue = parent.peek();
+        C oldChildValue = getter.map(originalParentValue);
+        if (!Objects.equals(oldChildValue, expectedValue)) {
+            return new SignalOperation<>(
+                    new SignalOperation.Error<>("Unexpected child value"));
+        }
+        return parent.replace(originalParentValue,
+                setter.set(originalParentValue, newValue));
     }
 
     @Override
