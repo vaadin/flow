@@ -232,6 +232,16 @@ public class AppShellRegistry implements Serializable {
                 stylesheets.put(href, sheet.value());
             }
         }
+
+        // Auto-load Aura if no AppShellConfigurator is defined
+        if (appShellClass == null) {
+            String defaultStylesheet = "context://@vaadin/aura/aura.css";
+            String auraHref = resolveStyleSheetHref(defaultStylesheet, request);
+            if (auraHref != null) {
+                stylesheets.put(auraHref, defaultStylesheet);
+            }
+        }
+
         addStyleSheets(request, stylesheets, settings);
         return settings;
     }
