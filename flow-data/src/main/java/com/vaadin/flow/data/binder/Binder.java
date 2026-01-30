@@ -1557,7 +1557,7 @@ public class Binder<BEAN> implements Serializable {
                         Collections.emptyList());
                 getBinder().getValidationStatusHandler()
                         .statusChange(statusChange);
-                getBinder().signalStatusChange(statusChange);
+                getBinder().signalStatusChangeFromBinding();
                 getBinder().fireStatusChangeEvent(status.isError());
             }
             return status;
@@ -4369,6 +4369,12 @@ public class Binder<BEAN> implements Serializable {
      */
     public BindingExceptionHandler getBindingExceptionHandler() {
         return exceptionHandler;
+    }
+
+    private void signalStatusChangeFromBinding() {
+        if (binderValidationStatusSignal != null) {
+            binderValidationStatusSignal.value(validate(false));
+        }
     }
 
     private void signalStatusChange(BinderValidationStatus<BEAN> statusChange) {
