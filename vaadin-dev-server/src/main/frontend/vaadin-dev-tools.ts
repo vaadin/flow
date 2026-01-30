@@ -712,6 +712,8 @@ export class VaadinDevTools extends LitElement {
       }
       if (this.conf.usageStatisticsEnabled === false) {
         localStorage.setItem('vaadin.statistics.optout', 'true');
+        localStorage.removeItem('vaadin.statistics.basket');
+        localStorage.removeItem('vaadin.statistics.firstuse');
       } else {
         localStorage.removeItem('vaadin.statistics.optout');
       }
