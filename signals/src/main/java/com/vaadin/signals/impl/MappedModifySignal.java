@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.local;
+package com.vaadin.signals.impl;
 
 import java.util.Objects;
 
@@ -21,6 +21,7 @@ import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.SignalMapper;
 import com.vaadin.signals.function.SignalModifier;
 import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 

@@ -27,6 +27,7 @@ import com.vaadin.signals.function.SignalMapper;
 import com.vaadin.signals.function.SignalModifier;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
+import com.vaadin.signals.impl.MappedModifySignal;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
