@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.operations;
 
+import java.util.function.Function;
+
 /**
  * An operation that can be cancelled.
  *
@@ -46,5 +48,46 @@ public class CancelableOperation<T> extends SignalOperation<T> {
      */
     public boolean isCancelled() {
         return cancelled;
+    }
+
+    /**
+     * Creates a new cancelable operation that transforms the result value using
+     * the given mapper function. Cancelling the returned operation will also
+     * cancel this operation. If this operation fails, the mapped operation will
+     * also fail with the same error.
+     *
+     * @param <R>
+     *            the mapped result type
+     * @param mapper
+     *            the function to transform the result value, not
+     *            <code>null</code>
+     * @return a new cancelable operation with the mapped result, not
+     *         <code>null</code>
+     */
+    @Override
+    public <R> CancelableOperation<R> map(Function<T, R> mapper) {
+        CancelableOperation<T> parent = this;
+        CancelableOperation<R> mapped = new CancelableOperation<>() {
+            @Override
+            public void cancel() {
+                super.cancel();
+                parent.cancel();
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return parent.isCancelled();
+            }
+        };
+        result().thenAccept(resultOrError -> {
+            if (resultOrError.successful()) {
+                T value = ((Result<T>) resultOrError).value();
+                mapped.result().complete(new Result<>(mapper.apply(value)));
+            } else {
+                mapped.result().complete(
+                        new Error<>(((Error<?>) resultOrError).reason()));
+            }
+        });
+        return mapped;
     }
 }

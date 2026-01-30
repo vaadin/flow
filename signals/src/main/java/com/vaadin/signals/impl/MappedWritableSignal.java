@@ -76,14 +76,9 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     @Override
     public SignalOperation<C> value(C newChildValue) {
-        AtomicReference<C> oldChildValue = new AtomicReference<>();
-
-        CancelableOperation<P> parentOp = parent.update(parentValue -> {
-            oldChildValue.set(getter.map(parentValue));
-            return setter.set(parentValue, newChildValue);
-        });
-
-        return mapOperation(parentOp, oldChildValue);
+        return parent.update(
+                parentValue -> setter.set(parentValue, newChildValue))
+                .map(oldParent -> getter.map(oldParent));
     }
 
     @Override
@@ -118,57 +113,10 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     @Override
     public CancelableOperation<C> update(SignalUpdater<C> childUpdater) {
         Objects.requireNonNull(childUpdater);
-        AtomicReference<C> oldChildValue = new AtomicReference<>();
-
-        CancelableOperation<P> parentOp = parent.update(parentValue -> {
+        return parent.update(parentValue -> {
             C currentChildValue = getter.map(parentValue);
-            oldChildValue.set(currentChildValue);
             C newChildValue = childUpdater.update(currentChildValue);
             return setter.set(parentValue, newChildValue);
-        });
-
-        return mapCancelableOperation(parentOp, oldChildValue);
-    }
-
-    private SignalOperation<C> mapOperation(CancelableOperation<P> parentOp,
-            AtomicReference<C> oldChildValue) {
-        SignalOperation<C> childOp = new SignalOperation<>();
-        parentOp.result().thenAccept(parentResult -> {
-            if (parentResult.successful()) {
-                childOp.result().complete(
-                        new SignalOperation.Result<>(oldChildValue.get()));
-            } else {
-                childOp.result().complete(new SignalOperation.Error<>(
-                        ((SignalOperation.Error<?>) parentResult).reason()));
-            }
-        });
-        return childOp;
-    }
-
-    private CancelableOperation<C> mapCancelableOperation(
-            CancelableOperation<P> parentOp,
-            AtomicReference<C> oldChildValue) {
-        CancelableOperation<C> childOp = new CancelableOperation<>() {
-            @Override
-            public void cancel() {
-                super.cancel();
-                parentOp.cancel();
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return parentOp.isCancelled();
-            }
-        };
-        parentOp.result().thenAccept(parentResult -> {
-            if (parentResult.successful()) {
-                childOp.result().complete(
-                        new SignalOperation.Result<>(oldChildValue.get()));
-            } else {
-                childOp.result().complete(new SignalOperation.Error<>(
-                        ((SignalOperation.Error<?>) parentResult).reason()));
-            }
-        });
-        return childOp;
+        }).map(oldParent -> getter.map(oldParent));
     }
 }

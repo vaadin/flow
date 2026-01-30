@@ -16,6 +16,7 @@
 package com.vaadin.signals.operations;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * An operation triggered on a signal instance. The result will be populated
@@ -101,5 +102,31 @@ public class SignalOperation<T> {
      */
     public CompletableFuture<ResultOrError<T>> result() {
         return result;
+    }
+
+    /**
+     * Creates a new operation that transforms the result value using the given
+     * mapper function. If this operation fails, the mapped operation will also
+     * fail with the same error.
+     *
+     * @param <R>
+     *            the mapped result type
+     * @param mapper
+     *            the function to transform the result value, not
+     *            <code>null</code>
+     * @return a new operation with the mapped result, not <code>null</code>
+     */
+    public <R> SignalOperation<R> map(Function<T, R> mapper) {
+        SignalOperation<R> mapped = new SignalOperation<>();
+        result.thenAccept(resultOrError -> {
+            if (resultOrError.successful()) {
+                T value = ((Result<T>) resultOrError).value();
+                mapped.result().complete(new Result<>(mapper.apply(value)));
+            } else {
+                mapped.result().complete(
+                        new Error<>(((Error<?>) resultOrError).reason()));
+            }
+        });
+        return mapped;
     }
 }
