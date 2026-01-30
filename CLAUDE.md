@@ -168,3 +168,4 @@ Components extend `Component` and use:
 - Extensive CI/CD pipeline with multiple test configurations
 - When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
 - When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
+- When creating a PR, mark it as a draft on GitHub and remind the user about a reviewing the code themselves and marking the PR ready
