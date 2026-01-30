@@ -248,7 +248,7 @@ public class AppShellRegistry implements Serializable {
                     stylesheets.put(auraHref, defaultStylesheet);
                     if (!auraAutoLoadWarningLogged) {
                         auraAutoLoadWarningLogged = true;
-                        log.warn(String.format(
+                        log.info(String.format(
                                 """
                                         There is no AppShellConfigurator implementation \
                                         available, auto loading the Aura theme. Add an \
