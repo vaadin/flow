@@ -738,7 +738,7 @@
             <configuration>
               <executable>npx</executable>
               <arguments>
-                <argument>husky</argument>
+                <argument>husky@9.1.7</argument>
               </arguments>
             </configuration>
           </execution>
