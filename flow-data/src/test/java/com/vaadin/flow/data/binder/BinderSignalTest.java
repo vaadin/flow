@@ -17,6 +17,7 @@ package com.vaadin.flow.data.binder;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -797,5 +798,40 @@ public class BinderSignalTest extends SignalsUnitTest {
         Assert.assertFalse(
                 "Binder status change signal should be invalid when other field is still invalid.",
                 prevStatus.get());
+    }
+
+    @Test
+    public void getValidationStatus_setBean_initialStatus() {
+        testInitialStatusChangeRunEffects(item -> binder.setBean(item));
+    }
+
+    @Test
+    public void getValidationStatus_readBean_initialStatus() {
+        testInitialStatusChangeRunEffects(item -> binder.readBean(item));
+    }
+
+    private void testInitialStatusChangeRunEffects(
+            Consumer<Person> binderSetup) {
+        item.setFirstName("");
+        UI.getCurrent().add(firstNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binderSetup.accept(item);
+
+        AtomicBoolean prevStatus = new AtomicBoolean(true);
+        ComponentEffect.effect(firstNameField, () -> {
+            prevStatus.set(binder.getValidationStatus().value().isOk());
+        });
+
+        Assert.assertFalse(prevStatus.get());
+
+        firstNameField.setValue("foo");
+        Assert.assertTrue(prevStatus.get());
+
+        var person = new Person();
+        person.setFirstName("");
+
+        binderSetup.accept(person);
+        Assert.assertFalse(prevStatus.get());
     }
 }

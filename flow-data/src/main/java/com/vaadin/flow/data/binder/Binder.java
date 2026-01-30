@@ -1557,7 +1557,7 @@ public class Binder<BEAN> implements Serializable {
                         Collections.emptyList());
                 getBinder().getValidationStatusHandler()
                         .statusChange(statusChange);
-                getBinder().signalStatusChangeFromBinding();
+                getBinder().signalStatusChange();
                 getBinder().fireStatusChangeEvent(status.isError());
             }
             return status;
@@ -2572,7 +2572,7 @@ public class Binder<BEAN> implements Serializable {
             // validation, need to make sure the validation errors are cleared
             var status = BinderValidationStatus.createUnresolvedStatus(this);
             getValidationStatusHandler().statusChange(status);
-            signalStatusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -2622,7 +2622,7 @@ public class Binder<BEAN> implements Serializable {
             changedBindings.clear();
             var status = BinderValidationStatus.createUnresolvedStatus(this);
             getValidationStatusHandler().statusChange(status);
-            signalStatusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -3780,7 +3780,7 @@ public class Binder<BEAN> implements Serializable {
         }
         var status = BinderValidationStatus.createUnresolvedStatus(this);
         getValidationStatusHandler().statusChange(status);
-        signalStatusChange(status);
+        signalStatusChange();
         if (fireStatusEvent) {
             fireStatusChangeEvent(false);
         }
@@ -4371,15 +4371,22 @@ public class Binder<BEAN> implements Serializable {
         return exceptionHandler;
     }
 
-    private void signalStatusChangeFromBinding() {
-        if (binderValidationStatusSignal != null) {
-            binderValidationStatusSignal.value(validate(false));
-        }
+    /**
+     * Signal status change from unresolved state or from specific binding's
+     * state.
+     */
+    private void signalStatusChange() {
+        signalStatusChange(null);
     }
 
     private void signalStatusChange(BinderValidationStatus<BEAN> statusChange) {
-        if (binderValidationStatusSignal != null) {
+        if (binderValidationStatusSignal == null) {
+            return;
+        }
+        if (statusChange != null) {
             binderValidationStatusSignal.value(statusChange);
+        } else {
+            binderValidationStatusSignal.value(validate(false));
         }
     }
 
