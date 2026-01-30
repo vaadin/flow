@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .venv/
+data/*.jsonl
+data/*.json
+!data/.gitkeep

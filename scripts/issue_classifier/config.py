@@ -8,7 +8,7 @@ REPO = "vaadin/flow"
 
 # File paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-DATA_DIR = PROJECT_ROOT / "data" / "issues"
+DATA_DIR = Path(__file__).parent / "data"
 ISSUES_FILE = DATA_DIR / "issues.jsonl"
 META_FILE = DATA_DIR / "issues_meta.json"
 AUDIT_LOG = DATA_DIR / "audit_log.jsonl"
