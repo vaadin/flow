@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -801,5 +802,64 @@ public class ComponentEventBusTest {
                 event.getDetails().getClientY());
         Assert.assertEquals("Button should be 0", 0,
                 event.getDetails().getButton());
+    }
+
+    @Test
+    public void inertElement_domEventWithoutAllowInert_listenerNotCalled() {
+        TestComponent component = new TestComponent();
+
+        // Make element inert first
+        InertData inertData = component.getElement().getNode()
+                .getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+
+        // Add listener after element is inert
+        EventTracker<MappedToDomNoDataEvent> eventTracker = new EventTracker<>();
+        component.addListener(MappedToDomNoDataEvent.class, eventTracker);
+
+        // Fire event
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
+
+        // Listener should not be called because element is inert
+        eventTracker.assertEventNotCalled();
+    }
+
+    @Test
+    public void inertElement_domEventWithAllowInert_listenerCalled() {
+        TestComponent component = new TestComponent();
+
+        // Make element inert first
+        InertData inertData = component.getElement().getNode()
+                .getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+
+        // Add listener after element is inert
+        EventTracker<MappedToDomEventWithAllowInert> eventTracker = new EventTracker<>();
+        component.addListener(MappedToDomEventWithAllowInert.class,
+                eventTracker);
+
+        // Fire event
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
+
+        // Listener should be called because allowInert is true
+        eventTracker.assertEventCalled(component, true);
+    }
+
+    @Test
+    public void nonInertElement_domEventWithAllowInert_listenerCalled() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEventWithAllowInert> eventTracker = new EventTracker<>();
+        component.addListener(MappedToDomEventWithAllowInert.class,
+                eventTracker);
+
+        // Element is not inert (default)
+
+        // Fire event
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
+
+        // Listener should be called normally
+        eventTracker.assertEventCalled(component, true);
     }
 }

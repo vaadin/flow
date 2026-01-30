@@ -339,6 +339,9 @@ public class ComponentEventBus implements Serializable {
         if (annotation.preventDefault()) {
             registration.preventDefault();
         }
+        if (annotation.allowInert()) {
+            registration.allowInert();
+        }
     }
 
     /**
