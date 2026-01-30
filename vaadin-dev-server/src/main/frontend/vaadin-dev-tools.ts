@@ -81,6 +81,7 @@ type DevToolsConf = {
   backend?: string;
   liveReloadPort?: number;
   token?: string;
+  usageStatisticsEnabled?: boolean;
 };
 
 // @ts-ignore
@@ -708,6 +709,11 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onHandshake = () => {
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
+      }
+      if (this.conf.usageStatisticsEnabled === false) {
+        localStorage.setItem('vaadin.statistics.optout', 'true');
+      } else {
+        localStorage.removeItem('vaadin.statistics.optout');
       }
       this.elementTelemetry();
     };
