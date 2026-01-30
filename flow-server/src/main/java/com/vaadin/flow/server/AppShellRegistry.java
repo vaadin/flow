@@ -75,6 +75,7 @@ public class AppShellRegistry implements Serializable {
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
+    private static final String AURA_STYLESHEET = "@vaadin/aura/aura.css";
     private static final Logger log = LoggerFactory
             .getLogger(AppShellRegistry.class);
 
@@ -236,24 +237,25 @@ public class AppShellRegistry implements Serializable {
 
         // Auto-load Aura if no AppShellConfigurator is defined and Aura is available
         if (appShellClass == null) {
-            String defaultStylesheet = "context://@vaadin/aura/aura.css";
+            String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                    + AURA_STYLESHEET;
             VaadinService service = request.getService();
-            if (service.isResourceAvailable("@vaadin/aura/aura.css")) {
+            if (service.isResourceAvailable(AURA_STYLESHEET)) {
                 String auraHref = resolveStyleSheetHref(defaultStylesheet,
                         request);
                 if (auraHref != null) {
                     stylesheets.put(auraHref, defaultStylesheet);
                     if (!auraAutoLoadWarningLogged) {
                         auraAutoLoadWarningLogged = true;
-                        log.warn("""
+                        log.warn(String.format("""
                                 There is no AppShellConfigurator implementation \
                                 available, auto loading the Aura theme. Add an \
                                 AppShellConfigurator to define the theme to use, e.g.
 
-                                @StyleSheet("@vaadin/aura/aura.css")
+                                @StyleSheet("%s")
                                 public class Application implements AppShellConfigurator {
                                 }
-                                """);
+                                """, AURA_STYLESHEET));
                     }
                 }
             }
