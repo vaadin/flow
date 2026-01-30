@@ -80,9 +80,13 @@ public class AppShellRegistryAuraAutoLoadTest {
     }
 
     @Test
-    public void noAppShellConfigurator_auraIsAutoLoaded() {
+    public void noAppShellConfigurator_auraAvailable_auraIsAutoLoaded() {
         // Do not set any shell class - leave appShellClass as null
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        // Mock Aura resource availability
+        Mockito.when(service.isResourceAvailable("@vaadin/aura/aura.css"))
+                .thenReturn(true);
 
         VaadinServletRequest request = createRequest("/", "");
         registry.modifyIndexHtml(document, request);
@@ -96,6 +100,24 @@ public class AppShellRegistryAuraAutoLoadTest {
                 aura.attr("data-file-path"));
         Assert.assertTrue("Aura href should contain aura.css",
                 aura.attr("href").contains("aura.css"));
+    }
+
+    @Test
+    public void noAppShellConfigurator_auraNotAvailable_auraNotLoaded() {
+        // Do not set any shell class - leave appShellClass as null
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        // Mock Aura resource NOT available
+        Mockito.when(service.isResourceAvailable("@vaadin/aura/aura.css"))
+                .thenReturn(false);
+
+        VaadinServletRequest request = createRequest("/", "");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        Assert.assertEquals(
+                "Aura should NOT be auto-loaded when not available", 0,
+                links.size());
     }
 
     @Test

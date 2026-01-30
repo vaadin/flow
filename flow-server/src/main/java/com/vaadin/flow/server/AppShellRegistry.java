@@ -79,6 +79,7 @@ public class AppShellRegistry implements Serializable {
             .getLogger(AppShellRegistry.class);
 
     private Class<? extends AppShellConfigurator> appShellClass;
+    private boolean auraAutoLoadWarningLogged = false;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
@@ -233,12 +234,28 @@ public class AppShellRegistry implements Serializable {
             }
         }
 
-        // Auto-load Aura if no AppShellConfigurator is defined
+        // Auto-load Aura if no AppShellConfigurator is defined and Aura is available
         if (appShellClass == null) {
             String defaultStylesheet = "context://@vaadin/aura/aura.css";
-            String auraHref = resolveStyleSheetHref(defaultStylesheet, request);
-            if (auraHref != null) {
-                stylesheets.put(auraHref, defaultStylesheet);
+            VaadinService service = request.getService();
+            if (service.isResourceAvailable("@vaadin/aura/aura.css")) {
+                String auraHref = resolveStyleSheetHref(defaultStylesheet,
+                        request);
+                if (auraHref != null) {
+                    stylesheets.put(auraHref, defaultStylesheet);
+                    if (!auraAutoLoadWarningLogged) {
+                        auraAutoLoadWarningLogged = true;
+                        log.warn("""
+                                There is no AppShellConfigurator implementation \
+                                available, auto loading the Aura theme. Add an \
+                                AppShellConfigurator to define the theme to use, e.g.
+
+                                @StyleSheet("@vaadin/aura/aura.css")
+                                public class Application implements AppShellConfigurator {
+                                }
+                                """);
+                    }
+                }
             }
         }
 
