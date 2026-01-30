@@ -8,27 +8,19 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+SOURCE="$SCRIPT_DIR/git-hooks/pre-commit"
+TARGET="$REPO_ROOT/.git/hooks/pre-commit"
 
-# Only proceed if this is a git repository
-if [ ! -d "$REPO_ROOT/.git/hooks" ]; then
-    exit 0
-fi
+[ ! -d "$REPO_ROOT/.git/hooks" ] && exit 0
+[ ! -f "$SOURCE" ] && exit 0
 
-# Install pre-commit hook
-HOOK_NAME="pre-commit"
-SOURCE="$SCRIPT_DIR/git-hooks/$HOOK_NAME"
-TARGET="$REPO_ROOT/.git/hooks/$HOOK_NAME"
-BACKUP="$TARGET.local"
-
-if [ -f "$SOURCE" ]; then
-    # Backup existing hook if it differs from ours and isn't already backed up
-    if [ -f "$TARGET" ] && [ ! -f "$BACKUP" ]; then
-        if ! diff -q "$SOURCE" "$TARGET" > /dev/null 2>&1; then
-            mv "$TARGET" "$BACKUP"
-            echo "Existing $HOOK_NAME hook backed up to $BACKUP"
-        fi
+# Backup existing hook if it differs from ours and isn't already backed up
+if [ -f "$TARGET" ] && [ ! -f "$TARGET.local" ]; then
+    if ! diff -q "$SOURCE" "$TARGET" > /dev/null 2>&1; then
+        mv "$TARGET" "$TARGET.local"
+        echo "Existing pre-commit hook backed up to $TARGET.local"
     fi
-
-    cp "$SOURCE" "$TARGET"
-    chmod +x "$TARGET"
 fi
+
+cp "$SOURCE" "$TARGET"
+chmod +x "$TARGET"
