@@ -135,8 +135,8 @@ public class AppShellRegistry implements Serializable {
 
     /**
      * Sets whether any {@link StyleSheet} annotation was found in the
-     * application. When set to true, Aura auto-loading is disabled since
-     * the application has explicit stylesheet configuration.
+     * application. When set to true, Aura auto-loading is disabled since the
+     * application has explicit stylesheet configuration.
      *
      * @param hasStyleSheets
      *            true if any @StyleSheet annotation exists

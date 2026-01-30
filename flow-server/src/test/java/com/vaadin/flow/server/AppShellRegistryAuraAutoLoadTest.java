@@ -101,8 +101,7 @@ public class AppShellRegistryAuraAutoLoadTest {
                 links.size());
 
         Element aura = links.get(0);
-        Assert.assertEquals("aura/aura.css",
-                aura.attr("data-file-path"));
+        Assert.assertEquals("aura/aura.css", aura.attr("data-file-path"));
         Assert.assertTrue("Aura href should contain aura.css",
                 aura.attr("href").contains("aura.css"));
     }
