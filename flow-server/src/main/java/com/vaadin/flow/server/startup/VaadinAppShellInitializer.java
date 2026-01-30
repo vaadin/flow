@@ -127,13 +127,6 @@ public class VaadinAppShellInitializer
                     }
                 });
 
-        // Detect if any class has @StyleSheet annotation to disable Aura
-        // auto-load
-        boolean hasStyleSheets = classes.stream()
-                .anyMatch(c -> c.isAnnotationPresent(StyleSheet.class)
-                        || c.isAnnotationPresent(StyleSheet.Container.class));
-        registry.setHasStyleSheetAnnotations(hasStyleSheets);
-
         if (!offendingAnnotations.isEmpty()) {
             if (disregardOffendingAnnotations) {
                 boolean hasPwa = offendingAnnotations.stream()
