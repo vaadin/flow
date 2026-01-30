@@ -97,12 +97,11 @@ public class VaadinServiceSignalsInitializationTest {
 
         var execution = invocations.get(1);
         Assert.assertEquals(
-                "Expected UI to not be available during effect execution",
-                null, execution.ui);
+                "Expected UI to not be available during effect execution", null,
+                execution.ui);
         Assert.assertTrue(
                 "Expected effect to be executed in Vaadin Executor thread",
-                execution.threadName
-                        .startsWith("VaadinTaskExecutor-thread-"));
+                execution.threadName.startsWith("VaadinTaskExecutor-thread-"));
     }
 
 }

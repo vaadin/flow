@@ -193,22 +193,20 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
         items.insertLast("second");
         items.insertLast("third");
 
-        container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         assertEquals(3, container.getChildren().count());
-        assertEquals("first", container.getChildren().toList().get(0)
-                .getId().orElse(null));
-        assertEquals("second", container.getChildren().toList().get(1)
-                .getId().orElse(null));
-        assertEquals("third", container.getChildren().toList().get(2)
-                .getId().orElse(null));
+        assertEquals("first",
+                container.getChildren().toList().get(0).getId().orElse(null));
+        assertEquals("second",
+                container.getChildren().toList().get(1).getId().orElse(null));
+        assertEquals("third",
+                container.getChildren().toList().get(2).getId().orElse(null));
     }
 
     @Test
@@ -217,24 +215,22 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
-        container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         assertEquals(1, container.getChildren().count());
 
         items.insertLast("second");
         assertEquals(2, container.getChildren().count());
-        assertEquals("second", container.getChildren().toList().get(1)
-                .getId().orElse(null));
+        assertEquals("second",
+                container.getChildren().toList().get(1).getId().orElse(null));
 
         items.remove(items.value().get(0));
         assertEquals(1, container.getChildren().count());
-        assertEquals("second", container.getChildren().toList().get(0)
-                .getId().orElse(null));
+        assertEquals("second",
+                container.getChildren().toList().get(0).getId().orElse(null));
     }
 
     @Test
@@ -243,8 +239,7 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
         Registration registration = container.bindChildren(items,
@@ -267,12 +262,10 @@ public class HasComponentsTest {
         new MockUI().add(container);
         container.add(new TestComponent("existing"));
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
 
-        assertThrows(IllegalStateException.class,
-                () -> container.bindChildren(items,
-                        item -> new TestComponent(item.value())));
+        assertThrows(IllegalStateException.class, () -> container
+                .bindChildren(items, item -> new TestComponent(item.value())));
     }
 
     @Test
@@ -281,11 +274,9 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
 
-        container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         SharedListSignal<String> otherItems = new SharedListSignal<>(
                 String.class);
@@ -300,12 +291,10 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
-        container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         assertThrows("add should throw while binding is active",
                 BindingActiveException.class,
@@ -318,18 +307,15 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
-        container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         Component child = container.getChildren().toList().get(0);
 
         assertThrows("remove should throw while binding is active",
-                BindingActiveException.class,
-                () -> container.remove(child));
+                BindingActiveException.class, () -> container.remove(child));
     }
 
     @Test
@@ -338,8 +324,7 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(
-                String.class);
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
         Registration registration = container.bindChildren(items,

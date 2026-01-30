@@ -43,7 +43,8 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
 
     @Override
     public List<Feature> getFeatures() {
-        return List.of(COLLABORATION_ENGINE_BACKEND, ACCESSIBLE_DISABLED_BUTTONS,
-                COMPONENT_STYLE_INJECTION, TAILWIND_CSS);
+        return List.of(COLLABORATION_ENGINE_BACKEND,
+                ACCESSIBLE_DISABLED_BUTTONS, COMPONENT_STYLE_INJECTION,
+                TAILWIND_CSS);
     }
 }
