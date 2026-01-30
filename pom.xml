@@ -722,7 +722,7 @@
         </executions>
       </plugin>
 
-      <!-- Install git pre-commit hook for automatic formatting -->
+      <!-- Install Husky git hooks for automatic formatting -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -736,7 +736,10 @@
             </goals>
             <phase>initialize</phase>
             <configuration>
-              <executable>scripts/install-git-hooks.sh</executable>
+              <executable>npx</executable>
+              <arguments>
+                <argument>husky</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>

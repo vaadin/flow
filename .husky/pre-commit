@@ -1,0 +1,14 @@
+# Get staged files that spotless can format
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(java|js|ts|css)$|pom\.xml$')
+
+if [ -n "$STAGED_FILES" ]; then
+    echo "Formatting with Spotless..."
+
+    if ! mvn spotless:apply -q; then
+        echo "Spotless formatting failed."
+        exit 1
+    fi
+
+    echo "$STAGED_FILES" | xargs -r git add
+    echo "Formatting complete."
+fi
