@@ -57,8 +57,8 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
      *            the function to modify the parent value in place with the new
      *            child value, not <code>null</code>
      */
-    public MappedModifySignal(ValueSignal<P> parent,
-            SignalMapper<P, C> getter, SignalModifier<P, C> modifier) {
+    public MappedModifySignal(ValueSignal<P> parent, SignalMapper<P, C> getter,
+            SignalModifier<P, C> modifier) {
         this.parent = Objects.requireNonNull(parent);
         this.getter = Objects.requireNonNull(getter);
         this.modifier = Objects.requireNonNull(modifier);

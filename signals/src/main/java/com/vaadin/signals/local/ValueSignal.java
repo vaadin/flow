@@ -340,8 +340,8 @@ public class ValueSignal<T> implements WritableSignal<T> {
      * }
      *
      * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
-     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(
-     *         Todo::isDone, Todo::setDone);
+     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
+     *         Todo::setDone);
      *
      * checkbox.bindValue(doneSignal); // Two-way binding
      * </pre>

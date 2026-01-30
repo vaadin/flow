@@ -75,8 +75,8 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     @Override
     public SignalOperation<C> value(C newChildValue) {
-        return parent.update(
-                parentValue -> setter.set(parentValue, newChildValue))
+        return parent
+                .update(parentValue -> setter.set(parentValue, newChildValue))
                 .map(oldParent -> getter.map(oldParent));
     }
 
