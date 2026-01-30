@@ -38,8 +38,8 @@ import com.vaadin.signals.local.ValueSignal;
  *
  * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
  *         new Todo("Buy milk", false));
- * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::isDone,
- *         Todo::setDone);
+ * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(
+ *         Todo::isDone, Todo::setDone);
  *
  * doneSignal.value(true); // Calls todoSignal.modify(t -&gt; t.setDone(true))
  * </pre>
@@ -48,7 +48,7 @@ import com.vaadin.signals.local.ValueSignal;
  *            the parent signal value type
  * @param <C>
  *            the child (mapped) signal value type
- * @see ValueSignal#map(SignalMapper, SignalModifier)
+ * @see ValueSignal#mapMutable(SignalMapper, SignalModifier)
  */
 @FunctionalInterface
 public interface SignalModifier<P, C> {
