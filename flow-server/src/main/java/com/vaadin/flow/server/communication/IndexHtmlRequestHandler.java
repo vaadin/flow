@@ -415,6 +415,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (isAllowedDevToolsHost(config, request)) {
             devToolsConf.put("token", DevToolsToken.getToken());
         }
+        devToolsConf.put("usageStatisticsEnabled",
+                config.isUsageStatisticsEnabled());
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
