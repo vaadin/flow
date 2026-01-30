@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# Pre-commit hook that runs spotless:apply on staged files
+#
+# This hook formats staged Java, TypeScript, CSS, and POM files using
+# Maven Spotless plugin before committing.
+#
+# If you have custom pre-commit logic, put it in .git/hooks/pre-commit.local
+# and it will be called after formatting.
+#
+
+# Get the repository root directory
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+# Get list of staged files that spotless can format
+# Filter by extensions: .java, .js, .ts, .css, pom.xml
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(java|js|ts|css)$|pom\.xml$')
+
+# Function to run user's local hook if it exists
+run_local_hook() {
+    if [ -x "$REPO_ROOT/.git/hooks/pre-commit.local" ]; then
+        "$REPO_ROOT/.git/hooks/pre-commit.local"
+        exit $?
+    fi
+    exit 0
+}
+
+if [ -z "$STAGED_FILES" ]; then
+    # No files to format, but still run local hook
+    run_local_hook
+fi
+
+echo "Formatting staged files with Spotless..."
+
+# Convert newlines to commas for the spotless file pattern
+# Spotless uses ant-style patterns, so we need to handle paths correctly
+FILE_PATTERNS=""
+for file in $STAGED_FILES; do
+    if [ -n "$FILE_PATTERNS" ]; then
+        FILE_PATTERNS="$FILE_PATTERNS,"
+    fi
+    FILE_PATTERNS="$FILE_PATTERNS$file"
+done
+
+# Run spotless:apply on the specific files
+# Using -DspotlessFiles to limit which files are formatted
+cd "$REPO_ROOT"
+mvn spotless:apply -DspotlessFiles="$FILE_PATTERNS" -q
+
+SPOTLESS_EXIT_CODE=$?
+
+if [ $SPOTLESS_EXIT_CODE -ne 0 ]; then
+    echo "Spotless formatting failed. Please fix the issues and try again."
+    exit 1
+fi
+
+# Re-add the formatted files to staging
+for file in $STAGED_FILES; do
+    if [ -f "$file" ]; then
+        git add "$file"
+    fi
+done
+
+echo "Formatting complete."
+run_local_hook
