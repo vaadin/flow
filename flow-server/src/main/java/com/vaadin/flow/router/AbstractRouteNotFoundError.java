@@ -78,9 +78,10 @@ public abstract class AbstractRouteNotFoundError extends Component {
         String template;
         String routes = getRoutes(event);
 
+        boolean noRoutes = routes.isEmpty();
         if (productionMode) {
             template = AbstractRouteNotFoundError.LazyInit.PRODUCTION_MODE_TEMPLATE;
-        } else if (routes.isEmpty()) {
+        } else if (noRoutes) {
             // Offer a way for people to get started
             template = readHtmlFile("NoRoutesError_dev.html");
         } else {
@@ -97,6 +98,16 @@ public abstract class AbstractRouteNotFoundError extends Component {
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
+        if (noRoutes && !productionMode) {
+            getElement().executeJs(
+                    "(function poll() {" +
+                    "    if (window.Vaadin?.copilot?.noRoutesInProject) {" +
+                    "        window.Vaadin.copilot.noRoutesInProject();" +
+                    "    } else {" +
+                    "        setTimeout(poll, 100);" +
+                    "    }" +
+                    "})();");
+        }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
 
