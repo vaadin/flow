@@ -33,37 +33,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MappedWritableSignalTest extends SignalTestBase {
 
-    record Todo(String text, boolean done, int priority) {
+    record Todo(String text, boolean done) {
         Todo withText(String text) {
-            return new Todo(text, this.done, this.priority);
+            return new Todo(text, this.done);
         }
 
         Todo withDone(boolean done) {
-            return new Todo(this.text, done, this.priority);
-        }
-
-        Todo withPriority(int priority) {
-            return new Todo(this.text, this.done, priority);
+            return new Todo(this.text, done);
         }
     }
 
     @Test
     void map_readValue_returnsMappedValue() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
         assertFalse(doneSignal.value());
 
-        todoSignal.value(new Todo("Buy milk", true, 1));
+        todoSignal.value(new Todo("Buy milk", true));
         assertTrue(doneSignal.value());
     }
 
     @Test
     void map_peek_returnsMappedValue() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
@@ -73,19 +69,19 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_setValue_updatesParentSignal() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
         doneSignal.value(true);
 
-        assertEquals(new Todo("Buy milk", true, 1), todoSignal.value());
+        assertEquals(new Todo("Buy milk", true), todoSignal.value());
     }
 
     @Test
     void map_setValue_returnsPreviousValue() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
@@ -98,20 +94,19 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_setValuePreservesOtherFields() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Original text", false, 5));
+                new Todo("Original text", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
         doneSignal.value(true);
 
         assertEquals("Original text", todoSignal.value().text());
-        assertEquals(5, todoSignal.value().priority());
     }
 
     @Test
     void map_replaceWithExpectedValue_updatesSignal() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
@@ -124,7 +119,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_replaceWithUnexpectedValue_fails() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
@@ -137,30 +132,29 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_update_updatesValue() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Task", false, 5));
-        WritableSignal<Integer> prioritySignal = todoSignal.map(Todo::priority,
-                Todo::withPriority);
+                new Todo("Task", false));
+        WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
+                Todo::withDone);
 
-        CancelableOperation<Integer> operation = prioritySignal
-                .update(value -> value * 2);
+        CancelableOperation<Boolean> operation = doneSignal
+                .update(value -> !value);
 
-        Integer oldValue = TestUtil.assertSuccess(operation);
-        assertEquals(5, oldValue);
-        assertEquals(10, prioritySignal.value());
-        assertEquals(new Todo("Task", false, 10), todoSignal.value());
+        Boolean oldValue = TestUtil.assertSuccess(operation);
+        assertFalse(oldValue);
+        assertTrue(doneSignal.value());
+        assertEquals(new Todo("Task", true), todoSignal.value());
     }
 
     @Test
     void map_update_preservesOtherFields() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Task", true, 5));
-        WritableSignal<Integer> prioritySignal = todoSignal.map(Todo::priority,
-                Todo::withPriority);
+                new Todo("Task", false));
+        WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
+                Todo::withDone);
 
-        prioritySignal.update(value -> value + 10);
+        doneSignal.update(value -> !value);
 
         assertEquals("Task", todoSignal.value().text());
-        assertTrue(todoSignal.value().done());
     }
 
     @Test
@@ -172,7 +166,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
         }
 
         ValueSignal<Outer> outerSignal = new ValueSignal<>(
-                new Outer(new Todo("Task", false, 1)));
+                new Outer(new Todo("Task", false)));
         WritableSignal<Todo> todoSignal = outerSignal.map(Outer::inner,
                 Outer::withInner);
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
@@ -187,7 +181,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_effectTracking_tracksChanges() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
@@ -202,14 +196,14 @@ public class MappedWritableSignalTest extends SignalTestBase {
         doneSignal.value(true);
         assertEquals(2, effectCount.get());
 
-        todoSignal.value(new Todo("Changed", true, 1));
+        todoSignal.value(new Todo("Changed", true));
         assertEquals(3, effectCount.get());
     }
 
     @Test
     void map_asReadonly_createsReadonlyView() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Buy milk", false, 1));
+                new Todo("Buy milk", false));
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
         Signal<Boolean> readonlySignal = doneSignal.asReadonly();
@@ -223,7 +217,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
     @Test
     void map_multipleFieldMappings_independent() {
         ValueSignal<Todo> todoSignal = new ValueSignal<>(
-                new Todo("Task", false, 1));
+                new Todo("Task", false));
         WritableSignal<String> textSignal = todoSignal.map(Todo::text,
                 Todo::withText);
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,

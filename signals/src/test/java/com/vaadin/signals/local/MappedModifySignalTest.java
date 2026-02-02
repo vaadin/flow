@@ -36,12 +36,10 @@ public class MappedModifySignalTest extends SignalTestBase {
     static class MutableTodo {
         private String text;
         private boolean done;
-        private int priority;
 
-        MutableTodo(String text, boolean done, int priority) {
+        MutableTodo(String text, boolean done) {
             this.text = text;
             this.done = done;
-            this.priority = priority;
         }
 
         public String getText() {
@@ -59,19 +57,11 @@ public class MappedModifySignalTest extends SignalTestBase {
         public void setDone(boolean done) {
             this.done = done;
         }
-
-        public int getPriority() {
-            return priority;
-        }
-
-        public void setPriority(int priority) {
-            this.priority = priority;
-        }
     }
 
     @Test
     void map_readValue_returnsMappedValue() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -84,7 +74,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_peek_returnsMappedValue() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -94,7 +84,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_setValue_modifiesParentValueInPlace() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -107,7 +97,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_setValue_returnsPreviousValue() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -120,7 +110,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_setValuePreservesOtherFields() {
-        MutableTodo todo = new MutableTodo("Original text", false, 5);
+        MutableTodo todo = new MutableTodo("Original text", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -128,12 +118,11 @@ public class MappedModifySignalTest extends SignalTestBase {
         doneSignal.value(true);
 
         assertEquals("Original text", todo.getText());
-        assertEquals(5, todo.getPriority());
     }
 
     @Test
     void map_replaceWithExpectedValue_updatesSignal() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -147,7 +136,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_replaceWithUnexpectedValue_fails() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -161,37 +150,36 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_update_modifiesInPlace() {
-        MutableTodo todo = new MutableTodo("Task", false, 5);
+        MutableTodo todo = new MutableTodo("Task", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
-        WritableSignal<Integer> prioritySignal = todoSignal
-                .mapMutable(MutableTodo::getPriority, MutableTodo::setPriority);
+        WritableSignal<Boolean> doneSignal = todoSignal
+                .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        CancelableOperation<Integer> operation = prioritySignal
-                .update(value -> value * 2);
+        CancelableOperation<Boolean> operation = doneSignal
+                .update(value -> !value);
 
-        Integer oldValue = TestUtil.assertSuccess(operation);
-        assertEquals(5, oldValue);
-        assertEquals(10, prioritySignal.value());
-        assertEquals(10, todo.getPriority());
+        Boolean oldValue = TestUtil.assertSuccess(operation);
+        assertFalse(oldValue);
+        assertTrue(doneSignal.value());
+        assertTrue(todo.isDone());
         assertSame(todo, todoSignal.value());
     }
 
     @Test
     void map_update_preservesOtherFields() {
-        MutableTodo todo = new MutableTodo("Task", true, 5);
+        MutableTodo todo = new MutableTodo("Task", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
-        WritableSignal<Integer> prioritySignal = todoSignal
-                .mapMutable(MutableTodo::getPriority, MutableTodo::setPriority);
+        WritableSignal<Boolean> doneSignal = todoSignal
+                .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        prioritySignal.update(value -> value + 10);
+        doneSignal.update(value -> !value);
 
         assertEquals("Task", todo.getText());
-        assertTrue(todo.isDone());
     }
 
     @Test
     void map_effectTracking_tracksChanges() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -210,7 +198,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_asReadonly_createsReadonlyView() {
-        MutableTodo todo = new MutableTodo("Buy milk", false, 1);
+        MutableTodo todo = new MutableTodo("Buy milk", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
@@ -224,7 +212,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_multipleFieldMappings_independent() {
-        MutableTodo todo = new MutableTodo("Task", false, 1);
+        MutableTodo todo = new MutableTodo("Task", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<String> textSignal = todoSignal
                 .mapMutable(MutableTodo::getText, MutableTodo::setText);
@@ -242,7 +230,7 @@ public class MappedModifySignalTest extends SignalTestBase {
 
     @Test
     void map_sameInstanceMaintained_afterModification() {
-        MutableTodo todo = new MutableTodo("Task", false, 1);
+        MutableTodo todo = new MutableTodo("Task", false);
         ValueSignal<MutableTodo> todoSignal = new ValueSignal<>(todo);
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
