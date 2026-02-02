@@ -22,7 +22,6 @@ import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
 import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -49,10 +48,9 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractLocalSignal
+public class ValueSignal<T> extends AbstractLocalSignal<T>
         implements WritableSignal<T> {
 
-    private T value;
     private boolean modifyRunning = false;
 
     /**
@@ -62,7 +60,7 @@ public class ValueSignal<T> extends AbstractLocalSignal
      *            the initial value, may be <code>null</code>
      */
     public ValueSignal(T initialValue) {
-        this.value = initialValue;
+        super(initialValue);
     }
 
     /**
@@ -72,8 +70,9 @@ public class ValueSignal<T> extends AbstractLocalSignal
         this(null);
     }
 
-    private void checkPreconditions() {
-        assert lock.isHeldByCurrentThread();
+    @Override
+    protected void checkPreconditions() {
+        assertLockHeld();
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
@@ -85,54 +84,26 @@ public class ValueSignal<T> extends AbstractLocalSignal
         }
     }
 
-    @Override
-    public T value() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            if (UsageTracker.isActive()) {
-                UsageTracker.registerUsage(createUsage(version));
-            }
-
-            return value;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @Override
-    public T peek() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            return value;
-        } finally {
-            lock.unlock();
-        }
-    }
-
     private void setAndNotify(T newValue) {
-        assert lock.isHeldByCurrentThread();
-        this.value = newValue;
+        assertLockHeld();
+        setSignalValue(newValue);
         notifyListeners();
     }
 
     @Override
     public SignalOperation<T> value(T value) {
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            T oldValue = this.value;
+            T oldValue = getSignalValue();
 
             setAndNotify(value);
 
             return new SignalOperation<>(
                     new SignalOperation.Result<>(oldValue));
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -144,11 +115,11 @@ public class ValueSignal<T> extends AbstractLocalSignal
      */
     @Override
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            if (Objects.equals(expectedValue, value)) {
+            if (Objects.equals(expectedValue, getSignalValue())) {
                 setAndNotify(newValue);
                 return new SignalOperation<>(
                         new SignalOperation.Result<>(null));
@@ -157,7 +128,7 @@ public class ValueSignal<T> extends AbstractLocalSignal
                         new SignalOperation.Error<>("Unexpected value"));
             }
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -179,11 +150,11 @@ public class ValueSignal<T> extends AbstractLocalSignal
     public synchronized CancelableOperation<T> update(
             SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            T oldValue = this.value;
+            T oldValue = getSignalValue();
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setAndNotify(newValue);
@@ -193,7 +164,7 @@ public class ValueSignal<T> extends AbstractLocalSignal
             operation.result().complete(new SignalOperation.Result<>(oldValue));
             return operation;
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -216,7 +187,7 @@ public class ValueSignal<T> extends AbstractLocalSignal
     public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 
-        if (!lock.tryLock()) {
+        if (!tryLock()) {
             throw new ConcurrentModificationException();
         }
         try {
@@ -224,25 +195,27 @@ public class ValueSignal<T> extends AbstractLocalSignal
 
             modifyRunning = true;
         } finally {
-            lock.unlock();
+            unlock();
         }
 
         boolean completed = false;
         try {
-            modifier.modify(value);
+            // Access without lock since modifyRunning prevents concurrent
+            // access
+            modifier.modify(getSignalValueUnsafe());
 
             completed = true;
         } finally {
-            lock.lock();
+            lock();
             try {
                 modifyRunning = false;
 
                 if (completed) {
-                    setAndNotify(value);
+                    setAndNotify(getSignalValue());
                 }
 
             } finally {
-                lock.unlock();
+                unlock();
             }
         }
     }

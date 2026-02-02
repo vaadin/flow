@@ -19,38 +19,138 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.TransientListener;
+import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
- * Base class for local signals providing shared listener notification and usage
- * tracking logic.
+ * Base class for local signals providing shared listener notification, usage
+ * tracking, and value access logic.
+ *
+ * @param <T>
+ *            the signal value type
  */
-abstract class AbstractLocalSignal {
+abstract class AbstractLocalSignal<T> implements Signal<T> {
+
+    private final List<TransientListener> listeners = new ArrayList<>();
+    private final ReentrantLock lock = new ReentrantLock();
+    private int version;
+    private T signalValue;
 
     /**
-     * Listeners to notify on changes.
+     * Creates a new signal with the given initial value.
+     *
+     * @param initialValue
+     *            the initial value
      */
-    protected final List<TransientListener> listeners = new ArrayList<>();
+    protected AbstractLocalSignal(T initialValue) {
+        this.signalValue = initialValue;
+    }
 
     /**
-     * Lock for thread-safe access to signal state.
+     * Hook for subclasses to perform precondition checks before accessing the
+     * value. Called while holding the lock. Default implementation does
+     * nothing.
      */
-    // package-protected for testing
-    final ReentrantLock lock = new ReentrantLock();
+    protected void checkPreconditions() {
+    }
+
+    @Override
+    public final T value() {
+        lock.lock();
+        try {
+            checkPreconditions();
+            if (UsageTracker.isActive()) {
+                UsageTracker.registerUsage(createUsage());
+            }
+            return signalValue;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public final T peek() {
+        lock.lock();
+        try {
+            checkPreconditions();
+            return signalValue;
+        } finally {
+            lock.unlock();
+        }
+    }
 
     /**
-     * Version counter incremented on each change.
+     * Acquires the lock. Must be followed by {@link #unlock()} in a finally
+     * block.
      */
-    protected int version;
+    protected final void lock() {
+        lock.lock();
+    }
+
+    /**
+     * Releases the lock.
+     */
+    protected final void unlock() {
+        lock.unlock();
+    }
+
+    /**
+     * Attempts to acquire the lock without blocking.
+     *
+     * @return true if the lock was acquired, false otherwise
+     */
+    protected final boolean tryLock() {
+        return lock.tryLock();
+    }
+
+    /**
+     * Asserts that the current thread holds the lock.
+     */
+    protected final void assertLockHeld() {
+        assert lock.isHeldByCurrentThread();
+    }
+
+    /**
+     * Gets the current signal value. Must be called while holding the lock.
+     *
+     * @return the current value
+     */
+    protected final T getSignalValue() {
+        assertLockHeld();
+        return signalValue;
+    }
+
+    /**
+     * Gets the current signal value without checking that the lock is held.
+     * Only use when the caller ensures thread-safety through other means.
+     *
+     * @return the current value
+     */
+    protected final T getSignalValueUnsafe() {
+        return signalValue;
+    }
+
+    /**
+     * Sets the signal value without notifying listeners. Must be called while
+     * holding the lock.
+     *
+     * @param value
+     *            the new value
+     */
+    protected final void setSignalValue(T value) {
+        assertLockHeld();
+        this.signalValue = value;
+    }
 
     /**
      * Notifies all registered listeners of a change and increments the version.
      * Must be called while holding the lock.
      */
-    protected void notifyListeners() {
-        assert lock.isHeldByCurrentThread();
+    protected final void notifyListeners() {
+        assertLockHeld();
         version++;
         List<TransientListener> copy = List.copyOf(listeners);
         listeners.clear();
@@ -62,13 +162,14 @@ abstract class AbstractLocalSignal {
     }
 
     /**
-     * Creates a Usage object for tracking changes from the given version.
+     * Creates a Usage object for tracking changes from the current version.
+     * Must be called while holding the lock.
      *
-     * @param originalVersion
-     *            the version at the time of usage registration
      * @return a Usage object for change detection
      */
-    protected Usage createUsage(int originalVersion) {
+    private Usage createUsage() {
+        assertLockHeld();
+        int originalVersion = version;
         return new Usage() {
             @Override
             public boolean hasChanges() {
@@ -104,5 +205,14 @@ abstract class AbstractLocalSignal {
                 }
             }
         };
+    }
+
+    /**
+     * Returns the lock for testing purposes.
+     *
+     * @return the lock
+     */
+    final ReentrantLock getLock() {
+        return lock;
     }
 }

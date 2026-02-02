@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.impl.UsageTracker;
-
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
  * reactivity.
@@ -38,39 +35,13 @@ import com.vaadin.signals.impl.UsageTracker;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractLocalSignal
-        implements Signal<List<ValueSignal<T>>> {
-
-    // Copy-on-write snapshot - never mutated after assignment
-    private List<ValueSignal<T>> entries = List.of();
+public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
 
     /**
      * Creates a new empty list signal.
      */
     public ListSignal() {
-    }
-
-    @Override
-    public List<ValueSignal<T>> value() {
-        lock.lock();
-        try {
-            if (UsageTracker.isActive()) {
-                UsageTracker.registerUsage(createUsage(version));
-            }
-            return entries;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @Override
-    public List<ValueSignal<T>> peek() {
-        lock.lock();
-        try {
-            return entries;
-        } finally {
-            lock.unlock();
-        }
+        super(List.of());
     }
 
     /**
@@ -92,11 +63,11 @@ public class ListSignal<T> extends AbstractLocalSignal
      * @return a signal for the inserted entry
      */
     public ValueSignal<T> insertLast(T value) {
-        lock.lock();
+        lock();
         try {
-            return insertAtInternal(entries.size(), value);
+            return insertAtInternal(getSignalValue().size(), value);
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -119,24 +90,25 @@ public class ListSignal<T> extends AbstractLocalSignal
      *             if index is negative or greater than size()
      */
     public ValueSignal<T> insertAt(int index, T value) {
-        lock.lock();
+        lock();
         try {
+            List<ValueSignal<T>> entries = getSignalValue();
             if (index < 0 || index > entries.size()) {
                 throw new IndexOutOfBoundsException(
                         "Index: " + index + ", Size: " + entries.size());
             }
             return insertAtInternal(index, value);
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
     private ValueSignal<T> insertAtInternal(int index, T value) {
-        assert lock.isHeldByCurrentThread();
+        assertLockHeld();
         ValueSignal<T> entry = new ValueSignal<>(value);
-        List<ValueSignal<T>> newEntries = new ArrayList<>(entries);
+        List<ValueSignal<T>> newEntries = new ArrayList<>(getSignalValue());
         newEntries.add(index, entry);
-        entries = Collections.unmodifiableList(newEntries);
+        setSignalValue(Collections.unmodifiableList(newEntries));
         notifyListeners();
         return entry;
     }
@@ -149,16 +121,17 @@ public class ListSignal<T> extends AbstractLocalSignal
      *            the entry to remove
      */
     public void remove(ValueSignal<T> entry) {
-        lock.lock();
+        lock();
         try {
+            List<ValueSignal<T>> entries = getSignalValue();
             List<ValueSignal<T>> newEntries = entries.stream()
                     .filter(e -> e != entry).toList();
             if (newEntries.size() < entries.size()) {
-                entries = newEntries;
+                setSignalValue(newEntries);
                 notifyListeners();
             }
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -166,14 +139,14 @@ public class ListSignal<T> extends AbstractLocalSignal
      * Removes all entries from this list.
      */
     public void clear() {
-        lock.lock();
+        lock();
         try {
-            if (!entries.isEmpty()) {
-                entries = List.of();
+            if (!getSignalValue().isEmpty()) {
+                setSignalValue(List.of());
                 notifyListeners();
             }
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
