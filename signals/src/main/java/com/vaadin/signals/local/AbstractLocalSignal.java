@@ -32,7 +32,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * @param <T>
  *            the signal value type
  */
-abstract class AbstractLocalSignal<T> implements Signal<T> {
+public abstract class AbstractLocalSignal<T> implements Signal<T> {
 
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
