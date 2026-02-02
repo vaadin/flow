@@ -16,19 +16,20 @@
 package com.vaadin.base.devserver.viteproxy;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
 import jakarta.websocket.CloseReason;
+import jakarta.websocket.CloseReason.CloseCodes;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.HandshakeResponse;
 import jakarta.websocket.Session;
+import jakarta.websocket.server.HandshakeRequest;
 import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * The websocket endpoint for Vite.
@@ -43,9 +45,29 @@ import com.vaadin.flow.server.VaadinServletContext;
 public class ViteWebsocketEndpoint extends Endpoint {
 
     public static final String VITE_HANDLER = "viteServer";
+    static final String TRACKER_KEY = "viteSessionTracker";
+    private static final String HTTP_SESSION_ID = "httpSessionId";
 
-    private final static Map<String, ViteWebsocketProxy> proxies = Collections
-            .synchronizedMap(new HashMap<>());
+    private ViteWebsocketProxy proxy;
+    private Registration listenerRegistration;
+
+    /**
+     * Configurator that captures the HTTP session ID during the WebSocket
+     * handshake. This allows tracking which WebSocket sessions are associated
+     * with which HTTP sessions.
+     */
+    public static class HttpSessionConfigurator
+            extends ServerEndpointConfig.Configurator {
+        @Override
+        public void modifyHandshake(ServerEndpointConfig config,
+                HandshakeRequest request, HandshakeResponse response) {
+            Object httpSessionObject = request.getHttpSession();
+            if (httpSessionObject instanceof HttpSession httpSession) {
+                config.getUserProperties().put(HTTP_SESSION_ID,
+                        httpSession.getId());
+            }
+        }
+    }
 
     /**
      * Creates the websocket endpoint that Vite connects to.
@@ -70,9 +92,19 @@ public class ViteWebsocketEndpoint extends Endpoint {
             ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
                     .create(ViteWebsocketEndpoint.class,
                             viteHandler.getPathToVaadinInContext())
-                    .subprotocols(subProtocols).build();
+                    .subprotocols(subProtocols)
+                    .configurator(new HttpSessionConfigurator()).build();
             endpointConfig.getUserProperties()
                     .put(ViteWebsocketEndpoint.VITE_HANDLER, viteHandler);
+
+            // Get tracker from servlet context if it exists (set by test
+            // listener)
+            ViteSessionTracker tracker = (ViteSessionTracker) servletContext
+                    .getAttribute(ViteSessionTracker.class.getName());
+            if (tracker != null) {
+                endpointConfig.getUserProperties().put(TRACKER_KEY, tracker);
+            }
+
             container.addEndpoint(endpointConfig);
         } catch (DeploymentException e) {
             getLogger().error("Error deploying Vite websocket proxy endpoint",
@@ -93,11 +125,31 @@ public class ViteWebsocketEndpoint extends Endpoint {
 
         ViteHandler viteHandler = (ViteHandler) config.getUserProperties()
                 .get(VITE_HANDLER);
-        ViteWebsocketProxy proxy;
+
+        String httpSessionId = (String) config.getUserProperties()
+                .get(HTTP_SESSION_ID);
+        ViteSessionTracker tracker = (ViteSessionTracker) config
+                .getUserProperties().get(TRACKER_KEY);
+        if (tracker != null && httpSessionId != null) {
+            listenerRegistration = tracker
+                    .addListener((sessionId, closeCode, closeMessage) -> {
+                        if (sessionId.equals(httpSessionId)) {
+                            try {
+                                if (session.isOpen()) {
+                                    session.close(new CloseReason(
+                                            CloseCodes.getCloseCode(closeCode),
+                                            closeMessage));
+                                }
+                            } catch (IOException e) {
+                                getLogger().debug("Error closing session", e);
+                            }
+                        }
+                    });
+        }
+
         try {
             proxy = new ViteWebsocketProxy(session, viteHandler.getPort(),
                     viteHandler.getPathToVaadin());
-            proxies.put(session.getId(), proxy);
             session.addMessageHandler(proxy);
         } catch (Exception e) {
             getLogger().error("Error creating Vite proxy connection", e);
@@ -113,7 +165,11 @@ public class ViteWebsocketEndpoint extends Endpoint {
     public void onClose(Session session, CloseReason closeReason) {
         getLogger().debug("Browser ({}) closed the connection",
                 session.getId());
-        ViteWebsocketProxy proxy = proxies.remove(session.getId());
+
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+        }
+
         if (proxy != null) {
             proxy.close();
         }

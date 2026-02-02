@@ -25,10 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -38,8 +35,6 @@ import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.mockito.ArgumentMatchers.any;
-
 /**
  * Unit tests for Style.bind(String, Signal<String>).
  */
@@ -47,15 +42,9 @@ public class StyleBindTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
     @BeforeClass
     public static void init() {
-        MockedStatic<FeatureFlags> staticMock = Mockito
-                .mockStatic(FeatureFlags.class);
-        featureFlagEnabled(staticMock);
         service = new MockVaadinServletService();
-        close(staticMock);
     }
 
     @AfterClass
@@ -66,14 +55,11 @@ public class StyleBindTest {
 
     @Before
     public void before() {
-        featureFlagStaticMock = Mockito.mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         mockLockedSessionWithErrorHandler();
     }
 
     @After
     public void after() {
-        close(featureFlagStaticMock);
         VaadinService.setCurrent(null);
     }
 
@@ -250,20 +236,5 @@ public class StyleBindTest {
         new MockUI(session);
         var list = new LinkedList<ErrorEvent>();
         session.setErrorHandler(list::add);
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = Mockito.mock(FeatureFlags.class);
-        Mockito.when(
-                flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        featureFlagStaticMock.close();
     }
 }
