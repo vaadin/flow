@@ -248,17 +248,18 @@ public class AppShellRegistry implements Serializable {
                     stylesheets.put(auraHref, defaultStylesheet);
                     if (!auraAutoLoadWarningLogged) {
                         auraAutoLoadWarningLogged = true;
-                        log.info("""
-                                There is no AppShellConfigurator implementation \
-                                available, auto loading the Aura theme. Add an \
-                                AppShellConfigurator to define the theme to use, e.g.
+                        log.info(
+                                """
+                                        There is no AppShellConfigurator implementation \
+                                        available, auto loading the Aura theme. Add an \
+                                        AppShellConfigurator to define the theme to use, e.g.
 
-                                import com.vaadin.flow.theme.aura.Aura;
+                                        import com.vaadin.flow.theme.aura.Aura;
 
-                                @StyleSheet(Aura.STYLESHEET)
-                                public class Application implements AppShellConfigurator {
-                                }
-                                """);
+                                        @StyleSheet(Aura.STYLESHEET)
+                                        public class Application implements AppShellConfigurator {
+                                        }
+                                        """);
                     }
                 }
             }
