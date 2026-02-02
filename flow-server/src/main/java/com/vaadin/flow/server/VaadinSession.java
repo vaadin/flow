@@ -85,11 +85,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Default locale of the session.
+     * Locale value used for serialization. The signal is the runtime source of
+     * truth; this field is only used to persist the value across serialization.
      */
     private Locale locale = Locale.getDefault();
 
-    private transient SharedValueSignal<Locale> localeSignal;
+    private transient SharedValueSignal<Locale> localeSignal = new SharedValueSignal<>(
+            locale);
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -387,18 +389,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Locale getLocale() {
         checkHasLock();
-        if (localeSignal != null) {
-            return localeSignal.value();
-        }
-        return locale;
+        return localeSignal.value();
     }
 
     /**
      * Gets a signal that reflects the current locale of this session.
      * <p>
-     * The signal is automatically updated when the locale changes via
-     * {@link #setLocale(Locale)}. Components can use this signal to reactively
-     * respond to locale changes.
+     * The signal is the source of truth for the locale. Changes to the signal
+     * are reflected in {@link #getLocale()} and vice versa.
      *
      * @return a writable signal reflecting the current locale, never null
      * @see #setLocale(Locale)
@@ -406,9 +404,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public WritableSignal<Locale> localeSignal() {
         checkHasLock();
-        if (localeSignal == null) {
-            localeSignal = new SharedValueSignal<>(locale);
-        }
         return localeSignal;
     }
 
@@ -425,11 +420,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
-        if (localeSignal != null) {
-            localeSignal.value(locale);
-        } else {
-            this.locale = locale;
-        }
+        localeSignal.value(locale);
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
@@ -1123,6 +1114,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
+            localeSignal = new SharedValueSignal<>(locale);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
@@ -1148,6 +1140,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 }
             }
 
+            // Sync locale field from signal for serialization
+            locale = localeSignal.value();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);
