@@ -23,9 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
@@ -43,25 +41,16 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 public class ElementBindTextTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
     private LinkedList<ErrorEvent> events;
 
     @BeforeClass
     public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
     }
 
     @AfterClass
@@ -72,30 +61,13 @@ public class ElementBindTextTest {
 
     @Before
     public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         events = mockLockedSessionWithErrorHandler();
     }
 
     @After
     public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
         CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
+        events = null;
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
