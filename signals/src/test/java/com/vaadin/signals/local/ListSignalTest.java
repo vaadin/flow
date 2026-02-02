@@ -208,7 +208,7 @@ public class ListSignalTest extends SignalTestBase {
 
         List<ValueSignal<String>> snapshot = signal.value();
 
-        signal.insertLast("second");
+        signal.insertFirst("second");
 
         assertEquals(1, snapshot.size());
         assertEquals("first", snapshot.get(0).value());
@@ -222,9 +222,11 @@ public class ListSignalTest extends SignalTestBase {
 
         AtomicBoolean entry1Changed = new AtomicBoolean(false);
         AtomicBoolean entry2Changed = new AtomicBoolean(false);
+        AtomicBoolean listChanged = new AtomicBoolean(false);
 
         Usage usage1 = UsageTracker.track(entry1::value);
         Usage usage2 = UsageTracker.track(entry2::value);
+        Usage listUsage = UsageTracker.track(signal::value);
 
         usage1.onNextChange(initial -> {
             entry1Changed.set(true);
@@ -234,11 +236,16 @@ public class ListSignalTest extends SignalTestBase {
             entry2Changed.set(true);
             return false;
         });
+        listUsage.onNextChange(initial -> {
+            listChanged.set(true);
+            return false;
+        });
 
         entry1.value("updated");
 
         assertTrue(entry1Changed.get());
         assertFalse(entry2Changed.get());
+        assertFalse(listChanged.get());
     }
 
     @Test
