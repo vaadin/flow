@@ -15,23 +15,16 @@
  */
 package com.vaadin.signals.local;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.SignalMapper;
 import com.vaadin.signals.function.SignalModifier;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
 import com.vaadin.signals.impl.MappedModifySignal;
 import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.TransientListener;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -58,15 +51,10 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> implements WritableSignal<T> {
+public class ValueSignal<T> extends AbstractLocalSignal<T>
+        implements WritableSignal<T> {
 
-    private T value;
-    private int version;
     private boolean modifyRunning = false;
-
-    private final List<TransientListener> listeners = new ArrayList<>();
-    // package-protected for testing
-    final ReentrantLock lock = new ReentrantLock();
 
     /**
      * Creates a new value signal with the given initial value.
@@ -75,7 +63,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
      *            the initial value, may be <code>null</code>
      */
     public ValueSignal(T initialValue) {
-        this.value = initialValue;
+        super(initialValue);
     }
 
     /**
@@ -85,8 +73,9 @@ public class ValueSignal<T> implements WritableSignal<T> {
         this(null);
     }
 
-    private void checkPreconditions() {
-        assert lock.isHeldByCurrentThread();
+    @Override
+    protected void checkPreconditions() {
+        assertLockHeld();
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
@@ -99,105 +88,19 @@ public class ValueSignal<T> implements WritableSignal<T> {
     }
 
     @Override
-    public T value() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            if (UsageTracker.isActive()) {
-                UsageTracker.registerUsage(createUsage(version));
-            }
-
-            return value;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    private Usage createUsage(int originalVersion) {
-        return new Usage() {
-            @Override
-            public boolean hasChanges() {
-                lock.lock();
-                boolean hasChanges = version != originalVersion;
-                lock.unlock();
-
-                return hasChanges;
-            }
-
-            @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                lock.lock();
-                try {
-                    if (hasChanges()) {
-                        boolean keep = listener.invoke(true);
-                        if (!keep) {
-                            return () -> {
-                            };
-                        }
-                    }
-
-                    listeners.add(listener);
-                    return () -> {
-                        lock.lock();
-                        try {
-                            listeners.remove(listener);
-                        } finally {
-                            lock.unlock();
-                        }
-                    };
-
-                } finally {
-                    lock.unlock();
-                }
-            }
-        };
-    }
-
-    @Override
-    public T peek() {
-        lock.lock();
-        try {
-            checkPreconditions();
-
-            return value;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    private void setAndNotify(T newValue) {
-        assert lock.isHeldByCurrentThread();
-
-        this.value = newValue;
-
-        version++;
-
-        List<TransientListener> copy = List.copyOf(listeners);
-        listeners.clear();
-        for (var listener : copy) {
-            boolean keep = listener.invoke(false);
-
-            if (keep) {
-                listeners.add(listener);
-            }
-        }
-    }
-
-    @Override
     public SignalOperation<T> value(T value) {
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            T oldValue = this.value;
+            T oldValue = getSignalValue();
 
-            setAndNotify(value);
+            setSignalValue(value);
 
             return new SignalOperation<>(
                     new SignalOperation.Result<>(oldValue));
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -209,12 +112,12 @@ public class ValueSignal<T> implements WritableSignal<T> {
      */
     @Override
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            if (Objects.equals(expectedValue, value)) {
-                setAndNotify(newValue);
+            if (Objects.equals(expectedValue, getSignalValue())) {
+                setSignalValue(newValue);
                 return new SignalOperation<>(
                         new SignalOperation.Result<>(null));
             } else {
@@ -222,7 +125,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
                         new SignalOperation.Error<>("Unexpected value"));
             }
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -244,21 +147,21 @@ public class ValueSignal<T> implements WritableSignal<T> {
     public synchronized CancelableOperation<T> update(
             SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
-        lock.lock();
+        lock();
         try {
             checkPreconditions();
 
-            T oldValue = this.value;
+            T oldValue = getSignalValue();
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
-                setAndNotify(newValue);
+                setSignalValue(newValue);
             }
 
             CancelableOperation<T> operation = new CancelableOperation<>();
             operation.result().complete(new SignalOperation.Result<>(oldValue));
             return operation;
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -281,7 +184,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
     public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 
-        if (!lock.tryLock()) {
+        if (!tryLock()) {
             throw new ConcurrentModificationException();
         }
         try {
@@ -289,25 +192,27 @@ public class ValueSignal<T> implements WritableSignal<T> {
 
             modifyRunning = true;
         } finally {
-            lock.unlock();
+            unlock();
         }
 
         boolean completed = false;
         try {
-            modifier.modify(value);
+            // Access without lock since modifyRunning prevents concurrent
+            // access
+            modifier.modify(getSignalValueUnsafe());
 
             completed = true;
         } finally {
-            lock.lock();
+            lock();
             try {
                 modifyRunning = false;
 
                 if (completed) {
-                    setAndNotify(value);
+                    setSignalValue(getSignalValue());
                 }
 
             } finally {
-                lock.unlock();
+                unlock();
             }
         }
     }
