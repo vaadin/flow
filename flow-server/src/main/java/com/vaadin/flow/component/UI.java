@@ -813,12 +813,17 @@ public class UI extends Component
     }
 
     /**
-     * Gets a signal that reflects the current locale of this UI.
+     * Gets a signal that holds the current locale of this UI.
      * <p>
-     * The signal is the source of truth for the locale. Changes to the signal
-     * are reflected in {@link #getLocale()} and vice versa.
+     * The signal is the source of truth for the locale. Reading the signal is
+     * equivalent to calling {@link #getLocale()}.
+     * <p>
+     * Note that writing directly to the signal will not notify
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver LocaleChangeObserver}
+     * instances. Use {@link #setLocale(Locale)} if you need observers to be
+     * notified.
      *
-     * @return a writable signal reflecting the current locale, never null
+     * @return a writable signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
