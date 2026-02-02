@@ -86,14 +86,14 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      * Acquires the lock. Must be followed by {@link #unlock()} in a finally
      * block.
      */
-    protected final void lock() {
+    protected void lock() {
         lock.lock();
     }
 
     /**
      * Releases the lock.
      */
-    protected final void unlock() {
+    protected void unlock() {
         lock.unlock();
     }
 
@@ -102,14 +102,14 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return true if the lock was acquired, false otherwise
      */
-    protected final boolean tryLock() {
+    protected boolean tryLock() {
         return lock.tryLock();
     }
 
     /**
      * Asserts that the current thread holds the lock.
      */
-    protected final void assertLockHeld() {
+    protected void assertLockHeld() {
         assert lock.isHeldByCurrentThread();
     }
 
@@ -118,7 +118,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected final T getSignalValue() {
+    protected T getSignalValue() {
         assertLockHeld();
         return signalValue;
     }
@@ -129,7 +129,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected final T getSignalValueUnsafe() {
+    protected T getSignalValueUnsafe() {
         return signalValue;
     }
 
