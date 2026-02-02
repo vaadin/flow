@@ -297,8 +297,60 @@ public class PageTest {
         // self check
         Assert.assertEquals("_self", params.get(1));
 
-        MatcherAssert.assertThat(capture.get(), CoreMatchers
-                .startsWith("if ($1 == '_self') this.stopApplication();"));
+        MatcherAssert.assertThat(capture.get(),
+                CoreMatchers.containsString("this.stopApplication();"));
+    }
+
+    @Test
+    public void setLocation_dispatchesRedirectPendingEvent() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        List<Object> params = new ArrayList<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setLocation("/logout-landing");
+
+        String expression = capture.get();
+        Assert.assertTrue("Should dispatch vaadin-redirect-pending event",
+                expression.contains("vaadin-redirect-pending"));
+        Assert.assertTrue("Should call window.open",
+                expression.contains("window.open"));
+        Assert.assertEquals("URL parameter should be passed", "/logout-landing",
+                params.get(0));
+    }
+
+    @Test
+    public void open_dispatchesRedirectPendingEventBeforeRedirect() {
+        AtomicReference<String> capture = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capture.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.open("https://example.com", "_blank");
+
+        String expression = capture.get();
+        // Verify event dispatch comes before window.open
+        int eventDispatchIndex = expression.indexOf("vaadin-redirect-pending");
+        int windowOpenIndex = expression.indexOf("window.open");
+        Assert.assertTrue("Event dispatch should be present",
+                eventDispatchIndex >= 0);
+        Assert.assertTrue("window.open should be present",
+                windowOpenIndex >= 0);
+        Assert.assertTrue(
+                "Event dispatch should come before window.open in the script",
+                eventDispatchIndex < windowOpenIndex);
     }
 
     @Test
