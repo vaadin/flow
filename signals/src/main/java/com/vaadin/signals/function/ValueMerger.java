@@ -18,12 +18,12 @@ package com.vaadin.signals.function;
 import com.vaadin.signals.WritableSignal;
 
 /**
- * Computes a new parent signal value based on the current parent value and a
- * new child value. Used for creating two-way computed signals where changes to
- * the mapped signal propagate back to the parent signal.
+ * Creates a new outer value by merging a new inner value with the old outer
+ * value. Used for creating two-way computed signals where changes to the mapped
+ * signal propagate back to the parent signal.
  * <p>
- * This interface is used with immutable value patterns where changing the child
- * value requires creating a new parent value instance.
+ * This interface is used with immutable value patterns where changing the inner
+ * value requires creating a new outer value instance.
  * <p>
  * Example usage with a record:
  *
@@ -42,23 +42,23 @@ import com.vaadin.signals.WritableSignal;
  * doneSignal.value(true); // Updates todoSignal to Todo("Buy milk", true)
  * </pre>
  *
- * @param <P>
- *            the parent signal value type
- * @param <C>
- *            the child (mapped) signal value type
- * @see WritableSignal#map(SignalMapper, SignalSetter)
+ * @param <O>
+ *            the outer (parent) signal value type
+ * @param <I>
+ *            the inner (mapped) signal value type
+ * @see WritableSignal#map(SignalMapper, ValueMerger)
  */
 @FunctionalInterface
-public interface SignalSetter<P, C> {
+public interface ValueMerger<O, I> {
     /**
-     * Computes a new parent value based on the current parent and a new child
-     * value.
+     * Creates a new outer value by merging the new inner value with the old
+     * outer value.
      *
-     * @param parentValue
-     *            the current parent signal value, may be <code>null</code>
-     * @param newChildValue
-     *            the new child value to apply, may be <code>null</code>
-     * @return the new parent value, may be <code>null</code>
+     * @param outerValue
+     *            the current outer signal value, may be <code>null</code>
+     * @param newInnerValue
+     *            the new inner value to merge, may be <code>null</code>
+     * @return the new outer value, may be <code>null</code>
      */
-    P set(P parentValue, C newChildValue);
+    O merge(O outerValue, I newInnerValue);
 }

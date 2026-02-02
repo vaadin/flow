@@ -18,8 +18,8 @@ package com.vaadin.signals;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.signals.function.SignalMapper;
-import com.vaadin.signals.function.SignalSetter;
 import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.ValueMerger;
 import com.vaadin.signals.impl.MappedWritableSignal;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
@@ -127,13 +127,13 @@ public interface WritableSignal<T> extends Signal<T> {
      * @param getter
      *            the function to extract the child value from this signal's
      *            value, not <code>null</code>
-     * @param setter
+     * @param merger
      *            the function to create a new value for this signal given the
      *            current value and a new child value, not <code>null</code>
      * @return a two-way mapped signal, not <code>null</code>
      */
     default <C> WritableSignal<C> map(SignalMapper<T, C> getter,
-            SignalSetter<T, C> setter) {
-        return new MappedWritableSignal<>(this, getter, setter);
+            ValueMerger<T, C> merger) {
+        return new MappedWritableSignal<>(this, getter, merger);
     }
 }

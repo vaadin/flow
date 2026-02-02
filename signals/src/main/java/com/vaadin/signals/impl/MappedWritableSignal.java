@@ -19,8 +19,8 @@ import java.util.Objects;
 
 import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.SignalMapper;
-import com.vaadin.signals.function.SignalSetter;
 import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.ValueMerger;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -42,7 +42,7 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     private final WritableSignal<P> parent;
     private final SignalMapper<P, C> getter;
-    private final SignalSetter<P, C> setter;
+    private final ValueMerger<P, C> merger;
 
     /**
      * Creates a new mapped writable signal.
@@ -52,15 +52,15 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
      * @param getter
      *            the function to extract the child value from the parent, not
      *            <code>null</code>
-     * @param setter
+     * @param merger
      *            the function to create a new parent value given the current
      *            parent and new child value, not <code>null</code>
      */
     public MappedWritableSignal(WritableSignal<P> parent,
-            SignalMapper<P, C> getter, SignalSetter<P, C> setter) {
+            SignalMapper<P, C> getter, ValueMerger<P, C> merger) {
         this.parent = Objects.requireNonNull(parent);
         this.getter = Objects.requireNonNull(getter);
-        this.setter = Objects.requireNonNull(setter);
+        this.merger = Objects.requireNonNull(merger);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
         // easily undo the accidental change from the same UI without having to
         // find the old item.
         return parent
-                .update(parentValue -> setter.set(parentValue, newChildValue))
+                .update(parentValue -> merger.merge(parentValue, newChildValue))
                 .map(oldParent -> getter.map(oldParent));
     }
 
@@ -95,7 +95,7 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
                     new SignalOperation.Error<>("Unexpected child value"));
         }
         return parent.replace(originalParentValue,
-                setter.set(originalParentValue, newValue));
+                merger.merge(originalParentValue, newValue));
     }
 
     @Override
@@ -104,7 +104,7 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
         return parent.update(parentValue -> {
             C currentChildValue = getter.map(parentValue);
             C newChildValue = childUpdater.update(currentChildValue);
-            return setter.set(parentValue, newChildValue);
+            return merger.merge(parentValue, newChildValue);
         }).map(oldParent -> getter.map(oldParent));
     }
 }
