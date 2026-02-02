@@ -75,6 +75,12 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
 
     @Override
     public SignalOperation<C> value(C newChildValue) {
+        // Using update() ensures the change is applied atomically to the
+        // current parent value. If the parent value changes concurrently, the
+        // new child value is applied to the updated parent. This gives the user
+        // the impression they clicked right after it was changed, and they can
+        // easily undo the accidental change from the same UI without having to
+        // find the old item.
         return parent
                 .update(parentValue -> setter.set(parentValue, newChildValue))
                 .map(oldParent -> getter.map(oldParent));

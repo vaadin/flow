@@ -79,15 +79,7 @@ public class CancelableOperation<T> extends SignalOperation<T> {
                 return parent.isCancelled();
             }
         };
-        result().thenAccept(resultOrError -> {
-            if (resultOrError.successful()) {
-                T value = ((Result<T>) resultOrError).value();
-                mapped.result().complete(new Result<>(mapper.apply(value)));
-            } else {
-                mapped.result().complete(
-                        new Error<>(((Error<?>) resultOrError).reason()));
-            }
-        });
+        forwardMappedResult(mapped, mapper);
         return mapped;
     }
 }
