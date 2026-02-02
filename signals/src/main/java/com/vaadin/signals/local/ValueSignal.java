@@ -23,8 +23,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SignalMapper;
+import com.vaadin.signals.function.SignalModifier;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
+import com.vaadin.signals.impl.MappedModifySignal;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
@@ -307,5 +310,55 @@ public class ValueSignal<T> implements WritableSignal<T> {
                 lock.unlock();
             }
         }
+    }
+
+    /**
+     * Creates a two-way mapped signal that uses in-place modification for
+     * writing. Reading the mapped signal applies the getter function to extract
+     * a child value. Writing to the mapped signal uses the modifier function to
+     * update this signal's value in place.
+     * <p>
+     * This method is named differently from
+     * {@link WritableSignal#map(SignalMapper, SignalSetter)} to avoid ambiguity
+     * in method overload resolution when using method references or lambdas.
+     * <p>
+     * This is useful for mutable bean patterns where the parent object's
+     * properties are modified directly using setters. For example:
+     *
+     * <pre>
+     * class Todo {
+     *     private String text;
+     *     private boolean done;
+     *
+     *     public boolean isDone() {
+     *         return done;
+     *     }
+     *
+     *     public void setDone(boolean done) {
+     *         this.done = done;
+     *     }
+     * }
+     *
+     * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
+     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
+     *         Todo::setDone);
+     *
+     * checkbox.bindValue(doneSignal); // Two-way binding
+     * </pre>
+     *
+     * @param <C>
+     *            the child (mapped) signal type
+     * @param getter
+     *            the function to extract the child value from this signal's
+     *            value, not <code>null</code>
+     * @param modifier
+     *            the function to modify this signal's value in place with the
+     *            new child value, not <code>null</code>
+     * @return a two-way mapped signal using in-place modification, not
+     *         <code>null</code>
+     */
+    public <C> WritableSignal<C> mapMutable(SignalMapper<T, C> getter,
+            SignalModifier<T, C> modifier) {
+        return new MappedModifySignal<>(this, getter, modifier);
     }
 }
