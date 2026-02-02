@@ -109,7 +109,6 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
         List<ValueSignal<T>> newEntries = new ArrayList<>(getSignalValue());
         newEntries.add(index, entry);
         setSignalValue(Collections.unmodifiableList(newEntries));
-        notifyListeners();
         return entry;
     }
 
@@ -128,7 +127,6 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
                     .filter(e -> e != entry).toList();
             if (newEntries.size() < entries.size()) {
                 setSignalValue(newEntries);
-                notifyListeners();
             }
         } finally {
             unlock();
@@ -143,7 +141,6 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
         try {
             if (!getSignalValue().isEmpty()) {
                 setSignalValue(List.of());
-                notifyListeners();
             }
         } finally {
             unlock();

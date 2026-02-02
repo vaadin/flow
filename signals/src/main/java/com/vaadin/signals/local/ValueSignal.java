@@ -84,12 +84,6 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         }
     }
 
-    private void setAndNotify(T newValue) {
-        assertLockHeld();
-        setSignalValue(newValue);
-        notifyListeners();
-    }
-
     @Override
     public SignalOperation<T> value(T value) {
         lock();
@@ -98,7 +92,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
 
             T oldValue = getSignalValue();
 
-            setAndNotify(value);
+            setSignalValue(value);
 
             return new SignalOperation<>(
                     new SignalOperation.Result<>(oldValue));
@@ -120,7 +114,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
             checkPreconditions();
 
             if (Objects.equals(expectedValue, getSignalValue())) {
-                setAndNotify(newValue);
+                setSignalValue(newValue);
                 return new SignalOperation<>(
                         new SignalOperation.Result<>(null));
             } else {
@@ -157,7 +151,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
             T oldValue = getSignalValue();
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
-                setAndNotify(newValue);
+                setSignalValue(newValue);
             }
 
             CancelableOperation<T> operation = new CancelableOperation<>();
@@ -211,7 +205,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
                 modifyRunning = false;
 
                 if (completed) {
-                    setAndNotify(getSignalValue());
+                    setSignalValue(getSignalValue());
                 }
 
             } finally {

@@ -58,7 +58,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public final T value() {
+    public T value() {
         lock.lock();
         try {
             checkPreconditions();
@@ -72,7 +72,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public final T peek() {
+    public T peek() {
         lock.lock();
         try {
             checkPreconditions();
@@ -134,23 +134,15 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     /**
-     * Sets the signal value without notifying listeners. Must be called while
-     * holding the lock.
+     * Sets the signal value and notifies all registered listeners. Must be
+     * called while holding the lock.
      *
      * @param value
      *            the new value
      */
-    protected final void setSignalValue(T value) {
+    protected void setSignalValue(T value) {
         assertLockHeld();
         this.signalValue = value;
-    }
-
-    /**
-     * Notifies all registered listeners of a change and increments the version.
-     * Must be called while holding the lock.
-     */
-    protected final void notifyListeners() {
-        assertLockHeld();
         version++;
         List<TransientListener> copy = List.copyOf(listeners);
         listeners.clear();
