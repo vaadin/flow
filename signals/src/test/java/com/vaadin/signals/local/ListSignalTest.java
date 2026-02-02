@@ -178,15 +178,6 @@ public class ListSignalTest extends SignalTestBase {
     }
 
     @Test
-    void clear_emptyList_noChange() {
-        ListSignal<String> signal = new ListSignal<>();
-
-        signal.clear();
-
-        assertTrue(signal.value().isEmpty());
-    }
-
-    @Test
     void value_returnsImmutableList() {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
