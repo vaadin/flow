@@ -99,16 +99,16 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
         getElement().setChild(0, new Html(template).getElement());
         if (noRoutes && !productionMode) {
-        String copilotNoRoutes = """
-                (function poll() {
-                    if (window.Vaadin?.copilot?.noRoutesInProject) {
-                        window.Vaadin.copilot.noRoutesInProject();
-                    } else {
-                        setTimeout(poll, 100);
-                    }
-                })();
-                """;
-        getElement().executeJs(copilotNoRoutes);
+            String copilotNoRoutes = """
+                    (function poll() {
+                        if (window.Vaadin?.copilot?.noRoutesInProject) {
+                            window.Vaadin.copilot.noRoutesInProject();
+                        } else {
+                            setTimeout(poll, 100);
+                        }
+                    })();
+                    """;
+            getElement().executeJs(copilotNoRoutes);
         }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
