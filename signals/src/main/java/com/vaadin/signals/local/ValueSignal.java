@@ -15,20 +15,14 @@
  */
 package com.vaadin.signals.local;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
 import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -55,15 +49,11 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> implements WritableSignal<T> {
+public class ValueSignal<T> extends AbstractLocalSignal
+        implements WritableSignal<T> {
 
     private T value;
-    private int version;
     private boolean modifyRunning = false;
-
-    private final List<TransientListener> listeners = new ArrayList<>();
-    // package-protected for testing
-    final ReentrantLock lock = new ReentrantLock();
 
     /**
      * Creates a new value signal with the given initial value.
@@ -111,46 +101,6 @@ public class ValueSignal<T> implements WritableSignal<T> {
         }
     }
 
-    private Usage createUsage(int originalVersion) {
-        return new Usage() {
-            @Override
-            public boolean hasChanges() {
-                lock.lock();
-                boolean hasChanges = version != originalVersion;
-                lock.unlock();
-
-                return hasChanges;
-            }
-
-            @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                lock.lock();
-                try {
-                    if (hasChanges()) {
-                        boolean keep = listener.invoke(true);
-                        if (!keep) {
-                            return () -> {
-                            };
-                        }
-                    }
-
-                    listeners.add(listener);
-                    return () -> {
-                        lock.lock();
-                        try {
-                            listeners.remove(listener);
-                        } finally {
-                            lock.unlock();
-                        }
-                    };
-
-                } finally {
-                    lock.unlock();
-                }
-            }
-        };
-    }
-
     @Override
     public T peek() {
         lock.lock();
@@ -165,20 +115,8 @@ public class ValueSignal<T> implements WritableSignal<T> {
 
     private void setAndNotify(T newValue) {
         assert lock.isHeldByCurrentThread();
-
         this.value = newValue;
-
-        version++;
-
-        List<TransientListener> copy = List.copyOf(listeners);
-        listeners.clear();
-        for (var listener : copy) {
-            boolean keep = listener.invoke(false);
-
-            if (keep) {
-                listeners.add(listener);
-            }
-        }
+        notifyListeners();
     }
 
     @Override

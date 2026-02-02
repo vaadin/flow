@@ -18,13 +18,9 @@ package com.vaadin.signals.local;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -42,13 +38,11 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
+public class ListSignal<T> extends AbstractLocalSignal
+        implements Signal<List<ValueSignal<T>>> {
 
     // Copy-on-write snapshot - never mutated after assignment
     private List<ValueSignal<T>> entries = List.of();
-    private final List<TransientListener> listeners = new ArrayList<>();
-    private final ReentrantLock lock = new ReentrantLock();
-    private int version;
 
     /**
      * Creates a new empty list signal.
@@ -183,54 +177,4 @@ public class ListSignal<T> implements Signal<List<ValueSignal<T>>> {
         }
     }
 
-    private void notifyListeners() {
-        assert lock.isHeldByCurrentThread();
-        version++;
-        List<TransientListener> copy = List.copyOf(listeners);
-        listeners.clear();
-        for (var listener : copy) {
-            if (listener.invoke(false)) {
-                listeners.add(listener);
-            }
-        }
-    }
-
-    // TODO: Extract to helper or abstract base class (duplicates ValueSignal)
-    private Usage createUsage(int originalVersion) {
-        return new Usage() {
-            @Override
-            public boolean hasChanges() {
-                lock.lock();
-                try {
-                    return version != originalVersion;
-                } finally {
-                    lock.unlock();
-                }
-            }
-
-            @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                lock.lock();
-                try {
-                    if (hasChanges()) {
-                        if (!listener.invoke(true)) {
-                            return () -> {
-                            };
-                        }
-                    }
-                    listeners.add(listener);
-                    return () -> {
-                        lock.lock();
-                        try {
-                            listeners.remove(listener);
-                        } finally {
-                            lock.unlock();
-                        }
-                    };
-                } finally {
-                    lock.unlock();
-                }
-            }
-        };
-    }
 }
