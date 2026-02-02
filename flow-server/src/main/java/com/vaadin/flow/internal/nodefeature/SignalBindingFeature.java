@@ -35,6 +35,8 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
     public static final String THEMES = "themes/";
+    public static final String HTML_CONTENT = "htmlContent";
+    public static final String CHILDREN = "children";
 
     private Map<String, SignalBinding> values;
 

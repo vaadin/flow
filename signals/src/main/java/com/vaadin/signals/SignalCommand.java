@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.signals.ListSignal.ListPosition;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 /**
  * A command triggered from a signal.
@@ -335,10 +335,8 @@ public sealed interface SignalCommand {
      *            the list insert position, not <code>null</code>
      */
     record InsertCommand(Id commandId, Id targetNodeId, Id scopeOwner,
-            JsonNode value, ListSignal.ListPosition position)
-            implements
-                ValueCommand,
-                ScopeOwnerCommand {
+            JsonNode value,
+            ListPosition position) implements ValueCommand, ScopeOwnerCommand {
     }
 
     /**

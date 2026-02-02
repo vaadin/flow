@@ -21,16 +21,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
-import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.NodeSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.shared.AbstractSignal;
+import com.vaadin.signals.shared.SharedNodeSignal;
+import com.vaadin.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal with a value that is computed based on the value of other signals.
@@ -248,7 +249,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    public NodeSignal asNode() {
+    public SharedNodeSignal asNode() {
         throw new UnsupportedOperationException(
                 "Cannot use a computed signal as a node signal");
     }

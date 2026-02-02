@@ -42,6 +42,11 @@ import java.io.Serializable;
  * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
  * function. Please enable cookies in your browser and click here or press ESC
  * to try again.</li>
+ * <li><b>syncErrorURL</b> = null</li>
+ * <li><b>syncErrorNotificationEnabled</b> = true</li>
+ * <li><b>syncErrorCaption</b> = "Synchronization Error"</li>
+ * <li><b>syncErrorMessage</b> = "Your session needs to be refreshed. Click here
+ * or press ESC to reload and restore your last saved state."</li>
  * </ul>
  *
  * @since 1.0
@@ -61,6 +66,11 @@ public class SystemMessages implements Serializable {
     protected boolean cookiesDisabledNotificationEnabled = true;
     protected String cookiesDisabledCaption = "Cookies disabled";
     protected String cookiesDisabledMessage = "This application requires cookies to function. Please enable cookies in your browser and click here or press ESC to try again.";
+
+    protected String syncErrorURL = null;
+    protected boolean syncErrorNotificationEnabled = true;
+    protected String syncErrorCaption = "Synchronization Error";
+    protected String syncErrorMessage = "Your session needs to be refreshed. Click here or press ESC to reload and restore your last saved state.";
 
     /**
      * Private constructor
@@ -219,6 +229,64 @@ public class SystemMessages implements Serializable {
     public String getCookiesDisabledMessage() {
         return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage
                 : null);
+    }
+
+    /**
+     * Gets the URL the user will be redirected to after dismissing a
+     * "synchronization error" message.
+     *
+     * Default value is {@literal null}.
+     *
+     * @return the URL to redirect to, or null to refresh the page
+     * @since 25.1
+     */
+    public String getSyncErrorURL() {
+        return syncErrorURL;
+    }
+
+    /**
+     * Checks if "synchronization error" notifications should be shown to the
+     * end user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getSyncErrorURL()}.
+     * <p>
+     * Synchronization errors occur when the client and server become out of
+     * sync, typically due to an abrupt server restart (e.g., OOMKilled,
+     * SIGKILL) before the UI state could be serialized.
+     *
+     * By default, the "synchronization error" notification is enabled.
+     *
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
+     * @since 25.1
+     */
+    public boolean isSyncErrorNotificationEnabled() {
+        return syncErrorNotificationEnabled;
+    }
+
+    /**
+     * Gets the caption to show in a "synchronization error" notification.
+     *
+     * Returns {@literal null} if the "synchronization error" notification is
+     * disabled.
+     *
+     * @return The caption to show or {@code null} to show no caption.
+     * @since 25.1
+     */
+    public String getSyncErrorCaption() {
+        return (syncErrorNotificationEnabled ? syncErrorCaption : null);
+    }
+
+    /**
+     * Gets the message to show in a "synchronization error" notification.
+     *
+     * Returns {@literal null} if the "synchronization error" notification is
+     * disabled.
+     *
+     * @return The message to show or {@code null} to show no message.
+     * @since 25.1
+     */
+    public String getSyncErrorMessage() {
+        return (syncErrorNotificationEnabled ? syncErrorMessage : null);
     }
 
 }

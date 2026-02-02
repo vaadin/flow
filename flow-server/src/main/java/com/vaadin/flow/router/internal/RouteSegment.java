@@ -282,8 +282,13 @@ final class RouteSegment implements Serializable {
 
         Map<String, String> parameters = new HashMap<>();
 
-        RouteTarget routeTarget = url == null ? null
-                : findRouteTarget(PathUtil.getSegmentsList(url), parameters);
+        List<String> segments = url == null ? null
+                : PathUtil.getSegmentsList(url);
+        List<String> decodedSegments = url == null ? null
+                : PathUtil.getSegmentsListWithDecoding(url);
+
+        RouteTarget routeTarget = segments == null ? null
+                : findRouteTarget(segments, decodedSegments, parameters);
 
         return new NavigationRouteTarget(url, routeTarget, parameters);
     }
@@ -496,25 +501,30 @@ final class RouteSegment implements Serializable {
      * segments.
      *
      * @param segments
-     *            input segments from navigation url.
+     *            input segments from navigation url (URL-encoded).
+     * @param decodedSegments
+     *            input segments from navigation url (URL-decoded for route
+     *            matching).
      * @param parameters
      *            a map instance used to output the parameters found in the
      *            input segment values.
      * @return the {@link RouteTarget} found.
      */
     private RouteTarget findRouteTarget(List<String> segments,
-            Map<String, String> parameters) {
+            List<String> decodedSegments, Map<String, String> parameters) {
 
         // First try with a static segment (non a parameter). An empty
         // segments list should happen only on root, so this instance should
         // resemble only the root.
-        RouteSegment routeSegment = segments.isEmpty() ? this
-                : getStaticSegments().get(segments.get(0));
+        // Use decoded segments for static route matching
+        RouteSegment routeSegment = decodedSegments.isEmpty() ? this
+                : getStaticSegments().get(decodedSegments.get(0));
 
         // Static segments
         if (routeSegment != null) {
             RouteTarget foundTarget = routeSegment
-                    .getRouteTargetMatchingParameter(segments, parameters);
+                    .getRouteTargetMatchingParameter(segments, decodedSegments,
+                            parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
@@ -527,27 +537,28 @@ final class RouteSegment implements Serializable {
             RouteTarget foundTarget;
 
             // Mandatory parameters
-            foundTarget = findRouteTarget(segments, parameters,
+            foundTarget = findRouteTarget(segments, decodedSegments, parameters,
                     getParameterSegments());
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Optionals
-            foundTarget = findRouteTarget(segments, parameters,
+            foundTarget = findRouteTarget(segments, decodedSegments, parameters,
                     getOptionalSegments());
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Optional's children
-            foundTarget = findRouteTargetInOptionals(segments, parameters);
+            foundTarget = findRouteTargetInOptionals(segments, decodedSegments,
+                    parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Varargs
-            foundTarget = findRouteTarget(segments, parameters,
+            foundTarget = findRouteTarget(segments, decodedSegments, parameters,
                     getVarargsSegments());
             if (foundTarget != null) {
                 return foundTarget;
@@ -558,13 +569,14 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTargetInOptionals(List<String> segments,
-            Map<String, String> parameters) {
+            List<String> decodedSegments, Map<String, String> parameters) {
         RouteTarget foundTarget;
         for (RouteSegment parameter : getOptionalSegments().values()) {
             // Try ignoring the parameter if optional and look into its
             // children using the same segments.
             Map<String, String> outputParameters = new HashMap<>();
-            foundTarget = parameter.findRouteTarget(segments, outputParameters);
+            foundTarget = parameter.findRouteTarget(segments, decodedSegments,
+                    outputParameters);
 
             if (foundTarget != null) {
                 parameters.putAll(outputParameters);
@@ -575,11 +587,11 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTarget(List<String> segments,
-            Map<String, String> parameters,
+            List<String> decodedSegments, Map<String, String> parameters,
             Map<String, RouteSegment> children) {
         for (RouteSegment segment : children.values()) {
-            RouteTarget foundTarget = segment
-                    .getRouteTargetMatchingParameter(segments, parameters);
+            RouteTarget foundTarget = segment.getRouteTargetMatchingParameter(
+                    segments, decodedSegments, parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
@@ -588,30 +600,35 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget getRouteTargetMatchingParameter(List<String> segments,
-            Map<String, String> parameters) {
+            List<String> decodedSegments, Map<String, String> parameters) {
 
         Map<String, String> outputParameters = new HashMap<>();
 
         // Handle varargs.
         if (isVarargs()) {
 
-            for (String value : segments) {
-                if (!isEligible(value)) {
+            // Check eligibility using decoded values
+            for (String decodedValue : decodedSegments) {
+                if (!isEligible(decodedValue)) {
                     // If any value is not eligible we don't want to go
                     // any further.
                     return null;
                 }
             }
 
+            // Store original encoded values in parameters
             outputParameters.put(getName(), PathUtil.getPath(segments));
             segments = Collections.emptyList();
+            decodedSegments = Collections.emptyList();
 
         } else if (isParameter()) {
             // Handle one parameter value.
-            String value = segments.get(0);
+            // Use decoded value for eligibility check
+            String decodedValue = decodedSegments.get(0);
 
-            if (isEligible(value)) {
-                outputParameters.put(getName(), value);
+            if (isEligible(decodedValue)) {
+                // Store original encoded value in parameters
+                outputParameters.put(getName(), segments.get(0));
 
             } else {
                 // If the value is not eligible we don't want to go any
@@ -622,8 +639,11 @@ final class RouteSegment implements Serializable {
 
         segments = segments.size() <= 1 ? Collections.emptyList()
                 : segments.subList(1, segments.size());
+        decodedSegments = decodedSegments.size() <= 1 ? Collections.emptyList()
+                : decodedSegments.subList(1, decodedSegments.size());
 
-        RouteTarget foundTarget = getRouteTarget(segments, outputParameters);
+        RouteTarget foundTarget = getRouteTarget(segments, decodedSegments,
+                outputParameters);
 
         if (foundTarget != null) {
             parameters.putAll(outputParameters);
@@ -633,11 +653,13 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget getRouteTarget(List<String> segments,
+            List<String> decodedSegments,
             Map<String, String> outputParameters) {
         RouteTarget foundTarget;
         if (!segments.isEmpty()) {
             // Continue looking if there any more segments.
-            foundTarget = findRouteTarget(segments, outputParameters);
+            foundTarget = findRouteTarget(segments, decodedSegments,
+                    outputParameters);
 
         } else if (hasTarget()) {
             // Found target.
