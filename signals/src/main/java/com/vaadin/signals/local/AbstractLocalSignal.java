@@ -204,7 +204,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the lock
      */
-   ReentrantLock getLock() {
+    ReentrantLock getLock() {
         return lock;
     }
 }
