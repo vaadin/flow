@@ -134,9 +134,6 @@ public class UIInternalsTest {
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
-        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         internals.setSession(session);
