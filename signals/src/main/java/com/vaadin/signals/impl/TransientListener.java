@@ -15,13 +15,15 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.Serializable;
+
 /**
  * A listener that is expected to only be invoked the next time some event
  * occurs but not for subsequent events. The listener can optionally request
  * that it retained also for the following event.
  */
 @FunctionalInterface
-public interface TransientListener {
+public interface TransientListener extends Serializable {
     /**
      * Invoked when the next event occurs. The return value indicates whether
      * the listener should be retained.

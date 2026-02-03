@@ -15,15 +15,19 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
+import com.vaadin.signals.function.SerializableExecutor;
+import com.vaadin.signals.function.SerializableRunnable;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback
@@ -33,15 +37,15 @@ import com.vaadin.signals.function.EffectAction;
  * whenever there's a change to any dependency. Dependencies are always updated
  * based the signals read during the most recent invocation.
  */
-public class Effect {
+public class Effect implements Serializable {
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
-    private final Executor dispatcher;
+    private SerializableExecutor dispatcher;
     private final List<CleanupCallback> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
-    private Runnable action;
+    private SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
@@ -57,7 +61,7 @@ public class Effect {
      *            the action to use, not <code>null</code>
      */
     public Effect(EffectAction action) {
-        this(action, SignalEnvironment.getDefaultEffectDispatcher());
+        this(action, SignalEnvironment.getDefaultEffectDispatcher()::execute);
     }
 
     /**
@@ -74,7 +78,7 @@ public class Effect {
      *            the dispatcher to use when handling changes, not
      *            <code>null</code>
      */
-    public Effect(EffectAction action, Executor dispatcher) {
+    public Effect(EffectAction action, SerializableExecutor dispatcher) {
         assert action != null;
         this.action = () -> {
             try {

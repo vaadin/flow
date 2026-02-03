@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -29,7 +31,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#effect(EffectAction)
  */
 @FunctionalInterface
-public interface EffectAction {
+public interface EffectAction extends Serializable {
     /**
      * Executes the effect action, automatically tracking signal dependencies.
      */

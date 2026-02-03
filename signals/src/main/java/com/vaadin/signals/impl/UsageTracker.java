@@ -15,11 +15,13 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
 import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SerializableRunnable;
 import com.vaadin.signals.function.ValueSupplier;
 
 /**
@@ -102,7 +104,7 @@ public class UsageTracker {
     /**
      * Tracks the state of some used value.
      */
-    public interface Usage {
+    public interface Usage extends Serializable {
         /**
          * Checks whether the used value has subsequently been changed.
          *
@@ -168,7 +170,7 @@ public class UsageTracker {
      * @return a usage instance that combines all used managed values, not
      *         <code>null</code>
      */
-    public static Usage track(Runnable task) {
+    public static Usage track(SerializableRunnable task) {
         Collection<Usage> usages = new ArrayList<>();
 
         track(task, usages::add);
@@ -193,7 +195,8 @@ public class UsageTracker {
      *            a consumer that receives all usages as they happen, not
      *            <code>null</code>
      */
-    public static void track(Runnable task, UsageRegistrar tracker) {
+    public static void track(SerializableRunnable task,
+            UsageRegistrar tracker) {
         assert task != null;
         assert tracker != null;
 

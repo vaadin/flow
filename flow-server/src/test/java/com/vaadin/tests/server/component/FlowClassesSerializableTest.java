@@ -16,6 +16,8 @@
 package com.vaadin.tests.server.component;
 
 import java.io.OutputStream;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,14 +27,24 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamVariable;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
+import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class FlowClassesSerializableTest extends ClassesSerializableTest {
 
@@ -76,6 +88,73 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         } finally {
             UI.setCurrent(null);
         }
+    }
+
+    @Test
+    public void componentEffectSerializable() {
+        CurrentInstance.clearAll();
+        var service = new MockVaadinServletService() {
+            private final Lock lock = new ReentrantLock();
+            {
+                lock.lock();
+            }
+
+            @Override
+            protected Lock getSessionLock(WrappedSession wrappedSession) {
+                return lock;
+            }
+        };
+        VaadinService.setCurrent(service);
+        var session = new MockVaadinSession(service);
+        session.lock();
+        session.refreshTransients(null, service);
+        MockUI ui = new MockUI(session);
+        ui.doInit(null, 42, "foo");
+        session.addUI(ui);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SerializedComponent component = new SerializedComponent(signal);
+        ui.add(component);
+        Assert.assertEquals(1, component.effectExecutionCounter);
+
+        // verify that signal works before serialization
+        signal.value("changed");
+        Assert.assertEquals(2, component.effectExecutionCounter);
+
+        SerializedComponent deserializedComponent;
+        VaadinSession deserializedSession = null;
+        session.unlock(); // serialization happens for unlocked session
+        try {
+            deserializedSession = serializeAndDeserialize(session);
+            assertNotNull(deserializedSession);
+            assertNotSame(deserializedSession, session);
+        } catch (Throwable e) {
+            fail("ComponentEffect should be serializable: " + e.getClass()
+                    + ": " + e.getMessage());
+        }
+        deserializedSession.refreshTransients(null, service);
+        deserializedSession.lock();
+
+        UI deserializedUi = deserializedSession.getUIs().iterator().next();
+        deserializedComponent = deserializedUi.getChildren()
+                .filter(SerializedComponent.class::isInstance)
+                .map(SerializedComponent.class::cast).findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "SerializedComponent has not been deserialized"));
+        assertNotSame(deserializedComponent, component);
+
+        UI.setCurrent(deserializedUi);
+        deserializedComponent.signal.value("changed after deserialization");
+        Assert.assertEquals(3, deserializedComponent.effectExecutionCounter);
+        deserializedComponent.signal.value("changed");
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+
+        signal.value("changed in original signal");
+        // original signal change should not affect deserialized component
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+
+        deserializedSession.unlock();
+        VaadinService.setCurrent(null);
     }
 
     private static class MyStreamVariable implements StreamVariable {
