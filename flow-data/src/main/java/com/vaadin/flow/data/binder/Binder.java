@@ -404,25 +404,30 @@ public class Binder<BEAN> implements Serializable {
          * PasswordField confirmField = new PasswordField();
          *
          * // Get reference to binding for cross-field validation
-         * Binding<UserRegistration, String> confirmBinding = binder
-         *         .forField(confirmField).bind("confirmPassword");
+         * Binding<UserRegistration, String> passwordBinding = binder
+         *         .forField(passwordField).bind("password");
          *
-         * binder.forField(passwordField)
-         *         .withValidator(
-         *                 password -> password.equals(confirmBinding.value()),
+         * binder.forField(confirmField)
+         *         .withValidator(text -> text.equals(passwordBinding.value()),
          *                 "Both fields must match")
-         *         .bind("password");
+         *         .bind("confirmPassword");
          *
-         * UI.getCurrent().add(passwordField, confirmField);
+         * add(passwordField, confirmField);
          *
          * binder.setBean(userRegistration);
          *
-         * confirmField.setValue("secret"); // passwordField shows validation
-         *                                  // error
+         * passwordField.setValue("secret"); // confirmField shows validation
+         *                                   // error
          *
-         * // or same with a Signal:
-         * confirmSignal.value("secret"); // passwordField shows validation
-         *                                // error
+         * // Same works also with a Signal directly:
+         * ValueSignal<String> passwordSignal = new ValueSignal<>("");
+         * passwordField.bindValue(passwordSignal);
+         * binder.forField(confirmField)
+         *         .withValidator(text -> text.equals(passwordSignal.value()),
+         *                 "Both fields must match")
+         *         .bind("confirmPassword");
+         * passwordSignal.value("secret"); // confirmField shows validation
+         *                                 // error
          * }
          * </pre>
          *
@@ -1492,8 +1497,6 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
-        private boolean initialSignalRegistration = true;
-
         private transient WritableSignal<Boolean> internalValidationTriggerSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
@@ -1692,10 +1695,8 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
-                initialSignalRegistration = true;
                 signalRegistration = ComponentEffect.effect(component, () -> {
-                    if (initialSignalRegistration) {
-                        initialSignalRegistration = false;
+                    if (valueInit) {
                         // start to track signal usage
                         doConversion();
                     } else {
@@ -3127,7 +3128,8 @@ public class Binder<BEAN> implements Serializable {
                             throw new InvalidSignalUsageError(
                                     "Detected Signal.value() call inside a bean level validator. "
                                             + "This is not supported since bean level validators "
-                                            + "are not run inside a reactive effect.");
+                                            + "are not run inside a reactive effect. "
+                                            + "Use of Signal.value() is only supported in field level validators.");
                         });
             }
         });
