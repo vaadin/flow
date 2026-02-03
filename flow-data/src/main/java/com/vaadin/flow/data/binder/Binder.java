@@ -384,10 +384,10 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * The Binder automatically runs validators inside a
          * {@link com.vaadin.flow.component.ComponentEffect#effect} context.
-         * This makes validators and converters reactive to signal changes -
-         * when you call {@code value()} on another binding from within a
-         * validator, the validator will automatically re-run whenever that
-         * other binding's value changes.
+         * This makes validators reactive to signal changes - when you call
+         * {@code value()} on another binding from within a validator, the
+         * validator will automatically re-run whenever that other binding's
+         * value changes.
          * <p>
          * For cross-field validation to work automatically, the fields must be
          * attached to the UI component tree. Detached fields will not trigger
