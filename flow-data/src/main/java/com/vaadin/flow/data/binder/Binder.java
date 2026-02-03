@@ -1552,10 +1552,12 @@ public class Binder<BEAN> implements Serializable {
                     "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
+                var statusChange = new BinderValidationStatus<>(getBinder(),
+                        Collections.singletonList(status),
+                        Collections.emptyList());
                 getBinder().getValidationStatusHandler()
-                        .statusChange(new BinderValidationStatus<>(getBinder(),
-                                Collections.singletonList(status),
-                                Collections.emptyList()));
+                        .statusChange(statusChange);
+                getBinder().signalStatusChange();
                 getBinder().fireStatusChangeEvent(status.isError());
             }
             return status;
@@ -2101,6 +2103,8 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean changeDetectionEnabled = false;
 
+    private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
+
     /**
      * Error thrown when a signal is used incorrectly.
      */
@@ -2566,8 +2570,9 @@ public class Binder<BEAN> implements Serializable {
             getBindings().forEach(b -> b.initFieldValue(bean, true));
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
-            getValidationStatusHandler().statusChange(
-                    BinderValidationStatus.createUnresolvedStatus(this));
+            var status = BinderValidationStatus.createUnresolvedStatus(this);
+            getValidationStatusHandler().statusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -2615,8 +2620,9 @@ public class Binder<BEAN> implements Serializable {
                 }
             });
             changedBindings.clear();
-            getValidationStatusHandler().statusChange(
-                    BinderValidationStatus.createUnresolvedStatus(this));
+            var status = BinderValidationStatus.createUnresolvedStatus(this);
+            getValidationStatusHandler().statusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -2925,6 +2931,7 @@ public class Binder<BEAN> implements Serializable {
         BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
                 bindingResults, binderResults);
         getValidationStatusHandler().statusChange(status);
+        signalStatusChange(status);
         fireStatusChangeEvent(!status.isOk());
         if (!status.isOk()) {
             throw new ValidationException(bindingResults, binderResults);
@@ -3008,6 +3015,7 @@ public class Binder<BEAN> implements Serializable {
         BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
                 bindingResults, binderResults);
         getValidationStatusHandler().statusChange(status);
+        signalStatusChange(status);
         fireStatusChangeEvent(!status.isOk());
         return status;
     }
@@ -3245,6 +3253,7 @@ public class Binder<BEAN> implements Serializable {
         }
         if (fireEvent) {
             getValidationStatusHandler().statusChange(validationStatus);
+            signalStatusChange(validationStatus);
             fireStatusChangeEvent(validationStatus.hasErrors());
         }
         return validationStatus;
@@ -3769,8 +3778,9 @@ public class Binder<BEAN> implements Serializable {
         if (bean != null) {
             bean = null;
         }
-        getValidationStatusHandler().statusChange(
-                BinderValidationStatus.createUnresolvedStatus(this));
+        var status = BinderValidationStatus.createUnresolvedStatus(this);
+        getValidationStatusHandler().statusChange(status);
+        signalStatusChange();
         if (fireStatusEvent) {
             fireStatusChangeEvent(false);
         }
@@ -4359,5 +4369,37 @@ public class Binder<BEAN> implements Serializable {
      */
     public BindingExceptionHandler getBindingExceptionHandler() {
         return exceptionHandler;
+    }
+
+    /**
+     * Signal status change from unresolved state or from specific binding's
+     * state.
+     */
+    private void signalStatusChange() {
+        signalStatusChange(null);
+    }
+
+    private void signalStatusChange(BinderValidationStatus<BEAN> statusChange) {
+        if (binderValidationStatusSignal == null) {
+            return;
+        }
+        if (statusChange != null) {
+            binderValidationStatusSignal.value(statusChange);
+        } else {
+            binderValidationStatusSignal.value(validate(false));
+        }
+    }
+
+    /**
+     * Gets a read-only {@link Signal} emitting {@link BinderValidationStatus}
+     * changes.
+     *
+     * @return the binder validation status signal
+     */
+    public Signal<BinderValidationStatus<BEAN>> getValidationStatus() {
+        if (binderValidationStatusSignal == null) {
+            binderValidationStatusSignal = new ValueSignal<>(validate(false));
+        }
+        return binderValidationStatusSignal.asReadonly();
     }
 }

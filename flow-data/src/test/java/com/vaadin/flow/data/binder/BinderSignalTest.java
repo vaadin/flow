@@ -15,16 +15,23 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.tests.data.bean.Person;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -695,5 +702,136 @@ public class BinderSignalTest extends SignalsUnitTest {
                 () -> binder.validate());
         Assert.assertThrows(Binder.InvalidSignalUsageError.class,
                 () -> binder.isValid());
+    }
+
+    @Test
+    public void getValidationStatus_signalInitialized() {
+        Signal<BinderValidationStatus<Person>> statusSignal = binder
+                .getValidationStatus();
+        Assert.assertNotNull(
+                "getValidationStatus() should setup validation status signal",
+                statusSignal);
+        Assert.assertNotNull(
+                "validation status signal value should not be null initially",
+                statusSignal.value());
+    }
+
+    @Test
+    public void getValidationStatus_signalIsReadOnly() {
+        Signal<BinderValidationStatus<Person>> statusSignal = binder
+                .getValidationStatus();
+        Assert.assertThrows(ClassCastException.class,
+                () -> ((WritableSignal<BinderValidationStatus<Person>>) statusSignal)
+                        .value(null));
+    }
+
+    @Test
+    public void getValidationStatus_statusChangeUpdatesSignal() {
+        item.setFirstName("Alice");
+        item.setLastName("Smith");
+        UI.getCurrent().add(firstNameField, lastNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binder.forField(lastNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("lastName");
+        binder.setBean(item);
+
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+
+        firstNameField.setValue("");
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        firstNameField.setValue("foo");
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+        lastNameField.setValue("");
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        firstNameField.setValue("");
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        firstNameField.setValue("foo");
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+    }
+
+    @Test
+    public void getValidationStatus_setBean_statusChangeRunEffects() {
+        testStatusChangeRunEffects(() -> binder.setBean(item));
+    }
+
+    @Test
+    public void getValidationStatus_readBean_statusChangeRunEffects() {
+        testStatusChangeRunEffects(() -> binder.readBean(item));
+    }
+
+    private void testStatusChangeRunEffects(Runnable binderSetup) {
+        item.setFirstName("Alice");
+        item.setLastName("Smith");
+        UI.getCurrent().add(firstNameField, lastNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binder.forField(lastNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("lastName");
+        binderSetup.run();
+
+        AtomicInteger effectCalled = new AtomicInteger(0);
+        AtomicBoolean prevStatus = new AtomicBoolean(true);
+        ComponentEffect.effect(firstNameField, () -> {
+            prevStatus.set(binder.getValidationStatus().value().isOk());
+            effectCalled.incrementAndGet();
+        });
+
+        // change field values to valid and invalid back-and-forth
+        firstNameField.setValue("");
+        Assert.assertFalse(prevStatus.get());
+        Assert.assertEquals(2, effectCalled.get());
+
+        firstNameField.setValue("foo");
+        Assert.assertEquals(3, effectCalled.get());
+        Assert.assertTrue(prevStatus.get());
+
+        lastNameField.setValue("");
+        Assert.assertEquals(4, effectCalled.get());
+        Assert.assertFalse(prevStatus.get());
+
+        firstNameField.setValue("");
+        Assert.assertFalse(prevStatus.get());
+        Assert.assertEquals(5, effectCalled.get());
+        firstNameField.setValue("foo");
+        Assert.assertEquals(6, effectCalled.get());
+        Assert.assertFalse(
+                "Binder status change signal should be invalid when other field is still invalid.",
+                prevStatus.get());
+    }
+
+    @Test
+    public void getValidationStatus_setBean_initialStatus() {
+        testInitialStatusChangeRunEffects(item -> binder.setBean(item));
+    }
+
+    @Test
+    public void getValidationStatus_readBean_initialStatus() {
+        testInitialStatusChangeRunEffects(item -> binder.readBean(item));
+    }
+
+    private void testInitialStatusChangeRunEffects(
+            Consumer<Person> binderSetup) {
+        item.setFirstName("");
+        UI.getCurrent().add(firstNameField);
+        binder.forField(firstNameField)
+                .withValidator(value -> !value.isEmpty(), "").bind("firstName");
+        binderSetup.accept(item);
+
+        AtomicBoolean prevStatus = new AtomicBoolean(true);
+        ComponentEffect.effect(firstNameField, () -> {
+            prevStatus.set(binder.getValidationStatus().value().isOk());
+        });
+
+        Assert.assertFalse(prevStatus.get());
+
+        firstNameField.setValue("foo");
+        Assert.assertTrue(prevStatus.get());
+
+        var person = new Person();
+        person.setFirstName("");
+
+        binderSetup.accept(person);
+        Assert.assertFalse(prevStatus.get());
     }
 }
