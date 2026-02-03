@@ -17,13 +17,16 @@ package com.vaadin.signals;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.signals.function.SignalMapper;
 import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.ValueMerger;
+import com.vaadin.signals.impl.MappedWritableSignal;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
 /**
  * A signal to which a new value can be directly written.
- * 
+ *
  * @param <T>
  *            the signal value type
  */
@@ -91,5 +94,46 @@ public interface WritableSignal<T> extends Signal<T> {
      */
     default Signal<T> asReadonly() {
         return () -> value();
+    }
+
+    /**
+     * Creates a two-way mapped signal that provides a bidirectional view of
+     * this signal. Reading the mapped signal applies the getter function to
+     * extract a child value. Writing to the mapped signal uses the setter
+     * function to update this signal with a new value derived from the current
+     * value and the new child value.
+     * <p>
+     * This is useful for creating component bindings to properties of complex
+     * objects. For example, to bind a checkbox to the "done" property of a Todo
+     * record:
+     *
+     * <pre>
+     * record Todo(String text, boolean done) {
+     *     Todo withDone(boolean done) {
+     *         return new Todo(this.text, done);
+     *     }
+     * }
+     *
+     * WritableSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
+     *         new Todo("Buy milk", false));
+     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done,
+     *         Todo::withDone);
+     *
+     * checkbox.bindValue(doneSignal); // Two-way binding
+     * </pre>
+     *
+     * @param <C>
+     *            the child (mapped) signal type
+     * @param getter
+     *            the function to extract the child value from this signal's
+     *            value, not <code>null</code>
+     * @param merger
+     *            the function to create a new value for this signal given the
+     *            current value and a new child value, not <code>null</code>
+     * @return a two-way mapped signal, not <code>null</code>
+     */
+    default <C> WritableSignal<C> map(SignalMapper<T, C> getter,
+            ValueMerger<T, C> merger) {
+        return new MappedWritableSignal<>(this, getter, merger);
     }
 }
