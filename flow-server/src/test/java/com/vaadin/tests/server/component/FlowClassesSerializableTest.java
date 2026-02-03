@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
@@ -36,6 +37,7 @@ import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
@@ -102,6 +104,21 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
             @Override
             protected Lock getSessionLock(WrappedSession wrappedSession) {
                 return lock;
+            }
+
+            @Override
+            public void init() {
+                super.init();
+
+                ApplicationConfiguration configuration = Mockito
+                        .mock(ApplicationConfiguration.class);
+                Mockito.when(configuration.isProductionMode()).thenReturn(
+                        getDeploymentConfiguration().isProductionMode());
+                Mockito.when(
+                        configuration.isDevModeSessionSerializationEnabled())
+                        .thenReturn(true);
+                getContext().setAttribute(ApplicationConfiguration.class,
+                        configuration);
             }
         };
         VaadinService.setCurrent(service);

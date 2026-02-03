@@ -31,7 +31,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -142,16 +141,6 @@ public class MockVaadinServletService extends VaadinServletService {
                         .thenReturn(new DefaultRoutePathProvider());
                 instrumentMockLookup(lookup);
                 getContext().setAttribute(Lookup.class, lookup);
-
-                ApplicationConfiguration configuration = Mockito
-                        .mock(ApplicationConfiguration.class);
-                Mockito.when(configuration.isProductionMode()).thenReturn(
-                        getDeploymentConfiguration().isProductionMode());
-                Mockito.when(
-                        configuration.isDevModeSessionSerializationEnabled())
-                        .thenReturn(true);
-                getContext().setAttribute(ApplicationConfiguration.class,
-                        configuration);
             }
             super.init();
         } catch (ServiceException | ServletException e) {
