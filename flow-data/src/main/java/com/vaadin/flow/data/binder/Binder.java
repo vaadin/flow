@@ -1406,8 +1406,24 @@ public class Binder<BEAN> implements Serializable {
             }
 
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
-                    .chain(converter);
+                    .chain(new Converter<TARGET, NEWTARGET>() {
+                        @Override
+                        public Result<NEWTARGET> convertToModel(
+                                TARGET presentationValue,
+                                ValueContext context) {
+                            return UsageTracker
+                                    .untracked(() -> converter.convertToModel(
+                                            presentationValue, context));
+                        }
 
+                        @Override
+                        public TARGET convertToPresentation(
+                                NEWTARGET modelValue, ValueContext context) {
+                            return UsageTracker.untracked(
+                                    (() -> converter.convertToPresentation(
+                                            modelValue, context)));
+                        }
+                    });
             return (BindingBuilder<BEAN, NEWTARGET>) this;
         }
 

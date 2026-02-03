@@ -751,6 +751,50 @@ public class BinderSignalTest extends SignalsUnitTest {
     }
 
     @Test
+    public void bindingValue_converterNotTracking() {
+        item.setLastName("Smith");
+        item.setAge(30);
+
+        var ageField = new TestTextField();
+
+        UI.getCurrent().add(lastNameField, ageField);
+
+        var lastNameBinding = binder.forField(lastNameField).bind("lastName");
+
+        AtomicInteger converterCalls = new AtomicInteger(0);
+        String ageValidationError = "Last name and age are required";
+        binder.forField(ageField).withConverter(
+                new StringToIntegerConverter("Value must be an integer") {
+                    @Override
+                    public Result<Integer> convertToModel(String value,
+                            ValueContext context) {
+                        // this should not start tracking
+                        lastNameBinding.value();
+                        converterCalls.incrementAndGet();
+                        return super.convertToModel(value, context);
+                    }
+                })
+                .withValidator(
+                        value -> value > 0
+                                && !lastNameField.getValue().isEmpty(),
+                        ageValidationError)
+                .bind("age");
+        binder.setBean(item);
+
+        Assert.assertTrue(binder.isValid());
+
+        // change of last name doesn't trigger validation of age field binding
+        // because converter is run inside UsageTracker.untracked()
+        lastNameField.setValue("");
+
+        Assert.assertFalse(ageField.isInvalid());
+        Assert.assertEquals("", ageField.getErrorMessage());
+        Assert.assertTrue("Converter should be called at least once",
+                converterCalls.get() > 0);
+        Assert.assertFalse(binder.isValid()); // reruns all validators
+    }
+
+    @Test
     public void getValidationStatus_setBean_statusChangeRunEffects() {
         testStatusChangeRunEffects(() -> binder.setBean(item));
     }
