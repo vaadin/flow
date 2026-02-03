@@ -168,7 +168,7 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
         if (context.isNavigating() || isDevelopmentMode(context)) {
             if (!context.isNavigating()) {
                 msg = msg
-                        + "\nThis access check was probably triggered by the security framework.";
+                        + ". This access check was probably triggered by the security framework.";
             }
             LOGGER.warn(msg, context.getNavigationTarget().getName(),
                     layoutClass.getName());
