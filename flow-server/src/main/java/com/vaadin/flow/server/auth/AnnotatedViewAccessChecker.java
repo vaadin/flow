@@ -166,11 +166,15 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     private void logDeniedByLayoutAccessRules(NavigationContext context,
             Class<?> layoutClass, String msg) {
         if (context.isNavigating() || isDevelopmentMode(context)) {
-            LOGGER.warn(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+            if (!context.isNavigating()) {
+                msg = msg
+                        + "\nThis access check was probably triggered by the security framework.";
+            }
+            LOGGER.warn(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         } else {
-            LOGGER.trace(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+            LOGGER.debug(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         }
     }
 
