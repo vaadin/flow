@@ -70,7 +70,9 @@ public class WebBrowser implements Serializable {
             browserDetails = new BrowserDetails(agent) {
                 @Override
                 protected void log(String error, Exception e) {
-                    LoggerFactory.getLogger(BrowserDetails.class).error(error);
+                    error = error
+                            + " isBrowser and isOs methods may not return correct values";
+                    LoggerFactory.getLogger(BrowserDetails.class).info(error);
                 }
             };
         }

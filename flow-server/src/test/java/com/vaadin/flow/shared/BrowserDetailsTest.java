@@ -113,6 +113,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String DUCK_DUCK_BOT = "ddg_android/5.169.0 (com.duckduckgo.mobile.android; android api 33)";
     private static final String DUCK_DUCK_BOT_2 = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.106 Mobile DuckDuckGo/5 Safari/537.36";
     private static final String DUCK_DUCK_BOT_3 = "DuckDuckGo/0.26.3 CFNetwork/1331.0.7 Darwin/21.4.0";
+    private static final String DUCK_DUCK_GO = "DuckDuckGo/5 (com.duckduckgo.mobile.android; Android API 35)";
 
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
@@ -786,6 +787,15 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, -1);
         assertBrowserMinorVersion(bd, -1);
         assertEngineVersion(bd, -1);
+    }
+
+    public void testDuckDuckGo() {
+        BrowserDetails bd = new BrowserDetails(DUCK_DUCK_GO);
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+        assertAndroid(bd, 5, -1);
     }
 
     private static UserAgent[] getUserAgentDetails(String agentFile)
