@@ -56,8 +56,15 @@ public class UsageTracker {
                 {
                     synchronized (lock) {
                         for (Usage usage : usages) {
+                            // avoid lambda to allow proper deserialization
+                            TransientListener usageListener = new TransientListener() {
+                                @Override
+                                public boolean invoke(boolean immediate) {
+                                    return onChange(immediate);
+                                }
+                            };
                             CleanupCallback cleanup = usage
-                                    .onNextChange(this::onChange);
+                                    .onNextChange(usageListener);
                             if (closed) {
                                 cleanup.cleanup();
                                 break;
@@ -129,7 +136,7 @@ public class UsageTracker {
      * Receives notifications about signal usage events.
      */
     @FunctionalInterface
-    public interface UsageRegistrar {
+    public interface UsageRegistrar extends Serializable {
         /**
          * Called when a usage event occurs.
          *

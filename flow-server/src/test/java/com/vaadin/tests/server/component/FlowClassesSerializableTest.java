@@ -170,6 +170,26 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         // original signal change should not affect deserialized component
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
+        // remove registration and verify that effect is not called anymore
+        deserializedComponent.registration.remove();
+        deserializedComponent.signal.value("foo");
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+
+        // verify various bindX methods
+        Assert.assertEquals("foo",
+                deserializedComponent.getElement().getText());
+        Assert.assertEquals("foo",
+                deserializedComponent.getElement().getAttribute("attr"));
+        Assert.assertEquals("foo",
+                deserializedComponent.getElement().getProperty("prop"));
+
+        // verify mapped and computed signals with bindEnabled and bindVisible
+        Assert.assertTrue(deserializedComponent.getElement().isEnabled());
+        Assert.assertTrue(deserializedComponent.getElement().isVisible());
+        deserializedComponent.signal.value(null);
+        Assert.assertFalse(deserializedComponent.getElement().isEnabled());
+        Assert.assertFalse(deserializedComponent.getElement().isVisible());
+
         deserializedSession.unlock();
         VaadinService.setCurrent(null);
     }

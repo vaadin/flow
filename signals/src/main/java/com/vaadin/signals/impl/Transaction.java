@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -38,7 +39,7 @@ import com.vaadin.signals.shared.impl.TreeRevision;
  * that changes from an inner transaction are rolled up to the outer
  * transaction.
  */
-public abstract class Transaction {
+public abstract class Transaction implements Serializable {
     /**
      * Creates a new transaction.
      */

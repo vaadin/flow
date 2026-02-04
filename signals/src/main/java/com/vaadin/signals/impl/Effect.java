@@ -116,7 +116,14 @@ public class Effect implements Serializable {
         activeEffects.get().add(this);
         try {
             UsageTracker.track(action, usage -> {
-                registrations.add(usage.onNextChange(this::onDependencyChange));
+                // avoid lambda to allow proper deserialization
+                TransientListener usageListener = new TransientListener() {
+                    @Override
+                    public boolean invoke(boolean immediate) {
+                        return onDependencyChange(immediate);
+                    }
+                };
+                registrations.add(usage.onNextChange(usageListener));
             });
         } finally {
             Effect removed = activeEffects.get().removeLast();

@@ -19,6 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -28,12 +29,21 @@ import com.vaadin.signals.local.ValueSignal;
 class SerializedComponent extends Component {
     int effectExecutionCounter = 0;
     ValueSignal<String> signal;
+    Registration registration;
 
     SerializedComponent(ValueSignal<String> signal) {
         this.signal = signal;
-        Registration registration = ComponentEffect.effect(this, () -> {
+
+        registration = ComponentEffect.effect(this, () -> {
             signal.value();
             effectExecutionCounter++;
         });
+
+        getElement().bindText(signal);
+        getElement().bindAttribute("attr", signal);
+        getElement().bindProperty("prop", signal);
+        getElement().bindEnabled(
+                signal.map(value -> value != null && !value.isEmpty()));
+        getElement().bindVisible(Signal.computed(() -> signal.value() != null));
     }
 }

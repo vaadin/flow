@@ -15,7 +15,6 @@
  */
 package com.vaadin.signals.local;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,8 +32,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractLocalSignal<T>
-        implements Signal<T>, Serializable {
+public abstract class AbstractLocalSignal<T> implements Signal<T> {
 
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
