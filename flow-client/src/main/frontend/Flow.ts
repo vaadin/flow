@@ -120,8 +120,6 @@ export class Flow {
         isActive: () => this.isActive
       }
     };
-    // Set browser details collection function as global for use by refresh()
-    ($wnd.Vaadin.Flow as any).getBrowserDetailsParameters = this.collectBrowserDetails.bind(this);
 
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
