@@ -52,6 +52,9 @@ public class UploadEvent {
 
     private final Part part;
 
+    private boolean rejected = false;
+    private String rejectionMessage;
+
     /**
      * Create a new download event with required data.
      *
@@ -90,8 +93,15 @@ public class UploadEvent {
      *
      * @return the input stream from which the contents of the request can be
      *         read
+     * @throws IllegalStateException
+     *             if the upload has been rejected
      */
     public InputStream getInputStream() {
+        if (rejected) {
+            throw new IllegalStateException(
+                    "Cannot access input stream of rejected upload: "
+                            + rejectionMessage);
+        }
         try {
             if (part != null) {
                 return part.getInputStream();
@@ -200,5 +210,52 @@ public class UploadEvent {
         } finally {
             session.unlock();
         }
+    }
+
+    /**
+     * Rejects this upload with a default message.
+     * <p>
+     * When called, the file will not be processed (or will be cleaned up if
+     * already processed) and the rejection will be communicated to the client.
+     * The default rejection message "File rejected" will be used.
+     *
+     * @see #reject(String)
+     */
+    public void reject() {
+        reject("File rejected");
+    }
+
+    /**
+     * Rejects this upload with a custom message.
+     * <p>
+     * When called, the file will not be processed (or will be cleaned up if
+     * already processed) and the rejection will be communicated to the client
+     * with the provided message.
+     *
+     * @param message
+     *            the rejection message to send to the client
+     */
+    public void reject(String message) {
+        this.rejected = true;
+        this.rejectionMessage = message;
+    }
+
+    /**
+     * Checks whether this upload has been rejected.
+     *
+     * @return {@code true} if the upload has been rejected, {@code false}
+     *         otherwise
+     */
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    /**
+     * Gets the rejection message if this upload has been rejected.
+     *
+     * @return the rejection message, or {@code null} if not rejected
+     */
+    public String getRejectionMessage() {
+        return rejectionMessage;
     }
 }

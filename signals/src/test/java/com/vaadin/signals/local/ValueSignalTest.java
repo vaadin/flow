@@ -316,16 +316,16 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         signal.update(value -> {
-            assertTrue(signal.lock.isHeldByCurrentThread());
+            assertTrue(signal.getLock().isHeldByCurrentThread());
             return value;
         });
-        assertFalse(signal.lock.isHeldByCurrentThread());
+        assertFalse(signal.getLock().isHeldByCurrentThread());
     }
 
     @Test
     void concurrency_lockHeld_operationsAreBlocked() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
-        signal.lock.lock();
+        signal.getLock().lock();
 
         AtomicInteger completed = new AtomicInteger();
 
@@ -355,14 +355,14 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         // Wait for all threads to start
-        assertEventually(() -> signal.lock.getQueueLength() == 5);
+        assertEventually(() -> signal.getLock().getQueueLength() == 5);
         assertEquals(0, completed.get());
 
-        signal.lock.unlock();
+        signal.getLock().unlock();
 
         // Wait for all threads to complete
         assertEventually(() -> completed.get() == 5);
-        assertEquals(0, signal.lock.getQueueLength());
+        assertEquals(0, signal.getLock().getQueueLength());
     }
 
     @Test
@@ -370,7 +370,8 @@ public class ValueSignalTest extends SignalTestBase {
             throws InterruptedException {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Thread lockThread = Thread.startVirtualThread(() -> signal.lock.lock());
+        Thread lockThread = Thread
+                .startVirtualThread(() -> signal.getLock().lock());
         // Wait until locked
         lockThread.join();
 
