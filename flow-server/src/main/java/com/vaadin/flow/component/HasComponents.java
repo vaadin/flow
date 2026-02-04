@@ -231,6 +231,12 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * component.bindChildren(taskList, ListItem::new);
      * </pre>
+     * <p>
+     * Note: The default implementation adds children directly to the
+     * component’s element using the Element API and does not invoke
+     * {@link #add(Component...)}. Components that override {@code add} or
+     * manage children indirectly must override this method to provide a
+     * suitable implementation or explicitly disable it.
      *
      * @param list
      *            list signal to bind to the parent, must not be
@@ -246,6 +252,8 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             thrown if this component isn't empty
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
+     * @see ComponentEffect#bindChildren(Component, Signal,
+     *      SerializableFunction)
      */
     default <T, S extends Signal<T>> Registration bindChildren(
             Signal<List<S>> list,
