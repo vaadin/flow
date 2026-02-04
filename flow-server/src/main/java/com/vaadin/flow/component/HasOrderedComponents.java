@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.signals.BindingActiveException;
 
 /**
  * A component which the children components are ordered, so the index of each
@@ -48,6 +50,14 @@ public interface HasOrderedComponents extends HasComponents {
      *            without adding any other
      */
     default void replace(Component oldComponent, Component newComponent) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(
+                                "replace is not allowed while a binding for children exists.");
+                    }
+                });
         if (oldComponent == null && newComponent == null) {
             // NO-OP
             return;
