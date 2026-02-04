@@ -366,6 +366,16 @@ public class BrowserDetails implements Serializable {
             return;
         }
 
+        if (userAgent.startsWith("duckduckgo/")) {
+            int startIndex = userAgent.indexOf("duckduckgo/");
+            String osVersionString = safeSubstring(userAgent,
+                    startIndex + "duckduckgo/".length(),
+                    userAgent.indexOf(' ', startIndex));
+            String[] parts = osVersionString.split("\\.");
+            parseOsVersion(parts, userAgent);
+            return;
+        }
+
         if (userAgent.contains("callpod keeper for android")) {
             String token = "; android ";
             int startIndex = userAgent.indexOf(token) + token.length();
