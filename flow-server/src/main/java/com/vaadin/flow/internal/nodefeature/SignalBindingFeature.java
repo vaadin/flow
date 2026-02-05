@@ -145,7 +145,16 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
     }
 
-    private <T> Signal<T> getSignal(String key) {
+    /**
+     * Gets the signal bound to the given key.
+     *
+     * @param key
+     *            the key
+     * @param <T>
+     *            the type of the signal value
+     * @return the signal bound to the given key, or null if no signal is bound
+     */
+    public <T> Signal<T> getSignal(String key) {
         if (values == null) {
             return null;
         }
