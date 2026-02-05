@@ -1355,13 +1355,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
+        // Parse browser details from request parameters and store in UI
+        extractAndStoreBrowserDetails(request, ui);
+
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
         ui.doInit(request, session.getNextUIid(), context.getAppId());
         session.addUI(ui);
 
-        // Parse browser details from request parameters and store in UI
-        extractAndStoreBrowserDetails(request, ui);
 
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
