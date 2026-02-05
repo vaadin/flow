@@ -809,14 +809,16 @@ public class UI extends Component
      */
     @Override
     public Locale getLocale() {
-        return localeSignal.value();
+        return localeSignal.peek();
     }
 
     /**
      * Gets a signal that holds the current locale of this UI.
      * <p>
-     * The signal is the source of truth for the locale. Reading the signal is
-     * equivalent to calling {@link #getLocale()}.
+     * The signal is the source of truth for the locale. Use
+     * {@link WritableSignal#value()} to read the locale reactively (creates a
+     * dependency when called inside a signal effect). Use {@link #getLocale()}
+     * for non-reactive reads.
      * <p>
      * Note that writing directly to the signal will not notify
      * {@link com.vaadin.flow.i18n.LocaleChangeObserver LocaleChangeObserver}
