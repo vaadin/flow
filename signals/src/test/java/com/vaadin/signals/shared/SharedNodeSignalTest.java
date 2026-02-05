@@ -241,11 +241,11 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         assertFailure(operation);
     }
-    
+
     @Test
     void adoptAt_addParentToChildWithAlias_rejected() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        
+
         signal.putChildWithValue("key", "value");
         SharedNodeSignal parentAlias = signal.putChildIfAbsent("key").signal();
 
