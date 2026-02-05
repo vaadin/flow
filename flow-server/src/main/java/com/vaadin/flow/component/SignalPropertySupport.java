@@ -167,4 +167,13 @@ public class SignalPropertySupport<T> implements Serializable {
         this.value = value;
         valueChangeConsumer.accept(value);
     }
+
+    /**
+     * Checks if a signal is currently bound to this property support.
+     *
+     * @return true if a signal is bound, false otherwise
+     */
+    public boolean isActive() {
+        return signal != null;
+    }
 }

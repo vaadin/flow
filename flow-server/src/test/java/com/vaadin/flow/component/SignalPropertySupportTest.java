@@ -268,6 +268,44 @@ public class SignalPropertySupportTest {
         assertEquals("bar", signalPropertySupport.get());
     }
 
+    @Test
+    public void isActive_notBound_returnsFalse() {
+        var component = new TestComponent();
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+
+        Assert.assertFalse(signalPropertySupport.isActive());
+    }
+
+    @Test
+    public void isActive_bound_returnsTrue() {
+        var component = new TestComponent();
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        signalPropertySupport.bind(signal);
+
+        Assert.assertTrue(signalPropertySupport.isActive());
+    }
+
+    @Test
+    public void isActive_boundThenUnbound_returnsFalse() {
+        var component = new TestComponent();
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        signalPropertySupport.bind(signal);
+
+        Assert.assertTrue(signalPropertySupport.isActive());
+
+        signalPropertySupport.bind(null);
+
+        Assert.assertFalse(signalPropertySupport.isActive());
+    }
+
     @Tag("div")
     private static class TestComponent extends Component {
 
