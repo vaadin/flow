@@ -48,7 +48,7 @@ import com.vaadin.signals.impl.Effect;
  */
 public final class ComponentEffect implements Serializable {
 
-    private transient ElementEffect elementEffect;
+    private ElementEffect elementEffect;
 
     private <C extends Component> ComponentEffect(C owner,
             SerializableRunnable effectFunction) {
