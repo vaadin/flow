@@ -750,6 +750,50 @@ public class BinderSignalTest extends SignalsUnitTest {
         Assert.assertFalse(binder.getValidationStatus().value().isOk());
     }
 
+    // verifies that field-specific validation statuses are updated correctly
+    @Test
+    public void getValidationStatus_fieldChanged_validationStatusSignalUpdated() {
+        item.setFirstName("Alice");
+        item.setLastName("Smith");
+        UI.getCurrent().add(firstNameField, lastNameField);
+        var lastNameBinding = binder.forField(lastNameField).bind("lastName");
+        var firstNameBinding = binder.forField(firstNameField)
+                .withValidator(hasTextValuesValidator(lastNameBinding),
+                        "First and last name are required")
+                .bind("firstName");
+        binder.setBean(item);
+
+        Assert.assertTrue(binder.getValidationStatus().value()
+                .getFieldValidationStatuses().stream()
+                .noneMatch(BindingValidationStatus::isError));
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+
+        lastNameField.setValue(""); // change to invalid state
+
+        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        var firstNameValidationStatuses = binder.getValidationStatus().value()
+                .getFieldValidationStatuses().stream()
+                .filter(status -> status.getBinding() == firstNameBinding)
+                .toList();
+        var otherValidationStatuses = binder.getValidationStatus().value()
+                .getFieldValidationStatuses().stream()
+                .filter(status -> status.getBinding() != firstNameBinding)
+                .toList();
+        Assert.assertEquals(
+                "Expected one BindingValidationStatus for first name field", 1,
+                firstNameValidationStatuses.size());
+        Assert.assertEquals(
+                "Expected one BindingValidationStatus for last name field", 1,
+                otherValidationStatuses.size());
+        Assert.assertFalse("Expected last name field to have an error",
+                otherValidationStatuses.get(0).isError());
+        Assert.assertTrue("Expected first name field to NOT have an error",
+                firstNameValidationStatuses.get(0).isError());
+
+        lastNameField.setValue("Smith");
+        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+    }
+
     @Test
     public void bindingValue_converterNotTracking() {
         item.setLastName("Smith");
