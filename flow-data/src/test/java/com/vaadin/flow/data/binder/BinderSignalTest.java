@@ -785,9 +785,9 @@ public class BinderSignalTest extends SignalsUnitTest {
         Assert.assertEquals(
                 "Expected one BindingValidationStatus for last name field", 1,
                 otherValidationStatuses.size());
-        Assert.assertFalse("Expected last name field to have an error",
+        Assert.assertFalse("Expected last name field to NOT have an error",
                 otherValidationStatuses.get(0).isError());
-        Assert.assertTrue("Expected first name field to NOT have an error",
+        Assert.assertTrue("Expected first name field to have an error",
                 firstNameValidationStatuses.get(0).isError());
 
         lastNameField.setValue("Smith");
