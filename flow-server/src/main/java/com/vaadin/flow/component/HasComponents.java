@@ -35,11 +35,11 @@ import com.vaadin.signals.impl.Effect;
  * A component to which the user can add and remove child components.
  * {@link Component} in itself provides basic support for child components that
  * are manually added as children of an element belonging to the component. This
- * interface provides an explicit API for components that explicitly supports
+ * interface provides an explicit API for components that explicitly support
  * adding and removing arbitrary child components.
  * <p>
  * {@link HasComponents} is generally implemented by layouts or components whose
- * primary function is to host child components. It isn't for example
+ * primary function is to host child components. It isn't, for example,
  * implemented by non-layout components such as fields.
  * <p>
  * The default implementations assume that children are attached to
@@ -143,10 +143,10 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Removes all contents from this component, this includes child components,
+     * Removes all contents from this component, including child components,
      * text content as well as child elements that have been added directly to
-     * this component using the {@link Element} API. it also removes the
-     * children that were added only at the client-side.
+     * this component using the {@link Element} API. It also removes the
+     * children added only at the client-side.
      */
     default void removeAll() {
         throwIfChildrenBindingIsActive("removeAll");
@@ -154,7 +154,7 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Adds the given component as child of this component at the specific
+     * Adds the given component as a child of this component at the specific
      * index.
      * <p>
      * In case the specified component has already been added to another parent,

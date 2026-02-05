@@ -85,7 +85,7 @@ public interface HasOrderedComponents extends HasComponents {
      * Returns the index of the given component.
      *
      * @param component
-     *            the component to look up, can not be <code>null</code>
+     *            the component to look up, cannot be <code>null</code>
      * @return the index of the component or -1 if the component is not a child
      */
     default int indexOf(Component component) {
@@ -118,7 +118,7 @@ public interface HasOrderedComponents extends HasComponents {
      * Returns the component at the given position.
      *
      * @param index
-     *            the position of the component, must be greater than or equals
+     *            the position of the component must be greater than or equals
      *            to 0 and less than the number of children components
      * @return The component at the given index
      * @throws IllegalArgumentException
