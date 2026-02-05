@@ -30,6 +30,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UrlUtil;
 
 /**
  * Parameter deserialization utility.
@@ -111,7 +112,8 @@ public final class ParameterDeserializer {
         Class<?> parameterType = getClassType(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
             validateWildcardType(navigationTarget, parameterType);
-            return parameters.stream().collect(Collectors.joining("/"));
+            return parameters.stream().map(UrlUtil::decodeURIComponent)
+                    .collect(Collectors.joining("/"));
         }
         String parameter = parameters.get(0);
         return ParameterDeserializer.deserializeParameter(parameterType,
