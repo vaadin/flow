@@ -60,6 +60,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Component... components) {
+        throwIfChildrenBindingIsActive("add");
         Objects.requireNonNull(components, "Components should not be null");
         add(Arrays.asList(components));
     }
@@ -74,15 +75,8 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Collection<Component> components) {
+        throwIfChildrenBindingIsActive("add");
         Objects.requireNonNull(components, "Components should not be null");
-        getElement().getNode()
-                .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
-                        throw new BindingActiveException(
-                                "add is not allowed while a binding for children exists.");
-                    }
-                });
         components.stream()
                 .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
@@ -96,6 +90,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the text to add, not <code>null</code>
      */
     default void add(String text) {
+        throwIfChildrenBindingIsActive("add");
         add(new Text(text));
     }
 
@@ -109,6 +104,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             this component
      */
     default void remove(Component... components) {
+        throwIfChildrenBindingIsActive("remove");
         Objects.requireNonNull(components, "Components should not be null");
         remove(Arrays.asList(components));
     }
@@ -123,15 +119,8 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             this component
      */
     default void remove(Collection<Component> components) {
+        throwIfChildrenBindingIsActive("remove");
         Objects.requireNonNull(components, "Components should not be null");
-        getElement().getNode()
-                .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
-                        throw new BindingActiveException(
-                                "remove is not allowed while a binding for children exists.");
-                    }
-                });
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
@@ -160,6 +149,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * children that were added only at the client-side.
      */
     default void removeAll() {
+        throwIfChildrenBindingIsActive("removeAll");
         getElement().removeAllChildren();
     }
 
@@ -177,6 +167,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the component to add, value should not be null
      */
     default void addComponentAtIndex(int index, Component component) {
+        throwIfChildrenBindingIsActive("addComponentAtIndex");
         Objects.requireNonNull(component, "Component should not be null");
         if (index < 0) {
             throw new IllegalArgumentException(
@@ -197,6 +188,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the component to add, value should not be null
      */
     default void addComponentAsFirst(Component component) {
+        throwIfChildrenBindingIsActive("addComponentAsFirst");
         addComponentAtIndex(0, component);
     }
 
@@ -258,17 +250,28 @@ public interface HasComponents extends HasElement, HasEnabled {
     default <T, S extends Signal<T>> Registration bindChildren(
             Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
-        Objects.requireNonNull(list, "ListSignal cannot be null");
-        Objects.requireNonNull(childFactory,
-                "Child element factory cannot be null");
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
         var feature = node.getFeature(SignalBindingFeature.class);
         if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
             throw new BindingActiveException();
         }
+        Objects.requireNonNull(list, "ListSignal cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child element factory cannot be null");
         var binding = ComponentEffect.bindChildren(self, list, childFactory);
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
         return () -> feature.removeBinding(SignalBindingFeature.CHILDREN);
+    }
+
+    private void throwIfChildrenBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for children exists.");
+                    }
+                });
     }
 }
