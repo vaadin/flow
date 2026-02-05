@@ -32,10 +32,10 @@ public interface HasOrderedComponents extends HasComponents {
 
     /**
      * Replaces the component in the container with another one without changing
-     * position. This method replaces component with another one is such way
+     * position. This method replaces a component with another one is such a way
      * that the new component overtakes the position of the old component. If
      * the old component is not in the container, the new component is added to
-     * the container. If the both component are already in the container, their
+     * the container. If both components are already in the container, their
      * positions are swapped. Component attach and detach events should be taken
      * care as with add and remove.
      *
