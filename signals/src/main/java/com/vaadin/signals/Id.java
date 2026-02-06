@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Base64;
 import java.util.Base64.Encoder;
@@ -36,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @param value
  *            the id value as a 64-bit integer
  */
-public record Id(long value) implements Comparable<Id> {
+public record Id(long value) implements Comparable<Id>, Serializable {
     /**
      * Default or initial id in various contexts. Always used for the root node
      * in a signal hierarchy. The zero id is frequently used and has a custom

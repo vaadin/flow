@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -61,7 +62,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the result value type
      */
     @FunctionalInterface
-    protected interface ResultConverter<T> {
+    protected interface ResultConverter<T> extends Serializable {
         /**
          * Converts an accepted command result into a result value.
          *
@@ -471,25 +472,30 @@ public abstract class AbstractSignal<T> implements Signal<T> {
                         }
                     }
 
-                    return tree.observeNextChange(id(), immediate -> {
-                        /*
-                         * Only invoke the listener if the tree change is
-                         * relevant in the context of this usage instance
-                         */
-                        if (hasChanges()) {
+                    // avoid lambda to allow proper deserialization
+                    TransientListener transientListener = new TransientListener() {
+                        @Override
+                        public boolean invoke(boolean immediate) {
                             /*
-                             * Run listener and let it decide if we should keep
-                             * listening to the tree
+                             * Only invoke the listener if the tree change is
+                             * relevant in the context of this usage instance
                              */
-                            return listener.invoke(immediate);
-                        } else {
-                            /*
-                             * Keep listening to the tree since the listener
-                             * hasn't yet been invoked
-                             */
-                            return true;
+                            if (hasChanges()) {
+                                /*
+                                 * Run listener and let it decide if we should
+                                 * keep listening to the tree
+                                 */
+                                return listener.invoke(immediate);
+                            } else {
+                                /*
+                                 * Keep listening to the tree since the listener
+                                 * hasn't yet been invoked
+                                 */
+                                return true;
+                            }
                         }
-                    });
+                    };
+                    return tree.observeNextChange(id(), transientListener);
                 } finally {
                     tree.getLock().unlock();
                 }

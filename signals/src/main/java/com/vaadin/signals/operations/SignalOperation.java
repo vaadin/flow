@@ -15,8 +15,10 @@
  */
 package com.vaadin.signals.operations;
 
+import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+
+import com.vaadin.signals.function.SerializableFunction;
 
 /**
  * An operation triggered on a signal instance. The result will be populated
@@ -26,14 +28,14 @@ import java.util.function.Function;
  * @param <T>
  *            the result type
  */
-public class SignalOperation<T> {
+public class SignalOperation<T> implements Serializable {
     /**
      * The result of a signal operation.
      *
      * @param <T>
      *            the result type in case the operation was successful
      */
-    public sealed interface ResultOrError<T> {
+    public sealed interface ResultOrError<T> extends Serializable {
         /**
          * Checks whether this instance represents successfully applied signal
          * operation.
@@ -116,7 +118,7 @@ public class SignalOperation<T> {
      *            <code>null</code>
      * @return a new operation with the mapped result, not <code>null</code>
      */
-    public <R> SignalOperation<R> map(Function<T, R> mapper) {
+    public <R> SignalOperation<R> map(SerializableFunction<T, R> mapper) {
         SignalOperation<R> mapped = new SignalOperation<>();
         forwardMappedResult(mapped, mapper);
         return mapped;
@@ -136,7 +138,7 @@ public class SignalOperation<T> {
      *            <code>null</code>
      */
     protected <R> void forwardMappedResult(SignalOperation<R> target,
-            Function<T, R> mapper) {
+            SerializableFunction<T, R> mapper) {
         result.thenAccept(resultOrError -> {
             if (resultOrError.successful()) {
                 T value = ((Result<T>) resultOrError).value();

@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.WritableSignal;
 
 /**
@@ -49,7 +51,7 @@ import com.vaadin.signals.WritableSignal;
  * @see WritableSignal#map(SignalMapper, ValueMerger)
  */
 @FunctionalInterface
-public interface ValueMerger<O, I> {
+public interface ValueMerger<O, I> extends Serializable {
     /**
      * Creates a new outer value by merging the new inner value with the old
      * outer value.

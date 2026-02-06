@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.signals.SignalCommand;
@@ -28,7 +29,7 @@ import com.vaadin.signals.SignalCommand;
  * require multiple validation rules to pass.
  */
 @FunctionalInterface
-public interface CommandValidator {
+public interface CommandValidator extends Serializable {
     /**
      * A validator that accepts all commands without restriction.
      */

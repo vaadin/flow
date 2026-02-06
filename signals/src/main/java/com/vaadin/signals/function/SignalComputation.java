@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -31,7 +33,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#computed(SignalComputation)
  */
 @FunctionalInterface
-public interface SignalComputation<T> {
+public interface SignalComputation<T> extends Serializable {
     /**
      * Computes the signal value, automatically tracking dependencies on other
      * signals.

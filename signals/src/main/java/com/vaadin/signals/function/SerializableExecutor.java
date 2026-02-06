@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,24 +16,13 @@
 package com.vaadin.signals.function;
 
 import java.io.Serializable;
-
-import com.vaadin.signals.Signal;
+import java.util.concurrent.Executor;
 
 /**
- * Represents a cleanup operation that can be invoked to unregister a listener,
- * dispose of resources, or cancel an ongoing operation.
- * <p>
- * This is typically returned from registration methods such as
- * {@link Signal#effect(EffectAction)} to allow the caller to clean up the
- * registration when it's no longer needed.
+ * An {@link Executor} that is also {@link Serializable}.
  *
- * @see Signal#effect(EffectAction)
+ * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface CleanupCallback extends Serializable {
-    /**
-     * Performs cleanup operations such as unregistering listeners or disposing
-     * resources.
-     */
-    void cleanup();
+public interface SerializableExecutor extends Executor, Serializable {
 }

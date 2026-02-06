@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SerializableRunnable;
 import com.vaadin.signals.function.ValueSupplier;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
@@ -37,12 +39,12 @@ import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
  * trees make a differences between submitted changes and changes that have been
  * asynchronously confirmed.
  */
-public abstract class SignalTree {
+public abstract class SignalTree implements Serializable {
     /**
      * Receives notifications about processed signal commands and their results.
      */
     @FunctionalInterface
-    public interface CommandSubscriber {
+    public interface CommandSubscriber extends Serializable {
         /**
          * Called when a command has been processed.
          *
@@ -61,7 +63,7 @@ public abstract class SignalTree {
      *
      * @see SignalTree#prepareCommit(CommandsAndHandlers)
      */
-    public interface PendingCommit {
+    public interface PendingCommit extends Serializable {
         /**
          * Checks whether the pending changes can be committed. Committing is
          * possible if all changes would be accepted based on the current tree
@@ -196,7 +198,7 @@ public abstract class SignalTree {
      * @param action
      *            the action to run, not <code>null</code>
      */
-    protected void runWithLock(Runnable action) {
+    protected void runWithLock(SerializableRunnable action) {
         lock.lock();
         try {
             action.run();
@@ -213,7 +215,7 @@ public abstract class SignalTree {
      * @return a cleanup callback that runs the provided action while holding
      *         the lock, not <code>null</code>
      */
-    protected CleanupCallback wrapWithLock(Runnable action) {
+    protected CleanupCallback wrapWithLock(SerializableRunnable action) {
         return () -> runWithLock(action);
     }
 

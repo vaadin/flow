@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,7 +75,7 @@ public class MutableTreeRevision extends TreeRevision {
      * Dispatches command results to their handlers.
      */
     @FunctionalInterface
-    interface CommandDispatcher {
+    interface CommandDispatcher extends Serializable {
         /**
          * Dispatches a command result.
          *
@@ -90,7 +91,7 @@ public class MutableTreeRevision extends TreeRevision {
      * Attaches a child node to a parent node.
      */
     @FunctionalInterface
-    interface ChildAttacher {
+    interface ChildAttacher extends Serializable {
         /**
          * Attaches a child to the parent node.
          *
