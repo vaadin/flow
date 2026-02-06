@@ -256,9 +256,9 @@ public interface HasComponents extends HasElement, HasEnabled {
         if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
             throw new BindingActiveException();
         }
-        Objects.requireNonNull(list, "ListSignal cannot be null");
+        Objects.requireNonNull(list, "Signal cannot be null");
         Objects.requireNonNull(childFactory,
-                "Child element factory cannot be null");
+                "Child component factory cannot be null");
         var binding = ComponentEffect.bindChildren(self, list, childFactory);
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
         return () -> feature.removeBinding(SignalBindingFeature.CHILDREN);
