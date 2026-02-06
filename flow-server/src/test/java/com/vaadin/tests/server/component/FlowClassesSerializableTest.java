@@ -29,6 +29,8 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -182,6 +184,14 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
                 deserializedComponent.getElement().getAttribute("attr"));
         Assert.assertEquals("foo",
                 deserializedComponent.getElement().getProperty("prop"));
+        Assert.assertEquals("foo!!!",
+                deserializedComponent.getElement().getProperty("two-way-prop"));
+        // verify that two-way-binding works
+        emulateClientUpdate(deserializedComponent.getElement(), "two-way-prop",
+                "bar!!!");
+        Assert.assertEquals("bar!!!",
+                deserializedComponent.getElement().getProperty("two-way-prop"));
+        Assert.assertEquals("bar", deserializedComponent.signal.peek());
 
         // verify mapped and computed signals with bindEnabled and bindVisible
         Assert.assertTrue(deserializedComponent.getElement().isEnabled());
@@ -192,6 +202,18 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
 
         deserializedSession.unlock();
         VaadinService.setCurrent(null);
+    }
+
+    private void emulateClientUpdate(Element element, String property,
+            String value) {
+        ElementPropertyMap childModel = ElementPropertyMap
+                .getModel(element.getNode());
+        try {
+            childModel.deferredUpdateFromClient(property, value);
+        } catch (PropertyChangeDeniedException e) {
+            Assert.fail(
+                    "Failed to update property from client: " + e.getMessage());
+        }
     }
 
     private static class MyStreamVariable implements StreamVariable {

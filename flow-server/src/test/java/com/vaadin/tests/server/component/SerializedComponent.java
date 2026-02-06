@@ -45,5 +45,14 @@ class SerializedComponent extends Component {
         getElement().bindEnabled(
                 signal.map(value -> value != null && !value.isEmpty()));
         getElement().bindVisible(Signal.computed(() -> signal.value() != null));
+
+        getElement().bindProperty("two-way-prop", signal.map(str -> str + "!!!",
+                (str, value) -> value.replace("!!!", "")));
+
+        // sync property from the client
+        getElement().addPropertyChangeListener("two-way-prop",
+                "two-way-prop-changed", e -> {
+                });
     }
+
 }
