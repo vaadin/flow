@@ -56,6 +56,6 @@ public class CustomUidlRequestHandler extends UidlRequestHandler {
 
     private void commitEmptyResponse(VaadinResponse response)
             throws IOException {
-        commitJsonResponse(response, "for(;;);[{}]");
+        commitJsonResponse(response, "{}");
     }
 }

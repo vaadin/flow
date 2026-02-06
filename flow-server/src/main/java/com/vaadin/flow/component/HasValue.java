@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.WritableSignal;
 
 /**
@@ -239,10 +240,13 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * signal value changes have no effect. <code>null</code> signal unbinds the
      * existing binding.
      * <p>
-     * While a Signal is bound to a value state, any attempt to set the state
-     * manually with {@link #setValue(Object)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
-     * trying to bind a new Signal while one is already bound.
+     * While a Signal is bound to a value state, any attempt to bind a new
+     * Signal while one is already bound throws
+     * {@link com.vaadin.signals.BindingActiveException}.
+     * <p>
+     * While a Signal is bound to a value state and the element is in attached
+     * state, setting the value with {@link #setValue(Object)} or when a change
+     * originates from the client, will update the signal value.
      * <p>
      * Example of usage:
      *
@@ -264,6 +268,41 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     default void bindValue(WritableSignal<V> valueSignal) {
         throw new UnsupportedOperationException(
                 "Binding value to a Signal is not supported by "
+                        + getClass().getSimpleName());
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the read-only state of this component
+     * and keeps the state synchronized with the signal value while the
+     * component is in attached state. When the component is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound to the read-only state, any attempt to set the
+     * read-only state manually with {@link #setReadOnly(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Input component = new Input();
+     * add(component);
+     * component.bindReadOnly(signal);
+     * signal.value(true); // The input becomes read-only
+     * </pre>
+     *
+     * @param readOnlySignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setReadOnly(boolean)
+     */
+    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
+        throw new UnsupportedOperationException(
+                "Binding read only state to a Signal is not supported by "
                         + getClass().getSimpleName());
     }
 }

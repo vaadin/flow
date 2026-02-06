@@ -32,10 +32,12 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -100,8 +102,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
@@ -123,8 +124,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
@@ -204,7 +204,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String v7Uidl = uidl.get("execute").get(2).get(1).textValue();
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
@@ -225,7 +225,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
@@ -246,7 +246,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -270,7 +270,7 @@ public class UidlRequestHandlerTest {
         String expected = uidl.toString();
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String actual = uidl.toString();
 
@@ -324,6 +324,148 @@ public class UidlRequestHandlerTest {
         handler.synchronizedHandleRequest(session, request, response, "");
 
         Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
+    }
+
+    @Test
+    public void synchronizedHandleRequest_MessageIdSyncException_returnsSyncErrorResponse()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        SystemMessages systemMessages = new CustomizedSystemMessages();
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(systemMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request)
+                    throws ServerRpcHandler.MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify sync error notification is returned
+        Assert.assertTrue("Response should contain caption",
+                responseContent.contains("Synchronization Error"));
+        Assert.assertTrue("Response should contain message",
+                responseContent.contains("Your session needs to be refreshed"));
+    }
+
+    @Test
+    public void synchronizedHandleRequest_MessageIdSyncException_usesCustomMessages()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        CustomizedSystemMessages customMessages = new CustomizedSystemMessages();
+        customMessages.setSyncErrorCaption("Custom Sync Caption");
+        customMessages.setSyncErrorMessage("Custom sync error message");
+        customMessages.setSyncErrorURL("/custom-redirect");
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(customMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request) throws MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify custom sync error notification is returned
+        Assert.assertTrue("Response should contain custom caption",
+                responseContent.contains("Custom Sync Caption"));
+        Assert.assertTrue("Response should contain custom message",
+                responseContent.contains("Custom sync error message"));
+        Assert.assertTrue("Response should contain custom URL",
+                responseContent.contains("/custom-redirect"));
+    }
+
+    @Test
+    public void synchronizedHandleRequest_MessageIdSyncException_notificationDisabled_silentRefresh()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+        when(request.getService()).thenReturn(service);
+
+        CustomizedSystemMessages customMessages = new CustomizedSystemMessages();
+        customMessages.setSyncErrorNotificationEnabled(false);
+        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+                .thenReturn(customMessages);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, String requestBody,
+                    VaadinRequest request) throws MessageIdSyncException {
+                throw new ServerRpcHandler.MessageIdSyncException(1, 5);
+            }
+        };
+
+        handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, "");
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
+        String responseContent = CommunicationUtil
+                .getStringWhenWriteString(outputStream);
+
+        // Verify caption and message are null (triggers silent refresh)
+        Assert.assertTrue("Response should have null caption",
+                responseContent.contains("\"caption\":null"));
+        Assert.assertTrue("Response should have null message",
+                responseContent.contains("\"message\":null"));
     }
 
     private ObjectNode generateUidl(boolean withLocation, boolean withHash) {

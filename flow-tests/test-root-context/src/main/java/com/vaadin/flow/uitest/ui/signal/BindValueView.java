@@ -20,8 +20,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * View for testing binding value state to a Signal.
@@ -40,10 +39,9 @@ public class BindValueView extends Div {
         Div counterDiv = new Div();
         counterDiv.setId("counter");
 
-        Div signalValueInfoDiv = new Div();
+        Div signalValueInfoDiv = new Div(
+                signal.map(value -> "Signal: " + value));
         signalValueInfoDiv.setId("signal-value-info");
-        signalValueInfoDiv.getElement()
-                .bindText(signal.map(value -> "Signal: " + value));
 
         TestInput target = new TestInput();
         target.setId("target");
@@ -56,11 +54,7 @@ public class BindValueView extends Div {
 
         NativeButton changeInputValueButton = new NativeButton(
                 "setValue(\"foo\")", e -> {
-                    try {
-                        target.setValue("foo");
-                    } catch (BindingActiveException ex) {
-                        valueInfoDiv.setText("BindingActiveException");
-                    }
+                    target.setValue("foo");
                 });
         changeInputValueButton.setId("change-value-button");
 

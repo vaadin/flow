@@ -72,6 +72,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
@@ -1138,4 +1139,128 @@ public class NavigationStateRendererTest {
             }
         };
     }
+
+    // Test views for forward/reroute to same view with different parameters
+    // (issue #23232)
+    static abstract class RedirectToSameViewWithParams extends Component
+            implements BeforeEnterObserver {
+        static int instanceCount = 0;
+        static int beforeEnterCount = 0;
+        static List<String> receivedIds = new ArrayList<>();
+        final int instanceId;
+
+        public RedirectToSameViewWithParams() {
+            instanceCount++;
+            instanceId = instanceCount;
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            beforeEnterCount++;
+            String id = event.getRouteParameters().get("id").orElse("");
+            receivedIds.add(id);
+            // Forward to valid-id if current id is "unknown"
+            if ("unknown".equals(id)) {
+                selfRedirect(event, "valid-id");
+            }
+        }
+
+        protected abstract void selfRedirect(BeforeEnterEvent event, String id);
+
+        static void reset() {
+            instanceCount = 0;
+            beforeEnterCount = 0;
+            receivedIds.clear();
+        }
+    }
+
+    @Route("forward-param/:id")
+    @Tag("div")
+    public static class ForwardToSameViewWithParams
+            extends RedirectToSameViewWithParams {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void selfRedirect(BeforeEnterEvent event, String id) {
+            event.forwardTo(
+                    (Class<? extends Component>) event.getNavigationTarget(),
+                    new RouteParameters("id", id));
+        }
+    }
+
+    @Route("reroute-param/:id")
+    @Tag("div")
+    public static class RerouteToSameViewWithParams
+            extends RedirectToSameViewWithParams {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void selfRedirect(BeforeEnterEvent event, String id) {
+            event.rerouteTo(
+                    (Class<? extends Component>) event.getNavigationTarget(),
+                    new RouteParameters("id", id));
+        }
+    }
+
+    @Test
+    public void forwardToSameViewWithDifferentParams_reusesInstance() {
+        // Issue #23232: Forward to same view with different route parameters
+        // should reuse the view instance instead of creating a new one
+        redirectToSameViewWithDifferentParams_reusesInstance(
+                ForwardToSameViewWithParams.class, "forward");
+    }
+
+    @Test
+    public void rerouteToSameViewWithDifferentParams_reusesInstance() {
+        // Reroute to same view with different route parameters
+        // should reuse the view instance instead of creating a new one
+        redirectToSameViewWithDifferentParams_reusesInstance(
+                RerouteToSameViewWithParams.class, "reroute");
+    }
+
+    private void redirectToSameViewWithDifferentParams_reusesInstance(
+            Class<? extends Component> targetView, String redirectType) {
+        // Redirect (forward/reroute) to same view with different route
+        // parameters
+        // should reuse the view instance instead of creating a new one
+
+        RedirectToSameViewWithParams.reset();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        // Use RouteConfiguration to properly register the annotated route
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(router.getRegistry());
+        routeConfiguration.setAnnotatedRoute(targetView);
+
+        MockUI ui = new MockUI(session);
+
+        // Use router.navigate() which properly handles the full navigation flow
+        router.navigate(ui, new Location(redirectType + "-param/unknown"),
+                NavigationTrigger.UI_NAVIGATE);
+
+        // Should only create one instance, not two
+        Assert.assertEquals(
+                "View should be instantiated only once when redirecting ("
+                        + redirectType + ") to same view",
+                1, RedirectToSameViewWithParams.instanceCount);
+
+        // beforeEnter should be called twice: once for "unknown", once for
+        // "valid-id"
+        Assert.assertEquals(
+                "beforeEnter should be called twice (original + " + redirectType
+                        + ")",
+                2, RedirectToSameViewWithParams.beforeEnterCount);
+
+        // Verify the parameters received
+        Assert.assertEquals("Should receive both parameter values", 2,
+                RedirectToSameViewWithParams.receivedIds.size());
+        Assert.assertEquals("First call should have 'unknown'", "unknown",
+                RedirectToSameViewWithParams.receivedIds.get(0));
+        Assert.assertEquals("Second call should have 'valid-id'", "valid-id",
+                RedirectToSameViewWithParams.receivedIds.get(1));
+    }
+
 }

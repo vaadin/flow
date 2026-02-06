@@ -597,6 +597,18 @@ public abstract class Component
      * signal.value(false); // The component is set hidden
      * </pre>
      *
+     * or with the multiple boolean conditions:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; needsVisaSignal = new ValueSignal&lt;&gt;(false);
+     * ValueSignal&lt;VisaType&gt; visaTypeSignal = new ValueSignal&lt;&gt;(VisaType.H1B);
+     * VerticalLayout visaSection = new VerticalLayout();
+     * add(visaSection);
+     * // using lambda expression as a computed signal
+     * visaSection.bindVisible(() -> needsVisaSignal.value()
+     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
+     * </pre>
+     *
      * @param visibleSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding

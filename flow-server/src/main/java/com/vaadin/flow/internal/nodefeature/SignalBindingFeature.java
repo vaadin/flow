@@ -34,6 +34,9 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String CLASSES = "classes/";
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
+    public static final String THEMES = "themes/";
+    public static final String HTML_CONTENT = "htmlContent";
+    public static final String CHILDREN = "children";
 
     private Map<String, SignalBinding> values;
 
@@ -142,7 +145,16 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
     }
 
-    private <T> Signal<T> getSignal(String key) {
+    /**
+     * Gets the signal bound to the given key.
+     *
+     * @param key
+     *            the key
+     * @param <T>
+     *            the type of the signal value
+     * @return the signal bound to the given key, or null if no signal is bound
+     */
+    public <T> Signal<T> getSignal(String key) {
         if (values == null) {
             return null;
         }

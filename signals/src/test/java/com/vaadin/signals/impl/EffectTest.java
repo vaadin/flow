@@ -23,15 +23,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.ListSignal;
-import com.vaadin.signals.MapSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.ValueSignal;
-import com.vaadin.signals.ValueSignalTest.AsyncValueSignal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,7 +62,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsValue_effectRunAgain() {
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -80,7 +80,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeListStructure_effectRunAgain() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -89,7 +89,7 @@ public class EffectTest extends SignalTestBase {
 
         assertEquals(List.of(0), invocations);
 
-        ValueSignal<String> child = signal.insertLast("one").signal();
+        SharedValueSignal<String> child = signal.insertLast("one").signal();
         assertEquals(List.of(0, 1), invocations);
 
         signal.remove(child);
@@ -98,7 +98,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeMapStructure_effectRunAgain() {
-        MapSignal<String> signal = new MapSignal<>(String.class);
+        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -116,7 +116,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
@@ -140,7 +140,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
@@ -166,7 +166,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_failedWrite_effectNotRunAgain() {
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -179,7 +179,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_multipleWritesInTransaction_effectRunOnce() {
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -196,8 +196,8 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_multipleSignalsInTransaction_effectRunOnce() {
-        ValueSignal<String> signal1 = new ValueSignal<>("");
-        ValueSignal<String> signal2 = new ValueSignal<>("");
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -214,7 +214,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeOtherPartOfNode_effectNotRunAgain() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -229,7 +229,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_asyncSignal_effectUsesSubmittedValue() {
-        AsyncValueSignal signal = new AsyncValueSignal();
+        AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
         signal.value("");
         signal.tree().confirmSubmitted();
 
@@ -254,7 +254,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_noOpChange_effectNotRunButRemainsActive() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -272,7 +272,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_readChildNodes_coveredByNextEffectInvocation() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<List<String>> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -293,7 +293,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeValueToNull_effectTriggered() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -308,7 +308,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_lambdaSignal_changeTracked() {
-        ValueSignal<Integer> signal = new ValueSignal<>(1);
+        SharedValueSignal<Integer> signal = new SharedValueSignal<>(1);
         Signal<Integer> doubled = () -> signal.value() * 2;
 
         ArrayList<Integer> invocations = new ArrayList<>();
@@ -326,7 +326,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void close_effectReadsValue_affectNotRunAfterClose() {
         ArrayList<String> invocations = new ArrayList<>();
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
 
         CleanupCallback closer = Signal.effect(() -> {
             invocations.add(signal.value());
@@ -340,7 +340,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void dispatcher_multipleWrites_singleUpdateWhenDispatcherTriggers() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         TestExecutor dispatcher = useTestEffectDispatcher();
 
         ArrayList<String> invocations = new ArrayList<>();
@@ -361,7 +361,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void dispatcher_closeWithPendingUpdate_noUpdate() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         TestExecutor dispatcher = useTestEffectDispatcher();
 
         ArrayList<String> invocations = new ArrayList<>();
@@ -382,7 +382,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void exceptionHandling_effectThrowsException_effectRemainsFunctional() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         RuntimeException exception = new RuntimeException("Expected exception");
 
@@ -401,7 +401,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.effect(() -> {
@@ -421,7 +421,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void exceptionHandling_effectThrowsError_effectClosed() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         ArrayList<String> invocations = new ArrayList<>();
         Error error = new Error("Expected error");
@@ -439,8 +439,8 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void infiniteLoopDetection_writeUnrelatedSignal_noError() {
-        ValueSignal<String> other = new ValueSignal<>("other");
-        ValueSignal<String> signal = new ValueSignal<>("signal");
+        SharedValueSignal<String> other = new SharedValueSignal<>("other");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("signal");
 
         Signal.effect(() -> {
             other.value(signal.value());
@@ -453,8 +453,8 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void infiniteLoopDetection_writeOwnSignal_loopDetected() {
-        ValueSignal<String> signal = new ValueSignal<>("signal");
-        ValueSignal<String> trigger = new ValueSignal<>("trigger");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("signal");
+        SharedValueSignal<String> trigger = new SharedValueSignal<>("trigger");
 
         AtomicInteger count = new AtomicInteger();
 
@@ -477,8 +477,8 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void infiniteLoopDetection_loopBetweenEffects_loopDetectedFromSetter() {
-        ValueSignal<String> signal1 = new ValueSignal<>("signal");
-        ValueSignal<String> signal2 = new ValueSignal<>("signal");
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("signal");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
 
         AtomicInteger throwCount = new AtomicInteger();
 
@@ -503,9 +503,9 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void infiniteLoopDetection_loopBetweenConditionalEffects_loopDetected() {
-        ValueSignal<String> signal1 = new ValueSignal<>("signal");
-        ValueSignal<String> signal2 = new ValueSignal<>("signal");
-        ValueSignal<Boolean> trigger = new ValueSignal<>(false);
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("signal");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
+        SharedValueSignal<Boolean> trigger = new SharedValueSignal<>(false);
 
         Signal.effect(() -> {
             signal1.value(signal2.value() + " update");
@@ -526,8 +526,8 @@ public class EffectTest extends SignalTestBase {
     void infiniteLoopDetection_loopBetweenAsyncEffects_loopDetected() {
         TestExecutor dispatcher = useTestEffectDispatcher();
 
-        ValueSignal<String> signal1 = new ValueSignal<>("signal");
-        ValueSignal<String> signal2 = new ValueSignal<>("signal");
+        SharedValueSignal<String> signal1 = new SharedValueSignal<>("signal");
+        SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
 
         Signal.effect(() -> {
             signal1.value(signal2.value() + " update");
@@ -551,7 +551,7 @@ public class EffectTest extends SignalTestBase {
         TestExecutor dispatcher = useTestEffectDispatcher();
         List<String> invocations = new ArrayList<>();
 
-        ValueSignal<String> signal = new ValueSignal<>("signal") {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("signal") {
             @Override
             protected Usage createUsage(Transaction transaction) {
                 Usage usage = super.createUsage(transaction);

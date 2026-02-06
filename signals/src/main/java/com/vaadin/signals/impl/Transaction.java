@@ -22,10 +22,14 @@ import java.util.function.Consumer;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.function.ValueSupplier;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 import com.vaadin.signals.operations.TransactionOperation;
+import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
+import com.vaadin.signals.shared.impl.MutableTreeRevision;
+import com.vaadin.signals.shared.impl.SignalTree;
+import com.vaadin.signals.shared.impl.StagedTransaction;
+import com.vaadin.signals.shared.impl.TreeRevision;
 
 /**
  * A context for running commands that might be related to each other. The
@@ -347,7 +351,7 @@ public abstract class Transaction {
      *            <code>false</code> to only update the transaction's
      *            repeatable-read revision
      */
-    protected abstract void include(SignalTree tree, SignalCommand command,
+    public abstract void include(SignalTree tree, SignalCommand command,
             CommandResultHandler resultHandler, boolean applyToTree);
 
     /**

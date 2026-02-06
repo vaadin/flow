@@ -93,7 +93,7 @@ public class PushAtmosphereHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"async\":true,\"sessionExpired\":true}}]",
+                "{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
                 responseContent);
     }
 

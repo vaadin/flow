@@ -54,6 +54,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
 @NotThreadSafe
 public class TranslationFileRequestHandlerTest {
 
+    private final VaadinService service = Mockito.mock(VaadinService.class);
+
     private final VaadinSession session = Mockito.mock(VaadinSession.class);
 
     private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
@@ -80,8 +82,7 @@ public class TranslationFileRequestHandlerTest {
     private I18NProvider i18NProvider;
 
     @Before
-    public void configure()
-            throws IOException, NoSuchFieldException, IllegalAccessException {
+    public void configure() throws IOException {
         initTranslationsFolder();
     }
 
@@ -397,7 +398,6 @@ public class TranslationFileRequestHandlerTest {
     private void mockService(boolean isProductionMode) {
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -405,7 +405,80 @@ public class TranslationFileRequestHandlerTest {
                 .thenReturn(isProductionMode);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-        Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(request.getService()).thenReturn(service);
+        // Just a guard to ensure the handler never uses VaadinSession
+        Mockito.when(session.getService()).thenThrow(new IllegalStateException(
+                "TranslationFileRequestHandler should not use Vaadin session."));
+    }
+
+    @Test
+    public void handleSessionExpired_translationRequest_returnsTranslations()
+            throws IOException {
+        configure(true);
+        setRequestParams("fi",
+                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
+                null, null);
+
+        Assert.assertTrue(
+                "handleSessionExpired should return true for i18n requests",
+                handler.handleSessionExpired(request, response));
+
+        Assert.assertEquals("The expected response content does not match.",
+                "{\"title\":\"Suomi\"}", getResponseContent());
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+    }
+
+    @Test
+    public void handleSessionExpired_nonTranslationRequest_returnsFalse()
+            throws IOException {
+        configure(true);
+        setRequestParams(null, "other", null, null);
+
+        Assert.assertFalse(
+                "handleSessionExpired should return false for non-i18n requests",
+                handler.handleSessionExpired(request, response));
+    }
+
+    @Test
+    public void handleSessionExpired_noI18nProvider_returnsError()
+            throws IOException {
+        // Create handler without I18NProvider
+        createTranslationFiles(true);
+        mockResponse();
+        mockService(false);
+        handler = new TranslationFileRequestHandler(null, urlClassLoader);
+
+        setRequestParams("fi",
+                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
+                null, null);
+
+        Assert.assertTrue("handleSessionExpired should return true",
+                handler.handleSessionExpired(request, response));
+
+        // In dev mode, should return 501 Not Implemented error
+        Mockito.verify(response).sendError(
+                HttpStatusCode.NOT_IMPLEMENTED.getCode(),
+                "Missing I18nProvider implementation, loading translations is not supported.");
+    }
+
+    @Test
+    public void handleSessionExpired_noI18nProvider_productionMode_returnsNotFound()
+            throws IOException {
+        // Create handler without I18NProvider
+        createTranslationFiles(true);
+        mockResponse();
+        mockService(true);
+        handler = new TranslationFileRequestHandler(null, urlClassLoader);
+
+        setRequestParams("fi",
+                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
+                null, null);
+
+        Assert.assertTrue("handleSessionExpired should return true",
+                handler.handleSessionExpired(request, response));
+
+        // In production mode, should return 404 Not Found
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     private static class CustomI18NProvider implements I18NProvider {

@@ -21,9 +21,8 @@ import org.junit.Test;
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
@@ -69,7 +68,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void multipleFieldsField_bindValue_detached_setModalValueDoesNotUpdateSignal() {
+    public void multipleFieldsField_bindValue_detached_setValueDoesNotUpdateSignal() {
         MultipleFieldsField field = new MultipleFieldsField();
 
         WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
@@ -78,7 +77,23 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("", field.start.getValue());
         Assert.assertEquals("", field.rest.getValue());
 
-        // test that setModelValue updates the bound signal even when detached
+        // setValue doesn't update the bound signal when detached
+        field.setValue("Hey You");
+        Assert.assertEquals("Hey You", field.getValue());
+        Assert.assertEquals("Hello Cool World", signal.peek());
+    }
+
+    @Test
+    public void multipleFieldsField_bindValue_detached_setModelValueDoesNotUpdateSignal() {
+        MultipleFieldsField field = new MultipleFieldsField();
+
+        WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
+        field.bindValue(signal);
+        // not attached yet, so presentation value not used from the signal
+        Assert.assertEquals("", field.start.getValue());
+        Assert.assertEquals("", field.rest.getValue());
+
+        // setModelValue doesn't update the bound signal when detached
         field.start.setValue("Hey");
         field.rest.setValue("You");
         Assert.assertEquals("Hey You", field.getValue());
@@ -95,12 +110,14 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("Hello", field.start.getValue());
         Assert.assertEquals("Cool World", field.rest.getValue());
 
-        // test that setValue fails when bound
-        Assert.assertThrows(BindingActiveException.class,
-                () -> field.setValue(""));
+        // test that setValue updates the signal
+        field.setValue("");
+        Assert.assertEquals("", field.getValue());
+        Assert.assertEquals("", signal.peek());
 
-        // setValue for CompositeField's components is allowed since their value
-        // change listeners update the value by internal setModelValue method
+        signal.value("Hello Cool World");
+        // setValue for CompositeField's components value change listeners
+        // update the value by internal setModelValue method
         field.rest.setValue("");
         Assert.assertEquals("Hello", field.getValue());
         Assert.assertEquals("Hello", signal.peek());

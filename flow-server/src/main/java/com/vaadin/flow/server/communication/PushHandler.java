@@ -51,6 +51,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.MessageIdSyncException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -77,6 +78,8 @@ public class PushHandler {
      * time for handling session expiration.
      */
     private final Map<String, Long> disconnectedUuidBuffer = new ConcurrentHashMap<>();
+
+    private VaadinServletService service;
 
     /**
      * Callback interface used internally to process an event with the
@@ -176,6 +179,18 @@ public class PushHandler {
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
+        } catch (MessageIdSyncException e) {
+            getLogger().warn(
+                    "Message ID sync error. Expected: {}, received: {}",
+                    e.getExpectedId(), e.getReceivedId());
+            SystemMessages msgs = service.getSystemMessages(
+                    HandlerHelper.findLocale(null, vaadinRequest),
+                    vaadinRequest);
+            sendNotificationAndDisconnect(resource,
+                    VaadinService.createCriticalNotificationJSON(
+                            msgs.getSyncErrorCaption(),
+                            msgs.getSyncErrorMessage(), null,
+                            msgs.getSyncErrorURL()));
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
@@ -184,8 +199,6 @@ public class PushHandler {
         }
 
     };
-
-    private VaadinServletService service;
 
     /**
      * Creates an instance connected to the given service.

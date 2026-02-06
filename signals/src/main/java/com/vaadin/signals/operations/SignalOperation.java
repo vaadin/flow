@@ -16,6 +16,7 @@
 package com.vaadin.signals.operations;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * An operation triggered on a signal instance. The result will be populated
@@ -101,5 +102,49 @@ public class SignalOperation<T> {
      */
     public CompletableFuture<ResultOrError<T>> result() {
         return result;
+    }
+
+    /**
+     * Creates a new operation that transforms the result value using the given
+     * mapper function. If this operation fails, the mapped operation will also
+     * fail with the same error.
+     *
+     * @param <R>
+     *            the mapped result type
+     * @param mapper
+     *            the function to transform the result value, not
+     *            <code>null</code>
+     * @return a new operation with the mapped result, not <code>null</code>
+     */
+    public <R> SignalOperation<R> map(Function<T, R> mapper) {
+        SignalOperation<R> mapped = new SignalOperation<>();
+        forwardMappedResult(mapped, mapper);
+        return mapped;
+    }
+
+    /**
+     * Forwards the result of this operation to another operation after applying
+     * the mapper function. If this operation fails, the target operation will
+     * also fail with the same error.
+     *
+     * @param <R>
+     *            the mapped result type
+     * @param target
+     *            the operation to forward the result to, not <code>null</code>
+     * @param mapper
+     *            the function to transform the result value, not
+     *            <code>null</code>
+     */
+    protected <R> void forwardMappedResult(SignalOperation<R> target,
+            Function<T, R> mapper) {
+        result.thenAccept(resultOrError -> {
+            if (resultOrError.successful()) {
+                T value = ((Result<T>) resultOrError).value();
+                target.result().complete(new Result<>(mapper.apply(value)));
+            } else {
+                target.result().complete(
+                        new Error<>(((Error<?>) resultOrError).reason()));
+            }
+        });
     }
 }

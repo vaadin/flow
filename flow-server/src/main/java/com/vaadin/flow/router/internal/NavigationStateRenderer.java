@@ -17,8 +17,11 @@ package com.vaadin.flow.router.internal;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.LocationChangeEvent;
@@ -43,6 +46,8 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
+    private LocationChangeEvent ongoingLocationChangeEvent;
+
     /**
      * Constructs a new NavigationStateRenderer that handles the given
      * navigation state.
@@ -52,6 +57,11 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
      */
     public NavigationStateRenderer(NavigationState navigationState) {
         super(navigationState);
+    }
+
+    void setOngoingLocationChangeEvent(
+            LocationChangeEvent ongoingLocationChangeEvent) {
+        this.ongoingLocationChangeEvent = ongoingLocationChangeEvent;
     }
 
     @Override
@@ -100,6 +110,24 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
         HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
         hasUrlParameter.setParameter(beforeEnterEvent, deserializedParameter);
+    }
+
+    @Override
+    protected Optional<HasElement> findActiveRouteTarget(NavigationEvent event,
+            Predicate<HasElement> isRouteTargetType) {
+        Optional<HasElement> currentInstance;
+        if (event.isForwardTo() && ongoingLocationChangeEvent != null) {
+            // When forwarding, first check the current navigation chain
+            // A view might forward to itself with different parameters,
+            // but at this point the active navigation chain is not yet updated
+            currentInstance = ongoingLocationChangeEvent.getRouteTargetChain()
+                    .stream().filter(isRouteTargetType).findAny();
+        } else {
+            currentInstance = Optional.empty();
+        }
+        // then check the active navigation chain
+        return currentInstance.or(
+                () -> super.findActiveRouteTarget(event, isRouteTargetType));
     }
 
 }
