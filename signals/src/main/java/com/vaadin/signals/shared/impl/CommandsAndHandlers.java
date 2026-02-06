@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +34,7 @@ public class CommandsAndHandlers {
      * Handles the result of a signal command execution.
      */
     @FunctionalInterface
-    public interface CommandResultHandler {
+    public interface CommandResultHandler extends Serializable {
         /**
          * Handles the result of a command execution.
          *

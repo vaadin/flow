@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.signals.function.CleanupCallback;
@@ -49,7 +50,7 @@ import com.vaadin.signals.operations.TransactionOperation;
  *            the signal value type
  */
 @FunctionalInterface
-public interface Signal<T> {
+public interface Signal<T> extends Serializable {
     /**
      * Gets the current value of this signal. The value is read in a way that
      * takes the current transaction into account and in the case of clustering

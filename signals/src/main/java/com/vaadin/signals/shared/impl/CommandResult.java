@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ import com.vaadin.signals.SignalCommand;
  * @see SignalCommand
  * @see TreeRevision
  */
-public sealed interface CommandResult {
+public sealed interface CommandResult extends Serializable {
     /**
      * A data node update in an accepted command result.
      *

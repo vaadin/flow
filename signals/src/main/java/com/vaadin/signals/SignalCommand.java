@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,7 @@ import com.vaadin.signals.shared.SharedListSignal.ListPosition;
         @Type(value = SignalCommand.SnapshotCommand.class, name = "snapshot"),
 
 })
-public sealed interface SignalCommand {
+public sealed interface SignalCommand extends Serializable {
     /**
      * A signal command that sets the value of a signal.
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,29 +16,30 @@
 package com.vaadin.signals.function;
 
 import java.io.Serializable;
-
-import com.vaadin.signals.Signal;
+import java.util.function.Function;
 
 /**
- * Supplies a value within a specific context such as a transaction or
- * lock-protected block.
- * <p>
- * This is used when the result of an operation needs to be returned, such as in
- * transactional operations where you want to both modify signals and return a
- * value.
+ * A {@link Function} that is also {@link Serializable}.
  *
+ * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
- *            the supplied value type
- * @see Signal#runInTransaction(ValueSupplier)
- * @see Signal#runWithoutTransaction(ValueSupplier)
- * @see Signal#untracked(ValueSupplier)
+ *            the type of the input to the function
+ * @param <R>
+ *            the type of the result of the function
  */
 @FunctionalInterface
-public interface ValueSupplier<T> extends Serializable {
+public interface SerializableFunction<T, R>
+        extends Function<T, R>, Serializable {
+
     /**
-     * Supplies a value.
+     * Returns a function that always returns its input argument.
      *
-     * @return the supplied value, may be <code>null</code>
+     * @param <T>
+     *            the type of the input and output objects to the function
+     * @return a function that always returns its input argument
      */
-    T supply();
+    static <T> SerializableFunction<T, T> identity() {
+        return t -> t;
+    }
 }
