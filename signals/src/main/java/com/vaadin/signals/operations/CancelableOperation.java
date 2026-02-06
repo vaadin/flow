@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.operations;
 
-import java.util.function.Function;
+import com.vaadin.signals.function.SerializableFunction;
 
 /**
  * An operation that can be cancelled.
@@ -65,7 +65,7 @@ public class CancelableOperation<T> extends SignalOperation<T> {
      *         <code>null</code>
      */
     @Override
-    public <R> CancelableOperation<R> map(Function<T, R> mapper) {
+    public <R> CancelableOperation<R> map(SerializableFunction<T, R> mapper) {
         CancelableOperation<T> parent = this;
         CancelableOperation<R> mapped = new CancelableOperation<>() {
             @Override
