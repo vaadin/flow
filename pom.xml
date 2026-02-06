@@ -721,6 +721,29 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Install Husky git hooks for automatic formatting -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${maven.exec.plugin.version}</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>install-git-hooks</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <executable>npx</executable>
+              <arguments>
+                <argument>husky@9.1.7</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <extensions>
       <!-- Enabling the use of SSH for deployment -->
