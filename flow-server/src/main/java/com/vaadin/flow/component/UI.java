@@ -83,6 +83,8 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -125,7 +127,8 @@ public class UI extends Component
 
     private PushConfiguration pushConfiguration;
 
-    private Locale locale = Locale.getDefault();
+    private final ValueSignal<Locale> localeSignal = new ValueSignal<>(
+            Locale.getDefault());
 
     private final UIInternals internals;
 
@@ -806,7 +809,28 @@ public class UI extends Component
      */
     @Override
     public Locale getLocale() {
-        return locale;
+        return localeSignal.peek();
+    }
+
+    /**
+     * Gets a signal that holds the current locale of this UI.
+     * <p>
+     * The signal is the source of truth for the locale. Use
+     * {@link WritableSignal#value()} to read the locale reactively (creates a
+     * dependency when called inside a signal effect). Use {@link #getLocale()}
+     * for non-reactive reads.
+     * <p>
+     * Note that writing directly to the signal will not notify
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver LocaleChangeObserver}
+     * instances. Use {@link #setLocale(Locale)} if you need observers to be
+     * notified.
+     *
+     * @return a writable signal holding the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public WritableSignal<Locale> localeSignal() {
+        return localeSignal;
     }
 
     /**
@@ -821,8 +845,8 @@ public class UI extends Component
      */
     public void setLocale(Locale locale) {
         assert locale != null : "Null locale is not supported!";
-        if (!this.locale.equals(locale)) {
-            this.locale = locale;
+        if (!getLocale().equals(locale)) {
+            localeSignal.value(locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }
