@@ -243,6 +243,21 @@ public class SharedNodeSignalTest extends SignalTestBase {
     }
 
     @Test
+    void adoptAt_addParentToChildWithAlias_rejected() {
+        SharedNodeSignal signal = new SharedNodeSignal();
+
+        signal.putChildWithValue("key", "value");
+        SharedNodeSignal parentAlias = signal.putChildIfAbsent("key").signal();
+
+        SharedNodeSignal child = parentAlias.insertChild(ListPosition.last())
+                .signal();
+
+        SignalOperation<Void> operation = child.adoptAt(parentAlias,
+                ListPosition.first());
+        assertFailure(operation);
+    }
+
+    @Test
     void adoptAt_adoptMapChild_noLongerMapChild() {
         SharedNodeSignal signal = new SharedNodeSignal();
         SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
