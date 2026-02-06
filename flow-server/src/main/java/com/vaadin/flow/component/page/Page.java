@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
@@ -41,6 +40,8 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.signals.impl.Effect;
 import com.vaadin.signals.local.ValueSignal;
 
 /**
@@ -55,7 +56,6 @@ public class Page implements Serializable {
     private final UI ui;
     private final History history;
     private DomListenerRegistration resizeReceiver;
-    private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
 
     /**
@@ -399,19 +399,7 @@ public class Page implements Serializable {
      * @return a read-only signal with the current window size
      */
     public Signal<WindowSize> windowSizeSignal() {
-        if (windowSizeSignal == null) {
-            ExtendedClientDetails details = getExtendedClientDetails();
-            int width = details.getWindowInnerWidth();
-            int height = details.getWindowInnerHeight();
-            if (width < 0) {
-                width = 0;
-            }
-            if (height < 0) {
-                height = 0;
-            }
-            windowSizeSignal = new ValueSignal<>(new WindowSize(width, height));
-            ensureResizeListener();
-        }
+        ensureWindowSizeSignal();
         return windowSizeSignal.asReadonly();
     }
 
@@ -430,12 +418,42 @@ public class Page implements Serializable {
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
-        ensureResizeListener();
-        if (resizeListeners == null) {
-            resizeListeners = new ArrayList<>(1);
+        ensureWindowSizeSignal();
+        // Skip the initial effect run by capturing the current value
+        WindowSize[] last = { windowSizeSignal.value() };
+        Effect effect = new Effect(() -> {
+            WindowSize size = windowSizeSignal.value();
+            if (!size.equals(last[0])) {
+                last[0] = size;
+                resizeListener
+                        .browserWindowResized(new BrowserWindowResizeEvent(this,
+                                size.width(), size.height()));
+            }
+        }, command -> {
+            if (UI.getCurrent() == ui) {
+                command.run();
+            } else {
+                SignalEnvironment.getDefaultEffectDispatcher()
+                        .execute(() -> ui.access(command::run));
+            }
+        });
+        return effect::dispose;
+    }
+
+    private void ensureWindowSizeSignal() {
+        if (windowSizeSignal == null) {
+            ExtendedClientDetails details = getExtendedClientDetails();
+            int width = details.getWindowInnerWidth();
+            int height = details.getWindowInnerHeight();
+            if (width < 0) {
+                width = 0;
+            }
+            if (height < 0) {
+                height = 0;
+            }
+            windowSizeSignal = new ValueSignal<>(new WindowSize(width, height));
         }
-        resizeListeners.add(resizeListener);
-        return () -> resizeListeners.remove(resizeListener);
+        ensureResizeListener();
     }
 
     private void ensureResizeListener() {
@@ -454,14 +472,7 @@ public class Page implements Serializable {
                     .addEventListener("window-resize", e -> {
                         int w = e.getEventData().get("event.w").intValue();
                         int h = e.getEventData().get("event.h").intValue();
-                        if (windowSizeSignal != null) {
-                            windowSizeSignal.value(new WindowSize(w, h));
-                        }
-                        if (resizeListeners != null) {
-                            var evt = new BrowserWindowResizeEvent(this, w, h);
-                            new ArrayList<>(resizeListeners)
-                                    .forEach(l -> l.browserWindowResized(evt));
-                        }
+                        windowSizeSignal.value(new WindowSize(w, h));
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
         }
