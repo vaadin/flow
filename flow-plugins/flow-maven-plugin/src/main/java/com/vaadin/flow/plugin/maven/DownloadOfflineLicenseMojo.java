@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,7 @@ import com.vaadin.pro.licensechecker.OfflineKeyValidator;
  * Unlike the online license (proKey), offline licenses work without internet
  * connectivity and are suitable for CI/CD environments and offline development.
  *
- * @since 25.0
+ * @since 24.10
  */
 @Mojo(name = "download-offline-license", requiresProject = false)
 public class DownloadOfflineLicenseMojo extends AbstractMojo {
