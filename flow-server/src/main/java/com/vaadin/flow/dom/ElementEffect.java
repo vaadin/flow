@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -41,10 +42,10 @@ import com.vaadin.signals.impl.Effect;
  *
  * @since 25.0
  */
-public final class ElementEffect {
-    private final Runnable effectFunction;
+public final class ElementEffect implements Serializable {
+    private transient final Runnable effectFunction;
     private boolean closed = false;
-    private Effect effect = null;
+    private transient Effect effect = null;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, Runnable effectFunction) {

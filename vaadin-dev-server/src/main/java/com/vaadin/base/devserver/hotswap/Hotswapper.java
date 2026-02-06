@@ -76,7 +76,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * <pre>
  * {@code
- * com.vaadin.flow.hotswap.Hotswapper.register(this);
+ * com.vaadin.base.devserver.hotswap.Hotswapper.register(this);
  * }
  * </pre>
  * <p>

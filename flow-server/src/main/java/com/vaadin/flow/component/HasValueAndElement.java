@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.signals.Signal;
 
 /**
  * A component that has a value.
@@ -48,5 +49,10 @@ public interface HasValueAndElement<E extends ValueChangeEvent<V>, V>
     @Override
     default boolean isReadOnly() {
         return getElement().getProperty("readonly", false);
+    }
+
+    @Override
+    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
+        getElement().bindProperty("readonly", readOnlySignal);
     }
 }

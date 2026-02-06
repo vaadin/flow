@@ -81,6 +81,19 @@ public class ReactAdapterIT extends ChromeBrowserTest {
                 $(SpanElement.class).id("listenerOutput").getText());
     }
 
+    @Test
+    public void validateSetNullState() {
+        open();
+
+        waitForDevServer();
+
+        $(NativeButtonElement.class).id("setNullValueButton").click();
+
+        // getPropertyString returns null for null/undefined values
+        String value = getAdapterElement().getPropertyString("value");
+        Assert.assertNull("Expected null value, not string 'null'", value);
+    }
+
     private TestBenchElement getAdapterElement() {
         return $("react-input").first();
     }

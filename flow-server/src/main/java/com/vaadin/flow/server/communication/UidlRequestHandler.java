@@ -38,12 +38,14 @@ import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ClientResentPayloadException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.MessageIdSyncException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
@@ -145,6 +147,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                     request.getRemoteHost());
             // Refresh on client side
             return Optional.of(() -> writeRefresh(response));
+        } catch (MessageIdSyncException e) {
+            getLogger().warn(
+                    "Message ID sync error. Expected: {}, received: {}",
+                    e.getExpectedId(), e.getReceivedId());
+            SystemMessages systemMessages = session.getService()
+                    .getSystemMessages(HandlerHelper.findLocale(null, request),
+                            request);
+            return Optional.of(() -> writeSyncError(systemMessages, response));
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
@@ -169,13 +179,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
+    private void writeSyncError(SystemMessages systemMessages,
+            VaadinResponse response) throws IOException {
+        String json = VaadinService.createCriticalNotificationJSON(
+                systemMessages.getSyncErrorCaption(),
+                systemMessages.getSyncErrorMessage(), null,
+                systemMessages.getSyncErrorURL());
+        commitJsonResponse(response, json);
+    }
+
     void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
         ObjectNode uidl = createUidl(ui, resync);
 
         removeOffendingMprHashFragment(uidl);
 
-        // some dirt to prevent cross site scripting
-        String responseString = "for(;;);[" + uidl + "]";
+        String responseString = uidl.toString();
         ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }

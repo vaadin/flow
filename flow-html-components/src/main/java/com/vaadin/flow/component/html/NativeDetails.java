@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing a <code>&lt;details&gt;</code> element.
@@ -81,6 +82,31 @@ public class NativeDetails extends HtmlComponent
     }
 
     /**
+     * Binds a signal's value to the summary text so that the text is updated
+     * when the signal's value is updated.
+     * <p>
+     * While a binding for the summary text is active, any attempt to set the
+     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
+     * The same happens when trying to bind a new Signal while one is already
+     * bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param summarySignal
+     *            the signal to bind, not <code>null</code>
+     * @see Element#bindText(Signal)
+     *
+     * @since 25.1
+     */
+    public NativeDetails(Signal<String> summarySignal) {
+        this();
+        Objects.requireNonNull(summarySignal, "summarySignal must not be null");
+        bindSummaryText(summarySignal);
+    }
+
+    /**
      * Creates a new details with the given content of the summary.
      *
      * @param summaryContent
@@ -101,6 +127,22 @@ public class NativeDetails extends HtmlComponent
      */
     public NativeDetails(String summary, Component content) {
         this(summary);
+        setContent(content);
+    }
+
+    /**
+     * Creates a new details using the provided summary signal and content.
+     *
+     * @param summarySignal
+     *            the signal to bind, not <code>null</code>
+     * @param content
+     *            the content component to set.
+     * @see #bindSummaryText(Signal)
+     *
+     * @since 25.1
+     */
+    public NativeDetails(Signal<String> summarySignal, Component content) {
+        this(summarySignal);
         setContent(content);
     }
 
@@ -146,6 +188,37 @@ public class NativeDetails extends HtmlComponent
      */
     public void setSummaryText(String summary) {
         this.summary.setText(summary);
+    }
+
+    /**
+     * Binds a signal's value to the summary text so that the text is updated
+     * when the signal's value is updated.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the summary text. When unbinding, the current summary text is left
+     * unchanged.
+     * <p>
+     * While a binding for the summary text is active, any attempt to set the
+     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
+     * The same happens when trying to bind a new Signal while one is already
+     * bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param summarySignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setSummaryText(String)
+     * @see Element#bindText(Signal)
+     *
+     * @since 25.1
+     */
+    public void bindSummaryText(Signal<String> summarySignal) {
+        this.summary.getElement().bindText(summarySignal);
     }
 
     /**
@@ -211,11 +284,11 @@ public class NativeDetails extends HtmlComponent
 
     /**
      * Represents the DOM event "toggle".
-     *
+     * <p>
      * In addition to the usual events supported by HTML elements, the details
      * element supports the toggle event, which is dispatched to the details
      * element whenever its state changes between open and closed.
-     *
+     * <p>
      * It is sent after the state is changed, although if the state changes
      * multiple times before the browser can dispatch the event, the events are
      * coalesced so that only one is sent.
@@ -230,7 +303,7 @@ public class NativeDetails extends HtmlComponent
 
         /**
          * ToggleEvent base constructor.
-         *
+         * <p>
          * Note: This event is always triggered on client side. Resulting in
          * {@code fromClient} to be always {@code true}.
          *

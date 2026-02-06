@@ -393,9 +393,9 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected void onMessage(AtmosphereResponse response) {
         String message = response.getResponseBody();
-        ValueMap json = MessageHandler.parseWrappedJson(message);
+        ValueMap json = MessageHandler.parseJson(message);
         if (json == null) {
-            // Invalid string (not wrapped as expected)
+            // Invalid JSON string
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {

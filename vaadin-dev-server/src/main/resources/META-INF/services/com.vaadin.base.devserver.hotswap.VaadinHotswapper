@@ -18,3 +18,4 @@ com.vaadin.base.devserver.hotswap.impl.StyleSheetHotswapper
 com.vaadin.base.devserver.hotswap.impl.ReflectionCacheHotswapper
 com.vaadin.base.devserver.hotswap.impl.DefaultTranslationsHotswapper
 com.vaadin.base.devserver.hotswap.impl.RouteRegistryHotswapper
+com.vaadin.base.devserver.hotswap.impl.ErrorViewHotswapper

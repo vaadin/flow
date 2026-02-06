@@ -204,7 +204,7 @@ public class AtmospherePushConnection
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage("for(;;);[" + response + "]");
+                    sendMessage(response.toString());
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }

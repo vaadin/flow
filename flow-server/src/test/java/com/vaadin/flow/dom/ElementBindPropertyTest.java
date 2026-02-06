@@ -30,12 +30,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -51,7 +49,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -59,25 +57,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 public class ElementBindPropertyTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
     private LinkedList<ErrorEvent> events;
 
     @BeforeClass
     public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
     }
 
     @AfterClass
@@ -88,30 +77,13 @@ public class ElementBindPropertyTest {
 
     @Before
     public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         events = mockLockedSessionWithErrorHandler();
     }
 
     @After
     public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
         CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
+        events = null;
     }
 
     // common property signal binding tests
@@ -698,7 +670,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<List<?>> signal = new ValueSignal<>(
+        ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 Arrays.asList(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -712,9 +684,8 @@ public class ElementBindPropertyTest {
         signal.value(Arrays.asList(createJack(), createJohn()));
 
         // assert signal value updated
-        assertEquals("Jack",
-                ((Map<?, ?>) signal.peek().getFirst()).get("name"));
-        assertEquals("John", ((Map<?, ?>) signal.peek().getLast()).get("name"));
+        assertEquals("Jack", (signal.peek().getFirst()).name());
+        assertEquals("John", (signal.peek().getLast()).name());
         // assert property value not updated
         assertEquals("John",
                 getFromList(component, "foo", 0).get("name").asString());
@@ -737,7 +708,7 @@ public class ElementBindPropertyTest {
     public void bindMapProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -749,7 +720,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
         assertEquals("John",
@@ -789,7 +760,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+        ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal);
 
@@ -803,8 +774,8 @@ public class ElementBindPropertyTest {
         signal.value(createPersonMap(createJack(), createJohn()));
 
         // assert signal value updated
-        assertEquals("Jack", ((Map<?, ?>) signal.peek().get("0")).get("name"));
-        assertEquals("John", ((Map<?, ?>) signal.peek().get("1")).get("name"));
+        assertEquals("Jack", (signal.peek().get("0")).name());
+        assertEquals("John", (signal.peek().get("1")).name());
         // assert property value not updated
         assertEquals("John",
                 getFromMap(component, "foo", "0").get("name").asString());
@@ -841,8 +812,9 @@ public class ElementBindPropertyTest {
         return createPerson("Jack", 52, false);
     }
 
-    private Map createPersonMap(JacksonUtilsTest.Person... persons) {
-        Map map = new HashMap<>();
+    private Map<String, JacksonUtilsTest.Person> createPersonMap(
+            JacksonUtilsTest.Person... persons) {
+        Map<String, JacksonUtilsTest.Person> map = new HashMap<>();
         for (int i = 0; i < persons.length; i++) {
             map.put(String.valueOf(i), persons[i]);
         }
