@@ -195,6 +195,8 @@
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
             </systemProperties>
             <deployMode>FORK</deployMode>
+            <maxChildStartChecks>50</maxChildStartChecks>
+            <maxChildStartCheckMs>200</maxChildStartCheckMs>
             <jvmArgs>-Djetty.http.port=${server.port}</jvmArgs>
           </configuration>
           <dependencies>
