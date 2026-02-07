@@ -29,8 +29,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.shared.SharedNumberSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.shared.SharedNumberSignal;
 
 /**
  * Creates a new input element with type "range".
@@ -158,8 +158,8 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * <p>
      * While a binding for the "min" attribute is active, any attempt to set the
      * attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -168,7 +168,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @param minSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setMin(double)
      * @see Element#bindAttribute(String, Signal)
@@ -209,8 +209,8 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * <p>
      * While a binding for the "max" attribute is active, any attempt to set the
      * attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -219,7 +219,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @param maxSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setMax(double)
      * @see Element#bindAttribute(String, Signal)

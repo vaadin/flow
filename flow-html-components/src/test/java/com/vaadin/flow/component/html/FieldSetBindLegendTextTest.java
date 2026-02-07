@@ -19,15 +19,15 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 /**
- * Tests for {@link FieldSet#bindLegendText(com.vaadin.signals.Signal)} using
- * {@link SignalsUnitTest} setup.
+ * Tests for {@link FieldSet#bindLegendText(com.vaadin.flow.signals.Signal)}
+ * using {@link SignalsUnitTest} setup.
  */
 public class FieldSetBindLegendTextTest extends SignalsUnitTest {
 

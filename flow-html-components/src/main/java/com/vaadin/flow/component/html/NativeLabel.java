@@ -24,7 +24,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component for a <code>&lt;label&gt;</code> element, which represents a
@@ -76,9 +76,9 @@ public class NativeLabel extends HtmlContainer {
      * Creates a new label with its text content bound to the given signal.
      * <p>
      * While a binding for the text content is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the

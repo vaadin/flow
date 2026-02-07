@@ -29,8 +29,8 @@ import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Default implementation for the {@link ThemeList} that stores the theme names

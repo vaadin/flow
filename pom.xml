@@ -50,7 +50,6 @@
     <module>flow-jandex</module>
     <module>vaadin-spring</module>
     <module>flow-polymer2lit</module>
-    <module>signals</module>
   </modules>
   <scm>
     <connection>scm:https:https://github.com/vaadin/flow.git</connection>

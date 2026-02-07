@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui.signal;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.local.ValueSignal;
 
 /**
  * View for testing binding enabled state to a Signal.

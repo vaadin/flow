@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Representation of the theme names for an {@link Element}.
@@ -70,7 +70,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *            the theme name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, or {@code null} to unbind
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
      */
