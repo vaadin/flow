@@ -22,7 +22,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;param&gt;</code> element for
@@ -85,8 +85,8 @@ public class Param extends HtmlComponent {
      * <p>
      * While a binding for the "value" attribute is active, any attempt to set
      * the attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -95,7 +95,7 @@ public class Param extends HtmlComponent {
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(String)
      * @see Element#bindAttribute(String, Signal)
@@ -126,8 +126,8 @@ public class Param extends HtmlComponent {
      * <p>
      * While a binding for the "name" attribute is active, any attempt to set
      * the attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -136,7 +136,7 @@ public class Param extends HtmlComponent {
      * @param nameSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setName(String)
      * @see Element#bindAttribute(String, Signal)

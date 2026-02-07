@@ -20,8 +20,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Helper class for binding a {@link Signal} to a property of a
@@ -117,13 +117,13 @@ public class SignalPropertySupport<T> implements Serializable {
      * binding.
      * <p>
      * While a Signal is bound to a property support, any attempt to set value
-     * manually throws {@link com.vaadin.signals.BindingActiveException}. Same
-     * happens when trying to bind a new Signal while one is already bound.
+     * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     * Same happens when trying to bind a new Signal while one is already bound.
      *
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
     public void bind(Signal<T> signal) {
@@ -157,7 +157,7 @@ public class SignalPropertySupport<T> implements Serializable {
      *
      * @param value
      *            the value to set
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is an existing binding
      */
     public void set(T value) {

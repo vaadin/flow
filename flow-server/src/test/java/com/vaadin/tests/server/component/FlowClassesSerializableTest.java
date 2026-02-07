@@ -40,8 +40,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
-import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;

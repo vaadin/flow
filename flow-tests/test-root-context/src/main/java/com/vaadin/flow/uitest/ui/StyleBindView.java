@@ -20,9 +20,9 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Test view for end-to-end verification of Style.bind. Binds the

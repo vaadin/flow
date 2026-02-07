@@ -32,8 +32,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * Encapsulates all the logic required for a typical field implementation. This
@@ -186,7 +186,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
-     * {@link com.vaadin.signals.BindingActiveException}.
+     * {@link com.vaadin.flow.signals.BindingActiveException}.
      * <p>
      * While a Signal is bound to a value state and the element is in attached
      * state, setting the value with {@link #setValue(Object)},
@@ -196,7 +196,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      * @see #setModelValue(Object, boolean)
