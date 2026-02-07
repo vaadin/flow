@@ -23,8 +23,8 @@ import org.junit.Test;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;

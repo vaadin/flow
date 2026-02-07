@@ -21,7 +21,7 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;td&gt;</code> element.
@@ -67,9 +67,9 @@ public class NativeTableCell extends HtmlContainer
      * Creates a new table cell with its text content bound to the given signal.
      * <p>
      * While a binding for the text content is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the

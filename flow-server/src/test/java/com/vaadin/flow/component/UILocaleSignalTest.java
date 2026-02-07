@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.WritableSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

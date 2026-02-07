@@ -31,7 +31,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -86,8 +86,8 @@ public class Anchor extends HtmlContainer
      * <p>
      * While a signal is bound, any attempt to set the text content manually via
      * {@link #setText(String)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new signal while one is already bound.
      *
      * @see #setHref(String)
      * @see #bindText(Signal)
@@ -181,8 +181,8 @@ public class Anchor extends HtmlContainer
      * <p>
      * While a signal is bound, any attempt to set the text content manually via
      * {@link #setText(String)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new signal while one is already bound.
      * <p>
      * Sets the {@code download} attribute for the link when given a non-inline
      * handler implementing {@link AbstractDownloadHandler}. For custom handlers

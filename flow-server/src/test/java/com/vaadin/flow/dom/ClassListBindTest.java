@@ -20,8 +20,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Tests for binding CSS class presence to a Signal using ClassList.bind.

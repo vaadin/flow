@@ -26,10 +26,10 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.SignalEnvironment;
-import com.vaadin.signals.function.EffectAction;
-import com.vaadin.signals.impl.Effect;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.impl.Effect;
 
 /**
  * The utility class that provides helper methods for using Signal effects in a

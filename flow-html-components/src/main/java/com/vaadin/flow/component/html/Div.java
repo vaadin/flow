@@ -22,7 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;div&gt;</code> element.
