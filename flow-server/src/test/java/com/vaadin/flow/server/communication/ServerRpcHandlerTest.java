@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -94,7 +94,8 @@ public class ServerRpcHandlerTest {
     @Test
     public void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
             throws IOException,
-            ServerRpcHandler.InvalidUIDLSecurityKeyException {
+            ServerRpcHandler.InvalidUIDLSecurityKeyException,
+            ServerRpcHandler.MessageIdSyncException {
         // given
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
@@ -115,7 +116,8 @@ public class ServerRpcHandlerTest {
 
     @Test(expected = ServerRpcHandler.ClientResentPayloadException.class)
     public void handleRpc_duplicateMessage_throwsResendPayload()
-            throws InvalidUIDLSecurityKeyException {
+            throws InvalidUIDLSecurityKeyException,
+            ServerRpcHandler.MessageIdSyncException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler();
 
@@ -128,9 +130,10 @@ public class ServerRpcHandlerTest {
         handler.handleRpc(ui, msg, request);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = ServerRpcHandler.MessageIdSyncException.class)
     public void handleRpc_unexpectedMessage_throw()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler();
 
@@ -140,9 +143,33 @@ public class ServerRpcHandlerTest {
         handler.handleRpc(ui, msg, request);
     }
 
+    @Test
+    public void handleRpc_unexpectedMessage_exceptionContainsCorrectIds()
+            throws InvalidUIDLSecurityKeyException, IOException {
+        String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":5}";
+        ServerRpcHandler handler = new ServerRpcHandler();
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        // Set the last processed ID to 0, so expected is 1
+        ui.getInternals().setLastProcessedClientToServerId(0,
+                MessageDigestUtil.sha256(""));
+
+        try {
+            handler.handleRpc(ui, msg, request);
+            Assert.fail("Expected MessageIdSyncException");
+        } catch (ServerRpcHandler.MessageIdSyncException e) {
+            Assert.assertEquals(1, e.getExpectedId());
+            Assert.assertEquals(5, e.getReceivedId());
+            Assert.assertTrue(e.getMessage().contains("Expected: 1"));
+            Assert.assertTrue(e.getMessage().contains("got: 5"));
+        }
+    }
+
     @Test(expected = DauEnforcementException.class)
     public void handleRpc_dauEnforcement_throws()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
@@ -158,7 +185,8 @@ public class ServerRpcHandlerTest {
 
     @Test
     public void handleRpc_dauEnforcement_pollEvent_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" }], \"syncId\": 0, \"clientId\":0}");
@@ -178,7 +206,8 @@ public class ServerRpcHandlerTest {
 
     @Test(expected = DauEnforcementException.class)
     public void handleRpc_dauEnforcement_pollEventMixedWithOtherEvents_throw()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
@@ -194,7 +223,8 @@ public class ServerRpcHandlerTest {
 
     @Test(expected = ServerRpcHandler.ResynchronizationRequiredException.class)
     public void handleRpc_dauEnforcement_resynchronization_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"resynchronize\": true, \"clientId\":0}");
@@ -214,7 +244,8 @@ public class ServerRpcHandlerTest {
 
     @Test
     public void handleRpc_dauEnforcement_unloadBeacon_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"UNLOAD\": true, \"clientId\":0}");
@@ -234,7 +265,8 @@ public class ServerRpcHandlerTest {
 
     @Test
     public void handleRpc_dauEnforcement_returnChannelMessage_doNoThrow()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 }], \"syncId\": 0, \"clientId\":0}");
@@ -254,7 +286,8 @@ public class ServerRpcHandlerTest {
 
     @Test(expected = DauEnforcementException.class)
     public void handleRpc_dauEnforcement_returnChannelMessageMixedWithOtherEvents_throw()
-            throws InvalidUIDLSecurityKeyException, IOException {
+            throws InvalidUIDLSecurityKeyException, IOException,
+            ServerRpcHandler.MessageIdSyncException {
         enableDau();
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");

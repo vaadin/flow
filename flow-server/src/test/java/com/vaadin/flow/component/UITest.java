@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
@@ -84,7 +85,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -1026,6 +1026,37 @@ public class UITest {
         wrapped.run();
 
         assertEquals("Handler should have run once", 1, runCount.get());
+    }
+
+    @Test
+    public void getCurrentOrThrow_withCurrentUI_returnsUI() {
+        UI ui = createTestUI();
+        UI.setCurrent(ui);
+
+        UI result = UI.getCurrentOrThrow();
+
+        assertSame("getCurrentOrThrow should return the current UI", ui,
+                result);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getCurrentOrThrow_withoutCurrentUI_throws() {
+        CurrentInstance.clearAll();
+        UI.getCurrentOrThrow();
+    }
+
+    @Test
+    public void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
+        CurrentInstance.clearAll();
+        try {
+            UI.getCurrentOrThrow();
+            Assert.fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException e) {
+            assertTrue("Exception message should mention UI context",
+                    e.getMessage().contains("UI context"));
+            assertTrue("Exception message should mention UI.access()",
+                    e.getMessage().contains("UI.access()"));
+        }
     }
 
     @Test

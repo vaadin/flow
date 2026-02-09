@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -376,5 +376,22 @@ public class FrontendStubs {
      */
     public enum Tool {
         NODE, NPM
+    }
+
+    /**
+     * Resets the static node installation cache in FrontendTools using
+     * reflection. This ensures test isolation by clearing cached node paths
+     * between test runs.
+     *
+     * @throws Exception
+     *             if reflection fails
+     */
+    public static void resetFrontendToolsNodeCache() throws Exception {
+        Class<?> frontendToolsClass = Class
+                .forName("com.vaadin.flow.server.frontend.FrontendTools");
+        java.lang.reflect.Field activeNodeField = frontendToolsClass
+                .getDeclaredField("activeNodeInstallation");
+        activeNodeField.setAccessible(true);
+        activeNodeField.set(null, null);
     }
 }

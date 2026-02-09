@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,8 +42,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * <li>Primitives and their wrappers: {@link Integer}, {@link Double},
  * {@link Boolean}, int, double, boolean, etc.</li>
  * <li>String values: {@link String}</li>
- * <li>JSON types: {@link tools.jackson.databind.JsonNode},
- * {@link elemental.json.JsonValue}</li>
+ * <li>JSON types: {@link tools.jackson.databind.JsonNode}</li>
  * <li>Bean/DTO types: Any Java bean or record that can be deserialized from
  * JSON using Jackson</li>
  * <li>Collections: {@link java.util.List}, {@link java.util.Map}, etc. (when

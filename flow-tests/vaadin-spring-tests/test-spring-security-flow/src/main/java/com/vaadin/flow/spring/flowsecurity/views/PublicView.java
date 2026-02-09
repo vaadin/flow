@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,19 +54,17 @@ public class PublicView extends FlexLayout {
         Button backgroundNavigation = new Button(
                 "Navigate to admin view in 1 second", e -> {
                     UI ui = e.getSource().getUI().get();
+                    Runnable doNavigation = new DelegatingSecurityContextRunnable(
+                            () -> ui.navigate(AdminView.class),
+                            SecurityContextHolder.getContext());
                     Runnable navigateToAdmin = () -> {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
                         }
-                        ui.access(() -> {
-                            ui.navigate(AdminView.class);
-                        });
+                        ui.access(doNavigation::run);
                     };
-                    Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                            navigateToAdmin,
-                            SecurityContextHolder.getContext());
-                    new Thread(wrappedRunnable).start();
+                    new Thread(navigateToAdmin).start();
                 });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
         add(backgroundNavigation);

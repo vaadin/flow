@@ -4,6 +4,7 @@ import typescript from '@rollup/plugin-typescript';
 
 export default defineConfig({
   build: {
+    sourcemap: true,
     // Write output to resources to include it in Maven package
     outDir: 'src/main/resources/META-INF/frontend/vaadin-dev-tools',
     // Clear output directory

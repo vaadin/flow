@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>flow-webpush</artifactId>
@@ -26,9 +26,9 @@
     <!-- API DEPENDENCIES -->
 
     <dependency>
-      <groupId>dev.blanke.webpush.jwt</groupId>
-      <artifactId>webpush-jwt-jose4j</artifactId>
-      <version>6.1.3</version>
+      <groupId>com.interaso</groupId>
+      <artifactId>webpush</artifactId>
+      <version>1.3.0</version>
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi

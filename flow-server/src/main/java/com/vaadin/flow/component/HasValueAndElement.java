@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A component that has a value.
@@ -48,5 +49,10 @@ public interface HasValueAndElement<E extends ValueChangeEvent<V>, V>
     @Override
     default boolean isReadOnly() {
         return getElement().getProperty("readonly", false);
+    }
+
+    @Override
+    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
+        getElement().bindProperty("readonly", readOnlySignal);
     }
 }

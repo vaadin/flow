@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,6 +64,23 @@ public class VaadinConfigurationProperties {
                 .bind("vaadin", VaadinConfigurationProperties.class)
                 .map(VaadinConfigurationProperties::getExcludeUrls)
                 .orElse(null);
+    }
+
+    /**
+     * Gets the allowed packages using the given environment.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. in AOT processors.
+     *
+     * @param environment
+     *            the application environment
+     * @return the allowed packages or an empty list if none is defined
+     */
+    public static List<String> getAllowedPackages(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(VaadinConfigurationProperties::getAllowedPackages)
+                .orElse(Collections.emptyList());
     }
 
     /**

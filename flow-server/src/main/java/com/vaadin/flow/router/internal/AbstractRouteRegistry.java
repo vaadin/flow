@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -612,7 +612,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
     }
 
-    Collection<Class<?>> getLayouts() {
+    /**
+     * Get all registered layouts.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @return a collection of all registered layouts
+     */
+    public Collection<Class<?>> getLayouts() {
         return Set.copyOf(layouts.values());
     }
 

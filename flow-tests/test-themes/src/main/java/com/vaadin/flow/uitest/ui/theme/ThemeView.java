@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -61,7 +61,7 @@ public class ThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         // Test npm asset
-        Image snowFlake = new Image("VAADIN/static/npm/icons/snowflake.svg",
+        Image snowFlake = new Image("assets/npm/icons/snowflake.svg",
                 "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);

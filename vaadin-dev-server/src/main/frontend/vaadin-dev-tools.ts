@@ -1,13 +1,6 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import {
-  Product,
-  handleLicenseMessage,
-  licenseCheckFailed,
-  licenseInit,
-  handlePreTrialMessage,
-  licenseDownloadFailed
-} from './License';
+import { handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
@@ -19,9 +12,11 @@ import { preTrialStartFailed, updateLicenseDownloadStatus } from './pre-trial-sp
 export interface DevToolsInterface {
   send(command: string, data: any): void;
 }
+
 export interface MessageHandler {
   handleMessage(message: ServerMessage): boolean;
 }
+
 export interface ServerMessage {
   /**
    * The command
@@ -78,12 +73,15 @@ interface Message {
   dontShowAgainMessage?: string;
   deleted: boolean;
 }
+
 type DevToolsConf = {
   enable: boolean;
   url: string;
+  contextRelativePath: string;
   backend?: string;
-  liveReloadPort: number;
+  liveReloadPort?: number;
   token?: string;
+  usageStatisticsEnabled?: boolean;
 };
 
 // @ts-ignore
@@ -92,7 +90,7 @@ const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   unhandledMessages: ServerMessage[] = [];
-  conf: DevToolsConf = { enable: false, url: '', liveReloadPort: -1 };
+  conf: DevToolsConf = { enable: false, url: '', contextRelativePath: '', liveReloadPort: -1 };
   bodyShadowRoot: ShadowRoot | null = null;
 
   static get styles() {
@@ -570,6 +568,7 @@ export class VaadinDevTools extends LitElement {
           .notification-tray .message {
             backdrop-filter: blur(8px);
           }
+
           .dev-tools:hover,
           .dev-tools.active,
           .window,
@@ -645,13 +644,8 @@ export class VaadinDevTools extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
     if (!this.conf.token) {
-      console.error('Dev tools functionality denied for this host.');
-      this.log(
-        MessageType.LOG,
-        'See Vaadin documentation on how to configure devmode.hostsAllowed property.',
-        undefined,
-        'https://vaadin.com/docs/latest/configuration/properties#properties',
-        undefined
+      console.error(
+        'Dev tools functionality denied for this host. See Vaadin documentation on how to configure devmode.hostsAllowed property: https://vaadin.com/docs/latest/configuration/properties#properties'
       );
       return;
     }
@@ -682,27 +676,32 @@ export class VaadinDevTools extends LitElement {
       }
     };
     const onUpdate = (path: string, content: string) => {
-      let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
-      if (styleTag) {
+      const contextPathProtocol = 'context://';
+      const pathWithNoProtocol = path.substring(contextPathProtocol.length);
+      if (path.startsWith(contextPathProtocol)) {
+        path = this.conf.contextRelativePath + pathWithNoProtocol;
+      }
+
+      if (content) {
+        // change or add a new stylesheet
+        let styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.setAttribute('data-file-path', path);
+          document.head.appendChild(styleTag);
+          this.removeOldLinks(pathWithNoProtocol);
+        }
         styleTag.textContent = content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-      } else {
-        let linkTag = document.head.querySelector(`link[data-file-path='${path}']`);
-        if (linkTag) {
-          const originalHref = linkTag.getAttribute('href') || '';
-          // Preserve existing query parameters and hash, and add/update a dedicated cache-busting parameter
-          const [hrefWithoutHash, hash = ''] = originalHref.split('#');
-          const [base, query = ''] = hrefWithoutHash.split('?');
-          const params = new URLSearchParams(query);
-          const cacheParam = 'v-hotreload';
-          params.set(cacheParam, String(new Date().getTime()));
-          const newQuery = params.toString();
-          const newHref = `${base}?${newQuery}${hash ? `#${hash}` : ''}`;
-          linkTag.setAttribute('href', newHref);
-          document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+      } else if (content === '' || content === null) {
+        // remove inlined stylesheets or initial links with the given path
+        const styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
+        if (styleTag) {
+          styleTag.remove();
         } else {
-          onReload();
+          this.removeOldLinks(pathWithNoProtocol);
         }
+        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       }
     };
 
@@ -710,6 +709,13 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onHandshake = () => {
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
+      }
+      if (this.conf.usageStatisticsEnabled === false) {
+        localStorage.setItem('vaadin.statistics.optout', 'true');
+        localStorage.removeItem('vaadin.statistics.basket');
+        localStorage.removeItem('vaadin.statistics.firstuse');
+      } else {
+        localStorage.removeItem('vaadin.statistics.optout');
       }
       this.elementTelemetry();
     };
@@ -722,7 +728,7 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
-    if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
+    if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS && this.conf.liveReloadPort) {
       this.javaConnection = new LiveReloadConnection(this.getSpringBootWebSocketUrl(window.location));
       this.javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
@@ -737,10 +743,22 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
+  removeOldLinks(path: string) {
+    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
+    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
+    links.forEach((link) => {
+      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
+      if (filePath && filePath.includes(path)) {
+        link.remove();
+      }
+    });
+  }
+
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
     const handler = tabElement as any as MessageHandler;
     return handler.handleMessage && handler.handleMessage.call(tabElement, message);
   }
+
   handleFrontendMessage(message: ServerMessage) {
     if (message.command === 'featureFlags') {
     } else if (handleLicenseMessage(message, this.bodyShadowRoot) || this.handleHmrMessage(message)) {
@@ -766,6 +784,7 @@ export class VaadinDevTools extends LitElement {
       div.innerHTML = `<a href="${relative}"/>`;
       return (div.firstChild as HTMLLinkElement).href;
     }
+
     if (this.conf.url === undefined) {
       return undefined;
     }
@@ -844,7 +863,7 @@ export class VaadinDevTools extends LitElement {
     if (this.frontendConnection) {
       this.frontendConnection.send('checkLicense', productInfo);
     } else {
-      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+      licenseCheckOk(productInfo);
     }
   }
 
@@ -856,6 +875,7 @@ export class VaadinDevTools extends LitElement {
       preTrialStartFailed(false, this.bodyShadowRoot);
     }
   }
+
   downloadLicense(productInfo: Product) {
     if (this.frontendConnection) {
       this.frontendConnection.send('downloadLicense', productInfo);
@@ -872,7 +892,7 @@ export class VaadinDevTools extends LitElement {
 
   /* eslint-disable lit/no-template-map */
   render() {
-    return html` <div style="display: none" class="dev-tools"> </div>`;
+    return html` <div style="display: none" class="dev-tools"></div>`;
   }
 
   setJavaLiveReloadActive(active: boolean) {

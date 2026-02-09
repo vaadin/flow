@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.tests.util.MockUI;
 
 /**
  * @author Vaadin Ltd
@@ -67,9 +68,10 @@ public class AtmospherePushConnectionTest {
 
     @Before
     public void setup() throws Exception {
-        UI ui = Mockito.spy(new UI());
         vaadinSession = new MockVaadinSession();
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        vaadinSession.lock();
+        UI ui = new MockUI(vaadinSession);
+        vaadinSession.unlock();
         broadcaster = Mockito.mock(Broadcaster.class);
         resource = Mockito.mock(AtmosphereResource.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);

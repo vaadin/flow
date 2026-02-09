@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-data</artifactId>
   <packaging>jar</packaging>
@@ -43,6 +43,11 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <scope>test</scope>
@@ -57,6 +62,13 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-generic</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <!-- For DataSerializableTest -->

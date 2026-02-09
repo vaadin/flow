@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.data.provider.DataProviderTestBase;
@@ -165,6 +166,39 @@ public class TreeDataProviderTest
         StrBean wrongSibling = data.getChildren(root0).get(0);
 
         data.moveAfterSibling(root0, wrongSibling);
+    }
+
+    @Test
+    public void treeData_setParent_direct_cycle_throws() {
+        // Test direct cycle: parent -> child, then try to set child as parent's
+        // parent
+        StrBean parent = rootData.get(0);
+        StrBean child = data.getChildren(parent).get(0);
+
+        // This should throw because it would create cycle: child -> parent ->
+        // child
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> data.setParent(parent, child));
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+        assertTrue(exception.getMessage().contains(parent.toString()));
+        assertTrue(exception.getMessage().contains(child.toString()));
+    }
+
+    @Test
+    public void treeData_setParent_multi_level_cycle_throws() {
+        // Test multi-level cycle: A -> B -> C, then try to set C as A's parent
+        StrBean itemA = rootData.get(0);
+        StrBean itemB = data.getChildren(itemA).get(0);
+        StrBean itemC = data.getChildren(itemB).get(0);
+
+        // This should throw because it would create cycle: C -> A -> B -> C
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> data.setParent(itemA, itemC));
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+        assertTrue(exception.getMessage().contains(itemA.toString()));
+        assertTrue(exception.getMessage().contains(itemC.toString()));
     }
 
     @Test

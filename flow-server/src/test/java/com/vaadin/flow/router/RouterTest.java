@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -2458,6 +2458,90 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void wildcard_parameter_with_encoded_slashes()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        // Test URL-encoded slash (%2F) in wildcard parameter
+        router.navigate(ui, new Location("wild/path%2Fwith%2Fslashes"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                WildParameter.events.size());
+        Assert.assertEquals(
+                "Encoded slashes should be decoded and preserved in parameter",
+                "path/with/slashes", WildParameter.param);
+    }
+
+    @Test
+    public void wildcard_parameter_with_encoded_special_characters()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        // Test various encoded special characters
+        router.navigate(ui, new Location("wild/test%3Fquestion"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Should decode %3F to ?", "test?question",
+                WildParameter.param);
+
+        router.navigate(ui, new Location("wild/value%26data"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Should decode %26 to &", "value&data",
+                WildParameter.param);
+
+        router.navigate(ui, new Location("wild/hello%20world"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Should decode %20 to space", "hello world",
+                WildParameter.param);
+    }
+
+    @Test
+    public void wildcard_parameter_with_mixed_encoded_segments()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        WildParameter.param = null;
+        setNavigationTargets(WildParameter.class);
+
+        // Mix of encoded and regular path segments
+        router.navigate(ui,
+                new Location("wild/path%2Fencoded/normal/another%2Fone"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                WildParameter.events.size());
+        Assert.assertEquals(
+                "Should decode individual segments but preserve literal slashes",
+                "path/encoded/normal/another/one", WildParameter.param);
+    }
+
+    @Test
+    public void wildcard_parameter_encoded_vs_literal_slashes()
+            throws InvalidRouteConfigurationException {
+        WildParameter.events.clear();
+        setNavigationTargets(WildParameter.class);
+
+        // Literal slashes create multiple segments
+        router.navigate(ui, new Location("wild/a/b/c"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Literal slashes create path structure", "a/b/c",
+                WildParameter.param);
+
+        // Encoded slashes are data within a single segment
+        router.navigate(ui, new Location("wild/a%2Fb%2Fc"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals(
+                "Encoded slashes should be decoded but not split segments",
+                "a/b/c", WildParameter.param);
+
+        // Note: Both produce "a/b/c" but the first has 3 segments,
+        // the second has 1 segment that gets decoded
+    }
+
+    @Test
     public void root_navigation_target_with_required_parameter()
             throws InvalidRouteConfigurationException {
         RootParameter.events.clear();
@@ -2981,14 +3065,11 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(FailOnException.class);
         setErrorNavigationTargets(FailingErrorHandler.class);
 
-        try {
-            ui.navigate("exception");
-            Assert.fail("No runtime exception was thrown from navigation");
-        } catch (Exception re) {
-            Assert.assertNull(
-                    "Last handled location should have been cleared even though navigation failed",
-                    ui.getInternals().getLastHandledLocation());
-        }
+        ui.navigate("exception");
+
+        Assert.assertNull(
+                "Last handled location should have been cleared even though navigation failed",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test
@@ -4695,6 +4776,66 @@ public class RouterTest extends RoutingTestBase {
 
     private void navigate(String url) {
         router.navigate(ui, new Location(url), NavigationTrigger.PROGRAMMATIC);
+    }
+
+    // Test classes for exception in error view's parent layout afterNavigation
+    @Tag(Tag.DIV)
+    @Layout
+    public static class ThrowingMainLayout extends Component
+            implements RouterLayout, AfterNavigationObserver {
+
+        static List<AfterNavigationEvent> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+            throw new RuntimeException(
+                    "Exception in MainLayout afterNavigation");
+        }
+    }
+
+    @Route(value = "error", layout = ThrowingMainLayout.class)
+    @Tag(Tag.DIV)
+    public static class TriggerErrorView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(ThrowingMainLayout.class)
+    public static class ErrorViewWithThrowingLayout extends Component
+            implements HasErrorParameter<RuntimeException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<RuntimeException> parameter) {
+            getElement().setText("An unexpected error occurred");
+            return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+    }
+
+    @Test
+    public void exception_in_error_view_parent_layout_afterNavigation_falls_back_to_InternalServerError()
+            throws InvalidRouteConfigurationException {
+        ThrowingMainLayout.events.clear();
+        setNavigationTargets(TriggerErrorView.class);
+        setErrorNavigationTargets(ErrorViewWithThrowingLayout.class);
+
+        int result = router.navigate(ui, new Location("error"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Navigation should complete with internal server error status.",
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
+
+        // Should fall back to InternalServerError instead of the custom error
+        // view
+        assertExceptionComponent(InternalServerError.class,
+                "There was an exception while trying to navigate to 'error' with the exception message 'Exception in MainLayout afterNavigation'");
+
+        // Verify that MainLayout's afterNavigation was called two times.
+        // Once for navigation and once for error view.
+        Assert.assertEquals(
+                "MainLayout's afterNavigation should have been called twice", 2,
+                ThrowingMainLayout.events.size());
     }
 
 }

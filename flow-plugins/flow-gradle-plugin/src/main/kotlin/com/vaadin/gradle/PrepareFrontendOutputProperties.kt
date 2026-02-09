@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2025 Vaadin Ltd.
+ *    Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.vaadin.flow.gradle
 import java.io.File
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
-import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.internal.FrontendUtils
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile

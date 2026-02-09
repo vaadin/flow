@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,11 @@ package com.vaadin.flow.server.webcomponent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -33,6 +31,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.theme.Theme;
 
@@ -63,7 +62,7 @@ public class WebComponentGenerator {
     private static String getStringResource(String name) {
         try (InputStream resourceStream = WebComponentGenerator.class
                 .getResourceAsStream(name)) {
-            return IOUtils.toString(resourceStream, StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(resourceStream.readAllBytes());
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Couldn't load string resource '" + name + "'!", e);

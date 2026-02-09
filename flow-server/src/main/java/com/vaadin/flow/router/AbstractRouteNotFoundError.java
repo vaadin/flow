@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@ package com.vaadin.flow.router;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
@@ -35,8 +33,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is abstract error view for routing exceptions.
@@ -79,9 +78,10 @@ public abstract class AbstractRouteNotFoundError extends Component {
         String template;
         String routes = getRoutes(event);
 
+        boolean noRoutes = routes.isEmpty();
         if (productionMode) {
             template = AbstractRouteNotFoundError.LazyInit.PRODUCTION_MODE_TEMPLATE;
-        } else if (routes.isEmpty()) {
+        } else if (noRoutes) {
             // Offer a way for people to get started
             template = readHtmlFile("NoRoutesError_dev.html");
         } else {
@@ -98,13 +98,25 @@ public abstract class AbstractRouteNotFoundError extends Component {
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
+        if (noRoutes && !productionMode) {
+            String copilotNoRoutes = """
+                    (function poll() {
+                        if (window.Vaadin?.copilot?.noRoutesInProject) {
+                            window.Vaadin.copilot.noRoutesInProject();
+                        } else {
+                            setTimeout(poll, 100);
+                        }
+                    })();
+                    """;
+            getElement().executeJs(copilotNoRoutes);
+        }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
 
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
-            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(stream);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);

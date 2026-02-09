@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,21 +33,18 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @Configuration
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     @Autowired
@@ -64,21 +60,6 @@ public class SecurityConfig {
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
         return new NavigationAccessControlConfigurer()
                 .withRoutePathAccessChecker();
-    }
-
-    /*
-     * Simulates Hilla implementation that accesses request principal.
-     */
-    @Bean
-    FileRouterRequestUtil sutbFileRouterRequestUtil() {
-        return request -> {
-            var principal = request.getUserPrincipal();
-            if (principal != null) {
-                // do nothing, just prevent IDE from complaining about unused
-                // variable
-            }
-            return false;
-        };
     }
 
     public String getLogoutSuccessUrl() {
@@ -97,8 +78,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
         http.authorizeHttpRequests(cfg -> cfg
                 .requestMatchers("/admin-only/**", "/admin")
                 .hasAnyRole(ROLE_ADMIN).requestMatchers("/private")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,9 @@ package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
 
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -61,20 +62,20 @@ public class DependencyTest {
     }
 
     private void assertDependency(Dependency dependency) {
-        JsonObject dependencyJson = dependency.toJson();
+        JsonNode dependencyJson = JacksonUtils.createNode(dependency);
 
         assertThat("No contents should be present in json now",
-                dependencyJson.hasKey(Dependency.KEY_CONTENTS), is(false));
+                dependencyJson.has(Dependency.KEY_CONTENTS), is(false));
         assertThat(
                 "Dependency type should match corresponding enum name in pojo",
-                dependencyJson.getString(Dependency.KEY_TYPE),
+                dependencyJson.get(Dependency.KEY_TYPE).asText(),
                 is(dependency.getType().name()));
         assertThat("Dependency url should match corresponding url in pojo",
-                dependencyJson.getString(Dependency.KEY_URL),
+                dependencyJson.get(Dependency.KEY_URL).asText(),
                 is(dependency.getUrl()));
         assertThat(
                 "Dependency load mode should match corresponding enum name in pojo",
-                dependencyJson.getString(Dependency.KEY_LOAD_MODE),
+                dependencyJson.get(Dependency.KEY_LOAD_MODE).asText(),
                 is(dependency.getLoadMode().name()));
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -189,25 +188,6 @@ class RootCache<T> extends Cache<T> {
     public ItemContext<T> getContextByItem(T item) {
         Object itemId = getItemId(item);
         return itemIdToContext.get(itemId);
-    }
-
-    /**
-     * Removes all descendant items that match the given predicate.
-     *
-     * @param predicate
-     *            the predicate to match items against
-     */
-    public void removeDescendantItemIf(SerializablePredicate<T> predicate) {
-        itemIdToContext.values().stream().filter((itemContext) -> {
-            var cache = itemContext.cache();
-            var index = itemContext.index();
-            var item = cache.getItem(index);
-            return predicate.test(item);
-        }).toList().forEach((itemContext) -> {
-            var cache = itemContext.cache();
-            var index = itemContext.index();
-            cache.removeItem(index);
-        });
     }
 
     void onItemAdded(T item, Cache<T> cache, int index) {

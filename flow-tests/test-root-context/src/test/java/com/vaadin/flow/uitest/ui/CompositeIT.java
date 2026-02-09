@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,7 +54,8 @@ public class CompositeIT extends ChromeBrowserTest {
         waitForElementPresent(By.id(CompositeView.COMPOSITE_PAPER_SLIDER));
         TestBenchElement paperSlider = (TestBenchElement) findElement(
                 By.id(CompositeView.COMPOSITE_PAPER_SLIDER));
-        Assert.assertEquals("100", paperSlider.getPropertyString("max"));
+        Assert.assertEquals(Integer.valueOf(100),
+                paperSlider.getPropertyInteger("max"));
 
     }
 }

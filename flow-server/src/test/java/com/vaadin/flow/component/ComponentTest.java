@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1983,6 +1983,69 @@ public class ComponentTest {
 
         assertPendingJs(
                 "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+    }
+
+    @Test
+    public void scrollIntoView_withBehaviorEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
+    }
+
+    @Test
+    public void scrollIntoView_withBlockEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Block.END);
+
+        assertScrollIntoViewWithParams("\"block\":\"end\"");
+    }
+
+    @Test
+    public void scrollIntoView_withInlineEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"inline\":\"center\"");
+    }
+
+    @Test
+    public void scrollIntoView_withMultipleOptions() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+                ScrollIntoViewOption.Block.END,
+                ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
+                "\"block\":\"end\"", "\"inline\":\"center\"");
+    }
+
+    private void assertScrollIntoViewWithParams(String... expectedJsonParts) {
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+
+        // Verify it uses parameter passing
+        String expression = inv.getExpression();
+        MatcherAssert.assertThat(expression,
+                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+
+        // Verify parameters contain expected JSON parts
+        List<Object> params = inv.getParameters();
+        Assert.assertTrue("Should have at least 2 parameters",
+                params.size() >= 2);
+        String paramJson = params.get(1).toString();
+        for (String expectedPart : expectedJsonParts) {
+            MatcherAssert.assertThat(paramJson,
+                    CoreMatchers.containsString(expectedPart));
+        }
     }
 
     @Test

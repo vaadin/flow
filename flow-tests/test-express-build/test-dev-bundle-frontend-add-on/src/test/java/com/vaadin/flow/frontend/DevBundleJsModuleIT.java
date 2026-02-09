@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import elemental.json.JsonObject;
 
 public class DevBundleJsModuleIT extends ChromeBrowserTest {
 
@@ -31,13 +30,13 @@ public class DevBundleJsModuleIT extends ChromeBrowserTest {
     public void frontendJsModules_hashCalculated() throws IOException {
         open();
         waitForElementPresent(By.id(DevBundleJsModuleView.SPAN_ID));
-        JsonObject frontendHashes = DevBundleCssImportIT.getFrontendHashes();
+        ObjectNode frontendHashes = DevBundleCssImportIT.getFrontendHashes();
         Assert.assertTrue("test.ts content hash is expected",
-                frontendHashes.hasKey("test.ts"));
+                frontendHashes.has("test.ts"));
         Assert.assertTrue("js/test.js content hash is expected",
-                frontendHashes.hasKey("js/test.js"));
+                frontendHashes.has("js/test.js"));
         Assert.assertFalse("unknownfile.js content hash is not expected",
-                frontendHashes.hasKey("unknownfile.js"));
+                frontendHashes.has("unknownfile.js"));
     }
 
 }

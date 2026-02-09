@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -63,6 +64,10 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.impl.UsageTracker;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data
@@ -366,6 +371,80 @@ public class Binder<BEAN> implements Serializable {
          */
         void setIsAppliedPredicate(
                 SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate);
+
+        /**
+         * Returns the current converted and validated value of this binding's
+         * field.
+         * <p>
+         * This method is primarily designed for implementing cross-field
+         * validation, where one field's validator needs to access the value of
+         * another field. It should be called from within a validator that is
+         * registered to a binding via
+         * {@link BindingBuilder#withValidator(Validator)}.
+         * <p>
+         * The Binder automatically runs validators inside a
+         * {@link com.vaadin.flow.component.ComponentEffect#effect} context.
+         * This makes validators reactive to signal changes - when you call
+         * {@code value()} on another binding from within a validator, the
+         * validator will automatically re-run whenever that other binding's
+         * value changes.
+         * <p>
+         * For cross-field validation to work automatically, the fields must be
+         * attached to the UI component tree. Detached fields will not trigger
+         * automatic re-validation, though manual validation via
+         * {@link Binder#validate()} will still work.
+         * <p>
+         * <b>Example - Cross-field validation:</b>
+         * 
+         * <pre>
+         * {@code
+         * Binder<UserRegistration> binder = new Binder<>(
+         *         UserRegistration.class);
+         * PasswordField passwordField = new PasswordField();
+         * PasswordField confirmField = new PasswordField();
+         *
+         * // Get reference to binding for cross-field validation
+         * Binding<UserRegistration, String> passwordBinding = binder
+         *         .forField(passwordField).bind("password");
+         *
+         * binder.forField(confirmField)
+         *         .withValidator(text -> text.equals(passwordBinding.value()),
+         *                 "Both fields must match")
+         *         .bind("confirmPassword");
+         *
+         * add(passwordField, confirmField);
+         *
+         * binder.setBean(userRegistration);
+         *
+         * passwordField.setValue("secret"); // confirmField shows validation
+         *                                   // error
+         *
+         * // Same works also with a Signal directly:
+         * ValueSignal<String> passwordSignal = new ValueSignal<>("");
+         * passwordField.bindValue(passwordSignal);
+         * binder.forField(confirmField)
+         *         .withValidator(text -> text.equals(passwordSignal.value()),
+         *                 "Both fields must match")
+         *         .bind("confirmPassword");
+         * passwordSignal.value("secret"); // confirmField shows validation
+         *                                 // error
+         * }
+         * </pre>
+         *
+         * @return the current converted and validated value of this binding's
+         *         field
+         *
+         * @see BindingBuilder#withValidator(Validator)
+         * @see com.vaadin.flow.component.HasValue#bindValue
+         * @see com.vaadin.flow.component.ComponentEffect#effect
+         *
+         * @since 25.1
+         */
+        default TARGET value() {
+            throw new UnsupportedOperationException(
+                    "value() is not supported by "
+                            + getClass().getSimpleName());
+        }
     }
 
     /**
@@ -1327,8 +1406,24 @@ public class Binder<BEAN> implements Serializable {
             }
 
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
-                    .chain(converter);
+                    .chain(new Converter<TARGET, NEWTARGET>() {
+                        @Override
+                        public Result<NEWTARGET> convertToModel(
+                                TARGET presentationValue,
+                                ValueContext context) {
+                            return UsageTracker
+                                    .untracked(() -> converter.convertToModel(
+                                            presentationValue, context));
+                        }
 
+                        @Override
+                        public TARGET convertToPresentation(
+                                NEWTARGET modelValue, ValueContext context) {
+                            return UsageTracker.untracked(
+                                    (() -> converter.convertToPresentation(
+                                            modelValue, context)));
+                        }
+                    });
             return (BindingBuilder<BEAN, NEWTARGET>) this;
         }
 
@@ -1416,6 +1511,10 @@ public class Binder<BEAN> implements Serializable {
 
         private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
 
+        private transient Registration signalRegistration;
+
+        private transient WritableSignal<Boolean> internalValidationTriggerSignal;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1436,8 +1535,8 @@ public class Binder<BEAN> implements Serializable {
                     && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
-                        .addValidationStatusChangeListener(
-                                event -> this.validate());
+                        .addValidationStatusChangeListener(event -> getBinder()
+                                .handleFieldValueChange(this));
             }
 
             this.getter = getter;
@@ -1472,10 +1571,12 @@ public class Binder<BEAN> implements Serializable {
                     "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
+                var statusChange = new BinderValidationStatus<>(getBinder(),
+                        Collections.singletonList(status),
+                        Collections.emptyList());
                 getBinder().getValidationStatusHandler()
-                        .statusChange(new BinderValidationStatus<>(getBinder(),
-                                Collections.singletonList(status),
-                                Collections.emptyList()));
+                        .statusChange(statusChange);
+                getBinder().signalStatusChangeFromBinding(status);
                 getBinder().fireStatusChangeEvent(status.isError());
             }
             return status;
@@ -1503,6 +1604,12 @@ public class Binder<BEAN> implements Serializable {
             if (binder != null) {
                 binder.removeBindingInternal(this);
                 binder = null;
+            }
+
+            if (signalRegistration != null) {
+                signalRegistration.remove();
+                signalRegistration = null;
+                internalValidationTriggerSignal = null;
             }
 
             field = null;
@@ -1576,6 +1683,7 @@ public class Binder<BEAN> implements Serializable {
                 execute(() -> {
                     TARGET originalValue = getter.apply(bean);
                     convertAndSetFieldValue(originalValue);
+                    initInternalSignalEffectForValidators();
 
                     if (writeBackChangedValues && setter != null && !readOnly) {
                         doConversion().ifOk(convertedValue -> {
@@ -1600,6 +1708,20 @@ public class Binder<BEAN> implements Serializable {
             });
         }
 
+        private void initInternalSignalEffectForValidators() {
+            if (signalRegistration == null
+                    && getField() instanceof Component component) {
+                signalRegistration = ComponentEffect.effect(component, () -> {
+                    if (valueInit) {
+                        // start to track signal usage
+                        doConversion();
+                    } else {
+                        validate();
+                    }
+                });
+            }
+        }
+
         /**
          * Handles the value change triggered by the bound field.
          *
@@ -1621,6 +1743,12 @@ public class Binder<BEAN> implements Serializable {
                 removeFromChangedBindingsIfReverted(
                         getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
+                if (internalValidationTriggerSignal != null) {
+                    // Trigger re-validation signal to notify validators using
+                    // value()
+                    internalValidationTriggerSignal
+                            .value(!internalValidationTriggerSignal.peek());
+                }
             }
         }
 
@@ -1851,6 +1979,22 @@ public class Binder<BEAN> implements Serializable {
                 SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate) {
             this.isAppliedPredicate = isAppliedPredicate;
         }
+
+        @Override
+        public TARGET value() {
+            HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
+            trackUsageOfInternalValidationSignal();
+            return field.getValue();
+        }
+
+        private void trackUsageOfInternalValidationSignal() {
+            if (internalValidationTriggerSignal == null) {
+                internalValidationTriggerSignal = new ValueSignal<>(false);
+            }
+            // registers tracking
+            internalValidationTriggerSignal.value();
+        }
+
     }
 
     /**
@@ -1975,6 +2119,17 @@ public class Binder<BEAN> implements Serializable {
     private boolean defaultValidatorsEnabled = true;
 
     private boolean changeDetectionEnabled = false;
+
+    private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
+
+    /**
+     * Error thrown when a signal is used incorrectly.
+     */
+    public static class InvalidSignalUsageError extends Error {
+        public InvalidSignalUsageError(String message) {
+            super(message);
+        }
+    }
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -2432,8 +2587,9 @@ public class Binder<BEAN> implements Serializable {
             getBindings().forEach(b -> b.initFieldValue(bean, true));
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
-            getValidationStatusHandler().statusChange(
-                    BinderValidationStatus.createUnresolvedStatus(this));
+            var status = BinderValidationStatus.createUnresolvedStatus(this);
+            getValidationStatusHandler().statusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -2481,8 +2637,9 @@ public class Binder<BEAN> implements Serializable {
                 }
             });
             changedBindings.clear();
-            getValidationStatusHandler().statusChange(
-                    BinderValidationStatus.createUnresolvedStatus(this));
+            var status = BinderValidationStatus.createUnresolvedStatus(this);
+            getValidationStatusHandler().statusChange(status);
+            signalStatusChange();
             fireStatusChangeEvent(false);
         }
     }
@@ -2791,6 +2948,7 @@ public class Binder<BEAN> implements Serializable {
         BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
                 bindingResults, binderResults);
         getValidationStatusHandler().statusChange(status);
+        signalStatusChange(status);
         fireStatusChangeEvent(!status.isOk());
         if (!status.isOk()) {
             throw new ValidationException(bindingResults, binderResults);
@@ -2874,6 +3032,7 @@ public class Binder<BEAN> implements Serializable {
         BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
                 bindingResults, binderResults);
         getValidationStatusHandler().statusChange(status);
+        signalStatusChange(status);
         fireStatusChangeEvent(!status.isOk());
         return status;
     }
@@ -2969,6 +3128,8 @@ public class Binder<BEAN> implements Serializable {
      * @param validator
      *            the validator to add, not null
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(Validator<? super BEAN> validator) {
         Objects.requireNonNull(validator, "validator cannot be null");
@@ -2976,7 +3137,16 @@ public class Binder<BEAN> implements Serializable {
             if (isValidatorsDisabled()) {
                 return ValidationResult.ok();
             } else {
-                return validator.apply(value, context);
+                // Track Signal usage and throw exception to help to detect
+                // attempt to use signals reactively without an active effect.
+                return UsageTracker.track(() -> validator.apply(value, context),
+                        usage -> {
+                            throw new InvalidSignalUsageError(
+                                    "Detected Signal.value() call inside a bean level validator. "
+                                            + "This is not supported since bean level validators "
+                                            + "are not run inside a reactive effect. "
+                                            + "Use of Signal.value() is only supported in field level validators.");
+                        });
             }
         });
         validators.add(wrappedValidator);
@@ -3001,6 +3171,8 @@ public class Binder<BEAN> implements Serializable {
      * @param message
      *            the error message to report in case validation failure
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
             String message) {
@@ -3026,6 +3198,8 @@ public class Binder<BEAN> implements Serializable {
      * @param errorMessageProvider
      *            the provider to generate error messages, not null
      * @return this binder, for chaining
+     * @throws InvalidSignalUsageError
+     *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
             ErrorMessageProvider errorMessageProvider) {
@@ -3097,6 +3271,7 @@ public class Binder<BEAN> implements Serializable {
         }
         if (fireEvent) {
             getValidationStatusHandler().statusChange(validationStatus);
+            signalStatusChange(validationStatus);
             fireStatusChangeEvent(validationStatus.hasErrors());
         }
         return validationStatus;
@@ -3621,8 +3796,9 @@ public class Binder<BEAN> implements Serializable {
         if (bean != null) {
             bean = null;
         }
-        getValidationStatusHandler().statusChange(
-                BinderValidationStatus.createUnresolvedStatus(this));
+        var status = BinderValidationStatus.createUnresolvedStatus(this);
+        getValidationStatusHandler().statusChange(status);
+        signalStatusChange();
         if (fireStatusEvent) {
             fireStatusChangeEvent(false);
         }
@@ -4211,5 +4387,53 @@ public class Binder<BEAN> implements Serializable {
      */
     public BindingExceptionHandler getBindingExceptionHandler() {
         return exceptionHandler;
+    }
+
+    /**
+     * Signal status change from unresolved state or from specific binding's
+     * state.
+     */
+    private void signalStatusChange() {
+        signalStatusChange(null);
+    }
+
+    private void signalStatusChangeFromBinding(
+            BindingValidationStatus<?> statusChange) {
+        if (binderValidationStatusSignal == null) {
+            return;
+        }
+        var oldStatus = binderValidationStatusSignal.peek();
+        var fieldValidationStatuses = new ArrayList<>(oldStatus
+                .getFieldValidationStatuses().stream().filter(status -> status
+                        .getBinding() != statusChange.getBinding())
+                .toList());
+        fieldValidationStatuses.add(statusChange);
+        binderValidationStatusSignal.value(new BinderValidationStatus<>(
+                oldStatus.getBinder(), fieldValidationStatuses,
+                oldStatus.getBeanValidationErrors()));
+    }
+
+    private void signalStatusChange(BinderValidationStatus<BEAN> statusChange) {
+        if (binderValidationStatusSignal == null) {
+            return;
+        }
+        if (statusChange != null) {
+            binderValidationStatusSignal.value(statusChange);
+        } else {
+            binderValidationStatusSignal.value(validate(false));
+        }
+    }
+
+    /**
+     * Gets a read-only {@link Signal} emitting {@link BinderValidationStatus}
+     * changes.
+     *
+     * @return the binder validation status signal
+     */
+    public Signal<BinderValidationStatus<BEAN>> getValidationStatus() {
+        if (binderValidationStatusSignal == null) {
+            binderValidationStatusSignal = new ValueSignal<>(validate(false));
+        }
+        return binderValidationStatusSignal.asReadonly();
     }
 }

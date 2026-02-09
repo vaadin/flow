@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -135,6 +137,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     private boolean isServletRootRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
         return pathInfo == null || "".equals(pathInfo) || "/".equals(pathInfo);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(JavaScriptBootstrapHandler.class.getName());
     }
 
     protected String getRequestUrl(VaadinRequest request) {

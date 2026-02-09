@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -105,6 +105,15 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         logoLayout
                 .add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
         logoLayout.add(new H1("Bank of Flow"));
+        Image circle;
+        if (userInfo == null) {
+            circle = new Image("assets/icons/circle.svg", "empty circle");
+        } else {
+            circle = new Image("assets/icons/user-circle.svg", "user circle");
+        }
+        circle.setId("status-icon");
+        logoLayout.add(circle);
+
         Div info = new Div();
         info.setText(
                 "The menu intentionally shows items you cannot access so that access control can be tested by clicking on them");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -328,7 +327,7 @@ public class TreeChangeProcessorTest {
     }
 
     private static JsonArray toArray(JsonValue... changes) {
-        return Arrays.stream(changes).collect(JsonUtils.asArray());
+        return Arrays.stream(changes).collect(TestJsonUtils.asArray());
     }
 
     private static JsonObject baseChange(int node, String type) {
@@ -415,7 +414,7 @@ public class TreeChangeProcessorTest {
 
         if (children != null && children.length != 0) {
             JsonArray add = Arrays.stream(children).mapToObj(Json::create)
-                    .collect(JsonUtils.asArray());
+                    .collect(TestJsonUtils.asArray());
             json.put(JsonConstants.CHANGE_SPLICE_ADD_NODES, add);
         }
 

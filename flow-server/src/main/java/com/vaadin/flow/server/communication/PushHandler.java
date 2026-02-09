@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
@@ -25,7 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -51,6 +51,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.MessageIdSyncException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -77,6 +78,8 @@ public class PushHandler {
      * time for handling session expiration.
      */
     private final Map<String, Long> disconnectedUuidBuffer = new ConcurrentHashMap<>();
+
+    private VaadinServletService service;
 
     /**
      * Callback interface used internally to process an event with the
@@ -176,6 +179,18 @@ public class PushHandler {
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
+        } catch (MessageIdSyncException e) {
+            getLogger().warn(
+                    "Message ID sync error. Expected: {}, received: {}",
+                    e.getExpectedId(), e.getReceivedId());
+            SystemMessages msgs = service.getSystemMessages(
+                    HandlerHelper.findLocale(null, vaadinRequest),
+                    vaadinRequest);
+            sendNotificationAndDisconnect(resource,
+                    VaadinService.createCriticalNotificationJSON(
+                            msgs.getSyncErrorCaption(),
+                            msgs.getSyncErrorMessage(), null,
+                            msgs.getSyncErrorURL()));
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
@@ -184,8 +199,6 @@ public class PushHandler {
         }
 
     };
-
-    private VaadinServletService service;
 
     /**
      * Creates an instance connected to the given service.
@@ -664,8 +677,9 @@ public class PushHandler {
                 return;
             }
 
-            String msg = IOUtils.toString(reader);
-            liveReload.get().onMessage(resource, msg);
+            StringWriter writer = new StringWriter();
+            reader.transferTo(writer);
+            liveReload.get().onMessage(resource, writer.toString());
         } catch (IOException e) {
             getLogger().error(
                     "Unable to read contents of debug connection message", e);

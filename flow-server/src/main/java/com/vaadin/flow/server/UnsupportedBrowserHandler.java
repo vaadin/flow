@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.IOException;
 import java.net.URL;
-
-import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -55,15 +53,18 @@ public class UnsupportedBrowserHandler implements RequestHandler {
                 final URL applicationBrowserTooOldPage = resourceProvider
                         .getApplicationResource(BROWSER_TOO_OLD_HTML);
                 if (applicationBrowserTooOldPage != null) {
-                    IOUtils.copy(applicationBrowserTooOldPage,
-                            response.getOutputStream());
+                    try (var input = applicationBrowserTooOldPage
+                            .openStream()) {
+                        input.transferTo(response.getOutputStream());
+                    }
                     return true;
                 }
             }
         }
 
-        IOUtils.copy(getClass().getResourceAsStream(BROWSER_TOO_OLD_HTML),
-                response.getOutputStream());
+        try (var input = getClass().getResourceAsStream(BROWSER_TOO_OLD_HTML)) {
+            input.transferTo(response.getOutputStream());
+        }
         return true;
     }
 

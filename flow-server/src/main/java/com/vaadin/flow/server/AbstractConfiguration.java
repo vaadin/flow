@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.server.frontend.BundleUtils;
-import com.vaadin.flow.server.frontend.FileIOUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 
@@ -136,8 +136,7 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether globally installed pnpm is used or the default one (see
-     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * Returns whether globally installed pnpm is used or the default one.
      *
      * @return {@code true} if globally installed pnpm is used, {@code false} if
      *         the default one is used.

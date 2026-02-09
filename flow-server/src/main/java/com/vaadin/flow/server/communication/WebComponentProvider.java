@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -141,8 +140,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                         moduleTag -> responder.get());
             }
 
-            IOUtils.write(generated, response.getOutputStream(),
-                    StandardCharsets.UTF_8);
+            response.getOutputStream()
+                    .write(generated.getBytes(StandardCharsets.UTF_8));
         } else {
             response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "No web component for " + Optional

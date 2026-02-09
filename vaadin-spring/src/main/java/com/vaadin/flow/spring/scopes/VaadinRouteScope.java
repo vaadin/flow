@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,7 +78,7 @@ public class VaadinRouteScope extends AbstractScope {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
             String key = getUIStoreKey(ui);
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 ui.getPage().retrieveExtendedClientDetails(
                         det -> relocateStore(ui, key));
             }
@@ -119,10 +119,10 @@ public class VaadinRouteScope extends AbstractScope {
         private String getUIStoreKey(UI ui) {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 return "uid-" + ui.getUIId();
             } else {
-                return "win-" + getWindowName(ui);
+                return "win-" + details.getWindowName();
             }
         }
 
@@ -448,19 +448,11 @@ public class VaadinRouteScope extends AbstractScope {
     private static String getWindowName(UI ui) {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (details == null) {
-            return null;
-        }
         return details.getWindowName();
     }
 
     private static UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The route scope is not active");
-        }
-        return ui;
+        return UI.getCurrentOrThrow();
     }
 
     private static UI findPreservingUI(UI ui) {

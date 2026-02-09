@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,8 +28,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
@@ -159,13 +157,7 @@ class SpringAccessPathCheckerTest {
         }
 
         @Bean
-        AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer httpServletRequestTransformer() {
-            return new PathPatternRequestTransformer();
-        }
-
-        @Bean
-        public SecurityFilterChain testingFilterChain(HttpSecurity http)
-                throws Exception {
+        public SecurityFilterChain testingFilterChain(HttpSecurity http) {
             // @formatter:off
             var matcherBuilder = PathPatternRequestMatcher.withDefaults();
             http.authorizeHttpRequests(cfg -> cfg

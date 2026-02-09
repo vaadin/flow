@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,8 +28,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.hamcrest.Matchers.is;
@@ -261,6 +261,19 @@ public class DefaultDeploymentConfigurationTest {
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
         Assert.assertEquals("Expected dev server to be enabled when set true",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+    }
+
+    @Test
+    public void frontendHotdeploy_defaultsToParentConfiguration() {
+        ApplicationConfiguration appConfig = setupAppConfig();
+        Mockito.when(appConfig.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+
+        Assert.assertEquals(
+                "Expected dev server to be enabled from parent configuration",
                 Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
     }
 

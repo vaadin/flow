@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,8 +35,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
@@ -194,7 +192,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 URL url = getClientResource(key);
                 try (InputStream stream = url.openStream()) {
                     ByteArrayOutputStream tempBuffer = new ByteArrayOutputStream();
-                    IOUtils.copy(stream, tempBuffer);
+                    stream.transferTo(tempBuffer);
                     return new CachedStreamData(tempBuffer.toByteArray(), null);
                 } catch (IOException e) {
                     return new CachedStreamData(null, e);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -41,7 +42,7 @@ import com.vaadin.flow.shared.Registration;
  *            the cached value type
  */
 public class ReflectionCache<C, T> {
-    private static final Set<Runnable> clearAllActions = Collections
+    private static final Set<Consumer<Class<?>>> clearAllActions = Collections
             .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
@@ -52,7 +53,7 @@ public class ReflectionCache<C, T> {
      * Capture the action in a field to prevent garbage collection. This is
      * necessary because the actions are stored with weak references.
      */
-    private final SerializableRunnable clearAction = this::clear;
+    private final SerializableConsumer<Class<? extends C>> clearAction = this::clear;
 
     /**
      * Creates a new reflection cache with the given value provider. The value
@@ -71,7 +72,8 @@ public class ReflectionCache<C, T> {
         }
         this.valueProvider = wrapValueProvider(valueProvider);
 
-        addClearAllAction(clearAction);
+        // noinspection rawtypes,unchecked
+        addClearAllAction((Consumer) clearAction);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -130,6 +132,20 @@ public class ReflectionCache<C, T> {
     }
 
     /**
+     * Removes mappings for the given type.
+     *
+     * @param type
+     *            the type to remove; {@literal null} means all mappings.
+     */
+    public void clear(Class<? extends C> type) {
+        if (type != null) {
+            values.remove(type);
+        } else {
+            values.clear();
+        }
+    }
+
+    /**
      * Adds an action that will be run when all reflection caches are cleared.
      * <p>
      * The actions are held with a weak reference, which typically means that
@@ -143,6 +159,24 @@ public class ReflectionCache<C, T> {
      * @return a registration for removing the action
      */
     public static Registration addClearAllAction(Runnable action) {
+        return Registration.addAndRemove(clearAllActions, k -> action.run());
+    }
+
+    /**
+     * Adds an action that will be run when all reflection caches are cleared
+     * for a specific type.
+     * <p>
+     * The actions are held with a weak reference, which typically means that
+     * the action will be ignored if the returned registration is garbage
+     * collected.
+     *
+     * @see #clearAll(Class)
+     *
+     * @param action
+     *            the action to run
+     * @return a registration for removing the action
+     */
+    public static Registration addClearAllAction(Consumer<Class<?>> action) {
         return Registration.addAndRemove(clearAllActions, action);
     }
 
@@ -150,6 +184,15 @@ public class ReflectionCache<C, T> {
      * Clears all mappings from all reflection caches and related resources.
      */
     public static void clearAll() {
-        clearAllActions.forEach(Runnable::run);
+        clearAll(null);
     }
+
+    /**
+     * Clears mappings for give type from all reflection caches and related
+     * resources.
+     */
+    public static void clearAll(Class<?> type) {
+        clearAllActions.forEach(action -> action.accept(type));
+    }
+
 }

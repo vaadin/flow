@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,6 +73,7 @@ import com.vaadin.flow.server.streams.TemporaryFileUploadHandler;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.server.streams.UploadMetadata;
+import com.vaadin.flow.server.streams.UploadResult;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -164,6 +165,75 @@ public class UploadHandlerTest {
         Mockito.verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         Mockito.verify(response, Mockito.times(1)).setStatus(200);
+    }
+
+    @Test
+    public void xhrUpload_filenameFromHeader_extractedCorrectly()
+            throws IOException {
+        final String[] capturedFilename = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedFilename[0] = event.getFileName();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("test.txt", capturedFilename[0]);
+    }
+
+    @Test
+    public void xhrUpload_encodedFilename_decodedCorrectly()
+            throws IOException {
+        final String[] capturedFilename = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedFilename[0] = event.getFileName();
+        };
+
+        // encodeURIComponent("my file åäö.txt") in JavaScript
+        Mockito.when(request.getHeader("X-Filename"))
+                .thenReturn("my%20file%20%C3%A5%C3%A4%C3%B6.txt");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("my file åäö.txt", capturedFilename[0]);
+    }
+
+    @Test
+    public void xhrUpload_contentTypeFromHeader_extractedCorrectly()
+            throws IOException {
+        final String[] capturedContentType = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedContentType[0] = event.getContentType();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        Mockito.when(request.getHeader("Content-Type"))
+                .thenReturn("text/plain");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("text/plain", capturedContentType[0]);
+    }
+
+    @Test
+    public void xhrUpload_missingContentTypeHeader_defaultsToUnknown()
+            throws IOException {
+        final String[] capturedContentType = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedContentType[0] = event.getContentType();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        Mockito.when(request.getHeader("Content-Type")).thenReturn(null);
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("unknown", capturedContentType[0]);
     }
 
     @Test
@@ -322,7 +392,7 @@ public class UploadHandlerTest {
 
     @Test
     public void mulitpartData_forInputIterator_dataIsGottenCorrectly()
-            throws IOException {
+            throws IOException, ServletException {
         List<String> outList = new ArrayList<>(2);
         List<String> fileNames = new ArrayList<>(2);
 
@@ -433,8 +503,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -467,8 +536,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -509,8 +577,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -542,8 +609,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -690,6 +756,213 @@ public class UploadHandlerTest {
         });
     }
 
+    @Test
+    public void xhrUpload_earlyRejection_returns422WithJson()
+            throws IOException {
+        UploadHandler handler = (event) -> {
+            if (!event.getFileName().endsWith(".png")) {
+                event.reject("Only PNG files are accepted");
+            }
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(request, response, session, element);
+
+        Mockito.verify(response).setStatus(422);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void xhrUpload_noRejection_returns200() throws IOException {
+        UploadHandler handler = (event) -> {
+            // Accept the file
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.png");
+
+        handler.handleRequest(request, response, session, element);
+
+        Mockito.verify(response).setStatus(200);
+    }
+
+    @Test
+    public void xhrUpload_rejectionWithDefaultMessage_usesDefaultMessage()
+            throws IOException {
+        AtomicBoolean rejected = new AtomicBoolean(false);
+
+        UploadHandler handler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject();
+                rejected.set(true);
+            }
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertTrue("File should have been rejected", rejected.get());
+        Mockito.verify(response).setStatus(422);
+    }
+
+    @Test
+    public void multipartUpload_mixedAcceptReject_returns207WithJson()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.png", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.zip", 3));
+        parts.add(createPart(createInputStream("three"), MULTIPART_CONTENT_TYPE,
+                "file3.png", 5));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        List<String> processedFiles = new ArrayList<>();
+
+        UploadHandler uploadHandler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject("ZIP files are not allowed");
+            } else {
+                processedFiles.add(event.getFileName());
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        // Should have processed 2 PNG files
+        Assert.assertEquals("Two files should have been accepted", 2,
+                processedFiles.size());
+        Assert.assertTrue("file1.png should be in processed files",
+                processedFiles.contains("file1.png"));
+        Assert.assertTrue("file3.png should be in processed files",
+                processedFiles.contains("file3.png"));
+
+        // Should return 207 Multi-Status for mixed results
+        Mockito.verify(response).setStatus(207);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void multipartUpload_allRejected_returns422()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.zip", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.exe", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        UploadHandler uploadHandler = (event) -> {
+            event.reject("File type not allowed");
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        // Should return 422 for all rejected
+        Mockito.verify(response).setStatus(422);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void multipartUpload_allAccepted_returns200()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.png", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.png", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        UploadHandler uploadHandler = (event) -> {
+            // Accept all files
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        // Should return 200 for all accepted
+        Mockito.verify(response).setStatus(200);
+    }
+
+    @Test
+    public void multipartUpload_earlyRejection_fileNotProcessed()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        Part rejectedPart = createPart(createInputStream("content"),
+                MULTIPART_CONTENT_TYPE, "file.zip", 7);
+        parts.add(rejectedPart);
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        AtomicBoolean inputStreamAccessed = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject("ZIP files not allowed");
+            } else {
+                // This should not be reached for rejected files
+                try {
+                    event.getInputStream().read();
+                    inputStreamAccessed.set(true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        Assert.assertFalse(
+                "Input stream should not be accessed for rejected file",
+                inputStreamAccessed.get());
+        Mockito.verify(response).setStatus(422);
+    }
+
     private Part createPart(InputStream inputStream, String contentType,
             String name, long size) throws IOException {
         Part part = mock(Part.class);
@@ -717,6 +990,20 @@ public class UploadHandlerTest {
         Mockito.when(request.getInputStream())
                 .thenReturn(createInputStream(content));
         Mockito.when(request.getMethod()).thenReturn("POST");
+
+        // Mock getParts() for multipart content
+        if (content.equals(MULTIPART_STREAM_CONTENT)) {
+            try {
+                List<Part> parts = new ArrayList<>();
+                parts.add(createPart(createInputStream("Sound"), "text/plain",
+                        "sound.txt", 5));
+                parts.add(createPart(createInputStream("Bytes"), "text/plain",
+                        "bytes.txt", 5));
+                Mockito.when(request.getParts()).thenReturn(parts);
+            } catch (ServletException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private ServletInputStream createInputStream(final String content) {

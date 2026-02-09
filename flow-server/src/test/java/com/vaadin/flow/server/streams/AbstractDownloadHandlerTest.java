@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
 public class AbstractDownloadHandlerTest {
@@ -89,7 +90,7 @@ public class AbstractDownloadHandlerTest {
             public void handleDownloadRequest(DownloadEvent event) {
             }
         };
-        handler.setTransferUI(ui);
+
         mockContext = Mockito.mock(TransferContext.class);
         Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
@@ -195,7 +196,6 @@ public class AbstractDownloadHandlerTest {
             successAtomic.set(success);
         });
 
-        customHandler.setTransferUI(ui);
         customHandler.handleDownloadRequest(downloadEvent);
 
         Assert.assertTrue(successAtomic.get());

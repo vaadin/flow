@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -25,6 +26,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamResourceWriter;
@@ -109,6 +111,11 @@ public class HtmlObjectTest extends ComponentTest {
     @Test
     public void downloadHandler_isSetToInline() {
         Element element = Mockito.mock(Element.class);
+        StateNode node = Mockito.mock(StateNode.class);
+        Mockito.when(element.getNode()).thenReturn(node);
+        Mockito.when(node.getFeatureIfInitialized(Mockito.any()))
+                .thenReturn(Optional.empty());
+
         class TestHtmlObject extends HtmlObject {
             public TestHtmlObject(DownloadHandler downloadHandler) {
                 super(downloadHandler);

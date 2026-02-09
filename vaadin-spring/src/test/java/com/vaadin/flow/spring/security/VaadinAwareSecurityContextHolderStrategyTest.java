@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,6 +78,24 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
     public void explicitUsedWhenNoSessionAvailable() {
         SecurityContext explicit = Mockito.mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
+        Assert.assertEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext());
+    }
+
+    @Test
+    public void getContext_invalidateSession_getsThreadSecurityContext() {
+        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
+
+        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
+        HttpSession httpSession = Mockito.mock(HttpSession.class);
+        Mockito.when(vaadinSession.getSession())
+                .thenReturn(new WrappedHttpSession(httpSession));
+        Mockito.doThrow(IllegalStateException.class).when(httpSession)
+                .getAttribute(
+                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        VaadinSession.setCurrent(vaadinSession);
+
         Assert.assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }

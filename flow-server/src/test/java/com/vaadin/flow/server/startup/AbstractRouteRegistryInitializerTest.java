@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -117,10 +117,27 @@ public class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Route("foo")
+    public static class NonComponent {
+
+    }
+
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
         initializer.validateRouteClasses(context,
                 Stream.of(RouteAndParentLayout.class));
+    }
+
+    @Test
+    public void validateRouteClasses_annotationOnNonComponentClass_throws() {
+        InvalidRouteConfigurationException exception = Assert.assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context,
+                        Stream.of(NonComponent.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        Assert.assertTrue(exception.getMessage()
+                .contains("not extend '" + Component.class.getCanonicalName()));
     }
 
     @Test

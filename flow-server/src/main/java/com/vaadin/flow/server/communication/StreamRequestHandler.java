@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -139,21 +139,21 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
-        if (blockInert(elementRequest, node)
-                || blockDisabled(elementRequest, node) || !node.isAttached()
-                || !node.isVisible()) {
-            response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
-                    "Resource not available");
-            return;
-        }
+        session.lock();
+        try {
+            if (blockInert(elementRequest, node)
+                    || blockDisabled(elementRequest, node) || !node.isAttached()
+                    || !node.isVisible()) {
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                        "Resource not available");
+                return;
+            }
 
-        if (elementRequest
-                .getElementRequestHandler() instanceof UploadHandler) {
-            // Validate upload security key. Else respond with
-            // FORBIDDEN.
-            PathData parts = parsePath(pathInfo);
-            session.lock();
-            try {
+            if (elementRequest
+                    .getElementRequestHandler() instanceof UploadHandler) {
+                // Validate upload security key. Else respond with
+                // FORBIDDEN.
+                PathData parts = parsePath(pathInfo);
                 String secKey = elementRequest.getId();
                 if (secKey == null || !MessageDigest.isEqual(
                         secKey.getBytes(StandardCharsets.UTF_8),
@@ -187,9 +187,9 @@ public class StreamRequestHandler implements RequestHandler {
                             "Resource not available");
                     return;
                 }
-            } finally {
-                session.unlock();
             }
+        } finally {
+            session.unlock();
         }
         elementRequest.getElementRequestHandler().handleRequest(request,
                 response, session, elementRequest.getOwner());
@@ -244,8 +244,9 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        return DYN_RES_PREFIX + UI.getCurrent().getUIId() + PATH_SEPARATOR + id
-                + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
+        return DYN_RES_PREFIX + UI.getCurrentOrThrow().getUIId()
+                + PATH_SEPARATOR + id + PATH_SEPARATOR
+                + UrlUtil.encodeURIComponent(name);
     }
 
     private static Optional<URI> getPathUri(String path) {

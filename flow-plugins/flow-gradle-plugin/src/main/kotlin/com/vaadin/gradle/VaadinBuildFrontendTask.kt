@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.BundleValidationUtil
-import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.server.frontend.FrontendBuildUtils
 import com.vaadin.flow.server.frontend.Options
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
+import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
@@ -81,9 +82,13 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     public fun vaadinBuildFrontend() {
         val config = adapter.get().config
         logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        // sanity check
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+        if (!tokenFile.exists()) {
+            // if prepare-frontend token file doesn't exist, propagate build info
+            // to token file
+            logger.info("Token file does not exist, propagating build info")
+            BuildFrontendUtil.propagateBuildInfo(adapter.get())
+        }
 
         val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
             .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
@@ -147,7 +152,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * @return `true` to remove created files, `false` to keep the files
      */
     protected open fun cleanFrontendFiles(): Boolean {
-        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(adapter.get()),
+        if (FrontendBuildUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(adapter.get()),
                         adapter.get().classFinder)) {
             /*
              * Override this to not clean generated frontend files after the

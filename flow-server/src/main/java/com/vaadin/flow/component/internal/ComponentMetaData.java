@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class ComponentMetaData {
     /**
      * Dependencies defined for a {@link Component} class.
      * <p>
-     * Framework internal class, thus package-private.
+     * Framework internal class.
      */
     public static class DependencyInfo {
         private final List<JavaScript> javaScripts = new ArrayList<>();
@@ -68,7 +68,12 @@ public class ComponentMetaData {
             return Collections.unmodifiableList(jsModules);
         }
 
-        List<StyleSheet> getStyleSheets() {
+        /**
+         * Gets the style sheets defined for the component.
+         * 
+         * @return an list of style sheets
+         */
+        public List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
         }
 

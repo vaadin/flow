@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,11 +30,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class MainIT extends ChromeDeviceTest {
     private static final Path SW_APP_TS_PATH = Path.of("src", "main",
@@ -100,8 +99,8 @@ public class MainIT extends ChromeDeviceTest {
                 StandardCharsets.UTF_8);
     }
 
-    private static JsonObject readJsonFromUrl(String url) throws IOException {
-        return Json.parse(readStringFromUrl(url));
+    private static ObjectNode readJsonFromUrl(String url) throws IOException {
+        return JacksonUtils.readTree(readStringFromUrl(url));
     }
 
     private static byte[] readAllBytes(InputStream inputStream)
@@ -117,9 +116,10 @@ public class MainIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(
+        ObjectNode stats = readJsonFromUrl(
                 getRootURL() + "?v-r=init&location=");
-        return stats.getObject("appConfig").getBoolean("productionMode");
+        return ((ObjectNode) stats.get("appConfig")).get("productionMode")
+                .asBoolean();
     }
 
 }

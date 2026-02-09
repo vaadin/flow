@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -434,15 +434,16 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-1334x750.png");
         expected.add("/icons/icon-640x1136.png");
         expected.add("/icons/icon-1136x640.png");
+        expected.add("/styles.css");
         expected.add("/themes/**");
-        expected.add("/aura/**");
-        expected.add("/lumo/**");
+        expected.add("/assets/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
         Assert.assertEquals(expected, actual);
 
-        Set<String> expectedRoot = Set.of("/favicon.ico");
+        Set<String> expectedRoot = Set.of("/favicon.ico", "/aura/**",
+                "/lumo/**");
 
         Set<String> actualRoot = new HashSet<>();
         Collections.addAll(actualRoot, HandlerHelper.getPublicResourcesRoot());

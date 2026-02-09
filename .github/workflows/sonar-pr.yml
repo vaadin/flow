@@ -1,0 +1,56 @@
+name: Sonar PR Analysis
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+concurrency:
+  group: sonar-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _HEAD_REF: ${{ github.event.pull_request.head.ref }}
+  _BASE_REF: ${{ github.event.pull_request.base.ref }}
+  _PR_NUMBER: ${{ github.event.pull_request.number }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  # PRs use github.base_ref, no push
+  JAVA_VERSION: ${{ (startsWith(github.base_ref, '23.') && '11') || (startsWith(github.base_ref, '24.') && '17') || '21' }}
+
+jobs:
+  sonar-analysis:
+    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
+    name: Sonar Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env._HEAD_SHA }}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Sonar analysis
+        run: |
+          mvn clean install sonar:sonar \
+            -ntp -B -e -V \
+            -DskipTests \
+            -Dsonar.projectKey=vaadin_flow \
+            -Dsonar.organization=vaadin \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.pullrequest.key=${{ env._PR_NUMBER }} \
+            -Dsonar.pullrequest.base=${{ env._BASE_REF }} \
+            -Dsonar.pullrequest.branch=${{ env._HEAD_REF }}

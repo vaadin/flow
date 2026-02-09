@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.ThemeList;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Default implementation for the {@link ThemeList} that stores the theme names
@@ -73,12 +78,56 @@ public class ThemeListImpl implements ThemeList, Serializable {
      */
     public ThemeListImpl(Element element) {
         this.element = element;
-        themes = Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
+        themes = readThemesFromAttribute();
+    }
+
+    private Set<String> readThemesFromAttribute() {
+        return Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
                 .map(value -> value.split(THEME_NAMES_DELIMITER))
                 .map(Stream::of)
                 .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
                         .collect(Collectors.toSet()))
                 .orElseGet(HashSet::new);
+    }
+
+    @Override
+    public void bind(String name, Signal<Boolean> signal) {
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (signal == null) {
+            feature.removeBinding(SignalBindingFeature.THEMES + name);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.THEMES + name)) {
+                throw new BindingActiveException("Theme name '" + name
+                        + "' is already bound to a signal");
+            }
+
+            Registration registration = ElementEffect.bind(
+                    Element.get(element.getNode()), signal,
+                    (element, value) -> internalSetPresence(name,
+                            Boolean.TRUE.equals(value)));
+            feature.setBinding(SignalBindingFeature.THEMES + name, registration,
+                    signal);
+        }
+    }
+
+    private void internalSetPresence(String name, boolean set) {
+        // Constructor reads the initial themes state only once.
+        // Refresh themes from the attribute to ensure multiple ElementEffect
+        // bindings work correctly with the latest themes.
+        themes.clear();
+        themes.addAll(readThemesFromAttribute());
+
+        boolean changed;
+        if (set) {
+            changed = themes.add(name);
+        } else {
+            changed = themes.remove(name);
+        }
+        if (changed) {
+            updateThemeAttribute();
+        }
     }
 
     @Override
@@ -88,6 +137,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean add(String themeName) {
+        throwIfBound(themeName);
         boolean changed = themes.add(themeName);
         if (changed) {
             updateThemeAttribute();
@@ -97,6 +147,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean addAll(Collection<? extends String> themeNames) {
+        themeNames.forEach(this::throwIfBound);
         boolean changed = themes.addAll(themeNames);
         if (changed) {
             updateThemeAttribute();
@@ -106,6 +157,9 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean remove(Object themeName) {
+        if (themeName instanceof String name) {
+            throwIfBound(name);
+        }
         boolean changed = themes.remove(themeName);
         if (changed) {
             updateThemeAttribute();
@@ -115,6 +169,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean retainAll(Collection<?> themeNamesToRetain) {
+        themes.stream().filter(name -> !themeNamesToRetain.contains(name))
+                .forEach(this::throwIfBound);
         boolean changed = themes.retainAll(themeNamesToRetain);
         if (changed) {
             updateThemeAttribute();
@@ -124,6 +180,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public boolean removeAll(Collection<?> themeNamesToRemove) {
+        themeNamesToRemove.stream().map(String.class::cast)
+                .forEach(this::throwIfBound);
         boolean changed = themes.removeAll(themeNamesToRemove);
         if (changed) {
             updateThemeAttribute();
@@ -133,6 +191,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public void clear() {
+        clearBindings();
         themes.clear();
         updateThemeAttribute();
     }
@@ -179,5 +238,31 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public String toString() {
         return themes.toString();
+    }
+
+    /**
+     * Clears all signal bindings.
+     */
+    public void clearBindings() {
+        getSignalBindingFeatureIfInitialized().ifPresent(
+                feature -> feature.clearBindings(SignalBindingFeature.THEMES));
+    }
+
+    private void throwIfBound(String className) {
+        getSignalBindingFeatureIfInitialized().ifPresent(feature -> {
+            if (feature.hasBinding(SignalBindingFeature.THEMES + className)) {
+                throw new BindingActiveException("Theme name '" + className
+                        + "' is bound and cannot be modified manually");
+            }
+        });
+    }
+
+    private Optional<SignalBindingFeature> getSignalBindingFeatureIfInitialized() {
+        try {
+            return element.getNode()
+                    .getFeatureIfInitialized(SignalBindingFeature.class);
+        } catch (IllegalStateException e) {
+            return Optional.empty();
+        }
     }
 }

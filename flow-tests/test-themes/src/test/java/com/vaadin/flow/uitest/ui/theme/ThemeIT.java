@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -102,7 +102,7 @@ public class ThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
-                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                ".*HTTP ERROR 404 Request was not handled by any registered handler.*",
                 Pattern.DOTALL).matcher(source);
         Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
@@ -197,7 +197,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 "Node assets should have been copied to 'themes/app-theme'",
-                getRootURL() + "/path/VAADIN/static/npm/icons/snowflake.svg",
+                getRootURL() + "/path/assets/npm/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/"

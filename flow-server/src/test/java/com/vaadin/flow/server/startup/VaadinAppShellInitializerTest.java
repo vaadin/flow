@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -206,6 +206,13 @@ public class VaadinAppShellInitializerTest {
 
     @StyleSheet("./foo.css")
     public static class ComponentWithStylesheet extends Component {
+    }
+
+    @StyleSheet("./foo1.css")
+    @StyleSheet("./foo2.css")
+    @StyleSheet("./foo3.css")
+    @StyleSheet("./foo4.css")
+    public static class ComponentWithMultipleStylesheet extends Component {
     }
 
     @StyleSheet("context://my-styles.css")
@@ -550,6 +557,13 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void styleSheetOnComponent_notOffending() throws Exception {
         classes.add(ComponentWithStylesheet.class);
+        // Should not throw as @StyleSheet is allowed on Components
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void multipleStyleSheetOnComponent_notOffending() throws Exception {
+        classes.add(ComponentWithMultipleStylesheet.class);
         // Should not throw as @StyleSheet is allowed on Components
         initializer.process(classes, servletContext);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -172,16 +172,22 @@ public class WebComponentUI extends UI {
 
         if (!shouldBePreserved) {
             attachCreatedWebComponent(webComponentConfiguration.get(), event);
-        } else if (getInternals().getExtendedClientDetails() != null) {
-            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                    event, getComponentHash(event,
-                            getInternals().getExtendedClientDetails()));
         } else {
-            getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+            ExtendedClientDetails details = getInternals()
+                    .getExtendedClientDetails();
+            if (details.getWindowName() == null) {
+                getPage().retrieveExtendedClientDetails(
+                        extendedClientDetails -> {
+                            attachCachedOrCreatedWebComponent(
+                                    webComponentConfiguration.get(), event,
+                                    getComponentHash(event,
+                                            extendedClientDetails));
+                        });
+            } else {
                 attachCachedOrCreatedWebComponent(
                         webComponentConfiguration.get(), event,
-                        getComponentHash(event, extendedClientDetails));
-            });
+                        getComponentHash(event, details));
+            }
         }
     }
 

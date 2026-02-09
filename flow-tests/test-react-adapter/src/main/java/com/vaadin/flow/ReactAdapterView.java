@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,10 @@ public class ReactAdapterView extends Div {
                 (event) -> input.setValue("set value"));
         setValueButton.setId("setValueButton");
 
+        var setNullButton = new NativeButton("Set null",
+                (event) -> input.setValue(null));
+        setNullButton.setId("setNullValueButton");
+
         var getOutput = new Span();
         getOutput.setId("getOutput");
 
@@ -43,7 +47,7 @@ public class ReactAdapterView extends Div {
         getValueButton.setId("getValueButton");
 
         add(new Div(input, listenerOutput), new Div(setValueButton),
-                new Div(getValueButton, getOutput));
+                new Div(setNullButton), new Div(getValueButton, getOutput));
     }
 
 }

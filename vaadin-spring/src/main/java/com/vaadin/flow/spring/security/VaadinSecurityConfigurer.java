@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,7 +71,6 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
 /**
  * A {@link SecurityConfigurer} specifically designed for Vaadin applications.
@@ -149,6 +148,10 @@ public final class VaadinSecurityConfigurer
     private String formLoginPage;
 
     private String oauth2LoginPage;
+
+    private String defaultSuccessUrl;
+
+    private boolean alwaysUseDefaultSuccessUrl;
 
     private String logoutSuccessUrl;
 
@@ -308,6 +311,43 @@ public final class VaadinSecurityConfigurer
             String postLogoutRedirectUri) {
         this.oauth2LoginPage = oauth2LoginPage;
         this.postLogoutRedirectUri = postLogoutRedirectUri;
+        return this;
+    }
+
+    /**
+     * Sets the default success URL after authentication. Redirected only when
+     * no protected page was previously accessed. Works only together with
+     * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
+     * variants.
+     * 
+     * @param defaultSuccessUrl
+     *            the default success url
+     * @return the current configurer instance for method chaining
+     * @see #defaultSuccessUrl(String, boolean)
+     */
+    public VaadinSecurityConfigurer defaultSuccessUrl(
+            String defaultSuccessUrl) {
+        return defaultSuccessUrl(defaultSuccessUrl, false);
+    }
+
+    /**
+     * Sets the default success URL after authentication. If alwaysUse is true,
+     * always redirects to this URL; otherwise, only when no protected page was
+     * previously accessed. Works only together with {@link #loginView(String)}
+     * or {@link #oauth2LoginPage(String)} and their variants.
+     * 
+     * @param defaultSuccessUrl
+     *            the default success url
+     * @param alwaysUse
+     *            if true, always redirect to {@code defaultSuccessUrl} after
+     *            authentication, even when a protected page was previously
+     *            accessed
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer defaultSuccessUrl(String defaultSuccessUrl,
+            boolean alwaysUse) {
+        this.defaultSuccessUrl = defaultSuccessUrl;
+        this.alwaysUseDefaultSuccessUrl = alwaysUse;
         return this;
     }
 
@@ -485,23 +525,13 @@ public final class VaadinSecurityConfigurer
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
         if (EndpointRequestUtil.isHillaAvailable()) {
-            return toRequestPrincipalAwareMatcher(
-                    RequestMatchers.anyOf(baseMatcher,
-                            // Matchers for known Hilla views
-                            getRequestUtil()::isAllowedHillaView,
-                            // Matcher for public Hilla endpoints
-                            getRequestUtil()::isAnonymousEndpoint));
+            return RequestMatchers.anyOf(baseMatcher,
+                    // Matchers for anonymous Hilla views
+                    getRequestUtil()::isAnonymousHillaRoute,
+                    // Matcher for public Hilla endpoints
+                    getRequestUtil()::isAnonymousEndpoint);
         }
-        return toRequestPrincipalAwareMatcher(baseMatcher);
-    }
-
-    private RequestMatcher toRequestPrincipalAwareMatcher(
-            RequestMatcher matcher) {
-        if (enableNavigationAccessControl && getNavigationAccessControl()
-                .hasAccessChecker(RoutePathAccessChecker.class)) {
-            return RequestUtil.principalAwareRequestMatcher(matcher);
-        }
-        return matcher;
+        return baseMatcher;
     }
 
     @Override
@@ -708,7 +738,12 @@ public final class VaadinSecurityConfigurer
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler createAuthenticationSuccessHandler() {
         var handler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
-        handler.setDefaultTargetUrl(getRequestUtil().applyUrlMapping(""));
+        if (defaultSuccessUrl != null) {
+            handler.setDefaultTargetUrl(defaultSuccessUrl);
+            handler.setAlwaysUseDefaultTargetUrl(alwaysUseDefaultSuccessUrl);
+        } else {
+            handler.setDefaultTargetUrl(getRequestUtil().applyUrlMapping(""));
+        }
         getSharedObject(RequestCache.class).ifPresent(handler::setRequestCache);
         getBuilder().setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -838,12 +873,13 @@ public final class VaadinSecurityConfigurer
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
         registry.requestMatchers(defaultPermitMatcher()).permitAll()
-                .requestMatchers(toRequestPrincipalAwareMatcher(
-                        getRequestUtil()::isSecuredFlowRoute))
+                .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
                 .authenticated();
         if (EndpointRequestUtil.isHillaAvailable()) {
-            registry.requestMatchers(toRequestPrincipalAwareMatcher(
-                    getRequestUtil()::isEndpointRequest)).authenticated();
+            registry.requestMatchers(getRequestUtil()::isSecuredHillaRoute)
+                    .access(getRequestUtil()::authorizeHillaRoute);
+            registry.requestMatchers(getRequestUtil()::isEndpointRequest)
+                    .authenticated();
         }
     }
 

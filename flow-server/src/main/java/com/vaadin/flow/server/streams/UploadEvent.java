@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
-import org.apache.commons.fileupload2.core.FileItemInput;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -51,8 +50,10 @@ public class UploadEvent {
 
     private final Element owningElement;
 
-    private final FileItemInput item;
     private final Part part;
+
+    private boolean rejected = false;
+    private String rejectionMessage;
 
     /**
      * Create a new download event with required data.
@@ -71,17 +72,12 @@ public class UploadEvent {
      *            size of the upload
      * @param owningElement
      *            element owning this upload
-     * @param item
-     *            multipart stream file item, {@code null} for xhr or parts
-     *            multipart stream
      * @param part
-     *            multipart part item, {@code null} for xhr or multipart file
-     *            stream
+     *            multipart part item, {@code null} for xhr upload
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, long contentLength,
-            String contentType, Element owningElement, FileItemInput item,
-            Part part) {
+            String contentType, Element owningElement, Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
@@ -89,7 +85,6 @@ public class UploadEvent {
         this.fileSize = contentLength;
         this.owningElement = owningElement;
         this.contentType = contentType;
-        this.item = item;
         this.part = part;
     }
 
@@ -98,12 +93,16 @@ public class UploadEvent {
      *
      * @return the input stream from which the contents of the request can be
      *         read
+     * @throws IllegalStateException
+     *             if the upload has been rejected
      */
     public InputStream getInputStream() {
+        if (rejected) {
+            throw new IllegalStateException(
+                    "Cannot access input stream of rejected upload: "
+                            + rejectionMessage);
+        }
         try {
-            if (item != null) {
-                return item.getInputStream();
-            }
             if (part != null) {
                 return part.getInputStream();
             }
@@ -211,5 +210,52 @@ public class UploadEvent {
         } finally {
             session.unlock();
         }
+    }
+
+    /**
+     * Rejects this upload with a default message.
+     * <p>
+     * When called, the file will not be processed (or will be cleaned up if
+     * already processed) and the rejection will be communicated to the client.
+     * The default rejection message "File rejected" will be used.
+     *
+     * @see #reject(String)
+     */
+    public void reject() {
+        reject("File rejected");
+    }
+
+    /**
+     * Rejects this upload with a custom message.
+     * <p>
+     * When called, the file will not be processed (or will be cleaned up if
+     * already processed) and the rejection will be communicated to the client
+     * with the provided message.
+     *
+     * @param message
+     *            the rejection message to send to the client
+     */
+    public void reject(String message) {
+        this.rejected = true;
+        this.rejectionMessage = message;
+    }
+
+    /**
+     * Checks whether this upload has been rejected.
+     *
+     * @return {@code true} if the upload has been rejected, {@code false}
+     *         otherwise
+     */
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    /**
+     * Gets the rejection message if this upload has been rejected.
+     *
+     * @return the rejection message, or {@code null} if not rejected
+     */
+    public String getRejectionMessage() {
+        return rejectionMessage;
     }
 }

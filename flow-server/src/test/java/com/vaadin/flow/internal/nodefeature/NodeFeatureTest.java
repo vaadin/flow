@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -96,6 +96,8 @@ public class NodeFeatureTest {
                 NodeFeatures.RETURN_CHANNEL_MAP);
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
         expectedIds.put(TextBindingFeature.class, NodeFeatures.TEXT_BINDING);
+        expectedIds.put(SignalBindingFeature.class,
+                NodeFeatures.SIGNAL_BINDING);
 
         return expectedIds;
     }
@@ -133,8 +135,11 @@ public class NodeFeatureTest {
 
         List<Class<? extends NodeFeature>> expectedOrder = Arrays.asList(
                 /* Primary features */
-                ElementData.class, TextNodeMap.class, TextBindingFeature.class,
-                ModelList.class, BasicTypeValue.class,
+                ElementData.class, TextNodeMap.class, ModelList.class,
+                BasicTypeValue.class,
+
+                /* Signal binding feature */
+                TextBindingFeature.class, SignalBindingFeature.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,

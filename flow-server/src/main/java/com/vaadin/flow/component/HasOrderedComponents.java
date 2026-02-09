@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
 
 /**
  * A component which the children components are ordered, so the index of each
@@ -30,10 +32,10 @@ public interface HasOrderedComponents extends HasComponents {
 
     /**
      * Replaces the component in the container with another one without changing
-     * position. This method replaces component with another one is such way
+     * position. This method replaces a component with another one is such a way
      * that the new component overtakes the position of the old component. If
      * the old component is not in the container, the new component is added to
-     * the container. If the both component are already in the container, their
+     * the container. If both components are already in the container, their
      * positions are swapped. Component attach and detach events should be taken
      * care as with add and remove.
      *
@@ -48,6 +50,14 @@ public interface HasOrderedComponents extends HasComponents {
      *            without adding any other
      */
     default void replace(Component oldComponent, Component newComponent) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(
+                                "replace is not allowed while a binding for children exists.");
+                    }
+                });
         if (oldComponent == null && newComponent == null) {
             // NO-OP
             return;
@@ -75,7 +85,7 @@ public interface HasOrderedComponents extends HasComponents {
      * Returns the index of the given component.
      *
      * @param component
-     *            the component to look up, can not be <code>null</code>
+     *            the component to look up, cannot be <code>null</code>
      * @return the index of the component or -1 if the component is not a child
      */
     default int indexOf(Component component) {
@@ -108,7 +118,7 @@ public interface HasOrderedComponents extends HasComponents {
      * Returns the component at the given position.
      *
      * @param index
-     *            the position of the component, must be greater than or equals
+     *            the position of the component must be greater than or equals
      *            to 0 and less than the number of children components
      * @return The component at the given index
      * @throws IllegalArgumentException

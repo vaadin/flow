@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,36 +15,22 @@
  */
 package com.vaadin.flow.spring.security;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 /**
  * Provides configuration of Vaadin aware {@link SecurityContextHolderStrategy}
+ *
+ * @deprecated A {@link SecurityContextHolderStrategy} implementation is now
+ *             automatically provided by {@link SpringSecurityAutoConfiguration}
+ *             and it is no more necessary to import this configuration class,
+ *             which is now no-op. The default strategy implementation is
+ *             {@link VaadinAwareSecurityContextHolderStrategy} and can be
+ *             overridden by providing a custom bean.
  */
+@Deprecated(since = "25.0", forRemoval = true)
 @Configuration
 public class VaadinAwareSecurityContextHolderStrategyConfiguration {
-
-    /**
-     * Registers {@link SecurityContextHolderStrategy} bean.
-     * <p>
-     * Beans of this type will automatically be used by
-     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
-     * to configure the current {@link SecurityContextHolderStrategy}.
-     *
-     * @return the Vaadin aware security context holder strategy
-     */
-    @Bean(name = "VaadinSecurityContextHolderStrategy")
-    @ConditionalOnMissingBean
-    public VaadinAwareSecurityContextHolderStrategy securityContextHolderStrategy() {
-        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setContextHolderStrategy(
-                vaadinAwareSecurityContextHolderStrategy);
-        return vaadinAwareSecurityContextHolderStrategy;
-    }
-
 }

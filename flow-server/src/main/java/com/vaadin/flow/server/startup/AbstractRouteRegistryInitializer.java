@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -81,8 +81,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return true if applicable class
      */
     private boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz)
+        boolean hasRouteAnnotation = clazz.isAnnotationPresent(Route.class);
+        if (hasRouteAnnotation && !Component.class.isAssignableFrom(clazz)) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "'%s' declares '@%s' but does not extend '%s'.",
+                    clazz.getCanonicalName(), Route.class.getSimpleName(),
+                    Component.class.getCanonicalName()));
+        }
+        return hasRouteAnnotation
                 && clazz.getAnnotation(Route.class).registerAtStartup();
     }
 

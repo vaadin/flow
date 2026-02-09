@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Immutable class list implementation.
@@ -62,5 +63,16 @@ public class ImmutableClassList extends AbstractSet<String>
     @Override
     public int size() {
         return values.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Text nodes do not support binding a {@link Signal} to a stylesheet class,
+     * because they do not support styling in general.
+     */
+    @Override
+    public void bind(String name, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 }

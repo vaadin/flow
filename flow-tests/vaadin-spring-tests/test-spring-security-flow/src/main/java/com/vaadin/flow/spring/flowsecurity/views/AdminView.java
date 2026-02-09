@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,16 +55,17 @@ public class AdminView extends VerticalLayout {
         accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
         accessRolePrefixedAdminPageFromThread.addClickListener(event -> {
             UI ui = event.getSource().getUI().get();
-            Runnable doNavigation = () -> {
+            Runnable doNavigation = new DelegatingSecurityContextRunnable(
+                    () -> ui.navigate(RolePrefixedAdminView.class),
+                    SecurityContextHolder.getContext());
+            Runnable delayedNavigation = () -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);
-                    ui.access(() -> ui.navigate(RolePrefixedAdminView.class));
+                    ui.access(doNavigation::run);
                 } catch (InterruptedException e) {
                 }
             };
-            Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                    doNavigation, SecurityContextHolder.getContext());
-            new Thread(wrappedRunnable).start();
+            new Thread(delayedNavigation).start();
         });
         add(accessRolePrefixedAdminPageFromThread);
     }

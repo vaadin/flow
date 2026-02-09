@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,13 @@ package com.vaadin.flow.uitest.servlet;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
+@MultipartConfig
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

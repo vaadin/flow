@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -536,11 +536,7 @@ public class ComponentUtil {
 
         try {
             Component.elementToMapTo.set(wrapData);
-            UI ui = UI.getCurrent();
-            if (ui == null) {
-                throw new IllegalStateException("UI instance is not available. "
-                        + "It looks like you are trying to execute UI code outside the UI/Servlet dispatching thread");
-            }
+            UI ui = UI.getCurrentOrThrow();
             Instantiator instantiator = Instantiator.get(ui);
             return instantiator.createComponent(componentType);
         } finally {

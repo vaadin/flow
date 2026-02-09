@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +56,8 @@ public class FeatureFlags implements Serializable {
     // Feature constants pointing to provider definitions for backward
     // compatibility
     public static final Feature COLLABORATION_ENGINE_BACKEND = CoreFeatureFlagProvider.COLLABORATION_ENGINE_BACKEND;
-    public static final Feature FLOW_FULLSTACK_SIGNALS = CoreFeatureFlagProvider.FLOW_FULLSTACK_SIGNALS;
     public static final Feature ACCESSIBLE_DISABLED_BUTTONS = CoreFeatureFlagProvider.ACCESSIBLE_DISABLED_BUTTONS;
     public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
-    public static final Feature COPILOT_EXPERIMENTAL = CoreFeatureFlagProvider.COPILOT_EXPERIMENTAL;
     public static final Feature HILLA_FULLSTACK_SIGNALS = HillaFeatureFlagProvider.HILLA_FULLSTACK_SIGNALS;
     public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = FlowComponentsFeatureFlagProvider.MASTER_DETAIL_LAYOUT_COMPONENT;
     public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = FlowComponentsFeatureFlagProvider.LAYOUT_COMPONENT_IMPROVEMENTS;
@@ -245,8 +242,7 @@ public class FeatureFlags implements Serializable {
             featureFlagFile.getParentFile().mkdirs(); // NOSONAR
         }
         try {
-            FileUtils.write(featureFlagFile, properties.toString(),
-                    StandardCharsets.UTF_8);
+            Files.writeString(featureFlagFile.toPath(), properties);
         } catch (IOException e) {
             getLogger().error("Unable to store feature flags", e);
         }

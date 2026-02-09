@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -99,9 +99,12 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
 
     /**
      * Request an update of the resource with the given path.
-     *
+     * <p>
+     * Path may start with the `context://` prefix, which indicates that the
+     * resource is located in the context root.
+     * 
      * @param path
-     *            the path of the file to update, relative to the servlet path
+     *            the path of the file to update, relative to the servlet path.
      * @param content
      *            the new content of the file
      */

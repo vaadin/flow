@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,7 @@ import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v139.network.Network;
+import org.openqa.selenium.devtools.v142.network.Network;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -51,7 +51,7 @@ public class DevToolsWrapper {
      */
     public void setOfflineEnabled(Boolean isEnabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty()));
@@ -66,7 +66,7 @@ public class DevToolsWrapper {
      */
     public void setCacheDisabled(Boolean isDisabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 

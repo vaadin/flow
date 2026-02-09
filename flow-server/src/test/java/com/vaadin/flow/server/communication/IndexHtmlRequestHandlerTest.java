@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -60,6 +61,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -74,10 +76,10 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
 
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -110,6 +112,7 @@ public class IndexHtmlRequestHandlerTest {
     @Before
     public void setUp() throws Exception {
 
+        UsageStatistics.resetEntries();
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
@@ -309,6 +312,18 @@ public class IndexHtmlRequestHandlerTest {
     public void canHandleRequest_doNotHandle_vaadinStaticResources() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/VAADIN/foo.js", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_vaadinReservedFolders() {
+        for (String reservedFolder : HandlerHelper
+                .getPublicInternalFolderPaths()) {
+            assertFalse(reservedFolder
+                    + " was handled even though it should not init index handler",
+                    indexHtmlRequestHandler.canHandleRequest(
+                            createRequestWithDestination(reservedFolder, null,
+                                    null)));
+        }
     }
 
     @Test
@@ -839,6 +854,117 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         assertEquals("dark", document.head().parent().attr("theme"));
+    }
+
+    @ColorScheme(ColorScheme.Value.DARK)
+    public static class ClassWithDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_dark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+        assertEquals("color-scheme: dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.LIGHT_DARK)
+    public static class ClassWithLightDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_lightDark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithLightDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("light-dark", document.head().parent().attr("theme"));
+        assertEquals("color-scheme: light dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.NORMAL)
+    public static class ClassWithNormalColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_not_apply_colorScheme_normal() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithNormalColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("", document.head().parent().attr("theme"));
+        assertEquals("", document.head().parent().attr("style"));
+    }
+
+    @Test
+    public void should_append_colorScheme_to_existing_style()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+
+        // Create custom index.html with existing style attribute on html
+        // element
+        String indexHtmlWithStyle = """
+                <!DOCTYPE html>
+                <html style="--custom-prop: value;">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                </head>
+                <body>
+                  <div id="outlet"></div>
+                </body>
+                </html>
+                """;
+
+        File frontendDir = new File(projectRootFolder, "frontend");
+        frontendDir.mkdirs();
+        File indexHtml = new File(frontendDir, "index.html");
+        java.nio.file.Files.writeString(indexHtml.toPath(), indexHtmlWithStyle);
+
+        TestUtil.createStatsJsonStub(projectRootFolder);
+
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtmlOutput = responseOutput
+                .toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtmlOutput);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+        assertEquals("--custom-prop: value; color-scheme: dark;",
+                document.head().parent().attr("style"));
     }
 
     @Test

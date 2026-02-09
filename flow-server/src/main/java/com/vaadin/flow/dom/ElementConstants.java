@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -111,6 +111,10 @@ public class ElementConstants {
      * The style property for cursor.
      */
     public static final String STYLE_CURSOR = "cursor";
+    /**
+     * The style property for color-scheme.
+     */
+    public static final String STYLE_COLOR_SCHEME = "color-scheme";
     /**
      * The style property for display.
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,8 +23,6 @@ import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import tools.jackson.databind.ObjectMapper;
-
-import com.vaadin.flow.server.frontend.TaskGenerateTsConfigTest;
 
 public class BrowserDetailsTest extends TestCase {
 
@@ -790,8 +788,8 @@ public class BrowserDetailsTest extends TestCase {
     private static UserAgent[] getUserAgentDetails(String agentFile)
             throws IOException {
         String userAgents = IOUtils.toString(
-                Objects.requireNonNull(TaskGenerateTsConfigTest.class
-                        .getClassLoader().getResourceAsStream(agentFile)),
+                Objects.requireNonNull(BrowserDetailsTest.class.getClassLoader()
+                        .getResourceAsStream(agentFile)),
                 StandardCharsets.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
 

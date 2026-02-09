@@ -1,0 +1,8 @@
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/utilities.css';
+
+/* #customImport# */
+
+/* #cssImport# */
+
+@source '#relativeSourcePath#';

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-live-reload-mode</artifactId>
 
@@ -41,6 +41,10 @@
       <artifactId>flow-test-lumo</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -58,6 +62,10 @@
           <webApp>
             <!-- use a non-root context -->
             <contextPath>/context</contextPath>
+            <!-- Make sure CSS in target folder are loaded by Jetty -->
+            <resourceBases>
+              <resouceBase>${project.build.outputDirectory}/META-INF/resources</resouceBase>
+            </resourceBases>
           </webApp>
         </configuration>
       </plugin>

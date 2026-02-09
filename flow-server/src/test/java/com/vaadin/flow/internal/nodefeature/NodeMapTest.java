@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -114,6 +114,18 @@ public class NodeMapTest
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
         Assert.assertEquals(KEY, removeChange.getKey());
+    }
+
+    @Test
+    public void testCollectChange_withSignalBinding() {
+        // Signal and Registration instances are irrelevant in this test.
+        nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value"));
+        List<NodeChange> putChanges = collectChanges(nodeMap);
+
+        Assert.assertEquals(1, putChanges.size());
+        MapPutChange putChange = (MapPutChange) putChanges.get(0);
+        Assert.assertEquals(KEY, putChange.getKey());
+        Assert.assertEquals("value", putChange.getValue());
     }
 
     @Test

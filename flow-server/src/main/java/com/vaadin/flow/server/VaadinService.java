@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -42,12 +43,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -59,8 +58,6 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.DisabledFeatureException;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -97,7 +94,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.flow.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -321,19 +318,7 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
-        try {
-            initSignalsEnvironment();
-        } catch (Exception e) {
-            if (FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-                throw e;
-            } else {
-                getLogger().info(
-                        "Error initializing signals. This is non-fatal since signals are "
-                                + "a preview feature and the feature flag is not enabled.",
-                        e);
-            }
-        }
+        initSignalsEnvironment();
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
@@ -366,25 +351,14 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void initSignalsEnvironment() {
-        boolean enabled = FeatureFlags.get(getContext())
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
-        if (enabled) {
-            // Trigger check for multiple TaskExecutor candidates
-            getExecutor();
-        }
+        // Trigger check for multiple TaskExecutor candidates
+        getExecutor();
 
         class VaadinServiceEnvironment extends SignalEnvironment
                 implements Serializable {
             @Override
             public boolean isActive() {
-                if (VaadinService.getCurrent() != VaadinService.this) {
-                    return false;
-                } else if (!enabled) {
-                    throw new DisabledFeatureException(
-                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-                } else {
-                    return true;
-                }
+                return VaadinService.getCurrent() == VaadinService.this;
             }
 
             private Executor createCurrentUiDispatcher() {
@@ -609,13 +583,8 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Creates a default executor instance to use with this service.
-     * <p>
-     * This default implementation creates a thread pool executor with a custom
-     * thread factory to generate daemon threads. It uses a core pool size of 8,
-     * an unbounded maximum pool size, and a keep-alive time of 60 seconds for
-     * idle threads. The thread pool grows dynamically as required, and idle
-     * core threads are allowed to time out.
+     * Creates a default executor instance to use with this service. This
+     * default implementation creates a virtual tread executor.
      * <p>
      * A custom {@link VaadinService} implementation can override this method to
      * provide its own ad-hoc executor tailored to specific environments like
@@ -635,42 +604,17 @@ public abstract class VaadinService implements Serializable {
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
-        int corePoolSize = 8;
-        int keepAliveTimeSec = 60;
+        ThreadFactory namedVirtualThreadFactory = defaultExecutorFactory()
+                .factory();
+        return Executors.newThreadPerTaskExecutor(namedVirtualThreadFactory);
+    }
 
-        class VaadinThreadFactory implements ThreadFactory {
-            private final AtomicInteger threadNumber = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable runnable) {
-                int threadNumber = this.threadNumber.incrementAndGet();
-                if (threadNumber == 1) {
-                    getLogger().info(
-                            "The application is using Vaadin's default ThreadPoolExecutor "
-                                    + "(pool size = {}, keep alive time = {} seconds). "
-                                    + "A custom executor with an appropriate thread pool "
-                                    + "can be provided registering a {}.",
-                            corePoolSize, keepAliveTimeSec,
-                            VaadinServiceInitListener.class.getSimpleName());
-                }
-                Thread thread = new Thread(runnable,
-                        "VaadinTaskExecutor-thread-" + threadNumber);
-                // Thread marked as daemon to prevent task execution to block
-                // JVM shutdown
-                thread.setDaemon(true);
-                thread.setPriority(Thread.NORM_PRIORITY);
-                return thread;
-            }
-        }
-        // Defaults taken from Spring Boot configuration
-        // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-                corePoolSize, Integer.MAX_VALUE, keepAliveTimeSec,
-                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-                new VaadinThreadFactory());
-        // Enables dynamic growing and shrinking of the pool.
-        threadPoolExecutor.allowCoreThreadTimeOut(true);
-        return threadPoolExecutor;
+    /*
+     * Package private to allow overriding with an uncaught exception handler in
+     * tests
+     */
+    OfVirtual defaultExecutorFactory() {
+        return Thread.ofVirtual().name("VaadinTaskExecutor-thread-", 1);
     }
 
     /**
@@ -2114,17 +2058,13 @@ public abstract class VaadinService implements Serializable {
             json.set("locales", JacksonUtils.createObjectNode());
             json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            return wrapJsonForClient(json);
+            return json.toString();
         } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(JacksonUtils.createObjectNode());
+            return JacksonUtils.createObjectNode().toString();
         }
 
-    }
-
-    private static String wrapJsonForClient(ObjectNode json) {
-        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -2146,7 +2086,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toString();
     }
 
     /**

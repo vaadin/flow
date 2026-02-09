@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,8 +199,6 @@ internal class GradlePluginAdapter private constructor(
     override fun nodeDownloadRoot(): URI =
         URI.create(config.nodeDownloadRoot.get())
 
-    override fun nodeAutoUpdate(): Boolean = config.nodeAutoUpdate.get()
-
     override fun nodeVersion(): String = config.nodeVersion.get()
 
     override fun npmFolder(): File = config.npmFolder.get()
@@ -217,6 +215,9 @@ internal class GradlePluginAdapter private constructor(
 
     override fun requireHomeNodeExec(): Boolean =
         config.requireHomeNodeExec.get()
+
+    override fun nodeFolder(): String? =
+        config.nodeFolder.orNull
 
     override fun servletResourceOutputDirectory(): File {
         // when running a task which runs before processResources, we need to
@@ -238,6 +239,9 @@ internal class GradlePluginAdapter private constructor(
 
     override fun frontendOutputDirectory(): File =
         config.frontendOutputDirectory.get()
+
+    override fun resourcesOutputDirectory(): File =
+        config.resourcesOutputDirectory.get()
 
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()

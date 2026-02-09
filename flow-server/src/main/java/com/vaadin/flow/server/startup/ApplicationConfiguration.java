@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,13 @@ package com.vaadin.flow.server.startup;
 
 import java.util.Enumeration;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
@@ -114,4 +117,19 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
                 InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
     }
 
+    @Override
+    default Mode getMode() {
+        var defaultMode = AbstractConfiguration.super.getMode();
+        if (!defaultMode.equals(Mode.DEVELOPMENT_BUNDLE)) {
+            return defaultMode;
+        }
+
+        // Tailwind CSS support should additionally enable frontend hotdeloy
+        var featureFlags = FeatureFlags.get(getContext());
+        if (featureFlags.isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+            return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+        }
+
+        return defaultMode;
+    }
 }

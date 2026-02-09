@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,6 +85,7 @@ public class WebComponentProviderTest {
     WebComponentConfigurationRegistry registry;
 
     @Before
+    @SuppressWarnings("java:S1872") // FeatureFlagsWrapper is protected class
     public void init() {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
@@ -219,12 +220,13 @@ public class WebComponentProviderTest {
         registry = setupConfigurations(MyComponentExporter.class,
                 OtherComponentExporter.class);
 
-        ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
+        ByteArrayOutputStream out1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream out2 = new ByteArrayOutputStream();
 
         DefaultDeploymentConfiguration configuration = Mockito
                 .mock(DefaultDeploymentConfiguration.class);
 
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+        Mockito.when(response.getOutputStream()).thenReturn(out1);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
 
         Mockito.when(request.getPathInfo())
@@ -232,17 +234,17 @@ public class WebComponentProviderTest {
         Assert.assertTrue("Provider should handle first web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
 
+        Mockito.when(response.getOutputStream()).thenReturn(out2);
+
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/other-component.js");
         Assert.assertTrue("Provider should handle second web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
-        Mockito.verify(out, times(2)).write(captor.capture(), Mockito.anyInt(),
-                Mockito.anyInt());
 
-        byte[] first = captor.getAllValues().get(0);
-        byte[] second = captor.getAllValues().get(1);
+        byte[] first = out1.toByteArray();
+        byte[] second = out2.toByteArray();
 
         Assert.assertNotEquals("Stream output should not match", first, second);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.Pair;
@@ -374,13 +375,14 @@ public class RoutePathAccessCheckerTest {
         Mockito.verifyNoInteractions(accessPathChecker);
     }
 
-    private AccessCheckResult checkAccess(Class<?> viewClass, User user) {
+    private AccessCheckResult checkAccess(Class<? extends Component> viewClass,
+            User user) {
         NavigationContext context = setupNavigationContext(viewClass, user);
         return this.routePathAccessChecker.check(context);
     }
 
-    private NavigationContext setupNavigationContext(Class<?> navigationTarget,
-            User user) {
+    private NavigationContext setupNavigationContext(
+            Class<? extends Component> navigationTarget, User user) {
         CurrentInstance.clearAll();
 
         Principal principal;

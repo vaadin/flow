@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
@@ -61,8 +62,9 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class, NoTheme.class,
-        StyleSheet.class, StyleSheet.Container.class })
+        BodySize.class, PageTitle.class, Push.class, ColorScheme.class,
+        Theme.class, NoTheme.class, StyleSheet.class,
+        StyleSheet.Container.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

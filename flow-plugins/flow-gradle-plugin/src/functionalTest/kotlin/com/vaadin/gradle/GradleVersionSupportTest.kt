@@ -1,5 +1,5 @@
 /**
- * Copyright 2000-2025 Vaadin Ltd
+ * Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """
         )

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UrlUtil;
 
 /**
  * Parameter deserialization utility.
@@ -111,7 +112,8 @@ public final class ParameterDeserializer {
         Class<?> parameterType = getClassType(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
             validateWildcardType(navigationTarget, parameterType);
-            return parameters.stream().collect(Collectors.joining("/"));
+            return parameters.stream().map(UrlUtil::decodeURIComponent)
+                    .collect(Collectors.joining("/"));
         }
         String parameter = parameters.get(0);
         return ParameterDeserializer.deserializeParameter(parameterType,

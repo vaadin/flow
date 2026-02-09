@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -122,17 +122,17 @@ public class DependencyListTest {
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
 
-        elemental.json.JsonObject actualJson = dependency.toJson();
-        ObjectNode actualMapped = JacksonUtils.mapElemental(actualJson);
+        ObjectNode actualJson = JacksonUtils.getMapper()
+                .valueToTree(dependency);
 
         // Remove the ID field from comparison since it's auto-generated for
         // some dependencies
-        actualMapped.remove(Dependency.KEY_ID);
+        actualJson.remove(Dependency.KEY_ID);
 
         assertTrue(String.format(
                 "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toString(), actualMapped.toString()),
-                JacksonUtils.jsonEquals(expectedJson, actualMapped));
+                expectedJson.toString(), actualJson.toString()),
+                JacksonUtils.jsonEquals(expectedJson, actualJson));
     }
 
     @Test

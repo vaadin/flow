@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,6 +70,13 @@ public class ApplicationConstants implements Serializable {
      * The prefix used for all internal static files, relative to context root.
      */
     public static final String VAADIN_STATIC_FILES_PATH = "VAADIN/static/";
+
+    /**
+     * The prefix used for all internal static files, relative to context root.
+     */
+    public static final String VAADIN_STATIC_ASSETS_PATH = VAADIN_STATIC_FILES_PATH
+            + "assets/";
+
     /**
      * The name of the javascript containing push support.
      */

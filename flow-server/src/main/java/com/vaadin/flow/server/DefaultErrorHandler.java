@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.io.EOFException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +55,13 @@ import com.vaadin.flow.router.InvalidLocationException;
  */
 public class DefaultErrorHandler implements ErrorHandler {
 
+    public static final Set<String> SOCKET_EXCEPTIONS = Collections
+            .unmodifiableSet(Set.of(SocketException.class.getName(),
+                    SocketTimeoutException.class.getName(),
+                    EOFException.class.getName(),
+                    "org.eclipse.jetty.io.EofException",
+                    "org.apache.catalina.connector.ClientAbortException"));
+
     private final Set<String> ignoredExceptions;
     private final Set<String> routeConfigurationExceptions;
 
@@ -70,11 +78,7 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     public DefaultErrorHandler() {
-        this.ignoredExceptions = Set.of(SocketException.class.getName(),
-                SocketTimeoutException.class.getName(),
-                EOFException.class.getName(),
-                "org.eclipse.jetty.io.EofException",
-                "org.apache.catalina.connector.ClientAbortException");
+        this.ignoredExceptions = SOCKET_EXCEPTIONS;
         this.routeConfigurationExceptions = Set.of(
                 AmbiguousRouteConfigurationException.class.getName(),
                 InvalidRouteConfigurationException.class.getName(),

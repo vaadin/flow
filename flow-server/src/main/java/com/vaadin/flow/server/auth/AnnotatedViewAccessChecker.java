@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,8 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -84,14 +86,13 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
                         context.getPrincipal(), context::hasRole);
                 if (!hasAccess) {
-                    LOGGER.warn(
-                            "Denied access to view due to layout '{}' access rules",
-                            layout.getSimpleName());
-                    return context.deny("Denied access to view due to layout '"
-                            + targetView.getSimpleName() + "' access rules."
+                    logDeniedByLayoutAccessRules(context, layout);
+                    return context.deny("Denied access to view '"
+                            + targetView.getSimpleName() + "' due to layout '"
+                            + layout.getSimpleName() + "' access rules. "
                             + "Consider adding one of the following annotations "
                             + "to make the layout accessible: @AnonymousAllowed, "
-                            + "@PermitAll, @RolesAllowed.");
+                            + "@PermitAll, or @RolesAllowed.");
                 }
             }
         } else {
@@ -107,16 +108,15 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                     boolean hasAccess = accessAnnotationChecker.hasAccess(
                             parent, context.getPrincipal(), context::hasRole);
                     if (!hasAccess) {
-                        LOGGER.warn(
-                                "Denied access to view due to parent layout '{}' access rules",
-                                parent.getSimpleName());
-                        return context.deny(
-                                "Denied access to view due to parent layout '"
-                                        + targetView.getSimpleName()
-                                        + "' access rules."
-                                        + "Consider adding one of the following annotations "
-                                        + "to make the parent layouts accessible: @AnonymousAllowed, "
-                                        + "@PermitAll, @RolesAllowed.");
+                        logDeniedByLayoutAccessRules(context, parent,
+                                "Denied access to view '{}' due to parent layout '{}' access rules");
+                        return context.deny("Denied access to view '"
+                                + targetView.getSimpleName()
+                                + "' due to parent layout '"
+                                + parent.getSimpleName() + "' access rules. "
+                                + "Consider adding one of the following annotations "
+                                + "to make the parent layout accessible: @AnonymousAllowed, "
+                                + "@PermitAll, or @RolesAllowed.");
                     }
                 }
             }
@@ -141,19 +141,41 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                             .getTargetUrl(
                                     (Class<? extends Component>) targetView)
                             .isEmpty()) {
-                LOGGER.warn(
-                        "Denied access to view due to layout '{}' access rules",
-                        targetView.getSimpleName());
-                denyReason = "Denied access to view due to layout '"
-                        + targetView.getSimpleName() + "' access rules."
+                logDeniedByLayoutAccessRules(context, targetView);
+                denyReason = "Denied access to view '"
+                        + context.getNavigationTarget().getSimpleName()
+                        + "' due to layout '" + targetView.getSimpleName()
+                        + "' access rules. "
                         + "Consider adding one of the following annotations "
                         + "to make the layout accessible: @AnonymousAllowed, "
-                        + "@PermitAll, @RolesAllowed.";
+                        + "@PermitAll, or @RolesAllowed.";
             }
         } else {
             denyReason = "Access is denied by annotations on the view.";
         }
         return context.deny(denyReason);
+    }
+
+    private void logDeniedByLayoutAccessRules(NavigationContext context,
+            Class<?> layoutClass) {
+        String msg = "Denied access to view '{}' due to layout '{}' access rules. "
+                + "Consider adding @AnonymousAllowed, @PermitAll, or @RolesAllowed to the layout class.";
+        logDeniedByLayoutAccessRules(context, layoutClass, msg);
+    }
+
+    private void logDeniedByLayoutAccessRules(NavigationContext context,
+            Class<?> layoutClass, String msg) {
+        if (context.isNavigating() || isDevelopmentMode(context)) {
+            if (!context.isNavigating()) {
+                msg = msg
+                        + " This access check was probably triggered by the security framework.";
+            }
+            LOGGER.warn(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
+        } else {
+            LOGGER.debug(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
+        }
     }
 
     private boolean isImplicitlyDenyAllAnnotated(Class<?> targetView) {
@@ -162,4 +184,11 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 
+    private boolean isDevelopmentMode(NavigationContext context) {
+        VaadinContext vaadinContext = context.getRouter().getRegistry()
+                .getContext();
+        ApplicationConfiguration appConfig = ApplicationConfiguration
+                .get(vaadinContext);
+        return !appConfig.isProductionMode();
+    }
 }

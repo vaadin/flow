@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -134,15 +134,9 @@ public final class Constants implements Serializable {
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by
-     * default (see
-     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * default.
      */
     public static final boolean GLOBAL_PNPM_DEFAULT = false;
-
-    /**
-     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
-     */
-    public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
 
     /**
      * The default value for

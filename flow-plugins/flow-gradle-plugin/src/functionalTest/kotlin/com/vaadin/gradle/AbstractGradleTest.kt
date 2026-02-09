@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.io.File
  */
 abstract class AbstractGradleTest {
 
-    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "25.0-SNAPSHOT"
+    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "25.1-SNAPSHOT"
     val slf4jVersion = "2.0.3"
 
     /**
