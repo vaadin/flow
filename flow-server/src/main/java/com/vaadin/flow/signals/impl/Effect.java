@@ -21,11 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SerializableExecutor;
-import com.vaadin.flow.signals.function.SerializableRunnable;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback

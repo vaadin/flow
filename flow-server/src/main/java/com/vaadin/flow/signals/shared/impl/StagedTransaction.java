@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class StagedTransaction extends Transaction {
      * successful results and an error result if any dependency submits an
      * error.
      */
-    static class ResultCollector {
+    static class ResultCollector implements Serializable {
         private final HashSet<Object> unresolvedDependencies;
         private final Consumer<ResultOrError<Void>> resultHandler;
         private final Object lock = new Object();
@@ -87,7 +88,7 @@ public class StagedTransaction extends Transaction {
         }
     }
 
-    static class TreeState {
+    static class TreeState implements Serializable {
         final CommandsAndHandlers staged = new CommandsAndHandlers();
         boolean failing = false;
 

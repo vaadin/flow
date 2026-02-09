@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.function.CleanupCallback;
-import com.vaadin.flow.signals.function.SerializableRunnable;
 import com.vaadin.flow.signals.function.ValueSupplier;
 
 /**
