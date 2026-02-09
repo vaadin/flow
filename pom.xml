@@ -748,7 +748,9 @@
             <executions>
               <execution>
                 <id>install-git-hooks</id>
-                <goals><goal>exec</goal></goals>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
                 <phase>initialize</phase>
                 <configuration>
                   <executable>npx</executable>
