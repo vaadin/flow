@@ -2,11 +2,11 @@
   "private": true,
   "description": "A list of Flow dependencies when using React 19",
   "dependencies": {
-    "react": "19.1.5",
-    "react-dom": "19.1.5"
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@types/react": "19.1.17",
-    "@types/react-dom": "19.1.11"
+    "@types/react": "19.2.13",
+    "@types/react-dom": "19.2.3"
   }
 }
