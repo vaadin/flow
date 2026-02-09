@@ -1798,6 +1798,40 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void projectThemeComponentsCSS_noThemeJson_bundleRebuild()
+            throws IOException {
+        // Theme has components/ folder with CSS but no theme.json
+        String cssTemplate = "[part=\"input-field\"]{background: %s; }";
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        // Create components CSS file without creating theme.json
+        String themeLocation = "themes/my-theme/components/";
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + themeLocation
+                        + "vaadin-text-field.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Should rebuild when theme has components CSS but no theme.json",
+                needsBuild);
+    }
+
+    @Test
     public void indexTsAdded_rebuildRequired() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
