@@ -18,9 +18,9 @@ package com.vaadin.flow.component;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
