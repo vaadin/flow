@@ -227,6 +227,7 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendGeneratedFolder(
                         new File(frontendFolder + GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
+                .setJavaResourceFolder(config.getJavaResourceFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
