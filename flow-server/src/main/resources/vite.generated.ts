@@ -289,6 +289,48 @@ function statsExtracterPlugin(): PluginOption {
         webComponents = webComponentTags.split(';');
       }
 
+      // Scan Java sources for Tailwind CSS class names and generate hash
+      let tailwindClassNamesHash = null;
+      const javaSourceDir = path.resolve(__dirname, 'src');
+      if (existsSync(javaSourceDir)) {
+        try {
+          const javaFiles = readdirSync(javaSourceDir, { recursive: true, withFileTypes: true })
+            .filter(dirent => dirent.isFile() && dirent.name.endsWith('.java'))
+            .map(dirent => path.join(dirent.path || dirent.parentPath, dirent.name));
+
+          // Extract class names from all Java files
+          const classNamePattern = /\.(addClassName|addClassNames|setClassName)\s*\(([^)]+)\)/gs;
+          const stringLiteralPattern = /"([^"]*)"|'([^']*)'/g;
+          const allClassNames: string[] = [];
+
+          for (const javaFile of javaFiles) {
+            const content = readFileSync(javaFile, { encoding: 'utf-8' });
+            const methodMatches = content.matchAll(classNamePattern);
+
+            for (const methodMatch of methodMatches) {
+              const args = methodMatch[2];
+              const stringMatches = args.matchAll(stringLiteralPattern);
+
+              for (const stringMatch of stringMatches) {
+                const stringValue = stringMatch[1] || stringMatch[2];
+                if (stringValue && stringValue.trim()) {
+                  // Split space-separated class names
+                  const parts = stringValue.trim().split(/\s+/);
+                  allClassNames.push(...parts.filter(p => p));
+                }
+              }
+            }
+          }
+
+          // Sort and hash
+          allClassNames.sort();
+          const classNamesString = allClassNames.join('\n');
+          tailwindClassNamesHash = createHash('sha256').update(classNamesString, 'utf8').digest('hex');
+        } catch (e) {
+          console.warn('Failed to scan Java sources for Tailwind class names:', e);
+        }
+      }
+
       const stats = {
         packageJsonDependencies: projectPackageJson.dependencies,
         npmModules: npmModuleAndVersion,
@@ -299,7 +341,8 @@ function statsExtracterPlugin(): PluginOption {
         webComponents,
         cvdlModules: cvdls,
         packageJsonHash: projectPackageJson?.vaadin?.hash,
-        indexHtmlGenerated: rowsGenerated
+        indexHtmlGenerated: rowsGenerated,
+        tailwindClassNamesHash
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
     }

@@ -239,6 +239,14 @@ public final class BundleValidationUtil {
             return true;
         }
 
+        // Check if Tailwind CSS classes have changed in Java sources
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)
+                && tailwindClassNamesChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-tailwind-classes-changed", null);
+            return true;
+        }
+
         // In dev mode index html is served from frontend folder, not from
         // dev-bundle, so rebuild is not required for custom content.
         if (options.isProductionMode() && BundleValidationUtil
@@ -1015,6 +1023,37 @@ public final class BundleValidationUtil {
         }
         Files.writeString(needsBuildFile.toPath(),
                 Boolean.toString(needsBundle));
+    }
+
+    /**
+     * Checks if Tailwind CSS class names in Java sources have changed since
+     * the last bundle build.
+     *
+     * @param options
+     *            Flow plugin options
+     * @param statsJson
+     *            stats.json from the existing bundle
+     * @return true if class names have changed
+     */
+    private static boolean tailwindClassNamesChanged(Options options,
+            JsonNode statsJson) {
+        // Get the previous hash from stats.json
+        String previousHash = null;
+        if (statsJson.has("tailwindClassNamesHash")) {
+            previousHash = statsJson.get("tailwindClassNamesHash").asText();
+        }
+
+        // Scan Java sources for class names
+        File sourceDirectory = new File(options.getNpmFolder(), "src");
+        boolean changed = TailwindClassScanner
+                .haveClassNamesChanged(sourceDirectory, previousHash);
+
+        if (changed) {
+            getLogger().info(
+                    "Tailwind CSS class names have changed in Java sources");
+        }
+
+        return changed;
     }
 
     private static Logger getLogger() {
