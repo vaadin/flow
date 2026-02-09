@@ -1807,8 +1807,7 @@ public class BundleValidationTest {
         // Create components CSS file without creating theme.json
         String themeLocation = "themes/my-theme/components/";
         File stylesheetFile = new File(temporaryFolder.getRoot(),
-                DEFAULT_FRONTEND_DIR + themeLocation
-                        + "vaadin-text-field.css");
+                DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
