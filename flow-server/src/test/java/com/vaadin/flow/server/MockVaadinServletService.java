@@ -31,7 +31,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
-import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**

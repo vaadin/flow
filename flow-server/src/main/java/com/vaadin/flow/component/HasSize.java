@@ -20,7 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 import static com.vaadin.flow.dom.ElementConstants.STYLE_HEIGHT;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_WIDTH;
@@ -429,8 +429,8 @@ public interface HasSize extends HasElement {
      * or "2.5em".
      * <p>
      * While a Signal is bound to the width, any attempt to set the width
-     * manually throws {@link com.vaadin.signals.BindingActiveException}. Same
-     * happens when trying to bind a new Signal while one is already bound.
+     * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     * Same happens when trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
      *
@@ -445,7 +445,7 @@ public interface HasSize extends HasElement {
      * @param widthSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setWidth(String)
      */
@@ -469,8 +469,8 @@ public interface HasSize extends HasElement {
      * or "2.5em".
      * <p>
      * While a Signal is bound to the height, any attempt to set the height
-     * manually throws {@link com.vaadin.signals.BindingActiveException}. Same
-     * happens when trying to bind a new Signal while one is already bound.
+     * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     * Same happens when trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
      *
@@ -485,7 +485,7 @@ public interface HasSize extends HasElement {
      * @param heightSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setHeight(String)
      */

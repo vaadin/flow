@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.signals.BindingActiveException;
+import com.vaadin.flow.signals.BindingActiveException;
 
 /**
  * A component which the children components are ordered, so the index of each
