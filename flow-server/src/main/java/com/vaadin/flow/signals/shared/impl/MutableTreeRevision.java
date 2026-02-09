@@ -301,7 +301,7 @@ public class MutableTreeRevision extends TreeRevision {
 
             Id ancestor = resolvedParentId;
             while (ancestor != null) {
-                if (ancestor.equals(childId)) {
+                if (ancestor.equals(resolvedChildId)) {
                     fail("Cannot attach to own descendant");
                     return;
                 }
