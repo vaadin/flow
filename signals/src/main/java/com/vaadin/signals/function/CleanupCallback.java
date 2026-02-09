@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -28,7 +30,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#effect(EffectAction)
  */
 @FunctionalInterface
-public interface CleanupCallback {
+public interface CleanupCallback extends Serializable {
     /**
      * Performs cleanup operations such as unregistering listeners or disposing
      * resources.

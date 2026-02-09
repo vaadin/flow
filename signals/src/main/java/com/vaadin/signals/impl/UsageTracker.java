@@ -15,10 +15,13 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SerializableRunnable;
 import com.vaadin.signals.function.ValueSupplier;
 
 /**
@@ -53,8 +56,15 @@ public class UsageTracker {
                 {
                     synchronized (lock) {
                         for (Usage usage : usages) {
+                            // avoid lambda to allow proper deserialization
+                            TransientListener usageListener = new TransientListener() {
+                                @Override
+                                public boolean invoke(boolean immediate) {
+                                    return onChange(immediate);
+                                }
+                            };
                             CleanupCallback cleanup = usage
-                                    .onNextChange(this::onChange);
+                                    .onNextChange(usageListener);
                             if (closed) {
                                 cleanup.cleanup();
                                 break;
@@ -101,7 +111,7 @@ public class UsageTracker {
     /**
      * Tracks the state of some used value.
      */
-    public interface Usage {
+    public interface Usage extends Serializable {
         /**
          * Checks whether the used value has subsequently been changed.
          *
@@ -126,7 +136,7 @@ public class UsageTracker {
      * Receives notifications about signal usage events.
      */
     @FunctionalInterface
-    public interface UsageRegistrar {
+    public interface UsageRegistrar extends Serializable {
         /**
          * Called when a usage event occurs.
          *
@@ -167,7 +177,7 @@ public class UsageTracker {
      * @return a usage instance that combines all used managed values, not
      *         <code>null</code>
      */
-    public static Usage track(Runnable task) {
+    public static Usage track(SerializableRunnable task) {
         Collection<Usage> usages = new ArrayList<>();
 
         track(task, usages::add);
@@ -192,7 +202,31 @@ public class UsageTracker {
      *            a consumer that receives all usages as they happen, not
      *            <code>null</code>
      */
-    public static void track(Runnable task, UsageRegistrar tracker) {
+    public static void track(SerializableRunnable task,
+            UsageRegistrar tracker) {
+        assert task != null;
+        assert tracker != null;
+
+        track(() -> {
+            task.run();
+            return null;
+        }, tracker);
+    }
+
+    /**
+     * Runs the given task with return value while reacting to all cases where a
+     * managed value is used.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @param tracker
+     *            a consumer that receives all usages as they happen, not
+     *            <code>null</code>
+     * @param <T>
+     *            the task return type
+     * @return the value returned from the task
+     */
+    public static <T> T track(Supplier<T> task, UsageRegistrar tracker) {
         assert task != null;
         assert tracker != null;
 
@@ -200,7 +234,7 @@ public class UsageTracker {
         try {
             currentTracker.set(tracker);
 
-            task.run();
+            return task.get();
         } finally {
             currentTracker.set(previousTracker);
         }

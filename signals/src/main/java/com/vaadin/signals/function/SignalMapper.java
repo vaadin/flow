@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -31,7 +33,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#map(SignalMapper)
  */
 @FunctionalInterface
-public interface SignalMapper<T, R> {
+public interface SignalMapper<T, R> extends Serializable {
     /**
      * Applies this mapper to transform a signal value.
      *

@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -31,7 +33,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#runInTransaction(ValueSupplier)
  */
 @FunctionalInterface
-public interface TransactionTask {
+public interface TransactionTask extends Serializable {
     /**
      * Executes the task within a transaction context.
      */

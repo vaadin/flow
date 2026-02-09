@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.impl;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,7 +54,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
      * Hilla clients.
      */
     private record ComputedState(Object value, RuntimeException exception,
-            Usage dependencies) {
+            Usage dependencies) implements Serializable {
     }
 
     private final SignalComputation<T> computation;
@@ -98,11 +99,16 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         // Run compute callback to get new dependencies
         ComputedState state = getValidState(data(Transaction.getCurrent()));
 
+        // avoid lambda to allow proper deserialization
+        TransientListener usageListener = new TransientListener() {
+            @Override
+            public boolean invoke(boolean immediate) {
+                revalidateAndListen();
+                return false;
+            }
+        };
         // Listen to the new dependencies
-        dependencyRegistration = state.dependencies.onNextChange(immediate -> {
-            revalidateAndListen();
-            return false;
-        });
+        dependencyRegistration = state.dependencies.onNextChange(usageListener);
     }
 
     /**
@@ -159,14 +165,20 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             public CleanupCallback onNextChange(TransientListener listener) {
                 CleanupCallback uncount = countActiveExternalListener();
 
+                // avoid lambda to allow proper deserialization
+                TransientListener usageListener = new TransientListener() {
+                    @Override
+                    public boolean invoke(boolean immediate) {
+                        boolean listenToNext = listener.invoke(immediate);
+                        if (!listenToNext) {
+                            uncount.cleanup();
+                        }
+                        return listenToNext;
+                    }
+                };
+
                 CleanupCallback superCleanup = superUsage
-                        .onNextChange(immediate -> {
-                            boolean listenToNext = listener.invoke(immediate);
-                            if (!listenToNext) {
-                                uncount.cleanup();
-                            }
-                            return listenToNext;
-                        });
+                        .onNextChange(usageListener);
 
                 return () -> {
                     superCleanup.cleanup();
@@ -194,7 +206,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             state = new ComputedState(value, exception, dependencies);
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
-                    new POJONode(state)));
+                    new ComputedPOJONode(state)));
         }
 
         return state;
@@ -214,8 +226,16 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     private static ComputedState extractState(JsonNode json) {
-        POJONode pojoNode = (POJONode) json;
+        ComputedPOJONode pojoNode = (ComputedPOJONode) json;
         return (ComputedState) pojoNode.getPojo();
+    }
+
+    private static class ComputedPOJONode extends POJONode
+            implements Serializable {
+
+        public ComputedPOJONode(Object v) {
+            super(v);
+        }
     }
 
     @Override

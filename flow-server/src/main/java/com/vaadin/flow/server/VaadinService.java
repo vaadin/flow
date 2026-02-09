@@ -58,8 +58,6 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.DisabledFeatureException;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -320,19 +318,7 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
-        try {
-            initSignalsEnvironment();
-        } catch (Exception e) {
-            if (FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-                throw e;
-            } else {
-                getLogger().info(
-                        "Error initializing signals. This is non-fatal since signals are "
-                                + "a preview feature and the feature flag is not enabled.",
-                        e);
-            }
-        }
+        initSignalsEnvironment();
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
@@ -365,25 +351,14 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void initSignalsEnvironment() {
-        boolean enabled = FeatureFlags.get(getContext())
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
-        if (enabled) {
-            // Trigger check for multiple TaskExecutor candidates
-            getExecutor();
-        }
+        // Trigger check for multiple TaskExecutor candidates
+        getExecutor();
 
         class VaadinServiceEnvironment extends SignalEnvironment
                 implements Serializable {
             @Override
             public boolean isActive() {
-                if (VaadinService.getCurrent() != VaadinService.this) {
-                    return false;
-                } else if (!enabled) {
-                    throw new DisabledFeatureException(
-                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-                } else {
-                    return true;
-                }
+                return VaadinService.getCurrent() == VaadinService.this;
             }
 
             private Executor createCurrentUiDispatcher() {

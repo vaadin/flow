@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +40,7 @@ import tools.jackson.databind.node.NullNode;
         @Type(value = Node.Alias.class, name = "a")
 
 })
-public sealed interface Node {
+public sealed interface Node extends Serializable {
 
     /**
      * An empty data node without parent, scope owner, value or children and the

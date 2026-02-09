@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
@@ -41,13 +43,13 @@ import com.vaadin.signals.impl.Effect;
  *
  * @since 25.0
  */
-public final class ElementEffect {
-    private final Runnable effectFunction;
+public final class ElementEffect implements Serializable {
+    private final SerializableRunnable effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
-    public ElementEffect(Element owner, Runnable effectFunction) {
+    public ElementEffect(Element owner, SerializableRunnable effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -98,7 +100,8 @@ public final class ElementEffect {
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      */
-    public static Registration effect(Element owner, Runnable effectFunction) {
+    public static Registration effect(Element owner,
+            SerializableRunnable effectFunction) {
         ElementEffect effect = new ElementEffect(owner, effectFunction);
         return effect::close;
     }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals.shared.impl;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +37,7 @@ import com.vaadin.signals.SignalCommand.ScopeOwnerCommand;
  *
  * @see MutableTreeRevision
  */
-public abstract class TreeRevision {
+public abstract class TreeRevision implements Serializable {
     private final Map<Id, Node> nodes;
     private final Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts;
 

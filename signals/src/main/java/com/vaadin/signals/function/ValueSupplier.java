@@ -15,6 +15,8 @@
  */
 package com.vaadin.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.signals.Signal;
 
 /**
@@ -32,7 +34,7 @@ import com.vaadin.signals.Signal;
  * @see Signal#untracked(ValueSupplier)
  */
 @FunctionalInterface
-public interface ValueSupplier<T> {
+public interface ValueSupplier<T> extends Serializable {
     /**
      * Supplies a value.
      *

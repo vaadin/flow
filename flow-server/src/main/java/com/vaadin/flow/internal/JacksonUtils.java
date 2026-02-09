@@ -519,6 +519,9 @@ public final class JacksonUtils {
      * @return converted JSON value
      */
     public static BaseJsonNode writeValue(Object object) {
+        if (object == null) {
+            return (BaseJsonNode) objectMapper.nullNode();
+        }
         return objectMapper.valueToTree(object);
     }
 
