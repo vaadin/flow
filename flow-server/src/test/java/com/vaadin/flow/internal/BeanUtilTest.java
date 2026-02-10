@@ -19,13 +19,13 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the {@link BeanUtil}.
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * Edge cases covered include null inputs, empty strings, non-existent
  * properties, deep nesting, and proper filtering of Object.class methods.
  */
-public class BeanUtilTest {
+class BeanUtilTest {
 
     // Test helper classes
     public static class TestBean {
@@ -162,9 +162,9 @@ public class BeanUtilTest {
             }
         }
 
-        assertTrue("Should find 'name' property", foundName);
-        assertTrue("Should find 'age' property", foundAge);
-        assertTrue("Should find 'nested' property", foundNested);
+        assertTrue(foundName, "Should find 'name' property");
+        assertTrue(foundAge, "Should find 'age' property");
+        assertTrue(foundNested, "Should find 'nested' property");
     }
 
     // Test for getBeanPropertyDescriptors with record
@@ -193,9 +193,9 @@ public class BeanUtilTest {
             }
         }
 
-        assertTrue("Should find 'recordProperty' property",
-                foundRecordProperty);
-        assertTrue("Should find 'recordAge' property", foundRecordAge);
+        assertTrue(foundRecordProperty,
+                "Should find 'recordProperty' property");
+        assertTrue(foundRecordAge, "Should find 'recordAge' property");
     }
 
     // Test for getBeanPropertyDescriptors with interface
@@ -342,7 +342,7 @@ public class BeanUtilTest {
         // The "class" property should be filtered out by BeanUtil
         PropertyDescriptor classProperty = BeanUtil
                 .getPropertyDescriptor(TestBean.class, "class");
-        assertNull("Object.getClass() should be filtered out", classProperty);
+        assertNull(classProperty, "Object.getClass() should be filtered out");
     }
 
     // Test that getBeanPropertyDescriptors includes all valid properties
@@ -355,11 +355,11 @@ public class BeanUtilTest {
         List<String> names = descriptors.stream()
                 .map(PropertyDescriptor::getName).toList();
 
-        assertTrue("should include property 'name'", names.contains("name"));
-        assertTrue("should include property 'age'", names.contains("age"));
-        assertTrue("should include property 'nested'",
-                names.contains("nested"));
-        assertTrue("should include property 'class'", names.contains("class"));
+        assertTrue(names.contains("name"), "should include property 'name'");
+        assertTrue(names.contains("age"), "should include property 'age'");
+        assertTrue(names.contains("nested"),
+                "should include property 'nested'");
+        assertTrue(names.contains("class"), "should include property 'class'");
     }
 
     // Test from main branch: duplicate property descriptors are removed
@@ -371,26 +371,24 @@ public class BeanUtilTest {
                 .stream()
                 .filter(desc -> desc.getName().equals("existsInAllPlaces"))
                 .toList();
-        Assert.assertEquals(
-                "There should be only one 'existsInAllPlaces' property descriptor",
-                1, existsInAllPlacesProperties.size());
+        Assertions.assertEquals(1, existsInAllPlacesProperties.size(),
+                "There should be only one 'existsInAllPlaces' property descriptor");
 
         // The property from the class should be retained
         // but we cannot test this as some introspector implementations
         // return the read method from the interface when introspecting the
         // class
-        // Assert.assertEquals(TestSomething.class,
+        // Assertions.assertEquals(TestSomething.class,
         // existsInAllPlacesProperties.get(0).getReadMethod().getDeclaringClass());
 
         List<PropertyDescriptor> oneInterfaceProperties = descriptors.stream()
                 .filter(desc -> desc.getName().equals("oneInterface")).toList();
-        Assert.assertEquals(
-                "There should be only one 'oneInterface' property descriptor",
-                1, oneInterfaceProperties.size());
+        Assertions.assertEquals(1, oneInterfaceProperties.size(),
+                "There should be only one 'oneInterface' property descriptor");
 
         PropertyDescriptor oneInterfaceProperty = oneInterfaceProperties.get(0);
         // The property from thedefault method
-        Assert.assertEquals(FirstInterface.class,
+        Assertions.assertEquals(FirstInterface.class,
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
 
     }

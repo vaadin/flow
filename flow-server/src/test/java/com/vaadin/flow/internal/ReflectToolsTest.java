@@ -28,19 +28,15 @@ import java.util.stream.Collectors;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReflectToolsTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class ReflectToolsTest {
 
     public class NonStaticInnerClass {
         public NonStaticInnerClass() {
@@ -133,18 +129,18 @@ public class ReflectToolsTest {
     public void testCreateInstance() {
         OkToCreate instance = ReflectTools.createInstance(OkToCreate.class);
 
-        Assert.assertNotNull(instance);
-        Assert.assertSame("Created instance should be of the requested type",
-                OkToCreate.class, instance.getClass());
+        Assertions.assertNotNull(instance);
+        Assertions.assertSame(OkToCreate.class, instance.getClass(),
+                "Created instance should be of the requested type");
     }
 
     @Test
     public void testCreateInstance_varArgsCtor() {
         VarArgsCtor instance = ReflectTools.createInstance(VarArgsCtor.class);
 
-        Assert.assertNotNull(instance);
-        Assert.assertSame("Created instance should be of the requested type",
-                VarArgsCtor.class, instance.getClass());
+        Assertions.assertNotNull(instance);
+        Assertions.assertSame(VarArgsCtor.class, instance.getClass(),
+                "Created instance should be of the requested type");
     }
 
     @Test
@@ -206,9 +202,9 @@ public class ReflectToolsTest {
         // This is how you get correct exception message.
         try {
             ReflectTools.createProxyInstance(proxyClass, originalClass);
-            Assert.fail("Creation should cause an exception");
+            Assertions.fail("Creation should cause an exception");
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(String.format(
+            Assertions.assertEquals(String.format(
                     ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                     originalClass.getName()), re.getMessage());
         }
@@ -282,12 +278,12 @@ public class ReflectToolsTest {
         Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
                 HasInterface.class, TestInterface.class);
 
-        Assert.assertEquals(String.class, genericInterfaceType);
+        Assertions.assertEquals(String.class, genericInterfaceType);
 
         genericInterfaceType = ReflectTools.getGenericInterfaceType(
                 ChildInterface.class, TestInterface.class);
 
-        Assert.assertEquals(Boolean.class, genericInterfaceType);
+        Assertions.assertEquals(Boolean.class, genericInterfaceType);
     }
 
     @Test
@@ -296,29 +292,29 @@ public class ReflectToolsTest {
         List<Class<?>> genericInterfaceTypes = ReflectTools
                 .getGenericInterfaceTypes(HasInterface.class,
                         TestInterface.class);
-        Assert.assertArrayEquals(new Class<?>[] { String.class },
+        Assertions.assertArrayEquals(new Class<?>[] { String.class },
                 genericInterfaceTypes.toArray());
 
         genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
                 ChildInterface.class, TestInterface.class);
-        Assert.assertArrayEquals(new Class<?>[] { Boolean.class },
+        Assertions.assertArrayEquals(new Class<?>[] { Boolean.class },
                 genericInterfaceTypes.toArray());
 
         genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
                 HasInterfaceMulti.class, TestInterfaceMulti.class);
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new Class<?>[] { String.class, Integer.class, Double.class },
                 genericInterfaceTypes.toArray());
 
         genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
                 ChildInterfaceMulti.class, TestInterfaceMulti.class);
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new Class<?>[] { Boolean.class, Float.class, Long.class },
                 genericInterfaceTypes.toArray());
 
         genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
                 ChildInterfacePartial.class, TestInterfaceMulti.class);
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new Class<?>[] { Boolean.class, Short.class, Long.class },
                 genericInterfaceTypes.toArray());
     }
@@ -355,26 +351,37 @@ public class ReflectToolsTest {
 
     @Test
     public void findCommonBaseType_interfaceNotSupported() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("a cannot be an interface");
-        ReflectTools.findCommonBaseType(Comparable.class, Object.class);
+
+        var exception = assertThrows(IllegalArgumentException.class, () -> {
+
+            ReflectTools.findCommonBaseType(Comparable.class, Object.class);
+
+        });
+
+        assertTrue(exception.getMessage().contains("a cannot be an interface"));
     }
 
     @Test
     public void findCommonBaseType_primitiveNotSupported() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("a cannot be a primitive type");
-        ReflectTools.findCommonBaseType(int.class, Object.class);
+
+        var exception = assertThrows(IllegalArgumentException.class, () -> {
+
+            ReflectTools.findCommonBaseType(int.class, Object.class);
+
+        });
+
+        assertTrue(exception.getMessage()
+                .contains("a cannot be a primitive type"));
     }
 
     @Test
     public void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
         List<Method> setters = ReflectTools.getSetterMethods(Category.class)
                 .collect(Collectors.toList());
-        Assert.assertEquals(1, setters.size());
+        Assertions.assertEquals(1, setters.size());
         Method setter = setters.get(0);
-        Assert.assertEquals("setId", setter.getName());
-        Assert.assertEquals(Long.class, setter.getParameterTypes()[0]);
+        Assertions.assertEquals("setId", setter.getName());
+        Assertions.assertEquals(Long.class, setter.getParameterTypes()[0]);
     }
 
     @Test
@@ -383,7 +390,7 @@ public class ReflectToolsTest {
         ClassLoader ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(loader, loader).get();
 
-        Assert.assertEquals(loader, ret);
+        Assertions.assertEquals(loader, ret);
     }
 
     public void findClosestCommonClassLoaderAncestor_null_whenNoSharedAncestor() {
@@ -393,7 +400,7 @@ public class ReflectToolsTest {
         Optional<ClassLoader> ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(loader1, loader2);
 
-        Assert.assertFalse(ret.isPresent());
+        Assertions.assertFalse(ret.isPresent());
     }
 
     @Test
@@ -403,7 +410,7 @@ public class ReflectToolsTest {
         ClassLoader ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(parent, child).get();
 
-        Assert.assertEquals(parent, ret);
+        Assertions.assertEquals(parent, ret);
     }
 
     @Test
@@ -414,7 +421,7 @@ public class ReflectToolsTest {
         ClassLoader ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
-        Assert.assertEquals(parent, ret);
+        Assertions.assertEquals(parent, ret);
     }
 
     @Test
@@ -427,7 +434,7 @@ public class ReflectToolsTest {
         ClassLoader ret = ReflectTools
                 .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
-        Assert.assertEquals(grandParent, ret);
+        Assertions.assertEquals(grandParent, ret);
     }
 
     @Test
@@ -437,61 +444,62 @@ public class ReflectToolsTest {
         Optional<ClassLoader> ret;
 
         ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader, null);
-        Assert.assertFalse(ret.isPresent());
+        Assertions.assertFalse(ret.isPresent());
 
         ret = ReflectTools.findClosestCommonClassLoaderAncestor(null, loader);
-        Assert.assertFalse(ret.isPresent());
+        Assertions.assertFalse(ret.isPresent());
 
         ret = ReflectTools.findClosestCommonClassLoaderAncestor(null, null);
-        Assert.assertFalse(ret.isPresent());
+        Assertions.assertFalse(ret.isPresent());
     }
 
     @Test
     public void hasAnnotation_annotationPresents_returnsTrue() {
-        Assert.assertTrue(ReflectTools.hasAnnotation(ClassWithAnnotation.class,
-                TestAnnotation.class.getName()));
+        Assertions.assertTrue(ReflectTools.hasAnnotation(
+                ClassWithAnnotation.class, TestAnnotation.class.getName()));
     }
 
     @Test
     public void hasAnnotation_annotationIsAbsent_returnsFalse() {
-        Assert.assertFalse(ReflectTools.hasAnnotation(
+        Assertions.assertFalse(ReflectTools.hasAnnotation(
                 ClassWithoutAnnotation.class, TestAnnotation.class.getName()));
     }
 
     @Test
     public void hasAnnotationWithSimpleName_annotationPresents_returnsTrue() {
-        Assert.assertTrue(ReflectTools.hasAnnotationWithSimpleName(
+        Assertions.assertTrue(ReflectTools.hasAnnotationWithSimpleName(
                 ClassWithAnnotation.class,
                 TestAnnotation.class.getSimpleName()));
     }
 
     @Test
     public void hasAnnotationWithSimpleName_annotationIsAbsent_returnsFalse() {
-        Assert.assertFalse(ReflectTools.hasAnnotationWithSimpleName(
+        Assertions.assertFalse(ReflectTools.hasAnnotationWithSimpleName(
                 ClassWithoutAnnotation.class,
                 TestAnnotation.class.getSimpleName()));
     }
 
     @Test
     public void getAnnotationMethodValue_annotaitonHasMethod_theValueIsReturned() {
-        Assert.assertEquals("foo", ReflectTools.getAnnotationMethodValue(
+        Assertions.assertEquals("foo", ReflectTools.getAnnotationMethodValue(
                 ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
                 "value"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getAnnotationMethodValue_annotationHasNoMethod_throws() {
-        ReflectTools.getAnnotationMethodValue(
-                ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
-                "foo");
+        assertThrows(IllegalArgumentException.class, () -> {
+            ReflectTools.getAnnotationMethodValue(ClassWithAnnotation.class
+                    .getAnnotation(TestAnnotation.class), "foo");
+        });
     }
 
     @Test
     public void getAnnotation_annotationPresents_returnsAnnotation() {
         Optional<Annotation> annotation = ReflectTools.getAnnotation(
                 ClassWithAnnotation.class, TestAnnotation.class.getName());
-        Assert.assertTrue(annotation.isPresent());
-        Assert.assertEquals(
+        Assertions.assertTrue(annotation.isPresent());
+        Assertions.assertEquals(
                 ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
                 annotation.get());
     }
@@ -500,7 +508,7 @@ public class ReflectToolsTest {
     public void getAnnotation_annotationIsAbsent_returnsEmpty() {
         Optional<Annotation> annotation = ReflectTools.getAnnotation(
                 ClassWithoutAnnotation.class, TestAnnotation.class.getName());
-        Assert.assertFalse(annotation.isPresent());
+        Assertions.assertFalse(annotation.isPresent());
     }
 
     @Test
@@ -556,9 +564,9 @@ public class ReflectToolsTest {
     private void assertError(String expectedError, Class<?> cls) {
         try {
             ReflectTools.createInstance(cls);
-            Assert.fail("Creation should cause an exception");
+            Assertions.fail("Creation should cause an exception");
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(String.format(expectedError, cls.getName()),
+            Assertions.assertEquals(String.format(expectedError, cls.getName()),
                     re.getMessage());
         }
     }

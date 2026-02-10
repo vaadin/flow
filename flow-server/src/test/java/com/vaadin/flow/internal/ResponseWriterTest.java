@@ -40,9 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -142,7 +142,7 @@ public class ResponseWriterTest {
         }
     };
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
         deploymentConfiguration.setBrotli(true);
@@ -177,7 +177,7 @@ public class ResponseWriterTest {
 
         responseWriter.writeContentType("/file.png", request, response);
 
-        Assert.assertEquals("image/png", contentType.get());
+        Assertions.assertEquals("image/png", contentType.get());
     }
 
     @Test
@@ -192,30 +192,31 @@ public class ResponseWriterTest {
 
         responseWriter.writeContentType("/file", request, response);
 
-        Assert.assertNull(contentType.get());
+        Assertions.assertNull(contentType.get());
     }
 
     @Test
     public void acceptsGzippedResource() {
-        Assert.assertTrue(acceptsGzippedResource("compress, gzip"));
-        Assert.assertTrue(acceptsGzippedResource("brotli, gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;q"));
-        Assert.assertFalse(acceptsGzippedResource("compress; q=1 , gzip;q=0"));
-        Assert.assertFalse(acceptsGzippedResource(""));
-        Assert.assertFalse(acceptsGzippedResource("compress"));
+        Assertions.assertTrue(acceptsGzippedResource("compress, gzip"));
+        Assertions.assertTrue(acceptsGzippedResource("brotli, gzip"));
+        Assertions.assertTrue(acceptsGzippedResource("gzip"));
+        Assertions.assertTrue(acceptsGzippedResource("gzip;"));
+        Assertions.assertTrue(acceptsGzippedResource("gzip;q"));
+        Assertions.assertFalse(
+                acceptsGzippedResource("compress; q=1 , gzip;q=0"));
+        Assertions.assertFalse(acceptsGzippedResource(""));
+        Assertions.assertFalse(acceptsGzippedResource("compress"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 acceptsGzippedResource("compress;q = 0.5, gzip;q=0.6"));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 acceptsGzippedResource("gzip;q=1.0, identity;q=0.5, *;q=0"));
-        Assert.assertTrue(acceptsGzippedResource("*"));
-        Assert.assertTrue(acceptsGzippedResource("*;q=0;gzip"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.00"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.000"));
+        Assertions.assertTrue(acceptsGzippedResource("*"));
+        Assertions.assertTrue(acceptsGzippedResource("*;q=0;gzip"));
+        Assertions.assertFalse(acceptsGzippedResource("*;q=0"));
+        Assertions.assertFalse(acceptsGzippedResource("*;q=0.0"));
+        Assertions.assertFalse(acceptsGzippedResource("*;q=0.00"));
+        Assertions.assertFalse(acceptsGzippedResource("*;q=0.000"));
     }
 
     private boolean acceptsGzippedResource(String acceptEncodingHeader) {
@@ -228,13 +229,13 @@ public class ResponseWriterTest {
     public void acceptsBrotliResource() {
         // Not testing all the same cases as for gzip since most of those
         // variants are effectively testing the same parser functionality
-        Assert.assertTrue(acceptsBrotliResource("compress, brotli"));
-        Assert.assertFalse(acceptsBrotliResource("gzip"));
+        Assertions.assertTrue(acceptsBrotliResource("compress, brotli"));
+        Assertions.assertFalse(acceptsBrotliResource("gzip"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 acceptsBrotliResource("compress;q = 0.5, brotli;q=0.6"));
-        Assert.assertTrue(acceptsBrotliResource("*"));
-        Assert.assertFalse(acceptsBrotliResource("*;q=0"));
+        Assertions.assertTrue(acceptsBrotliResource("*"));
+        Assertions.assertFalse(acceptsBrotliResource("*;q=0"));
     }
 
     private boolean acceptsBrotliResource(String acceptEncodingHeader) {
@@ -345,7 +346,7 @@ public class ResponseWriterTest {
         assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
                 "Content-Range", "bytes 0-1/" + fileJsContents.length));
-        Assert.assertEquals(2L, responseContentLength.get());
+        Assertions.assertEquals(2L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -356,7 +357,7 @@ public class ResponseWriterTest {
         assertResponse(Arrays.copyOfRange(fileJsContents, 10, 12));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
                 "Content-Range", "bytes 10-11/" + fileJsContents.length));
-        Assert.assertEquals(2L, responseContentLength.get());
+        Assertions.assertEquals(2L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -367,7 +368,7 @@ public class ResponseWriterTest {
         assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
                 "Content-Range", "bytes 0-10/" + fileJsContents.length));
-        Assert.assertEquals(11L, responseContentLength.get());
+        Assertions.assertEquals(11L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -379,7 +380,7 @@ public class ResponseWriterTest {
                 Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
                 "Content-Range", "bytes 10-15/" + fileJsContents.length));
-        Assert.assertEquals(6L, responseContentLength.get());
+        Assertions.assertEquals(6L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -391,7 +392,7 @@ public class ResponseWriterTest {
                 Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
                 "Content-Range", "bytes 10-15/" + fileJsContents.length));
-        Assert.assertEquals(6L, responseContentLength.get());
+        Assertions.assertEquals(6L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -539,8 +540,8 @@ public class ResponseWriterTest {
         responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
                 response);
 
-        Assert.assertArrayEquals(expectedResponse, out.getOutput());
-        Assert.assertEquals(expectedResponse.length,
+        Assertions.assertArrayEquals(expectedResponse, out.getOutput());
+        Assertions.assertEquals(expectedResponse.length,
                 responseContentLength.get());
     }
 
@@ -560,8 +561,8 @@ public class ResponseWriterTest {
                 response);
         final byte[] output = out.getOutput();
 
-        Assert.assertNotNull(contentType.get());
-        Assert.assertTrue(contentType.get()
+        Assertions.assertNotNull(contentType.get());
+        Assertions.assertTrue(contentType.get()
                 .startsWith("multipart/byteranges; boundary="));
 
         String boundary = contentType.get()
@@ -573,16 +574,15 @@ public class ResponseWriterTest {
             String[] expectedHeaders = expected.getFirst();
             String actualHeaders = parser.readHeaders();
             for (String expectedHeader : expectedHeaders) {
-                Assert.assertTrue(
+                Assertions.assertTrue(actualHeaders.contains(expectedHeader),
                         String.format("Headers:\n%s\ndid not contain:\n%s",
-                                actualHeaders, expectedHeader),
-                        actualHeaders.contains(expectedHeader));
+                                actualHeaders, expectedHeader));
             }
             byte[] expectedBytes = expected.getSecond();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             parser.readBodyData(outputStream);
             byte[] bytes = outputStream.toByteArray();
-            Assert.assertArrayEquals(expectedBytes, bytes);
+            Assertions.assertArrayEquals(expectedBytes, bytes);
         }
 
         // check that there are no excess parts
@@ -590,8 +590,8 @@ public class ResponseWriterTest {
             parser.readHeaders();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             parser.readBodyData(outputStream);
-            Assert.assertTrue("excess bytes in multipart response",
-                    outputStream.toByteArray().length == 0);
+            Assertions.assertTrue(outputStream.toByteArray().length == 0,
+                    "excess bytes in multipart response");
         } catch (IOException ioe) {
             // all is well, stream ended
         }
