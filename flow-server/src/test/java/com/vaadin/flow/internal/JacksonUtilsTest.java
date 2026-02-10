@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -40,60 +40,66 @@ import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class JacksonUtilsTest {
     ObjectMapper mapper = JacksonUtils.getMapper();
 
     @Test
     public void testEquals() {
         // Equal
-        Assert.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree(true),
+        Assertions.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree(true),
                 mapper.valueToTree(true)));
-        Assert.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree("foo"),
+        Assertions.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree("foo"),
                 mapper.valueToTree("foo")));
-        Assert.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
+        Assertions.assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
                 mapper.valueToTree(3.14)));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(mapper.nullNode(), mapper.nullNode()));
-        Assert.assertTrue(JacksonUtils.jsonEquals(createTestObject1(),
+        Assertions.assertTrue(JacksonUtils.jsonEquals(createTestObject1(),
                 createTestObject1()));
-        Assert.assertTrue(JacksonUtils.jsonEquals(createTestArray1(),
+        Assertions.assertTrue(JacksonUtils.jsonEquals(createTestArray1(),
                 createTestArray1()));
 
         // Non-equal with matching types
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(true),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(true),
                 mapper.valueToTree(false)));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree("foo"),
-                mapper.valueToTree("oof")));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(
+                mapper.valueToTree("foo"), mapper.valueToTree("oof")));
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
                 mapper.valueToTree(3.142)));
-        Assert.assertFalse(JacksonUtils.jsonEquals(createTestObject1(),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(createTestObject1(),
                 createTestObject2()));
-        Assert.assertFalse(JacksonUtils.jsonEquals(createTestArray1(),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(createTestArray1(),
                 createTestArray2()));
 
         // Non-equal with different types
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(true),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(true),
                 mapper.valueToTree("true")));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.valueToTree(3.14),
                 mapper.valueToTree("3.14")));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.nullNode(),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.nullNode(),
                 mapper.valueToTree("null")));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.createObjectNode(),
-                mapper.valueToTree("{}")));
-        Assert.assertFalse(JacksonUtils.jsonEquals(mapper.createArrayNode(),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(
+                mapper.createObjectNode(), mapper.valueToTree("{}")));
+        Assertions.assertFalse(JacksonUtils.jsonEquals(mapper.createArrayNode(),
                 mapper.valueToTree(0)));
-        Assert.assertFalse(JacksonUtils.jsonEquals(createTestArray1(),
+        Assertions.assertFalse(JacksonUtils.jsonEquals(createTestArray1(),
                 createTestObject1()));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testEquals_firstNull_throws() {
-        JacksonUtils.jsonEquals(null, mapper.nullNode());
+        assertThrows(AssertionError.class, () -> {
+            JacksonUtils.jsonEquals(null, mapper.nullNode());
+        });
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testEquals_secondNull_throws() {
-        JacksonUtils.jsonEquals(mapper.nullNode(), null);
+        assertThrows(AssertionError.class, () -> {
+            JacksonUtils.jsonEquals(mapper.nullNode(), null);
+        });
     }
 
     private ObjectNode createTestObject1() {
@@ -134,7 +140,7 @@ public class JacksonUtilsTest {
     public void collectEmptyStream() {
         Stream<JsonNode> jsonValueStream = Stream.empty();
         ArrayNode a = jsonValueStream.collect(JacksonUtils.asArray());
-        Assert.assertEquals(0, a.size());
+        Assertions.assertEquals(0, a.size());
     }
 
     @Test
@@ -142,9 +148,9 @@ public class JacksonUtilsTest {
         ArrayNode array = createTestArray1();
         List<JsonNode> list = JacksonUtils.stream(array).toList();
 
-        Assert.assertEquals(2, list.size());
-        Assert.assertEquals("foo", list.get(0).textValue());
-        Assert.assertTrue(JacksonUtils.jsonEquals(list.get(1),
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals("foo", list.get(0).textValue());
+        Assertions.assertTrue(JacksonUtils.jsonEquals(list.get(1),
                 mapper.createObjectNode()));
     }
 
@@ -156,12 +162,12 @@ public class JacksonUtilsTest {
 
         List<JsonNode> objects = JacksonUtils.objectStream(array).toList();
 
-        Assert.assertEquals(3, objects.size());
-        Assert.assertTrue(JacksonUtils.jsonEquals(mapper.createObjectNode(),
+        Assertions.assertEquals(3, objects.size());
+        Assertions.assertTrue(JacksonUtils.jsonEquals(mapper.createObjectNode(),
                 objects.get(0)));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(createTestObject1(), objects.get(1)));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(createTestObject2(), objects.get(2)));
     }
 
@@ -175,7 +181,7 @@ public class JacksonUtilsTest {
 
         DoubleStream numberStream = JacksonUtils.numberStream(array);
 
-        Assert.assertArrayEquals(values, numberStream.toArray(), 0);
+        Assertions.assertArrayEquals(values, numberStream.toArray(), 0);
     }
 
     @Test
@@ -184,7 +190,8 @@ public class JacksonUtilsTest {
 
         ArrayNode array = stream.collect(JacksonUtils.asArray());
 
-        Assert.assertTrue(JacksonUtils.jsonEquals(createTestArray1(), array));
+        Assertions
+                .assertTrue(JacksonUtils.jsonEquals(createTestArray1(), array));
     }
 
     @Test
@@ -192,16 +199,16 @@ public class JacksonUtilsTest {
         ArrayNode array = JacksonUtils.createArray(mapper.valueToTree("string"),
                 mapper.nullNode());
 
-        Assert.assertEquals(2, array.size());
-        Assert.assertEquals("string", array.get(0).asString());
-        Assert.assertTrue(array.get(1).isNull());
+        Assertions.assertEquals(2, array.size());
+        Assertions.assertEquals("string", array.get(0).asString());
+        Assertions.assertTrue(array.get(1).isNull());
     }
 
     @Test
     public void testCreateEmptyArray() {
         ArrayNode array = JacksonUtils.createArray();
 
-        Assert.assertEquals(0, array.size());
+        Assertions.assertEquals(0, array.size());
     }
 
     @Test
@@ -218,9 +225,9 @@ public class JacksonUtilsTest {
             }
         });
 
-        Assert.assertEquals(2, JacksonUtils.getKeys(object).size());
-        Assert.assertEquals(3, object.get("integer").asInt(), 0);
-        Assert.assertEquals("foo", object.get("string").asString());
+        Assertions.assertEquals(2, JacksonUtils.getKeys(object).size());
+        Assertions.assertEquals(3, object.get("integer").asInt(), 0);
+        Assertions.assertEquals("foo", object.get("string").asString());
     }
 
     @Test
@@ -230,7 +237,7 @@ public class JacksonUtilsTest {
                     throw new AssertionError("Callback should not be called");
                 });
 
-        Assert.assertEquals(0, JacksonUtils.getKeys(object).size());
+        Assertions.assertEquals(0, JacksonUtils.getKeys(object).size());
     }
 
     public static class SimpleBean {
@@ -342,18 +349,18 @@ public class JacksonUtilsTest {
     @Test
     public void simpleBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new SimpleBean());
-        Assert.assertEquals("value", json.get("string").asString());
-        Assert.assertEquals(1.0, json.get("number").asDouble(), 0.0);
-        Assert.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
-        Assert.assertEquals(4.56, json.get("dbl").asDouble(), 0.0);
+        Assertions.assertEquals("value", json.get("string").asString());
+        Assertions.assertEquals(1.0, json.get("number").asDouble(), 0.0);
+        Assertions.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
+        Assertions.assertEquals(4.56, json.get("dbl").asDouble(), 0.0);
     }
 
     @Test
     public void nestedBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
-        Assert.assertEquals("parent", json.get("parentValue").asString());
+        Assertions.assertEquals("parent", json.get("parentValue").asString());
         JsonNode child = json.get("child");
-        Assert.assertEquals("child", child.get("childValue").asString());
+        Assertions.assertEquals("child", child.get("childValue").asString());
     }
 
     @Test
@@ -361,32 +368,32 @@ public class JacksonUtilsTest {
         BeanWithTemporalFields bean = new BeanWithTemporalFields();
         ObjectNode json = JacksonUtils.beanToJson(bean);
 
-        Assert.assertTrue("LocalTime not serialized as expected",
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
-                        json.get("localTime")));
-        Assert.assertTrue("LocalDate not serialized as expected",
+                        json.get("localTime")),
+                "LocalTime not serialized as expected");
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
-                        json.get("localDate")));
-        Assert.assertTrue("LocalDateTime not serialized as expected",
+                        json.get("localDate")),
+                "LocalDate not serialized as expected");
+        Assertions.assertTrue(
                 JacksonUtils.jsonEquals(
                         JacksonUtils.createNode("2024-06-26T10:23:55"),
-                        json.get("localDateTime")));
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.zonedDateTime.toEpochSecond(),
+                        json.get("localDateTime")),
+                "LocalDateTime not serialized as expected");
+        Assertions.assertEquals(bean.zonedDateTime.toEpochSecond(),
                 ZonedDateTime.parse(json.get("zonedDateTime").asString())
                         .toEpochSecond(),
-                0);
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(),
+                "ZonedDateTime not serialized as expected");
+        Assertions.assertEquals(bean.sqlDate.getTime(),
                 ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
                         .toEpochMilli(),
-                0);
-        Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(),
+                "ZonedDateTime not serialized as expected");
+        Assertions.assertEquals(bean.date.getTime(),
                 ZonedDateTime.parse(json.get("date").asString()).toInstant()
                         .toEpochMilli(),
-                0);
-        Assert.assertEquals(10.0,
+                "ZonedDateTime not serialized as expected");
+        Assertions.assertEquals(10.0,
                 Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
@@ -396,7 +403,7 @@ public class JacksonUtilsTest {
         bean.child = null;
 
         ObjectNode json = JacksonUtils.beanToJson(bean);
-        Assert.assertEquals(mapper.nullNode(), json.get("child"));
+        Assertions.assertEquals(mapper.nullNode(), json.get("child"));
     }
 
     @Test
@@ -406,26 +413,26 @@ public class JacksonUtilsTest {
         ObjectNode json = JacksonUtils.beanToJson(bean);
 
         JsonNode integerMap = json.get("integerMap");
-        Assert.assertEquals(1, integerMap.get("one").asInt(), 0);
-        Assert.assertEquals(2, integerMap.get("two").asInt(), 0);
+        Assertions.assertEquals(1, integerMap.get("one").asInt(), 0);
+        Assertions.assertEquals(2, integerMap.get("two").asInt(), 0);
 
         JsonNode childBeanMap = json.get("childBeanMap");
         JsonNode firstChild = childBeanMap.get("First");
-        Assert.assertEquals("firstChildValue",
+        Assertions.assertEquals("firstChildValue",
                 firstChild.get("childValue").asString());
         JsonNode secondChild = childBeanMap.get("Second");
-        Assert.assertEquals("secondChildValue",
+        Assertions.assertEquals("secondChildValue",
                 secondChild.get("childValue").asString());
 
         JsonNode integerList = json.get("integerList");
-        Assert.assertEquals(3, integerList.get(0).asInt(), 0);
-        Assert.assertEquals(2, integerList.get(1).asInt(), 0);
-        Assert.assertEquals(1, integerList.get(2).asInt(), 0);
+        Assertions.assertEquals(3, integerList.get(0).asInt(), 0);
+        Assertions.assertEquals(2, integerList.get(1).asInt(), 0);
+        Assertions.assertEquals(1, integerList.get(2).asInt(), 0);
 
         JsonNode childBeanList = json.get("childBeanList");
-        Assert.assertEquals("firstChildValue",
+        Assertions.assertEquals("firstChildValue",
                 childBeanList.get(0).get("childValue").asString());
-        Assert.assertEquals("secondChildValue",
+        Assertions.assertEquals("secondChildValue",
                 childBeanList.get(1).get("childValue").asString());
     }
 
@@ -440,8 +447,8 @@ public class JacksonUtilsTest {
         list.add(bean2);
         ArrayNode json = JacksonUtils.listToJson(list);
 
-        Assert.assertEquals("bean1", json.get(0).get("string").asString());
-        Assert.assertEquals("bean2", json.get(1).get("string").asString());
+        Assertions.assertEquals("bean1", json.get(0).get("string").asString());
+        Assertions.assertEquals("bean2", json.get(1).get("string").asString());
     }
 
     @Test
@@ -456,8 +463,10 @@ public class JacksonUtilsTest {
         map.put("two", bean2);
         ObjectNode json = JacksonUtils.mapToJson(map);
 
-        Assert.assertEquals("bean1", json.get("one").get("string").asString());
-        Assert.assertEquals("bean2", json.get("two").get("string").asString());
+        Assertions.assertEquals("bean1",
+                json.get("one").get("string").asString());
+        Assertions.assertEquals("bean2",
+                json.get("two").get("string").asString());
     }
 
     public record Person(String name, double age, boolean canSwim) {
@@ -473,15 +482,15 @@ public class JacksonUtilsTest {
 
         Person person = JacksonUtils.readToObject(jsonObject, Person.class);
 
-        Assert.assertEquals("Foo", person.name);
-        Assert.assertEquals(30.5, person.age, 0.0);
-        Assert.assertTrue(person.canSwim);
+        Assertions.assertEquals("Foo", person.name);
+        Assertions.assertEquals(30.5, person.age, 0.0);
+        Assertions.assertTrue(person.canSwim);
     }
 
     @Test
     public void toFileJson() throws JacksonException {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
-        Assert.assertEquals("""
+        Assertions.assertEquals("""
                 {
                   "child": {
                     "childValue": "child"
@@ -494,8 +503,8 @@ public class JacksonUtilsTest {
     @Test
     public void writeValue_nullReturnsNullNode() {
         BaseJsonNode result = JacksonUtils.writeValue(null);
-        Assert.assertTrue("Expected NullNode", result.isNull());
-        Assert.assertEquals(mapper.nullNode(), result);
+        Assertions.assertTrue(result.isNull(), "Expected NullNode");
+        Assertions.assertEquals(mapper.nullNode(), result);
     }
 
 }

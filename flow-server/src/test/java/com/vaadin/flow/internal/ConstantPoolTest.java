@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
-public class ConstantPoolTest {
+class ConstantPoolTest {
     private ConstantPool constantPool = new ConstantPool();
 
     @Test
     public void newConstantPool_noNewItems() {
-        Assert.assertFalse(constantPool.hasNewConstants());
-        Assert.assertEquals(0,
+        Assertions.assertFalse(constantPool.hasNewConstants());
+        Assertions.assertEquals(0,
                 JacksonUtils.getKeys(constantPool.dumpConstants()).size());
     }
 
@@ -36,12 +36,12 @@ public class ConstantPoolTest {
 
         String constantId = constantPool.getConstantId(reference);
 
-        Assert.assertTrue(constantPool.hasNewConstants());
+        Assertions.assertTrue(constantPool.hasNewConstants());
 
         ObjectNode dump = constantPool.dumpConstants();
 
-        Assert.assertEquals(1, JacksonUtils.getKeys(dump).size());
-        Assert.assertEquals("{}", dump.get(constantId).toString());
+        Assertions.assertEquals(1, JacksonUtils.getKeys(dump).size());
+        Assertions.assertEquals("{}", dump.get(constantId).toString());
     }
 
     @Test
@@ -55,8 +55,8 @@ public class ConstantPoolTest {
         String otherId = constantPool.getConstantId(
                 new ConstantPoolKey(JacksonUtils.createObjectNode()));
 
-        Assert.assertEquals(constantId, otherId);
-        Assert.assertFalse(constantPool.hasNewConstants());
+        Assertions.assertEquals(constantId, otherId);
+        Assertions.assertFalse(constantPool.hasNewConstants());
     }
 
     @Test
@@ -70,8 +70,8 @@ public class ConstantPoolTest {
         String otherId = constantPool.getConstantId(
                 new ConstantPoolKey(JacksonUtils.createArrayNode()));
 
-        Assert.assertNotEquals(constantId, otherId);
-        Assert.assertTrue(constantPool.hasNewConstants());
+        Assertions.assertNotEquals(constantId, otherId);
+        Assertions.assertTrue(constantPool.hasNewConstants());
     }
 
     @Test
@@ -80,6 +80,6 @@ public class ConstantPoolTest {
                 JacksonUtils.createObjectNode());
         final ObjectNode message = JacksonUtils.createObjectNode();
         constantPoolKey.export(message);
-        Assert.assertTrue(message.has(constantPoolKey.getId()));
+        Assertions.assertTrue(message.has(constantPoolKey.getId()));
     }
 }

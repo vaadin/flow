@@ -18,41 +18,41 @@ package com.vaadin.flow.internal;
 import java.io.File;
 import java.net.URL;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.open.OSUtils;
 
-public class FileIOUtilsTest {
+class FileIOUtilsTest {
 
     @Test
     public void projectFolderOnWindows() throws Exception {
-        Assume.assumeTrue(OSUtils.isWindows());
+        Assumptions.assumeTrue(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/C:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File("C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
     public void projectFolderOnMacOrLinux() throws Exception {
-        Assume.assumeFalse(OSUtils.isWindows());
+        Assumptions.assumeFalse(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
     public void tempFilesAreTempFiles() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
     }
 }

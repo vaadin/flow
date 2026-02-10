@@ -17,47 +17,47 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 
-public class UrlUtilTest {
+class UrlUtilTest {
 
     private String encodeURIShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789;,/?:@&=+$-_.!~*'()#";
     private String encodeURIComponentShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()";
 
     @Test
     public void isExternal_URLStartsWithTwoSlashes_returnsTrue() {
-        Assert.assertTrue(UrlUtil.isExternal("//foo"));
+        Assertions.assertTrue(UrlUtil.isExternal("//foo"));
     }
 
     @Test
     public void isExternal_URLContainsAnySchemaAsPrefix_returnsTrue() {
-        Assert.assertTrue(UrlUtil.isExternal("http://foo"));
-        Assert.assertTrue(UrlUtil.isExternal("https://foo"));
-        Assert.assertTrue(UrlUtil.isExternal("context://foo"));
-        Assert.assertTrue(UrlUtil.isExternal("base://foo"));
+        Assertions.assertTrue(UrlUtil.isExternal("http://foo"));
+        Assertions.assertTrue(UrlUtil.isExternal("https://foo"));
+        Assertions.assertTrue(UrlUtil.isExternal("context://foo"));
+        Assertions.assertTrue(UrlUtil.isExternal("base://foo"));
     }
 
     @Test
     public void isExternal_URLDoesnotContainSchema_returnsFalse() {
-        Assert.assertFalse(UrlUtil.isExternal("foo"));
+        Assertions.assertFalse(UrlUtil.isExternal("foo"));
     }
 
     @Test
     public void plusAndSpaceHandledCorrectly() {
-        Assert.assertEquals("Plus+Spa%20+%20ce",
+        Assertions.assertEquals("Plus+Spa%20+%20ce",
                 UrlUtil.encodeURI("Plus+Spa + ce"));
-        Assert.assertEquals("Plus%2BSpa%20%2B%20ce",
+        Assertions.assertEquals("Plus%2BSpa%20%2B%20ce",
                 UrlUtil.encodeURIComponent("Plus+Spa + ce"));
     }
 
     @Test
     public void encodeURI_shouldNotBeEscaped() {
-        Assert.assertEquals(encodeURIShouldNotBeEscaped,
+        Assertions.assertEquals(encodeURIShouldNotBeEscaped,
                 UrlUtil.encodeURI(encodeURIShouldNotBeEscaped));
     }
 
@@ -68,13 +68,13 @@ public class UrlUtilTest {
             if (encodeURIShouldNotBeEscaped.contains(s)) {
                 continue;
             }
-            Assert.assertNotEquals(UrlUtil.encodeURI(s), s);
+            Assertions.assertNotEquals(UrlUtil.encodeURI(s), s);
         }
     }
 
     @Test
     public void encodeURIComponent_shouldNotBeEscaped() {
-        Assert.assertEquals(encodeURIComponentShouldNotBeEscaped, UrlUtil
+        Assertions.assertEquals(encodeURIComponentShouldNotBeEscaped, UrlUtil
                 .encodeURIComponent(encodeURIComponentShouldNotBeEscaped));
     }
 
@@ -85,29 +85,29 @@ public class UrlUtilTest {
             if (encodeURIComponentShouldNotBeEscaped.contains(s)) {
                 continue;
             }
-            Assert.assertNotEquals(UrlUtil.encodeURIComponent(s), s);
+            Assertions.assertNotEquals(UrlUtil.encodeURIComponent(s), s);
         }
     }
 
     @Test
     public void getServletPathRelative() {
-        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar/",
+        Assertions.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar/",
                 createRequest("/foo", "/bar")));
-        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar",
+        Assertions.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar",
                 createRequest("/foo", "/bar")));
-        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo/",
+        Assertions.assertEquals("..", UrlUtil.getServletPathRelative("/foo/",
                 createRequest("/foo", "/bar")));
-        Assert.assertEquals("../..", UrlUtil.getServletPathRelative("/",
+        Assertions.assertEquals("../..", UrlUtil.getServletPathRelative("/",
                 createRequest("/foo", "/bar")));
-        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo",
+        Assertions.assertEquals("..", UrlUtil.getServletPathRelative("/foo",
                 createRequest("/foo", "/bar")));
-        Assert.assertEquals("../../login", UrlUtil.getServletPathRelative(
+        Assertions.assertEquals("../../login", UrlUtil.getServletPathRelative(
                 "/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("../login", UrlUtil.getServletPathRelative(
+        Assertions.assertEquals("../login", UrlUtil.getServletPathRelative(
                 "/foo/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("login", UrlUtil.getServletPathRelative(
+        Assertions.assertEquals("login", UrlUtil.getServletPathRelative(
                 "/foo/bar/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("baz/login", UrlUtil.getServletPathRelative(
+        Assertions.assertEquals("baz/login", UrlUtil.getServletPathRelative(
                 "/foo/bar/baz/login", createRequest("/foo", "/bar")));
     }
 
@@ -132,7 +132,7 @@ public class UrlUtilTest {
     @Test
     public void decodeURIComponent_percentEncodedSpace_decoded() {
         String result = UrlUtil.decodeURIComponent("test%20file.txt");
-        Assert.assertEquals("test file.txt", result);
+        Assertions.assertEquals("test file.txt", result);
     }
 
     @Test
@@ -140,43 +140,43 @@ public class UrlUtilTest {
         // Plus signs should remain as plus signs (RFC 3986, not HTML form
         // encoding)
         String result = UrlUtil.decodeURIComponent("test+file.txt");
-        Assert.assertEquals("test+file.txt", result);
+        Assertions.assertEquals("test+file.txt", result);
     }
 
     @Test
     public void decodeURIComponent_encodedPlusSign_decoded() {
         String result = UrlUtil.decodeURIComponent("test%2Bfile.txt");
-        Assert.assertEquals("test+file.txt", result);
+        Assertions.assertEquals("test+file.txt", result);
     }
 
     @Test
     public void decodeURIComponent_unicodeCharacters_decoded() {
         // åäö.txt encoded as UTF-8 percent-encoded
         String result = UrlUtil.decodeURIComponent("%C3%A5%C3%A4%C3%B6.txt");
-        Assert.assertEquals("åäö.txt", result);
+        Assertions.assertEquals("åäö.txt", result);
     }
 
     @Test
     public void decodeURIComponent_specialCharacters_decoded() {
         String result = UrlUtil.decodeURIComponent("special%26%3Dchars.txt");
-        Assert.assertEquals("special&=chars.txt", result);
+        Assertions.assertEquals("special&=chars.txt", result);
     }
 
     @Test
     public void decodeURIComponent_nullValue_returnsNull() {
         String result = UrlUtil.decodeURIComponent(null);
-        Assert.assertNull(result);
+        Assertions.assertNull(result);
     }
 
     @Test
     public void decodeURIComponent_emptyValue_returnsEmpty() {
         String result = UrlUtil.decodeURIComponent("");
-        Assert.assertEquals("", result);
+        Assertions.assertEquals("", result);
     }
 
     @Test
     public void decodeURIComponent_noEncodedChars_returnsSame() {
         String result = UrlUtil.decodeURIComponent("simple.txt");
-        Assert.assertEquals("simple.txt", result);
+        Assertions.assertEquals("simple.txt", result);
     }
 }
