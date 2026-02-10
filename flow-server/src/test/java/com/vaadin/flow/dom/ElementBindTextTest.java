@@ -17,12 +17,12 @@ package com.vaadin.flow.dom;
 
 import java.util.LinkedList;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
@@ -39,32 +39,32 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ElementBindTextTest {
+class ElementBindTextTest {
 
     private static MockVaadinServletService service;
 
     private LinkedList<ErrorEvent> events;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         events = mockLockedSessionWithErrorHandler();
     }
 
-    @After
+    @AfterEach
     public void after() {
         CurrentInstance.clearAll();
         events = null;
@@ -153,7 +153,7 @@ public class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>();
         element.bindText(signal);
         assertEquals("", element.getText());
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
         signal.value(null);
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
         assertEquals("", element.getText());
     }
 
@@ -246,7 +246,7 @@ public class ElementBindTextTest {
         element.getText();
 
         element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
-                .ifPresent(feature -> Assert.fail(
+                .ifPresent(feature -> Assertions.fail(
                         "TextBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -282,7 +282,7 @@ public class ElementBindTextTest {
         assertEquals("", span.getText());
 
         // verify setText throws with active binding
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> span.setText(""));
 
         // detach
