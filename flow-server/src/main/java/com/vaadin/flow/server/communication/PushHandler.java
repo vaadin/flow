@@ -396,13 +396,13 @@ public class PushHandler {
                     getLogger()
                             .debug("Could not get UI. This should never happen,"
                                     + " except when reloading in Firefox and Chrome -"
-                                    + " see http://dev.vaadin.com/ticket/14251.");
+                                    + " see https://github.com/vaadin/framework/issues/5449.");
                     return session;
                 } else {
                     getLogger().info(
                             "No UI was found based on data in the request,"
                                     + " but a slower lookup based on the AtmosphereResource succeeded."
-                                    + " See http://dev.vaadin.com/ticket/14251 for more details.");
+                                    + " See https://github.com/vaadin/framework/issues/5449 for more details.");
                 }
             }
 
