@@ -34,6 +34,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
@@ -156,6 +157,20 @@ class StreamRequestHandlerTest {
     }
 
     @Test
+    public void streamResourceNameContainsPercent_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("percent in name",
+                "file%.txt");
+    }
+
+    @Test
+    public void streamResourceNameContainsPercent_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("percent in name",
+                "file%.txt");
+    }
+
+    @Test
     void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
@@ -249,7 +264,8 @@ class StreamRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(request.getPathInfo())
                 .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+                        ui.getId().orElse("-1"), res.getId(),
+                        UrlUtil.sanitizeForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -270,7 +286,8 @@ class StreamRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(request.getPathInfo())
                 .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+                        ui.getId().orElse("-1"), res.getId(),
+                        UrlUtil.sanitizeForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
@@ -304,7 +321,8 @@ class StreamRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(request.getPathInfo())
                 .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
-                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+                        ui.getId().orElse("-1"), res.getId(),
+                        UrlUtil.sanitizeForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
