@@ -615,6 +615,32 @@ public class ShortcutRegistrationTest {
     }
 
     @Test
+    public void constructedRegistration_lifecycleOwnerRemovedBeforeKeyEvent_noNPE() {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        for (Component component : listenOn) {
+            Mockito.when(component.addDetachListener(any()))
+                    .thenReturn(mock(Registration.class));
+        }
+
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event::set, Key.KEY_A);
+
+        mockLifecycle(true);
+        clientResponse();
+
+        // Simulate removal: nulls lifecycleOwner, eventListener, etc.
+        registration.remove();
+
+        // Fire KeyDown event after removal — should not throw NPE
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        // Shortcut event should not have been fired
+        Assert.assertNull(event.get());
+    }
+
+    @Test
     public void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
         AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
         Mockito.doAnswer(invocaation -> {
