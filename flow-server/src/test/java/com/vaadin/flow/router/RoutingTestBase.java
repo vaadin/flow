@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -107,7 +107,7 @@ public class RoutingTestBase {
 
     protected Router router;
 
-    @Before
+    @BeforeEach
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         router = new Router(new TestRouteRegistry());
