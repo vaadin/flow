@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
@@ -35,17 +35,17 @@ import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class DependencyListTest {
+class DependencyListTest {
     private static final String URL = "https://example.net/";
 
     private MockUI ui;
     private DependencyList deps;
 
-    @Before
+    @BeforeEach
     public void before() {
         ui = MockUI.createUI();
         deps = ui.getInternals().getDependencyList();
@@ -53,7 +53,7 @@ public class DependencyListTest {
         assertEquals(0, deps.getPendingSendToClient().size());
     }
 
-    @After
+    @AfterEach
     public void after() {
         UI.setCurrent(null);
     }
@@ -108,13 +108,13 @@ public class DependencyListTest {
 
     private void validateDependency(String url, Type dependencyType,
             LoadMode loadMode) {
-        assertEquals("Expected to receive exactly one dependency", 1,
-                deps.getPendingSendToClient().size());
+        assertEquals(1, deps.getPendingSendToClient().size(),
+                "Expected to receive exactly one dependency");
 
         Dependency dependency = deps.getPendingSendToClient().iterator().next();
-        assertEquals("URL mismatch", url, dependency.getUrl());
-        assertEquals("Type mismatch", dependencyType, dependency.getType());
-        assertEquals("LoadMode mismatch", loadMode, dependency.getLoadMode());
+        assertEquals(url, dependency.getUrl(), "URL mismatch");
+        assertEquals(dependencyType, dependency.getType(), "Type mismatch");
+        assertEquals(loadMode, dependency.getLoadMode(), "LoadMode mismatch");
 
         // Validate JSON representation includes the expected fields
         ObjectNode expectedJson = JacksonUtils.createObjectNode();
@@ -129,10 +129,10 @@ public class DependencyListTest {
         // some dependencies
         actualJson.remove(Dependency.KEY_ID);
 
-        assertTrue(String.format(
-                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toString(), actualJson.toString()),
-                JacksonUtils.jsonEquals(expectedJson, actualJson));
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, actualJson),
+                String.format(
+                        "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                        expectedJson.toString(), actualJson.toString()));
     }
 
     @Test
@@ -214,10 +214,10 @@ public class DependencyListTest {
 
         Collection<Dependency> pendingSendToClient = deps
                 .getPendingSendToClient();
-        assertEquals("Expected to have only one dependency", 1,
-                pendingSendToClient.size());
-        assertEquals("Wrong load mode resolved",
-                pendingSendToClient.iterator().next().getLoadMode(), expected);
+        assertEquals(1, pendingSendToClient.size(),
+                "Expected to have only one dependency");
+        assertEquals(pendingSendToClient.iterator().next().getLoadMode(),
+                expected, "Wrong load mode resolved");
     }
 
     @Test
@@ -228,8 +228,9 @@ public class DependencyListTest {
         }
         long time = System.currentTimeMillis() - start;
 
-        assertTrue("Adding 10K dependencies should take about 50ms. Took "
-                + time + "ms", time < 500);
+        assertTrue(time < 500,
+                "Adding 10K dependencies should take about 50ms. Took " + time
+                        + "ms");
     }
 
     @Test
@@ -242,18 +243,18 @@ public class DependencyListTest {
                 LoadMode.LAZY);
         Dependency lazyCss = new Dependency(Type.STYLESHEET, "lazy.css",
                 LoadMode.LAZY);
-        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
-                eagerJs.getLoadMode());
-        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
-                eagerCss.getLoadMode());
-        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
-                lazyJs.getLoadMode());
-        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
-                lazyCss.getLoadMode());
+        assertEquals(LoadMode.EAGER, eagerJs.getLoadMode(),
+                "Expected the dependency to be eager");
+        assertEquals(LoadMode.EAGER, eagerCss.getLoadMode(),
+                "Expected the dependency to be eager");
+        assertEquals(LoadMode.LAZY, lazyJs.getLoadMode(),
+                "Expected the dependency to be lazy");
+        assertEquals(LoadMode.LAZY, lazyCss.getLoadMode(),
+                "Expected the dependency to be lazy");
 
         List<Dependency> dependencies = new ArrayList<>(
                 Arrays.asList(eagerJs, eagerCss, lazyJs, lazyCss));
-        assertEquals("Expected to have 4 dependencies", 4, dependencies.size());
+        assertEquals(4, dependencies.size(), "Expected to have 4 dependencies");
 
         Collections.shuffle(dependencies);
         dependencies.forEach(deps::add);
@@ -263,13 +264,11 @@ public class DependencyListTest {
         for (int i = 0; i < pendingSendToClient.size(); i++) {
             Dependency actualDependency = pendingSendToClient.get(i);
             Dependency expectedDependency = dependencies.get(i);
-            assertEquals(
-                    "Expected to have the same dependency on the same position for list, but urls do not match",
-                    expectedDependency.getUrl(), actualDependency.getUrl());
-            assertEquals(
-                    "Expected to have the same dependency on the same position for list, but load modes do not match",
-                    expectedDependency.getLoadMode(),
-                    actualDependency.getLoadMode());
+            assertEquals(expectedDependency.getUrl(), actualDependency.getUrl(),
+                    "Expected to have the same dependency on the same position for list, but urls do not match");
+            assertEquals(expectedDependency.getLoadMode(),
+                    actualDependency.getLoadMode(),
+                    "Expected to have the same dependency on the same position for list, but load modes do not match");
         }
     }
 }

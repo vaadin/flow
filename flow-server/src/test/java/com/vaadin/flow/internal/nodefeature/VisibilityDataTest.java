@@ -15,27 +15,27 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class VisibilityDataTest {
+class VisibilityDataTest {
 
     @Test
     public void setVisible() {
         StateNode node = new StateNode(ElementData.class);
         ElementData data = node.getFeature(ElementData.class);
 
-        Assert.assertNull(data.get(NodeProperties.VISIBLE));
-        Assert.assertTrue(data.isVisible());
+        Assertions.assertNull(data.get(NodeProperties.VISIBLE));
+        Assertions.assertTrue(data.isVisible());
 
         data.put(NodeProperties.VISIBLE, true);
-        Assert.assertTrue(data.isVisible());
+        Assertions.assertTrue(data.isVisible());
 
         data.put(NodeProperties.VISIBLE, false);
-        Assert.assertFalse(data.isVisible());
+        Assertions.assertFalse(data.isVisible());
     }
 
     @Test
@@ -46,10 +46,10 @@ public class VisibilityDataTest {
 
         Mockito.when(data.isVisible()).thenReturn(true);
 
-        Assert.assertTrue(data.allowsChanges());
+        Assertions.assertTrue(data.allowsChanges());
 
         Mockito.when(data.isVisible()).thenReturn(false);
 
-        Assert.assertFalse(data.allowsChanges());
+        Assertions.assertFalse(data.allowsChanges());
     }
 }

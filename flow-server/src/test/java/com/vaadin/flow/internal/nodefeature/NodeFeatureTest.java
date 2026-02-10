@@ -21,34 +21,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
-public class NodeFeatureTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {
         public UnregisteredNodeFeature(StateNode node) {
             super(node);
         }
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testCreateNullTypeThrows() {
-        NodeFeatureRegistry.create(null, StateNodeTest.createEmptyNode());
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(null, StateNodeTest.createEmptyNode());
+        });
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testCreateNullNodeThrows() {
-        NodeFeatureRegistry.create(ElementData.class, null);
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(ElementData.class, null);
+        });
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testCreateUnknownFeatureThrows() {
-        NodeFeatureRegistry.create(UnregisteredNodeFeature.class,
-                StateNodeTest.createEmptyNode());
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(UnregisteredNodeFeature.class,
+                    StateNodeTest.createEmptyNode());
+        });
     }
 
     private static Map<Class<? extends NodeFeature>, Integer> buildExpectedIdMap() {
@@ -107,12 +115,14 @@ public class NodeFeatureTest {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
-        Assert.assertEquals("The number of expected features is not up to date",
-                expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
+        Assertions.assertEquals(expectedIds.size(),
+                NodeFeatureRegistry.nodeFeatures.size(),
+                "The number of expected features is not up to date");
 
         expectedIds.forEach((type, expectedId) -> {
-            Assert.assertEquals("Unexpected id for " + type.getName(),
-                    expectedId.intValue(), NodeFeatureRegistry.getId(type));
+            Assertions.assertEquals(expectedId.intValue(),
+                    NodeFeatureRegistry.getId(type),
+                    "Unexpected id for " + type.getName());
         });
     }
 
@@ -121,8 +131,9 @@ public class NodeFeatureTest {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         expectedIds.forEach((expectedType, id) -> {
-            Assert.assertEquals("Unexpected type for id " + id, expectedType,
-                    NodeFeatureRegistry.getFeature(id));
+            Assertions.assertEquals(expectedType,
+                    NodeFeatureRegistry.getFeature(id),
+                    "Unexpected type for id " + id);
         });
     }
 
@@ -169,11 +180,11 @@ public class NodeFeatureTest {
                 PollConfigurationMap.class,
                 ReconnectDialogConfigurationMap.class);
 
-        Assert.assertEquals(expectedOrder.size(), priorityOrder.size());
+        Assertions.assertEquals(expectedOrder.size(), priorityOrder.size());
 
         for (int i = 0; i < priorityOrder.size(); i++) {
             if (priorityOrder.get(i) != expectedOrder.get(i)) {
-                Assert.fail("Invalid priority ordering at index " + i
+                Assertions.fail("Invalid priority ordering at index " + i
                         + ". Expected " + expectedOrder.get(i).getSimpleName()
                         + " but got " + priorityOrder.get(i).getSimpleName());
             }

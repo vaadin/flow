@@ -18,7 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         extends AbstractNodeFeatureTest<T> {
@@ -29,11 +29,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         String value2 = "bar";
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        Assertions.assertEquals(value1, getter.get());
+        Assertions.assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        Assertions.assertEquals(value2, getter.get());
     }
 
     protected void testInt(NodeMap mapFeature, String key,
@@ -42,11 +42,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Integer value2 = 5844;
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        Assertions.assertEquals(value1, getter.get());
+        Assertions.assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        Assertions.assertEquals(value2, getter.get());
     }
 
     protected void testBoolean(NodeMap mapFeature, String key,
@@ -55,11 +55,11 @@ public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         Boolean value2 = false;
 
         setter.accept(value1);
-        Assert.assertEquals(value1, getter.get());
-        Assert.assertEquals(value1, mapFeature.get(key));
+        Assertions.assertEquals(value1, getter.get());
+        Assertions.assertEquals(value1, mapFeature.get(key));
 
         mapFeature.put(key, value2);
-        Assert.assertEquals(value2, getter.get());
+        Assertions.assertEquals(value2, getter.get());
     }
 
 }
