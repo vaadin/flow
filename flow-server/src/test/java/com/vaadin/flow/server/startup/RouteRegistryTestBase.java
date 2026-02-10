@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -36,8 +35,13 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public abstract class RouteRegistryTestBase {
+abstract class RouteRegistryTestBase {
 
     @Test
     public void initializedRoutes_routesCanBeAdded() {
@@ -48,17 +52,18 @@ public abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("info", MyInfo.class,
                 Collections.emptyList());
 
-        Assert.assertEquals(
-                "Initial registration of routes should have succeeded.", 2,
-                getTestedRegistry().getRegisteredRoutes().size());
+        assertEquals(2,
+                getTestedRegistry().getRegisteredRoutes().size(),
+                "Initial registration of routes should have succeeded.");
 
         getTestedRegistry().setRoute("palace", MyPalace.class,
                 Collections.emptyList());
         getTestedRegistry().setRoute("modular", MyModular.class,
                 Collections.emptyList());
 
-        Assert.assertEquals("All new routes should have been registered", 4,
-                getTestedRegistry().getRegisteredRoutes().size());
+        assertEquals(4,
+                getTestedRegistry().getRegisteredRoutes().size(),
+                "All new routes should have been registered");
 
         getTestedRegistry().setRoute("withAliases", MyRouteWithAliases.class,
                 Collections.emptyList());
@@ -67,8 +72,9 @@ public abstract class RouteRegistryTestBase {
         getTestedRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        Assert.assertEquals("The new route should have registered", 5,
-                getTestedRegistry().getRegisteredRoutes().size());
+        assertEquals(5,
+                getTestedRegistry().getRegisteredRoutes().size(),
+                "The new route should have registered");
     }
 
     @Test
@@ -91,11 +97,11 @@ public abstract class RouteRegistryTestBase {
                 .getRegisteredRoutes().stream().filter(route -> route
                         .getNavigationTarget().equals(MyRouteWithAliases.class))
                 .findFirst();
-        Assert.assertTrue("Didn't get RouteData for MyRouteWithAliases.",
-                first.isPresent());
+        assertTrue(first.isPresent(),
+                "Didn't get RouteData for MyRouteWithAliases.");
 
-        Assert.assertEquals("Expected two route aliases to be registered", 2,
-                first.get().getRouteAliases().size());
+        assertEquals(2, first.get().getRouteAliases().size(),
+                "Expected two route aliases to be registered");
     }
 
     @Test
@@ -109,23 +115,26 @@ public abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !getTestedRegistry().getRegisteredRoutes().isEmpty());
+        assertTrue(
+                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+                "Registry didn't contain routes even though 3 should have been registered");
 
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
+        assertTrue(
                 getTestedRegistry().getNavigationTarget("withAliases")
-                        .isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                getTestedRegistry().getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                getTestedRegistry().getNavigationTarget("person").isPresent());
+                        .isPresent(),
+                "Path for main route 'withAliases' returned empty");
+        assertTrue(
+                getTestedRegistry().getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' returned empty.");
+        assertTrue(
+                getTestedRegistry().getNavigationTarget("person").isPresent(),
+                "RouteAlias 'person' returned empty.");
 
         getTestedRegistry().removeRoute(MyRouteWithAliases.class);
 
-        Assert.assertFalse(
-                "Registry should be empty after removing the only registered Class.",
-                !getTestedRegistry().getRegisteredRoutes().isEmpty());
+        assertFalse(
+                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+                "Registry should be empty after removing the only registered Class.");
     }
 
     @Test
@@ -139,27 +148,31 @@ public abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !getTestedRegistry().getRegisteredRoutes().isEmpty());
+        assertTrue(
+                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+                "Registry didn't contain routes even though 3 should have been registered");
 
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
+        assertTrue(
                 getTestedRegistry().getNavigationTarget("withAliases")
-                        .isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                getTestedRegistry().getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                getTestedRegistry().getNavigationTarget("person").isPresent());
+                        .isPresent(),
+                "Path for main route 'withAliases' returned empty");
+        assertTrue(
+                getTestedRegistry().getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' returned empty.");
+        assertTrue(
+                getTestedRegistry().getNavigationTarget("person").isPresent(),
+                "RouteAlias 'person' returned empty.");
 
         getTestedRegistry().removeRoute("withAliases");
 
-        Assert.assertTrue("Registry should contain alias routes",
-                !getTestedRegistry().getRegisteredRoutes().isEmpty());
+        assertTrue(
+                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+                "Registry should contain alias routes");
 
-        Assert.assertEquals(
-                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias",
-                1, getTestedRegistry().getRegisteredRoutes().get(0)
-                        .getRouteAliases().size());
+        assertEquals(1,
+                getTestedRegistry().getRegisteredRoutes().get(0)
+                        .getRouteAliases().size(),
+                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias");
     }
 
     @Test
@@ -175,15 +188,18 @@ public abstract class RouteRegistryTestBase {
                 MyRouteWithAliases.class,
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
-        Assert.assertFalse("'MyRoute' should have a single parent",
+        assertFalse(
                 getTestedRegistry().getNavigationRouteTarget("MyRoute")
-                        .getRouteTarget().getParentLayouts().isEmpty());
-        Assert.assertTrue("'info' should have no parents.",
+                        .getRouteTarget().getParentLayouts().isEmpty(),
+                "'MyRoute' should have a single parent");
+        assertTrue(
                 getTestedRegistry().getNavigationRouteTarget("info")
-                        .getRouteTarget().getParentLayouts().isEmpty());
-        Assert.assertEquals("'version' should return two parents", 2,
+                        .getRouteTarget().getParentLayouts().isEmpty(),
+                "'info' should have no parents.");
+        assertEquals(2,
                 getTestedRegistry().getNavigationRouteTarget("version")
-                        .getRouteTarget().getParentLayouts().size());
+                        .getRouteTarget().getParentLayouts().size(),
+                "'version' should return two parents");
     }
 
     @Test
@@ -198,10 +214,10 @@ public abstract class RouteRegistryTestBase {
 
         parentChain.remove(MainLayout.class);
 
-        Assert.assertEquals(
-                "'version' should return two parents even when original list is changed",
-                2, getTestedRegistry().getNavigationRouteTarget("version")
-                        .getRouteTarget().getParentLayouts().size());
+        assertEquals(2,
+                getTestedRegistry().getNavigationRouteTarget("version")
+                        .getRouteTarget().getParentLayouts().size(),
+                "'version' should return two parents even when original list is changed");
     }
 
     @Test
@@ -214,11 +230,10 @@ public abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("version", MyRoute.class,
                 parentChain);
 
-        Assert.assertArrayEquals(
-                "Registry should return parent layouts in the same order as set.",
-                parentChain.toArray(),
+        assertArrayEquals(parentChain.toArray(),
                 getTestedRegistry().getNavigationRouteTarget("version")
-                        .getRouteTarget().getParentLayouts().toArray());
+                        .getRouteTarget().getParentLayouts().toArray(),
+                "Registry should return parent layouts in the same order as set.");
     }
 
     /**
