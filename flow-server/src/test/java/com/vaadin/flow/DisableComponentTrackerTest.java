@@ -19,10 +19,10 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -34,11 +34,11 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class DisableComponentTrackerTest {
+class DisableComponentTrackerTest {
     private Object previousDisabled;
     private Field disabledField;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         disabledField = ComponentTracker.class.getDeclaredField("disabled");
         disabledField.setAccessible(true);
@@ -46,7 +46,7 @@ public class DisableComponentTrackerTest {
         disabledField.set(null, null);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         disabledField.set(null, previousDisabled);
     }
@@ -60,7 +60,7 @@ public class DisableComponentTrackerTest {
                     ArgumentMatchers.anyBoolean())).then(i -> i.getArgument(1));
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
-            Assert.assertNull(ComponentTracker.findCreate(c1));
+            Assertions.assertNull(ComponentTracker.findCreate(c1));
         });
     }
 
@@ -75,7 +75,7 @@ public class DisableComponentTrackerTest {
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
                     c1);
-            Assert.assertNull(ComponentTracker.findAttach(c1));
+            Assertions.assertNull(ComponentTracker.findAttach(c1));
         });
     }
 
@@ -88,7 +88,7 @@ public class DisableComponentTrackerTest {
                     ArgumentMatchers.anyBoolean())).thenReturn(false);
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
-            Assert.assertNull(ComponentTracker.findCreate(c1));
+            Assertions.assertNull(ComponentTracker.findCreate(c1));
         });
     }
 
@@ -103,7 +103,7 @@ public class DisableComponentTrackerTest {
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
                     c1);
-            Assert.assertNull(ComponentTracker.findAttach(c1));
+            Assertions.assertNull(ComponentTracker.findAttach(c1));
         });
     }
 

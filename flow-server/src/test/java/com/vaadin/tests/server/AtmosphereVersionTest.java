@@ -15,16 +15,19 @@
  */
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
 import org.atmosphere.util.Version;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.Constants;
 
-public class AtmosphereVersionTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AtmosphereVersionTest {
     /**
      * Test that the atmosphere version constant matches the version on our
      * classpath
      */
+    @Test
     public void testAtmosphereVersion() {
         assertEquals(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
                 Version.getRawVersion());

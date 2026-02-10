@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -38,7 +38,7 @@ import com.vaadin.flow.component.internal.ComponentTracker.Location;
  * Note that if you reformat this file, the tests will need to be adjusted as
  * they track line numbers.
  */
-public class ComponentTrackerTest {
+class ComponentTrackerTest {
 
     @Tag("component1")
     public static class Component1 extends Component {
@@ -54,7 +54,7 @@ public class ComponentTrackerTest {
     private Object previousDisabled;
     private Field disabledField;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         disabledField = ComponentTracker.class.getDeclaredField("disabled");
         disabledField.setAccessible(true);
@@ -62,7 +62,7 @@ public class ComponentTrackerTest {
         disabledField.set(null, false);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         disabledField.set(null, previousDisabled);
     }
@@ -136,11 +136,11 @@ public class ComponentTrackerTest {
 
         new Layout(new Component1());
 
-        Assert.assertEquals(2, createMap.size());
-        Assert.assertEquals(1, attachMap.size());
+        Assertions.assertEquals(2, createMap.size());
+        Assertions.assertEquals(1, attachMap.size());
 
-        Assert.assertTrue(isCleared(createMap));
-        Assert.assertTrue(isCleared(attachMap));
+        Assertions.assertTrue(isCleared(createMap));
+        Assertions.assertTrue(isCleared(attachMap));
     }
 
     @Test
@@ -200,26 +200,26 @@ public class ComponentTrackerTest {
     private void assertCreateLocation(Component c, int lineNumber,
             String name) {
         ComponentTracker.Location location = ComponentTracker.findCreate(c);
-        Assert.assertEquals(lineNumber, location.lineNumber());
-        Assert.assertEquals(name, location.className());
+        Assertions.assertEquals(lineNumber, location.lineNumber());
+        Assertions.assertEquals(name, location.className());
 
         Location locationFromArray = getLocationFromArray(
                 ComponentTracker.findCreateLocations(c));
-        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
-        Assert.assertEquals(name, locationFromArray.className());
+        Assertions.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assertions.assertEquals(name, locationFromArray.className());
     }
 
     private void assertAttachLocation(Component c, int lineNumber,
             String name) {
         ComponentTracker.Location location = ComponentTracker.findAttach(c);
-        Assert.assertEquals(lineNumber, location.lineNumber());
-        Assert.assertEquals(name, location.className());
+        Assertions.assertEquals(lineNumber, location.lineNumber());
+        Assertions.assertEquals(name, location.className());
 
         Location locationFromArray = getLocationFromArray(
                 ComponentTracker.findAttachLocations(c));
 
-        Assert.assertEquals(lineNumber, locationFromArray.lineNumber());
-        Assert.assertEquals(name, locationFromArray.className());
+        Assertions.assertEquals(lineNumber, locationFromArray.lineNumber());
+        Assertions.assertEquals(name, locationFromArray.className());
     }
 
     private Location getLocationFromArray(Location[] locations) {
@@ -237,14 +237,14 @@ public class ComponentTrackerTest {
                 .apply(componentWithLowerOrdinalVal);
         Location locationC2 = findLocationFn
                 .apply(componentWithHigherOrdinalVal);
-        Assert.assertTrue(locationC2.ordinal() > locationC1.ordinal());
+        Assertions.assertTrue(locationC2.ordinal() > locationC1.ordinal());
 
         Location locationFromArrayC1 = getLocationFromArray(
                 findLocationArrFn.apply(componentWithLowerOrdinalVal));
         Location locationFromArrayC2 = getLocationFromArray(
                 findLocationArrFn.apply(componentWithHigherOrdinalVal));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
     }
 
