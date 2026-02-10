@@ -22,8 +22,8 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -31,7 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-public class DefaultInstantiatorTest {
+class DefaultInstantiatorTest {
 
     @Tag(Tag.A)
     public static class TestComponent extends Component {
@@ -49,7 +49,7 @@ public class DefaultInstantiatorTest {
         TestComponent component = instantiator
                 .createComponent(TestComponent.class);
 
-        Assert.assertNotNull(component);
+        Assertions.assertNotNull(component);
 
         Mockito.verify(instantiator, Mockito.times(0))
                 .getOrCreate(Mockito.any());
@@ -65,7 +65,7 @@ public class DefaultInstantiatorTest {
         Mockito.when(lookup.lookup(List.class)).thenReturn(new ArrayList<>());
 
         List<?> list = instantiator.getOrCreate(List.class);
-        Assert.assertTrue(list instanceof ArrayList);
+        Assertions.assertTrue(list instanceof ArrayList);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class DefaultInstantiatorTest {
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
         TestComponent component = instantiator.getOrCreate(TestComponent.class);
-        Assert.assertNotNull(component);
+        Assertions.assertNotNull(component);
     }
 
     @Test
@@ -87,9 +87,9 @@ public class DefaultInstantiatorTest {
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
         TestComponent instance = instantiator.getOrCreate(TestComponent.class);
-        Assert.assertSame(TestComponent.class,
+        Assertions.assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
+        Assertions.assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
@@ -109,10 +109,10 @@ public class DefaultInstantiatorTest {
         TestComponent instance = syntheticClass.getDeclaredConstructor()
                 .newInstance();
 
-        Assert.assertNotSame(TestComponent.class, instance.getClass());
-        Assert.assertSame(TestComponent.class,
+        Assertions.assertNotSame(TestComponent.class, instance.getClass());
+        Assertions.assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestComponent.class,
+        Assertions.assertSame(TestComponent.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
