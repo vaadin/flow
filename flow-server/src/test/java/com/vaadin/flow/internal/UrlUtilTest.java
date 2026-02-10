@@ -179,4 +179,32 @@ public class UrlUtilTest {
         String result = UrlUtil.decodeURIComponent("simple.txt");
         Assert.assertEquals("simple.txt", result);
     }
+
+    @Test
+    public void sanitizeForUrl_percentIsReplaced() {
+        Assert.assertEquals("Test_Test.txt",
+                UrlUtil.sanitizeForUrl("Test%Test.txt"));
+    }
+
+    @Test
+    public void sanitizeForUrl_multiplePercentsReplaced() {
+        Assert.assertEquals("__100__done.txt",
+                UrlUtil.sanitizeForUrl("%%100%%done.txt"));
+    }
+
+    @Test
+    public void sanitizeForUrl_noPercentUnchanged() {
+        Assert.assertEquals("normal-file.txt",
+                UrlUtil.sanitizeForUrl("normal-file.txt"));
+    }
+
+    @Test
+    public void sanitizeForUrl_nullReturnsNull() {
+        Assert.assertNull(UrlUtil.sanitizeForUrl(null));
+    }
+
+    @Test
+    public void sanitizeForUrl_emptyReturnsEmpty() {
+        Assert.assertEquals("", UrlUtil.sanitizeForUrl(""));
+    }
 }

@@ -168,6 +168,30 @@ public class UrlUtil {
     }
 
     /**
+     * Sanitizes a resource name for safe use in URL path segments.
+     * <p>
+     * Replaces characters that would produce ambiguous percent-encodings. In
+     * particular, {@code %} is replaced with {@code _} because its
+     * percent-encoded form ({@code %25}) is rejected by Jetty 12 as ambiguous
+     * URI path encoding.
+     * <p>
+     * The sanitized name is used only in the URL path for resource lookup. The
+     * actual download filename is set via the Content-Disposition header and is
+     * not affected by this sanitization.
+     *
+     * @param name
+     *            the resource name to sanitize
+     * @return the sanitized name safe for URL encoding, or the original value
+     *         if {@code null} or empty
+     */
+    public static String sanitizeForUrl(String name) {
+        if (name == null || name.isEmpty()) {
+            return name;
+        }
+        return name.replace("%", "_");
+    }
+
+    /**
      * Returns the given absolute path as a path relative to the servlet path.
      *
      * @param absolutePath

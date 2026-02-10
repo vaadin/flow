@@ -130,10 +130,28 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 
+        DownloadHandler percentDownloadHandler = new DownloadHandler() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                event.getWriter().print("foo");
+            }
+
+            @Override
+            public String getUrlPostfix() {
+                return "file%.jpg";
+            }
+        };
+
+        Anchor percentDownload = new Anchor("",
+                "Percent DownloadHandler");
+        percentDownload.setHref(percentDownloadHandler);
+        percentDownload.setId("download-handler-percent");
+
         add(handlerDownload, fileDownload, fileDownloadUnicodeName,
                 fileDownloadUnicodeNameWithQuote, classDownload,
                 servletDownload, inputStreamDownload, inputStreamErrorDownload,
-                inputStreamExceptionDownload, inputStreamCallbackError);
+                inputStreamExceptionDownload, inputStreamCallbackError,
+                percentDownload);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
