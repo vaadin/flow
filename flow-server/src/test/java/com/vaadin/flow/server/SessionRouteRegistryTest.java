@@ -38,10 +38,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -69,13 +69,15 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
-public class SessionRouteRegistryTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class SessionRouteRegistryTest {
 
     private ApplicationRouteRegistry registry;
     private MockService vaadinService;
     private VaadinSession session;
 
-    @Before
+    @BeforeEach
     public void init() {
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));
@@ -110,7 +112,7 @@ public class SessionRouteRegistryTest {
         };
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
     }
@@ -141,15 +143,13 @@ public class SessionRouteRegistryTest {
         registry.setRoute("path", MyRoute.class, Collections.emptyList());
         registry.setRoute("palace", MyRoute.class, Collections.emptyList());
 
-        Assert.assertTrue(
-                "Registry didn't contain navigation targets even though some were registered",
-                !registry.getRegisteredRoutes().isEmpty());
+        Assertions.assertTrue(!registry.getRegisteredRoutes().isEmpty(),
+                "Registry didn't contain navigation targets even though some were registered");
 
         registry.removeRoute(MyRoute.class);
 
-        Assert.assertFalse(
-                "Registry should be empty as only one class was registered",
-                !registry.getRegisteredRoutes().isEmpty());
+        Assertions.assertFalse(!registry.getRegisteredRoutes().isEmpty(),
+                "Registry should be empty as only one class was registered");
     }
 
     @Test
@@ -159,44 +159,36 @@ public class SessionRouteRegistryTest {
         registry.setRoute("home", MyRoute.class, Collections.emptyList());
         registry.setRoute("home", Parameter.class, Collections.emptyList());
 
-        Assert.assertTrue(
-                "Registry didn't contain navigation targets even though some were registered",
-                !registry.getRegisteredRoutes().isEmpty());
+        Assertions.assertTrue(!registry.getRegisteredRoutes().isEmpty(),
+                "Registry didn't contain navigation targets even though some were registered");
 
-        Assert.assertEquals(
-                "No parameters route class was expected for only path String.",
-                MyRoute.class, registry.getNavigationTarget("home").get());
-        Assert.assertEquals(
-                "No parameters route class was expected for empty segments.",
-                MyRoute.class,
+        Assertions.assertEquals(MyRoute.class,
+                registry.getNavigationTarget("home").get(),
+                "No parameters route class was expected for only path String.");
+        Assertions.assertEquals(MyRoute.class,
                 registry.getNavigationTarget("home", Collections.emptyList())
-                        .get());
-        Assert.assertEquals(
-                "Expected HasRouteParameters class for request with segments.",
-                Parameter.class,
+                        .get(),
+                "No parameters route class was expected for empty segments.");
+        Assertions.assertEquals(Parameter.class,
                 registry.getNavigationTarget("home", Arrays.asList("param"))
-                        .get());
+                        .get(),
+                "Expected HasRouteParameters class for request with segments.");
 
         registry.removeRoute(MyRoute.class);
 
-        Assert.assertTrue(
-                "Registry is empty even though we should have one route available",
-                !registry.getRegisteredRoutes().isEmpty());
-        Assert.assertFalse(
-                "MyRoute should have been removed from the registry.",
-                registry.getTargetUrl(MyRoute.class).isPresent());
-        Assert.assertTrue(
-                "Parameter class should have been available from the registry",
+        Assertions.assertTrue(!registry.getRegisteredRoutes().isEmpty(),
+                "Registry is empty even though we should have one route available");
+        Assertions.assertFalse(registry.getTargetUrl(MyRoute.class).isPresent(),
+                "MyRoute should have been removed from the registry.");
+        Assertions.assertTrue(
                 registry.getTargetUrl(Parameter.class,
-                        HasUrlParameterFormat.getParameters("foo"))
-                        .isPresent());
-        Assert.assertTrue(
-                "Parameter class should have been available from the registry",
-                registry.getTemplate(Parameter.class).isPresent());
-        Assert.assertEquals("Parameter route should have been available.",
-                Parameter.class,
-                registry.getNavigationTarget("home", Arrays.asList("param"))
-                        .get());
+                        HasUrlParameterFormat.getParameters("foo")).isPresent(),
+                "Parameter class should have been available from the registry");
+        Assertions.assertTrue(registry.getTemplate(Parameter.class).isPresent(),
+                "Parameter class should have been available from the registry");
+        Assertions.assertEquals(Parameter.class, registry
+                .getNavigationTarget("home", Arrays.asList("param")).get(),
+                "Parameter route should have been available.");
     }
 
     @Test
@@ -206,13 +198,16 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("alternate", MyRoute.class,
                 Collections.emptyList());
 
-        Assert.assertEquals("Expected session registry route to be returned",
-                "alternate", sessionRegistry.getTargetUrl(MyRoute.class).get());
+        Assertions.assertEquals("alternate",
+                sessionRegistry.getTargetUrl(MyRoute.class).get(),
+                "Expected session registry route to be returned");
 
-        Assert.assertTrue("Route 'alternate' should be available.",
-                sessionRegistry.getNavigationTarget("alternate").isPresent());
-        Assert.assertTrue("Route 'MyRoute' should be available.",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("alternate").isPresent(),
+                "Route 'alternate' should be available.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Route 'MyRoute' should be available.");
     }
 
     @Test
@@ -222,17 +217,15 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("MyRoute", Secondary.class,
                 Collections.emptyList());
 
-        Assert.assertEquals(
-                "Route 'MyRoute' should return Secondary as registered to SessionRegistry.",
-                Secondary.class,
-                sessionRegistry.getNavigationTarget("MyRoute").get());
+        Assertions.assertEquals(Secondary.class,
+                sessionRegistry.getNavigationTarget("MyRoute").get(),
+                "Route 'MyRoute' should return Secondary as registered to SessionRegistry.");
 
         sessionRegistry.removeRoute(Secondary.class);
 
-        Assert.assertEquals(
-                "Route 'MyRoute' should return MyRoute as registered to GlobalRegistry.",
-                MyRoute.class,
-                sessionRegistry.getNavigationTarget("MyRoute").get());
+        Assertions.assertEquals(MyRoute.class,
+                sessionRegistry.getNavigationTarget("MyRoute").get(),
+                "Route 'MyRoute' should return MyRoute as registered to GlobalRegistry.");
     }
 
     @Test
@@ -249,14 +242,15 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("version", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        Assert.assertTrue("Main route was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-        Assert.assertTrue(
-                "RouteAlias 'info' was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue(
-                "RouteAlias 'version' was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("version").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Main route was not registered for given Class.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("info").isPresent(),
+                "RouteAlias 'info' was not registered for given Class.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' was not registered for given Class.");
     }
 
     @Test
@@ -270,15 +264,18 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("version", MyRouteWithAliases.class,
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
 
-        Assert.assertFalse("'MyRoute' should have a single parent",
+        Assertions.assertFalse(
                 sessionRegistry.getNavigationRouteTarget("MyRoute")
-                        .getRouteTarget().getParentLayouts().isEmpty());
-        Assert.assertTrue("'info' should have no parents.",
+                        .getRouteTarget().getParentLayouts().isEmpty(),
+                "'MyRoute' should have a single parent");
+        Assertions.assertTrue(
                 sessionRegistry.getNavigationRouteTarget("info")
-                        .getRouteTarget().getParentLayouts().isEmpty());
-        Assert.assertEquals("'version' should return two parents", 2,
+                        .getRouteTarget().getParentLayouts().isEmpty(),
+                "'info' should have no parents.");
+        Assertions.assertEquals(2,
                 sessionRegistry.getNavigationRouteTarget("version")
-                        .getRouteTarget().getParentLayouts().size());
+                        .getRouteTarget().getParentLayouts().size(),
+                "'version' should return two parents");
     }
 
     @Test
@@ -292,10 +289,10 @@ public class SessionRouteRegistryTest {
 
         parentChain.remove(MainLayout.class);
 
-        Assert.assertEquals(
-                "'version' should return two parents even when original list is changed",
-                2, registry.getNavigationRouteTarget("version").getRouteTarget()
-                        .getParentLayouts().size());
+        Assertions.assertEquals(2,
+                registry.getNavigationRouteTarget("version").getRouteTarget()
+                        .getParentLayouts().size(),
+                "'version' should return two parents even when original list is changed");
     }
 
     @Test
@@ -307,11 +304,10 @@ public class SessionRouteRegistryTest {
 
         registry.setRoute("version", MyRoute.class, parentChain);
 
-        Assert.assertArrayEquals(
-                "Registry should return parent layouts in the same order as set.",
-                parentChain.toArray(),
+        Assertions.assertArrayEquals(parentChain.toArray(),
                 registry.getNavigationRouteTarget("version").getRouteTarget()
-                        .getParentLayouts().toArray());
+                        .getParentLayouts().toArray(),
+                "Registry should return parent layouts in the same order as set.");
     }
 
     @Test
@@ -327,41 +323,43 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("version", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        Assert.assertTrue("Main route was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-        Assert.assertTrue(
-                "RouteAlias 'info' was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue(
-                "RouteAlias 'version' was not registered for given Class.",
-                sessionRegistry.getNavigationTarget("version").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Main route was not registered for given Class.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("info").isPresent(),
+                "RouteAlias 'info' was not registered for given Class.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' was not registered for given Class.");
 
-        Assert.assertEquals("MyRoute",
+        Assertions.assertEquals("MyRoute",
                 sessionRegistry.getTargetUrl(MyRouteWithAliases.class).get());
 
         sessionRegistry.removeRoute("MyRoute");
 
-        Assert.assertFalse(
-                "Route 'MyRoute' was still available even though it should have been removed.",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-        Assert.assertTrue(
-                "Route 'info' has been removed eve though it should still be available",
-                sessionRegistry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue(
-                "Route 'version' has been removed eve though it should still be available",
-                sessionRegistry.getNavigationTarget("version").isPresent());
+        Assertions.assertFalse(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Route 'MyRoute' was still available even though it should have been removed.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("info").isPresent(),
+                "Route 'info' has been removed eve though it should still be available");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("version").isPresent(),
+                "Route 'version' has been removed eve though it should still be available");
 
-        Assert.assertTrue(
-                "Route was not found from the registry anymore even though it should be available.",
+        Assertions.assertTrue(
                 sessionRegistry.getTargetUrl(MyRouteWithAliases.class)
-                        .isPresent());
+                        .isPresent(),
+                "Route was not found from the registry anymore even though it should be available.");
 
         // Either or is expected as the new default as first match is picked
         // from the map
-        Assert.assertTrue(
-                "Route didn't return a url matching either of the expected aliases.",
-                Arrays.asList("info", "version").contains(sessionRegistry
-                        .getTargetUrl(MyRouteWithAliases.class).get()));
+        Assertions.assertTrue(
+                Arrays.asList("info", "version")
+                        .contains(sessionRegistry
+                                .getTargetUrl(MyRouteWithAliases.class).get()),
+                "Route didn't return a url matching either of the expected aliases.");
     }
 
     @Test
@@ -377,31 +375,33 @@ public class SessionRouteRegistryTest {
 
         List<RouteData> registeredRoutes = sessionRegistry
                 .getRegisteredRoutes();
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registeredRoutes.isEmpty());
+        Assertions.assertTrue(!registeredRoutes.isEmpty(),
+                "Registry didn't contain routes even though 3 should have been registered");
 
-        Assert.assertTrue("Path for main route 'main' returned empty",
-                sessionRegistry.getNavigationTarget("main").isPresent());
-        Assert.assertTrue("RouteAlias 'Alias1' returned empty.",
-                sessionRegistry.getNavigationTarget("Alias1").isPresent());
-        Assert.assertTrue("RouteAlias 'Alias2' returned empty.",
-                sessionRegistry.getNavigationTarget("Alias2").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("main").isPresent(),
+                "Path for main route 'main' returned empty");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("Alias1").isPresent(),
+                "RouteAlias 'Alias1' returned empty.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("Alias2").isPresent(),
+                "RouteAlias 'Alias2' returned empty.");
 
-        Assert.assertEquals(
-                "Two 'RouteAlias'es should be registered in the collected route data.",
-                2, registeredRoutes.get(0).getRouteAliases().size());
+        Assertions.assertEquals(2,
+                registeredRoutes.get(0).getRouteAliases().size(),
+                "Two 'RouteAlias'es should be registered in the collected route data.");
 
         sessionRegistry.removeRoute("main");
 
         registeredRoutes = sessionRegistry.getRegisteredRoutes();
 
-        Assert.assertTrue("Registry should still contain the alias routes",
-                !registeredRoutes.isEmpty());
+        Assertions.assertTrue(!registeredRoutes.isEmpty(),
+                "Registry should still contain the alias routes");
 
-        Assert.assertEquals(
-                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias",
-                1, registeredRoutes.get(0).getRouteAliases().size());
+        Assertions.assertEquals(1,
+                registeredRoutes.get(0).getRouteAliases().size(),
+                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias");
     }
 
     @Test
@@ -417,19 +417,22 @@ public class SessionRouteRegistryTest {
 
         List<RouteData> registeredRoutes = sessionRegistry
                 .getRegisteredRoutes();
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registeredRoutes.isEmpty());
+        Assertions.assertTrue(!registeredRoutes.isEmpty(),
+                "Registry didn't contain routes even though 3 should have been registered");
 
-        Assert.assertTrue("Path for main route 'MyRoute' returned empty",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-        Assert.assertTrue("RouteAlias 'info' returned empty.",
-                sessionRegistry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                sessionRegistry.getNavigationTarget("version").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Path for main route 'MyRoute' returned empty");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("info").isPresent(),
+                "RouteAlias 'info' returned empty.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' returned empty.");
 
-        Assert.assertEquals("Both route aliases should be found for Route", 2,
-                registeredRoutes.get(0).getRouteAliases().size());
+        Assertions.assertEquals(2,
+                registeredRoutes.get(0).getRouteAliases().size(),
+                "Both route aliases should be found for Route");
     }
 
     @Test
@@ -446,24 +449,27 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("MyRoute", Secondary.class,
                 Collections.emptyList());
 
-        Assert.assertTrue("Registry didn't contain routes.",
-                !sessionRegistry.getRegisteredRoutes().isEmpty());
+        Assertions.assertTrue(!sessionRegistry.getRegisteredRoutes().isEmpty(),
+                "Registry didn't contain routes.");
 
-        Assert.assertTrue("Path for main route 'MyRoute' returned empty",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-        Assert.assertEquals(
-                "Navigation target for route 'MyRoute' was not the expected one.",
-                Secondary.class,
-                sessionRegistry.getNavigationTarget("MyRoute").get());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent(),
+                "Path for main route 'MyRoute' returned empty");
+        Assertions.assertEquals(Secondary.class,
+                sessionRegistry.getNavigationTarget("MyRoute").get(),
+                "Navigation target for route 'MyRoute' was not the expected one.");
 
-        Assert.assertTrue("RouteAlias 'info' returned empty.",
-                sessionRegistry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                sessionRegistry.getNavigationTarget("version").isPresent());
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("info").isPresent(),
+                "RouteAlias 'info' returned empty.");
+        Assertions.assertTrue(
+                sessionRegistry.getNavigationTarget("version").isPresent(),
+                "RouteAlias 'version' returned empty.");
 
-        Assert.assertTrue("Both route aliases should be found for Route",
+        Assertions.assertTrue(
                 sessionRegistry.getRegisteredRoutes().get(0).getRouteAliases()
-                        .isEmpty());
+                        .isEmpty(),
+                "Both route aliases should be found for Route");
     }
 
     @Test
@@ -501,19 +507,17 @@ public class SessionRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals(
-                "Expected 4 route already exists exceptions due to route target validation",
-                THREADS - 1, exceptions.size());
+        Assertions.assertEquals(THREADS - 1, exceptions.size(),
+                "Expected 4 route already exists exceptions due to route target validation");
         String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
-            Assert.assertEquals(expected, exception);
+            Assertions.assertEquals(expected, exception);
         }
         Optional<Class<? extends Component>> myRoute = getRegistry(session)
                 .getNavigationTarget("MyRoute");
-        Assert.assertTrue(
-                "MyRoute was missing from the session scope registry.",
-                myRoute.isPresent());
+        Assertions.assertTrue(myRoute.isPresent(),
+                "MyRoute was missing from the session scope registry.");
 
     }
 
@@ -552,19 +556,17 @@ public class SessionRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals(
-                "Expected 4 route already exists exceptions due to route target validation",
-                THREADS - 1, exceptions.size());
+        Assertions.assertEquals(THREADS - 1, exceptions.size(),
+                "Expected 4 route already exists exceptions due to route target validation");
         String expected = String.format(RouteUtil.ROUTE_CONFLICT,
                 MyRoute.class.getName(), MyRoute.class.getName());
         for (String exception : exceptions) {
-            Assert.assertEquals(expected, exception);
+            Assertions.assertEquals(expected, exception);
         }
         Optional<Class<? extends Component>> myRoute = getRegistry(session)
                 .getNavigationTarget("MyRoute");
-        Assert.assertTrue(
-                "MyRoute was missing from the session scope registry.",
-                myRoute.isPresent());
+        Assertions.assertTrue(myRoute.isPresent(),
+                "MyRoute was missing from the session scope registry.");
 
     }
 
@@ -617,16 +619,18 @@ public class SessionRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals(
-                "No exceptions should have been thrown for threaded updates.",
-                0, exceptions.size());
+        Assertions.assertEquals(0, exceptions.size(),
+                "No exceptions should have been thrown for threaded updates.");
 
-        Assert.assertTrue("Route 'home' was not registered into the scope.",
-                getRegistry(session).getNavigationTarget("home").isPresent());
-        Assert.assertTrue("Route 'info' was not registered into the scope.",
-                getRegistry(session).getNavigationTarget("info").isPresent());
-        Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                getRegistry(session).getNavigationTarget("palace").isPresent());
+        Assertions.assertTrue(
+                getRegistry(session).getNavigationTarget("home").isPresent(),
+                "Route 'home' was not registered into the scope.");
+        Assertions.assertTrue(
+                getRegistry(session).getNavigationTarget("info").isPresent(),
+                "Route 'info' was not registered into the scope.");
+        Assertions.assertTrue(
+                getRegistry(session).getNavigationTarget("palace").isPresent(),
+                "Route 'palace' was not registered into the scope.");
     }
 
     @Test
@@ -683,51 +687,55 @@ public class SessionRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals(
-                "No exceptions should have been thrown for threaded updates.",
-                0, exceptions.size());
+        Assertions.assertEquals(0, exceptions.size(),
+                "No exceptions should have been thrown for threaded updates.");
 
-        Assert.assertFalse(
-                "Route 'home' was still registered even though it should have been removed.",
-                getRegistry(session).getNavigationTarget("home").isPresent());
+        Assertions.assertFalse(
+                getRegistry(session).getNavigationTarget("home").isPresent(),
+                "Route 'home' was still registered even though it should have been removed.");
 
-        Assert.assertFalse(
-                "Route 'info' was still registered even though it should have been removed.",
-                getRegistry(session).getNavigationTarget("info").isPresent());
+        Assertions.assertFalse(
+                getRegistry(session).getNavigationTarget("info").isPresent(),
+                "Route 'info' was still registered even though it should have been removed.");
 
-        Assert.assertTrue("Route 'modular' was not registered into the scope.",
-                getRegistry(session).getNavigationTarget("modular")
-                        .isPresent());
-        Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                getRegistry(session).getNavigationTarget("palace").isPresent());
+        Assertions.assertTrue(
+                getRegistry(session).getNavigationTarget("modular").isPresent(),
+                "Route 'modular' was not registered into the scope.");
+        Assertions.assertTrue(
+                getRegistry(session).getNavigationTarget("palace").isPresent(),
+                "Route 'palace' was not registered into the scope.");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void settingSessionRouteRegistryOfAnotherSession_getRegistryFails() {
-        SessionRouteRegistry registry = getRegistry(session);
+        assertThrows(IllegalStateException.class, () -> {
+            SessionRouteRegistry registry = getRegistry(session);
 
-        VaadinSession anotherSession = new MockVaadinSession(vaadinService) {
-            @Override
-            public VaadinService getService() {
-                return vaadinService;
+            VaadinSession anotherSession = new MockVaadinSession(
+                    vaadinService) {
+                @Override
+                public VaadinService getService() {
+                    return vaadinService;
+                }
+            };
+
+            SessionRouteRegistry anotherRegistry = getRegistry(anotherSession);
+            Assertions.assertNotEquals(registry, anotherRegistry,
+                    "Another session should receive another session");
+
+            session.lock();
+            try {
+                session.setAttribute(SessionRouteRegistry.class,
+                        anotherRegistry);
+            } finally {
+                session.unlock();
             }
-        };
 
-        SessionRouteRegistry anotherRegistry = getRegistry(anotherSession);
-        Assert.assertNotEquals("Another session should receive another session",
-                registry, anotherRegistry);
+            getRegistry(session);
 
-        session.lock();
-        try {
-            session.setAttribute(SessionRouteRegistry.class, anotherRegistry);
-        } finally {
-            session.unlock();
-        }
-
-        getRegistry(session);
-
-        Assert.fail(
-                "Setting anotherRegistry to session should fail when getting the registry!");
+            Assertions.fail(
+                    "Setting anotherRegistry to session should fail when getting the registry!");
+        });
     }
 
     private static class Result {
@@ -750,13 +758,15 @@ public class SessionRouteRegistryTest {
             public void run() {
                 awaitCountDown(waitUpdaterThread);
 
-                Assert.assertTrue("Registry should still remain empty",
-                        getRegistry(session).getRegisteredRoutes().isEmpty());
+                Assertions.assertTrue(
+                        getRegistry(session).getRegisteredRoutes().isEmpty(),
+                        "Registry should still remain empty");
 
                 awaitCountDown(waitUpdaterThread);
 
-                Assert.assertTrue("Registry should still remain empty",
-                        getRegistry(session).getRegisteredRoutes().isEmpty());
+                Assertions.assertTrue(
+                        getRegistry(session).getRegisteredRoutes().isEmpty(),
+                        "Registry should still remain empty");
 
                 waitReaderThread.countDown();
             }
@@ -775,9 +785,9 @@ public class SessionRouteRegistryTest {
             awaitCountDown(waitReaderThread);
         });
 
-        Assert.assertEquals(
-                "After unlock registry should be updated for others to configure with new data",
-                2, getRegistry(session).getRegisteredRoutes().size());
+        Assertions.assertEquals(2,
+                getRegistry(session).getRegisteredRoutes().size(),
+                "After unlock registry should be updated for others to configure with new data");
     }
 
     @Test
@@ -796,37 +806,39 @@ public class SessionRouteRegistryTest {
 
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
-        Assert.assertFalse("Added should contain data for one entry",
-                added.isEmpty());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assertions.assertFalse(added.isEmpty(),
+                "Added should contain data for one entry");
+        Assertions.assertTrue(removed.isEmpty(),
+                "No routes should have been removed");
 
-        Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
-        Assert.assertEquals("", added.get(0).getTemplate());
+        Assertions.assertEquals(MyRoute.class,
+                added.get(0).getNavigationTarget());
+        Assertions.assertEquals("", added.get(0).getTemplate());
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
 
-        Assert.assertFalse("Added should contain data for one entry",
-                added.isEmpty());
-        Assert.assertEquals("Only latest change should be available", 1,
-                added.size());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assertions.assertFalse(added.isEmpty(),
+                "Added should contain data for one entry");
+        Assertions.assertEquals(1, added.size(),
+                "Only latest change should be available");
+        Assertions.assertTrue(removed.isEmpty(),
+                "No routes should have been removed");
 
-        Assert.assertEquals(Secondary.class,
+        Assertions.assertEquals(Secondary.class,
                 added.get(0).getNavigationTarget());
-        Assert.assertEquals("home", added.get(0).getTemplate());
+        Assertions.assertEquals("home", added.get(0).getTemplate());
 
         registry.removeRoute("home");
 
-        Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertEquals("One route should have gotten removed", 1,
-                removed.size());
+        Assertions.assertTrue(added.isEmpty(),
+                "No routes should have been added");
+        Assertions.assertEquals(1, removed.size(),
+                "One route should have gotten removed");
 
-        Assert.assertEquals(Secondary.class,
+        Assertions.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
-        Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getTemplate());
+        Assertions.assertEquals("home", removed.get(0).getTemplate(),
+                "The 'home' route should have been removed");
     }
 
     @Test
@@ -852,28 +864,31 @@ public class SessionRouteRegistryTest {
                     Collections.singletonList(MainLayout.class));
         });
 
-        Assert.assertEquals("Two ne paths should have been added", 2,
-                added.size());
-        Assert.assertEquals("One path should have been removed", 1,
-                removed.size());
+        Assertions.assertEquals(2, added.size(),
+                "Two ne paths should have been added");
+        Assertions.assertEquals(1, removed.size(),
+                "One path should have been removed");
 
         for (RouteBaseData data : added) {
             if (data.getTemplate().equals("")) {
-                Assert.assertEquals("MyRoute should have been added",
-                        MyRoute.class, data.getNavigationTarget());
-                Assert.assertEquals(
-                        "MyRoute should have been seen as a update as the parent layouts changed.",
-                        MainLayout.class, data.getParentLayout());
+                Assertions.assertEquals(MyRoute.class,
+                        data.getNavigationTarget(),
+                        "MyRoute should have been added");
+                Assertions.assertEquals(MainLayout.class,
+                        data.getParentLayout(),
+                        "MyRoute should have been seen as a update as the parent layouts changed.");
             } else {
-                Assert.assertEquals("", Secondary.class,
-                        data.getNavigationTarget());
+                Assertions.assertEquals(Secondary.class,
+                        data.getNavigationTarget(), "");
             }
         }
 
-        Assert.assertEquals("One MyRoute should have been removed",
-                MyRoute.class, removed.get(0).getNavigationTarget());
-        Assert.assertEquals("Removed version should not have a parent layout",
-                Collections.emptyList(), removed.get(0).getParentLayouts());
+        Assertions.assertEquals(MyRoute.class,
+                removed.get(0).getNavigationTarget(),
+                "One MyRoute should have been removed");
+        Assertions.assertEquals(Collections.emptyList(),
+                removed.get(0).getParentLayouts(),
+                "Removed version should not have a parent layout");
     }
 
     @Test
@@ -899,18 +914,17 @@ public class SessionRouteRegistryTest {
                     Collections.emptyList());
         });
 
-        Assert.assertEquals(
-                "Main route and aliases should all be seen as added.", 3,
-                added.size());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assertions.assertEquals(3, added.size(),
+                "Main route and aliases should all be seen as added.");
+        Assertions.assertTrue(removed.isEmpty(),
+                "No routes should have been removed");
 
         sessionRegistry.removeRoute("Alias2");
 
-        Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertEquals(
-                "Removing the alias route should be seen in the event", 1,
-                removed.size());
+        Assertions.assertTrue(added.isEmpty(),
+                "No routes should have been added");
+        Assertions.assertEquals(1, removed.size(),
+                "Removing the alias route should be seen in the event");
     }
 
     @Test
@@ -934,25 +948,24 @@ public class SessionRouteRegistryTest {
 
         registry.removeRoute(MyRoute.class);
 
-        Assert.assertTrue("No event for masked path should have been received.",
-                events.isEmpty());
+        Assertions.assertTrue(events.isEmpty(),
+                "No event for masked path should have been received.");
 
         registry.setRoute("main", MyRoute.class, Collections.emptyList());
 
-        Assert.assertTrue("No event for masked path should have been received.",
-                events.isEmpty());
+        Assertions.assertTrue(events.isEmpty(),
+                "No event for masked path should have been received.");
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
 
-        Assert.assertEquals(
-                "Addition of non masked path should have fired an event.", 1,
-                events.size());
-        Assert.assertEquals("Source should have been ApplicationRouteRegistry",
-                registry, events.get(0).getSource());
-        Assert.assertEquals("One route should have been added", 1,
-                events.get(0).getAddedRoutes().size());
-        Assert.assertEquals("No routes should have been removed", 0,
-                events.get(0).getRemovedRoutes().size());
+        Assertions.assertEquals(1, events.size(),
+                "Addition of non masked path should have fired an event.");
+        Assertions.assertEquals(registry, events.get(0).getSource(),
+                "Source should have been ApplicationRouteRegistry");
+        Assertions.assertEquals(1, events.get(0).getAddedRoutes().size(),
+                "One route should have been added");
+        Assertions.assertEquals(0, events.get(0).getRemovedRoutes().size(),
+                "No routes should have been removed");
     }
 
     @Test
@@ -975,23 +988,20 @@ public class SessionRouteRegistryTest {
                     Collections.emptyList());
         });
 
-        Assert.assertEquals(
-                "One event for both registries should have been fired.", 2,
-                events.size());
+        Assertions.assertEquals(2, events.size(),
+                "One event for both registries should have been fired.");
 
         registration.remove();
 
         sessionRegistry.removeRoute("main");
 
-        Assert.assertEquals(
-                "No new event should have been received for session scope", 2,
-                events.size());
+        Assertions.assertEquals(2, events.size(),
+                "No new event should have been received for session scope");
 
         registry.removeRoute("main");
 
-        Assert.assertEquals(
-                "No new event should have been received for application scope",
-                2, events.size());
+        Assertions.assertEquals(2, events.size(),
+                "No new event should have been received for application scope");
 
     }
 
@@ -1017,11 +1027,11 @@ public class SessionRouteRegistryTest {
         deserialized.session.refreshTransients(wrappedSession, service);
 
         // The original registry doesn't contain "foo" navigation target
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 registry.getNavigationTarget("foo", Collections.emptyList()));
         // The deserialized one (after refreshing transients) contains "foo"
         // navigation target
-        Assert.assertEquals(Optional.of(HtmlContainer.class), deserialized
+        Assertions.assertEquals(Optional.of(HtmlContainer.class), deserialized
                 .getNavigationTarget("foo", Collections.emptyList()));
 
     }
@@ -1037,8 +1047,8 @@ public class SessionRouteRegistryTest {
         Optional<String> url = registry.getTargetUrl(RouteWithRootAlias.class,
                 RouteParameters.empty());
 
-        Assert.assertTrue(url.isPresent());
-        Assert.assertEquals("foo", url.get());
+        Assertions.assertTrue(url.isPresent());
+        Assertions.assertEquals("foo", url.get());
     }
 
     @Test
@@ -1052,8 +1062,8 @@ public class SessionRouteRegistryTest {
         Optional<String> url = registry.getTargetUrl(
                 ParameterizedRouteWithRootAlias.class, RouteParameters.empty());
 
-        Assert.assertTrue(url.isPresent());
-        Assert.assertEquals("", url.get());
+        Assertions.assertTrue(url.isPresent());
+        Assertions.assertEquals("", url.get());
     }
 
     @Test
@@ -1064,37 +1074,33 @@ public class SessionRouteRegistryTest {
                 Collections.emptyList());
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
-        Assert.assertEquals("ApplicationRegisty Templated should be found.",
-                Templated.class,
-                sessionRegistry.getNavigationTarget("oh/my").get());
-        Assert.assertEquals("ApplicationRegistry NonTemplated should be found",
-                NonTemplated.class,
-                sessionRegistry.getNavigationTarget("other/view").get());
+        Assertions.assertEquals(Templated.class,
+                sessionRegistry.getNavigationTarget("oh/my").get(),
+                "ApplicationRegisty Templated should be found.");
+        Assertions.assertEquals(NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get(),
+                "ApplicationRegistry NonTemplated should be found");
 
         sessionRegistry.setRoute(":one/:two", Secondary.class,
                 Collections.emptyList());
 
-        Assert.assertEquals(
-                "SessionRegistry should override ApplicationRegistry Templated",
-                Secondary.class,
-                sessionRegistry.getNavigationTarget("oh/my").get());
+        Assertions.assertEquals(Secondary.class,
+                sessionRegistry.getNavigationTarget("oh/my").get(),
+                "SessionRegistry should override ApplicationRegistry Templated");
 
-        Assert.assertEquals(
-                "ApplicationRegistry exact match should be returned instead of SessionRegistry wildcard match",
-                NonTemplated.class,
-                sessionRegistry.getNavigationTarget("other/view").get());
+        Assertions.assertEquals(NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get(),
+                "ApplicationRegistry exact match should be returned instead of SessionRegistry wildcard match");
 
         sessionRegistry.setRoute("other/:one", MyRoute.class,
                 Collections.emptyList());
 
-        Assert.assertEquals(
-                "ApplicationRegistry exact match should be returned instead of any SessionRegistry wildcard match",
-                NonTemplated.class,
-                sessionRegistry.getNavigationTarget("other/view").get());
-        Assert.assertEquals(
-                "SessionRegistry best match with least wildcards should be returned",
-                MyRoute.class,
-                sessionRegistry.getNavigationTarget("other/plank").get());
+        Assertions.assertEquals(NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get(),
+                "ApplicationRegistry exact match should be returned instead of any SessionRegistry wildcard match");
+        Assertions.assertEquals(MyRoute.class,
+                sessionRegistry.getNavigationTarget("other/plank").get(),
+                "SessionRegistry best match with least wildcards should be returned");
 
     }
 
@@ -1111,22 +1117,18 @@ public class SessionRouteRegistryTest {
         sessionRegistry.setRoute("other/:match/:session?", Secondary.class,
                 Collections.emptyList());
 
-        Assert.assertEquals(
-                "MyRoute should be selected as the matching parts are equal",
-                MyRoute.class,
-                sessionRegistry.getNavigationTarget("other/view/offset").get());
-        Assert.assertEquals(
-                "Exact macth in ApplicationRegistry should be selected",
-                NonTemplated.class,
-                sessionRegistry.getNavigationTarget("other/view/parent").get());
-        Assert.assertEquals(
-                "Closer macth in ApplicationRegistry should be selected",
-                Templated.class,
-                sessionRegistry.getNavigationTarget("other/alias").get());
-        Assert.assertEquals(
-                "Closer macth in ApplicationRegistry should be selected",
-                Templated.class,
-                sessionRegistry.getNavigationTarget("other/alias/extra").get());
+        Assertions.assertEquals(MyRoute.class,
+                sessionRegistry.getNavigationTarget("other/view/offset").get(),
+                "MyRoute should be selected as the matching parts are equal");
+        Assertions.assertEquals(NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view/parent").get(),
+                "Exact macth in ApplicationRegistry should be selected");
+        Assertions.assertEquals(Templated.class,
+                sessionRegistry.getNavigationTarget("other/alias").get(),
+                "Closer macth in ApplicationRegistry should be selected");
+        Assertions.assertEquals(Templated.class,
+                sessionRegistry.getNavigationTarget("other/alias/extra").get(),
+                "Closer macth in ApplicationRegistry should be selected");
 
     }
 
@@ -1148,7 +1150,7 @@ public class SessionRouteRegistryTest {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
-            Assert.fail();
+            Assertions.fail();
         }
     }
 

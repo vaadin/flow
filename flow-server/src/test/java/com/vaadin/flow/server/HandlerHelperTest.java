@@ -22,13 +22,13 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 
-public class HandlerHelperTest {
+class HandlerHelperTest {
 
     private HttpServletRequest createRequest(String pathInfo,
             RequestType type) {
@@ -52,13 +52,13 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_nullPathInfo() {
         HttpServletRequest request = createRequest(null, RequestType.INIT);
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
     }
 
@@ -66,13 +66,13 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_emptyPathinfo() {
         HttpServletRequest request = createRequest("", RequestType.INIT);
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
     }
 
@@ -81,13 +81,13 @@ public class HandlerHelperTest {
         // This is how requests to /vaadinServlet/ are interpreted
         HttpServletRequest request = createRequest("/", RequestType.INIT);
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
     }
 
@@ -95,13 +95,13 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_unknownType() {
         HttpServletRequest request = createRequest(null, "unknown");
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
 
     }
@@ -110,13 +110,13 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_noType() {
         HttpServletRequest request = createRequest(null, (RequestType) null);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
 
     }
@@ -125,17 +125,17 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_validType_withPath() {
         HttpServletRequest request = createRequest("hello", RequestType.INIT);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/*", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/hello", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/hello/*", request));
     }
 
@@ -144,11 +144,11 @@ public class HandlerHelperTest {
         HttpServletRequest request = createRequest("", RequestType.INIT);
         Mockito.when(request.getServletPath()).thenReturn("/servlet");
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("", request));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/servlet", request));
     }
 
@@ -157,9 +157,9 @@ public class HandlerHelperTest {
         HttpServletRequest request = createRequest("/", (RequestType) null);
         Mockito.when(request.getServletPath()).thenReturn("/servlet");
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/", request));
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 HandlerHelper.isFrameworkInternalRequest("/servlet", request));
     }
 
@@ -167,14 +167,15 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_vaadinRequest_servletRoot() {
         VaadinRequest request = createVaadinRequest("", "/*", RequestType.INIT);
 
-        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assertions.assertTrue(
+                BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
     public void isFrameworkInternalRequest_vaadinRequest_servletRoot_noType() {
         VaadinRequest request = createVaadinRequest("", "/*", null);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
@@ -183,7 +184,7 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("/foo", "/*",
                 RequestType.INIT);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
@@ -191,7 +192,7 @@ public class HandlerHelperTest {
     public void isFrameworkInternalRequest_vaadinRequest_pathInsideServlet_noType() {
         VaadinRequest request = createVaadinRequest("/foo", "/*", null);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
@@ -200,7 +201,8 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("", "/myservlet/",
                 RequestType.INIT);
 
-        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        Assertions.assertTrue(
+                BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -208,7 +210,7 @@ public class HandlerHelperTest {
         VaadinRequest request = createVaadinRequest("/hello", "/myservlet",
                 null);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 BootstrapHandler.isFrameworkInternalRequest(request));
     }
 
@@ -218,7 +220,7 @@ public class HandlerHelperTest {
                 "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/upload",
                 "", null);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -229,7 +231,7 @@ public class HandlerHelperTest {
                 "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/",
                 "", null);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -240,7 +242,7 @@ public class HandlerHelperTest {
                 "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/custom.pdf",
                 "", null);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -249,7 +251,7 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
                 null);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -258,7 +260,7 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
                 null);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
                 request.getHttpServletRequest()));
     }
 
@@ -267,7 +269,7 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
                 RequestType.PUSH);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -276,7 +278,7 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest("/VAADIN/push",
                 "/ui", RequestType.PUSH);
 
-        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
+        Assertions.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
                 request.getHttpServletRequest()));
     }
 
@@ -285,7 +287,7 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest(
                 "VAADIN/dynamic/resource/../../../upload", "", null);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
@@ -294,88 +296,88 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest(
                 "VAADIN/static/file.png", "", null);
 
-        Assert.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
+        Assertions.assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 
     @Test
     public void getPathIfInsideServlet_default_servlet() {
         String servletMapping = "/*";
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
-        Assert.assertEquals(Optional.of("/"),
+        Assertions.assertEquals(Optional.of("/"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
-        Assert.assertEquals(Optional.of("foo"),
+        Assertions.assertEquals(Optional.of("foo"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
-        Assert.assertEquals(Optional.of("/foo"),
+        Assertions.assertEquals(Optional.of("/foo"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
     }
 
     @Test
     public void getPathIfInsideServlet_root_only_servlet() {
         String servletMapping = "";
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
     }
 
     @Test
     public void getPathIfInsideServlet_all_urls_servlet() {
         String servletMapping = "/";
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
-        Assert.assertEquals(Optional.of("/"),
+        Assertions.assertEquals(Optional.of("/"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/"));
-        Assert.assertEquals(Optional.of("foo"),
+        Assertions.assertEquals(Optional.of("foo"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
-        Assert.assertEquals(Optional.of("/foo"),
+        Assertions.assertEquals(Optional.of("/foo"),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
     }
 
     @Test
     public void getPathIfInsideServlet_sevlet_using_single_path() {
         String servletMapping = "/foo";
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo/"));
-        Assert.assertEquals(Optional.empty(), HandlerHelper
+        Assertions.assertEquals(Optional.empty(), HandlerHelper
                 .getPathIfInsideServlet(servletMapping, "foo/bar"));
     }
 
     @Test
     public void getPathIfInsideServlet_sevlet_with_context_path() {
         String servletMapping = "/foo/*";
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, ""));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "foo/"));
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
-        Assert.assertEquals(Optional.empty(),
+        Assertions.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foos"));
-        Assert.assertEquals(Optional.empty(), HandlerHelper
+        Assertions.assertEquals(Optional.empty(), HandlerHelper
                 .getPathIfInsideServlet(servletMapping, "/foos/bar"));
-        Assert.assertEquals(Optional.of(""),
+        Assertions.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo/"));
-        Assert.assertEquals(Optional.of("bar"), HandlerHelper
+        Assertions.assertEquals(Optional.of("bar"), HandlerHelper
                 .getPathIfInsideServlet(servletMapping, "/foo/bar"));
     }
 
@@ -440,13 +442,13 @@ public class HandlerHelperTest {
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
 
         Set<String> expectedRoot = Set.of("/favicon.ico", "/aura/**",
                 "/lumo/**");
 
         Set<String> actualRoot = new HashSet<>();
         Collections.addAll(actualRoot, HandlerHelper.getPublicResourcesRoot());
-        Assert.assertEquals(expectedRoot, actualRoot);
+        Assertions.assertEquals(expectedRoot, actualRoot);
     }
 }

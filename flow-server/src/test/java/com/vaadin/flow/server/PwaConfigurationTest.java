@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.server;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class PwaConfigurationTest {
+class PwaConfigurationTest {
     @Test
     // For https://github.com/vaadin/flow/issues/10148
     public void pwaDefaultStartUrl_should_BeDotInsteadOfEmptyString() {
         PwaConfiguration pwaConfiguration = new PwaConfiguration();
-        Assert.assertEquals(PwaConfiguration.DEFAULT_START_URL,
+        Assertions.assertEquals(PwaConfiguration.DEFAULT_START_URL,
                 pwaConfiguration.getStartUrl());
     }
 
@@ -35,7 +35,7 @@ public class PwaConfigurationTest {
     public void pwaOfflinePathEmpty_should_beDisabled() {
         PwaConfiguration pwaConfiguration = new PwaConfiguration(
                 App.class.getAnnotation(PWA.class));
-        Assert.assertFalse(pwaConfiguration.isOfflinePathEnabled());
-        Assert.assertEquals("", pwaConfiguration.getOfflinePath());
+        Assertions.assertFalse(pwaConfiguration.isOfflinePathEnabled());
+        Assertions.assertEquals("", pwaConfiguration.getOfflinePath());
     }
 }
