@@ -22,23 +22,18 @@
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-maven-plugin</artifactId>
         <configuration>
-          <!-- Use war output directory to get the webpack files -->
-          <webAppConfig>
-            <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-          </webAppConfig>
           <webApp>
             <contextPath>/</contextPath>
           </webApp>
-          <contextHandlers>
-            <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
-              <war>${project.parent.basedir}${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</war>
-              <contextPath>/test-war1</contextPath>
-            </contextHandler>
-            <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
-              <war>${project.parent.basedir}${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</war>
-              <contextPath>/test-war2</contextPath>
-            </contextHandler>
-          </contextHandlers>
+          <jettyXmls>
+            <jettyXml>${project.basedir}/src/main/jetty/jetty.xml</jettyXml>
+          </jettyXmls>
+          <jettyProperties>
+            <webapp1.warPath>${project.parent.basedir}${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</webapp1.warPath>
+            <webapp1.context>/test-war1</webapp1.context>
+            <webapp2.warPath>${project.parent.basedir}${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</webapp2.warPath>
+            <webapp2.context>/test-war2</webapp2.context>
+          </jettyProperties>
         </configuration>
       </plugin>
     </plugins>

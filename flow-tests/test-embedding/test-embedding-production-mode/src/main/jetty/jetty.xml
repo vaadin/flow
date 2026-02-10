@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://eclipse.dev/jetty/configure_12.0.dtd">
+
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+    <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+    <Ref refid="Contexts">
+        <Call name="addHandler">
+            <Arg>
+                <New class="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
+                    <Set name="contextPath"><Property name="webapp.npm.context"/></Set>
+                    <Set name="baseResourceAsString"><Property name="webapp.npm.path"/></Set>
+                </New>
+            </Arg>
+        </Call>
+    </Ref>
+    <Set name="handler">
+        <Ref refid="Contexts"/>
+    </Set>
+</Configure>
