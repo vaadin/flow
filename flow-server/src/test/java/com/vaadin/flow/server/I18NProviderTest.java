@@ -25,10 +25,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -38,6 +37,10 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
 public class I18NProviderTest {
@@ -51,8 +54,9 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         initServletAndService(config);
 
-        Assert.assertEquals("Locale was not the expected default locale",
-                Locale.getDefault(), VaadinSession.getCurrent().getLocale());
+        assertEquals(Locale.getDefault(),
+                VaadinSession.getCurrent().getLocale(),
+                "Locale was not the expected default locale");
     }
 
     @Test
@@ -65,8 +69,9 @@ public class I18NProviderTest {
 
         Instantiator instantiator = VaadinService.getCurrent()
                 .getInstantiator();
-        Assert.assertEquals("Found wrong registry", TestProvider.class,
-                instantiator.getI18NProvider().getClass());
+        assertEquals(TestProvider.class,
+                instantiator.getI18NProvider().getClass(),
+                "Found wrong registry");
     }
 
     @Test
@@ -80,11 +85,11 @@ public class I18NProviderTest {
         Instantiator instantiator = VaadinService.getCurrent()
                 .getInstantiator();
         I18NProvider i18NProvider = instantiator.getI18NProvider();
-        Assert.assertNotNull("No provider for ", i18NProvider);
+        assertNotNull(i18NProvider, "No provider for ");
 
-        Assert.assertEquals("Locale was not the defined locale",
-                i18NProvider.getProvidedLocales().get(0),
-                VaadinSession.getCurrent().getLocale());
+        assertEquals(i18NProvider.getProvidedLocales().get(0),
+                VaadinSession.getCurrent().getLocale(),
+                "Locale was not the defined locale");
     }
 
     @Test
@@ -95,8 +100,8 @@ public class I18NProviderTest {
 
         initServletAndService(config);
 
-        Assert.assertEquals("translate method should return a value",
-                "!foo.bar!", I18NProvider.translate("foo.bar"));
+        assertEquals("!foo.bar!", I18NProvider.translate("foo.bar"),
+                "translate method should return a value");
     }
 
     @Test
@@ -104,9 +109,9 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         initServletAndService(config);
 
-        Assert.assertEquals(
-                "Should return the key with !{}! to show no translation available",
-                "!{foo.bar}!", I18NProvider.translate("foo.bar"));
+        assertEquals("!{foo.bar}!",
+                I18NProvider.translate("foo.bar"),
+                "Should return the key with !{}! to show no translation available");
     }
 
     @Test
@@ -119,10 +124,9 @@ public class I18NProviderTest {
 
         VaadinService.setCurrent(null);
 
-        Assert.assertThrows(
-                "Should throw exception without active VaadinService",
-                IllegalStateException.class,
-                () -> I18NProvider.translate("foo.bar"));
+        assertThrows(IllegalStateException.class,
+                () -> I18NProvider.translate("foo.bar"),
+                "Should throw exception without active VaadinService");
     }
 
     @Test
@@ -141,19 +145,18 @@ public class I18NProviderTest {
 
         VaadinService.setCurrent(service);
 
-        Assert.assertThrows(
-                "Should throw exception without active VaadinService",
-                IllegalStateException.class,
-                () -> I18NProvider.translate("foo.bar"));
+        assertThrows(IllegalStateException.class,
+                () -> I18NProvider.translate("foo.bar"),
+                "Should throw exception without active VaadinService");
     }
 
-    @Before
+    @BeforeEach
     public void initState()
             throws NoSuchFieldException, IllegalAccessException {
         clearI18NProviderField();
     }
 
-    @After
+    @AfterEach
     public void clearCurrentInstances()
             throws NoSuchFieldException, IllegalAccessException {
         CurrentInstance.clearAll();

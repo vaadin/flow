@@ -16,21 +16,23 @@
 package com.vaadin.flow.server;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class PropertyDeploymentConfigurationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+class PropertyDeploymentConfigurationTest {
+    @TempDir
+    Path tempFolder;
 
     @Test
     public void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
@@ -38,9 +40,9 @@ public class PropertyDeploymentConfigurationTest {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
-        Assert.assertTrue(config.isProductionMode());
+        assertTrue(config.isProductionMode());
         // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
+        assertTrue(config.getInitParameters().isEmpty());
     }
 
     @Test
@@ -53,8 +55,8 @@ public class PropertyDeploymentConfigurationTest {
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.isProductionMode());
-        Assert.assertEquals(properties, config.getInitParameters());
+        assertTrue(config.isProductionMode());
+        assertEquals(properties, config.getInitParameters());
     }
 
     @Test
@@ -67,8 +69,8 @@ public class PropertyDeploymentConfigurationTest {
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.reuseDevServer());
-        Assert.assertEquals(properties, config.getInitParameters());
+        assertTrue(config.reuseDevServer());
+        assertEquals(properties, config.getInitParameters());
     }
 
     @Test
@@ -77,9 +79,9 @@ public class PropertyDeploymentConfigurationTest {
         Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
-        Assert.assertTrue(config.reuseDevServer());
+        assertTrue(config.reuseDevServer());
         // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
+        assertTrue(config.getInitParameters().isEmpty());
     }
 
     @Test
@@ -88,9 +90,9 @@ public class PropertyDeploymentConfigurationTest {
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
-        Assert.assertTrue(config.isPnpmEnabled());
+        assertTrue(config.isPnpmEnabled());
         // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
+        assertTrue(config.getInitParameters().isEmpty());
     }
 
     @Test
@@ -103,8 +105,8 @@ public class PropertyDeploymentConfigurationTest {
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.isPnpmEnabled());
-        Assert.assertEquals(properties, config.getInitParameters());
+        assertTrue(config.isPnpmEnabled());
+        assertEquals(properties, config.getInitParameters());
     }
 
     @Test
@@ -113,9 +115,9 @@ public class PropertyDeploymentConfigurationTest {
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
-        Assert.assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.isXsrfProtectionEnabled());
         // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
+        assertTrue(config.getInitParameters().isEmpty());
     }
 
     @Test
@@ -128,8 +130,8 @@ public class PropertyDeploymentConfigurationTest {
                 Boolean.FALSE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.isXsrfProtectionEnabled());
-        Assert.assertEquals(properties, config.getInitParameters());
+        assertTrue(config.isXsrfProtectionEnabled());
+        assertEquals(properties, config.getInitParameters());
     }
 
     @Test
@@ -142,9 +144,10 @@ public class PropertyDeploymentConfigurationTest {
         PropertyDeploymentConfiguration configuration = createConfiguration(
                 appConfig, new Properties());
 
-        Assert.assertEquals("bar", configuration.getApplicationProperty("foo"));
+        assertEquals("bar",
+                configuration.getApplicationProperty("foo"));
         // there is no any property
-        Assert.assertTrue(configuration.getInitParameters().isEmpty());
+        assertTrue(configuration.getInitParameters().isEmpty());
     }
 
     @Test
@@ -160,8 +163,9 @@ public class PropertyDeploymentConfigurationTest {
         PropertyDeploymentConfiguration configuration = createConfiguration(
                 appConfig, properties);
 
-        Assert.assertEquals("baz", configuration.getApplicationProperty("foo"));
-        Assert.assertEquals(properties, configuration.getInitParameters());
+        assertEquals("baz",
+                configuration.getApplicationProperty("foo"));
+        assertEquals(properties, configuration.getInitParameters());
     }
 
     @Test
@@ -187,8 +191,8 @@ public class PropertyDeploymentConfigurationTest {
         // though its "getInitParameters" method returns the property. Also
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
-        Assert.assertTrue(config.isProductionMode());
-        Assert.assertTrue(config.getInitParameters()
+        assertTrue(config.isProductionMode());
+        assertTrue(config.getInitParameters()
                 .containsKey(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
@@ -215,8 +219,8 @@ public class PropertyDeploymentConfigurationTest {
         // though its "getInitParameters" method returns the property. Also
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
-        Assert.assertTrue(config.isPnpmEnabled());
-        Assert.assertTrue(config.getInitParameters()
+        assertTrue(config.isPnpmEnabled());
+        assertTrue(config.getInitParameters()
                 .containsKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
     }
 
@@ -243,8 +247,8 @@ public class PropertyDeploymentConfigurationTest {
         // though its "getInitParameters" method returns the property. Also
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
-        Assert.assertTrue(config.reuseDevServer());
-        Assert.assertTrue(config.getInitParameters().containsKey(
+        assertTrue(config.reuseDevServer());
+        assertTrue(config.getInitParameters().containsKey(
                 InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER));
     }
 
@@ -271,8 +275,8 @@ public class PropertyDeploymentConfigurationTest {
         // though its "getInitParameters" method returns the property. Also
         // "getApplicationProperty" method checks the parent properties which
         // should not be taken into account here
-        Assert.assertTrue(config.isXsrfProtectionEnabled());
-        Assert.assertTrue(config.getInitParameters().containsKey(
+        assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.getInitParameters().containsKey(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION));
     }
 
@@ -292,8 +296,8 @@ public class PropertyDeploymentConfigurationTest {
                 appConfig, properties);
         Properties initParameters = configuration.getInitParameters();
 
-        Assert.assertEquals("foobar", initParameters.get("foo"));
-        Assert.assertEquals("baz", initParameters.get("bar"));
+        assertEquals("foobar", initParameters.get("foo"));
+        assertEquals("baz", initParameters.get("bar"));
     }
 
     @Test
@@ -306,20 +310,22 @@ public class PropertyDeploymentConfigurationTest {
                 // You cannot override these
                 continue;
             }
-            Assert.assertNotEquals("There is a method '" + methodName
-                    + "' which is declared in  " + AbstractConfiguration.class
-                    + " interface but it's not overriden in the "
-                    + PropertyDeploymentConfiguration.class
-                    + ". That's most likely a mistake because every method implementation in "
-                    + PropertyDeploymentConfiguration.class
-                    + " must take into account parent "
-                    + ApplicationConfiguration.class
-                    + " API which shares the same interface "
-                    + AbstractConfiguration.class + " with "
-                    + PropertyDeploymentConfiguration.class
-                    + ", so every API method should call parent config and may not use just default implementation of "
-                    + AbstractConfiguration.class, AbstractConfiguration.class,
-                    method.getDeclaringClass());
+            assertNotEquals(AbstractConfiguration.class,
+                    method.getDeclaringClass(),
+                    "There is a method '" + methodName
+                            + "' which is declared in  "
+                            + AbstractConfiguration.class
+                            + " interface but it's not overriden in the "
+                            + PropertyDeploymentConfiguration.class
+                            + ". That's most likely a mistake because every method implementation in "
+                            + PropertyDeploymentConfiguration.class
+                            + " must take into account parent "
+                            + ApplicationConfiguration.class
+                            + " API which shares the same interface "
+                            + AbstractConfiguration.class + " with "
+                            + PropertyDeploymentConfiguration.class
+                            + ", so every API method should call parent config and may not use just default implementation of "
+                            + AbstractConfiguration.class);
         }
     }
 

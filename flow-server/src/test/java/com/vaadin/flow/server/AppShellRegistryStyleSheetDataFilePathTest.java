@@ -19,16 +19,17 @@ import java.util.List;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
-public class AppShellRegistryStyleSheetDataFilePathTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AppShellRegistryStyleSheetDataFilePathTest {
 
     @StyleSheet("/absolute.css")
     @StyleSheet("./relative/path.css")
@@ -41,7 +42,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
     private VaadinServletContext context;
     private Document document;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mocks = new MockServletServiceSessionSetup();
         context = new VaadinServletContext(mocks.getServletContext());
@@ -50,7 +51,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         document = Document.createShell("");
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         mocks.cleanup();
@@ -68,30 +69,31 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assert.assertEquals(4, links.size());
+        assertEquals(4, links.size());
 
         // 1) Absolute path: href preserved, data-file-path drops leading '/'
         Element abs = links.get(0);
-        Assert.assertEquals("/absolute.css", abs.attr("href"));
-        Assert.assertEquals("absolute.css", abs.attr("data-file-path"));
+        assertEquals("/absolute.css", abs.attr("href"));
+        assertEquals("absolute.css", abs.attr("data-file-path"));
 
         // 2) Relative with './': href resolved with context path,
         // data-file-path drops './'
         Element rel = links.get(1);
-        Assert.assertEquals("/ctx/relative/path.css", rel.attr("href"));
-        Assert.assertEquals("relative/path.css", rel.attr("data-file-path"));
+        assertEquals("/ctx/relative/path.css", rel.attr("href"));
+        assertEquals("relative/path.css",
+                rel.attr("data-file-path"));
 
         // 3) context:// should resolve to context path in href, and
         // data-file-path strips context protocol prefix
         Element ctx = links.get(2);
-        Assert.assertEquals("/ctx/from-context.css", ctx.attr("href"));
-        Assert.assertEquals("from-context.css", ctx.attr("data-file-path"));
+        assertEquals("/ctx/from-context.css", ctx.attr("href"));
+        assertEquals("from-context.css", ctx.attr("data-file-path"));
 
         // 4) Remote http(s) URL unchanged, data-file-path remains original
         Element remote = links.get(3);
-        Assert.assertEquals("https://cdn.example.com/remote.css",
+        assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("href"));
-        Assert.assertEquals("https://cdn.example.com/remote.css",
+        assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("data-file-path"));
     }
 
