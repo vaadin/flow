@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
@@ -40,7 +41,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         UI.getCurrent().add(input);
         assertEquals("", input.getValue());
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         assertEquals("foo", input.getValue());
     }
@@ -50,7 +51,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         assertEquals("", input.getValue());
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         // attach after bindValue
         UI.getCurrent().add(input);
 
@@ -62,7 +63,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         // initially "foo"
         assertEquals("foo", input.getValue());
@@ -80,7 +81,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_elementNotAttached_bindingInactive() {
         TestInput input = new TestInput();
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         signal.value("bar");
 
         assertEquals("", input.getValue());
@@ -91,7 +92,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         input.removeFromParent();
         signal.value("bar"); // ignored
 
@@ -103,7 +104,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         input.removeFromParent();
         signal.value("bar");
         UI.getCurrent().add(input);
@@ -115,10 +116,12 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_bindValueWhileBindingIsActive_throwException() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        input.bindValue(new ValueSignal<>("foo"));
+        ValueSignal<String> signal1 = new ValueSignal<>("foo");
+        input.bindValue(signal1, signal1::value);
 
+        ValueSignal<String> signal2 = new ValueSignal<>("bar");
         assertThrows(BindingActiveException.class,
-                () -> input.bindValue(new ValueSignal<>("bar")));
+                () -> input.bindValue(signal2, signal2::value));
         assertEquals("foo", input.getValue());
     }
 
@@ -127,7 +130,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         input.setValue("bar");
         assertEquals("bar", input.getValue());
@@ -139,10 +142,10 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         assertEquals("foo", input.getValue());
 
-        input.bindValue(null); // remove binding
+        input.bindValue(null, null); // remove binding
         signal.value("bar"); // no effect
         assertEquals("foo", input.getValue());
 
@@ -155,10 +158,10 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
         assertEquals("foo", input.getValue());
 
-        input.bindValue(null); // remove binding
+        input.bindValue(null, null); // remove binding
 
         input.setValue("bar");
         assertEquals("bar", input.getValue());
@@ -176,7 +179,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         input.getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
@@ -190,7 +193,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         UI.getCurrent().add(input);
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
@@ -212,7 +215,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
         Assert.assertNull(listenerValue.get());
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         Assert.assertEquals("foo", listenerValue.get());
     }
@@ -222,7 +225,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         AtomicInteger counter = new AtomicInteger(0);
         ComponentEffect.effect(input, () -> {
@@ -263,7 +266,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
                 event -> listenerValue.set(event.getValue()));
         Assert.assertEquals("", input.getValue());
         Assert.assertNull(listenerValue.get());
-        input.bindValue(signal);
+        input.bindValue(signal, signal::value);
 
         // value after bindValue
         Assert.assertEquals("foo", input.getValue());
@@ -282,6 +285,99 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals(1, events.size());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
+    }
+
+    @Test
+    public void bindValue_readOnlyBinding_setValueThrows() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, null);
+
+        assertEquals("foo", input.getValue());
+
+        assertThrows(IllegalStateException.class, () -> input.setValue("bar"));
+        assertEquals("foo", input.getValue());
+        assertEquals("foo", signal.peek());
+    }
+
+    @Test
+    public void bindValue_readOnlyBinding_signalChangesStillWork() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, null);
+
+        assertEquals("foo", input.getValue());
+
+        signal.value("bar");
+        assertEquals("bar", input.getValue());
+    }
+
+    @Test
+    public void bindValue_readOnlyBinding_detachedSetValueDoesNotThrow() {
+        TestInput input = new TestInput();
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, null);
+
+        // Not attached, so setValue should succeed without throwing
+        input.setValue("bar");
+        assertEquals("bar", input.getValue());
+    }
+
+    @Test
+    public void bindValue_noOpCallback_revertsToSignalValue() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        // No-op callback: ignores the value, signal stays at "foo"
+        input.bindValue(signal, v -> {
+        });
+
+        input.setValue("bar");
+        // Component should revert to signal's value since callback was no-op
+        assertEquals("foo", input.getValue());
+        assertEquals("foo", signal.peek());
+    }
+
+    @Test
+    public void bindValue_transformingCallback_componentShowsTransformed() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        // Callback that uppercases the value
+        input.bindValue(signal, v -> signal.value(v.toUpperCase()));
+
+        input.setValue("bar");
+        // Signal should have "BAR", and component should show "BAR"
+        assertEquals("BAR", signal.peek());
+        assertEquals("BAR", input.getValue());
+    }
+
+    @Test
+    public void bindValue_normalCallback_setValueUpdatesBoth() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, signal::value);
+
+        input.setValue("bar");
+        assertEquals("bar", input.getValue());
+        assertEquals("bar", signal.peek());
+    }
+
+    @Test
+    public void bindValue_readOnlySignal_signalToComponentDirection() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> writable = new ValueSignal<>("foo");
+        Signal<String> readOnly = writable.asReadonly();
+        input.bindValue(readOnly, null);
+
+        assertEquals("foo", input.getValue());
+
+        writable.value("bar");
+        assertEquals("bar", input.getValue());
     }
 
     /**

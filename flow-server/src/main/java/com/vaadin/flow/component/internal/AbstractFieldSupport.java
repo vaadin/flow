@@ -33,7 +33,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Encapsulates all the logic required for a typical field implementation. This
@@ -64,6 +64,9 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     private T pendingValueFromPresentation;
 
     private boolean valueSetFromSignal;
+
+    private Signal<T> readSignal;
+    private SerializableConsumer<T> writeCallback;
 
     /**
      * Creates a new field support.
@@ -178,9 +181,9 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     }
 
     /**
-     * Binds a {@link WritableSignal}'s value to the value state of the field
-     * and keeps the state synchronized with the signal value while the element
-     * is in attached state. When the element is in detached state, signal value
+     * Binds a {@link Signal}'s value to the value state of the field and keeps
+     * the state synchronized with the signal value while the element is in
+     * attached state. When the element is in detached state, signal value
      * changes have no effect. <code>null</code> signal unbinds the existing
      * binding.
      * <p>
@@ -191,26 +194,41 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * While a Signal is bound to a value state and the element is in attached
      * state, setting the value with {@link #setValue(Object)},
      * {@link #setModelValue(Object, boolean)}, or when a change originates from
-     * the client, will update the signal value.
+     * the client, will invoke the write callback to propagate the value back.
+     * After the callback, the signal is re-consulted and if its value differs
+     * from what was set, the component reverts to the signal's value.
+     * <p>
+     * If the write callback is <code>null</code>, the binding is read-only and
+     * any attempt to set the value while attached will throw an
+     * {@link IllegalStateException}.
      *
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      * @see #setModelValue(Object, boolean)
      */
-    public void bindValue(WritableSignal<T> valueSignal) {
+    public void bindValue(Signal<T> valueSignal,
+            SerializableConsumer<T> writeCallback) {
         SignalBindingFeature feature = component.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
 
         if (valueSignal == null) {
+            this.readSignal = null;
+            this.writeCallback = null;
             feature.removeBinding(SignalBindingFeature.VALUE);
         } else {
             if (feature.hasBinding(SignalBindingFeature.VALUE)) {
                 throw new BindingActiveException();
             }
+
+            this.readSignal = valueSignal;
+            this.writeCallback = writeCallback;
 
             Registration registration = ElementEffect.bind(
                     component.getElement(), valueSignal,
@@ -267,15 +285,25 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
-        if (!valueSetFromSignal) {
-            // update signal value
-            getFeatureIfInitialized(SignalBindingFeature.class)
-                    .ifPresent(feature -> {
-                        if (component.isAttached()) {
-                            feature.updateWritableSignalValue(
-                                    SignalBindingFeature.VALUE, newValue);
-                        }
-                    });
+        if (!valueSetFromSignal && readSignal != null
+                && component.isAttached()) {
+            if (writeCallback != null) {
+                writeCallback.accept(newValue);
+                // Re-consult the signal after the callback
+                T signalValue = readSignal.peek();
+                if (!valueEquals.test(signalValue, newValue)) {
+                    // Signal value differs from what was set, revert
+                    bufferedValue = signalValue;
+                    applyValue(signalValue);
+                }
+            } else {
+                // Read-only binding: revert and throw
+                bufferedValue = oldValue;
+                applyValue(oldValue);
+                throw new IllegalStateException(
+                        "Cannot set value on a read-only signal binding. "
+                                + "Provide a write callback to enable two-way binding.");
+            }
         }
 
         ComponentUtil.fireEvent(component,

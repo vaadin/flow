@@ -45,7 +45,7 @@ public class BindValueView extends Div {
 
         TestInput target = new TestInput();
         target.setId("target");
-        target.bindValue(signal);
+        target.bindValue(signal, signal::value);
         target.addValueChangeListener(event -> {
             valueInfoDiv.setText("Value: " + event.getValue());
             counter++;

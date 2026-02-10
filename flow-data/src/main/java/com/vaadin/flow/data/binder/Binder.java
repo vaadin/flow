@@ -421,7 +421,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * // Same works also with a Signal directly:
          * ValueSignal<String> passwordSignal = new ValueSignal<>("");
-         * passwordField.bindValue(passwordSignal);
+         * passwordField.bindValue(passwordSignal, passwordSignal::value);
          * binder.forField(confirmField)
          *         .withValidator(text -> text.equals(passwordSignal.value()),
          *                 "Both fields must match")

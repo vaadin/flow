@@ -22,7 +22,6 @@ import java.util.Map;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -124,25 +123,6 @@ public class SignalBindingFeature extends ServerSideFeature {
             binding.registration.remove();
         }
         values.remove(key);
-    }
-
-    /**
-     * Updates the value of the writable signal bound to the given key.
-     * 
-     * @param key
-     *            the key
-     * @param value
-     *            the new value
-     * @param <T>
-     *            the type of the value
-     */
-    public <T> void updateWritableSignalValue(String key, T value) {
-        if (hasBinding(SignalBindingFeature.VALUE)) {
-            Signal<T> signal = getSignal(key);
-            if (signal instanceof WritableSignal<T> writableSignal) {
-                writableSignal.value(value);
-            }
-        }
     }
 
     /**
