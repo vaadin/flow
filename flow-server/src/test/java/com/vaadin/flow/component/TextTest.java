@@ -15,164 +15,145 @@
  */
 package com.vaadin.flow.component;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class TextTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+class TextTest {
 
     @Test
-    public void elementAttached() {
+    void elementAttached() {
         // This will throw an assertion error if the element is not attached to
         // the component
         new Text("Foo").getParent();
     }
 
     @Test
-    public void nullText_transformsToEmptyAndDoesNotThrowException() {
-        Assert.assertEquals("", new Text(null).getText());
+    void nullText_transformsToEmptyAndDoesNotThrowException() {
+        Assertions.assertEquals("", new Text(null).getText());
     }
 
     @Test
-    public void emptyText() {
-        Assert.assertEquals("", new Text("").getText());
+    void emptyText() {
+        Assertions.assertEquals("", new Text("").getText());
     }
 
     @Test
-    public void setText_emptyTextCanBeChangedLater() {
+    void setText_emptyTextCanBeChangedLater() {
         Text text = new Text(null);
         text.setText("Non Empty");
-        Assert.assertEquals("Non Empty", text.getText());
+        Assertions.assertEquals("Non Empty", text.getText());
     }
 
     @Test
-    public void setText_nullIsChangedToEmptyAndDoesNotThrowException() {
+    void setText_nullIsChangedToEmptyAndDoesNotThrowException() {
         Text text = new Text("Default");
         text.setText(null);
-        Assert.assertEquals("", text.getText());
+        Assertions.assertEquals("", text.getText());
     }
 
     @Test
-    public void setGetText() {
-        Assert.assertEquals("Simple", new Text("Simple").getText());
-        Assert.assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
+    void setGetText() {
+        Assertions.assertEquals("Simple", new Text("Simple").getText());
+        Assertions.assertEquals("\u00e5\u00e4\u00f6 \u20ac#%\u00b0#",
+                new Text("\u00e5\u00e4\u00f6 \u20ac#%\u00b0#").getText());
     }
 
     @Test
-    public void setId_throwsWithMeaningfulMessage() {
-        assertExceptionOnSetProperty("id");
-
-        new Text("").setId("foo");
+    void setId_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").setId("foo"));
+        Assertions.assertTrue(ex.getMessage().contains("Cannot set 'id' "));
+        Assertions.assertTrue(ex.getMessage().contains(
+                "component because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void setFooProperty_throwsWithMeaningfulMessage() {
-        assertExceptionOnSetProperty("foo");
-
-        new Text("").set(PropertyDescriptors.propertyWithDefault("foo", true),
-                false);
+    void setFooProperty_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").set(
+                        PropertyDescriptors.propertyWithDefault("foo", true),
+                        false));
+        Assertions.assertTrue(ex.getMessage().contains("Cannot set 'foo' "));
+        Assertions.assertTrue(ex.getMessage().contains(
+                "component because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void setVisibility_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Cannot change Text component visibility"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").setVisible(false);
+    void setVisibility_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").setVisible(false));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Cannot change Text component visibility"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void addClassName_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot add a class to the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").addClassName("foo");
+    void addClassName_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").addClassName("foo"));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Cannot add a class to the Text"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void addClassNames_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot add classes to the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").addClassNames("foor", "bar");
+    void addClassNames_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").addClassNames("foor", "bar"));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Cannot add classes to the Text"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void removeClassName_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot remove a class from the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").removeClassName("foo");
+    void removeClassName_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").removeClassName("foo"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Cannot remove a class from the Text"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void removeClassNames_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot remove classes from the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").removeClassNames("foo", "bar");
+    void removeClassNames_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").removeClassNames("foo", "bar"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Cannot remove classes from the Text"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void setClassName_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot set the Text component class"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").setClassName("foo");
+    void setClassName_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").setClassName("foo"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Cannot set the Text component class"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 
     @Test
-    public void setClassName_withBooleanParameter_throwsWithMeaningfulMessage() {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot set the Text component class"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
-
-        new Text("").setClassName("foo", true);
-    }
-
-    private void assertExceptionOnSetProperty(String property) {
-        exception.expect(UnsupportedOperationException.class);
-
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot set '" + property + "' "),
-                CoreMatchers.containsString(
-                        "component because it doesn't represent an HTML Element")));
+    void setClassName_withBooleanParameter_throwsWithMeaningfulMessage() {
+        UnsupportedOperationException ex = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> new Text("").setClassName("foo", true));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Cannot set the Text component class"));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("because it doesn't represent an HTML Element"));
     }
 }

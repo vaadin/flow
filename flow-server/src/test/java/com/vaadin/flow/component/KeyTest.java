@@ -19,10 +19,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class KeyTest {
+class KeyTest {
 
     @Tag("input")
     public static class InputComponent extends Component
@@ -38,26 +38,27 @@ public class KeyTest {
                 event -> fired.set(true));
 
         input.fireEvent(new KeyPressEvent(input, "foo"));
-        Assert.assertTrue(fired.get());
+        Assertions.assertTrue(fired.get());
 
         fired.set(false);
         input.fireEvent(new KeyPressEvent(input, "bar"));
-        Assert.assertTrue(fired.get());
+        Assertions.assertTrue(fired.get());
 
         fired.set(false);
         input.fireEvent(new KeyPressEvent(input, "baz"));
-        Assert.assertFalse(fired.get());
+        Assertions.assertFalse(fired.get());
     }
 
     @Test
     public void of_toString_returnsKeys() {
         Key key = Key.of("foo");
 
-        Assert.assertEquals("foo", key.toString());
+        Assertions.assertEquals("foo", key.toString());
 
         key = Key.of("foo", "bar");
 
-        Assert.assertEquals("foo,  additional keys : [bar]", key.toString());
+        Assertions.assertEquals("foo,  additional keys : [bar]",
+                key.toString());
     }
 
     @Test
@@ -65,7 +66,7 @@ public class KeyTest {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("foo");
 
-        Assert.assertEquals(key1, key2);
+        Assertions.assertEquals(key1, key2);
     }
 
     @Test
@@ -73,7 +74,7 @@ public class KeyTest {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("bar");
 
-        Assert.assertNotEquals(key1, key2);
+        Assertions.assertNotEquals(key1, key2);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class KeyTest {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("foo", "bar");
 
-        Assert.assertNotEquals(key1, key2);
+        Assertions.assertNotEquals(key1, key2);
     }
 
     @Test
@@ -95,14 +96,14 @@ public class KeyTest {
             }
         };
 
-        Assert.assertNotEquals(key1, key2);
+        Assertions.assertNotEquals(key1, key2);
     }
 
     @Test
     public void of_equalKeys_hasSameHashCode() {
         Key key1 = Key.of("foo", "bar");
         Key key2 = Key.of("foo", "bar");
-        Assert.assertEquals(key1.hashCode(), key2.hashCode());
+        Assertions.assertEquals(key1.hashCode(), key2.hashCode());
     }
 
 }

@@ -23,11 +23,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -43,10 +41,11 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -55,16 +54,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ShortcutRegistrationTest {
+class ShortcutRegistrationTest {
 
     private UI ui;
     private Component lifecycleOwner;
     private Component[] listenOn = new Component[3];
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void initTests() {
         ui = mock(UI.class);
         lifecycleOwner = mock(Component.class);
@@ -190,12 +186,12 @@ public class ShortcutRegistrationTest {
 
         clientResponse();
 
-        assertTrue("Allow default was not set to true",
-                registration.isBrowserDefaultAllowed());
-        assertTrue("Allow propagation was not set to true",
-                registration.isBrowserDefaultAllowed());
-        assertTrue("Reset focus on active element was not set to true",
-                registration.isResetFocusOnActiveElement());
+        assertTrue(registration.isBrowserDefaultAllowed(),
+                "Allow default was not set to true");
+        assertTrue(registration.isBrowserDefaultAllowed(),
+                "Allow propagation was not set to true");
+        assertTrue(registration.isResetFocusOnActiveElement(),
+                "Reset focus on active element was not set to true");
 
         registration.setBrowserDefaultAllowed(false);
         registration.setEventPropagationAllowed(false);
@@ -203,12 +199,12 @@ public class ShortcutRegistrationTest {
 
         clientResponse();
 
-        assertFalse("Allow default was not set to false",
-                registration.isBrowserDefaultAllowed());
-        assertFalse("Allow propagation was not set to false",
-                registration.isEventPropagationAllowed());
-        assertFalse("Reset focus on active element was not set to false",
-                registration.isResetFocusOnActiveElement());
+        assertFalse(registration.isBrowserDefaultAllowed(),
+                "Allow default was not set to false");
+        assertFalse(registration.isEventPropagationAllowed(),
+                "Allow propagation was not set to false");
+        assertFalse(registration.isResetFocusOnActiveElement(),
+                "Reset focus on active element was not set to false");
     }
 
     @Test
@@ -266,7 +262,7 @@ public class ShortcutRegistrationTest {
 
         // Once the shortcut listener is registered the expression should
         // contain KeyA
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 hasKeyAInKeyDownExpression(initialComponentToListenOn));
 
         Component replacementComponentToListenOn = new FakeComponent();
@@ -283,7 +279,7 @@ public class ShortcutRegistrationTest {
 
         consumer.accept(mock(ExecutionContext.class));
         // the new component should now also have expression with KeyA
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 hasKeyAInKeyDownExpression(replacementComponentToListenOn));
     }
 
@@ -317,7 +313,7 @@ public class ShortcutRegistrationTest {
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
         // the new UI should now also have expression with KeyA
-        Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
+        Assertions.assertTrue(hasKeyAInKeyDownExpression(newUI));
     }
 
     @Test
@@ -327,14 +323,14 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = fakeComponent
                 .addClickShortcut(Key.KEY_A);
 
-        assertTrue("Allows default was not true",
-                registration.isBrowserDefaultAllowed());
+        assertTrue(registration.isBrowserDefaultAllowed(),
+                "Allows default was not true");
 
-        assertFalse("Allows propagation was not false",
-                registration.isEventPropagationAllowed());
+        assertFalse(registration.isEventPropagationAllowed(),
+                "Allows propagation was not false");
 
-        assertFalse("Reset focus on active element was not set to false",
-                registration.isResetFocusOnActiveElement());
+        assertFalse(registration.isResetFocusOnActiveElement(),
+                "Reset focus on active element was not set to false");
     }
 
     @Test
@@ -344,14 +340,14 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = fakeComponent
                 .addFocusShortcut(Key.KEY_A);
 
-        assertFalse("Allows default was not false",
-                registration.isBrowserDefaultAllowed());
+        assertFalse(registration.isBrowserDefaultAllowed(),
+                "Allows default was not false");
 
-        assertFalse("Allows propagation was not false",
-                registration.isEventPropagationAllowed());
+        assertFalse(registration.isEventPropagationAllowed(),
+                "Allows propagation was not false");
 
-        assertFalse("Reset focus on active element was not set to false",
-                registration.isResetFocusOnActiveElement());
+        assertFalse(registration.isResetFocusOnActiveElement(),
+                "Reset focus on active element was not set to false");
     }
 
     @Test
@@ -360,10 +356,11 @@ public class ShortcutRegistrationTest {
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
 
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES);
-        registration.listenOn(listenOn[0], listenOn[1], listenOn[1]);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class, () -> registration
+                        .listenOn(listenOn[0], listenOn[1], listenOn[1]));
+        assertTrue(ex.getMessage().contains(
+                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES));
     }
 
     @Test
@@ -372,10 +369,11 @@ public class ShortcutRegistrationTest {
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
 
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL);
-        registration.listenOn(listenOn[0], null, listenOn[1]);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> registration.listenOn(listenOn[0], null, listenOn[1]));
+        assertTrue(ex.getMessage().contains(
+                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL));
     }
 
     @Test
@@ -406,32 +404,30 @@ public class ShortcutRegistrationTest {
         final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
                 .get(0);
         final String expression = js.getInvocation().getExpression();
-        Assert.assertTrue(
-                "element locator string " + fixture.elementLocatorJs
-                        + " missing from JS execution string " + expression,
+        Assertions.assertTrue(
                 expression.contains(
-                        "const delegate=" + fixture.elementLocatorJs + ";"));
-        Assert.assertTrue(
+                        "const delegate=" + fixture.elementLocatorJs + ";"),
+                "element locator string " + fixture.elementLocatorJs
+                        + " missing from JS execution string " + expression);
+        Assertions.assertTrue(expression.contains("event.preventDefault();"),
                 "JS execution string should have event.preventDefault() in it"
-                        + expression,
-                expression.contains("event.preventDefault();"));
-        Assert.assertTrue(
+                        + expression);
+        Assertions.assertTrue(expression.contains("event.stopPropagation();"),
                 "JS execution string should always have event.stopPropagation() in it"
-                        + expression,
-                expression.contains("event.stopPropagation();"));
-        Assert.assertTrue("JS execution string missing the key" + key,
-                expression.contains(key.getKeys().get(0)));
-        Assert.assertFalse(
+                        + expression);
+        Assertions.assertTrue(expression.contains(key.getKeys().get(0)),
+                "JS execution string missing the key" + key);
+        Assertions.assertFalse(
+                expression.contains("window.Vaadin.Flow.resetFocus()"),
                 "JS execution string should not have blur() and focus() on active element in it"
-                        + expression,
-                expression.contains("window.Vaadin.Flow.resetFocus()"));
+                        + expression);
 
         fixture.registration.remove();
 
         fixture.createNewShortcut(Key.KEY_X);
 
         pendingJavaScriptInvocations = fixture.writeResponse();
-        Assert.assertEquals(0, pendingJavaScriptInvocations.size());
+        Assertions.assertEquals(0, pendingJavaScriptInvocations.size());
     }
 
     @Test
@@ -446,10 +442,9 @@ public class ShortcutRegistrationTest {
         final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
                 .get(0);
         final String expression = js.getInvocation().getExpression();
-        Assert.assertFalse(
+        Assertions.assertFalse(expression.contains("event.preventDefault();"),
                 "JS execution string should NOT have event.preventDefault() in it"
-                        + expression,
-                expression.contains("event.preventDefault();"));
+                        + expression);
     }
 
     @Test
@@ -464,10 +459,10 @@ public class ShortcutRegistrationTest {
         final PendingJavaScriptInvocation js = pendingJavaScriptInvocations
                 .get(0);
         final String expression = js.getInvocation().getExpression();
-        Assert.assertTrue(
+        Assertions.assertTrue(
+                expression.contains("window.Vaadin.Flow.resetFocus()"),
                 "JS execution string should have blur() and focus() on active element in it"
-                        + expression,
-                expression.contains("window.Vaadin.Flow.resetFocus()"));
+                        + expression);
     }
 
     @Test
@@ -484,7 +479,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNotNull(event.get());
+        Assertions.assertNotNull(event.get());
     }
 
     @Test
@@ -502,7 +497,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
@@ -520,7 +515,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNotNull(event.get());
+        Assertions.assertNotNull(event.get());
     }
 
     @Test
@@ -537,7 +532,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
@@ -556,7 +551,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNotNull(event.get());
+        Assertions.assertNotNull(event.get());
     }
 
     @Test
@@ -589,8 +584,8 @@ public class ShortcutRegistrationTest {
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
         ShortcutEvent event = eventRef.get();
-        Assert.assertNotNull(event);
-        Assert.assertEquals(modal, event.getSource());
+        Assertions.assertNotNull(event);
+        Assertions.assertEquals(modal, event.getSource());
     }
 
     @Test
@@ -612,7 +607,7 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
@@ -693,7 +688,7 @@ public class ShortcutRegistrationTest {
 
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
 
         ui.remove(owner);
 
@@ -702,7 +697,7 @@ public class ShortcutRegistrationTest {
 
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
-        Assert.assertEquals(2, count.get());
+        Assertions.assertEquals(2, count.get());
 
         UI newUI = Mockito.spy(UI.class);
         // close the previous UI
@@ -718,7 +713,7 @@ public class ShortcutRegistrationTest {
         captor.getValue().accept(mock(ExecutionContext.class));
 
         // the new UI should now also have expression with KeyA
-        Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
+        Assertions.assertTrue(hasKeyAInKeyDownExpression(newUI));
     }
 
     @Test
@@ -743,15 +738,15 @@ public class ShortcutRegistrationTest {
         Component[] components = new Component[] { ui };
         new ShortcutRegistration(owner, () -> components, event -> {
         }, Key.KEY_A);
-        Assert.assertEquals(1, beforeClientRegistrations.size());
+        Assertions.assertEquals(1, beforeClientRegistrations.size());
 
         ui.remove(owner);
-        Assert.assertEquals(0, beforeClientRegistrations.size());
+        Assertions.assertEquals(0, beforeClientRegistrations.size());
 
         ui.add(owner);
-        Assert.assertEquals(1, beforeClientRegistrations.size());
+        Assertions.assertEquals(1, beforeClientRegistrations.size());
         ui.remove(owner);
-        Assert.assertEquals(0, beforeClientRegistrations.size());
+        Assertions.assertEquals(0, beforeClientRegistrations.size());
     }
 
     @Test
@@ -759,10 +754,11 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
-        Assert.assertTrue(registration.toString().contains("listenOn = []"));
+        Assertions
+                .assertTrue(registration.toString().contains("listenOn = []"));
 
         clientResponse();
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 registration.toString().matches(".*listenOn = \\[[^]]+],.*"));
     }
 

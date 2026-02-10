@@ -16,13 +16,13 @@
 package com.vaadin.flow.component;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 
-public class AbstractCompositeFieldTest {
+class AbstractCompositeFieldTest {
 
     private static class ReverseCaseField extends
             AbstractCompositeField<AbstractSinglePropertyFieldTest.StringField, ReverseCaseField, String> {
@@ -70,23 +70,23 @@ public class AbstractCompositeFieldTest {
         StringField innerField = outerField.getContent();
 
         outerField.setValue("Hello");
-        Assert.assertEquals("hELLO", innerField.getValue());
+        Assertions.assertEquals("hELLO", innerField.getValue());
 
         innerField.setValue("wORLD");
-        Assert.assertEquals("World", outerField.getValue());
+        Assertions.assertEquals("World", outerField.getValue());
     }
 
     @Test
     public void emptyValueEquals() {
         ReverseCaseField field = new ReverseCaseField();
 
-        Assert.assertTrue(field.isEmpty());
+        Assertions.assertTrue(field.isEmpty());
 
         field.setValue("a");
-        Assert.assertFalse(field.isEmpty());
+        Assertions.assertFalse(field.isEmpty());
 
         field.setValue(" ");
-        Assert.assertTrue(field.isEmpty());
+        Assertions.assertTrue(field.isEmpty());
     }
 
     private static class MultipleFieldsField extends
@@ -135,14 +135,14 @@ public class AbstractCompositeFieldTest {
         MultipleFieldsField field = new MultipleFieldsField();
 
         field.setValue("Hello Cool World");
-        Assert.assertEquals("Hello", field.start.getValue());
-        Assert.assertEquals("Cool World", field.rest.getValue());
+        Assertions.assertEquals("Hello", field.start.getValue());
+        Assertions.assertEquals("Cool World", field.rest.getValue());
 
         field.rest.setValue("");
-        Assert.assertEquals("Hello", field.getValue());
+        Assertions.assertEquals("Hello", field.getValue());
 
         field.rest.setValue("Vaadin");
-        Assert.assertEquals("Hello Vaadin", field.getValue());
+        Assertions.assertEquals("Hello Vaadin", field.getValue());
     }
 
     @Test
@@ -153,7 +153,7 @@ public class AbstractCompositeFieldTest {
         field.setValue("foo");
 
         ReverseCaseField anotherField = SerializationUtils.roundtrip(field);
-        Assert.assertEquals("foo", anotherField.getValue());
+        Assertions.assertEquals("foo", anotherField.getValue());
     }
 
 }

@@ -19,12 +19,12 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
@@ -36,11 +36,11 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SignalPropertySupportTest {
+class SignalPropertySupportTest {
 
     private static MockVaadinServletService service;
 
@@ -49,27 +49,27 @@ public class SignalPropertySupportTest {
     private AtomicInteger callCount;
     private AtomicReference<Object> lastValue;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         events = mockLockedSessionWithErrorHandler();
         callCount = new AtomicInteger(0);
         lastValue = new AtomicReference<>();
     }
 
-    @After
+    @AfterEach
     public void after() {
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
         CurrentInstance.clearAll();
         events = null;
     }

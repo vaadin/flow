@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class HasAriaLabelTest {
+class HasAriaLabelTest {
 
     @Tag(Tag.MAIN) // main is used, because div is not a valid target by default
     private static class TestComponent extends Component
