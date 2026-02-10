@@ -22,9 +22,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -51,15 +50,15 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class UidlRequestHandlerTest {
+class UidlRequestHandlerTest {
 
     private VaadinRequest request;
     private VaadinResponse response;
@@ -67,7 +66,7 @@ public class UidlRequestHandlerTest {
 
     private UidlRequestHandler handler;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
@@ -95,14 +94,14 @@ public class UidlRequestHandlerTest {
                 .thenReturn(RequestType.UIDL.getIdentifier());
 
         boolean result = handler.handleSessionExpired(request, response);
-        Assert.assertTrue("Result should be true", result);
+        assertTrue(result, "Result should be true");
 
         String responseContent = CommunicationUtil
                 .getStringWhenWriteBytesOffsetLength(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}",
+                responseContent, "Invalid response");
     }
 
     @Test
@@ -116,15 +115,15 @@ public class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, null);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
-                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}",
+                responseContent, "Invalid response");
     }
 
     @Test
@@ -167,8 +166,8 @@ public class UidlRequestHandlerTest {
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response,
                         requestBody);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -180,15 +179,15 @@ public class UidlRequestHandlerTest {
 
         result = handler.synchronizedHandleRequest(session, request, response,
                 requestBody);
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String resendResponseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        Assert.assertEquals("Server should send same content again",
-                responseContent, resendResponseContent);
+        assertEquals(responseContent, resendResponseContent,
+                "Server should send same content again");
     }
 
     @Test
@@ -292,7 +291,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        Assert.assertFalse(out.contains("history.pushState"));
+        assertFalse(out.contains("history.pushState"));
     }
 
     @Test
@@ -359,17 +358,18 @@ public class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // Verify sync error notification is returned
-        Assert.assertTrue("Response should contain caption",
-                responseContent.contains("Synchronization Error"));
-        Assert.assertTrue("Response should contain message",
-                responseContent.contains("Your session needs to be refreshed"));
+        assertTrue(responseContent.contains("Synchronization Error"),
+                "Response should contain caption");
+        assertTrue(
+                responseContent.contains("Your session needs to be refreshed"),
+                "Response should contain message");
     }
 
     @Test
@@ -407,19 +407,20 @@ public class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // Verify custom sync error notification is returned
-        Assert.assertTrue("Response should contain custom caption",
-                responseContent.contains("Custom Sync Caption"));
-        Assert.assertTrue("Response should contain custom message",
-                responseContent.contains("Custom sync error message"));
-        Assert.assertTrue("Response should contain custom URL",
-                responseContent.contains("/custom-redirect"));
+        assertTrue(responseContent.contains("Custom Sync Caption"),
+                "Response should contain custom caption");
+        assertTrue(
+                responseContent.contains("Custom sync error message"),
+                "Response should contain custom message");
+        assertTrue(responseContent.contains("/custom-redirect"),
+                "Response should contain custom URL");
     }
 
     @Test
@@ -455,17 +456,17 @@ public class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        Assert.assertTrue("ResponseWriter should be present",
-                result.isPresent());
+        assertTrue(result.isPresent(),
+                "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // Verify caption and message are null (triggers silent refresh)
-        Assert.assertTrue("Response should have null caption",
-                responseContent.contains("\"caption\":null"));
-        Assert.assertTrue("Response should have null message",
-                responseContent.contains("\"message\":null"));
+        assertTrue(responseContent.contains("\"caption\":null"),
+                "Response should have null caption");
+        assertTrue(responseContent.contains("\"message\":null"),
+                "Response should have null message");
     }
 
     private ObjectNode generateUidl(boolean withLocation, boolean withHash) {

@@ -18,11 +18,8 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -43,7 +40,12 @@ import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
-public class ServerRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ServerRpcHandlerTest {
     private VaadinRequest request;
     private VaadinService service;
     private VaadinSession session;
@@ -56,12 +58,9 @@ public class ServerRpcHandlerTest {
     final private String csrfToken = "";
 
     private ServerRpcHandler serverRpcHandler;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     private DeploymentConfiguration deploymentConfiguration;
 
-    @Before
+    @BeforeEach
     public void setup() {
         request = Mockito.mock(VaadinRequest.class);
         service = Mockito.mock(VaadinService.class);
@@ -101,46 +100,60 @@ public class ServerRpcHandlerTest {
                 + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
         uiTree.collectChanges(c -> { // clean tree
         });
-        thrown.expect(
-                ServerRpcHandler.ResynchronizationRequiredException.class);
 
-        // when
-        serverRpcHandler.handleRpc(ui, reader, request);
+        assertThrows(ServerRpcHandler.ResynchronizationRequiredException.class,
+                () -> {
 
-        // then there are dirty nodes
-        Assert.assertTrue(uiTree.hasDirtyNodes());
+                    // when
 
-        // the dependencies-sent cache was cleared
-        Mockito.verify(dependencyList).clearPendingSendToClient();
+                    serverRpcHandler.handleRpc(ui, reader, request);
+
+                    // then there are dirty nodes
+
+                    assertTrue(uiTree.hasDirtyNodes());
+
+                    // the dependencies-sent cache was cleared
+
+                    Mockito.verify(dependencyList).clearPendingSendToClient();
+
+                });
     }
 
-    @Test(expected = ServerRpcHandler.ClientResentPayloadException.class)
+    @Test
     public void handleRpc_duplicateMessage_throwsResendPayload()
             throws InvalidUIDLSecurityKeyException,
             ServerRpcHandler.MessageIdSyncException {
-        String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
-        ServerRpcHandler handler = new ServerRpcHandler();
+        assertThrows(ServerRpcHandler.ClientResentPayloadException.class,
+                () -> {
+                    String msg = "{\""
+                            + ApplicationConstants.CLIENT_TO_SERVER_ID
+                            + "\":1}";
+                    ServerRpcHandler handler = new ServerRpcHandler();
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
-        ui.getInternals().setLastProcessedClientToServerId(1,
-                MessageDigestUtil.sha256(msg));
+                    ui = new UI();
+                    ui.getInternals().setSession(session);
+                    ui.getInternals().setLastProcessedClientToServerId(1,
+                            MessageDigestUtil.sha256(msg));
 
-        // This invocation shouldn't throw. No other checks
-        handler.handleRpc(ui, msg, request);
+                    // This invocation shouldn't throw. No other checks
+                    handler.handleRpc(ui, msg, request);
+                });
     }
 
-    @Test(expected = ServerRpcHandler.MessageIdSyncException.class)
+    @Test
     public void handleRpc_unexpectedMessage_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
-        ServerRpcHandler handler = new ServerRpcHandler();
+        assertThrows(ServerRpcHandler.MessageIdSyncException.class, () -> {
+            String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
+                    + "\":1}";
+            ServerRpcHandler handler = new ServerRpcHandler();
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
+            ui = new UI();
+            ui.getInternals().setSession(session);
 
-        handler.handleRpc(ui, msg, request);
+            handler.handleRpc(ui, msg, request);
+        });
     }
 
     @Test
@@ -157,30 +170,34 @@ public class ServerRpcHandlerTest {
 
         try {
             handler.handleRpc(ui, msg, request);
-            Assert.fail("Expected MessageIdSyncException");
+            fail("Expected MessageIdSyncException");
         } catch (ServerRpcHandler.MessageIdSyncException e) {
-            Assert.assertEquals(1, e.getExpectedId());
-            Assert.assertEquals(5, e.getReceivedId());
-            Assert.assertTrue(e.getMessage().contains("Expected: 1"));
-            Assert.assertTrue(e.getMessage().contains("got: 5"));
+            assertEquals(1, e.getExpectedId());
+            assertEquals(5, e.getReceivedId());
+            assertTrue(e.getMessage().contains("Expected: 1"));
+            assertTrue(e.getMessage().contains("got: 5"));
         }
     }
 
-    @Test(expected = DauEnforcementException.class)
+    @Test
     public void handleRpc_dauEnforcement_throws()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        enableDau();
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
-        ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
-                .thenReturn(new EnforcementException("Block"));
+        assertThrows(DauEnforcementException.class, () -> {
+            enableDau();
+            StringReader reader = new StringReader("{\"csrfToken\": \""
+                    + csrfToken
+                    + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
+            ServerRpcHandler handler = new ServerRpcHandler();
+            Mockito.when(
+                    request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+                    .thenReturn(new EnforcementException("Block"));
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
+            ui = new UI();
+            ui.getInternals().setSession(session);
 
-        handler.handleRpc(ui, reader, request);
+            handler.handleRpc(ui, reader, request);
+        });
     }
 
     @Test
@@ -200,46 +217,55 @@ public class ServerRpcHandlerTest {
         try {
             handler.handleRpc(ui, reader, request);
         } catch (DauEnforcementException e) {
-            Assert.fail("UI Poll request should not be blocked");
+            fail("UI Poll request should not be blocked");
         }
     }
 
-    @Test(expected = DauEnforcementException.class)
+    @Test
     public void handleRpc_dauEnforcement_pollEventMixedWithOtherEvents_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        enableDau();
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
-        ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
-                .thenReturn(new EnforcementException("Block"));
+        assertThrows(DauEnforcementException.class, () -> {
+            enableDau();
+            StringReader reader = new StringReader("{\"csrfToken\": \""
+                    + csrfToken
+                    + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
+            ServerRpcHandler handler = new ServerRpcHandler();
+            Mockito.when(
+                    request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+                    .thenReturn(new EnforcementException("Block"));
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
+            ui = new UI();
+            ui.getInternals().setSession(session);
 
-        handler.handleRpc(ui, reader, request);
+            handler.handleRpc(ui, reader, request);
+        });
     }
 
-    @Test(expected = ServerRpcHandler.ResynchronizationRequiredException.class)
+    @Test
     public void handleRpc_dauEnforcement_resynchronization_doNoThrow()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        enableDau();
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"resynchronize\": true, \"clientId\":0}");
-        ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
-                .thenReturn(new EnforcementException("Block"));
+        assertThrows(ServerRpcHandler.ResynchronizationRequiredException.class,
+                () -> {
+                    enableDau();
+                    StringReader reader = new StringReader("{\"csrfToken\": \""
+                            + csrfToken
+                            + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"resynchronize\": true, \"clientId\":0}");
+                    ServerRpcHandler handler = new ServerRpcHandler();
+                    Mockito.when(request
+                            .getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+                            .thenReturn(new EnforcementException("Block"));
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
+                    ui = new UI();
+                    ui.getInternals().setSession(session);
 
-        try {
-            handler.handleRpc(ui, reader, request);
-        } catch (EnforcementException e) {
-            Assert.fail("UI Poll request should not be blocked");
-        }
+                    try {
+                        handler.handleRpc(ui, reader, request);
+                    } catch (EnforcementException e) {
+                        fail("UI Poll request should not be blocked");
+                    }
+                });
     }
 
     @Test
@@ -259,7 +285,7 @@ public class ServerRpcHandlerTest {
         try {
             handler.handleRpc(ui, reader, request);
         } catch (EnforcementException e) {
-            Assert.fail("Unload beacon request should not be blocked");
+            fail("Unload beacon request should not be blocked");
         }
     }
 
@@ -280,25 +306,29 @@ public class ServerRpcHandlerTest {
         try {
             handler.handleRpc(ui, reader, request);
         } catch (EnforcementException e) {
-            Assert.fail("UI Poll request should not be blocked");
+            fail("UI Poll request should not be blocked");
         }
     }
 
-    @Test(expected = DauEnforcementException.class)
+    @Test
     public void handleRpc_dauEnforcement_returnChannelMessageMixedWithOtherEvents_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        enableDau();
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
-        ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
-                .thenReturn(new EnforcementException("Block"));
+        assertThrows(DauEnforcementException.class, () -> {
+            enableDau();
+            StringReader reader = new StringReader("{\"csrfToken\": \""
+                    + csrfToken
+                    + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
+            ServerRpcHandler handler = new ServerRpcHandler();
+            Mockito.when(
+                    request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+                    .thenReturn(new EnforcementException("Block"));
 
-        ui = new UI();
-        ui.getInternals().setSession(session);
+            ui = new UI();
+            ui.getInternals().setSession(session);
 
-        handler.handleRpc(ui, reader, request);
+            handler.handleRpc(ui, reader, request);
+        });
     }
 
     private void enableDau() {

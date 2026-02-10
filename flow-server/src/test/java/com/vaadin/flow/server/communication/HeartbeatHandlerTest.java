@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class HeartbeatHandlerTest {
+class HeartbeatHandlerTest {
 
     @Test
     public void synchronizedHandleRequest_uiPresent_setLastHeartbeatTimestampIsCalledOnce()

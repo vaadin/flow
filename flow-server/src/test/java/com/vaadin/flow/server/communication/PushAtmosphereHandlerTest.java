@@ -23,9 +23,8 @@ import java.util.Properties;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResponse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -34,7 +33,9 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class PushAtmosphereHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PushAtmosphereHandlerTest {
 
     private AtmosphereResource resource;
 
@@ -44,7 +45,7 @@ public class PushAtmosphereHandlerTest {
 
     private PushAtmosphereHandler atmosphereHandler;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         request = Mockito.mock(AtmosphereRequest.class);
         response = Mockito.mock(AtmosphereResponse.class);
@@ -92,9 +93,9 @@ public class PushAtmosphereHandlerTest {
                 .getStringWhenWriteString(printWriter);
 
         // response shouldn't contain async
-        Assert.assertEquals("Invalid response",
+        assertEquals(
                 "{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
-                responseContent);
+                responseContent, "Invalid response");
     }
 
 }
