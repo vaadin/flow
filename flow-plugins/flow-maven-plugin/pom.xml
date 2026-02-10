@@ -83,6 +83,8 @@
           <configuration>
             <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
             <goalPrefix>flow</goalPrefix>
+            <requiredJavaVersion>${maven.compiler.release}</requiredJavaVersion>
+            <requiredMavenVersion>3.8</requiredMavenVersion>
           </configuration>
           <executions>
             <execution>
