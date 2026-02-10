@@ -15,46 +15,50 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest;
 import com.vaadin.flow.dom.Element;
 
-public class RouterLayoutTest {
+class RouterLayoutTest {
 
     private static final String NEW_ID = "newId";
     private TestRouterLayout testRouterLayout;
 
-    @Before
+    @BeforeEach
     public void setup() {
         testRouterLayout = new TestRouterLayout();
     }
 
     @Test
     public void show_nonNull_childrenUpdated() {
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+        Assertions.assertEquals(0,
+                testRouterLayout.getElement().getChildCount());
 
         ComponentTest.TestDiv content = new ComponentTest.TestDiv();
         testRouterLayout.showRouterLayoutContent(content);
 
-        Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
+        Assertions.assertEquals(1,
+                testRouterLayout.getElement().getChildCount());
 
         ComponentTest.TestDiv newContent = new ComponentTest.TestDiv();
         newContent.setId(NEW_ID);
         content.getElement().removeFromParent();
         testRouterLayout.showRouterLayoutContent(newContent);
 
-        Assert.assertEquals(1, testRouterLayout.getElement().getChildCount());
-        Assert.assertSame(NEW_ID,
+        Assertions.assertEquals(1,
+                testRouterLayout.getElement().getChildCount());
+        Assertions.assertSame(NEW_ID,
                 testRouterLayout.getElement().getChild(0).getAttribute("id"));
     }
 
     @Test
     public void show_null_noChildren() {
         testRouterLayout.showRouterLayoutContent(null);
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+        Assertions.assertEquals(0,
+                testRouterLayout.getElement().getChildCount());
     }
 
     @Test
@@ -64,7 +68,8 @@ public class RouterLayoutTest {
 
         testRouterLayout.removeRouterLayoutContent(content);
 
-        Assert.assertEquals(0, testRouterLayout.getElement().getChildCount());
+        Assertions.assertEquals(0,
+                testRouterLayout.getElement().getChildCount());
     }
 
     private static class TestRouterLayout implements RouterLayout {

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class ErrorParameterTest {
+class ErrorParameterTest {
     @Test
     public void matchingExceptionType() {
         NullPointerException exception = new NullPointerException();
@@ -26,8 +26,8 @@ public class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(exception, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        Assertions.assertSame(exception, errorParameter.getException());
+        Assertions.assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -37,8 +37,8 @@ public class ErrorParameterTest {
         ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(
                 RuntimeException.class, exception);
 
-        Assert.assertSame(exception, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        Assertions.assertSame(exception, errorParameter.getException());
+        Assertions.assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -49,8 +49,8 @@ public class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(cause, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        Assertions.assertSame(cause, errorParameter.getException());
+        Assertions.assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -63,8 +63,8 @@ public class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assert.assertSame(cause, errorParameter.getException());
-        Assert.assertSame(exception, errorParameter.getCaughtException());
+        Assertions.assertSame(cause, errorParameter.getException());
+        Assertions.assertSame(exception, errorParameter.getCaughtException());
     }
 
 }

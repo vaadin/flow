@@ -16,10 +16,10 @@
 package com.vaadin.flow.router;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
@@ -27,7 +27,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 
 @NotThreadSafe
-public class InternalServerErrorTest {
+class InternalServerErrorTest {
 
     private BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
 
@@ -36,7 +36,7 @@ public class InternalServerErrorTest {
     private DeploymentConfiguration configuration = Mockito
             .mock(DeploymentConfiguration.class);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         VaadinService.setCurrent(service);
 
@@ -47,7 +47,7 @@ public class InternalServerErrorTest {
         Mockito.when(event.getLocation()).thenReturn(location);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         VaadinService.setCurrent(null);
     }
@@ -61,9 +61,8 @@ public class InternalServerErrorTest {
         testInstance.setErrorParameter(event, new ErrorParameter<>(
                 Exception.class, new NullPointerException("foo")));
 
-        Assert.assertEquals(
-                "Only a text node with exception message should be shown", 1,
-                testInstance.getElement().getChildCount());
+        Assertions.assertEquals(1, testInstance.getElement().getChildCount(),
+                "Only a text node with exception message should be shown");
     }
 
     @Test
@@ -81,19 +80,18 @@ public class InternalServerErrorTest {
         testInstance.setErrorParameter(event, new ErrorParameter<>(
                 Exception.class, new NullPointerException("foo")));
 
-        Assert.assertEquals(
-                "3 elements should be shown: exception text, warning about log binding absence and exception stacktrace",
-                3, testInstance.getElement().getChildCount());
+        Assertions.assertEquals(3, testInstance.getElement().getChildCount(),
+                "3 elements should be shown: exception text, warning about log binding absence and exception stacktrace");
 
         Element warning = testInstance.getElement().getChild(1);
-        Assert.assertEquals("div", warning.getTag());
-        Assert.assertTrue(warning.getText().contains("SLF4J"));
+        Assertions.assertEquals("div", warning.getTag());
+        Assertions.assertTrue(warning.getText().contains("SLF4J"));
 
         Element stacktrace = testInstance.getElement().getChild(2);
-        Assert.assertEquals("pre", stacktrace.getTag());
-        Assert.assertTrue(stacktrace.getText()
+        Assertions.assertEquals("pre", stacktrace.getTag());
+        Assertions.assertTrue(stacktrace.getText()
                 .contains(NullPointerException.class.getName()));
-        Assert.assertTrue(stacktrace.getText().contains("foo"));
+        Assertions.assertTrue(stacktrace.getText().contains("foo"));
     }
 
     @Test
@@ -111,14 +109,13 @@ public class InternalServerErrorTest {
         testInstance.setErrorParameter(event, new ErrorParameter<>(
                 Exception.class, new NullPointerException("foo")));
 
-        Assert.assertEquals(
-                "2 elements should be shown: exception text and exception stacktrace",
-                2, testInstance.getElement().getChildCount());
+        Assertions.assertEquals(2, testInstance.getElement().getChildCount(),
+                "2 elements should be shown: exception text and exception stacktrace");
 
         Element stacktrace = testInstance.getElement().getChild(1);
-        Assert.assertEquals("pre", stacktrace.getTag());
-        Assert.assertTrue(stacktrace.getText()
+        Assertions.assertEquals("pre", stacktrace.getTag());
+        Assertions.assertTrue(stacktrace.getText()
                 .contains(NullPointerException.class.getName()));
-        Assert.assertTrue(stacktrace.getText().contains("foo"));
+        Assertions.assertTrue(stacktrace.getText().contains("foo"));
     }
 }
