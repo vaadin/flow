@@ -34,10 +34,10 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ScrollOptions.Alignment;
@@ -68,13 +68,15 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class ComponentTest {
 
     private UI testUI;
 
-    @After
+    @AfterEach
     public void checkThreadLocal() {
-        Assert.assertNull(Component.elementToMapTo.get());
+        Assertions.assertNull(Component.elementToMapTo.get());
     }
 
     @com.vaadin.flow.component.DomEvent("foo")
@@ -177,11 +179,11 @@ public class ComponentTest {
         AtomicInteger getDetachEvents();
 
         default void assertAttachEvents(int attachEvents) {
-            Assert.assertEquals(attachEvents, getAttachEvents().get());
+            Assertions.assertEquals(attachEvents, getAttachEvents().get());
         }
 
         default void assertDetachEvents(int detachEvents) {
-            Assert.assertEquals(detachEvents, getDetachEvents().get());
+            Assertions.assertEquals(detachEvents, getDetachEvents().get());
         }
     }
 
@@ -292,7 +294,7 @@ public class ComponentTest {
         return mockUI;
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         resetComponentTrackerProductionMode();
         divWithTextComponent = new TestComponent(
@@ -313,7 +315,7 @@ public class ComponentTest {
         UI.setCurrent(testUI);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         UI.setCurrent(null);
         mocks.cleanup();
@@ -327,8 +329,8 @@ public class ComponentTest {
         Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
         Component test = new TestButton();
         final Locale locale = test.getLocale();
-        Assert.assertEquals("System default locale should be returned",
-                Locale.getDefault(), locale);
+        Assertions.assertEquals(Locale.getDefault(), locale,
+                "System default locale should be returned");
     }
 
     @Test
@@ -338,8 +340,8 @@ public class ComponentTest {
         UI.setCurrent(ui);
         Component test = new TestButton();
         final Locale locale = test.getLocale();
-        Assert.assertEquals("Component getLocale returns the UI locale",
-                Locale.CANADA_FRENCH, locale);
+        Assertions.assertEquals(Locale.CANADA_FRENCH, locale,
+                "Component getLocale returns the UI locale");
     }
 
     @Test
@@ -365,8 +367,8 @@ public class ComponentTest {
                 });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
-        Assert.assertEquals("First provided locale should be returned",
-                providedLocales.get(0), locale);
+        Assertions.assertEquals(providedLocales.get(0), locale,
+                "First provided locale should be returned");
     }
 
     @Test
@@ -388,23 +390,23 @@ public class ComponentTest {
                 });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
-        Assert.assertEquals("System default locale should be returned",
-                Locale.getDefault(), locale);
+        Assertions.assertEquals(Locale.getDefault(), locale,
+                "System default locale should be returned");
     }
 
     @Test
     public void getElement() {
-        Assert.assertEquals(Tag.DIV,
+        Assertions.assertEquals(Tag.DIV,
                 divWithTextComponent.getElement().getTag());
-        Assert.assertEquals("Test component",
+        Assertions.assertEquals("Test component",
                 divWithTextComponent.getElement().getTextRecursively());
     }
 
     @Test
     public void getParentForAttachedComponent() {
-        Assert.assertEquals(parentDivComponent,
+        Assertions.assertEquals(parentDivComponent,
                 child1SpanComponent.getParent().get());
-        Assert.assertEquals(parentDivComponent,
+        Assertions.assertEquals(parentDivComponent,
                 child2InputComponent.getParent().get());
     }
 
@@ -419,12 +421,12 @@ public class ComponentTest {
         testUI = new UI();
         testUI.add(shadowRootParent);
 
-        Assert.assertEquals(testUI, shadowChild.getUI().get());
+        Assertions.assertEquals(testUI, shadowChild.getUI().get());
     }
 
     @Test
     public void getParentForDetachedComponent() {
-        Assert.assertFalse(parentDivComponent.getParent().isPresent());
+        Assertions.assertFalse(parentDivComponent.getParent().isPresent());
     }
 
     @Test
@@ -436,9 +438,9 @@ public class ComponentTest {
     public static void assertChildren(Component parent,
             Component... expectedChildren) {
         List<Component> children = parent.getChildren().toList();
-        Assert.assertArrayEquals(expectedChildren, children.toArray());
+        Assertions.assertArrayEquals(expectedChildren, children.toArray());
         for (Component c : children) {
-            Assert.assertEquals(c.getParent().get(), parent);
+            Assertions.assertEquals(c.getParent().get(), parent);
         }
     }
 
@@ -485,24 +487,26 @@ public class ComponentTest {
                 child2.getElement(),
                 new Element("level1b").appendChild(child3.getElement()));
 
-        Assert.assertArrayEquals(new Component[] { child1, child2, child3 },
+        Assertions.assertArrayEquals(new Component[] { child1, child2, child3 },
                 parent.getChildren().toArray());
 
     }
 
     @Test
     public void defaultGetChildrenNoChildren() {
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
                 parentDivComponent.getChildren().toArray());
 
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void attachBrokenComponent() {
-        BrokenComponent c = new BrokenComponent();
-        TestComponentContainer tc = new TestComponentContainer();
-        tc.add(c);
+        assertThrows(AssertionError.class, () -> {
+            BrokenComponent c = new BrokenComponent();
+            TestComponentContainer tc = new TestComponentContainer();
+            tc.add(c);
+        });
     }
 
     @Test
@@ -512,49 +516,56 @@ public class ComponentTest {
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
-        Assert.assertEquals(c, element.getComponent().get());
-        Assert.assertEquals(element, c.getElement());
+        Assertions.assertEquals(c, element.getComponent().get());
+        Assertions.assertEquals(element, c.getElement());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setElementNull() {
-        Component c = new Component(null) {
-        };
-        Component.setElement(c, null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Component c = new Component(null) {
+            };
+            Component.setElement(c, null);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setElementTwice() {
-        Component c = new Component(null) {
-        };
-        Element element = ElementFactory.createDiv();
-        Component.setElement(c, element);
-        Component.setElement(c, element);
-
+        assertThrows(IllegalStateException.class, () -> {
+            Component c = new Component(null) {
+            };
+            Element element = ElementFactory.createDiv();
+            Component.setElement(c, element);
+            Component.setElement(c, element);
+        });
     }
 
     @Test
     public void createComponentWithTag() {
         Component component = new TestComponentWithTag();
 
-        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
+        Assertions.assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test
     public void createComponentWithInheritedTag() {
         Component component = new TestComponentWithInheritedTag();
 
-        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
+        Assertions.assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void createComponentWithEmptyTag() {
-        new TestComponentWithEmptyTag();
+        assertThrows(IllegalStateException.class, () -> {
+            new TestComponentWithEmptyTag();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void createComponentWithoutTag() {
-        new TestComponentWithoutTag();
+        assertThrows(IllegalStateException.class, () -> {
+            new TestComponentWithoutTag();
+        });
     }
 
     @Test
@@ -576,7 +587,7 @@ public class ComponentTest {
         TestComponent child = new TestComponent();
         UI ui = new UI();
         ui.add(child);
-        Assert.assertEquals(ui, child.getUI().get());
+        Assertions.assertEquals(ui, child.getUI().get());
     }
 
     @Test
@@ -586,12 +597,12 @@ public class ComponentTest {
         parent.add(child);
         UI ui = new UI();
         ui.add(parent);
-        Assert.assertEquals(ui, child.getUI().get());
+        Assertions.assertEquals(ui, child.getUI().get());
     }
 
     private void assertEmpty(Optional<?> optional) {
-        Assert.assertEquals("Optional should be empty but is " + optional,
-                Optional.empty(), optional);
+        Assertions.assertEquals(Optional.empty(), optional,
+                "Optional should be empty but is " + optional);
     }
 
     @Test
@@ -665,10 +676,10 @@ public class ComponentTest {
         parent.track();
 
         child.addAttachListener(event -> {
-            Assert.assertEquals(0, parent.getAttachEvents().get());
+            Assertions.assertEquals(0, parent.getAttachEvents().get());
         });
         parent.addAttachListener(event -> {
-            Assert.assertEquals(1, child.getAttachEvents().get());
+            Assertions.assertEquals(1, child.getAttachEvents().get());
         });
 
         parent.add(child);
@@ -694,11 +705,11 @@ public class ComponentTest {
 
         ui.add(parent);
 
-        Assert.assertEquals(4, ui.getChildren().count());
+        Assertions.assertEquals(4, ui.getChildren().count());
 
         ui.add(parent);
 
-        Assert.assertEquals(4, ui.getChildren().count());
+        Assertions.assertEquals(4, ui.getChildren().count());
     }
 
     @Test
@@ -710,10 +721,10 @@ public class ComponentTest {
         parent.track();
 
         child.addDetachListener(event -> {
-            Assert.assertEquals(0, parent.getDetachEvents().get());
+            Assertions.assertEquals(0, parent.getDetachEvents().get());
         });
         parent.addDetachListener(event -> {
-            Assert.assertEquals(1, child.getDetachEvents().get());
+            Assertions.assertEquals(1, child.getDetachEvents().get());
         });
 
         parent.add(child);
@@ -791,7 +802,7 @@ public class ComponentTest {
             child.assertDetachEvents(3);
             parent.assertDetachEvents(3);
 
-            Assert.assertEquals(expectedExceptions, handledExceptions);
+            Assertions.assertEquals(expectedExceptions, handledExceptions);
         } finally {
             VaadinSession.setCurrent(null);
         }
@@ -809,10 +820,10 @@ public class ComponentTest {
         child.track();
 
         child.addAttachListener(event -> {
-            Assert.assertEquals(1, child.getDetachEvents().get());
+            Assertions.assertEquals(1, child.getDetachEvents().get());
         });
         child.addDetachListener(event -> {
-            Assert.assertEquals(0, child.getAttachEvents().get());
+            Assertions.assertEquals(0, child.getAttachEvents().get());
         });
 
         ui.add(child);
@@ -827,10 +838,10 @@ public class ComponentTest {
         TestComponent testComponent = new TestComponent();
         testComponent.track();
 
-        testComponent.addAttachListener(event -> Assert.assertEquals(ui,
+        testComponent.addAttachListener(event -> Assertions.assertEquals(ui,
                 event.getSource().getUI().get()));
 
-        testComponent.addDetachListener(event -> Assert.assertEquals(ui,
+        testComponent.addDetachListener(event -> Assertions.assertEquals(ui,
                 event.getSource().getUI().get()));
 
         testComponent.assertAttachEvents(0);
@@ -900,7 +911,7 @@ public class ComponentTest {
         session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService(config));
         ui.getInternals().setSession(session);
-        Assert.assertTrue(initialAttach.get());
+        Assertions.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
 
@@ -913,7 +924,7 @@ public class ComponentTest {
         });
         UI ui = new UI();
         ui.add(c);
-        Assert.assertTrue(initialAttach.get());
+        Assertions.assertTrue(initialAttach.get());
     }
 
     @Test
@@ -927,7 +938,7 @@ public class ComponentTest {
         ui.add(c);
         ui.remove(c);
         ui.add(c);
-        Assert.assertFalse(initialAttach.get());
+        Assertions.assertFalse(initialAttach.get());
     }
 
     /**
@@ -937,78 +948,86 @@ public class ComponentTest {
     public void testIsAttached() {
         UI ui = new UI();
         // ui is initially attached
-        Assert.assertTrue(ui.isAttached());
+        Assertions.assertTrue(ui.isAttached());
 
         TestComponentContainer parent = new TestComponentContainer();
         TestComponentContainer child = new TestComponentContainer();
         TestComponent grandChild = new TestComponent();
         child.track();
         grandChild.addAttachListener(
-                event -> Assert.assertTrue(grandChild.isAttached()));
+                event -> Assertions.assertTrue(grandChild.isAttached()));
         grandChild.addDetachListener(
                 event -> grandChild.getDetachEvents().incrementAndGet());
 
         parent.add(child);
         child.add(grandChild);
-        Assert.assertFalse(parent.isAttached());
-        Assert.assertFalse(child.isAttached());
-        Assert.assertFalse(grandChild.isAttached());
+        Assertions.assertFalse(parent.isAttached());
+        Assertions.assertFalse(child.isAttached());
+        Assertions.assertFalse(grandChild.isAttached());
 
         ui.add(parent);
-        Assert.assertTrue(parent.isAttached());
-        Assert.assertTrue(child.isAttached());
-        Assert.assertTrue(grandChild.isAttached());
+        Assertions.assertTrue(parent.isAttached());
+        Assertions.assertTrue(child.isAttached());
+        Assertions.assertTrue(grandChild.isAttached());
 
         ui.remove(parent);
-        Assert.assertFalse(parent.isAttached());
-        Assert.assertFalse(child.isAttached());
-        Assert.assertFalse(grandChild.isAttached());
+        Assertions.assertFalse(parent.isAttached());
+        Assertions.assertFalse(child.isAttached());
+        Assertions.assertFalse(grandChild.isAttached());
 
         ui.add(parent);
-        Assert.assertTrue(parent.isAttached());
-        Assert.assertTrue(child.isAttached());
-        Assert.assertTrue(grandChild.isAttached());
+        Assertions.assertTrue(parent.isAttached());
+        Assertions.assertTrue(child.isAttached());
+        Assertions.assertTrue(grandChild.isAttached());
 
         // Mock closing of UI after request handled
         ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
         ui.close();
         ui.getInternals().setSession(null);
 
-        Assert.assertFalse(parent.isAttached());
-        Assert.assertFalse(child.isAttached());
-        Assert.assertFalse(grandChild.isAttached());
-        Assert.assertFalse(ui.isAttached());
+        Assertions.assertFalse(parent.isAttached());
+        Assertions.assertFalse(child.isAttached());
+        Assertions.assertFalse(grandChild.isAttached());
+        Assertions.assertFalse(ui.isAttached());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void wrapNullComponentType() {
-        new Element("div").as(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Element("div").as(null);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void wrapWrongTag() {
-        Element foo = new Element("foo");
-        foo.as(TestDiv.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Element foo = new Element("foo");
+            foo.as(TestDiv.class);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void wrappedComponentGetParent() {
-        Element div = new Element("div");
-        Element button = new Element("button");
-        div.appendChild(button);
+        assertThrows(IllegalStateException.class, () -> {
+            Element div = new Element("div");
+            Element button = new Element("button");
+            div.appendChild(button);
 
-        div.as(TestDiv.class);
-        button.as(TestButton.class).getParent();
+            div.as(TestDiv.class);
+            button.as(TestButton.class).getParent();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void wrappedComponentGetChildren() {
-        Element div = new Element("div");
-        Element button = new Element("button");
-        div.appendChild(button);
+        assertThrows(IllegalStateException.class, () -> {
+            Element div = new Element("div");
+            Element button = new Element("button");
+            div.appendChild(button);
 
-        button.as(TestButton.class);
-        div.as(TestDiv.class).getChildren();
+            button.as(TestButton.class);
+            div.as(TestDiv.class).getChildren();
+        });
     }
 
     @Test
@@ -1019,15 +1038,17 @@ public class ComponentTest {
 
         TestDiv testDiv = Component.from(div, TestDiv.class);
         TestButton testButton = Component.from(button, TestButton.class);
-        Assert.assertEquals(testButton.getParent().get(), testDiv);
-        Assert.assertTrue(testDiv.getChildren().anyMatch(c -> c == testButton));
+        Assertions.assertEquals(testButton.getParent().get(), testDiv);
+        Assertions.assertTrue(
+                testDiv.getChildren().anyMatch(c -> c == testButton));
     }
 
     @Test
     public void wrappedComponentUsesElement() {
         Element div = new Element("div");
         div.setAttribute("id", "foo");
-        Assert.assertEquals(Optional.of("foo"), div.as(TestDiv.class).getId());
+        Assertions.assertEquals(Optional.of("foo"),
+                div.as(TestDiv.class).getId());
 
     }
 
@@ -1035,7 +1056,7 @@ public class ComponentTest {
     public void wrappedComponentModifyElement() {
         Element div = new Element("div");
         div.as(TestDiv.class).setId("foo");
-        Assert.assertEquals("foo", div.getAttribute("id"));
+        Assertions.assertEquals("foo", div.getAttribute("id"));
     }
 
     @Test
@@ -1043,8 +1064,8 @@ public class ComponentTest {
         TestButton button = new TestButton();
         TestButton button2 = button.getElement().as(TestButton.class);
         button.setId("id1");
-        Assert.assertEquals(Optional.of("id1"), button2.getId());
-        Assert.assertEquals(Optional.of("id1"), button.getId());
+        Assertions.assertEquals(Optional.of("id1"), button2.getId());
+        Assertions.assertEquals(Optional.of("id1"), button.getId());
     }
 
     @Test
@@ -1052,24 +1073,30 @@ public class ComponentTest {
         TestButton button = new TestButton();
         TestOtherButton button2 = button.getElement().as(TestOtherButton.class);
         button.setId("id1");
-        Assert.assertEquals(Optional.of("id1"), button2.getId());
-        Assert.assertEquals(Optional.of("id1"), button.getId());
+        Assertions.assertEquals(Optional.of("id1"), button2.getId());
+        Assertions.assertEquals(Optional.of("id1"), button.getId());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void mapToExistingComponent() {
-        TestButton button = new TestButton();
-        Component.from(button.getElement(), TestButton.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            TestButton button = new TestButton();
+            Component.from(button.getElement(), TestButton.class);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void mapToNullComponentType() {
-        Component.from(new Element("div"), null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Component.from(new Element("div"), null);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void mapFromNullElement() {
-        Component.from(null, TestButton.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Component.from(null, TestButton.class);
+        });
     }
 
     @Test
@@ -1079,9 +1106,9 @@ public class ComponentTest {
                 TestComponentWhichCreatesComponentInConstructor.class);
         Element buttonElement = c.getElement().getChild(0);
 
-        Assert.assertEquals(e, c.getElement());
-        Assert.assertNotEquals(e, buttonElement);
-        Assert.assertEquals("button", buttonElement.getTag());
+        Assertions.assertEquals(e, c.getElement());
+        Assertions.assertNotEquals(e, buttonElement);
+        Assertions.assertEquals("button", buttonElement.getTag());
     }
 
     @Test
@@ -1091,9 +1118,9 @@ public class ComponentTest {
                 TestComponentWhichHasComponentField.class);
         Element buttonElement = c.getElement().getChild(0);
 
-        Assert.assertEquals(e, c.getElement());
-        Assert.assertNotEquals(e, buttonElement);
-        Assert.assertEquals("button", buttonElement.getTag());
+        Assertions.assertEquals(e, c.getElement());
+        Assertions.assertNotEquals(e, buttonElement);
+        Assertions.assertEquals("button", buttonElement.getTag());
     }
 
     @Test
@@ -1102,8 +1129,8 @@ public class ComponentTest {
         TestComponentWhichUsesElementConstructor c = Component.from(e,
                 TestComponentWhichUsesElementConstructor.class);
 
-        Assert.assertSame(e, c.getElement());
-        Assert.assertSame(c, e.getComponent().get());
+        Assertions.assertSame(e, c.getElement());
+        Assertions.assertSame(c, e.getComponent().get());
     }
 
     @Test
@@ -1112,8 +1139,8 @@ public class ComponentTest {
         TestComponentWhichUsesNullElementConstructor c = Component.from(e,
                 TestComponentWhichUsesNullElementConstructor.class);
 
-        Assert.assertSame(e, c.getElement());
-        Assert.assertSame(c, e.getComponent().get());
+        Assertions.assertSame(e, c.getElement());
+        Assertions.assertSame(c, e.getComponent().get());
     }
 
     @Tag("div")
@@ -1176,7 +1203,7 @@ public class ComponentTest {
                 .getFeature(ElementListenerMap.class)
                 .getExpressions(domEventName);
 
-        Assert.assertEquals(expected, expressions);
+        Assertions.assertEquals(expected, expressions);
     }
 
     @Test
@@ -1197,10 +1224,10 @@ public class ComponentTest {
     @Test
     public void componentMetaDataCached() {
         ComponentUtil.componentMetaDataCache.clear();
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 ComponentUtil.componentMetaDataCache.contains(Text.class));
         new Text("foobar");
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 ComponentUtil.componentMetaDataCache.contains(Text.class));
     }
 
@@ -1219,9 +1246,11 @@ public class ComponentTest {
         assertSynchronizedProperties("blur", element, "}foo");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void synchronizeOnNonGetter() {
-        new SynchronizeOnNonGetterComponent();
+        assertThrows(IllegalStateException.class, () -> {
+            new SynchronizeOnNonGetterComponent();
+        });
     }
 
     @Tag("div")
@@ -1267,7 +1296,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(1, pendingDependencies.size());
+        Assertions.assertEquals(1, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
@@ -1282,7 +1311,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(1, pendingDependencies.size());
+        Assertions.assertEquals(1, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
@@ -1296,7 +1325,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        Assertions.assertEquals(2, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
@@ -1308,7 +1337,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies2.class);
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        Assertions.assertEquals(2, pendingDependencies.size());
         assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css2.css",
@@ -1332,7 +1361,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(1, pendingDependencies.size());
+        Assertions.assertEquals(1, pendingDependencies.size());
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1345,15 +1374,15 @@ public class ComponentTest {
                 .getFeature(ElementListenerMap.class);
 
         Set<String> props = feature.getExpressions("bar");
-        Assert.assertEquals(1, props.size());
-        Assert.assertTrue(props.contains("}baz"));
-        Assert.assertEquals(DisabledUpdateMode.ALWAYS,
+        Assertions.assertEquals(1, props.size());
+        Assertions.assertTrue(props.contains("}baz"));
+        Assertions.assertEquals(DisabledUpdateMode.ALWAYS,
                 feature.getPropertySynchronizationMode("baz"));
 
         props = feature.getExpressions("foo");
-        Assert.assertEquals(1, props.size());
-        Assert.assertTrue(props.contains("}bar"));
-        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+        Assertions.assertEquals(1, props.size());
+        Assertions.assertTrue(props.contains("}bar"));
+        Assertions.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 feature.getPropertySynchronizationMode("bar"));
     }
 
@@ -1366,7 +1395,7 @@ public class ComponentTest {
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
     }
 
     @Test
@@ -1379,7 +1408,7 @@ public class ComponentTest {
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 
-        Assert.assertEquals(0, count.get());
+        Assertions.assertEquals(0, count.get());
     }
 
     @Test
@@ -1395,7 +1424,7 @@ public class ComponentTest {
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 
-        Assert.assertEquals(0, count.get());
+        Assertions.assertEquals(0, count.get());
     }
 
     @Test
@@ -1410,7 +1439,7 @@ public class ComponentTest {
         div.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(createEvent("foo", div));
 
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
     }
 
     @Test
@@ -1433,11 +1462,10 @@ public class ComponentTest {
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
         Dependency dependency = pendingDependencies.get(url);
-        Assert.assertNotNull(
-                "Could not locate a dependency object for url=" + url,
-                dependency);
-        Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals(url, dependency.getUrl());
+        Assertions.assertNotNull(dependency,
+                "Could not locate a dependency object for url=" + url);
+        Assertions.assertEquals(type, dependency.getType());
+        Assertions.assertEquals(url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(
@@ -1500,25 +1528,25 @@ public class ComponentTest {
             }
         };
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertFalse(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled",
-                child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered",
-                stateChange.get());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(child.isEnabled(),
+                "After detach child should be enabled");
+        Assertions.assertTrue(stateChange.get(),
+                "Enable event should have triggered");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test
@@ -1556,25 +1584,25 @@ public class ComponentTest {
         // Clear state change from setEnabled
         stateChange.set(null);
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertFalse("Child should be enabled.", child.isEnabled());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
+        Assertions.assertFalse(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertNull("No change event should have fired",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertNull(stateChange.get(),
+                "No change event should have fired");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertFalse("After detach child should still be disabled",
-                child.isEnabled());
-        Assert.assertNull("No change event should have fired",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After detach child should still be disabled");
+        Assertions.assertNull(stateChange.get(),
+                "No change event should have fired");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1605,38 +1633,39 @@ public class ComponentTest {
         };
         child.add(grandChild);
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
-        Assert.assertTrue("GrandChild should be enabled.",
-                grandChild.isEnabled());
-        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(grandChild.isEnabled(),
+                "GrandChild should be enabled.");
+        Assertions.assertNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("After attach GrandChild should be disabled",
-                grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                grandStateChange.get());
-        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertFalse(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "After attach GrandChild should be disabled");
+        Assertions.assertFalse(grandStateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(
+                grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled",
-                child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered",
-                stateChange.get());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
-        Assert.assertTrue("After detach GrandChild should be enabled",
-                grandChild.isEnabled());
-        Assert.assertTrue("GrandChild should have gotten true event",
-                grandStateChange.get());
-        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(child.isEnabled(),
+                "After detach child should be enabled");
+        Assertions.assertTrue(stateChange.get(),
+                "Enable event should have triggered");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(grandChild.isEnabled(),
+                "After detach GrandChild should be enabled");
+        Assertions.assertTrue(grandStateChange.get(),
+                "GrandChild should have gotten true event");
+        Assertions.assertNull(grandChild.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1670,38 +1699,39 @@ public class ComponentTest {
         };
         child.add(grandChild);
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertFalse("Child should be disabled.", child.isEnabled());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("GrandChild should be disabled.",
-                grandChild.isEnabled());
+        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
+        Assertions.assertFalse(child.isEnabled(), "Child should be disabled.");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "GrandChild should be disabled.");
         // note that add doesn't create an attach event as we are not connected
         // to the UI.
-        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertNull(grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertNull("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("After attach GrandChild should be disabled",
-                grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                grandStateChange.get());
-        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertNull(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "After attach GrandChild should be disabled");
+        Assertions.assertFalse(grandStateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(
+                grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertFalse("After detach child should be disabled",
-                child.isEnabled());
-        Assert.assertNull("No change event should have been sent",
-                stateChange.get());
-        Assert.assertFalse("After detach GrandChild should be disabled",
-                grandChild.isEnabled());
-        Assert.assertFalse("Latest state change should have been disabled",
-                grandStateChange.get());
+        Assertions.assertFalse(child.isEnabled(),
+                "After detach child should be disabled");
+        Assertions.assertNull(stateChange.get(),
+                "No change event should have been sent");
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "After detach GrandChild should be disabled");
+        Assertions.assertFalse(grandStateChange.get(),
+                "Latest state change should have been disabled");
     }
 
     @Test // 3818
@@ -1733,38 +1763,41 @@ public class ComponentTest {
         grandChild.setEnabled(false);
         child.add(grandChild);
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("GrandChild should be disabled.",
-                grandChild.isEnabled());
-        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "GrandChild should be disabled.");
+        Assertions.assertNotNull(
+                grandChild.getElement().getAttribute("disabled"));
 
         parent.add(child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("After attach GrandChild should be disabled",
-                grandChild.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                grandStateChange.get());
-        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertFalse(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "After attach GrandChild should be disabled");
+        Assertions.assertFalse(grandStateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(
+                grandChild.getElement().getAttribute("disabled"));
 
         parent.remove(child);
 
-        Assert.assertTrue("After detach child should be enabled",
-                child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered",
-                stateChange.get());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
-        Assert.assertFalse("After detach GrandChild should be disabled",
-                grandChild.isEnabled());
-        Assert.assertFalse("Latest state change should have been disabled",
-                grandStateChange.get());
-        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(child.isEnabled(),
+                "After detach child should be enabled");
+        Assertions.assertTrue(stateChange.get(),
+                "Enable event should have triggered");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(grandChild.isEnabled(),
+                "After detach GrandChild should be disabled");
+        Assertions.assertFalse(grandStateChange.get(),
+                "Latest state change should have been disabled");
+        Assertions.assertNotNull(
+                grandChild.getElement().getAttribute("disabled"));
     }
 
     @Test // 3818
@@ -1782,52 +1815,56 @@ public class ComponentTest {
 
         ui.add(parent);
 
-        Assert.assertTrue("Parent should be enabled.", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertTrue("SubChild should be enabled.", subChild.isEnabled());
-        Assert.assertTrue("SubsubChild should be enabled.",
-                subSubChild.isEnabled());
+        Assertions.assertTrue(parent.isEnabled(), "Parent should be enabled.");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertTrue(subChild.isEnabled(),
+                "SubChild should be enabled.");
+        Assertions.assertTrue(subSubChild.isEnabled(),
+                "SubsubChild should be enabled.");
 
-        Assert.assertNull("No disabled attribute should not exist for parent",
-                parent.getElement().getAttribute("disabled"));
-        Assert.assertNull("No disabled attribute should not exist for child",
-                child.getElement().getAttribute("disabled"));
-        Assert.assertNull("No disabled attribute should not exist for subChild",
-                subChild.getElement().getAttribute("disabled"));
-        Assert.assertNull(
-                "No disabled attribute should not exist for subSubChild",
-                subSubChild.getElement().getAttribute("disabled"));
+        Assertions.assertNull(parent.getElement().getAttribute("disabled"),
+                "No disabled attribute should not exist for parent");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"),
+                "No disabled attribute should not exist for child");
+        Assertions.assertNull(subChild.getElement().getAttribute("disabled"),
+                "No disabled attribute should not exist for subChild");
+        Assertions.assertNull(subSubChild.getElement().getAttribute("disabled"),
+                "No disabled attribute should not exist for subSubChild");
 
         parent.setEnabled(false);
 
-        Assert.assertFalse("Parent should be disabled.", parent.isEnabled());
-        Assert.assertFalse("Child should be disabled.", child.isEnabled());
-        Assert.assertFalse("SubChild should be disabled.",
-                subChild.isEnabled());
-        Assert.assertFalse("SubsubChild should be disabled.",
-                subSubChild.isEnabled());
+        Assertions.assertFalse(parent.isEnabled(),
+                "Parent should be disabled.");
+        Assertions.assertFalse(child.isEnabled(), "Child should be disabled.");
+        Assertions.assertFalse(subChild.isEnabled(),
+                "SubChild should be disabled.");
+        Assertions.assertFalse(subSubChild.isEnabled(),
+                "SubsubChild should be disabled.");
 
-        Assert.assertNotNull("Disabled attribute should exist for parent",
-                parent.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Disabled attribute should exist for child",
-                child.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Disabled attribute should exist for subChild",
-                subChild.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Disabled attribute should exist for subSubChild",
-                subSubChild.getElement().getAttribute("disabled"));
+        Assertions.assertNotNull(parent.getElement().getAttribute("disabled"),
+                "Disabled attribute should exist for parent");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"),
+                "Disabled attribute should exist for child");
+        Assertions.assertNotNull(subChild.getElement().getAttribute("disabled"),
+                "Disabled attribute should exist for subChild");
+        Assertions.assertNotNull(
+                subSubChild.getElement().getAttribute("disabled"),
+                "Disabled attribute should exist for subSubChild");
 
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
-        // given
-        TestComponent child = new TestComponent();
-        UI ui1 = new UI();
-        ui1.add(child);
-        UI ui2 = new UI();
+        assertThrows(IllegalStateException.class, () -> {
+            // given
+            TestComponent child = new TestComponent();
+            UI ui1 = new UI();
+            ui1.add(child);
+            UI ui2 = new UI();
 
-        // then
-        ui2.add(child);
+            // then
+            ui2.add(child);
+        });
     }
 
     @Test
@@ -1838,11 +1875,11 @@ public class ComponentTest {
         componentContainer.add(component);
         ui.add(componentContainer);
 
-        Assert.assertEquals(componentContainer,
+        Assertions.assertEquals(componentContainer,
                 component.findAncestor(TestComponentContainer.class));
-        Assert.assertEquals(ui, component.findAncestor(UI.class));
-        Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
-        Assert.assertNull(component.findAncestor(TestButton.class));
+        Assertions.assertEquals(ui, component.findAncestor(UI.class));
+        Assertions.assertEquals(ui, component.findAncestor(PollNotifier.class));
+        Assertions.assertNull(component.findAncestor(TestButton.class));
     }
 
     @Test
@@ -1853,18 +1890,19 @@ public class ComponentTest {
         componentContainer.add(component);
         ui.add(componentContainer);
 
-        Assert.assertEquals(componentContainer, component.getParent().get());
-        Assert.assertEquals(1, componentContainer.getChildren().count());
-        Assert.assertEquals(ui, componentContainer.getParent().get());
-        Assert.assertEquals(1, ui.getChildren().count());
+        Assertions.assertEquals(componentContainer,
+                component.getParent().get());
+        Assertions.assertEquals(1, componentContainer.getChildren().count());
+        Assertions.assertEquals(ui, componentContainer.getParent().get());
+        Assertions.assertEquals(1, ui.getChildren().count());
 
         component.removeFromParent();
-        Assert.assertTrue(component.getParent().isEmpty());
-        Assert.assertEquals(0, componentContainer.getChildren().count());
+        Assertions.assertTrue(component.getParent().isEmpty());
+        Assertions.assertEquals(0, componentContainer.getChildren().count());
 
         componentContainer.removeFromParent();
-        Assert.assertTrue(componentContainer.getParent().isEmpty());
-        Assert.assertEquals(0, ui.getChildren().count());
+        Assertions.assertTrue(componentContainer.getParent().isEmpty());
+        Assertions.assertEquals(0, ui.getChildren().count());
 
     }
 
@@ -1882,23 +1920,23 @@ public class ComponentTest {
             @Override
             public void onEnabledStateChanged(boolean enabled) {
                 super.onEnabledStateChanged(enabled);
-                Assert.assertTrue("Expected empty state for enabled change",
-                        stateChange.compareAndSet(null, enabled));
+                Assertions.assertTrue(stateChange.compareAndSet(null, enabled),
+                        "Expected empty state for enabled change");
             }
         };
 
-        Assert.assertEquals("Parent should be disabled", initiallyEnabled,
-                parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertEquals(initiallyEnabled, parent.isEnabled(),
+                "Parent should be disabled");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
 
         modificationStartegy.accept(parent, child);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertFalse(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
     }
 
     private void enabledStateChangeOnParentDetachReturnsOldState(
@@ -1921,27 +1959,27 @@ public class ComponentTest {
             }
         };
 
-        Assert.assertTrue("Parent should be enabled", parent.isEnabled());
-        Assert.assertTrue("Child should be enabled.", child.isEnabled());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(parent.isEnabled(), "Parent should be enabled");
+        Assertions.assertTrue(child.isEnabled(), "Child should be enabled.");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
 
         modificationStartegy.accept(parent, child);
 
         grandParent.add(parent);
 
-        Assert.assertFalse("After attach child should be disabled",
-                child.isEnabled());
-        Assert.assertFalse("Disabled event should have triggered",
-                stateChange.get());
-        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertFalse(child.isEnabled(),
+                "After attach child should be disabled");
+        Assertions.assertFalse(stateChange.get(),
+                "Disabled event should have triggered");
+        Assertions.assertNotNull(child.getElement().getAttribute("disabled"));
 
         grandParent.remove(parent);
 
-        Assert.assertTrue("After detach child should be enabled",
-                child.isEnabled());
-        Assert.assertTrue("Enable event should have triggered",
-                stateChange.get());
-        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assertions.assertTrue(child.isEnabled(),
+                "After detach child should be enabled");
+        Assertions.assertTrue(stateChange.get(),
+                "Enable event should have triggered");
+        Assertions.assertNull(child.getElement().getAttribute("disabled"));
     }
 
     @Test
@@ -1959,7 +1997,7 @@ public class ComponentTest {
 
         List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        Assert.assertEquals(1, pendingJs.size());
+        Assertions.assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
         MatcherAssert.assertThat(inv.getExpression(),
                 CoreMatchers.containsString(expectedJs));
@@ -2029,7 +2067,7 @@ public class ComponentTest {
                 .runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        Assert.assertEquals(1, pendingJs.size());
+        Assertions.assertEquals(1, pendingJs.size());
         JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
 
         // Verify it uses parameter passing
@@ -2039,8 +2077,8 @@ public class ComponentTest {
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
-        Assert.assertTrue("Should have at least 2 parameters",
-                params.size() >= 2);
+        Assertions.assertTrue(params.size() >= 2,
+                "Should have at least 2 parameters");
         String paramJson = params.get(1).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
@@ -2055,9 +2093,9 @@ public class ComponentTest {
         final TestButton button = new TestButton();
         otherUI.add(button);
 
-        IllegalStateException ex = Assert.assertThrows(
+        IllegalStateException ex = Assertions.assertThrows(
                 IllegalStateException.class, () -> testUI.add(button));
-        Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
+        Assertions.assertTrue(ex.getMessage().startsWith(
                 "Can't move a node from one state tree to another. If this is "
                         + "intentional, first remove the node from its current "
                         + "state tree by calling removeFromTree. This usually "
@@ -2066,7 +2104,8 @@ public class ComponentTest {
                         + "assigning components to static members or spring "
                         + "singleton scoped beans and referencing them from "
                         + "multiple UIs. Offending component: com.vaadin.flow."
-                        + "component.ComponentTest$TestButton@"));
+                        + "component.ComponentTest$TestButton@"),
+                ex.getMessage());
     }
 
     private void resetComponentTrackerProductionMode() throws Exception {

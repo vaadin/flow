@@ -17,13 +17,13 @@ package com.vaadin.flow.component;
 
 import java.lang.reflect.Constructor;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.internal.ReflectionCache;
 
-public class ComponentEventBusUtilTest {
+class ComponentEventBusUtilTest {
 
     @DomEvent("dom-event")
     public class InnerClass extends ComponentEvent<Component> {
@@ -48,10 +48,10 @@ public class ComponentEventBusUtilTest {
         ReflectionCache<ComponentEvent<?>, ?> cache = ComponentEventBusUtil.cache;
         TestComponent component = new TestComponent();
         cache.clear();
-        Assert.assertFalse(cache.contains(MappedToDomEvent.class));
+        Assertions.assertFalse(cache.contains(MappedToDomEvent.class));
         component.addListener(MappedToDomEvent.class, e -> {
         });
-        Assert.assertTrue(cache.contains(MappedToDomEvent.class));
+        Assertions.assertTrue(cache.contains(MappedToDomEvent.class));
     }
 
     @Test
@@ -59,10 +59,10 @@ public class ComponentEventBusUtilTest {
         TestComponent component = new TestComponent();
         ReflectionCache<ComponentEvent<?>, ?> cache = ComponentEventBusUtil.cache;
         cache.clear();
-        Assert.assertFalse(cache.contains(MappedToDomEvent.class));
+        Assertions.assertFalse(cache.contains(MappedToDomEvent.class));
         component.addListener(MappedToDomEvent.class, e -> {
         });
-        Assert.assertTrue(cache.contains(MappedToDomEvent.class));
+        Assertions.assertTrue(cache.contains(MappedToDomEvent.class));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ComponentEventBusUtilTest {
         try {
             ComponentEventBusUtil.getEventConstructor(InnerClass.class);
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals("Cannot instantiate '"
+            Assertions.assertEquals("Cannot instantiate '"
                     + InnerClass.class.getName() + "'. "
                     + "Make sure the class is static if it is an inner class.",
                     exception.getMessage());
@@ -81,7 +81,7 @@ public class ComponentEventBusUtilTest {
     public void domEvent_nestedEventClass() {
         Constructor<NestedClass> ctor = ComponentEventBusUtil
                 .getEventConstructor(NestedClass.class);
-        Assert.assertNotNull(ctor);
+        Assertions.assertNotNull(ctor);
     }
 
     @Test
@@ -94,14 +94,10 @@ public class ComponentEventBusUtilTest {
             }
 
         }
-        try {
-            ComponentEventBusUtil.getEventConstructor(LocalClass.class);
-        } catch (IllegalArgumentException exception) {
-            Assert.assertEquals(
-                    "Cannot instantiate local class '"
-                            + LocalClass.class.getName() + "'. "
-                            + "Move class declaration outside the method.",
-                    exception.getMessage());
-        }
+        IllegalArgumentException exception = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> ComponentEventBusUtil
+                        .getEventConstructor(LocalClass.class));
+        Assertions.assertTrue(
+                exception.getMessage().contains(LocalClass.class.getName()));
     }
 }

@@ -18,34 +18,35 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.shared.Registration;
 
-public class ComponentUtilTest {
+class ComponentUtilTest {
     private Component component = new TestDiv();
 
     @Test
     public void setData_byString() {
-        Assert.assertNull("There should initially not be any value",
-                ComponentUtil.getData(component, "name"));
+        Assertions.assertNull(ComponentUtil.getData(component, "name"),
+                "There should initially not be any value");
 
         ComponentUtil.setData(component, "name", "value");
-        Assert.assertEquals("The stored value should be returned", "value",
-                ComponentUtil.getData(component, "name"));
+        Assertions.assertEquals("value",
+                ComponentUtil.getData(component, "name"),
+                "The stored value should be returned");
 
         ComponentUtil.setData(component, "name", "value2");
-        Assert.assertEquals("The replaced value should be returned", "value2",
-                ComponentUtil.getData(component, "name"));
+        Assertions.assertEquals("value2",
+                ComponentUtil.getData(component, "name"),
+                "The replaced value should be returned");
 
         ComponentUtil.setData(component, "name", null);
-        Assert.assertNull("The value should be removed",
-                ComponentUtil.getData(component, "name"));
-        Assert.assertNull(
-                "Storage should be cleared after removing the last attribute",
-                component.attributes);
+        Assertions.assertNull(ComponentUtil.getData(component, "name"),
+                "The value should be removed");
+        Assertions.assertNull(component.attributes,
+                "Storage should be cleared after removing the last attribute");
     }
 
     @Test
@@ -53,48 +54,48 @@ public class ComponentUtilTest {
         Integer instance1 = new Integer(1);
         Integer instance2 = new Integer(2);
 
-        Assert.assertNull("There should initially not be any value",
-                ComponentUtil.getData(component, Integer.class));
+        Assertions.assertNull(ComponentUtil.getData(component, Integer.class),
+                "There should initially not be any value");
 
         ComponentUtil.setData(component, Integer.class, instance1);
-        Assert.assertSame("The stored value should be returned", instance1,
-                ComponentUtil.getData(component, Integer.class));
+        Assertions.assertSame(instance1,
+                ComponentUtil.getData(component, Integer.class),
+                "The stored value should be returned");
 
-        Assert.assertNull(
-                "Attribute should not be available based on super type",
-                ComponentUtil.getData(component, Number.class));
+        Assertions.assertNull(ComponentUtil.getData(component, Number.class),
+                "Attribute should not be available based on super type");
 
         ComponentUtil.setData(component, Integer.class, instance2);
-        Assert.assertSame("The replaced value should be returned", instance2,
-                ComponentUtil.getData(component, Integer.class));
+        Assertions.assertSame(instance2,
+                ComponentUtil.getData(component, Integer.class),
+                "The replaced value should be returned");
 
         ComponentUtil.setData(component, Integer.class, null);
-        Assert.assertNull("The value should be removed",
-                ComponentUtil.getData(component, Integer.class));
-        Assert.assertNull(
-                "Storage should be cleared after removing the last attribute",
-                component.attributes);
+        Assertions.assertNull(ComponentUtil.getData(component, Integer.class),
+                "The value should be removed");
+        Assertions.assertNull(component.attributes,
+                "Storage should be cleared after removing the last attribute");
     }
 
     @Test
     public void addListenerToComponent_hasListener_returnsTrue() {
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 ComponentUtil.hasEventListener(component, PollEvent.class));
 
         Registration listener = ComponentUtil.addListener(component,
                 PollEvent.class, event -> {
                 });
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 ComponentUtil.hasEventListener(component, PollEvent.class));
 
         listener.remove();
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 ComponentUtil.hasEventListener(component, PollEvent.class));
     }
 
     @Test
     public void addListenerToComponent_getListeners_returnsCollection() {
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 ComponentUtil.hasEventListener(component, PollEvent.class));
 
         Registration listener = ComponentUtil.addListener(component,
@@ -102,11 +103,11 @@ public class ComponentUtilTest {
                 });
         Collection<?> listeners = ComponentUtil.getListeners(component,
                 PollEvent.class);
-        Assert.assertEquals(1, listeners.size());
+        Assertions.assertEquals(1, listeners.size());
 
         listener.remove();
-        Assert.assertTrue(ComponentUtil.getListeners(component, PollEvent.class)
-                .isEmpty());
+        Assertions.assertTrue(ComponentUtil
+                .getListeners(component, PollEvent.class).isEmpty());
     }
 
     @Test
@@ -119,9 +120,8 @@ public class ComponentUtilTest {
         Set<Class<? extends Component>> retrievedClasses = ComponentUtil
                 .getComponentsByTag(testTag);
 
-        Assert.assertTrue(
-                "The retrieved classes should contain the registered component class",
-                retrievedClasses.contains(testComponentClass));
+        Assertions.assertTrue(retrievedClasses.contains(testComponentClass),
+                "The retrieved classes should contain the registered component class");
 
         ComponentUtil.getComponentsByTag(testTag).clear();
     }
@@ -133,9 +133,8 @@ public class ComponentUtilTest {
         Set<Class<? extends Component>> retrievedClasses = ComponentUtil
                 .getComponentsByTag(unregisteredTag);
 
-        Assert.assertTrue(
-                "The retrieved classes should be empty for an unregistered tag",
-                retrievedClasses.isEmpty());
+        Assertions.assertTrue(retrievedClasses.isEmpty(),
+                "The retrieved classes should be empty for an unregistered tag");
     }
 
 }

@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -28,11 +28,11 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AbstractFieldBindValueTest extends SignalsUnitTest {
+class AbstractFieldBindValueTest extends SignalsUnitTest {
 
     @Test
     public void bindValue_elementAttachedBefore_bindingActive() {
@@ -142,7 +142,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> input.bindValue(null, null));
     }
 
@@ -177,7 +177,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.getValue();
         input.getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> Assert.fail(
+                .ifPresent(feature -> Assertions.fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -201,9 +201,9 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
 
-        Assert.assertNull(listenerValue.get());
+        Assertions.assertNull(listenerValue.get());
         signal.set("bar");
-        Assert.assertEquals("bar", listenerValue.get());
+        Assertions.assertEquals("bar", listenerValue.get());
     }
 
     @Test
@@ -216,10 +216,10 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
-        Assert.assertNull(listenerValue.get());
+        Assertions.assertNull(listenerValue.get());
         input.bindValue(signal, signal::set);
 
-        Assert.assertEquals("foo", listenerValue.get());
+        Assertions.assertEquals("foo", listenerValue.get());
     }
 
     @Test
@@ -235,25 +235,25 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
             counter.incrementAndGet();
         });
 
-        Assert.assertEquals(0, counter.get());
+        Assertions.assertEquals(0, counter.get());
         UI.getCurrent().add(input);
         // effect run once on attach
-        Assert.assertEquals(1, counter.get());
+        Assertions.assertEquals(1, counter.get());
 
         input.setValue("bar");
-        Assert.assertEquals(2, counter.get());
+        Assertions.assertEquals(2, counter.get());
 
         input.setValue("bar");
-        Assert.assertEquals(2, counter.get());
+        Assertions.assertEquals(2, counter.get());
 
         input.setValue("foo");
-        Assert.assertEquals(3, counter.get());
+        Assertions.assertEquals(3, counter.get());
 
         signal.set("baz");
-        Assert.assertEquals(4, counter.get());
+        Assertions.assertEquals(4, counter.get());
 
         input.setValue("baz");
-        Assert.assertEquals(4, counter.get());
+        Assertions.assertEquals(4, counter.get());
     }
 
     @Test
@@ -266,25 +266,25 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
-        Assert.assertEquals("", input.getValue());
-        Assert.assertNull(listenerValue.get());
+        Assertions.assertEquals("", input.getValue());
+        Assertions.assertNull(listenerValue.get());
         input.bindValue(signal, signal::set);
 
         // value after bindValue
-        Assert.assertEquals("foo", input.getValue());
-        Assert.assertEquals("foo", listenerValue.get());
+        Assertions.assertEquals("foo", input.getValue());
+        Assertions.assertEquals("foo", listenerValue.get());
 
         // value after signal value change
         signal.set("bar");
-        Assert.assertEquals("bar", input.getValue());
-        Assert.assertEquals("bar", listenerValue.get());
+        Assertions.assertEquals("bar", input.getValue());
+        Assertions.assertEquals("bar", listenerValue.get());
 
         // null is not allowed in TestPropertyInput. Default value is "".
         signal.set(null);
         // value doesn't change
-        Assert.assertEquals("bar", input.getValue());
-        Assert.assertEquals("bar", listenerValue.get());
-        Assert.assertEquals(1, events.size());
+        Assertions.assertEquals("bar", input.getValue());
+        Assertions.assertEquals("bar", listenerValue.get());
+        Assertions.assertEquals(1, events.size());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
     }
@@ -382,7 +382,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("bar", input.getValue());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void bindValue_writeCallbackThrows() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
@@ -393,12 +393,12 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("foo", input.getValue());
 
         input.addValueChangeListener(event -> {
-            Assert.fail(
+            Assertions.fail(
                     "Value change listener should not be triggered when write callback throws");
         });
 
-        input.setValue("bar");
-
+        Assertions.assertThrows(RuntimeException.class,
+                () -> input.setValue("bar"));
     }
 
     @Test
@@ -448,7 +448,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         });
 
         input.addValueChangeListener(event -> {
-            Assert.fail(
+            Assertions.fail(
                     "Value change listener should not be triggered with a no-op callback");
         });
 

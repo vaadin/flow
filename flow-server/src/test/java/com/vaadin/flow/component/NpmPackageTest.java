@@ -18,13 +18,13 @@ package com.vaadin.flow.component;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
-public class NpmPackageTest {
+class NpmPackageTest {
 
     // Keep this here just to make sure the @NpmPackage annotation exists, since
     // it's used outside of the flow-server module, and it has no other use
@@ -41,7 +41,7 @@ public class NpmPackageTest {
 
         boolean found = Arrays.stream(annotations)
                 .anyMatch(a -> a.annotationType().equals(NpmPackage.class));
-        Assert.assertTrue("NpmPackage is missing", found);
+        Assertions.assertTrue(found, "NpmPackage is missing");
     }
 
 }

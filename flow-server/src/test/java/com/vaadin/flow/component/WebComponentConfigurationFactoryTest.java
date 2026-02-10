@@ -15,19 +15,14 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 
-public class WebComponentConfigurationFactoryTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
+class WebComponentConfigurationFactoryTest {
 
     private WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
@@ -40,19 +35,17 @@ public class WebComponentConfigurationFactoryTest {
         WebComponentConfiguration<? extends Component> config2 = factory
                 .create(new MyComponentExporter());
 
-        Assert.assertNotNull("create() from class should have been successful",
-                config1);
-        Assert.assertNotNull(
-                "create() from instance should have been " + "successful",
-                config2);
+        Assertions.assertNotNull(config1,
+                "create() from class should have been successful");
+        Assertions.assertNotNull(config2,
+                "create() from instance should have been " + "successful");
     }
 
     @Test
     public void create_instance_throwsOnNullArgument() {
-        expectedEx.expect(NullPointerException.class);
-        expectedEx.expectMessage("'exporter'");
-
-        factory.create(null);
+        NullPointerException ex = Assertions.assertThrows(
+                NullPointerException.class, () -> factory.create(null));
+        Assertions.assertTrue(ex.getMessage().contains("'exporter'"));
     }
 
     @Test
@@ -71,19 +64,20 @@ public class WebComponentConfigurationFactoryTest {
                 new DefaultWebComponentExporterFactory<>(SimilarExporter3.class)
                         .create());
 
-        Assert.assertNotEquals(
+        Assertions.assertNotEquals(myComponentConfig.hashCode(),
+                similarConfig1.hashCode(),
                 "Configurations with different tags should have "
-                        + "not have same hashCodes",
-                myComponentConfig.hashCode(), similarConfig1.hashCode());
+                        + "not have same hashCodes");
 
-        Assert.assertNotEquals(
+        Assertions.assertNotEquals(similarConfig1.hashCode(),
+                similarConfig2.hashCode(),
                 "Configurations with same tag, but different "
-                        + "properties should not have same hashCodes",
-                similarConfig1.hashCode(), similarConfig2.hashCode());
+                        + "properties should not have same hashCodes");
 
-        Assert.assertEquals("Configurations with same tag and same properties "
-                + "but different defaults should have the same hashCode",
-                similarConfig2.hashCode(), similarConfig3.hashCode());
+        Assertions.assertEquals(similarConfig2.hashCode(),
+                similarConfig3.hashCode(),
+                "Configurations with same tag and same properties "
+                        + "but different defaults should have the same hashCode");
     }
 
     @Test
@@ -102,21 +96,18 @@ public class WebComponentConfigurationFactoryTest {
                 new DefaultWebComponentExporterFactory<>(SimilarExporter3.class)
                         .create());
 
-        Assert.assertNotEquals(
-                "Configurations with different tags should " + "not be equal",
-                myComponentConfig, similarConfig1);
+        Assertions.assertNotEquals(myComponentConfig, similarConfig1,
+                "Configurations with different tags should " + "not be equal");
 
-        Assert.assertNotEquals(
+        Assertions.assertNotEquals(similarConfig1, similarConfig2,
                 "Configurations with same tag, but different "
-                        + "properties should not be equal",
-                similarConfig1, similarConfig2);
+                        + "properties should not be equal");
 
         // even though the classes are different, they define the same
         // embeddable web component
-        Assert.assertEquals(
+        Assertions.assertEquals(similarConfig2, similarConfig3,
                 "Configurations with same tag and same properties "
-                        + "but different defaults should be equal",
-                similarConfig2, similarConfig3);
+                        + "but different defaults should be equal");
     }
 
     public static class MyComponent extends Component {

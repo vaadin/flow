@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class HasEnabledTest {
+class HasEnabledTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component
@@ -30,7 +30,7 @@ public class HasEnabledTest {
     public void enabledComponent_isEnabledReturnsTrue() {
         TestComponent component = new TestComponent();
 
-        Assert.assertTrue(component.isEnabled());
+        Assertions.assertTrue(component.isEnabled());
     }
 
     @Test
@@ -38,7 +38,7 @@ public class HasEnabledTest {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 
-        Assert.assertFalse(component.isEnabled());
+        Assertions.assertFalse(component.isEnabled());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class HasEnabledTest {
 
         parent.add(component);
 
-        Assert.assertFalse(component.isEnabled());
+        Assertions.assertFalse(component.isEnabled());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class HasEnabledTest {
 
         parent.remove(component);
 
-        Assert.assertTrue(component.isEnabled());
+        Assertions.assertTrue(component.isEnabled());
     }
 
     @Test
@@ -77,11 +77,11 @@ public class HasEnabledTest {
 
         parent.setEnabled(false);
 
-        Assert.assertFalse(component.isEnabled());
+        Assertions.assertFalse(component.isEnabled());
 
         parent.setEnabled(true);
 
-        Assert.assertFalse(component.isEnabled());
+        Assertions.assertFalse(component.isEnabled());
     }
 
 }

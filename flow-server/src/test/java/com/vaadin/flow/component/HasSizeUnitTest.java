@@ -17,10 +17,12 @@ package com.vaadin.flow.component;
 
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class HasSizeUnitTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class HasSizeUnitTest {
 
     @Tag("div")
     public static class HasSizeComponent extends Component implements HasSize {
@@ -32,7 +34,7 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getWidth());
+            Assertions.assertEquals("100.0" + unit.toString(), c.getWidth());
         }
     }
 
@@ -41,7 +43,7 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMinWidth());
+            Assertions.assertEquals("100.0" + unit.toString(), c.getMinWidth());
         }
     }
 
@@ -50,7 +52,7 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxWidth(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMaxWidth());
+            Assertions.assertEquals("100.0" + unit.toString(), c.getMaxWidth());
         }
     }
 
@@ -59,7 +61,7 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getHeight());
+            Assertions.assertEquals("100.0" + unit.toString(), c.getHeight());
         }
     }
 
@@ -68,7 +70,8 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMinHeight());
+            Assertions.assertEquals("100.0" + unit.toString(),
+                    c.getMinHeight());
         }
     }
 
@@ -77,7 +80,8 @@ public class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxHeight(100, unit);
-            Assert.assertEquals("100.0" + unit.toString(), c.getMaxHeight());
+            Assertions.assertEquals("100.0" + unit.toString(),
+                    c.getMaxHeight());
         }
     }
 
@@ -86,8 +90,8 @@ public class HasSizeUnitTest {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             Optional<Unit> theUnit = Unit.getUnit(cssSize);
-            Assert.assertTrue(theUnit.isPresent());
-            Assert.assertEquals(theUnit.get(), unit);
+            Assertions.assertTrue(theUnit.isPresent());
+            Assertions.assertEquals(theUnit.get(), unit);
         }
     }
 
@@ -96,31 +100,37 @@ public class HasSizeUnitTest {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             float size = Unit.getSize(cssSize);
-            Assert.assertEquals(100f, size, 0.01);
+            Assertions.assertEquals(100f, size, 0.01);
         }
         for (Unit unit : Unit.values()) {
             String cssSize = unit.toString();
             float size = Unit.getSize(cssSize);
-            Assert.assertEquals(0f, size, 0.01);
+            Assertions.assertEquals(0f, size, 0.01);
         }
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void getSizeException() {
-        String cssSize = "10a0px";
-        float size = Unit.getSize(cssSize);
+        assertThrows(NumberFormatException.class, () -> {
+            String cssSize = "10a0px";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getSizeNoUnit() {
-        String cssSize = "100";
-        float size = Unit.getSize(cssSize);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String cssSize = "100";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getSizeNoValidUnit() {
-        String cssSize = "100p";
-        float size = Unit.getSize(cssSize);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String cssSize = "100p";
+            float size = Unit.getSize(cssSize);
+        });
     }
 
 }

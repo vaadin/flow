@@ -17,11 +17,9 @@ package com.vaadin.flow.component;
 
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.webcomponent.WebComponent;
@@ -33,19 +31,17 @@ import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-public class WebComponentExporterTest {
+class WebComponentExporterTest {
 
     private static final String TAG = "my-component";
 
     private MyComponentExporter exporter;
     private WebComponentConfiguration<MyComponent> config;
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() {
         exporter = new MyComponentExporter();
@@ -79,19 +75,19 @@ public class WebComponentExporterTest {
     public void addProperty_propertyWithTheSameNameGetsOverwritten() {
         exporter.addProperty("int", 1);
 
-        Assert.assertTrue(config.hasProperty("int"));
+        Assertions.assertTrue(config.hasProperty("int"));
 
         exporter.addProperty("int", 2);
 
-        Assert.assertEquals("Configuration should have one property", 1,
-                config.getPropertyDataSet().size());
+        Assertions.assertEquals(1, config.getPropertyDataSet().size(),
+                "Configuration should have one property");
 
         assertProperty(config, "int", 2);
     }
 
     @Test
     public void configuration_getTag() {
-        Assert.assertEquals(TAG, config.getTag());
+        Assertions.assertEquals(TAG, config.getTag());
     }
 
     @Test
@@ -101,10 +97,11 @@ public class WebComponentExporterTest {
         exporter.addProperty("boolean", true);
         exporter.addProperty("double", 1.0);
 
-        Assert.assertEquals(Integer.class, config.getPropertyType("int"));
-        Assert.assertEquals(String.class, config.getPropertyType("string"));
-        Assert.assertEquals(Boolean.class, config.getPropertyType("boolean"));
-        Assert.assertEquals(Double.class, config.getPropertyType("double"));
+        Assertions.assertEquals(Integer.class, config.getPropertyType("int"));
+        Assertions.assertEquals(String.class, config.getPropertyType("string"));
+        Assertions.assertEquals(Boolean.class,
+                config.getPropertyType("boolean"));
+        Assertions.assertEquals(Double.class, config.getPropertyType("double"));
     }
 
     @Test
@@ -115,12 +112,12 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), JacksonUtils.createObjectNode());
 
-        Assert.assertNotNull(binding);
+        Assertions.assertNotNull(binding);
 
         binding.updateProperty("int", 1);
 
-        Assert.assertEquals("Component should have been updated", 1,
-                binding.getComponent().getValue());
+        Assertions.assertEquals(1, binding.getComponent().getValue(),
+                "Component should have been updated");
     }
 
     @Test
@@ -132,13 +129,13 @@ public class WebComponentExporterTest {
 
         Set<PropertyData<?>> set = config.getPropertyDataSet();
 
-        Assert.assertEquals(4, set.size());
+        Assertions.assertEquals(4, set.size());
     }
 
     @Test
     public void configuration_getComponentClass() {
-        Assert.assertEquals("Component class should be MyComponent.class",
-                MyComponent.class, config.getComponentClass());
+        Assertions.assertEquals(MyComponent.class, config.getComponentClass(),
+                "Component class should be MyComponent.class");
     }
 
     @Test
@@ -161,13 +158,13 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), JacksonUtils.createObjectNode());
 
-        Assert.assertNotNull("Binding should not be null", binding);
-        Assert.assertNotNull("Binding's component should not be null",
-                binding.getComponent());
-        Assert.assertTrue("configureInstance() should have set 'flip' to true",
-                binding.getComponent().getFlip());
-        Assert.assertEquals("value should be set to 1 by default", 1,
-                binding.getComponent().value);
+        Assertions.assertNotNull(binding, "Binding should not be null");
+        Assertions.assertNotNull(binding.getComponent(),
+                "Binding's component should not be null");
+        Assertions.assertTrue(binding.getComponent().getFlip(),
+                "configureInstance() should have set 'flip' to true");
+        Assertions.assertEquals(1, binding.getComponent().value,
+                "value should be set to 1 by default");
     }
 
     @Test
@@ -184,8 +181,8 @@ public class WebComponentExporterTest {
                         mock(Element.class),
                         JacksonUtils.readTree("{\"value\":2}"));
 
-        Assert.assertEquals("attribute should have set default value to two", 2,
-                binding.getComponent().value);
+        Assertions.assertEquals(2, binding.getComponent().value,
+                "attribute should have set default value to two");
     }
 
     @Test
@@ -194,22 +191,24 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), JacksonUtils.createObjectNode());
 
-        Assert.assertNotNull("Binding should not be null", binding);
-        Assert.assertNotNull("Binding's component should not be null",
-                binding.getComponent());
-        Assert.assertFalse("'flip' should have been false",
-                binding.getComponent().getFlip());
+        Assertions.assertNotNull(binding, "Binding should not be null");
+        Assertions.assertNotNull(binding.getComponent(),
+                "Binding's component should not be null");
+        Assertions.assertFalse(binding.getComponent().getFlip(),
+                "'flip' should have been false");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     @SuppressWarnings("unchecked")
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
-        SharedTagExporter sharedTagExporter = new SharedTagExporter();
-        WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(sharedTagExporter);
+        assertThrows(IllegalStateException.class, () -> {
+            SharedTagExporter sharedTagExporter = new SharedTagExporter();
+            WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                    .create(sharedTagExporter);
 
-        sharedConfig.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), JacksonUtils.createObjectNode());
+            sharedConfig.createWebComponentBinding(new MockInstantiator(),
+                    mock(Element.class), JacksonUtils.createObjectNode());
+        });
     }
 
     @Test
@@ -219,30 +218,32 @@ public class WebComponentExporterTest {
         exporter.addProperty("boolean", true);
         exporter.addProperty("double", 1.0);
 
-        Assert.assertTrue(config.hasProperty("int"));
-        Assert.assertTrue(config.hasProperty("string"));
-        Assert.assertTrue(config.hasProperty("boolean"));
-        Assert.assertTrue(config.hasProperty("double"));
+        Assertions.assertTrue(config.hasProperty("int"));
+        Assertions.assertTrue(config.hasProperty("string"));
+        Assertions.assertTrue(config.hasProperty("boolean"));
+        Assertions.assertTrue(config.hasProperty("double"));
 
-        Assert.assertFalse(config.hasProperty("does-not-exist"));
+        Assertions.assertFalse(config.hasProperty("does-not-exist"));
     }
 
     @Test
     public void configuration_callAddProperty_throws() {
-        expectedEx.expect(IllegalStateException.class);
-        expectedEx.expectMessage("'addProperty'");
-
         AddPropertyInsideConfigureInstance exporter = new AddPropertyInsideConfigureInstance();
         WebComponentConfiguration<?> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
 
-        config.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class), JacksonUtils.createObjectNode());
+        IllegalStateException ex = Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> config.createWebComponentBinding(new MockInstantiator(),
+                        mock(Element.class), JacksonUtils.createObjectNode()));
+        Assertions.assertTrue(ex.getMessage().contains("'addProperty'"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void exporterConstructorThrowsIfNoComponentDefined() {
-        NoComponentExporter exporter = new NoComponentExporter();
+        assertThrows(IllegalStateException.class, () -> {
+            NoComponentExporter exporter = new NoComponentExporter();
+        });
     }
 
     @Tag("test")
@@ -358,8 +359,8 @@ public class WebComponentExporterTest {
                 .filter(d -> d.getName().equals(property)).findFirst()
                 .orElse(null);
 
-        Assert.assertNotNull("Property " + property + " should not be null",
-                data);
-        Assert.assertEquals(value, data.getDefaultValue());
+        Assertions.assertNotNull(data,
+                "Property " + property + " should not be null");
+        Assertions.assertEquals(value, data.getDefaultValue());
     }
 }
