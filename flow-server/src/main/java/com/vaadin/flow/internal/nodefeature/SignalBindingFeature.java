@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -39,8 +40,8 @@ public class SignalBindingFeature extends ServerSideFeature {
 
     private Map<String, SignalBinding> values;
 
-    private record SignalBinding(Signal<?> signal,
-            Registration registration) implements Serializable {
+    private record SignalBinding(Signal<?> signal, Registration registration,
+            SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
     /**
@@ -65,8 +66,26 @@ public class SignalBindingFeature extends ServerSideFeature {
      */
     public void setBinding(String key, Registration registration,
             Signal<?> signal) {
+        setBinding(key, registration, signal, null);
+    }
+
+    /**
+     * Sets a binding for the given key with a write callback.
+     *
+     * @param key
+     *            the key
+     * @param registration
+     *            the registration
+     * @param signal
+     *            the signal
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
+     */
+    public void setBinding(String key, Registration registration,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         ensureValues();
-        values.put(key, new SignalBinding(signal, registration));
+        values.put(key, new SignalBinding(signal, registration, writeCallback));
     }
 
     /**
@@ -123,6 +142,26 @@ public class SignalBindingFeature extends ServerSideFeature {
             binding.registration.remove();
         }
         values.remove(key);
+    }
+
+    /**
+     * Gets the write callback for the given key.
+     *
+     * @param key
+     *            the key
+     * @param <T>
+     *            the type of the consumer value
+     * @return the write callback for the given key, or null if no callback is
+     *         set
+     */
+    @SuppressWarnings("unchecked")
+    public <T> SerializableConsumer<T> getWriteCallback(String key) {
+        if (values == null) {
+            return null;
+        }
+        SignalBinding binding = values.get(key);
+        return binding != null ? (SerializableConsumer<T>) binding.writeCallback
+                : null;
     }
 
     /**

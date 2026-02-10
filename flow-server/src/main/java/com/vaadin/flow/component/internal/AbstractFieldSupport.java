@@ -65,9 +65,6 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
 
     private boolean valueSetFromSignal;
 
-    private Signal<T> readSignal;
-    private SerializableConsumer<T> writeCallback;
-
     /**
      * Creates a new field support.
      *
@@ -219,22 +216,17 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                 .getFeature(SignalBindingFeature.class);
 
         if (valueSignal == null) {
-            this.readSignal = null;
-            this.writeCallback = null;
             feature.removeBinding(SignalBindingFeature.VALUE);
         } else {
             if (feature.hasBinding(SignalBindingFeature.VALUE)) {
                 throw new BindingActiveException();
             }
 
-            this.readSignal = valueSignal;
-            this.writeCallback = writeCallback;
-
             Registration registration = ElementEffect.bind(
                     component.getElement(), valueSignal,
                     (element, value) -> setValueFromSignal(value));
             feature.setBinding(SignalBindingFeature.VALUE, registration,
-                    valueSignal);
+                    valueSignal, writeCallback);
         }
     }
 
@@ -285,25 +277,35 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
-        if (!valueSetFromSignal && readSignal != null
-                && component.isAttached()) {
-            if (writeCallback != null) {
-                writeCallback.accept(newValue);
-                // Re-consult the signal after the callback
-                T signalValue = readSignal.peek();
-                if (!valueEquals.test(signalValue, newValue)) {
-                    // Signal value differs from what was set, revert
-                    bufferedValue = signalValue;
-                    applyValue(signalValue);
-                }
-            } else {
-                // Read-only binding: revert and throw
-                bufferedValue = oldValue;
-                applyValue(oldValue);
-                throw new IllegalStateException(
-                        "Cannot set value on a read-only signal binding. "
-                                + "Provide a write callback to enable two-way binding.");
-            }
+        if (!valueSetFromSignal) {
+            getFeatureIfInitialized(SignalBindingFeature.class)
+                    .ifPresent(feature -> {
+                        if (component.isAttached() && feature
+                                .hasBinding(SignalBindingFeature.VALUE)) {
+                            SerializableConsumer<T> callback = feature
+                                    .getWriteCallback(
+                                            SignalBindingFeature.VALUE);
+                            Signal<T> signal = feature
+                                    .getSignal(SignalBindingFeature.VALUE);
+                            if (callback != null) {
+                                callback.accept(newValue);
+                                // Re-consult the signal after the callback
+                                T signalValue = signal.peek();
+                                if (!valueEquals.test(signalValue, newValue)) {
+                                    // Signal value differs, revert
+                                    bufferedValue = signalValue;
+                                    applyValue(signalValue);
+                                }
+                            } else {
+                                // Read-only binding: revert and throw
+                                bufferedValue = oldValue;
+                                applyValue(oldValue);
+                                throw new IllegalStateException(
+                                        "Cannot set value on a read-only signal binding. "
+                                                + "Provide a write callback to enable two-way binding.");
+                            }
+                        }
+                    });
         }
 
         ComponentUtil.fireEvent(component,
