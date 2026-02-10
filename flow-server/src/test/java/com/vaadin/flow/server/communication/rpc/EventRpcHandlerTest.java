@@ -17,9 +17,10 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -31,7 +32,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class EventRpcHandlerTest {
+class EventRpcHandlerTest {
 
     @Test
     public void testElementEventNoData() throws Exception {
@@ -44,7 +45,7 @@ public class EventRpcHandlerTest {
         element.addEventListener("test-event",
                 e -> invocations.incrementAndGet());
         sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invocations.get());
+        assertEquals(1, invocations.get());
     }
 
     @Test
@@ -61,7 +62,7 @@ public class EventRpcHandlerTest {
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("nr", 123);
         sendElementEvent(element, ui, "test-event", eventData);
-        Assert.assertEquals(123, invocationData.get());
+        assertEquals(123, invocationData.get());
 
         // Also verify inert stops the event and allowInert allows to bypass
         invocationData.set(0);
@@ -70,11 +71,11 @@ public class EventRpcHandlerTest {
         inertData.setInertSelf(true);
         inertData.generateChangesFromEmpty();
         sendElementEvent(element, ui, "test-event", eventData);
-        Assert.assertEquals(0, invocationData.get());
+        assertEquals(0, invocationData.get());
         // explicitly allow this event listener even when element is inert
         domListenerRegistration.allowInert();
         sendElementEvent(element, ui, "test-event", eventData);
-        Assert.assertEquals(124, invocationData.get());
+        assertEquals(124, invocationData.get());
 
     }
 

@@ -17,9 +17,13 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -36,14 +40,14 @@ import com.vaadin.flow.server.communication.ReturnChannelHandler;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
-public class ReturnChannelHandlerTest {
+class ReturnChannelHandlerTest {
     private MockUI ui = new MockUI();
 
     private AtomicReference<JsonNode> observedArguments = new AtomicReference<>();
     private SerializableConsumer<ArrayNode> observingConsumer = arguments -> {
-        Assert.assertNotNull("Arguments should not be null", arguments);
-        Assert.assertNull("There should be no previous arguments",
-                observedArguments.getAndSet(arguments));
+        assertNotNull(arguments, "Arguments should not be null");
+        assertNull(observedArguments.getAndSet(arguments),
+                "There should be no previous arguments");
     };
 
     private ArrayNode args = JacksonUtils.createArrayNode();
@@ -54,9 +58,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertSame(
-                "Handler should have been invoked with the given arguments.",
-                args, observedArguments.get());
+        assertSame(args, observedArguments.get(),
+                "Handler should have been invoked with the given arguments.");
     }
 
     @Test
@@ -75,10 +78,9 @@ public class ReturnChannelHandlerTest {
     public void returnChannelMapNotInitialized_noInitializedAfterInvocation() {
         handleMessage(ui.getElement().getNode().getId(), 0);
 
-        Assert.assertFalse("Feature should not be initialized",
-                ui.getElement().getNode()
-                        .getFeatureIfInitialized(ReturnChannelMap.class)
-                        .isPresent());
+        assertFalse(ui.getElement().getNode()
+                .getFeatureIfInitialized(ReturnChannelMap.class).isPresent(),
+                "Feature should not be initialized");
     }
 
     @Test
@@ -88,8 +90,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        assertNull(observedArguments.get(),
+                "Channel handler should not be called");
     }
 
     @Test
@@ -100,8 +102,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        assertNull(observedArguments.get(),
+                "Channel handler should not be called");
     }
 
     @Test
@@ -113,8 +115,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNotNull("Channel handler should be called",
-                observedArguments.get());
+        assertNotNull(observedArguments.get(),
+                "Channel handler should be called");
     }
 
     @Test
@@ -126,8 +128,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNotNull("Channel handler should be called",
-                observedArguments.get());
+        assertNotNull(observedArguments.get(),
+                "Channel handler should be called");
     }
 
     @Test
@@ -140,8 +142,8 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        assertNull(observedArguments.get(),
+                "Channel handler should not be called");
     }
 
     private void handleMessage(ReturnChannelRegistration registration) {

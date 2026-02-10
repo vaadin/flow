@@ -20,11 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +42,13 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -54,14 +57,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class MapSyncRpcHandlerTest {
+class MapSyncRpcHandlerTest {
 
     private static final String NEW_VALUE = "newValue";
     private static final String DUMMY_EVENT = "dummy-event";
     private static final String TEST_PROPERTY = "test-property";
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Tag(Tag.A)
     public static class TestComponent extends Component {
@@ -77,11 +77,13 @@ public class MapSyncRpcHandlerTest {
 
         UI ui = new UI();
         ui.add(c);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        assertFalse(element.hasProperty(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value1");
-        Assert.assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value1",
+                element.getPropertyRaw(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
-        Assert.assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value2",
+                element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -117,13 +119,13 @@ public class MapSyncRpcHandlerTest {
         // TEST_PROPERTY value
         Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
 
-        Assert.assertTrue(testPropertyValue instanceof StateNode);
+        assertTrue(testPropertyValue instanceof StateNode);
 
         StateNode newNode = (StateNode) testPropertyValue;
-        Assert.assertNotEquals(item.getId(), newNode.getId());
+        assertNotEquals(item.getId(), newNode.getId());
 
-        Assert.assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
-                .getProperty("bar"));
+        assertEquals("baz", newNode
+                .getFeature(ElementPropertyMap.class).getProperty("bar"));
     }
 
     @Test
@@ -157,10 +159,10 @@ public class MapSyncRpcHandlerTest {
 
         Serializable testPropertyValue = propertyMap.getProperty("foo");
 
-        Assert.assertTrue(testPropertyValue instanceof StateNode);
+        assertTrue(testPropertyValue instanceof StateNode);
 
         StateNode newNode = (StateNode) testPropertyValue;
-        Assert.assertSame(model, newNode);
+        assertSame(model, newNode);
     }
 
     @Test
@@ -191,8 +193,8 @@ public class MapSyncRpcHandlerTest {
         Serializable testPropertyValue = node
                 .getFeature(ElementPropertyMap.class).getProperty("foo");
 
-        Assert.assertNotSame(anotherNode, testPropertyValue);
-        Assert.assertTrue(testPropertyValue instanceof JsonNode);
+        assertNotSame(anotherNode, testPropertyValue);
+        assertTrue(testPropertyValue instanceof JsonNode);
     }
 
     @Test
@@ -208,7 +210,7 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertNotEquals(NEW_VALUE,
+        assertNotEquals(NEW_VALUE,
                 element.getPropertyRaw(TEST_PROPERTY));
     }
 
@@ -225,7 +227,8 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -242,7 +245,8 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -258,7 +262,8 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -275,69 +280,80 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void noSyncPropertiesFeature_noExplicitAllow_throws() {
-        StateNode noSyncProperties = new StateNode(ElementPropertyMap.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            StateNode noSyncProperties = new StateNode(
+                    ElementPropertyMap.class);
 
-        ElementPropertyMap map = noSyncProperties
-                .getFeature(ElementPropertyMap.class);
+            ElementPropertyMap map = noSyncProperties
+                    .getFeature(ElementPropertyMap.class);
 
-        new MapSyncRpcHandler().handleNode(noSyncProperties,
-                createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY,
-                        NEW_VALUE));
+            new MapSyncRpcHandler().handleNode(noSyncProperties,
+                    createSyncPropertyInvocation(noSyncProperties,
+                            TEST_PROPERTY, NEW_VALUE));
 
-        Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+            assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+        });
     }
 
     @Test
     public void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Element with tag 'foo'"),
-                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
-        Element element = new Element("foo");
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class, () -> {
+                    Element element = new Element("foo");
 
-        new MapSyncRpcHandler().handleNode(element.getNode(),
-                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE));
+                    new MapSyncRpcHandler().handleNode(element.getNode(),
+                            createSyncPropertyInvocation(element.getNode(),
+                                    TEST_PROPERTY, NEW_VALUE));
+                });
+        assertTrue(
+                thrown.getMessage().contains("Element with tag 'foo'"));
+        assertTrue(
+                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test
     public void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Component " + TestComponent.class.getName()),
-                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
-        TestComponent component = new TestComponent();
-        Element element = component.getElement();
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class, () -> {
+                    TestComponent component = new TestComponent();
+                    Element element = component.getElement();
 
-        new MapSyncRpcHandler().handleNode(element.getNode(),
-                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE));
+                    new MapSyncRpcHandler().handleNode(element.getNode(),
+                            createSyncPropertyInvocation(element.getNode(),
+                                    TEST_PROPERTY, NEW_VALUE));
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Component " + TestComponent.class.getName()));
+        assertTrue(
+                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test
     public void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Component " + TestComponent.class.getName()),
-                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
-        TestComponent component = new TestComponent();
-        Element element = component.getElement();
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class, () -> {
+                    TestComponent component = new TestComponent();
+                    Element element = component.getElement();
 
-        StateNode node = element.getNode();
-        ElementPropertyMap propertyMap = node
-                .getFeature(ElementPropertyMap.class)
-                .resolveModelMap("foo.bar");
+                    StateNode node = element.getNode();
+                    ElementPropertyMap propertyMap = node
+                            .getFeature(ElementPropertyMap.class)
+                            .resolveModelMap("foo.bar");
 
-        new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
-                createSyncPropertyInvocation(propertyMap.getNode(),
-                        TEST_PROPERTY, NEW_VALUE));
+                    new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
+                            createSyncPropertyInvocation(propertyMap.getNode(),
+                                    TEST_PROPERTY, NEW_VALUE));
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Component " + TestComponent.class.getName()));
+        assertTrue(
+                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test
@@ -370,8 +386,8 @@ public class MapSyncRpcHandlerTest {
         new MapSyncRpcHandler().handleNode(node,
                 createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE));
 
-        Assert.assertEquals(1, deferredUpdateInvocations.get());
-        Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
+        assertEquals(1, deferredUpdateInvocations.get());
+        assertEquals(TEST_PROPERTY, deferredKey.get());
     }
 
     @Test
