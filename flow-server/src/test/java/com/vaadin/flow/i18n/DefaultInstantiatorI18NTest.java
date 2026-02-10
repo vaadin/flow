@@ -21,17 +21,17 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
@@ -42,18 +42,17 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 @NotThreadSafe
-public class DefaultInstantiatorI18NTest {
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+class DefaultInstantiatorI18NTest {
+    @TempDir
+    Path temporaryFolder;
     private File translations;
     private ClassLoader urlClassLoader;
 
-    @Before
+    @BeforeEach
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        File resources = temporaryFolder.newFolder();
+        File resources = Files.createTempDirectory(temporaryFolder, "temp")
+                .toFile();
 
         translations = new File(resources, DefaultI18NProvider.BUNDLE_FOLDER);
         translations.mkdirs();
@@ -63,7 +62,7 @@ public class DefaultInstantiatorI18NTest {
         I18NProviderTest.clearI18NProviderField();
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws NoSuchFieldException, IllegalAccessException {
         ResourceBundle.clearCache(urlClassLoader);
         I18NProviderTest.clearI18NProviderField();
@@ -89,37 +88,37 @@ public class DefaultInstantiatorI18NTest {
         };
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
-        Assert.assertNotNull(i18NProvider);
-        Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
+        Assertions.assertNotNull(i18NProvider);
+        Assertions.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("Suomi",
+        Assertions.assertEquals("Suomi",
                 i18NProvider.getTranslation("title", new Locale("fi", "FI")));
-        Assert.assertEquals("Suomi",
+        Assertions.assertEquals("Suomi",
                 I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
-        Assert.assertEquals("deutsch",
+        Assertions.assertEquals("deutsch",
                 i18NProvider.getTranslation("title", new Locale("de")));
-        Assert.assertEquals("deutsch",
+        Assertions.assertEquals("deutsch",
                 I18NProvider.translate(new Locale("de"), "title"));
 
-        Assert.assertEquals(
-                "non existing country should select language bundle", "deutsch",
-                i18NProvider.getTranslation("title", new Locale("de", "AT")));
-        Assert.assertEquals(
-                "non existing country should select language bundle", "deutsch",
-                I18NProvider.translate(new Locale("de", "AT"), "title"));
+        Assertions.assertEquals("deutsch",
+                i18NProvider.getTranslation("title", new Locale("de", "AT")),
+                "non existing country should select language bundle");
+        Assertions.assertEquals("deutsch",
+                I18NProvider.translate(new Locale("de", "AT"), "title"),
+                "non existing country should select language bundle");
 
-        Assert.assertEquals("Korean",
+        Assertions.assertEquals("Korean",
                 i18NProvider.getTranslation("title", new Locale("ko", "KR")));
-        Assert.assertEquals("Korean",
+        Assertions.assertEquals("Korean",
                 I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
@@ -144,30 +143,30 @@ public class DefaultInstantiatorI18NTest {
         };
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
-        Assert.assertNotNull(i18NProvider);
-        Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
+        Assertions.assertNotNull(i18NProvider);
+        Assertions.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("fi", "FI")));
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("de")));
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 I18NProvider.translate(new Locale("de"), "title"));
 
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("ko", "KR")));
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("Default lang",
+        Assertions.assertEquals("Default lang",
                 I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
@@ -192,17 +191,17 @@ public class DefaultInstantiatorI18NTest {
         };
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
-        Assert.assertNotNull(i18NProvider);
-        Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
+        Assertions.assertNotNull(i18NProvider);
+        Assertions.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
-        Assert.assertEquals("No Default",
+        Assertions.assertEquals("No Default",
                 i18NProvider.getTranslation("title", new Locale("ja")));
-        Assert.assertEquals("No Default",
+        Assertions.assertEquals("No Default",
                 I18NProvider.translate(new Locale("ja"), "title"));
 
-        Assert.assertEquals("title",
+        Assertions.assertEquals("title",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
-        Assert.assertEquals("title",
+        Assertions.assertEquals("title",
                 I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
@@ -215,9 +214,9 @@ public class DefaultInstantiatorI18NTest {
                 service);
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
-        Assert.assertEquals(
-                "Should return the key with !{}! to show no translation available",
-                "!{foo.bar}!", I18NProvider.translate("foo.bar"));
+        Assertions.assertEquals("!{foo.bar}!",
+                I18NProvider.translate("foo.bar"),
+                "Should return the key with !{}! to show no translation available");
     }
 
     @Test
@@ -243,14 +242,14 @@ public class DefaultInstantiatorI18NTest {
                             (mock, context) -> {
                                 ClassLoader classLoaderArgument = (ClassLoader) context
                                         .arguments().get(1);
-                                Assert.assertEquals(urlClassLoader,
+                                Assertions.assertEquals(urlClassLoader,
                                         classLoaderArgument);
                             })) {
                 I18NProvider i18NProvider = defaultInstantiator
                         .getI18NProvider();
 
-                Assert.assertNotNull(i18NProvider);
-                Assert.assertEquals(i18NProvider,
+                Assertions.assertNotNull(i18NProvider);
+                Assertions.assertEquals(i18NProvider,
                         mockedConstruction.constructed().get(0));
             }
         } finally {
