@@ -147,12 +147,6 @@
       <version>6.0.2</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>6.0.2</version>
-      <scope>test</scope>
-    </dependency>
 
   </dependencies>
   <build>
