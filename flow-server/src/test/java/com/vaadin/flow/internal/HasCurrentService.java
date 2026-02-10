@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -36,7 +34,6 @@ public abstract class HasCurrentService {
     // test is running
     private VaadinService service;
 
-    @Before
     @BeforeEach
     public void setUpCurrentService() {
         clearCurrentService();
@@ -48,7 +45,6 @@ public abstract class HasCurrentService {
 
     protected abstract VaadinService createService();
 
-    @After
     @AfterEach
     public void clearCurrentService() {
         VaadinService.setCurrent(null);

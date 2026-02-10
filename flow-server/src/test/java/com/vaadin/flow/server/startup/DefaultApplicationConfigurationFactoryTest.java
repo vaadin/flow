@@ -22,14 +22,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -49,8 +49,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class DefaultApplicationConfigurationFactoryTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
 
     @Test
     public void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
@@ -69,11 +69,11 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertTrue(configuration
+        Assertions.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        Assert.assertFalse(configuration.isProductionMode());
+        Assertions.assertFalse(configuration.isProductionMode());
     }
 
     @Test
@@ -87,11 +87,11 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertTrue(configuration
+        Assertions.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        Assert.assertFalse(configuration.isProductionMode());
+        Assertions.assertFalse(configuration.isProductionMode());
     }
 
     @Test
@@ -105,12 +105,12 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
-        Assert.assertTrue(configuration
+        Assertions.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        Assertions.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        Assert.assertEquals("http://my.server/static/stats.json", configuration
+        Assertions.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
-        Assert.assertFalse(configuration.isProductionMode());
+        Assertions.assertFalse(configuration.isProductionMode());
     }
 
     @Test
@@ -130,12 +130,12 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
-        Assert.assertTrue(configuration
+        Assertions.assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        Assertions.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        Assert.assertEquals("http://my.server/static/stats.json", configuration
+        Assertions.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
-        Assert.assertFalse(configuration.isProductionMode());
+        Assertions.assertFalse(configuration.isProductionMode());
     }
 
     @Test
@@ -156,9 +156,9 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertEquals(1, propertyNames.size());
-        Assert.assertEquals("foo", propertyNames.get(0));
-        Assert.assertEquals("bar",
+        Assertions.assertEquals(1, propertyNames.size());
+        Assertions.assertEquals("foo", propertyNames.get(0));
+        Assertions.assertEquals("bar",
                 configuration.getStringProperty("foo", null));
     }
 
@@ -193,17 +193,18 @@ public class DefaultApplicationConfigurationFactoryTest {
             flags.when(() -> FeatureFlags.get(context))
                     .thenReturn(featureFlags);
 
-            Assert.assertEquals("Should have bundle mode by default",
-                    Mode.DEVELOPMENT_BUNDLE, configuration.getMode());
+            Assertions.assertEquals(Mode.DEVELOPMENT_BUNDLE,
+                    configuration.getMode(),
+                    "Should have bundle mode by default");
 
             Mockito.when(featureFlags
                     .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS))
                     .thenReturn(true);
 
-            Assert.assertEquals(
-                    "Should have livereload mode when TailwindCSS is enabled",
+            Assertions.assertEquals(
                     Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
-                    configuration.getMode());
+                    configuration.getMode(),
+                    "Should have livereload mode when TailwindCSS is enabled");
         }
     }
 
@@ -224,12 +225,12 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(propertyNames.contains(attributeName));
+        Assertions.assertTrue(propertyNames.contains(attributeName));
         if (value instanceof Boolean) {
-            Assert.assertTrue(
+            Assertions.assertTrue(
                     configuration.getBooleanProperty(attributeName, false));
         } else {
-            Assert.assertEquals(
+            Assertions.assertEquals(
                     configuration.getStringProperty(attributeName, null),
                     value.toString());
         }
@@ -239,7 +240,7 @@ public class DefaultApplicationConfigurationFactoryTest {
             String content) throws IOException, MalformedURLException {
         String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
-        File tmpFile = temporaryFolder.newFile();
+        File tmpFile = Files.createTempFile(temporaryFolder, null, null).toFile();
         Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
         URLStreamHandler handler = new URLStreamHandler() {
@@ -290,7 +291,7 @@ public class DefaultApplicationConfigurationFactoryTest {
                 .thenReturn(Collections.enumeration(
                         Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
 
-        File tmpFile = temporaryFolder.newFile();
+        File tmpFile = Files.createTempFile(temporaryFolder, null, null).toFile();
         Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
         Mockito.when(

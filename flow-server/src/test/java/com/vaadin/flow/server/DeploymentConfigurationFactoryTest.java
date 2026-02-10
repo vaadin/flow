@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -68,7 +67,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeploymentConfigurationFactoryTest {
 
-    @Rule
     @TempDir
     Path temporaryFolder;
     private File tokenFile;
