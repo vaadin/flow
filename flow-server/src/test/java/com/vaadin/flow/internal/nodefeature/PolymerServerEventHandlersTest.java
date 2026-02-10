@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -46,15 +46,16 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0.
  */
 @NotThreadSafe
-public class PolymerServerEventHandlersTest extends HasCurrentService {
+class PolymerServerEventHandlersTest extends HasCurrentService {
     private StateNode stateNode;
     private PolymerServerEventHandlers handlers;
     private Collection<Method> methodCollector;
@@ -117,7 +118,7 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
                         Collectors.toMap(Method::getName, Function.identity()));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
                 .getFeatures();
@@ -205,20 +206,27 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("repeatIndexParam2"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testNotAnnotatedParam() {
-        addAndVerifyMethod(wronglyAnnotatedHandlers.get("notAnnotatedParam"));
+        assertThrows(IllegalStateException.class, () -> {
+            addAndVerifyMethod(
+                    wronglyAnnotatedHandlers.get("notAnnotatedParam"));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testWrongTypeOfRepeatIndexParam() {
-        addAndVerifyMethod(
-                wronglyAnnotatedHandlers.get("wrongTypeOfRepeatIndexParam"));
+        assertThrows(IllegalStateException.class, () -> {
+            addAndVerifyMethod(wronglyAnnotatedHandlers
+                    .get("wrongTypeOfRepeatIndexParam"));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testMultipleAnnotationsOnOneParam() {
-        addAndVerifyMethod(wronglyAnnotatedHandlers
-                .get("eventDataAndRepeatIndexOnOneParam"));
+        assertThrows(IllegalStateException.class, () -> {
+            addAndVerifyMethod(wronglyAnnotatedHandlers
+                    .get("eventDataAndRepeatIndexOnOneParam"));
+        });
     }
 }

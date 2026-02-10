@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class PollConfigurationMapTest
+class PollConfigurationMapTest
         extends AbstractMapFeatureTest<PollConfigurationMap> {
 
     private final PollConfigurationMap map = createFeature();
 
     @Test
     public void setDefaultPollInterval() {
-        Assert.assertEquals(-1, map.getPollInterval());
+        Assertions.assertEquals(-1, map.getPollInterval());
     }
 
     @Test

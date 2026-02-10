@@ -15,25 +15,25 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class LoadingIndicatorConfigurationMapTest
+class LoadingIndicatorConfigurationMapTest
         extends AbstractMapFeatureTest<LoadingIndicatorConfigurationMap> {
     private final LoadingIndicatorConfigurationMap map = createFeature();
 
     @Test
     public void defaults() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT,
                 map.getFirstDelay());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT,
                 map.getSecondDelay());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT,
                 map.getThirdDelay());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT,
                 map.isApplyDefaultTheme());
     }

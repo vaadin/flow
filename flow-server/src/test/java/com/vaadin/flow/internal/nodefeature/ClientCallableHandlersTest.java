@@ -19,8 +19,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -29,7 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
-public class ClientCallableHandlersTest {
+class ClientCallableHandlersTest {
 
     @Tag("div")
     static class NonTemplateComponentWithoutEventHandler extends Component {
@@ -52,7 +52,7 @@ public class ClientCallableHandlersTest {
         StateNode stateNode = new StateNode(ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
@@ -65,7 +65,7 @@ public class ClientCallableHandlersTest {
                 ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
@@ -93,9 +93,9 @@ public class ClientCallableHandlersTest {
 
     private void assertListFeature(SerializableNodeList<String> feature,
             String... expected) {
-        Assert.assertEquals(expected.length, feature.size());
+        Assertions.assertEquals(expected.length, feature.size());
         for (int i = 0; i < expected.length; i++) {
-            Assert.assertEquals(expected[i], feature.get(i));
+            Assertions.assertEquals(expected[i], feature.get(i));
         }
 
     }

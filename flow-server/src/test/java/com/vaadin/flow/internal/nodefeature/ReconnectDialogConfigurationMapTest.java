@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class ReconnectDialogConfigurationMapTest
+class ReconnectDialogConfigurationMapTest
         extends AbstractMapFeatureTest<ReconnectDialogConfigurationMap> {
 
     private StateNode node = new StateNode(
@@ -30,15 +30,16 @@ public class ReconnectDialogConfigurationMapTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
+        Assertions.assertEquals(
+                ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
                 map.getDialogText());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT,
                 map.getDialogTextGaveUp());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT,
                 map.getReconnectAttempts());
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
                 map.getReconnectInterval());
     }

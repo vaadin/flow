@@ -19,7 +19,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
@@ -64,9 +64,9 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
     }
 
     protected void assertNodeEquals(StateNode node1, StateNode node2) {
-        Assert.assertEquals(node1.getId(), node2.getId());
+        Assertions.assertEquals(node1.getId(), node2.getId());
         NodeFeatureRegistry.nodeFeatures.keySet().forEach(k -> {
-            Assert.assertEquals(node1.hasFeature(k), node2.hasFeature(k));
+            Assertions.assertEquals(node1.hasFeature(k), node2.hasFeature(k));
             if (node1.hasFeature(k)) {
                 assertFeaturesEquals(node1.getFeature(k), node2.getFeature(k));
             }
@@ -77,13 +77,13 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
     @SuppressWarnings("rawtypes")
     protected void assertFeaturesEquals(NodeFeature feature1,
             NodeFeature feature2) {
-        Assert.assertEquals(feature1.getClass(), feature2.getClass());
+        Assertions.assertEquals(feature1.getClass(), feature2.getClass());
         if (feature1 instanceof NodeMap) {
             assertMapFeatureEquals((NodeMap) feature1, (NodeMap) feature2);
         } else if (feature1 instanceof NodeList) {
             assertListFeatureEquals((NodeList) feature1, (NodeList) feature2);
         } else {
-            Assert.fail(
+            Assertions.fail(
                     "Unknown feature type " + feature1.getClass().getName());
         }
     }
@@ -91,16 +91,17 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
     @SuppressWarnings("rawtypes")
     protected void assertListFeatureEquals(NodeList feature1,
             NodeList feature2) {
-        Assert.assertEquals(feature1.size(), feature2.size());
+        Assertions.assertEquals(feature1.size(), feature2.size());
         for (int i = 0; i < feature1.size(); i++) {
-            Assert.assertEquals(feature1.get(i), feature2.get(i));
+            Assertions.assertEquals(feature1.get(i), feature2.get(i));
         }
     }
 
     protected void assertMapFeatureEquals(NodeMap feature1, NodeMap feature2) {
-        Assert.assertEquals(feature1.keySet().size(), feature2.keySet().size());
+        Assertions.assertEquals(feature1.keySet().size(),
+                feature2.keySet().size());
         feature1.keySet().forEach(k -> {
-            Assert.assertEquals(feature1.get(k), feature2.get(k));
+            Assertions.assertEquals(feature1.get(k), feature2.get(k));
         });
     }
 

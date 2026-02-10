@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.internal.change;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
@@ -25,7 +25,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class MapRemoveChangeTest {
+class MapRemoveChangeTest {
     private NodeMap feature = AbstractNodeFeatureTest
             .createFeature(ElementPropertyMap.class);
 
@@ -35,13 +35,13 @@ public class MapRemoveChangeTest {
 
         ObjectNode json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
+        Assertions.assertEquals(change.getNode().getId(),
                 json.get(JsonConstants.CHANGE_NODE).intValue());
-        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+        Assertions.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 json.get(JsonConstants.CHANGE_FEATURE).intValue());
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
+        Assertions.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
                 json.get(JsonConstants.CHANGE_TYPE).textValue());
-        Assert.assertEquals("some",
+        Assertions.assertEquals("some",
                 json.get(JsonConstants.CHANGE_MAP_KEY).textValue());
     }
 
