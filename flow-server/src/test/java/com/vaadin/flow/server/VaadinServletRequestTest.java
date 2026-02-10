@@ -17,10 +17,10 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class VaadinServletRequestTest {
+class VaadinServletRequestTest {
 
     @Test
     public void getContentLengthLong_delegateToServletRequestGetContentLengthLong() {

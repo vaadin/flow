@@ -20,21 +20,21 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultErrorHandlerTest {
+class DefaultErrorHandlerTest {
 
     MockedStatic<LoggerFactory> loggerFactory;
     Logger logger;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         logger = Mockito
                 .spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
@@ -46,7 +46,7 @@ public class DefaultErrorHandlerTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         loggerFactory.close();
     }

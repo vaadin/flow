@@ -21,6 +21,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
@@ -45,22 +49,26 @@ public abstract class SignalsUnitTest {
     private MockUI ui;
 
     @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
     @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
     @Before
+    @BeforeEach
     public void before() {
         events = mockLockedSessionWithErrorHandler();
     }
 
     @After
+    @AfterEach
     public void after() {
         assertTrue(events.isEmpty());
         CurrentInstance.clearAll();

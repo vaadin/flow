@@ -38,10 +38,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -74,7 +74,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -84,7 +84,7 @@ import static org.mockito.ArgumentMatchers.anyString;
  * @since 1.0
  */
 @NotThreadSafe
-public class VaadinServiceTest {
+class VaadinServiceTest {
 
     @Tag("div")
     public static class TestView extends Component {
@@ -156,8 +156,8 @@ public class VaadinServiceTest {
         }
     }
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearCurrentInstances() {
         CurrentInstance.clearAll();
     }
@@ -176,25 +176,25 @@ public class VaadinServiceTest {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         service.requestStart(request, response);
 
-        Assert.assertSame(service, VaadinService.getCurrent());
-        Assert.assertSame(request, VaadinRequest.getCurrent());
-        Assert.assertSame(response, VaadinResponse.getCurrent());
+        Assertions.assertSame(service, VaadinService.getCurrent());
+        Assertions.assertSame(request, VaadinRequest.getCurrent());
+        Assertions.assertSame(response, VaadinResponse.getCurrent());
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         try {
             service.requestEnd(request, response, session);
-            Assert.fail("Should have thrown an exception");
+            Assertions.fail("Should have thrown an exception");
         } catch (Exception e) {
-            Assert.assertNull("VaadinService.current",
-                    VaadinService.getCurrent());
-            Assert.assertNull("VaadinSession.current",
-                    VaadinSession.getCurrent());
-            Assert.assertNull("VaadinRequest.current",
-                    VaadinRequest.getCurrent());
-            Assert.assertNull("VaadinResponse.current",
-                    VaadinResponse.getCurrent());
+            Assertions.assertNull(VaadinService.getCurrent(),
+                    "VaadinService.current");
+            Assertions.assertNull(VaadinSession.getCurrent(),
+                    "VaadinSession.current");
+            Assertions.assertNull(VaadinRequest.getCurrent(),
+                    "VaadinRequest.current");
+            Assertions.assertNull(VaadinResponse.getCurrent(),
+                    "VaadinResponse.current");
         } finally {
             CurrentInstance.clearAll();
         }
@@ -230,9 +230,9 @@ public class VaadinServiceTest {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         service.requestStart(request, response);
 
-        Assert.assertSame(service, VaadinService.getCurrent());
-        Assert.assertSame(request, VaadinRequest.getCurrent());
-        Assert.assertSame(response, VaadinResponse.getCurrent());
+        Assertions.assertSame(service, VaadinService.getCurrent());
+        Assertions.assertSame(request, VaadinRequest.getCurrent());
+        Assertions.assertSame(response, VaadinResponse.getCurrent());
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
@@ -240,14 +240,14 @@ public class VaadinServiceTest {
         try {
             service.requestEnd(request, response, session);
 
-            Assert.assertNull("VaadinService.current",
-                    VaadinService.getCurrent());
-            Assert.assertNull("VaadinSession.current",
-                    VaadinSession.getCurrent());
-            Assert.assertNull("VaadinRequest.current",
-                    VaadinRequest.getCurrent());
-            Assert.assertNull("VaadinResponse.current",
-                    VaadinResponse.getCurrent());
+            Assertions.assertNull(VaadinService.getCurrent(),
+                    "VaadinService.current");
+            Assertions.assertNull(VaadinSession.getCurrent(),
+                    "VaadinSession.current");
+            Assertions.assertNull(VaadinRequest.getCurrent(),
+                    "VaadinRequest.current");
+            Assertions.assertNull(VaadinResponse.getCurrent(),
+                    "VaadinResponse.current");
         } finally {
             CurrentInstance.clearAll();
         }
@@ -271,9 +271,9 @@ public class VaadinServiceTest {
 
         service.init(instantiator);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
-        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_AUTO_LAYOUT.equals(e.getName())));
     }
 
@@ -292,15 +292,15 @@ public class VaadinServiceTest {
 
         service.init(instantiator);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_HYBRID.equals(e.getName())));
-        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
-        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_FLOW_ROUTE.equals(e.getName())));
-        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+        Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_AUTO_LAYOUT.equals(e.getName())));
     }
 
@@ -320,13 +320,13 @@ public class VaadinServiceTest {
         runWithClientRoute("client-test", false, service, () -> {
             service.init(new MockInstantiator(initListener));
 
-            Assert.assertTrue(UsageStatistics.getEntries()
+            Assertions.assertTrue(UsageStatistics.getEntries()
                     .anyMatch(e -> Constants.STATISTIC_HAS_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertTrue(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
         });
@@ -346,13 +346,13 @@ public class VaadinServiceTest {
         runWithClientRoute("test", true, service, () -> {
             service.init(new MockInstantiator(initListener));
 
-            Assert.assertTrue(UsageStatistics.getEntries()
+            Assertions.assertTrue(UsageStatistics.getEntries()
                     .anyMatch(e -> Constants.STATISTIC_HAS_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertTrue(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
         });
@@ -380,13 +380,13 @@ public class VaadinServiceTest {
         runWithClientRoute("test", false, service, () -> {
             service.init(new MockInstantiator(initListener));
 
-            Assert.assertTrue(UsageStatistics.getEntries()
+            Assertions.assertTrue(UsageStatistics.getEntries()
                     .anyMatch(e -> Constants.STATISTIC_HAS_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
-            Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+            Assertions.assertFalse(UsageStatistics.getEntries().anyMatch(
                     e -> Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT
                             .equals(e.getName())));
         });
@@ -422,19 +422,17 @@ public class VaadinServiceTest {
 
         MockVaadinSession vaadinSession = new MockVaadinSession(service);
         service.fireSessionDestroy(vaadinSession);
-        Assert.assertEquals(
-                "'fireSessionDestroy' method doesn't call 'close' for the session",
-                1, vaadinSession.getCloseCount());
+        Assertions.assertEquals(1, vaadinSession.getCloseCount(),
+                "'fireSessionDestroy' method doesn't call 'close' for the session");
 
         vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(1, vaadinSession.getCloseCount(),
                 "'fireSessionDestroy' method may not call 'close' "
-                        + "method for closing session",
-                1, vaadinSession.getCloseCount());
+                        + "method for closing session");
 
-        Assert.assertEquals("SessionDestroyListeners not called exactly once",
-                1, listener.callCount);
+        Assertions.assertEquals(1, listener.callCount,
+                "SessionDestroyListeners not called exactly once");
     }
 
     @Test
@@ -454,11 +452,11 @@ public class VaadinServiceTest {
         vaadinSession.unlock();
         service.fireSessionDestroy(vaadinSession);
 
-        Assert.assertEquals("ErrorHandler not called exactly once", 1,
-                errorCount.get());
+        Assertions.assertEquals(1, errorCount.get(),
+                "ErrorHandler not called exactly once");
 
-        Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
-                listener.callCount);
+        Assertions.assertEquals(1, listener.callCount,
+                "SessionDestroyListener not called exactly once");
     }
 
     @Test
@@ -511,11 +509,11 @@ public class VaadinServiceTest {
 
         service.fireSessionDestroy(vaadinSession);
 
-        Assert.assertTrue("Second UI detach not called properly",
-                secondUiDetached.get());
+        Assertions.assertTrue(secondUiDetached.get(),
+                "Second UI detach not called properly");
 
-        Assert.assertEquals("SessionDestroyListener not called exactly once", 1,
-                listener.callCount);
+        Assertions.assertEquals(1, listener.callCount,
+                "SessionDestroyListener not called exactly once");
     }
 
     @Test
@@ -530,8 +528,8 @@ public class VaadinServiceTest {
 
         assertThrows(RuntimeException.class, service::destroy);
 
-        Assert.assertEquals("ServiceDestroyListener not called exactly once", 1,
-                listener.callCount);
+        Assertions.assertEquals(1, listener.callCount,
+                "ServiceDestroyListener not called exactly once");
     }
 
     @Test
@@ -617,7 +615,7 @@ public class VaadinServiceTest {
         };
         servlet.init(servletConfig);
         VaadinService service = servlet.getService();
-        Assert.assertTrue(service.createRequestHandlers().stream()
+        Assertions.assertTrue(service.createRequestHandlers().stream()
                 .filter(StreamRequestHandler.class::isInstance).findAny()
                 .isPresent());
     }
@@ -634,23 +632,23 @@ public class VaadinServiceTest {
 
         CurrentInstance.set(String.class, "Original value");
         service.runPendingAccessTasks(session);
-        Assert.assertEquals(
-                "Original CurrentInstance should be set after the task has been run",
-                "Original value", CurrentInstance.get(String.class));
+        Assertions.assertEquals("Original value",
+                CurrentInstance.get(String.class),
+                "Original CurrentInstance should be set after the task has been run");
     }
 
     @Test
     public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
 
         VaadinServiceInitListener initListener = event -> {
-            Assert.assertNotNull("service init should have set thread local",
-                    VaadinService.getCurrent());
+            Assertions.assertNotNull(VaadinService.getCurrent(),
+                    "service init should have set thread local");
 
             Router router = event.getSource().getRouter();
-            Assert.assertNotNull("Router should be initialized", router);
+            Assertions.assertNotNull(router, "Router should be initialized");
 
-            Assert.assertNotNull("registry should be initialized",
-                    router.getRegistry());
+            Assertions.assertNotNull(router.getRegistry(),
+                    "registry should be initialized");
 
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
@@ -667,8 +665,8 @@ public class VaadinServiceTest {
                 .forApplicationScope().getAvailableRoutes();
         VaadinService.setCurrent(null);
 
-        Assert.assertEquals(1, availableRoutes.size());
-        Assert.assertEquals("test", availableRoutes.get(0).getTemplate());
+        Assertions.assertEquals(1, availableRoutes.size());
+        Assertions.assertEquals("test", availableRoutes.get(0).getTemplate());
     }
 
     @Test
@@ -689,9 +687,9 @@ public class VaadinServiceTest {
         List<DependencyFilter> filters = new ArrayList<>();
         service.getDependencyFilters().forEach(filters::add);
 
-        Assert.assertEquals(1, filters.size());
+        Assertions.assertEquals(1, filters.size());
 
-        Assert.assertSame(applicationFilter, filters.get(0));
+        Assertions.assertSame(applicationFilter, filters.get(0));
     }
 
     @Test
@@ -710,23 +708,25 @@ public class VaadinServiceTest {
 
         Instantiator instantiator = factory.createInstantitor(null);
 
-        Assert.assertSame(instantiator, loadedInstantiator.get());
+        Assertions.assertSame(instantiator, loadedInstantiator.get());
     }
 
-    @Test(expected = ServiceException.class)
+    @Test
     public void loadInstantiators_twoFactoriesInLookup_throws()
             throws ServiceException {
-        MockVaadinServletService service = createService();
+        assertThrows(ServiceException.class, () -> {
+            MockVaadinServletService service = createService();
 
-        Lookup lookup = service.getLookup();
+            Lookup lookup = service.getLookup();
 
-        InstantiatorFactory factory1 = createInstantiatorFactory();
-        InstantiatorFactory factory2 = createInstantiatorFactory();
+            InstantiatorFactory factory1 = createInstantiatorFactory();
+            InstantiatorFactory factory2 = createInstantiatorFactory();
 
-        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
-                .thenReturn(Arrays.asList(factory1, factory2));
+            Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                    .thenReturn(Arrays.asList(factory1, factory2));
 
-        service.loadInstantiators();
+            service.loadInstantiators();
+        });
     }
 
     @Test
@@ -742,9 +742,9 @@ public class VaadinServiceTest {
         List<RequestHandler> handlers = service.createRequestHandlers();
         Set<?> set = handlers.stream().map(Object::getClass)
                 .collect(Collectors.toSet());
-        Assert.assertTrue(set.contains(PwaHandler.class));
-        Assert.assertTrue(set.contains(WebComponentProvider.class));
-        Assert.assertTrue(set.contains(WebComponentBootstrapHandler.class));
+        Assertions.assertTrue(set.contains(PwaHandler.class));
+        Assertions.assertTrue(set.contains(WebComponentProvider.class));
+        Assertions.assertTrue(set.contains(WebComponentBootstrapHandler.class));
     }
 
     @Test
@@ -761,7 +761,7 @@ public class VaadinServiceTest {
 
         service.fireSessionDestroy(vaadinSession);
 
-        Assert.assertEquals(VaadinSessionState.CLOSED, stateRef.get());
+        Assertions.assertEquals(VaadinSessionState.CLOSED, stateRef.get());
     }
 
     @Test
@@ -782,7 +782,7 @@ public class VaadinServiceTest {
 
         service.removeFromHttpSession(httpSession);
 
-        Assert.assertTrue(session.sessionClosedExplicitly);
+        Assertions.assertTrue(session.sessionClosedExplicitly);
     }
 
     @Test
@@ -815,31 +815,31 @@ public class VaadinServiceTest {
         VaadinService service = createService();
         Executor executor = service.getExecutor();
         AtomicReference<String> threadName = new AtomicReference<>();
-        Assert.assertNotNull(executor);
+        Assertions.assertNotNull(executor);
         CountDownLatch latch = new CountDownLatch(1);
         executor.execute(() -> {
             threadName.set(Thread.currentThread().getName());
             latch.countDown();
         });
         latch.await();
-        Assert.assertNotNull("Task has not been not executed",
-                threadName.get());
-        Assert.assertTrue("Task was not executed by Vaadin default executor",
-                threadName.get().startsWith("VaadinTaskExecutor-"));
+        Assertions.assertNotNull(threadName.get(),
+                "Task has not been not executed");
+        Assertions.assertTrue(
+                threadName.get().startsWith("VaadinTaskExecutor-"),
+                "Task was not executed by Vaadin default executor");
     }
 
     @Test
     public void serviceDestroy_defaultExecutor_executorStopped() {
         VaadinService service = createService();
         Executor executor = service.getExecutor();
-        Assert.assertTrue(
-                "Expected the default executor to be an ExecutorService instance",
-                executor instanceof ExecutorService);
-        Assert.assertFalse("Expected executor service to be started",
-                ((ExecutorService) executor).isShutdown());
+        Assertions.assertTrue(executor instanceof ExecutorService,
+                "Expected the default executor to be an ExecutorService instance");
+        Assertions.assertFalse(((ExecutorService) executor).isShutdown(),
+                "Expected executor service to be started");
         service.destroy();
-        Assert.assertTrue("Expected executor service to be stopped",
-                ((ExecutorService) executor).isShutdown());
+        Assertions.assertTrue(((ExecutorService) executor).isShutdown(),
+                "Expected executor service to be stopped");
     }
 
     @Test
@@ -857,14 +857,12 @@ public class VaadinServiceTest {
         MockInstantiator instantiator = new MockInstantiator(initListener);
         MockVaadinServletService service = new MockVaadinServletService(false);
         service.init(instantiator);
-        Assert.assertSame(
-                "Expected VaadinService to return the custom executor",
-                executor, service.getExecutor());
+        Assertions.assertSame(executor, service.getExecutor(),
+                "Expected VaadinService to return the custom executor");
         service.getExecutor().execute(latch::countDown);
         latch.await();
-        Assert.assertTrue(
-                "Task should have been submitted to the custom executor",
-                taskSubmitted.get());
+        Assertions.assertTrue(taskSubmitted.get(),
+                "Task should have been submitted to the custom executor");
     }
 
     @Test
@@ -877,13 +875,12 @@ public class VaadinServiceTest {
         MockVaadinServletService service = new MockVaadinServletService(false);
         service.init(instantiator);
 
-        Assert.assertSame(
-                "Expected VaadinService to return the custom executor",
-                executor, service.getExecutor());
+        Assertions.assertSame(executor, service.getExecutor(),
+                "Expected VaadinService to return the custom executor");
 
         service.destroy();
-        Assert.assertFalse("Expected custom executor not to be stopped",
-                executor.isShutdown());
+        Assertions.assertFalse(executor.isShutdown(),
+                "Expected custom executor not to be stopped");
 
     }
 
@@ -901,8 +898,8 @@ public class VaadinServiceTest {
                 setExecutorInitListener, resetExecutorInitListener);
         MockVaadinServletService service = new MockVaadinServletService(false);
         service.init(instantiator);
-        Assert.assertNotSame("Custom executor should not be used", executor,
-                service.getExecutor());
+        Assertions.assertNotSame(executor, service.getExecutor(),
+                "Custom executor should not be used");
     }
 
     @Test
@@ -917,12 +914,12 @@ public class VaadinServiceTest {
             };
         });
         if (error.getCause() instanceof ServiceException serviceException) {
-            Assert.assertTrue(
-                    "Expected VaadinService initialization to fail with null executor",
+            Assertions.assertTrue(
                     serviceException.getMessage()
-                            .contains("Unable to create the default Executor"));
+                            .contains("Unable to create the default Executor"),
+                    "Expected VaadinService initialization to fail with null executor");
         } else {
-            Assert.fail("Expected ServiceException to be thrown");
+            Assertions.fail("Expected ServiceException to be thrown");
         }
     }
 

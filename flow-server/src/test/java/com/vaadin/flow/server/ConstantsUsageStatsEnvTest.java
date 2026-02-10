@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for VAADIN_USAGE_STATS_ENABLED environment variable affecting
  * Constants.DEFAULT_DEVMODE_STATS.
  */
-public class ConstantsUsageStatsEnvTest {
+class ConstantsUsageStatsEnvTest {
 
     private String runIsolated(Boolean setEnv, String value)
             throws IOException, InterruptedException {
@@ -63,30 +63,30 @@ public class ConstantsUsageStatsEnvTest {
     @Test
     public void whenEnvNotSet_statsEnabledByDefault() throws Exception {
         String out = runIsolated(false, null);
-        Assert.assertEquals("true", out);
+        Assertions.assertEquals("true", out);
     }
 
     @Test
     public void whenEnvFalse_statsDisabled() throws Exception {
         String out = runIsolated(true, "false");
-        Assert.assertEquals("false", out);
+        Assertions.assertEquals("false", out);
     }
 
     @Test
     public void whenEnvFALSE_statsDisabled() throws Exception {
         String out = runIsolated(true, "FALSE");
-        Assert.assertEquals("false", out);
+        Assertions.assertEquals("false", out);
     }
 
     @Test
     public void whenEnvTrue_statsEnabled() throws Exception {
         String out = runIsolated(true, "true");
-        Assert.assertEquals("true", out);
+        Assertions.assertEquals("true", out);
     }
 
     @Test
     public void whenEnvRandom_statsEnabled() throws Exception {
         String out = runIsolated(true, "random-value");
-        Assert.assertEquals("true", out);
+        Assertions.assertEquals("true", out);
     }
 }
