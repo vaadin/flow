@@ -22,8 +22,8 @@ import java.util.Set;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -32,7 +32,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponent
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
 @SuppressWarnings("rawtypes")
-public class WebComponentExporterUtilsTest {
+class WebComponentExporterUtilsTest {
 
     @Test
     public void getFactories_notEligibleExportersAreFiltered_factoriesAreReturned() {
@@ -41,7 +41,7 @@ public class WebComponentExporterUtilsTest {
                 .getFactories(new HashSet<>(Arrays.asList(GoodExporter.class,
                         AbstractExporter.class, PackageLocalExporter.class,
                         NoPublicCtorExporter.class, ExporterFactory.class)));
-        Assert.assertEquals(2, factories.size());
+        Assertions.assertEquals(2, factories.size());
 
         Iterator<WebComponentExporterFactory> iterator = factories.iterator();
         WebComponentExporterFactory factory = iterator.next();
@@ -55,7 +55,7 @@ public class WebComponentExporterUtilsTest {
 
     private void assertFactories(WebComponentExporterFactory factory,
             WebComponentExporterFactory anotherFactory) {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 anotherFactory instanceof DefaultWebComponentExporterFactory);
         WebComponentExporter exporter = anotherFactory.create();
         MatcherAssert.assertThat(exporter,

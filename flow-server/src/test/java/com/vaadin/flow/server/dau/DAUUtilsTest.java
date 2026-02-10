@@ -21,10 +21,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -46,24 +46,24 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class DAUUtilsTest {
+class DAUUtilsTest {
 
     private String subscriptionKey;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (subscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey", subscriptionKey);
@@ -94,7 +94,7 @@ public class DAUUtilsTest {
             FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verifyNoInteractions();
 
-            Assert.assertThrows(DauEnforcementException.class,
+            Assertions.assertThrows(DauEnforcementException.class,
                     () -> FlowDauIntegration.applyEnforcement(request,
                             unused -> true));
             dauIntegration.verify(
@@ -127,7 +127,7 @@ public class DAUUtilsTest {
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
 
-            Assert.assertThrows(DauEnforcementException.class,
+            Assertions.assertThrows(DauEnforcementException.class,
                     () -> FlowDauIntegration.applyEnforcement(request,
                             unused -> true));
 
@@ -252,11 +252,12 @@ public class DAUUtilsTest {
     private void assertJsonErrorProperty(String expectedKey,
             String expectedValue, JsonNode json) {
         if (expectedValue != null) {
-            Assert.assertEquals(expectedKey, expectedValue,
-                    json.get(expectedKey).asString());
+            Assertions.assertEquals(expectedValue,
+                    json.get(expectedKey).asString(), expectedKey);
         } else {
-            Assert.assertEquals("expected key " + expectedKey + " to be null",
-                    JsonNodeType.NULL, json.get(expectedKey).getNodeType());
+            Assertions.assertEquals(JsonNodeType.NULL,
+                    json.get(expectedKey).getNodeType(),
+                    "expected key " + expectedKey + " to be null");
         }
 
     }

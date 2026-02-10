@@ -23,17 +23,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -51,7 +52,7 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.mockito.Mockito.mock;
 
-public class UploadTransferProgressTest {
+class UploadTransferProgressTest {
     private static final int DUMMY_CONTENT_LENGTH = 160000;
     public static final String DUMMY_FILE_NAME = "test.tmp";
 
@@ -62,11 +63,10 @@ public class UploadTransferProgressTest {
     private UI ui;
     private Element element;
     private UploadEvent uploadEvent;
+    @TempDir
+    Path temporaryFolder;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
         session = new AlwaysLockedVaadinSession(service) {
@@ -122,11 +122,13 @@ public class UploadTransferProgressTest {
         UploadHandler handler = UploadHandler.toFile(
                 (meta, file) -> actualFile.set(file), (uploadMetadata) -> {
                     try {
-                        File file = temporaryFolder.newFile(DUMMY_FILE_NAME);
+                        File file = Files.createFile(
+                                temporaryFolder.resolve(DUMMY_FILE_NAME))
+                                .toFile();
                         expectedFile.set(file);
                         return file;
                     } catch (IOException e) {
-                        Assert.fail("Failed to create temp file: "
+                        Assertions.fail("Failed to create temp file: "
                                 + e.getMessage());
                     }
                     return null;
@@ -136,7 +138,7 @@ public class UploadTransferProgressTest {
         handler.handleUploadRequest(uploadEvent);
 
         assertListenersInvoked(invocations, transferredBytesRecords);
-        Assert.assertEquals(expectedFile.get(), actualFile.get());
+        Assertions.assertEquals(expectedFile.get(), actualFile.get());
     }
 
     @Test
@@ -150,10 +152,10 @@ public class UploadTransferProgressTest {
 
         try {
             handler.handleUploadRequest(uploadEvent);
-            Assert.fail("Expected an IOException to be thrown");
+            Assertions.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onError"), invocations);
+        Assertions.assertEquals(List.of("onError"), invocations);
     }
 
     @Test
@@ -187,10 +189,10 @@ public class UploadTransferProgressTest {
 
         try {
             handler.handleUploadRequest(uploadEvent);
-            Assert.fail("Expected an IOException to be thrown");
+            Assertions.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Assertions.assertEquals(List.of("onStart", "onError"), invocations);
     }
 
     @Test
@@ -224,10 +226,10 @@ public class UploadTransferProgressTest {
 
         try {
             handler.handleUploadRequest(uploadEvent);
-            Assert.fail("Expected an IOException to be thrown");
+            Assertions.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Assertions.assertEquals(List.of("onStart", "onError"), invocations);
     }
 
     private ByteArrayInputStream createRandomBytes(int size) {
@@ -241,9 +243,9 @@ public class UploadTransferProgressTest {
         return new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH,
+                Assertions.assertEquals(DUMMY_CONTENT_LENGTH,
                         context.contentLength());
-                Assert.assertEquals(DUMMY_FILE_NAME, context.fileName());
+                Assertions.assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onStart");
             }
 
@@ -251,18 +253,18 @@ public class UploadTransferProgressTest {
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH, totalBytes);
-                Assert.assertEquals(DUMMY_FILE_NAME, context.fileName());
+                Assertions.assertEquals(DUMMY_CONTENT_LENGTH, totalBytes);
+                Assertions.assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onProgress");
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH,
+                Assertions.assertEquals(DUMMY_CONTENT_LENGTH,
                         context.contentLength());
-                Assert.assertEquals(DUMMY_CONTENT_LENGTH, transferredBytes);
-                Assert.assertEquals(DUMMY_FILE_NAME, context.fileName());
+                Assertions.assertEquals(DUMMY_CONTENT_LENGTH, transferredBytes);
+                Assertions.assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onComplete");
             }
 
@@ -296,7 +298,7 @@ public class UploadTransferProgressTest {
             @Override
             public void onError(TransferContext context, IOException reason) {
                 invocations.add("onError");
-                Assert.assertEquals("Test exception", reason.getMessage());
+                Assertions.assertEquals("Test exception", reason.getMessage());
             }
         };
     }
@@ -304,10 +306,10 @@ public class UploadTransferProgressTest {
     private static void assertListenersInvoked(List<String> invocations,
             List<Long> transferredBytesRecords) {
         // Two invocations with interval of 65536 bytes for total size 165000
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        Assert.assertArrayEquals(new long[] { 65536, 131072 },
+        Assertions.assertArrayEquals(new long[] { 65536, 131072 },
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
     }

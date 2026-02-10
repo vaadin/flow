@@ -18,9 +18,9 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
@@ -31,14 +31,14 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Unit tests for {@link UploadEvent} rejection functionality.
  */
-public class UploadEventTest {
+class UploadEventTest {
 
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
     private Element owner;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
@@ -54,10 +54,10 @@ public class UploadEventTest {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
-        Assert.assertFalse("Event should not be rejected initially",
-                event.isRejected());
-        Assert.assertNull("Rejection message should be null initially",
-                event.getRejectionMessage());
+        Assertions.assertFalse(event.isRejected(),
+                "Event should not be rejected initially");
+        Assertions.assertNull(event.getRejectionMessage(),
+                "Rejection message should be null initially");
     }
 
     @Test
@@ -67,10 +67,10 @@ public class UploadEventTest {
 
         event.reject();
 
-        Assert.assertTrue("Event should be marked as rejected",
-                event.isRejected());
-        Assert.assertEquals("Default rejection message should be set",
-                "File rejected", event.getRejectionMessage());
+        Assertions.assertTrue(event.isRejected(),
+                "Event should be marked as rejected");
+        Assertions.assertEquals("File rejected", event.getRejectionMessage(),
+                "Default rejection message should be set");
     }
 
     @Test
@@ -81,10 +81,10 @@ public class UploadEventTest {
         String customMessage = "Only PNG files are accepted";
         event.reject(customMessage);
 
-        Assert.assertTrue("Event should be marked as rejected",
-                event.isRejected());
-        Assert.assertEquals("Custom rejection message should be set",
-                customMessage, event.getRejectionMessage());
+        Assertions.assertTrue(event.isRejected(),
+                "Event should be marked as rejected");
+        Assertions.assertEquals(customMessage, event.getRejectionMessage(),
+                "Custom rejection message should be set");
     }
 
     @Test
@@ -96,13 +96,13 @@ public class UploadEventTest {
 
         try {
             event.getInputStream();
-            Assert.fail(
+            Assertions.fail(
                     "Expected IllegalStateException when accessing rejected upload stream");
         } catch (IllegalStateException e) {
-            Assert.assertTrue("Exception should mention rejection",
-                    e.getMessage().contains("rejected"));
-            Assert.assertTrue("Exception should include rejection reason",
-                    e.getMessage().contains("Not allowed"));
+            Assertions.assertTrue(e.getMessage().contains("rejected"),
+                    "Exception should mention rejection");
+            Assertions.assertTrue(e.getMessage().contains("Not allowed"),
+                    "Exception should include rejection reason");
         }
     }
 
@@ -111,7 +111,7 @@ public class UploadEventTest {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
-        Assert.assertNotNull("Should be able to get input stream",
-                event.getInputStream());
+        Assertions.assertNotNull(event.getInputStream(),
+                "Should be able to get input stream");
     }
 }
