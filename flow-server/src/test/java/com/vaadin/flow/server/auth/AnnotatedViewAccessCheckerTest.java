@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.auth;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,10 +38,12 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByGrandParentView;
@@ -54,6 +58,7 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class AnnotatedViewAccessCheckerTest {
 
@@ -543,6 +548,226 @@ public class AnnotatedViewAccessCheckerTest {
         RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return new NavigationContext(event, principal, roles::contains);
+    }
+
+    @Test
+    public void layoutDenial_viewBroaderThanLayout_logsWarn() {
+        // AnonymousAllowed view (level 3) + PermitAll layout (level 2)
+        // = misconfiguration → WARN with "configuration error" message
+        String logOutput = captureLogOutput(() -> {
+            NavigationContext context = setupLayoutDenialContext(
+                    AnonymousAllowedView.class, null,
+                    AccessControlTestClasses.PermitAllLayout.class, true,
+                    false);
+            viewAccessChecker.check(context);
+        });
+        Assert.assertTrue(
+                "Expected WARN log for misconfiguration, got: " + logOutput,
+                logOutput.contains("WARN"));
+        Assert.assertTrue(
+                "Expected 'configuration error' in log, got: " + logOutput,
+                logOutput.contains("configuration error"));
+    }
+
+    @Test
+    public void layoutDenial_sameAccessLevel_navigating_devMode_logsInfo() {
+        // PermitAll view + PermitAll layout, navigating=true, devMode=true
+        // anonymous user → layout denies, view not broader → INFO
+        String logOutput = captureLogOutput(() -> {
+            NavigationContext context = setupLayoutDenialContext(
+                    PermitAllView.class, null,
+                    AccessControlTestClasses.PermitAllLayout.class, true,
+                    false);
+            viewAccessChecker.check(context);
+        });
+        Assert.assertTrue(
+                "Expected INFO log for dev-mode navigation denial, got: "
+                        + logOutput,
+                logOutput.contains("INFO"));
+        Assert.assertFalse(
+                "Should not log WARN when access levels are equal, got: "
+                        + logOutput,
+                logOutput.contains("WARN")
+                        && logOutput.contains("configuration error"));
+    }
+
+    @Test
+    public void layoutDenial_securityProbe_notNavigating_noWarnOrInfo() {
+        // PermitAll view + PermitAll layout, navigating=false (security probe)
+        // → DEBUG (not visible at default INFO level)
+        String logOutput = captureLogOutput(() -> {
+            NavigationContext context = setupLayoutDenialContext(
+                    PermitAllView.class, null,
+                    AccessControlTestClasses.PermitAllLayout.class, false,
+                    false);
+            viewAccessChecker.check(context);
+        });
+        Assert.assertFalse(
+                "Security probe should not produce WARN, got: " + logOutput,
+                logOutput.contains("WARN") && logOutput.contains("layout"));
+        Assert.assertFalse(
+                "Security probe should not produce INFO about layout, got: "
+                        + logOutput,
+                logOutput.contains("INFO") && logOutput.contains("layout"));
+    }
+
+    @Test
+    public void layoutDenial_navigating_productionMode_noWarnOrInfo() {
+        // PermitAll view + PermitAll layout, navigating=true, prodMode=true
+        // → DEBUG (not visible at default INFO level)
+        String logOutput = captureLogOutput(() -> {
+            NavigationContext context = setupLayoutDenialContext(
+                    PermitAllView.class, null,
+                    AccessControlTestClasses.PermitAllLayout.class, true, true);
+            viewAccessChecker.check(context);
+        });
+        Assert.assertFalse(
+                "Production mode should not produce WARN, got: " + logOutput,
+                logOutput.contains("WARN") && logOutput.contains("layout"));
+        Assert.assertFalse(
+                "Production mode should not produce INFO about layout, got: "
+                        + logOutput,
+                logOutput.contains("INFO") && logOutput.contains("layout"));
+    }
+
+    @Test
+    public void layoutDenial_parentLayout_viewBroaderThanLayout_logsWarn() {
+        // PermitAll view (level 2) with no-annotation parent layout (level 0)
+        // = misconfiguration → WARN
+        String logOutput = captureLogOutput(() -> {
+            NavigationContext context = setupParentLayoutDenialContext(
+                    AccessControlTestClasses.PermitAllWithEmptyParentView.class,
+                    null, AccessControlTestClasses.NoPermitParent.class, true,
+                    false);
+            viewAccessChecker.check(context);
+        });
+        Assert.assertTrue(
+                "Expected WARN log for misconfiguration, got: " + logOutput,
+                logOutput.contains("WARN"));
+        Assert.assertTrue(
+                "Expected 'configuration error' in log, got: " + logOutput,
+                logOutput.contains("configuration error"));
+    }
+
+    /**
+     * Captures stderr output produced during the given action. slf4j-simple
+     * writes log output to System.err.
+     */
+    private String captureLogOutput(Runnable action) {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream captureStream = new PrintStream(baos);
+        System.setErr(captureStream);
+        try {
+            action.run();
+        } finally {
+            System.setErr(originalErr);
+        }
+        return baos.toString();
+    }
+
+    /**
+     * Sets up a NavigationContext that triggers the autolayout-based layout
+     * denial path for testing log levels.
+     */
+    private NavigationContext setupLayoutDenialContext(
+            Class<? extends Component> viewClass, User user,
+            Class<? extends Component> layoutClass, boolean navigating,
+            boolean productionMode) {
+        CurrentInstance.clearAll();
+
+        Principal principal = getPrincipal(user);
+        Set<String> roles = getRoles(user);
+
+        Router router = Mockito.mock(Router.class);
+        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+
+        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+        Mockito.when(routeRegistry.getContext()).thenReturn(vaadinContext);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
+        Mockito.when(vaadinContext.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
+        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(appConfig);
+
+        Mockito.when(routeRegistry.getRegisteredRoutes())
+                .thenReturn(Collections.emptyList());
+
+        String route = getRoute(viewClass);
+        Mockito.when(routeRegistry.hasLayout(route)).thenReturn(true);
+        Mockito.when(routeRegistry.getLayout(route))
+                .thenAnswer(invocation -> layoutClass);
+
+        Location location = new Location(route);
+        return new NavigationContext(router, viewClass, location,
+                RouteParameters.empty(), principal, roles::contains, false,
+                navigating);
+    }
+
+    /**
+     * Sets up a NavigationContext that triggers the parent-layout-based denial
+     * path for testing log levels.
+     */
+    @SuppressWarnings("unchecked")
+    private NavigationContext setupParentLayoutDenialContext(
+            Class<? extends Component> viewClass, User user,
+            Class<? extends Component> parentLayoutClass, boolean navigating,
+            boolean productionMode) {
+        CurrentInstance.clearAll();
+
+        Principal principal = getPrincipal(user);
+        Set<String> roles = getRoles(user);
+
+        Router router = Mockito.mock(Router.class);
+        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+
+        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+        Mockito.when(routeRegistry.getContext()).thenReturn(vaadinContext);
+
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
+        Mockito.when(vaadinContext.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(appConfig);
+        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(appConfig);
+
+        RouteData data = new RouteData(
+                Collections.singletonList((Class) parentLayoutClass),
+                getRoute(viewClass), Collections.emptyMap(), viewClass,
+                Collections.emptyList());
+        Mockito.when(routeRegistry.getRegisteredRoutes())
+                .thenReturn(Collections.singletonList(data));
+
+        String route = getRoute(viewClass);
+        Location location = new Location(route);
+        return new NavigationContext(router, viewClass, location,
+                RouteParameters.empty(), principal, roles::contains, false,
+                navigating);
+    }
+
+    private static Principal getPrincipal(User user) {
+        if (user == null) {
+            return null;
+        }
+        return AccessAnnotationCheckerTest.USER_PRINCIPAL;
+    }
+
+    private static Set<String> getRoles(User user) {
+        Set<String> roles = new HashSet<>();
+        if (user == User.NORMAL_USER) {
+            roles.add("user");
+        } else if (user == User.ADMIN) {
+            roles.add("admin");
+        }
+        return roles;
     }
 
     static String getRoute(Class<?> navigationTarget) {
