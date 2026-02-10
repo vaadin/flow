@@ -35,10 +35,10 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         label.bindText(signal);
 
-        signal.value("text-1");
+        signal.set("text-1");
         assertEquals("text-1", label.getText());
 
-        signal.value("text-2");
+        signal.set("text-2");
         assertEquals("text-2", label.getText());
     }
 
@@ -70,7 +70,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", label.getText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", label.getText());
     }
 }

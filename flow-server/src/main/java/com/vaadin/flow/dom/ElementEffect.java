@@ -85,7 +85,7 @@ public final class ElementEffect implements Serializable {
      * <pre>
      * Registration effect = ElementEffect.effect(myElement, () -> {
      *     Notification.show("Element is attached and signal value is "
-     *             + someSignal.value());
+     *             + someSignal.get());
      * });
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
@@ -141,7 +141,7 @@ public final class ElementEffect implements Serializable {
     public static <T> Registration bind(Element owner, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter) {
         return effect(owner, () -> {
-            setter.accept(owner, signal.value());
+            setter.accept(owner, signal.get());
         });
     }
 

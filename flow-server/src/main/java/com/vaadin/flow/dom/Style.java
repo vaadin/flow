@@ -199,7 +199,7 @@ public interface Style extends Serializable {
      * the style property value synchronized with the signal.
      * <p>
      * When a binding is in place, the style signal mirrors
-     * {@code signal.value()}. If the signal value is {@code null}, the style
+     * {@code signal.get()}. If the signal value is {@code null}, the style
      * property is removed; otherwise it is set to the string value.
      * <p>
      * The binding effect is active only while the owner element is in the

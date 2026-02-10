@@ -66,7 +66,7 @@ public final class ComponentEffect implements Serializable {
      * <pre>
      * Registration effect = ComponentEffect.effect(myComponent, () -> {
      *     Notification.show("Component is attached and signal value is "
-     *             + someSignal.value());
+     *             + someSignal.get());
      * });
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
@@ -124,7 +124,7 @@ public final class ComponentEffect implements Serializable {
      */
     public static <C extends Component, T> Registration bind(C owner,
             Signal<T> signal, SerializableBiConsumer<C, T> setter) {
-        return effect(owner, () -> setter.accept(owner, signal.value()));
+        return effect(owner, () -> setter.accept(owner, signal.get()));
     }
 
     /**
@@ -212,7 +212,7 @@ public final class ComponentEffect implements Serializable {
 
         return ComponentEffect.effect(parentComponent,
                 () -> runEffect(new BindChildrenEffectContext<T, S>(parent,
-                        list.value(), childFactory, valueSignalToChildCache)));
+                        list.get(), childFactory, valueSignalToChildCache)));
     }
 
     private static <T, S extends Signal<T>> void runEffect(

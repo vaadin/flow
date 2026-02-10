@@ -50,10 +50,10 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        assertFalse(doneSignal.value());
+        assertFalse(doneSignal.get());
 
-        todoSignal.value(new Todo("Buy milk", true));
-        assertTrue(doneSignal.value());
+        todoSignal.set(new Todo("Buy milk", true));
+        assertTrue(doneSignal.get());
     }
 
     @Test
@@ -73,9 +73,9 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        doneSignal.value(true);
+        doneSignal.set(true);
 
-        assertEquals(new Todo("Buy milk", true), todoSignal.value());
+        assertEquals(new Todo("Buy milk", true), todoSignal.get());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        SignalOperation<Boolean> operation = doneSignal.value(true);
+        SignalOperation<Boolean> operation = doneSignal.set(true);
 
         Boolean oldValue = TestUtil.assertSuccess(operation);
         assertFalse(oldValue);
@@ -98,9 +98,9 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        doneSignal.value(true);
+        doneSignal.set(true);
 
-        assertEquals("Original text", todoSignal.value().text());
+        assertEquals("Original text", todoSignal.get().text());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = doneSignal.replace(false, true);
 
         TestUtil.assertSuccess(operation);
-        assertTrue(doneSignal.value());
+        assertTrue(doneSignal.get());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = doneSignal.replace(true, false);
 
         TestUtil.assertFailure(operation);
-        assertFalse(doneSignal.value());
+        assertFalse(doneSignal.get());
     }
 
     @Test
@@ -141,8 +141,8 @@ public class MappedWritableSignalTest extends SignalTestBase {
 
         Boolean oldValue = TestUtil.assertSuccess(operation);
         assertFalse(oldValue);
-        assertTrue(doneSignal.value());
-        assertEquals(new Todo("Task", true), todoSignal.value());
+        assertTrue(doneSignal.get());
+        assertEquals(new Todo("Task", true), todoSignal.get());
     }
 
     @Test
@@ -154,7 +154,7 @@ public class MappedWritableSignalTest extends SignalTestBase {
 
         doneSignal.update(value -> !value);
 
-        assertEquals("Task", todoSignal.value().text());
+        assertEquals("Task", todoSignal.get().text());
     }
 
     @Test
@@ -172,10 +172,10 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        doneSignal.value(true);
+        doneSignal.set(true);
 
-        assertTrue(outerSignal.value().inner().done());
-        assertEquals("Task", outerSignal.value().inner().text());
+        assertTrue(outerSignal.get().inner().done());
+        assertEquals("Task", outerSignal.get().inner().text());
     }
 
     @Test
@@ -187,16 +187,16 @@ public class MappedWritableSignalTest extends SignalTestBase {
 
         AtomicInteger effectCount = new AtomicInteger();
         Signal.effect(() -> {
-            doneSignal.value();
+            doneSignal.get();
             effectCount.incrementAndGet();
         });
 
         assertEquals(1, effectCount.get());
 
-        doneSignal.value(true);
+        doneSignal.set(true);
         assertEquals(2, effectCount.get());
 
-        todoSignal.value(new Todo("Changed", true));
+        todoSignal.set(new Todo("Changed", true));
         assertEquals(3, effectCount.get());
     }
 
@@ -210,8 +210,8 @@ public class MappedWritableSignalTest extends SignalTestBase {
 
         assertFalse(readonlySignal instanceof WritableSignal);
 
-        doneSignal.value(true);
-        assertTrue(readonlySignal.value());
+        doneSignal.set(true);
+        assertTrue(readonlySignal.get());
     }
 
     @Test
@@ -223,12 +223,12 @@ public class MappedWritableSignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal.map(Todo::done,
                 Todo::withDone);
 
-        textSignal.value("Updated task");
-        assertEquals("Updated task", todoSignal.value().text());
-        assertFalse(todoSignal.value().done());
+        textSignal.set("Updated task");
+        assertEquals("Updated task", todoSignal.get().text());
+        assertFalse(todoSignal.get().done());
 
-        doneSignal.value(true);
-        assertEquals("Updated task", todoSignal.value().text());
-        assertTrue(todoSignal.value().done());
+        doneSignal.set(true);
+        assertEquals("Updated task", todoSignal.get().text());
+        assertTrue(todoSignal.get().done());
     }
 }

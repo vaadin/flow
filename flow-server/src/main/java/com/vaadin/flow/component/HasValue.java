@@ -249,7 +249,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * the value back. After the callback, the signal is re-consulted via
      * {@link Signal#peek()} and if its value differs from what was being set,
      * the new value is ignored and the signal's updated value is used instead,
-     * i.e. in cases where write callback has `signal.value("different")`,
+     * i.e. in cases where write callback has `signal.set("different")`,
      * whereas a value being set is "a new value", the "different" value wins.
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only and
@@ -262,8 +262,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Input component = new Input();
      * add(component);
-     * component.bindValue(signal, signal::value);
-     * signal.value("Hello"); // The input's value changes
+     * component.bindValue(signal, signal::set);
+     * signal.set("Hello"); // The input's value changes
      * </pre>
      *
      * @param valueSignal
@@ -300,7 +300,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Input component = new Input();
      * add(component);
      * component.bindReadOnly(signal);
-     * signal.value(true); // The input becomes read-only
+     * signal.set(true); // The input becomes read-only
      * </pre>
      *
      * @param readOnlySignal

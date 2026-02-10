@@ -65,8 +65,8 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public C value() {
-        return getter.map(parent.value());
+    public C get() {
+        return getter.map(parent.get());
     }
 
     @Override
@@ -75,7 +75,7 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public SignalOperation<C> value(C newChildValue) {
+    public SignalOperation<C> set(C newChildValue) {
         C oldChildValue = getter.map(parent.peek());
         parent.modify(
                 parentValue -> modifier.modify(parentValue, newChildValue));

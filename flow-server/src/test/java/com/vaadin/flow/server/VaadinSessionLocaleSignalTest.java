@@ -43,7 +43,7 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
 
         assertNotNull("localeSignal() should never return null", signal);
         assertEquals("Signal value should match getLocale()",
-                session.getLocale(), signal.value());
+                session.getLocale(), signal.get());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
         session.setLocale(newLocale);
 
         assertEquals("Signal should reflect the new locale after setLocale()",
-                newLocale, signal.value());
+                newLocale, signal.get());
         assertEquals("getLocale() should also return the new locale", newLocale,
                 session.getLocale());
     }
@@ -80,12 +80,12 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
             newLocale = Locale.GERMAN;
         }
 
-        signal.value(newLocale);
+        signal.set(newLocale);
 
         assertEquals("getLocale() should reflect the new locale after "
                 + "writing to signal", newLocale, session.getLocale());
         assertEquals("Signal should have the new value", newLocale,
-                signal.value());
+                signal.get());
     }
 
     @Test
@@ -105,13 +105,13 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
         WritableSignal<Locale> signal = session.localeSignal();
 
         session.setLocale(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, signal.value());
+        assertEquals(Locale.FRENCH, signal.get());
 
         session.setLocale(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, signal.value());
+        assertEquals(Locale.GERMAN, signal.get());
 
         session.setLocale(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, signal.value());
+        assertEquals(Locale.JAPANESE, signal.get());
     }
 
     @Test
@@ -119,13 +119,13 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
         VaadinSession session = getSession();
         WritableSignal<Locale> signal = session.localeSignal();
 
-        signal.value(Locale.FRENCH);
+        signal.set(Locale.FRENCH);
         assertEquals(Locale.FRENCH, session.getLocale());
 
-        signal.value(Locale.GERMAN);
+        signal.set(Locale.GERMAN);
         assertEquals(Locale.GERMAN, session.getLocale());
 
-        signal.value(Locale.JAPANESE);
+        signal.set(Locale.JAPANESE);
         assertEquals(Locale.JAPANESE, session.getLocale());
     }
 }

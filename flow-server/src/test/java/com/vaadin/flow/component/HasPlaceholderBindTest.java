@@ -48,11 +48,11 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("first", component.getPlaceholder());
 
         // Update signal and verify placeholder follows
-        signal.value("second");
+        signal.set("second");
         assertEquals("second", component.getPlaceholder());
 
         // Another update to ensure continued propagation
-        signal.value("third");
+        signal.set("third");
         assertEquals("third", component.getPlaceholder());
     }
 
@@ -64,7 +64,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         component.bindPlaceholder(signal);
         // No propagation while detached
         assertNull(component.getPlaceholder());
-        signal.value("bar");
+        signal.set("bar");
         assertNull(component.getPlaceholder());
     }
 
@@ -74,7 +74,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         // Update before attach
-        signal.value("bar");
+        signal.set("bar");
         assertNull(component.getPlaceholder());
         // Attach -> latest value is applied
         UI.getCurrent().add(component);
@@ -91,7 +91,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("foo", component.getPlaceholder());
         // Detach and update signal -> ignored while detached
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", component.getPlaceholder());
         // Re-attach -> latest value applied
         UI.getCurrent().add(component);

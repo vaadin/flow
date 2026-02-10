@@ -118,7 +118,7 @@ public class ElementBindAttributeTest {
 
         component.removeFromParent();
 
-        signal.value("baz");
+        signal.set("baz");
 
         Assert.assertTrue(events.isEmpty());
         assertEquals("bar", component.getElement().getAttribute("foo"));
@@ -148,7 +148,7 @@ public class ElementBindAttributeTest {
         assertEquals("bar", component.getElement().getAttribute("foo"));
 
         component.removeFromParent();
-        signal.value("baz");
+        signal.set("baz");
 
         assertEquals("baz", signal.peek());
         assertEquals("bar", component.getElement().getAttribute("foo"));
@@ -195,7 +195,7 @@ public class ElementBindAttributeTest {
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
-        signal.value("baz");
+        signal.set("baz");
 
         assertEquals("baz", component.getElement().getAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
@@ -223,7 +223,7 @@ public class ElementBindAttributeTest {
         assertEquals("foo", component.getElement().getAttribute("attr1"));
         assertEquals("foo", component.getElement().getAttribute("attr2"));
 
-        signal.value("foobar");
+        signal.set("foobar");
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("foobar", component.getElement().getAttribute("attr2"));
@@ -244,8 +244,8 @@ public class ElementBindAttributeTest {
         assertEquals("foo", component.getElement().getAttribute("attr1"));
         assertEquals("bar", component.getElement().getAttribute("attr2"));
 
-        signal1.value("foobar");
-        signal2.value("barfoo");
+        signal1.set("foobar");
+        signal2.set("barfoo");
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("barfoo", component.getElement().getAttribute("attr2"));
@@ -273,7 +273,7 @@ public class ElementBindAttributeTest {
 
         Signal<String> signal = Signal.computed(() -> "bar");
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
 
         component.getElement().bindAttribute("foo", computedSignal);
 
@@ -294,7 +294,7 @@ public class ElementBindAttributeTest {
 
         assertEquals("", component.getElement().getAttribute("foo"));
 
-        signal.value(false);
+        signal.set(false);
 
         assertNull(component.getElement().getAttribute("foo"));
         // expecting whole attribute to be removed

@@ -260,14 +260,14 @@ public class ComponentEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
         Registration registration = ComponentEffect.effect(component, () -> {
-            signal.value();
+            signal.get();
             count.incrementAndGet();
         });
 
         assertEquals("Effect should not be run until component is attached", 0,
                 count.get());
 
-        signal.value("test");
+        signal.set("test");
         assertEquals(
                 "Effect should not be run until component is attached even after signal value change",
                 0, count.get());
@@ -278,20 +278,20 @@ public class ComponentEffectTest {
         assertEquals("Effect should be run once component is attached", 1,
                 count.get());
 
-        signal.value("test2");
+        signal.set("test2");
         assertEquals("Effect should be run when signal value is chaged", 2,
                 count.get());
 
         ui.remove(component);
 
-        signal.value("test3");
+        signal.set("test3");
         assertEquals("Effect should not be run after detach", 2, count.get());
 
         ui.add(component);
         assertEquals("Effect should be run after attach", 3, count.get());
 
         registration.remove();
-        signal.value("test4");
+        signal.set("test4");
         assertEquals("Effect should not be run after remove", 3, count.get());
     }
 
@@ -311,13 +311,13 @@ public class ComponentEffectTest {
                 component.getValue());
 
         // Change signal value
-        signal.value("new value");
+        signal.set("new value");
 
         assertEquals("Component should be updated with new value", "new value",
                 component.getValue());
 
         // Change signal value again
-        signal.value("another value");
+        signal.set("another value");
 
         assertEquals("Component should be updated with another value",
                 "another value", component.getValue());
@@ -325,7 +325,7 @@ public class ComponentEffectTest {
         registration.remove();
 
         // Change signal value after registration is removed
-        signal.value("final value");
+        signal.set("final value");
 
         assertEquals(
                 "Component should not be updated after registration is removed",
@@ -356,7 +356,7 @@ public class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
         assertEquals(0, parentComponent.getComponentCount());
     }
 
@@ -393,7 +393,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
-            expectedComponent.setValue(valueSignal.value());
+            expectedComponent.setValue(valueSignal.get());
             return expectedComponent;
         });
         assertEquals(1, parentComponent.getComponentCount());
@@ -415,7 +415,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals("Parent component children count is wrong", 1,
                 parentComponent.getComponentCount());
@@ -450,7 +450,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals("Parent component children count is wrong", 3,
                 parentComponent.getComponentCount());
@@ -458,7 +458,7 @@ public class ComponentEffectTest {
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
 
-        taskList.remove(taskList.value().get(0));
+        taskList.remove(taskList.get().get(0));
 
         assertEquals("Parent component children count is wrong", 2,
                 parentComponent.getComponentCount());
@@ -489,13 +489,13 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals("Parent component children count is wrong", 3,
                 parentComponent.getComponentCount());
 
         // move last to first
-        taskList.moveTo(taskList.value().get(2),
+        taskList.moveTo(taskList.get().get(2),
                 SharedListSignal.ListPosition.first());
 
         assertEquals("Parent component children count is wrong", 3,
@@ -505,15 +505,15 @@ public class ComponentEffectTest {
                         .getValue());
 
         // move it back to last
-        taskList.moveTo(taskList.value().get(0),
+        taskList.moveTo(taskList.get().get(0),
                 SharedListSignal.ListPosition.last());
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(2))
                         .getValue());
 
         // move last between first and last
-        taskList.moveTo(taskList.value().get(2), SharedListSignal.ListPosition
-                .between(taskList.value().get(0), taskList.value().get(1)));
+        taskList.moveTo(taskList.get().get(2), SharedListSignal.ListPosition
+                .between(taskList.get().get(0), taskList.get().get(1)));
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(1))
                         .getValue());
@@ -531,7 +531,7 @@ public class ComponentEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move last to first
-        taskList.moveTo(taskList.value().get(2),
+        taskList.moveTo(taskList.get().get(2),
                 SharedListSignal.ListPosition.first());
 
         List<TestComponent> children = parentComponent.getChildren()
@@ -557,7 +557,7 @@ public class ComponentEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move first to last
-        taskList.moveTo(taskList.value().get(0),
+        taskList.moveTo(taskList.get().get(0),
                 SharedListSignal.ListPosition.last());
 
         List<TestComponent> children = parentComponent.getChildren()
@@ -583,8 +583,8 @@ public class ComponentEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move last between first and second
-        taskList.moveTo(taskList.value().get(2), SharedListSignal.ListPosition
-                .between(taskList.value().get(0), taskList.value().get(1)));
+        taskList.moveTo(taskList.get().get(2), SharedListSignal.ListPosition
+                .between(taskList.get().get(0), taskList.get().get(1)));
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
@@ -613,7 +613,7 @@ public class ComponentEffectTest {
         ui.add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         var expectedComponent = new TestComponent("added directly");
         // doing wrong
@@ -655,7 +655,7 @@ public class ComponentEffectTest {
         ui.add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         var directlyAddedComponent1 = new TestComponent("added directly 1");
         var directlyAddedComponent2 = new TestComponent("added directly 2");
@@ -706,7 +706,7 @@ public class ComponentEffectTest {
         ui.add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
-            String value = valueSignal.value();
+            String value = valueSignal.get();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 // doing wrong
@@ -754,7 +754,7 @@ public class ComponentEffectTest {
         ui.add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
-            String value = valueSignal.value();
+            String value = valueSignal.get();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 component.addAttachListener(event -> {
@@ -805,7 +805,7 @@ public class ComponentEffectTest {
         ui.add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
-            String value = valueSignal.value();
+            String value = valueSignal.get();
             var component = new TestComponent(value);
             component.getElement().setText(value);
             if ("last".equals(value)) {
@@ -845,7 +845,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
-            var component = new TestComponent(valueSignal.value(),
+            var component = new TestComponent(valueSignal.get(),
                     parentComponent.getElement(), null);
             expectedMockedElements.add(component.getElement());
             return component;
@@ -858,11 +858,11 @@ public class ComponentEffectTest {
             taskList.insertLast("last");
 
             taskList.insertLast("middle");
-            taskList.moveTo(taskList.value().get(2),
+            taskList.moveTo(taskList.get().get(2),
                     SharedListSignal.ListPosition.between(
-                            taskList.value().get(0), taskList.value().get(1)));
+                            taskList.get().get(0), taskList.get().get(1)));
 
-            taskList.remove(taskList.value().get(0));
+            taskList.remove(taskList.get().get(0));
         });
 
         // getChildren() should be called twice per bindChildren effect call
@@ -917,7 +917,7 @@ public class ComponentEffectTest {
 
         Registration registration = ComponentEffect.bindChildren(
                 parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals("Parent should have initial children", 2,
                 parentComponent.getComponentCount());
@@ -958,7 +958,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, listSignal,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals(1, parentComponent.getComponentCount());
         assertEquals("first",
@@ -966,7 +966,7 @@ public class ComponentEffectTest {
                         .getValue());
 
         // Add second item
-        listSignal.value(new ArrayList<>(List.of(first, second)));
+        listSignal.set(new ArrayList<>(List.of(first, second)));
 
         assertEquals(2, parentComponent.getComponentCount());
         assertEquals("first",
@@ -977,7 +977,7 @@ public class ComponentEffectTest {
                         .getValue());
 
         // Remove first item
-        listSignal.value(new ArrayList<>(List.of(second)));
+        listSignal.set(new ArrayList<>(List.of(second)));
 
         assertEquals(1, parentComponent.getComponentCount());
         assertEquals("second",
@@ -985,7 +985,7 @@ public class ComponentEffectTest {
                         .getValue());
 
         // Clear list
-        listSignal.value(new ArrayList<>());
+        listSignal.set(new ArrayList<>());
 
         assertEquals(0, parentComponent.getComponentCount());
     }
@@ -995,7 +995,7 @@ public class ComponentEffectTest {
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, listSignal,
-                valueSignal -> new TestComponent(valueSignal.value()));
+                valueSignal -> new TestComponent(valueSignal.get()));
 
         parentComponent.getChildren().map(TestComponent.class::cast)
                 .forEach(TestComponent::resetCounters);

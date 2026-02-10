@@ -60,7 +60,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     public SharedValueSignal(T initialValue) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 (Class<T>) initialValue.getClass());
-        value(initialValue);
+        set(initialValue);
     }
 
     /**
@@ -98,7 +98,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    public SignalOperation<T> value(T value) {
+    public SignalOperation<T> set(T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
@@ -157,7 +157,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
             verifyValue(value);
 
             T newValue = updater.update(value);
-            return value(newValue);
+            return set(newValue);
         }).returnValue();
 
         setOperation.result().whenComplete((result, error) -> {

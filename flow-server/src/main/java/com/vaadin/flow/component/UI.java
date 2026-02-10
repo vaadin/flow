@@ -846,7 +846,7 @@ public class UI extends Component
     public void setLocale(Locale locale) {
         assert locale != null : "Null locale is not supported!";
         if (!getLocale().equals(locale)) {
-            localeSignal.value(locale);
+            localeSignal.set(locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }

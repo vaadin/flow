@@ -66,10 +66,10 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        assertFalse(doneSignal.value());
+        assertFalse(doneSignal.get());
 
         todoSignal.modify(t -> t.setDone(true));
-        assertTrue(doneSignal.value());
+        assertTrue(doneSignal.get());
     }
 
     @Test
@@ -89,10 +89,10 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        doneSignal.value(true);
+        doneSignal.set(true);
 
         assertTrue(todo.isDone());
-        assertSame(todo, todoSignal.value());
+        assertSame(todo, todoSignal.get());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        SignalOperation<Boolean> operation = doneSignal.value(true);
+        SignalOperation<Boolean> operation = doneSignal.set(true);
 
         Boolean oldValue = TestUtil.assertSuccess(operation);
         assertFalse(oldValue);
@@ -115,7 +115,7 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        doneSignal.value(true);
+        doneSignal.set(true);
 
         assertEquals("Original text", todo.getText());
     }
@@ -130,7 +130,7 @@ public class MappedModifySignalTest extends SignalTestBase {
         SignalOperation<Void> operation = doneSignal.replace(false, true);
 
         TestUtil.assertSuccess(operation);
-        assertTrue(doneSignal.value());
+        assertTrue(doneSignal.get());
         assertTrue(todo.isDone());
     }
 
@@ -144,7 +144,7 @@ public class MappedModifySignalTest extends SignalTestBase {
         SignalOperation<Void> operation = doneSignal.replace(true, false);
 
         TestUtil.assertFailure(operation);
-        assertFalse(doneSignal.value());
+        assertFalse(doneSignal.get());
         assertFalse(todo.isDone());
     }
 
@@ -160,9 +160,9 @@ public class MappedModifySignalTest extends SignalTestBase {
 
         Boolean oldValue = TestUtil.assertSuccess(operation);
         assertFalse(oldValue);
-        assertTrue(doneSignal.value());
+        assertTrue(doneSignal.get());
         assertTrue(todo.isDone());
-        assertSame(todo, todoSignal.value());
+        assertSame(todo, todoSignal.get());
     }
 
     @Test
@@ -186,13 +186,13 @@ public class MappedModifySignalTest extends SignalTestBase {
 
         AtomicInteger effectCount = new AtomicInteger();
         Signal.effect(() -> {
-            doneSignal.value();
+            doneSignal.get();
             effectCount.incrementAndGet();
         });
 
         assertEquals(1, effectCount.get());
 
-        doneSignal.value(true);
+        doneSignal.set(true);
         assertEquals(2, effectCount.get());
     }
 
@@ -206,8 +206,8 @@ public class MappedModifySignalTest extends SignalTestBase {
 
         assertFalse(readonlySignal instanceof WritableSignal);
 
-        doneSignal.value(true);
-        assertTrue(readonlySignal.value());
+        doneSignal.set(true);
+        assertTrue(readonlySignal.get());
     }
 
     @Test
@@ -219,11 +219,11 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        textSignal.value("Updated task");
+        textSignal.set("Updated task");
         assertEquals("Updated task", todo.getText());
         assertFalse(todo.isDone());
 
-        doneSignal.value(true);
+        doneSignal.set(true);
         assertEquals("Updated task", todo.getText());
         assertTrue(todo.isDone());
     }
@@ -235,13 +235,13 @@ public class MappedModifySignalTest extends SignalTestBase {
         WritableSignal<Boolean> doneSignal = todoSignal
                 .mapMutable(MutableTodo::isDone, MutableTodo::setDone);
 
-        doneSignal.value(true);
-        assertSame(todo, todoSignal.value());
+        doneSignal.set(true);
+        assertSame(todo, todoSignal.get());
 
-        doneSignal.value(false);
-        assertSame(todo, todoSignal.value());
+        doneSignal.set(false);
+        assertSame(todo, todoSignal.get());
 
         doneSignal.update(d -> !d);
-        assertSame(todo, todoSignal.value());
+        assertSame(todo, todoSignal.get());
     }
 }

@@ -66,15 +66,15 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         assertEquals(List.of(""), invocations);
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("", "update"), invocations);
 
-        signal.value("again");
+        signal.set("again");
         assertEquals(List.of("", "update", "again"), invocations);
     }
 
@@ -84,7 +84,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value().size());
+            invocations.add(signal.get().size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -102,7 +102,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value().size());
+            invocations.add(signal.get().size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -122,18 +122,18 @@ public class EffectTest extends SignalTestBase {
 
         Signal.effect(() -> {
             if (read.get()) {
-                invocations.add(signal.value());
+                invocations.add(signal.get());
             } else {
                 invocations.add("ignored");
             }
         });
 
         read.set(false);
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("", "ignored"), invocations);
 
         read.set(true);
-        signal.value("again");
+        signal.set("again");
         assertEquals(List.of("", "ignored"), invocations,
                 "The effect should no longer depend on the signal");
     }
@@ -146,20 +146,20 @@ public class EffectTest extends SignalTestBase {
 
         Signal.effect(() -> {
             if (read.get()) {
-                invocations.add(signal.value());
+                invocations.add(signal.get());
             } else {
                 invocations.add(Signal.untracked(() -> {
-                    return "untracked: " + signal.value();
+                    return "untracked: " + signal.get();
                 }));
             }
         });
 
         read.set(false);
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("", "untracked: update"), invocations);
 
         read.set(true);
-        signal.value("again");
+        signal.set("again");
         assertEquals(List.of("", "untracked: update"), invocations,
                 "The effect should no longer depend on the signal");
     }
@@ -170,7 +170,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         signal.replace("foo", "bar");
@@ -183,12 +183,12 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         Signal.runInTransaction(() -> {
-            signal.value("first");
-            signal.value("second");
+            signal.set("first");
+            signal.set("second");
         });
 
         assertEquals(List.of("", "second"), invocations);
@@ -201,12 +201,12 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal1.value() + signal2.value());
+            invocations.add(signal1.get() + signal2.get());
         });
 
         Signal.runInTransaction(() -> {
-            signal1.value("one ");
-            signal2.value("two");
+            signal1.set("one ");
+            signal2.set("two");
         });
 
         assertEquals(List.of("", "one two"), invocations);
@@ -218,7 +218,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         assertEquals(List.of("value"), invocations);
@@ -230,13 +230,13 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_asyncSignal_effectUsesSubmittedValue() {
         AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
-        signal.value("");
+        signal.set("");
         signal.tree().confirmSubmitted();
 
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         assertEquals(List.of(""), invocations);
@@ -258,15 +258,15 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         assertEquals(List.of("value"), invocations);
 
-        signal.value("value");
+        signal.set("value");
         assertEquals(List.of("value"), invocations);
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("value", "update"), invocations);
     }
 
@@ -276,7 +276,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<List<String>> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            List<String> values = signal.value().stream().map(Signal::value)
+            List<String> values = signal.get().stream().map(Signal::get)
                     .toList();
             invocations.add(values);
         });
@@ -297,29 +297,29 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         assertEquals(Arrays.asList("initial"), invocations);
 
-        signal.value(null);
+        signal.set(null);
         assertEquals(Arrays.asList("initial", null), invocations);
     }
 
     @Test
     void changeTracking_lambdaSignal_changeTracked() {
         SharedValueSignal<Integer> signal = new SharedValueSignal<>(1);
-        Signal<Integer> doubled = () -> signal.value() * 2;
+        Signal<Integer> doubled = () -> signal.get() * 2;
 
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(doubled.value());
+            invocations.add(doubled.get());
         });
 
         assertEquals(List.of(2), invocations);
 
-        signal.value(2);
+        signal.set(2);
         assertEquals(List.of(2, 4), invocations);
     }
 
@@ -329,11 +329,11 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
 
         CleanupCallback closer = Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         closer.cleanup();
-        signal.value("update");
+        signal.set("update");
 
         assertEquals(List.of(""), invocations);
     }
@@ -346,13 +346,13 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
-        signal.value("update1");
-        signal.value("update2");
+        signal.set("update1");
+        signal.set("update2");
         assertEquals(List.of("initial"), invocations);
 
         dispatcher.runPendingTasks();
@@ -367,12 +367,12 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         CleanupCallback closer = Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("initial"), invocations);
 
         closer.cleanup();
@@ -388,12 +388,12 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
             throw exception;
         });
         assertUncaughtException(exception);
 
-        signal.value("update");
+        signal.set("update");
 
         assertUncaughtException(exception);
         assertEquals(List.of("initial", "update"), invocations);
@@ -412,10 +412,10 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("initial", "update"), invocations);
     }
 
@@ -426,14 +426,14 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         Error error = new Error("Expected error");
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
 
             throw error;
         });
         assertEquals(List.of("initial"), invocations);
         assertUncaughtException(caught -> caught.getCause() == error);
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(List.of("initial"), invocations);
     }
 
@@ -443,12 +443,12 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal");
 
         Signal.effect(() -> {
-            other.value(signal.value());
+            other.set(signal.get());
         });
-        assertEquals("signal", other.value());
+        assertEquals("signal", other.get());
 
-        signal.value("update");
-        assertEquals("update", other.value());
+        signal.set("update");
+        assertEquals("update", other.get());
     }
 
     @Test
@@ -460,17 +460,17 @@ public class EffectTest extends SignalTestBase {
 
         Signal.effect(() -> {
             count.incrementAndGet();
-            trigger.value();
-            signal.value();
+            trigger.get();
+            signal.get();
 
             assertThrows(IllegalStateException.class, () -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
 
         assertEquals(1, count.get());
 
-        trigger.value("update");
+        trigger.set("update");
 
         assertEquals(1, count.get(), "Signal should have been disabled");
     }
@@ -483,10 +483,10 @@ public class EffectTest extends SignalTestBase {
         AtomicInteger throwCount = new AtomicInteger();
 
         Signal.effect(() -> {
-            String value = signal2.value() + " update";
+            String value = signal2.get() + " update";
 
             try {
-                signal1.value(value);
+                signal1.set(value);
             } catch (IllegalStateException e) {
                 throwCount.incrementAndGet();
             }
@@ -495,7 +495,7 @@ public class EffectTest extends SignalTestBase {
                 "Should not fail with only one effect active");
 
         Signal.effect(() -> {
-            signal2.value(signal1.value() + " update");
+            signal2.set(signal1.get() + " update");
         });
         assertEquals(1, throwCount.get(),
                 "Should fail when the other effect is created");
@@ -508,17 +508,17 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<Boolean> trigger = new SharedValueSignal<>(false);
 
         Signal.effect(() -> {
-            signal1.value(signal2.value() + " update");
+            signal1.set(signal2.get() + " update");
         });
 
         Signal.effect(() -> {
-            if (trigger.value()) {
-                signal2.value(signal1.value() + " update");
+            if (trigger.get()) {
+                signal2.set(signal1.get() + " update");
             }
         });
         assertNoUncaughtException();
 
-        trigger.value(true);
+        trigger.set(true);
         assertUncaughtException(IllegalStateException.class);
     }
 
@@ -530,12 +530,12 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
 
         Signal.effect(() -> {
-            signal1.value(signal2.value() + " update");
+            signal1.set(signal2.get() + " update");
         });
         dispatcher.runPendingTasks();
 
         Signal.effect(() -> {
-            signal2.value(signal1.value() + " update");
+            signal2.set(signal1.get() + " update");
         });
         // Runs the 2nd effect which schedules running the 1st effect
         dispatcher.runPendingTasks();
@@ -570,7 +570,7 @@ public class EffectTest extends SignalTestBase {
                          * write at the moment when the effect starts listening
                          * for changes
                          */
-                        value("update");
+                        set("update");
 
                         return usage.onNextChange(listener);
                     }
@@ -579,7 +579,7 @@ public class EffectTest extends SignalTestBase {
         };
 
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            invocations.add(signal.get());
         });
 
         dispatcher.runPendingTasks();

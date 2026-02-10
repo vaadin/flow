@@ -39,11 +39,11 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         Signal.runInTransaction(() -> {
-            signal.value("changed");
+            signal.set("changed");
 
             assertTrue(usage.hasChanges());
 
@@ -66,10 +66,10 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertTrue(usage.hasChanges());
     }
 
@@ -81,7 +81,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peek();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -93,7 +93,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peekConfirmed();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -103,12 +103,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value();
+                signal.get();
                 return null;
             });
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -118,12 +118,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value("update");
+                signal.set("update");
                 return null;
             });
         });
 
-        signal.value("another");
+        signal.set("another");
         assertFalse(usage.hasChanges());
     }
 

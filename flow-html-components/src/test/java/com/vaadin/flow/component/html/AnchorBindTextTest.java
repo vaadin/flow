@@ -47,7 +47,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
         assertEquals("", anchor.getText());
 
         // Update before attach is ignored
-        signal.value("two");
+        signal.set("two");
         assertEquals("", anchor.getText());
 
         // Attach -> latest value applied
@@ -55,12 +55,12 @@ public class AnchorBindTextTest extends SignalsUnitTest {
         assertEquals("two", anchor.getText());
 
         // Updates propagate while attached
-        signal.value("three");
+        signal.set("three");
         assertEquals("three", anchor.getText());
 
         // Detach -> updates ignored
         anchor.removeFromParent();
-        signal.value("four");
+        signal.set("four");
         assertEquals("three", anchor.getText());
 
         // Re-attach -> latest value applied
