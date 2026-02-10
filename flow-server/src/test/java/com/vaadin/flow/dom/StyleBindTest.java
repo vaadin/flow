@@ -19,12 +19,12 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
@@ -38,27 +38,27 @@ import com.vaadin.tests.util.MockUI;
 /**
  * Unit tests for Style.bind(String, Signal<String>).
  */
-public class StyleBindTest {
+class StyleBindTest {
 
     private static MockVaadinServletService service;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         VaadinService.setCurrent(null);
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         mockLockedSessionWithErrorHandler();
     }
 
-    @After
+    @AfterEach
     public void after() {
         VaadinService.setCurrent(null);
     }
@@ -72,14 +72,15 @@ public class StyleBindTest {
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        Assertions.assertEquals("red",
+                element.getStyle().get("backgroundColor"));
 
         color.set("blue");
-        Assert.assertEquals("blue", element.getStyle().get("backgroundColor"));
+        Assertions.assertEquals("blue", element.getStyle().get("backgroundColor"));
 
         // Null removes the style
         color.set(null);
-        Assert.assertNull(element.getStyle().get("backgroundColor"));
+        Assertions.assertNull(element.getStyle().get("backgroundColor"));
     }
 
     // Lifecycle: no updates while detached; lastApplied preserved across
@@ -91,18 +92,20 @@ public class StyleBindTest {
 
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        Assertions.assertEquals("red",
+                element.getStyle().get("backgroundColor"));
 
         // Detach
         UI.getCurrent().getElement().removeChild(element);
 
         // Change while detached -> should not apply
         color.set("green");
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        Assertions.assertEquals("red", element.getStyle().get("backgroundColor"));
 
         // Reattach -> current signal value should be applied
         UI.getCurrent().getElement().appendChild(element);
-        Assert.assertEquals("green", element.getStyle().get("backgroundColor"));
+        Assertions.assertEquals("green",
+                element.getStyle().get("backgroundColor"));
     }
 
     // Conflict prevention: set/remove throw while binding is active
@@ -114,9 +117,9 @@ public class StyleBindTest {
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> element.getStyle().set("background-color", "black"));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> element.getStyle().remove("background-color"));
     }
 
@@ -131,20 +134,21 @@ public class StyleBindTest {
         element.getStyle().bind("border-top-width", a);
         element.getStyle().bind("border-bottom-width", b);
 
-        Assert.assertEquals("1", element.getStyle().get("borderTopWidth"));
-        Assert.assertEquals("2", element.getStyle().get("borderBottomWidth"));
+        Assertions.assertEquals("1", element.getStyle().get("borderTopWidth"));
+        Assertions.assertEquals("2",
+                element.getStyle().get("borderBottomWidth"));
 
         element.getStyle().clear();
 
         // Cleared
-        Assert.assertNull(element.getStyle().get("borderTopWidth"));
-        Assert.assertNull(element.getStyle().get("borderBottomWidth"));
+        Assertions.assertNull(element.getStyle().get("borderTopWidth"));
+        Assertions.assertNull(element.getStyle().get("borderBottomWidth"));
 
         // Toggling signals should have no effect
         a.set("3");
         b.set("4");
-        Assert.assertNull(element.getStyle().get("borderTopWidth"));
-        Assert.assertNull(element.getStyle().get("borderBottomWidth"));
+        Assertions.assertNull(element.getStyle().get("borderTopWidth"));
+        Assertions.assertNull(element.getStyle().get("borderBottomWidth"));
     }
 
     @Test
@@ -152,7 +156,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> element.getStyle().bind("background-color", null));
     }
 
@@ -168,29 +172,29 @@ public class StyleBindTest {
         element.getStyle().bind("margin-bottom", b);
 
         // a applied, then set b to null which should remove the style
-        Assert.assertEquals("10px", element.getStyle().get("marginTop"));
+        Assertions.assertEquals("10px", element.getStyle().get("marginTop"));
         b.set(null);
-        Assert.assertNull(element.getStyle().get("marginBottom"));
+        Assertions.assertNull(element.getStyle().get("marginBottom"));
 
         // getNames should include names that have recorded last-applied values.
         // BasicElementStyle currently exposes attribute names (dash-separated).
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
-        Assert.assertTrue(names.contains("margin-top"));
+        Assertions.assertTrue(names.contains("margin-top"));
         // b has a null last-applied value, but the binding is preserved -> name
         // present
-        Assert.assertTrue(names.contains("margin-bottom"));
+        Assertions.assertTrue(names.contains("margin-bottom"));
 
         // Detach before any applying for c -> bind while detached -> no value
         // applied yet, get returns null
         ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
-        Assert.assertNull(element.getStyle().get("paddingTop"));
+        Assertions.assertNull(element.getStyle().get("paddingTop"));
         names = element.getStyle().getNames().collect(Collectors.toSet());
         // The current implementation records the binding name even before first
         // attach
-        Assert.assertTrue(names.contains("padding-top"));
+        Assertions.assertTrue(names.contains("padding-top"));
     }
 
     @Test
@@ -200,20 +204,20 @@ public class StyleBindTest {
 
         ValueSignal<String> color = new ValueSignal<>("rgba(255, 0, 0, 1)");
         element.getStyle().bind("background-color", color);
-        Assert.assertEquals("rgba(255, 0, 0, 1)",
+        Assertions.assertEquals("rgba(255, 0, 0, 1)",
                 element.getStyle().get("backgroundColor"));
 
         // Set null -> should remove the style and has() should report false
         color.set(null);
-        Assert.assertNull(element.getStyle().get("backgroundColor"));
-        Assert.assertFalse(element.getStyle().has("background-color"));
+        Assertions.assertNull(element.getStyle().get("backgroundColor"));
+        Assertions.assertFalse(element.getStyle().has("background-color"));
 
         // but it preserves the signal binding
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
-        Assert.assertTrue(names.contains("background-color"));
+        Assertions.assertTrue(names.contains("background-color"));
         color.set("rgba(0, 0, 255, 1)");
-        Assert.assertEquals("rgba(0, 0, 255, 1)",
+        Assertions.assertEquals("rgba(0, 0, 255, 1)",
                 element.getStyle().get("backgroundColor"));
     }
 

@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -55,35 +55,35 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ElementBindPropertyTest {
+class ElementBindPropertyTest {
 
     private static MockVaadinServletService service;
 
     private LinkedList<ErrorEvent> events;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         events = mockLockedSessionWithErrorHandler();
     }
 
-    @After
+    @AfterEach
     public void after() {
         CurrentInstance.clearAll();
         events = null;
@@ -121,7 +121,7 @@ public class ElementBindPropertyTest {
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         element.bindProperty("foobar", signal, signal::set);
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -135,7 +135,7 @@ public class ElementBindPropertyTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setProperty("foo", "baz"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> component.getElement().bindProperty("foo", null, null));
     }
 
@@ -158,7 +158,7 @@ public class ElementBindPropertyTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeProperty("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -225,22 +225,23 @@ public class ElementBindPropertyTest {
         component.getElement().addPropertyChangeListener("foo", "event",
                 event -> listenerValue.set(event.getValue()));
 
-        Assert.assertEquals("The property should be synchronized",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED,
+        Assertions.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 component.getElement().getNode()
                         .getFeature(ElementListenerMap.class)
-                        .getPropertySynchronizationMode("foo"));
+                        .getPropertySynchronizationMode("foo"),
+                "The property should be synchronized");
 
         ElementListenerMap listenerMap = component.getElement().getNode()
                 .getFeature(ElementListenerMap.class);
 
-        Assert.assertEquals("A DOM event synchronization should be defined",
+        Assertions.assertEquals(
                 Collections.singleton(
                         JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "foo"),
-                ElementListenersTest.getExpressions(listenerMap, "event"));
+                ElementListenersTest.getExpressions(listenerMap, "event"),
+                "A DOM event synchronization should be defined");
 
         signal.set("changedValue");
-        Assert.assertEquals("changedValue", listenerValue.get());
+        Assertions.assertEquals("changedValue", listenerValue.get());
     }
 
     @Test
@@ -256,14 +257,14 @@ public class ElementBindPropertyTest {
                 event -> listenerValue.set(event.getValue()));
 
         signal.set("changedValue");
-        Assert.assertEquals("changedValue", listenerValue.get());
+        Assertions.assertEquals("changedValue", listenerValue.get());
 
         // When detached, signal change should not propagate to the property and
         // the listener should not be triggered
         component.removeFromParent();
         signal.set("secondChangedValue");
-        Assert.assertEquals("changedValue", listenerValue.get());
-        Assert.assertEquals("changedValue",
+        Assertions.assertEquals("changedValue", listenerValue.get());
+        Assertions.assertEquals("changedValue",
                 component.getElement().getProperty("foo"));
     }
 
@@ -293,7 +294,7 @@ public class ElementBindPropertyTest {
 
         signal.set(false);
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
         assertTrue(component.getElement().getProperty("foo", false));
     }
 
@@ -307,7 +308,7 @@ public class ElementBindPropertyTest {
         component.getElement().bindProperty("foo", signal, signal::set);
 
         assertTrue(component.getElement().getProperty("foo", false));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -329,7 +330,7 @@ public class ElementBindPropertyTest {
         UI.getCurrent().add(component);
         assertFalse(component.getElement().getProperty("foo", true));
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // double property signal binding tests
@@ -399,7 +400,7 @@ public class ElementBindPropertyTest {
         assertEquals(2.0d, component.getElement().getProperty("foo", -1.0d),
                 0.0d);
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // integer property signal binding tests
@@ -464,7 +465,7 @@ public class ElementBindPropertyTest {
         UI.getCurrent().add(component);
         assertEquals(2, component.getElement().getProperty("foo", -1));
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // string property signal binding tests
@@ -493,7 +494,7 @@ public class ElementBindPropertyTest {
 
         signal.set("baz");
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
         assertEquals("bar",
                 component.getElement().getProperty("foo", "default"));
     }
@@ -509,7 +510,7 @@ public class ElementBindPropertyTest {
 
         assertEquals("bar",
                 component.getElement().getProperty("foo", "default"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -534,7 +535,7 @@ public class ElementBindPropertyTest {
         assertEquals("baz",
                 component.getElement().getProperty("foo", "default"));
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // bean property signal binding tests
@@ -565,7 +566,7 @@ public class ElementBindPropertyTest {
 
         assertPersonEquals(john,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
 
     }
 
@@ -580,7 +581,7 @@ public class ElementBindPropertyTest {
 
         assertPersonEquals(john,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -607,7 +608,7 @@ public class ElementBindPropertyTest {
 
         assertPersonEquals(jack,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // list property signal binding tests
@@ -644,7 +645,7 @@ public class ElementBindPropertyTest {
         assertEquals("Jack",
                 getFromList(component, "foo", 1).get("name").asString());
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -660,7 +661,7 @@ public class ElementBindPropertyTest {
                 getFromList(component, "foo", 0).get("name").asString());
         assertEquals("Jack",
                 getFromList(component, "foo", 1).get("name").asString());
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -697,7 +698,7 @@ public class ElementBindPropertyTest {
                 getFromList(component, "foo", 0).get("name").asString());
         assertEquals("John",
                 getFromList(component, "foo", 1).get("name").asString());
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     // map property signal binding tests
@@ -734,7 +735,7 @@ public class ElementBindPropertyTest {
         assertEquals("Jack",
                 getFromMap(component, "foo", "1").get("name").asString());
 
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -750,7 +751,7 @@ public class ElementBindPropertyTest {
                 getFromMap(component, "foo", "0").get("name").asString());
         assertEquals("Jack",
                 getFromMap(component, "foo", "1").get("name").asString());
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -787,10 +788,10 @@ public class ElementBindPropertyTest {
                 getFromMap(component, "foo", "0").get("name").asString());
         assertEquals("John",
                 getFromMap(component, "foo", "1").get("name").asString());
-        Assert.assertTrue(events.isEmpty());
+        Assertions.assertTrue(events.isEmpty());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void bindProperty_writeCallbackThrows() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
@@ -802,11 +803,12 @@ public class ElementBindPropertyTest {
 
         component.getElement().addPropertyChangeListener("prop", "change",
                 event -> {
-                    Assert.fail(
+                    Assertions.fail(
                             "Property change listener should not be triggered when write callback throws");
                 });
 
-        emulateClientUpdate(component.getElement(), "prop", "bar");
+        Assertions.assertThrows(RuntimeException.class,
+                () -> emulateClientUpdate(component.getElement(), "prop", "bar"));
     }
 
     @Test
@@ -860,7 +862,7 @@ public class ElementBindPropertyTest {
 
         component.getElement().addPropertyChangeListener("prop", "change",
                 event -> {
-                    Assert.fail(
+                    Assertions.fail(
                             "Property change listener should not be triggered with a no-op callback");
                 });
 
@@ -876,7 +878,7 @@ public class ElementBindPropertyTest {
         try {
             childModel.deferredUpdateFromClient(property, value);
         } catch (PropertyChangeDeniedException e) {
-            Assert.fail(
+            Assertions.fail(
                     "Failed to update property from client: " + e.getMessage());
         }
     }

@@ -17,8 +17,8 @@ package com.vaadin.flow.dom;
 
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasTheme;
@@ -29,10 +29,12 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * Tests for binding theme attribute presence to a Signal using ThemeList.bind.
  */
-public class ThemeListBindTest extends SignalsUnitTest {
+class ThemeListBindTest extends SignalsUnitTest {
 
     @Test
     public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesTheme() {
@@ -43,13 +45,13 @@ public class ThemeListBindTest extends SignalsUnitTest {
         component.bindThemeName("light", signal);
 
         // Initially false -> not present
-        Assert.assertFalse(component.hasThemeName("light"));
+        Assertions.assertFalse(component.hasThemeName("light"));
 
         signal.set(true);
-        Assert.assertTrue(component.hasThemeName("light"));
+        Assertions.assertTrue(component.hasThemeName("light"));
 
         signal.set(false);
-        Assert.assertFalse(component.hasThemeName("light"));
+        Assertions.assertFalse(component.hasThemeName("light"));
     }
 
     @Test
@@ -64,11 +66,11 @@ public class ThemeListBindTest extends SignalsUnitTest {
 
         // Change signal while detached – should NOT apply
         signal.set(true);
-        Assert.assertFalse(component.hasThemeName("active"));
+        Assertions.assertFalse(component.hasThemeName("active"));
 
         // Reattach – current value true should be applied
         UI.getCurrent().add(component);
-        Assert.assertTrue(component.hasThemeName("active"));
+        Assertions.assertTrue(component.hasThemeName("active"));
     }
 
     @Test
@@ -78,23 +80,23 @@ public class ThemeListBindTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindThemeName("locked", signal);
 
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.addThemeName("locked"));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.removeThemeName("locked"));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.setThemeName("locked", true));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.setThemeName("locked", false));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.addThemeNames("locked", "open"));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.removeThemeNames("locked", "open"));
-        Assert.assertThrows(BindingActiveException.class,
+        Assertions.assertThrows(BindingActiveException.class,
                 () -> component.getThemeNames().retainAll(Set.of("open")));
 
         component.addThemeName("open");
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 component.getThemeNames().retainAll(Set.of("locked")));
     }
 
@@ -107,23 +109,23 @@ public class ThemeListBindTest extends SignalsUnitTest {
         component.bindThemeName("a", a);
         component.bindThemeName("b", b);
 
-        Assert.assertTrue(component.hasThemeName("a"));
-        Assert.assertTrue(component.hasThemeName("b"));
+        Assertions.assertTrue(component.hasThemeName("a"));
+        Assertions.assertTrue(component.hasThemeName("b"));
 
         component.getThemeNames().clear();
 
         // Themes cleared
-        Assert.assertFalse(component.hasThemeName("a"));
-        Assert.assertFalse(component.hasThemeName("b"));
+        Assertions.assertFalse(component.hasThemeName("a"));
+        Assertions.assertFalse(component.hasThemeName("b"));
 
         // Toggling signals has no effect (bindings were cleared)
         a.set(false);
         b.set(false);
         a.set(true);
         b.set(true);
-        Assert.assertFalse(component.hasThemeName("a"));
-        Assert.assertFalse(component.hasThemeName("b"));
-        Assert.assertFalse(component.getThemeNames().iterator().hasNext());
+        Assertions.assertFalse(component.hasThemeName("a"));
+        Assertions.assertFalse(component.hasThemeName("b"));
+        Assertions.assertFalse(component.getThemeNames().iterator().hasNext());
     }
 
     @Test
@@ -132,7 +134,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
         component.bindThemeName("flag", bound);
-        Assert.assertTrue(component.hasThemeName("flag"));
+        Assertions.assertTrue(component.hasThemeName("flag"));
 
         // Bulk replace via setThemeName.
         // Note that setting theme attribute directly can't clear bindings due
@@ -140,13 +142,13 @@ public class ThemeListBindTest extends SignalsUnitTest {
         // meaning of 'theme' attribute. This could be improved in the future,
         // but for now, setThemeName supports clearing bindings.
         component.setThemeName("foo");
-        Assert.assertTrue(component.hasThemeName("foo"));
-        Assert.assertFalse(component.hasThemeName("flag"));
+        Assertions.assertTrue(component.hasThemeName("foo"));
+        Assertions.assertFalse(component.hasThemeName("flag"));
 
         // Binding should be cleared, so toggling has no effect
         bound.set(false);
         bound.set(true);
-        Assert.assertFalse(component.hasThemeName("flag"));
+        Assertions.assertFalse(component.hasThemeName("flag"));
     }
 
     @Test
@@ -155,7 +157,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindThemeName("badge", signal);
-        Assert.assertTrue(component.hasThemeName("badge"));
+        Assertions.assertTrue(component.hasThemeName("badge"));
 
         // Remove binding via the node's SignalBindingFeature
         SignalBindingFeature feature = component.getElement().getNode()
@@ -164,11 +166,11 @@ public class ThemeListBindTest extends SignalsUnitTest {
 
         // Signal changes should no longer affect the theme list
         signal.set(false);
-        Assert.assertTrue(component.hasThemeName("badge"));
+        Assertions.assertTrue(component.hasThemeName("badge"));
 
         // Manual set should work without throwing
         component.removeThemeName("badge");
-        Assert.assertFalse(component.hasThemeName("badge"));
+        Assertions.assertFalse(component.hasThemeName("badge"));
     }
 
     @Test
@@ -176,22 +178,24 @@ public class ThemeListBindTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> component.bindThemeName("badge", null));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void rebinding_alreadyBound_throws() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<Boolean> s1 = new ValueSignal<>(true);
-        ValueSignal<Boolean> s2 = new ValueSignal<>(false);
+        assertThrows(BindingActiveException.class, () -> {
+            TestComponent component = new TestComponent();
+            UI.getCurrent().add(component);
+            ValueSignal<Boolean> s1 = new ValueSignal<>(true);
+            ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
-        component.bindThemeName("tag", s1);
-        Assert.assertTrue(component.hasThemeName("tag"));
+            component.bindThemeName("tag", s1);
+            Assertions.assertTrue(component.hasThemeName("tag"));
 
-        // Rebind to a new signal
-        component.bindThemeName("tag", s2);
+            // Rebind to a new signal
+            component.bindThemeName("tag", s2);
+        });
     }
 
     @Test
@@ -205,13 +209,13 @@ public class ThemeListBindTest extends SignalsUnitTest {
         // duplicate theme entries.
         signal.set(true);
         signal.set(true); // no-op update
-        Assert.assertTrue(component.hasThemeName("spin"));
-        Assert.assertEquals(1, component.getThemeNames().stream()
+        Assertions.assertTrue(component.hasThemeName("spin"));
+        Assertions.assertEquals(1, component.getThemeNames().stream()
                 .filter("spin"::equals).count());
 
         signal.set(false);
         signal.set(false); // no-op update
-        Assert.assertFalse(component.hasThemeName("spin"));
+        Assertions.assertFalse(component.hasThemeName("spin"));
     }
 
     @Test
@@ -231,19 +235,19 @@ public class ThemeListBindTest extends SignalsUnitTest {
         component.bindThemeName("b", b);
         component.bindThemeName("c", c);
 
-        Assert.assertTrue(component.hasThemeName("a"));
-        Assert.assertFalse(component.hasThemeName("b"));
-        Assert.assertFalse(component.hasThemeName("b"));
+        Assertions.assertTrue(component.hasThemeName("a"));
+        Assertions.assertFalse(component.hasThemeName("b"));
+        Assertions.assertFalse(component.hasThemeName("b"));
 
         signal.set(DummyEnum.TWO);
-        Assert.assertFalse(component.hasThemeName("a"));
-        Assert.assertTrue(component.hasThemeName("b"));
-        Assert.assertFalse(component.hasThemeName("c"));
+        Assertions.assertFalse(component.hasThemeName("a"));
+        Assertions.assertTrue(component.hasThemeName("b"));
+        Assertions.assertFalse(component.hasThemeName("c"));
 
         signal.set(DummyEnum.THREE);
-        Assert.assertFalse(component.hasThemeName("a"));
-        Assert.assertFalse(component.hasThemeName("b"));
-        Assert.assertTrue(component.hasThemeName("c"));
+        Assertions.assertFalse(component.hasThemeName("a"));
+        Assertions.assertFalse(component.hasThemeName("b"));
+        Assertions.assertTrue(component.hasThemeName("c"));
     }
 
     @Tag("span")

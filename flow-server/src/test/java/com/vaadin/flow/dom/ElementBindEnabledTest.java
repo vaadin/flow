@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -26,11 +26,11 @@ import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ElementBindEnabledTest extends SignalsUnitTest {
+class ElementBindEnabledTest extends SignalsUnitTest {
 
     @Test
     public void bindEnabled_elementAttachedBefore_bindingActive() {
@@ -161,7 +161,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         element.setEnabled(false);
         element.isEnabled();
         element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> Assert.fail(
+                .ifPresent(feature -> Assertions.fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
