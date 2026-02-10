@@ -91,9 +91,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.15.2</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        <goalPrefix>flow</goalPrefix>
+                        <requiredJavaVersion>${maven.compiler.release}</requiredJavaVersion>
+                        <requiredMavenVersion>3.5</requiredMavenVersion>
                     </configuration>
                     <executions>
                         <execution>
