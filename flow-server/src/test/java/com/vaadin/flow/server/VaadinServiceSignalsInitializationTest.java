@@ -28,8 +28,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 

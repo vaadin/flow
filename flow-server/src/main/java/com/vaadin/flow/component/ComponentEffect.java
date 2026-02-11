@@ -28,10 +28,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.function.EffectAction;
-import com.vaadin.signals.impl.Effect;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.impl.Effect;
 
 /**
  * The utility class that provides helper methods for using Signal effects in a
@@ -45,12 +46,12 @@ import com.vaadin.signals.impl.Effect;
  *
  * @since 24.8
  */
-public final class ComponentEffect {
+public final class ComponentEffect implements Serializable {
 
     private ElementEffect elementEffect;
 
     private <C extends Component> ComponentEffect(C owner,
-            Runnable effectFunction) {
+            SerializableRunnable effectFunction) {
         this.elementEffect = new ElementEffect(owner.getElement(),
                 effectFunction);
     }
@@ -83,7 +84,7 @@ public final class ComponentEffect {
      *         function
      */
     public static <C extends Component> Registration effect(C owner,
-            Runnable effectFunction) {
+            SerializableRunnable effectFunction) {
         ComponentEffect effect = new ComponentEffect(owner, effectFunction);
         return effect::close;
     }

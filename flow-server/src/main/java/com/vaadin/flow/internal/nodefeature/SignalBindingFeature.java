@@ -21,8 +21,8 @@ import java.util.Map;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -145,7 +145,16 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
     }
 
-    private <T> Signal<T> getSignal(String key) {
+    /**
+     * Gets the signal bound to the given key.
+     *
+     * @param key
+     *            the key
+     * @param <T>
+     *            the type of the signal value
+     * @return the signal bound to the given key, or null if no signal is bound
+     */
+    public <T> Signal<T> getSignal(String key) {
         if (values == null) {
             return null;
         }

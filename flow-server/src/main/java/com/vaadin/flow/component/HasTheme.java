@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents {@link Component} which has theme attribute.
@@ -166,7 +166,7 @@ public interface HasTheme extends HasElement {
      *            the theme name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, or {@code null} to unbind
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
      */
