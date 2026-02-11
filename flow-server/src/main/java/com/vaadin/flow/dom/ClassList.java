@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,7 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Representation of the class names for an {@link Element}.
@@ -71,7 +71,7 @@ public interface ClassList extends Set<String>, Serializable {
      *            the class name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, or {@code null} to unbind
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.0
      */

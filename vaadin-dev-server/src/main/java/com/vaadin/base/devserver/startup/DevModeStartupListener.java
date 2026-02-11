@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,6 +34,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -69,7 +70,8 @@ import com.vaadin.flow.theme.Theme;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
         Template.class, LoadDependenciesOnStartup.class,
-        TypeScriptBootstrapModifier.class, Component.class, Layout.class })
+        TypeScriptBootstrapModifier.class, Component.class, Layout.class,
+        StyleSheet.class, StyleSheet.Container.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,

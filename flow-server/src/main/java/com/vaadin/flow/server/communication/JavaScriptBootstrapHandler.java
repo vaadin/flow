@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -171,38 +170,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put("requestURL", requestURL);
 
-        // Parse browser details from request parameters and store in UI
-        extractAndStoreBrowserDetails(request, context.getUI());
-
         return context;
-    }
-
-    /**
-     * Extracts browser details from the request JSON parameter and stores them
-     * in the UI's internals as ExtendedClientDetails.
-     *
-     * @param request
-     *            the request containing browser details as JSON parameter
-     * @param ui
-     *            the UI instance to store the details in
-     */
-    private void extractAndStoreBrowserDetails(VaadinRequest request, UI ui) {
-        // Extract browser details JSON parameter from request
-        // This is sent by the client in the v-r=init request
-        String browserDetailsJson = request.getParameter("v-browserDetails");
-
-        if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
-            try {
-                JsonNode json = JacksonUtils.readTree(browserDetailsJson);
-                ExtendedClientDetails details = ExtendedClientDetails
-                        .fromJson(ui, json);
-                ui.getInternals().setExtendedClientDetails(details);
-            } catch (Exception e) {
-                // Log and continue without browser details
-                getLogger().debug(
-                        "Failed to parse browser details from init request", e);
-            }
-        }
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -71,7 +72,7 @@ public class DevModeClassFinderTest {
                 HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
                 Template.class, LoadDependenciesOnStartup.class,
                 Component.class, TypeScriptBootstrapModifier.class,
-                Layout.class);
+                Layout.class, StyleSheet.class, StyleSheet.Container.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,8 +58,6 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.DisabledFeatureException;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -96,7 +94,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.flow.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -320,19 +318,7 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
-        try {
-            initSignalsEnvironment();
-        } catch (Exception e) {
-            if (FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-                throw e;
-            } else {
-                getLogger().info(
-                        "Error initializing signals. This is non-fatal since signals are "
-                                + "a preview feature and the feature flag is not enabled.",
-                        e);
-            }
-        }
+        initSignalsEnvironment();
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
@@ -365,25 +351,14 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void initSignalsEnvironment() {
-        boolean enabled = FeatureFlags.get(getContext())
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
-        if (enabled) {
-            // Trigger check for multiple TaskExecutor candidates
-            getExecutor();
-        }
+        // Trigger check for multiple TaskExecutor candidates
+        getExecutor();
 
         class VaadinServiceEnvironment extends SignalEnvironment
                 implements Serializable {
             @Override
             public boolean isActive() {
-                if (VaadinService.getCurrent() != VaadinService.this) {
-                    return false;
-                } else if (!enabled) {
-                    throw new DisabledFeatureException(
-                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-                } else {
-                    return true;
-                }
+                return VaadinService.getCurrent() == VaadinService.this;
             }
 
             private Executor createCurrentUiDispatcher() {
@@ -2083,17 +2058,13 @@ public abstract class VaadinService implements Serializable {
             json.set("locales", JacksonUtils.createObjectNode());
             json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            return wrapJsonForClient(json);
+            return json.toString();
         } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(JacksonUtils.createObjectNode());
+            return JacksonUtils.createObjectNode().toString();
         }
 
-    }
-
-    private static String wrapJsonForClient(ObjectNode json) {
-        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -2115,7 +2086,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toString();
     }
 
     /**

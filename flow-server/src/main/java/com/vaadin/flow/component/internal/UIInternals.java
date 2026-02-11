@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -231,6 +231,8 @@ public class UIInternals implements Serializable {
     private ExtendedClientDetails extendedClientDetails = null;
 
     private ArrayDeque<Component> modalComponentStack;
+
+    private Element wrapperElement;
 
     /**
      * Creates a new instance for the given UI.
@@ -1204,6 +1206,21 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks if an error view is currently being displayed. An error view is a
+     * component that implements HasErrorParameter.
+     *
+     * @return true if showing an error view, false otherwise
+     */
+    public boolean isShowingErrorView() {
+        if (routerTargetChain.isEmpty()) {
+            return false;
+        }
+        // The first element in the chain is the actual view component
+        HasElement target = routerTargetChain.get(0);
+        return target instanceof com.vaadin.flow.router.HasErrorParameter;
+    }
+
+    /**
      * Check if we have already started navigation to some location on this
      * roundtrip.
      *
@@ -1510,5 +1527,24 @@ public class UIInternals implements Serializable {
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
+    }
+
+    /**
+     * Create flow reference for the client outlet element if not already
+     * generated.
+     */
+    public void createWrapperElement() {
+        if (wrapperElement == null) {
+            this.wrapperElement = new Element(getContainerTag());
+        }
+    }
+
+    /**
+     * Get outlet element reference wrapper if set.
+     * 
+     * @return wrapperElement if set else {@code null}
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
     }
 }

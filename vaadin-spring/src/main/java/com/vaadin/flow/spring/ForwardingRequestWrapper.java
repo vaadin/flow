@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,6 +38,11 @@ public class ForwardingRequestWrapper extends HttpServletRequestWrapper {
 
     public ForwardingRequestWrapper(HttpServletRequest request) {
         super(request);
+        // Do not decode URLs to preserve encoded path separators (%2F).
+        // Decoding would cause incorrect baseHref calculation when paths
+        // contain encoded slashes (e.g., /a%2Fb should be one segment, not
+        // two).
+        urlPathHelper.setUrlDecode(false);
     }
 
     @Override

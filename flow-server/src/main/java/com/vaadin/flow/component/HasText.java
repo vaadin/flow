@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,9 @@ package com.vaadin.flow.component;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A component that supports text content.
@@ -158,5 +161,37 @@ public interface HasText extends HasElement {
             return WhiteSpace.NORMAL;
         }
         return WhiteSpace.forString(value);
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the text content of this component and
+     * keeps the text content synchronized with the signal value while the
+     * element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound, any attempt to set the text content manually
+     * throws {@link com.vaadin.flow.signals.BindingActiveException}. Same
+     * happens when trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Span component = new Span("");
+     * add(component);
+     * component.bindText(signal);
+     * signal.value("text"); // The component text content is set to "text"
+     * </pre>
+     *
+     * @param textSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setText(String)
+     */
+    default void bindText(Signal<String> textSignal) {
+        getElement().bindText(textSignal);
     }
 }

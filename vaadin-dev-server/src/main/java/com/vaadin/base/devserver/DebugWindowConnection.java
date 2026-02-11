@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -188,12 +188,17 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (DevToolsToken.getToken()
-                .equals(resource.getRequest().getParameter("token"))) {
+        String requestToken = resource.getRequest().getParameter("token");
+        if (DevToolsToken.getToken().equals(requestToken)) {
             handleConnect(resource);
         } else {
-            getLogger().debug(
-                    "Connection denied because of a missing or invalid token. Either the host is not on the 'vaadin.devmode.hosts-allowed' list or it is using an outdated token");
+            if (requestToken == null) {
+                getLogger().debug(
+                        "Connection denied because the host is not on the 'vaadin.devmode.hosts-allowed' list");
+            } else {
+                getLogger().debug(
+                        "Connection denied because of an invalid or outdated security token.");
+            }
             try {
                 resource.close();
             } catch (IOException e) {

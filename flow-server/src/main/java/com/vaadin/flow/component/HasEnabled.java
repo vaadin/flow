@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,8 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A generic interface for components and other user interface objects that may
@@ -109,7 +109,7 @@ public interface HasEnabled extends HasElement {
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:

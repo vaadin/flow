@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -174,12 +175,18 @@ public class ThemeValidationUtil {
                 .map(ThemeDefinition::getName).filter(name -> !name.isBlank())
                 .map(themeName -> {
                     Map<String, JsonNode> themeJsonContents = new HashMap<>();
-                    ThemeUtils.getThemeJson(themeName, frontendDirectory)
-                            .ifPresent(
-                                    themeJson -> collectThemeJsonContentsInFrontend(
-                                            options, themeJsonContents,
-                                            themeName, themeJson));
-                    return themeJsonContents.keySet().stream()
+                    Optional<JsonNode> themeJson = ThemeUtils
+                            .getThemeJson(themeName, frontendDirectory);
+                    themeJson.ifPresent(
+                            json -> collectThemeJsonContentsInFrontend(options,
+                                    themeJsonContents, themeName, json));
+                    // Always include the main theme itself, even
+                    // without theme.json, so its components/ folder
+                    // is checked
+                    Set<String> themeNames = new HashSet<>(
+                            themeJsonContents.keySet());
+                    themeNames.add(themeName);
+                    return themeNames.stream()
                             .map(name -> ThemeUtils
                                     .getThemeFolder(frontendDirectory, name))
                             .map(dir -> new File(dir, "components"))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -488,6 +489,13 @@ public class JacksonUtilsTest {
                   "parentValue": "parent"
                 }""", JacksonUtils.toFileJson(json).replace("\r\n", "\n"));
 
+    }
+
+    @Test
+    public void writeValue_nullReturnsNullNode() {
+        BaseJsonNode result = JacksonUtils.writeValue(null);
+        Assert.assertTrue("Expected NullNode", result.isNull());
+        Assert.assertEquals(mapper.nullNode(), result);
     }
 
 }

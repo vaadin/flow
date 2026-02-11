@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.MessageIdSyncException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -77,6 +78,8 @@ public class PushHandler {
      * time for handling session expiration.
      */
     private final Map<String, Long> disconnectedUuidBuffer = new ConcurrentHashMap<>();
+
+    private VaadinServletService service;
 
     /**
      * Callback interface used internally to process an event with the
@@ -176,6 +179,18 @@ public class PushHandler {
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
+        } catch (MessageIdSyncException e) {
+            getLogger().warn(
+                    "Message ID sync error. Expected: {}, received: {}",
+                    e.getExpectedId(), e.getReceivedId());
+            SystemMessages msgs = service.getSystemMessages(
+                    HandlerHelper.findLocale(null, vaadinRequest),
+                    vaadinRequest);
+            sendNotificationAndDisconnect(resource,
+                    VaadinService.createCriticalNotificationJSON(
+                            msgs.getSyncErrorCaption(),
+                            msgs.getSyncErrorMessage(), null,
+                            msgs.getSyncErrorURL()));
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
@@ -184,8 +199,6 @@ public class PushHandler {
         }
 
     };
-
-    private VaadinServletService service;
 
     /**
      * Creates an instance connected to the given service.
@@ -464,13 +477,13 @@ public class PushHandler {
                     getLogger()
                             .debug("Could not get UI. This should never happen,"
                                     + " except when reloading in Firefox and Chrome -"
-                                    + " see http://dev.vaadin.com/ticket/14251.");
+                                    + " see https://github.com/vaadin/framework/issues/5449.");
                     return session;
                 } else {
                     getLogger().info(
                             "No UI was found based on data in the request,"
                                     + " but a slower lookup based on the AtmosphereResource succeeded."
-                                    + " See http://dev.vaadin.com/ticket/14251 for more details.");
+                                    + " See https://github.com/vaadin/framework/issues/5449 for more details.");
                 }
             }
 

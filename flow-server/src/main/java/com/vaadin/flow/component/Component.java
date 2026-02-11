@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,8 +43,8 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -584,7 +584,7 @@ public abstract class Component
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -595,6 +595,18 @@ public abstract class Component
      * add(component);
      * component.bindVisible(signal);
      * signal.value(false); // The component is set hidden
+     * </pre>
+     *
+     * or with the multiple boolean conditions:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; needsVisaSignal = new ValueSignal&lt;&gt;(false);
+     * ValueSignal&lt;VisaType&gt; visaTypeSignal = new ValueSignal&lt;&gt;(VisaType.H1B);
+     * VerticalLayout visaSection = new VerticalLayout();
+     * add(visaSection);
+     * // using lambda expression as a computed signal
+     * visaSection.bindVisible(() -> needsVisaSignal.value()
+     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
      * </pre>
      *
      * @param visibleSignal

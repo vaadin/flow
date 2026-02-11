@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Mixin interface for field components that have helper text as property and
@@ -68,6 +69,37 @@ public interface HasHelper extends HasElement {
      */
     default void setHelperText(String helperText) {
         getElement().setProperty("helperText", helperText);
+    }
+
+    /**
+     * Binds a signal's value to the component's helper text so that the helper
+     * text is updated when the signal's value is updated.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given helper text. When unbinding, the current helper text is
+     * left unchanged.
+     * <p>
+     * While a binding for the helper text is active, any attempt to set the
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param helperTextSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setHelperText(String)
+     * @see Element#bindProperty(String, Signal)
+     *
+     * @since 25.1
+     */
+    default void bindHelperText(Signal<String> helperTextSignal) {
+        getElement().bindProperty("helperText", helperTextSignal);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,11 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -117,6 +122,35 @@ public class Html extends Component {
     }
 
     /**
+     * Creates an instance based on the given HTML fragment signal. The signal's
+     * current value must have exactly one root element. Subsequent changes to
+     * the signal will update the component's content (root tag cannot be
+     * changed after creation).
+     *
+     * @param htmlSignal
+     *            the signal that provides the HTML outer content
+     * @throws IllegalArgumentException
+     *             if the signal is {@code null} or its current value is null or
+     *             empty, or doesn't have exactly one root element
+     */
+    public Html(Signal<String> htmlSignal) {
+        super(null);
+        if (htmlSignal == null) {
+            throw new IllegalArgumentException("HTML signal cannot be null");
+        }
+        String outerHtml = htmlSignal.value();
+        if (outerHtml == null || outerHtml.isEmpty()) {
+            throw new IllegalArgumentException("HTML cannot be null or empty");
+        }
+        // Initialize from current signal value (sets the root element and
+        // attrs)
+        setOuterHtml(outerHtml, false);
+        // Bind further updates to inner content and attributes (root tag cannot
+        // change)
+        bindHtmlContent(htmlSignal);
+    }
+
+    /**
      * Sets the content based on the given HTML fragment. The fragment must have
      * exactly one root element, which matches the existing one.
      * <p>
@@ -130,6 +164,15 @@ public class Html extends Component {
      *            the HTML to wrap
      */
     public void setHtmlContent(String html) {
+        // Disallow manual setting while a binding exists
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
+                        throw new BindingActiveException(
+                                "setHtmlContent is not allowed while a binding for HTML content exists.");
+                    }
+                });
         setOuterHtml(html, true);
     }
 
@@ -194,4 +237,43 @@ public class Html extends Component {
         return get(innerHtmlDescriptor);
     }
 
+    /**
+     * Binds a {@link com.vaadin.flow.signals.Signal}'s value to this
+     * component's HTML content (outer HTML) and keeps the content synchronized
+     * with the signal value while the component is attached. When the component
+     * is detached, signal value changes have no effect. Passing
+     * <code>null</code> unbinds any existing binding.
+     * <p>
+     * While a Signal is bound to the HTML content, any attempt to set the HTML
+     * content manually via {@link #setHtmlContent(String)} throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
+     * <p>
+     * The first value of the signal must have exactly one root element. When
+     * updating the content, the root tag name must remain the same as the
+     * component's current root tag.
+     *
+     * @param htmlSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     */
+    public void bindHtmlContent(Signal<String> htmlSignal) {
+        SignalBindingFeature feature = getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (htmlSignal == null) {
+            feature.removeBinding(SignalBindingFeature.HTML_CONTENT);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(getElement(),
+                    htmlSignal, (element, value) -> setOuterHtml(value, true));
+            feature.setBinding(SignalBindingFeature.HTML_CONTENT, registration,
+                    htmlSignal);
+        }
+    }
 }

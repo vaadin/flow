@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -136,15 +137,20 @@ public abstract class AbstractNavigationStateRenderer
         boolean forceInstantiation = lastElement ? event.isForceInstantiation()
                 : (event.isForceInstantiation()
                         && event.isRecreateLayoutChain());
+        Predicate<HasElement> isRouteTargetType = component -> instantiator
+                .getApplicationClass(component).equals(routeTargetType);
         Optional<HasElement> currentInstance = forceInstantiation
                 ? Optional.empty()
-                : ui.getInternals().getActiveRouterTargetsChain().stream()
-                        .filter(component -> instantiator
-                                .getApplicationClass(component)
-                                .equals(routeTargetType))
-                        .findAny();
+                : findActiveRouteTarget(event, isRouteTargetType);
         return (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
+    }
+
+    protected Optional<HasElement> findActiveRouteTarget(NavigationEvent event,
+            Predicate<HasElement> isRouteTargetType) {
+
+        return event.getUI().getInternals().getActiveRouterTargetsChain()
+                .stream().filter(isRouteTargetType).findAny();
     }
 
     @Override
@@ -515,7 +521,6 @@ public abstract class AbstractNavigationStateRenderer
      *            component type that will be shown
      * @param router
      *            used router instance
-     *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
      */
@@ -627,7 +632,7 @@ public abstract class AbstractNavigationStateRenderer
      * event is sent first to the {@link BeforeEnterHandler}s registered within
      * the {@link UI}, then to any element in the chain and to any of its child
      * components in the hierarchy which implements {@link BeforeEnterHandler}
-     *
+     * <p>
      * If the <code>chain</code> argument is empty <code>chainClasses</code> is
      * going to be used and populate <code>chain</code> with new created
      * instance.
@@ -904,6 +909,9 @@ public abstract class AbstractNavigationStateRenderer
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getForwardTarget();
+        if (handler instanceof NavigationStateRenderer renderer) {
+            renderer.setOngoingLocationChangeEvent(locationChangeEvent);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
@@ -916,6 +924,9 @@ public abstract class AbstractNavigationStateRenderer
 
     private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
+        if (handler instanceof NavigationStateRenderer renderer) {
+            renderer.setOngoingLocationChangeEvent(locationChangeEvent);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);

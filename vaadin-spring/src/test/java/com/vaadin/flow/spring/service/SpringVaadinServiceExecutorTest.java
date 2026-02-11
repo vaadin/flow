@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -404,24 +404,6 @@ public class SpringVaadinServiceExecutorTest {
                             .contains("@Bean(\"VaadinTaskExecutor\")"));
                     assertTrue(
                             error.getMessage().contains("@VaadinTaskExecutor"));
-                });
-    }
-
-    @Test
-    public void init_multipleUnnamedTaskExecutors_executorNotAccessed_doesntThrow() {
-        contextRunner.withUserConfiguration(MultipleExecutorsConfig.class)
-                .run(context -> {
-                    SpringInstantiatorTest.getService(context,
-                            new Properties());
-                });
-    }
-
-    @Test
-    public void init_multipleNamedTaskExecutors_executorNotAccessed_doesnThrow() {
-        contextRunner.withUserConfiguration(MultipleNamedExecutorsConfig.class)
-                .run(context -> {
-                    SpringInstantiatorTest.getService(context,
-                            new Properties());
                 });
     }
 

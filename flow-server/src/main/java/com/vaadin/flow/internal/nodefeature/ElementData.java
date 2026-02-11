@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import tools.jackson.databind.node.BaseJsonNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Map of basic element information.
@@ -158,7 +158,7 @@ public class ElementData extends NodeMap {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
      */

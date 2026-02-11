@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -114,7 +113,7 @@ public class CompositeTest {
         layoutInsideComposite.track();
         layoutWithSingleComponentComposite.track();
 
-        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService.setCurrent(null);
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);

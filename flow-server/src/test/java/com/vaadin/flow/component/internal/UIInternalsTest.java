@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -134,13 +134,11 @@ public class UIInternalsTest {
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
-        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
     }
 
     @Test

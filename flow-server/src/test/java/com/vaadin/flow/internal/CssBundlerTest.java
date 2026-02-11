@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -557,5 +557,82 @@ public class CssBundlerTest {
                 result.contains("@import 'nonexistent/styles.css'"));
         Assert.assertTrue("Should contain main CSS",
                 result.contains(".main { color: red; }"));
+    }
+
+    @Test
+    public void cyclicImportsDoNotCauseStackOverflow() throws IOException {
+        // a.css imports b.css, b.css imports a.css
+        writeCss("@import 'b.css';\n.from-a { color: red; }", "a.css");
+        writeCss("@import 'a.css';\n.from-b { color: blue; }", "b.css");
+        writeCss("@import 'a.css';", "styles.css");
+
+        // Should not throw StackOverflowError
+        String result = CssBundler.inlineImportsForThemes(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+
+        // Both CSS rules should be present (each file processed once)
+        Assert.assertTrue("Should contain .from-a", result.contains(".from-a"));
+        Assert.assertTrue("Should contain .from-b", result.contains(".from-b"));
+        // No @import statements should remain (all were inlined or skipped)
+        Assert.assertFalse("Should not contain any @import statements",
+                result.contains("@import"));
+    }
+
+    @Test
+    public void transitiveCyclicImportsDoNotCauseStackOverflow()
+            throws IOException {
+        // a.css -> b.css -> c.css -> a.css
+        writeCss("@import 'b.css';\n.from-a { color: red; }", "a.css");
+        writeCss("@import 'c.css';\n.from-b { color: blue; }", "b.css");
+        writeCss("@import 'a.css';\n.from-c { color: green; }", "c.css");
+        writeCss("@import 'a.css';", "styles.css");
+
+        String result = CssBundler.inlineImportsForThemes(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+
+        Assert.assertTrue("Should contain .from-a", result.contains(".from-a"));
+        Assert.assertTrue("Should contain .from-b", result.contains(".from-b"));
+        Assert.assertTrue("Should contain .from-c", result.contains(".from-c"));
+        // No @import statements should remain (all were inlined or skipped)
+        Assert.assertFalse("Should not contain any @import statements",
+                result.contains("@import"));
+    }
+
+    @Test
+    public void selfImportDoesNotCauseStackOverflow() throws IOException {
+        // a.css imports itself
+        writeCss("@import 'a.css';\n.from-a { color: red; }", "a.css");
+        writeCss("@import 'a.css';", "styles.css");
+
+        String result = CssBundler.inlineImportsForThemes(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+
+        Assert.assertTrue("Should contain .from-a", result.contains(".from-a"));
+        // No @import statements should remain (all were inlined or skipped)
+        Assert.assertFalse("Should not contain any @import statements",
+                result.contains("@import"));
+    }
+
+    @Test
+    public void cyclicImportsInNestedFoldersDoNotCauseStackOverflow()
+            throws IOException {
+        // styles.css imports sub/a.css
+        // sub/a.css imports ../b.css (back to root)
+        // b.css imports sub/a.css (creates cycle)
+        writeCss("@import 'sub/a.css';", "styles.css");
+        writeCss("@import '../b.css';\n.from-sub-a { color: red; }",
+                "sub/a.css");
+        writeCss("@import 'sub/a.css';\n.from-b { color: blue; }", "b.css");
+
+        String result = CssBundler.inlineImportsForThemes(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+
+        // Both CSS rules should be present (each file processed once)
+        Assert.assertTrue("Should contain .from-sub-a",
+                result.contains(".from-sub-a"));
+        Assert.assertTrue("Should contain .from-b", result.contains(".from-b"));
+        // No @import statements should remain (all were inlined or skipped)
+        Assert.assertFalse("Should not contain any @import statements",
+                result.contains("@import"));
     }
 }

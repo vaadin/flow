@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -61,8 +61,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -260,7 +260,7 @@ public class Element extends Node<Element> {
      * <p>
      * While a Signal is bound to an attribute, any attempt to set or remove
      * attribute value manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Binding style or class attribute to a Signal is not supported.
@@ -280,7 +280,7 @@ public class Element extends Node<Element> {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
      */
@@ -886,7 +886,7 @@ public class Element extends Node<Element> {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
@@ -1281,13 +1281,12 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
-        if (feature.hasBinding()) {
-            throw new BindingActiveException(
-                    "setText is not allowed while a binding for text exists.");
-        }
-
+        getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
+            if (feature.hasBinding()) {
+                throw new BindingActiveException(
+                        "setText is not allowed while a binding for text exists.");
+            }
+        });
         setTextContent(textContent);
 
         return this;
@@ -1325,7 +1324,7 @@ public class Element extends Node<Element> {
      * <p>
      * While a Signal is bound to a property, any attempt to set the text
      * content manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -1810,7 +1809,7 @@ public class Element extends Node<Element> {
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -1868,7 +1867,7 @@ public class Element extends Node<Element> {
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -75,10 +75,12 @@ public class AppShellRegistry implements Serializable {
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
+    private static final String AURA_STYLESHEET = "aura/aura.css";
     private static final Logger log = LoggerFactory
             .getLogger(AppShellRegistry.class);
 
     private Class<? extends AppShellConfigurator> appShellClass;
+    private boolean auraAutoLoadWarningLogged = false;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
@@ -232,6 +234,37 @@ public class AppShellRegistry implements Serializable {
                 stylesheets.put(href, sheet.value());
             }
         }
+
+        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
+        // available
+        if (appShellClass == null) {
+            String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                    + AURA_STYLESHEET;
+            VaadinService service = request.getService();
+            if (service.isResourceAvailable(AURA_STYLESHEET)) {
+                String auraHref = resolveStyleSheetHref(defaultStylesheet,
+                        request);
+                if (auraHref != null) {
+                    stylesheets.put(auraHref, defaultStylesheet);
+                    if (!auraAutoLoadWarningLogged) {
+                        auraAutoLoadWarningLogged = true;
+                        log.info(
+                                """
+                                        There is no AppShellConfigurator implementation \
+                                        available, auto loading the Aura theme. Add an \
+                                        AppShellConfigurator to define the theme to use, e.g.
+
+                                        import com.vaadin.flow.theme.aura.Aura;
+
+                                        @StyleSheet(Aura.STYLESHEET)
+                                        public class Application implements AppShellConfigurator {
+                                        }
+                                        """);
+                    }
+                }
+            }
+        }
+
         addStyleSheets(request, stylesheets, settings);
         return settings;
     }

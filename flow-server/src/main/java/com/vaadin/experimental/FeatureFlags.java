@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,6 @@ public class FeatureFlags implements Serializable {
     // Feature constants pointing to provider definitions for backward
     // compatibility
     public static final Feature COLLABORATION_ENGINE_BACKEND = CoreFeatureFlagProvider.COLLABORATION_ENGINE_BACKEND;
-    public static final Feature FLOW_FULLSTACK_SIGNALS = CoreFeatureFlagProvider.FLOW_FULLSTACK_SIGNALS;
     public static final Feature ACCESSIBLE_DISABLED_BUTTONS = CoreFeatureFlagProvider.ACCESSIBLE_DISABLED_BUTTONS;
     public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
     public static final Feature HILLA_FULLSTACK_SIGNALS = HillaFeatureFlagProvider.HILLA_FULLSTACK_SIGNALS;

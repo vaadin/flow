@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,7 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Handles storing and retrieval of the state information for an element using a
@@ -244,7 +244,7 @@ public interface ElementStateProvider extends Serializable {
      *            the property value
      * @param emitChange
      *            true to create a change event for the client side
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is an existing binding for the given
      *             property
      */
@@ -258,7 +258,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @param name
      *            the property name, not <code>null</code>
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is an existing binding for the given
      *             property
      */
@@ -276,7 +276,7 @@ public interface ElementStateProvider extends Serializable {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */

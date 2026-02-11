@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,8 +18,8 @@ package com.vaadin.flow.dom;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;

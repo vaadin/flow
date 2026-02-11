@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -472,8 +472,12 @@ public class Page implements Serializable {
      *            the name of the window.
      */
     public void open(String url, String windowName) {
+        // The vaadin-redirect-pending event might be useful to block other
+        // client side
+        // reload/redirection triggered by other components, for example Vite.
         executeJs(
-                "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
+                "window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}})); "
+                        + "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
                 url, windowName);
     }
 

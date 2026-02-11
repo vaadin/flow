@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,7 +72,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
-                "com\\.vaadin\\.signals\\..*",
+                "com\\.vaadin\\.flow\\.signals\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
                 "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.stats..*",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -109,5 +109,22 @@ public @interface DomEvent {
      * @return true if default behavior is should be prevented
      */
     public boolean preventDefault() default false;
+
+    /**
+     * Controls whether this event listener should bypass the server-side
+     * security checks for modality. When set to {@code true}, the listener will
+     * receive events even when the component is behind a modal component's
+     * modality curtain (i.e., when the component is inert).
+     * <p>
+     * Handle with care! This should only be used for cases where the event
+     * needs to be processed regardless of the component's modal state, such as
+     * geolocation updates or other non-UI related events.
+     *
+     * @see DomListenerRegistration#allowInert()
+     *
+     * @return {@code true} if the listener should receive events even when the
+     *         component is inert, {@code false} otherwise (default)
+     */
+    public boolean allowInert() default false;
 
 }

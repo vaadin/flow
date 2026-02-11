@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,41 +23,34 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 public class ElementBindTextTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
     private LinkedList<ErrorEvent> events;
 
     @BeforeClass
     public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
     }
 
     @AfterClass
@@ -68,30 +61,13 @@ public class ElementBindTextTest {
 
     @Before
     public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         events = mockLockedSessionWithErrorHandler();
     }
 
     @After
     public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
         CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
+        events = null;
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
@@ -174,7 +150,7 @@ public class ElementBindTextTest {
     public void bindText_initialNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        ValueSignal<String> signal = new ValueSignal<>();
         element.bindText(signal);
         assertEquals("", element.getText());
         Assert.assertTrue(events.isEmpty());
@@ -260,5 +236,66 @@ public class ElementBindTextTest {
 
         signal.value("text2");
         assertEquals("text2", element.getText());
+    }
+
+    @Test
+    public void lazyInitSignalBindingFeature() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        element.setText("text2");
+        element.getText();
+
+        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+                .ifPresent(feature -> Assert.fail(
+                        "TextBindingFeature should not be initialized before binding a signal"));
+
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+
+        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+                .orElseThrow(() -> new AssertionError(
+                        "TextBindingFeature should be initialized after binding a signal"));
+    }
+
+    /*
+     * HasText interface's default bindText should delegate to Element's
+     * bindText. This test verifies that with a custom Span component.
+     */
+    @Test
+    public void bindText_componentWithHasText() {
+        @Tag(Tag.SPAN)
+        class SpanWithHasText extends Component implements HasText {
+        }
+
+        SpanWithHasText span = new SpanWithHasText();
+        UI.getCurrent().add(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        span.bindText(signal);
+        assertEquals("text", span.getText());
+
+        signal.value("text2");
+        assertEquals("text2", span.getText());
+
+        // verify text is blank with null signal value
+        signal.value(null);
+        assertEquals("", span.getText());
+
+        // verify setText throws with active binding
+        Assert.assertThrows(BindingActiveException.class,
+                () -> span.setText(""));
+
+        // detach
+        UI.getCurrent().remove(span);
+        signal.value("text3");
+        assertEquals("", span.getText());
+        // reattach
+        UI.getCurrent().add(span);
+        assertEquals("text3", span.getText());
+
+        // unbind and verify setText works
+        span.bindText(null);
+        span.setText("text");
+        assertEquals("text", span.getText());
     }
 }

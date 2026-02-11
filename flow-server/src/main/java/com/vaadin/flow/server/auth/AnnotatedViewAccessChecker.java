@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,8 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -163,12 +165,16 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 
     private void logDeniedByLayoutAccessRules(NavigationContext context,
             Class<?> layoutClass, String msg) {
-        if (context.isNavigating()) {
-            LOGGER.warn(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+        if (context.isNavigating() || isDevelopmentMode(context)) {
+            if (!context.isNavigating()) {
+                msg = msg
+                        + " This access check was probably triggered by the security framework.";
+            }
+            LOGGER.warn(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         } else {
-            LOGGER.trace(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+            LOGGER.debug(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         }
     }
 
@@ -178,4 +184,11 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 
+    private boolean isDevelopmentMode(NavigationContext context) {
+        VaadinContext vaadinContext = context.getRouter().getRegistry()
+                .getContext();
+        ApplicationConfiguration appConfig = ApplicationConfiguration
+                .get(vaadinContext);
+        return !appConfig.isProductionMode();
+    }
 }

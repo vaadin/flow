@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -519,6 +519,9 @@ public final class JacksonUtils {
      * @return converted JSON value
      */
     public static BaseJsonNode writeValue(Object object) {
+        if (object == null) {
+            return (BaseJsonNode) objectMapper.nullNode();
+        }
         return objectMapper.valueToTree(object);
     }
 
