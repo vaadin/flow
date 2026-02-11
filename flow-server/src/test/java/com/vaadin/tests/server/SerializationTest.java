@@ -149,8 +149,7 @@ class SerializationTest {
                 "UIs should be available after empty deserialization");
         assertEquals(1, session.getUIs().size(),
                 "UIs should contain a UI instance after empty deserialization");
-        assertEquals(42,
-                session.getUIs().iterator().next().getUIId(),
+        assertEquals(42, session.getUIs().iterator().next().getUIId(),
                 "Unexpected UI id after empty deserialization");
     }
 

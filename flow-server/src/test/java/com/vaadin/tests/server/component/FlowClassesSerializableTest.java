@@ -164,26 +164,21 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
 
         UI.setCurrent(deserializedUi);
         deserializedComponent.signal.value("changed after deserialization");
-        assertEquals(3,
-                deserializedComponent.effectExecutionCounter);
+        assertEquals(3, deserializedComponent.effectExecutionCounter);
         deserializedComponent.signal.value("changed");
-        assertEquals(4,
-                deserializedComponent.effectExecutionCounter);
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         signal.value("changed in original signal");
         // original signal change should not affect deserialized component
-        assertEquals(4,
-                deserializedComponent.effectExecutionCounter);
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
         deserializedComponent.signal.value("foo");
-        assertEquals(4,
-                deserializedComponent.effectExecutionCounter);
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // verify various bindX methods
-        assertEquals("foo",
-                deserializedComponent.getElement().getText());
+        assertEquals("foo", deserializedComponent.getElement().getText());
         assertEquals("foo",
                 deserializedComponent.getElement().getAttribute("attr"));
         assertEquals("foo",
@@ -215,8 +210,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         try {
             childModel.deferredUpdateFromClient(property, value);
         } catch (PropertyChangeDeniedException e) {
-            fail(
-                    "Failed to update property from client: " + e.getMessage());
+            fail("Failed to update property from client: " + e.getMessage());
         }
     }
 
