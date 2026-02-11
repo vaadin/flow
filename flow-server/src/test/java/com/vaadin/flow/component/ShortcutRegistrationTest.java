@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -615,13 +616,9 @@ public class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOwnerRemovedBeforeKeyEvent_noNPE() {
+    public void constructedRegistration_lifecycleOwnerNulledBeforeKeyEvent_noNPE()
+            throws Exception {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
-
-        for (Component component : listenOn) {
-            Mockito.when(component.addDetachListener(any()))
-                    .thenReturn(mock(Registration.class));
-        }
 
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event::set, Key.KEY_A);
@@ -629,10 +626,14 @@ public class ShortcutRegistrationTest {
         mockLifecycle(true);
         clientResponse();
 
-        // Simulate removal: nulls lifecycleOwner, eventListener, etc.
-        registration.remove();
+        // Simulate the race condition: null out lifecycleOwner while
+        // the KeyDown listener is still registered
+        Field field = ShortcutRegistration.class
+                .getDeclaredField("lifecycleOwner");
+        field.setAccessible(true);
+        field.set(registration, null);
 
-        // Fire KeyDown event after removal — should not throw NPE
+        // Fire KeyDown event — should not throw NPE
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
