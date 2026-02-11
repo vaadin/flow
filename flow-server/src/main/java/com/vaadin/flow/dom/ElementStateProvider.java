@@ -68,8 +68,7 @@ public interface ElementStateProvider extends Serializable {
     void setAttribute(StateNode node, String attribute, String value);
 
     /**
-     * Binds the given signal to the given attribute. <code>null</code> signal
-     * unbinds existing binding.
+     * Binds the given signal to the given attribute.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
@@ -77,8 +76,7 @@ public interface ElementStateProvider extends Serializable {
      * @param attribute
      *            the name of the attribute
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      */
     void bindAttributeSignal(Element owner, String attribute,
             Signal<String> signal);
@@ -265,8 +263,7 @@ public interface ElementStateProvider extends Serializable {
     void removeProperty(StateNode node, String name);
 
     /**
-     * Binds the given signal to the given property. <code>null</code> signal
-     * unbinds existing binding.
+     * Binds the given signal to the given property.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
@@ -274,8 +271,7 @@ public interface ElementStateProvider extends Serializable {
      * @param name
      *            the property name, not <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
@@ -461,14 +457,12 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Binds the given signal to the <code>visible</code> property.
-     * <code>null</code> signal unbinds existing binding.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
      *            <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      */
     void bindVisibleSignal(Element owner, Signal<Boolean> signal);
 

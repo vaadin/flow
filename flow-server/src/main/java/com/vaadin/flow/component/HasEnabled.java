@@ -123,8 +123,7 @@ public interface HasEnabled extends HasElement {
      * </pre>
      *
      * @param enabledSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)

@@ -259,8 +259,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * </pre>
      *
      * @param valueSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
@@ -275,8 +274,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Binds a {@link Signal}'s value to the read-only state of this component
      * and keeps the state synchronized with the signal value while the
      * component is in attached state. When the component is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * While a Signal is bound to the read-only state, any attempt to set the
      * read-only state manually with {@link #setReadOnly(boolean)} throws
@@ -294,8 +292,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * </pre>
      *
      * @param readOnlySignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)

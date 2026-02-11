@@ -70,8 +70,7 @@ public interface HasPlaceholder extends HasElement {
      * detached state.
      *
      * @param placeholderSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setPlaceholder(String)

@@ -185,8 +185,7 @@ public interface HasText extends HasElement {
      * </pre>
      *
      * @param textSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
