@@ -380,6 +380,59 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("bar", input.getValue());
     }
 
+    @Test(expected = RuntimeException.class)
+    public void bindValue_writeCallbackThrows() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, value -> {
+            throw new RuntimeException("test");
+        });
+        assertEquals("foo", input.getValue());
+
+        input.addValueChangeListener(event -> {
+            Assert.fail(
+                    "Value change listener should not be triggered when write callback throws");
+        });
+
+        input.setValue("bar");
+
+    }
+
+    @Test
+    public void bindValue_normalCallback_valueChangeEventTriggered() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, signal::value);
+
+        AtomicReference<String> eventValue = new AtomicReference<>();
+        input.addValueChangeListener(event -> {
+            eventValue.set(event.getValue());
+        });
+
+        input.setValue("bar");
+        assertEquals("bar", eventValue.get());
+    }
+
+    @Test
+    public void bindValue_noOpCallback_valueChangeEventNotTriggered() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, value -> {
+        });
+
+        input.addValueChangeListener(event -> {
+            Assert.fail(
+                    "Value change listener should not be triggered with a no-op callback");
+        });
+
+        // With a no-op callback, value is not changed and event should not be
+        // triggered
+        input.setValue("bar");
+    }
+
     /**
      * Test input component using {@link AbstractField} directly.
      */

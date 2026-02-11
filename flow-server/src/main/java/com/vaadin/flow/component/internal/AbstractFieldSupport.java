@@ -278,36 +278,28 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         }
 
         if (!valueSetFromSignal) {
-            getFeatureIfInitialized(SignalBindingFeature.class)
-                    .ifPresent(feature -> {
-                        if (component.isAttached() && feature
-                                .hasBinding(SignalBindingFeature.VALUE)) {
-                            SerializableConsumer<T> callback = feature
-                                    .getWriteCallback(
-                                            SignalBindingFeature.VALUE);
-                            Signal<T> signal = feature
-                                    .getSignal(SignalBindingFeature.VALUE);
-                            if (callback != null) {
-                                callback.accept(newValue);
-                                // Re-consult the signal after the callback
-                                T signalValue = signal.peek();
-                                if (!valueEquals.test(signalValue, newValue)) {
-                                    // Signal value differs, revert
-                                    bufferedValue = signalValue;
-                                    applyValue(signalValue);
-                                }
-                            } else {
-                                // Read-only binding: revert and throw
-                                bufferedValue = oldValue;
-                                applyValue(oldValue);
-                                throw new IllegalStateException(
-                                        "Cannot set value on a read-only signal binding. "
-                                                + "Provide a write callback to enable two-way binding.");
-                            }
-                        }
-                    });
+            Optional<SignalBindingFeature> featureOpt = getFeatureIfInitialized(
+                    SignalBindingFeature.class);
+            if (featureOpt.isPresent()) {
+                SignalBindingFeature feature = featureOpt.get();
+                if (component.isAttached()
+                        && feature.hasBinding(SignalBindingFeature.VALUE)) {
+                    boolean changed = feature.updateSignalByWriteCallback(
+                            SignalBindingFeature.VALUE, oldValue, newValue,
+                            valueEquals, revertedToValue -> {
+                                // revert component value to the given value
+                                // which is in sync with the signal
+                                bufferedValue = revertedToValue;
+                                applyValue(revertedToValue);
+                            });
+                    if (!changed) {
+                        // no need to fire value change event when value is not
+                        // changed due to signal reversion
+                        return;
+                    }
+                }
+            }
         }
-
         ComponentUtil.fireEvent(component,
                 createValueChange(oldValue, fromClient));
     }

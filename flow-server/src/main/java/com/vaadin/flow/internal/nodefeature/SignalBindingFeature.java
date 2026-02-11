@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
@@ -179,6 +180,57 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
         SignalBinding binding = values.get(key);
         return binding != null ? (Signal<T>) values.get(key).signal : null;
+    }
+
+    /**
+     * Updates the signal value by invoking the write callback for the given
+     * key. The callback is expected to update the signal value, and this method
+     * will check whether the signal value was updated to the expected new
+     * value. If the signal value differs from the expected new value after the
+     * callback, the revert callback will be invoked with the current signal
+     * value to revert the change.
+     * 
+     * @param key
+     *            the key for which to update the signal value
+     * @param oldValue
+     *            the old value before the update, used for comparison in case
+     *            of revert
+     * @param newValue
+     *            the expected new value to be set by the write callback
+     * @param valueEquals
+     *            a predicate to compare signal values for equality
+     * @param revertCallback
+     *            a callback to revert the value change if the signal value does
+     *            not match the expected new value after invoking the write
+     *            callback
+     * @return true if the signal value was updated to the expected new value,
+     *         false if a revert was performed
+     * @param <T>
+     *            the type of the signal value
+     */
+    public <T> boolean updateSignalByWriteCallback(String key, T oldValue,
+            T newValue, SerializableBiPredicate<T, T> valueEquals,
+            SerializableConsumer<T> revertCallback) {
+        SerializableConsumer<T> callback = getWriteCallback(key);
+        Signal<T> signal = getSignal(key);
+        if (callback != null) {
+            callback.accept(newValue);
+            // Re-consult the signal after the callback
+            T signalValue = signal.peek();
+            if (!valueEquals.test(signalValue, newValue)) {
+                // Signal value differs, revert
+                revertCallback.accept(signalValue);
+                // No change compared to old value, so no need to fire event
+                return !valueEquals.test(signalValue, oldValue);
+            }
+        } else {
+            // Read-only binding: revert and throw
+            revertCallback.accept(oldValue);
+            throw new IllegalStateException(
+                    "Cannot set value on a read-only signal binding. "
+                            + "Provide a write callback to enable two-way binding.");
+        }
+        return true;
     }
 
     private void ensureValues() {
