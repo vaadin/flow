@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -42,14 +42,14 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
 
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         VaadinSession.setCurrent(null);
         UI.setCurrent(null);
         ui = null;
     }
 
-    @After
+    @AfterEach
     public void clearUI() {
         ui = null;
         UI.setCurrent(null);

@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -63,10 +63,10 @@ import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
         VaadinSecurityConfigurerTest.TestConfig.class })
-public class AuthenticationContextTest {
+class AuthenticationContextTest {
 
     @Autowired
     ObjectPostProcessor<Object> postProcessor;
@@ -81,31 +81,31 @@ public class AuthenticationContextTest {
 
     @Test
     public void isAuthenticated_notAuthenticated_false() {
-        Assert.assertFalse(authContext.isAuthenticated());
+        Assertions.assertFalse(authContext.isAuthenticated());
     }
 
     @Test
     @WithAnonymousUser
     public void isAuthenticated_anonymous_false() {
-        Assert.assertFalse(authContext.isAuthenticated());
+        Assertions.assertFalse(authContext.isAuthenticated());
     }
 
     @Test
     @WithMockUser
     public void isAuthenticated_loggedUser_true() {
-        Assert.assertTrue(authContext.isAuthenticated());
+        Assertions.assertTrue(authContext.isAuthenticated());
     }
 
     @Test
     public void getAuthenticatedUser_notAuthenticated_getsEmpty() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authContext.getAuthenticatedUser(Object.class).isEmpty());
     }
 
     @Test
     @WithAnonymousUser
     public void getAuthenticatedUser_anonymous_getsEmpty() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authContext.getAuthenticatedUser(Object.class).isEmpty());
     }
 
@@ -113,55 +113,55 @@ public class AuthenticationContextTest {
     @WithMockUser()
     public void getAuthenticatedUser_loggedUser_getsUserInstance() {
         Optional<User> maybeUser = authContext.getAuthenticatedUser(User.class);
-        Assert.assertTrue(maybeUser.isPresent());
-        Assert.assertEquals("user", maybeUser.get().getUsername());
+        Assertions.assertTrue(maybeUser.isPresent());
+        Assertions.assertEquals("user", maybeUser.get().getUsername());
     }
 
     @Test
     @WithMockUser()
     public void getAuthenticatedUser_loggedUserWrongUserType_throws() {
-        Assert.assertThrows(ClassCastException.class, () -> authContext
+        Assertions.assertThrows(ClassCastException.class, () -> authContext
                 .getAuthenticatedUser(AuthenticatedPrincipal.class));
     }
 
     @Test
     public void getPrincipalName_notAuthenticated_getsEmpty() {
-        Assert.assertTrue(authContext.getPrincipalName().isEmpty());
+        Assertions.assertTrue(authContext.getPrincipalName().isEmpty());
     }
 
     @Test
     @WithAnonymousUser
     public void getPrincipalName_anonymous_getsEmpty() {
-        Assert.assertTrue(authContext.getPrincipalName().isEmpty());
+        Assertions.assertTrue(authContext.getPrincipalName().isEmpty());
     }
 
     @Test
     @WithMockUser(username = "the-username")
     public void getPrincipalName_loggedUser_getsAuthenticationName() {
         Optional<String> maybePrincipalName = authContext.getPrincipalName();
-        Assert.assertTrue(maybePrincipalName.isPresent());
-        Assert.assertEquals("the-username", maybePrincipalName.get());
+        Assertions.assertTrue(maybePrincipalName.isPresent());
+        Assertions.assertEquals("the-username", maybePrincipalName.get());
     }
 
     @Test
     public void getGrantedAuthorities_notAuthenticated_emptyResult() {
-        Assert.assertTrue(authContext.getGrantedAuthorities().isEmpty());
+        Assertions.assertTrue(authContext.getGrantedAuthorities().isEmpty());
     }
 
     @Test
     @WithAnonymousUser
     public void getGrantedAuthorities_anonymous_emptyResult() {
-        Assert.assertTrue(authContext.getGrantedAuthorities().isEmpty());
+        Assertions.assertTrue(authContext.getGrantedAuthorities().isEmpty());
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void getGrantedAuthorities_authenticated_rolesAreIncluded() {
         var authorities = authContext.getGrantedAuthorities();
-        Assert.assertEquals(2, authorities.size());
-        Assert.assertTrue(
+        Assertions.assertEquals(2, authorities.size());
+        Assertions.assertTrue(
                 authorities.contains(new SimpleGrantedAuthority("ROLE_USER")));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
 
@@ -169,248 +169,256 @@ public class AuthenticationContextTest {
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void getGrantedAuthorities_authenticated_authoritiesAreIncluded() {
         var authorities = authContext.getGrantedAuthorities();
-        Assert.assertEquals(2, authorities.size());
-        Assert.assertTrue(
+        Assertions.assertEquals(2, authorities.size());
+        Assertions.assertTrue(
                 authorities.contains(new SimpleGrantedAuthority("AUTH_READ")));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authorities.contains(new SimpleGrantedAuthority("AUTH_WRITE")));
     }
 
     @Test
     public void getGrantedRoles_notAuthenticated_emptyResult() {
-        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+        Assertions.assertTrue(authContext.getGrantedRoles().isEmpty());
     }
 
     @Test
     @WithAnonymousUser
     public void getGrantedRoles_anonymous_emptyResult() {
-        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+        Assertions.assertTrue(authContext.getGrantedRoles().isEmpty());
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void getGrantedRoles_authenticated_rolesAreIncluded() {
         var roles = authContext.getGrantedRoles();
-        Assert.assertEquals(2, roles.size());
-        Assert.assertTrue(roles.contains("USER"));
-        Assert.assertTrue(roles.contains("ADMIN"));
+        Assertions.assertEquals(2, roles.size());
+        Assertions.assertTrue(roles.contains("USER"));
+        Assertions.assertTrue(roles.contains("ADMIN"));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void getGrantedRoles_authenticated_authoritiesAreNotIncluded() {
-        Assert.assertTrue(authContext.getGrantedRoles().isEmpty());
+        Assertions.assertTrue(authContext.getGrantedRoles().isEmpty());
     }
 
     @Test
     public void hasRole_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasRole("USER"));
+        Assertions.assertFalse(authContext.hasRole("USER"));
     }
 
     @Test
     @WithAnonymousUser
     public void hasRole_anonymous_false() {
-        Assert.assertFalse(authContext.hasRole("ANONYMOUS"));
+        Assertions.assertFalse(authContext.hasRole("ANONYMOUS"));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasRole_hasRole_true() {
-        Assert.assertTrue(authContext.hasRole("USER"));
-        Assert.assertTrue(authContext.hasRole("ADMIN"));
+        Assertions.assertTrue(authContext.hasRole("USER"));
+        Assertions.assertTrue(authContext.hasRole("ADMIN"));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasRole_lacksRole_false() {
-        Assert.assertFalse(authContext.hasRole("SUPERADMIN"));
+        Assertions.assertFalse(authContext.hasRole("SUPERADMIN"));
     }
 
     @Test
     public void hasAnyRole_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasAnyRole("USER"));
-        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+        Assertions.assertFalse(authContext.hasAnyRole("USER"));
+        Assertions.assertFalse(authContext.hasAnyRole(List.of("USER")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAnyRole_anonymous_false() {
-        Assert.assertFalse(authContext.hasAnyRole("ANONYMOUS"));
-        Assert.assertFalse(authContext.hasAnyRole(List.of("ANONYMOUS")));
+        Assertions.assertFalse(authContext.hasAnyRole("ANONYMOUS"));
+        Assertions.assertFalse(authContext.hasAnyRole(List.of("ANONYMOUS")));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasAnyRole_hasRole_true() {
-        Assert.assertTrue(authContext.hasAnyRole("USER"));
-        Assert.assertTrue(authContext.hasAnyRole(List.of("ADMIN")));
+        Assertions.assertTrue(authContext.hasAnyRole("USER"));
+        Assertions.assertTrue(authContext.hasAnyRole(List.of("ADMIN")));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasAnyRole_hasOneOfTheRoles_true() {
-        Assert.assertTrue(authContext.hasAnyRole("USER", "SUPERADMIN"));
-        Assert.assertTrue(
+        Assertions.assertTrue(authContext.hasAnyRole("USER", "SUPERADMIN"));
+        Assertions.assertTrue(
                 authContext.hasAnyRole(List.of("ADMIN", "SUPERADMIN")));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasAnyRole_lacksRole_false() {
-        Assert.assertFalse(authContext.hasAnyRole("SUPERADMIN"));
-        Assert.assertFalse(authContext.hasAnyRole(List.of("SUPERADMIN")));
+        Assertions.assertFalse(authContext.hasAnyRole("SUPERADMIN"));
+        Assertions.assertFalse(authContext.hasAnyRole(List.of("SUPERADMIN")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAnyRole_noRoles_false() {
-        Assert.assertFalse(authContext.hasAnyRole("USER"));
-        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+        Assertions.assertFalse(authContext.hasAnyRole("USER"));
+        Assertions.assertFalse(authContext.hasAnyRole(List.of("USER")));
     }
 
     @Test
     public void hasAllRoles_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
-        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+        Assertions.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assertions
+                .assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAllRoles_anonymous_false() {
-        Assert.assertFalse(authContext.hasAllRoles("ANONYMOUS"));
-        Assert.assertFalse(authContext.hasAllRoles(List.of("ANONYMOUS")));
+        Assertions.assertFalse(authContext.hasAllRoles("ANONYMOUS"));
+        Assertions.assertFalse(authContext.hasAllRoles(List.of("ANONYMOUS")));
     }
 
     @Test
     @WithMockUser(roles = { "USER", "ADMIN" })
     public void hasAllRoles_hasRoles_true() {
-        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
-        Assert.assertTrue(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+        Assertions.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        Assertions
+                .assertTrue(authContext.hasAllRoles(List.of("USER", "ADMIN")));
     }
 
     @Test
     @WithMockUser(roles = { "USER" })
     public void hasAllRoles_lacksRole_false() {
-        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
-        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+        Assertions.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assertions
+                .assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAllRoles_noRoles_false() {
-        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
-        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+        Assertions.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assertions
+                .assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
     }
 
     @Test
     public void hasAuthority_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasAuthority("AUTH_READ"));
+        Assertions.assertFalse(authContext.hasAuthority("AUTH_READ"));
     }
 
     @Test
     @WithAnonymousUser
     public void hasAuthority_anonymous_false() {
-        Assert.assertFalse(authContext.hasAuthority("ROLE_ANONYMOUS"));
+        Assertions.assertFalse(authContext.hasAuthority("ROLE_ANONYMOUS"));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAuthority_hasAuthority_true() {
-        Assert.assertTrue(authContext.hasAuthority("AUTH_READ"));
-        Assert.assertTrue(authContext.hasAuthority("AUTH_WRITE"));
+        Assertions.assertTrue(authContext.hasAuthority("AUTH_READ"));
+        Assertions.assertTrue(authContext.hasAuthority("AUTH_WRITE"));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAuthority_lacksAuthority_false() {
-        Assert.assertFalse(authContext.hasAuthority("AUTH_MANAGE"));
+        Assertions.assertFalse(authContext.hasAuthority("AUTH_MANAGE"));
     }
 
     @Test
     public void hasAnyAuthority_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
-        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+        Assertions.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assertions
+                .assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAnyAuthority_anonymous_false() {
-        Assert.assertFalse(authContext.hasAnyAuthority("ROLE_ANONYMOUS"));
-        Assert.assertFalse(
+        Assertions.assertFalse(authContext.hasAnyAuthority("ROLE_ANONYMOUS"));
+        Assertions.assertFalse(
                 authContext.hasAnyAuthority(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAnyAuthority_hasAuthority_true() {
-        Assert.assertTrue(authContext.hasAnyAuthority("AUTH_READ"));
-        Assert.assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+        Assertions.assertTrue(authContext.hasAnyAuthority("AUTH_READ"));
+        Assertions
+                .assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
 
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAnyAuthority_hasOneOfTheAuthorities_true() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authContext.hasAnyAuthority("AUTH_READ", "AUTH_MANAGE"));
-        Assert.assertTrue(authContext
+        Assertions.assertTrue(authContext
                 .hasAnyAuthority(List.of("AUTH_WRITE", "AUTH_MANAGE")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAnyAuthority_lacksAuthority_false() {
-        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_MANAGE"));
-        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_MANAGE")));
+        Assertions.assertFalse(authContext.hasAnyAuthority("AUTH_MANAGE"));
+        Assertions.assertFalse(
+                authContext.hasAnyAuthority(List.of("AUTH_MANAGE")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAnyAuthority_noAuthorities_false() {
-        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
-        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+        Assertions.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assertions.assertFalse(
+                authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
     }
 
     @Test
     public void hasAllAuthorities_notAuthenticated_false() {
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
+        Assertions.assertFalse(authContext
                 .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAllAuthorities_anonymous_false() {
-        Assert.assertFalse(authContext.hasAllAuthorities("ROLE_ANONYMOUS"));
-        Assert.assertFalse(
+        Assertions.assertFalse(authContext.hasAllAuthorities("ROLE_ANONYMOUS"));
+        Assertions.assertFalse(
                 authContext.hasAllAuthorities(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAllAuthorities_hasAuthorities_true() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertTrue(authContext
+        Assertions.assertTrue(authContext
                 .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ" })
     public void hasAllAuthorities_lacksAuthority_false() {
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
+        Assertions.assertFalse(authContext
                 .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAllAuthorities_noAuthorities_false() {
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
+        Assertions.assertFalse(authContext
                 .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
@@ -427,7 +435,7 @@ public class AuthenticationContextTest {
             try {
                 authContext.logout();
             } catch (NullPointerException e) {
-                Assert.fail("Should not throw NPE");
+                Assertions.fail("Should not throw NPE");
             }
         } finally {
             CurrentInstance.clearAll();
@@ -563,8 +571,8 @@ public class AuthenticationContextTest {
         AuthenticationContext authCtx = new AuthenticationContext();
         AuthenticationContext.applySecurityConfiguration(httpSecurity, authCtx);
 
-        Assert.assertNotNull(authCtx.getLogoutSuccessHandler());
-        Assert.assertNotNull(authCtx.getLogoutHandler());
+        Assertions.assertNotNull(authCtx.getLogoutSuccessHandler());
+        Assertions.assertNotNull(authCtx.getLogoutHandler());
 
         CompositeLogoutHandler composite = authCtx.getLogoutHandler();
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
@@ -591,10 +599,10 @@ public class AuthenticationContextTest {
 
         AuthenticationContext authCtx = new AuthenticationContext();
 
-        IllegalStateException exception = Assert.assertThrows(
+        IllegalStateException exception = Assertions.assertThrows(
                 IllegalStateException.class, () -> AuthenticationContext
                         .applySecurityConfiguration(httpSecurity, authCtx));
-        Assert.assertEquals("This object has not been built",
+        Assertions.assertEquals("This object has not been built",
                 exception.getMessage());
     }
 
@@ -604,11 +612,11 @@ public class AuthenticationContextTest {
         var prefixHolder = new VaadinRolePrefixHolder("FOO_");
         var authContext = new AuthenticationContext();
         authContext.setRolePrefixHolder(prefixHolder);
-        Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
-        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        Assertions.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+        Assertions.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
         var roles = authContext.getGrantedRoles();
-        Assert.assertTrue(roles.contains("USER"));
-        Assert.assertTrue(roles.contains("ADMIN"));
+        Assertions.assertTrue(roles.contains("USER"));
+        Assertions.assertTrue(roles.contains("ADMIN"));
     }
 
     private static void mockPush(UI ui) {

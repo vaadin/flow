@@ -17,10 +17,10 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -29,17 +29,17 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
 
-public class VaadinAwareSecurityContextHolderStrategyTest {
+class VaadinAwareSecurityContextHolderStrategyTest {
 
     private VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy;
 
-    @Before
+    @BeforeEach
     public void setup() {
         vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         CurrentInstance.clearAll();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         CurrentInstance.clearAll();
     }
@@ -58,7 +58,7 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
 
         vaadinAwareSecurityContextHolderStrategy
                 .setContext(Mockito.mock(SecurityContext.class));
-        Assert.assertEquals(securityContext,
+        Assertions.assertEquals(securityContext,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
@@ -70,7 +70,7 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
 
         SecurityContext explicit = Mockito.mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
-        Assert.assertEquals(explicit,
+        Assertions.assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
@@ -78,7 +78,7 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
     public void explicitUsedWhenNoSessionAvailable() {
         SecurityContext explicit = Mockito.mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
-        Assert.assertEquals(explicit,
+        Assertions.assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
@@ -96,7 +96,7 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
                         HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         VaadinSession.setCurrent(vaadinSession);
 
-        Assert.assertEquals(explicit,
+        Assertions.assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 }

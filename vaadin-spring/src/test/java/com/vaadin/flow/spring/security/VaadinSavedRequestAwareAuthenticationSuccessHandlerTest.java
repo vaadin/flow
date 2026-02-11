@@ -17,9 +17,9 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -31,11 +31,11 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 
-public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
+class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler;
 
-    @Before
+    @BeforeEach
     public void init() {
         vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
     }
@@ -49,9 +49,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("/", loginResponse.getHeader("Location"));
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertEquals("/", loginResponse.getHeader("Location"));
     }
 
     @Test
@@ -66,9 +66,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertEquals("/foo", loginResponse.getHeader("Location"));
     }
 
     @Test
@@ -92,9 +92,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertEquals("/foo", loginResponse.getHeader("Location"));
     }
 
     @Test
@@ -115,9 +115,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertEquals("/foo", loginResponse.getHeader("Location"));
     }
 
     @Test
@@ -138,11 +138,11 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
         // HttpSessionRequestCache uses request parameter "continue",
         // see HttpSessionRequestCache::setMatchingRequestParameterName
-        Assert.assertEquals("http://localhost/the-saved-url?continue",
+        Assertions.assertEquals("http://localhost/the-saved-url?continue",
                 loginResponse.getHeader("Location"));
     }
 
@@ -162,9 +162,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("http://localhost/last-route",
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertEquals("http://localhost/last-route",
                 loginResponse.getHeader("Location"));
     }
 
@@ -189,11 +189,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertNull(loginResponse.getHeader("Result"));
-        Assert.assertEquals(302, loginResponse.getStatus());
+        Assertions.assertNull(loginResponse.getHeader("Result"));
+        Assertions.assertEquals(302, loginResponse.getStatus());
         // HttpSessionRequestCache uses request parameter "continue",
         // see HttpSessionRequestCache::setMatchingRequestParameterName
-        Assert.assertEquals("http://localhost/a-previous-saved-url?continue",
+        Assertions.assertEquals(
+                "http://localhost/a-previous-saved-url?continue",
                 loginResponse.getHeader("Location"));
     }
 
@@ -207,10 +208,10 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertEquals("success", loginResponse.getHeader("Result"));
-        Assert.assertEquals(200, loginResponse.getStatus());
-        Assert.assertNull(loginResponse.getHeader("Saved-url"));
-        Assert.assertEquals("/", loginResponse.getHeader("Default-url"));
+        Assertions.assertEquals("success", loginResponse.getHeader("Result"));
+        Assertions.assertEquals(200, loginResponse.getStatus());
+        Assertions.assertNull(loginResponse.getHeader("Saved-url"));
+        Assertions.assertEquals("/", loginResponse.getHeader("Default-url"));
     }
 
     @Test
@@ -230,13 +231,13 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertEquals("success", loginResponse.getHeader("Result"));
-        Assert.assertEquals(200, loginResponse.getStatus());
+        Assertions.assertEquals("success", loginResponse.getHeader("Result"));
+        Assertions.assertEquals(200, loginResponse.getStatus());
         // HttpSessionRequestCache uses request parameter "continue",
         // see HttpSessionRequestCache::setMatchingRequestParameterName
-        Assert.assertEquals("http://localhost/the-saved-url?continue",
+        Assertions.assertEquals("http://localhost/the-saved-url?continue",
                 loginResponse.getHeader("Saved-url"));
-        Assert.assertEquals("/", loginResponse.getHeader("Default-url"));
+        Assertions.assertEquals("/", loginResponse.getHeader("Default-url"));
     }
 
     @Test
@@ -255,12 +256,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertEquals("success", loginResponse.getHeader("Result"));
-        Assert.assertEquals(200, loginResponse.getStatus());
+        Assertions.assertEquals("success", loginResponse.getHeader("Result"));
+        Assertions.assertEquals(200, loginResponse.getStatus());
 
-        Assert.assertEquals("spring-csrf-header-name",
+        Assertions.assertEquals("spring-csrf-header-name",
                 loginResponse.getHeader("Spring-CSRF-header"));
-        Assert.assertEquals("spring-csrf-token-value",
+        Assertions.assertEquals("spring-csrf-token-value",
                 loginResponse.getHeader("Spring-CSRF-token"));
     }
 
@@ -284,12 +285,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 .onAuthenticationSuccess(loginRequest, loginResponse,
                         new UsernamePasswordAuthenticationToken("foo", "bar"));
 
-        Assert.assertEquals("success", loginResponse.getHeader("Result"));
-        Assert.assertEquals(200, loginResponse.getStatus());
+        Assertions.assertEquals("success", loginResponse.getHeader("Result"));
+        Assertions.assertEquals(200, loginResponse.getStatus());
 
-        Assert.assertEquals("spring-csrf-header-name",
+        Assertions.assertEquals("spring-csrf-header-name",
                 loginResponse.getHeader("Spring-CSRF-header"));
-        Assert.assertEquals("spring-csrf-token-value",
+        Assertions.assertEquals("spring-csrf-token-value",
                 loginResponse.getHeader("Spring-CSRF-token"));
 
         Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))

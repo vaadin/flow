@@ -21,14 +21,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-public class SerializedJwtSplitCookieRepositoryTest {
+class SerializedJwtSplitCookieRepositoryTest {
     private static final int DEFAULT_MAX_AGE = 1800;
     private static final int CUSTOM_MAX_AGE = 3600;
     private static final String JWT_HEADER_AND_PAYLOAD = "foo.bar";
@@ -51,7 +51,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
 
-    @Before
+    @BeforeEach
     public void setup() {
         serializedJwtSplitCookieRepository = new SerializedJwtSplitCookieRepository();
         request = Mockito.mock(HttpServletRequest.class);
@@ -64,7 +64,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
     public void containsSerializedJwt_true_when_bothCookiesPreset() {
         Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE,
                 JWT_SIGNATURE_COOKIE }).when(request).getCookies();
-        Assert.assertTrue(serializedJwtSplitCookieRepository
+        Assertions.assertTrue(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
@@ -72,7 +72,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
     public void containsSerializedJwt_false_when_signatureCookieMissing() {
         Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE })
                 .when(request).getCookies();
-        Assert.assertFalse(serializedJwtSplitCookieRepository
+        Assertions.assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
@@ -80,21 +80,21 @@ public class SerializedJwtSplitCookieRepositoryTest {
     public void containsSerializedJwt_false_when_headerAndPayloadCookieMissing() {
         Mockito.doReturn(new Cookie[] { JWT_SIGNATURE_COOKIE }).when(request)
                 .getCookies();
-        Assert.assertFalse(serializedJwtSplitCookieRepository
+        Assertions.assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
     @Test
     public void containsSerializedJwt_false_when_bothCookiesMissing() {
         Mockito.doReturn(new Cookie[] {}).when(request).getCookies();
-        Assert.assertFalse(serializedJwtSplitCookieRepository
+        Assertions.assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
     @Test
     public void containsSerializedJwt_false_when_cookiesNull() {
         Mockito.doReturn(null).when(request).getCookies();
-        Assert.assertFalse(serializedJwtSplitCookieRepository
+        Assertions.assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
@@ -105,7 +105,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
 
         String serializedJwt = serializedJwtSplitCookieRepository
                 .loadSerializedJwt(request);
-        Assert.assertEquals(JWT, serializedJwt);
+        Assertions.assertEquals(JWT, serializedJwt);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
                 .loadSerializedJwt(request);
-        Assert.assertNull(JWT, serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
                 .loadSerializedJwt(request);
-        Assert.assertNull(JWT, serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -137,7 +137,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
                 .loadSerializedJwt(request);
-        Assert.assertNull(JWT, serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class SerializedJwtSplitCookieRepositoryTest {
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
                 .loadSerializedJwt(request);
-        Assert.assertNull(JWT, serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -222,24 +222,24 @@ public class SerializedJwtSplitCookieRepositoryTest {
         List<Cookie> cookieList = cookieArgumentCaptor.getAllValues();
 
         Cookie headerAndPayloadCookie = cookieList.get(0);
-        Assert.assertNotNull(headerAndPayloadCookie);
-        Assert.assertEquals(JWT_HEADER_AND_PAYLOAD_NAME,
+        Assertions.assertNotNull(headerAndPayloadCookie);
+        Assertions.assertEquals(JWT_HEADER_AND_PAYLOAD_NAME,
                 headerAndPayloadCookie.getName());
-        Assert.assertEquals(expectedHeaderAndPayload,
+        Assertions.assertEquals(expectedHeaderAndPayload,
                 headerAndPayloadCookie.getValue());
-        Assert.assertFalse(headerAndPayloadCookie.isHttpOnly());
-        Assert.assertEquals(expectedIsSecure,
+        Assertions.assertFalse(headerAndPayloadCookie.isHttpOnly());
+        Assertions.assertEquals(expectedIsSecure,
                 headerAndPayloadCookie.getSecure());
-        Assert.assertEquals(expectedPath, headerAndPayloadCookie.getPath());
-        Assert.assertEquals(maxAge, headerAndPayloadCookie.getMaxAge());
+        Assertions.assertEquals(expectedPath, headerAndPayloadCookie.getPath());
+        Assertions.assertEquals(maxAge, headerAndPayloadCookie.getMaxAge());
 
         Cookie signatureCookie = cookieList.get(1);
-        Assert.assertNotNull(signatureCookie);
-        Assert.assertEquals(JWT_SIGNATURE_NAME, signatureCookie.getName());
-        Assert.assertEquals(expectedSignature, signatureCookie.getValue());
-        Assert.assertTrue(signatureCookie.isHttpOnly());
-        Assert.assertEquals(expectedIsSecure, signatureCookie.getSecure());
-        Assert.assertEquals(expectedPath, signatureCookie.getPath());
-        Assert.assertEquals(maxAge, signatureCookie.getMaxAge());
+        Assertions.assertNotNull(signatureCookie);
+        Assertions.assertEquals(JWT_SIGNATURE_NAME, signatureCookie.getName());
+        Assertions.assertEquals(expectedSignature, signatureCookie.getValue());
+        Assertions.assertTrue(signatureCookie.isHttpOnly());
+        Assertions.assertEquals(expectedIsSecure, signatureCookie.getSecure());
+        Assertions.assertEquals(expectedPath, signatureCookie.getPath());
+        Assertions.assertEquals(maxAge, signatureCookie.getMaxAge());
     }
 }

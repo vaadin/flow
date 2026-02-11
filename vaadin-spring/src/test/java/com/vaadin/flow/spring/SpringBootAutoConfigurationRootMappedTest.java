@@ -18,7 +18,7 @@ package com.vaadin.flow.spring;
 import java.util.Set;
 
 import org.atmosphere.cpr.ApplicationConfig;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,12 +39,12 @@ public class SpringBootAutoConfigurationRootMappedTest {
 
     @Test
     public void urlMappingPassedToAtmosphere() {
-        Assert.assertTrue(RootMappedCondition
+        Assertions.assertTrue(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("/" + Constants.PUSH_MAPPING,
+        Assertions.assertEquals("/" + Constants.PUSH_MAPPING,
                 servletRegistrationBean.getInitParameters()
                         .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }

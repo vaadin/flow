@@ -20,9 +20,9 @@ import jakarta.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
@@ -31,7 +31,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 
-public class SpringApplicationConfigurationFactoryTest {
+class SpringApplicationConfigurationFactoryTest {
 
     private WebApplicationContext webAppContext = Mockito
             .mock(WebApplicationContext.class);
@@ -47,7 +47,7 @@ public class SpringApplicationConfigurationFactoryTest {
 
     private Map<String, Object> map = new HashMap<>();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Mockito.doAnswer(invocation -> {
             map.put(invocation.getArgument(0), invocation.getArgument(1));
@@ -76,17 +76,17 @@ public class SpringApplicationConfigurationFactoryTest {
         ApplicationConfiguration config = factory.doCreate(context, props);
 
         for (String prop : SpringServlet.PROPERTY_NAMES) {
-            Assert.assertEquals(
+            Assertions.assertEquals(prefix + prop,
+                    config.getStringProperty(prop, null),
                     "'" + prop + "' property is not available via "
-                            + ApplicationConfiguration.class,
-                    prefix + prop, config.getStringProperty(prop, null));
-            Assert.assertEquals("'" + prop
+                            + ApplicationConfiguration.class);
+            Assertions.assertEquals(prefix + prop, props.get(prop), "'" + prop
                     + "' property is not set in the properties map passed to the "
-                    + ApplicationConfiguration.class.getSimpleName() + " CTOR",
-                    prefix + prop, props.get(prop));
+                    + ApplicationConfiguration.class.getSimpleName() + " CTOR");
         }
 
-        Assert.assertEquals(SpringServlet.PROPERTY_NAMES.size(), props.size());
+        Assertions.assertEquals(SpringServlet.PROPERTY_NAMES.size(),
+                props.size());
     }
 
     @Test

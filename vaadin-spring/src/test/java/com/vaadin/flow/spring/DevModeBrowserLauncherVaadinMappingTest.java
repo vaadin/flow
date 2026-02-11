@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -27,7 +27,7 @@ public class DevModeBrowserLauncherVaadinMappingTest
     @Test
     public void getUrl_withUrlMapping_givesUrlWithUrlMappingAndNoContextPath() {
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1235/ui/", url);
+        Assertions.assertEquals("http://localhost:1235/ui/", url);
     }
 
 }

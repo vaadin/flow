@@ -26,10 +26,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -54,7 +54,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
 
-public class VaadinServletContextInitializerTest {
+class VaadinServletContextInitializerTest {
 
     @Mock
     private ApplicationContext applicationContext;
@@ -84,7 +84,7 @@ public class VaadinServletContextInitializerTest {
 
     private MockedStatic<ServletDeployer> servletDeployerMock;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
 
@@ -96,7 +96,7 @@ public class VaadinServletContextInitializerTest {
         servletDeployerMock = Mockito.mockStatic(ServletDeployer.class);
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         autoConfigurationPackagesMock.close();
         autoConfigurationPackagesMock = null;
@@ -177,7 +177,7 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        Assertions.assertEquals(TestErrorView.class, navigationTarget);
     }
 
     @Test
@@ -213,7 +213,7 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        Assertions.assertEquals(TestErrorView.class, navigationTarget);
     }
 
     private Runnable initRouteNotFoundMocksAndGetContextInitializedMockCall(

@@ -45,10 +45,10 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTProcessor;
 import org.assertj.core.util.Lists;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -69,7 +69,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-public class JwtSecurityContextRepositoryTest {
+class JwtSecurityContextRepositoryTest {
     static private final String TEST_USERNAME = "username@example.com";
     static private final String TEST_ISSUER = "https://app.example.com";
     static private final String TEST_OTHER_ISSUER = "https://other.example.com";
@@ -124,12 +124,12 @@ public class JwtSecurityContextRepositoryTest {
     private static JWTClaimsSet decodeSerializedJwt(String serializedJwt,
             JWTProcessor<?> jwtProcessor)
             throws BadJOSEException, ParseException, JOSEException {
-        Assert.assertNotNull(serializedJwt);
-        Assert.assertNotEquals("", serializedJwt);
+        Assertions.assertNotNull(serializedJwt);
+        Assertions.assertNotEquals("", serializedJwt);
         return jwtProcessor.process(serializedJwt, null);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.openMocks(this);
 
@@ -150,7 +150,7 @@ public class JwtSecurityContextRepositoryTest {
                 new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, secret));
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         Mockito.verifyNoInteractions(request);
         Mockito.verifyNoInteractions(response);
@@ -347,7 +347,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.loadDeferredContext(request)
                         .get());
     }
@@ -360,7 +360,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
         jwtSecurityContextRepository.setJwkSource(null);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.loadDeferredContext(request)
                         .get());
     }
@@ -373,7 +373,7 @@ public class JwtSecurityContextRepositoryTest {
         boolean contains = jwtSecurityContextRepository
                 .containsContext(request);
 
-        Assert.assertFalse(contains);
+        Assertions.assertFalse(contains);
         Mockito.verify(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
         Mockito.verifyNoInteractions(request);
@@ -387,7 +387,7 @@ public class JwtSecurityContextRepositoryTest {
         boolean contains = jwtSecurityContextRepository
                 .containsContext(request);
 
-        Assert.assertTrue(contains);
+        Assertions.assertTrue(contains);
         Mockito.verify(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
     }
@@ -401,7 +401,7 @@ public class JwtSecurityContextRepositoryTest {
                 response);
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -418,7 +418,7 @@ public class JwtSecurityContextRepositoryTest {
                 response);
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -442,7 +442,7 @@ public class JwtSecurityContextRepositoryTest {
 
         Mockito.verify(trustResolver).isAnonymous(authentication);
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -460,7 +460,7 @@ public class JwtSecurityContextRepositoryTest {
                 response);
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -474,12 +474,12 @@ public class JwtSecurityContextRepositoryTest {
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwkSource(null);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.saveContext(securityContext,
                         request, response));
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -494,12 +494,12 @@ public class JwtSecurityContextRepositoryTest {
         jwtSecurityContextRepository
                 .setJwkSource((jwkSelector, context) -> null);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.saveContext(securityContext,
                         request, response));
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -514,12 +514,12 @@ public class JwtSecurityContextRepositoryTest {
         jwtSecurityContextRepository
                 .setJwkSource((jwkSelector, context) -> new ArrayList<>());
 
-        Assert.assertThrows(IndexOutOfBoundsException.class,
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
                 () -> jwtSecurityContextRepository.saveContext(securityContext,
                         request, response));
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -533,12 +533,12 @@ public class JwtSecurityContextRepositoryTest {
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.saveContext(securityContext,
                         request, response));
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNull(serializedJwt);
+        Assertions.assertNull(serializedJwt);
     }
 
     @Test
@@ -556,8 +556,8 @@ public class JwtSecurityContextRepositoryTest {
                 response);
 
         String serializedJwt = getSavedSerializedJwt();
-        Assert.assertNotNull(serializedJwt);
-        Assert.assertNotEquals("", serializedJwt);
+        Assertions.assertNotNull(serializedJwt);
+        Assertions.assertNotEquals("", serializedJwt);
     }
 
     @Test
@@ -577,7 +577,7 @@ public class JwtSecurityContextRepositoryTest {
         JWTClaimsSet decodedClaimsSet = decodeSerializedJwt(serializedJwt,
                 jwtProcessor);
         assertClaims(decodedClaimsSet, TEST_USERNAME, TEST_ROLES, 1800);
-        Assert.assertEquals(null, decodedClaimsSet.getIssuer());
+        Assertions.assertEquals(null, decodedClaimsSet.getIssuer());
     }
 
     @Test
@@ -605,7 +605,7 @@ public class JwtSecurityContextRepositoryTest {
 
         assertClaims(decodedClaimsSet, "anonymous",
                 Lists.newArrayList("ANONYMOUS"), 1800);
-        Assert.assertEquals(null, decodedClaimsSet.getIssuer());
+        Assertions.assertEquals(null, decodedClaimsSet.getIssuer());
     }
 
     @Test
@@ -626,7 +626,7 @@ public class JwtSecurityContextRepositoryTest {
         JWTClaimsSet decodedClaimsSet = decodeSerializedJwt(serializedJwt,
                 jwtProcessor);
         assertClaims(decodedClaimsSet, TEST_USERNAME, TEST_ROLES, 1800);
-        Assert.assertEquals(TEST_ISSUER, decodedClaimsSet.getIssuer());
+        Assertions.assertEquals(TEST_ISSUER, decodedClaimsSet.getIssuer());
     }
 
     @Test
@@ -710,28 +710,28 @@ public class JwtSecurityContextRepositoryTest {
                 .forClass(JwtAuthenticationToken.class);
         Mockito.verify(securityContext).setAuthentication(captor.capture());
         JwtAuthenticationToken actualAuthentication = captor.getValue();
-        Assert.assertTrue(actualAuthentication.isAuthenticated());
-        Assert.assertEquals(username, actualAuthentication.getName());
-        Assert.assertTrue(
+        Assertions.assertTrue(actualAuthentication.isAuthenticated());
+        Assertions.assertEquals(username, actualAuthentication.getName());
+        Assertions.assertTrue(
                 actualAuthentication.getAuthorities().containsAll(authorities));
     }
 
     private void assertClaims(JWTClaimsSet claimsSet, String username,
             ArrayList<String> roles, long expiresIn) {
-        Assert.assertEquals(username, claimsSet.getSubject());
-        Assert.assertEquals(roles, claimsSet.getClaim("roles"));
-        Assert.assertTrue(
+        Assertions.assertEquals(username, claimsSet.getSubject());
+        Assertions.assertEquals(roles, claimsSet.getClaim("roles"));
+        Assertions.assertTrue(
                 Instant.now().isAfter(claimsSet.getIssueTime().toInstant()));
         final Duration lag = Duration.ofSeconds(10);
         final Instant iat = claimsSet.getIssueTime().toInstant();
         final Instant iatEstimate = Instant.now();
-        Assert.assertTrue(iatEstimate.minus(lag).isBefore(iat));
-        Assert.assertTrue(iatEstimate.plus(lag).isAfter(iat));
+        Assertions.assertTrue(iatEstimate.minus(lag).isBefore(iat));
+        Assertions.assertTrue(iatEstimate.plus(lag).isAfter(iat));
         final Instant exp = claimsSet.getExpirationTime().toInstant();
         final Instant expEstimate = iatEstimate
                 .plus(Duration.ofSeconds(expiresIn));
-        Assert.assertTrue(expEstimate.minus(lag).isBefore(exp));
-        Assert.assertTrue(expEstimate.plus(lag).isAfter(exp));
+        Assertions.assertTrue(expEstimate.minus(lag).isBefore(exp));
+        Assertions.assertTrue(expEstimate.plus(lag).isAfter(exp));
     }
 
     private String getSavedSerializedJwt() {

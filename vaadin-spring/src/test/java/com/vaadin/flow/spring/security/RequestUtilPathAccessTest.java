@@ -20,10 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +32,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -58,12 +56,11 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 import static org.mockito.ArgumentMatchers.any;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest()
 @ContextConfiguration(classes = { RequestUtilPathAccessTest.TestConfig.class,
         SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class, })
-public class RequestUtilPathAccessTest {
+class RequestUtilPathAccessTest {
 
     @Autowired
     RequestUtil requestUtil;
@@ -80,7 +77,7 @@ public class RequestUtilPathAccessTest {
     @MockitoBean
     private AccessPathChecker accessPathChecker;
 
-    @Before
+    @BeforeEach
     public void setupMockAccessPathChecker() {
         Set<String> publicPaths = Set.of("", "alias/public", "other",
                 "alias/other");
@@ -127,27 +124,27 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/123/abc");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/123/abc");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
     }
 
     @Test
@@ -160,27 +157,27 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/123/abc");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/123/abc");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
     }
 
@@ -192,15 +189,15 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/admin");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/alias/admin");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/tpl/admin/abc/123");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
     }
 
     @Test
@@ -213,35 +210,35 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("/");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/abc/123");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/abc/123");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+        Assertions.assertTrue(requestUtil.isAnonymousRoute(request));
     }
 
     @Test
@@ -254,27 +251,27 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/123/abc");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/123/abc");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
     }
 
     @Test
@@ -285,15 +282,15 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/admin");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/foo/alias/admin");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/foo/tpl/admin/abc/123");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
     }
 
     @Test
@@ -306,27 +303,27 @@ public class RequestUtilPathAccessTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/abc/123");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/abc/123");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
     }
 
@@ -337,27 +334,27 @@ public class RequestUtilPathAccessTest {
         setupMockServlet(false);
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/public");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/public/123/abc");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("alias/other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
         request = createRequest("tpl/other/123/abc");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+        Assertions.assertFalse(requestUtil.isAnonymousRoute(request));
 
     }
 

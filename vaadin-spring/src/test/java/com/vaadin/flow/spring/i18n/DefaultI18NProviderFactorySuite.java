@@ -16,11 +16,11 @@
 package com.vaadin.flow.spring.i18n;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
-@RunWith(Suite.class)
+@Suite
 @NotThreadSafe
-@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
+@SelectClasses({ DefaultI18NProviderFactoryTest.class })
 public class DefaultI18NProviderFactorySuite {
 }
