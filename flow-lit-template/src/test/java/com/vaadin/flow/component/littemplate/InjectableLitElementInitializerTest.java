@@ -19,11 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
@@ -31,10 +28,10 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class InjectableLitElementInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
+class InjectableLitElementInitializerTest {
 
     private Element element = ElementFactory.createDiv();
 
@@ -45,66 +42,66 @@ public class InjectableLitElementInitializerTest {
     public void initializeElement_setId_idIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("id", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("id"));
+        Assertions.assertEquals("foo", element.getAttribute("id"));
     }
 
     @Test
     public void initializeElement_setHref_hrefIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("href", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("href"));
+        Assertions.assertEquals("foo", element.getAttribute("href"));
     }
 
     @Test
     public void initializeElement_setTheme_themeIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("theme", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("theme"));
+        Assertions.assertEquals("foo", element.getAttribute("theme"));
     }
 
     @Test
     public void initializeElement_setAttributeBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("?class", "foo"));
 
-        Assert.assertFalse(element.hasAttribute("class"));
-        Assert.assertFalse(element.hasAttribute("?class"));
-        Assert.assertFalse(element.hasProperty("class"));
-        Assert.assertFalse(element.hasProperty("?class"));
+        Assertions.assertFalse(element.hasAttribute("class"));
+        Assertions.assertFalse(element.hasAttribute("?class"));
+        Assertions.assertFalse(element.hasProperty("class"));
+        Assertions.assertFalse(element.hasProperty("?class"));
     }
 
     @Test
     public void initializeElement_setPropertyBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap(".foo", "bar"));
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertFalse(element.hasProperty("foo"));
+        Assertions.assertFalse(element.hasAttribute("foo"));
+        Assertions.assertFalse(element.hasProperty("foo"));
     }
 
     @Test
     public void initializeElement_setDynamicValue_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("foo", "${bar}"));
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertFalse(element.hasProperty("foo"));
+        Assertions.assertFalse(element.hasAttribute("foo"));
+        Assertions.assertFalse(element.hasProperty("foo"));
     }
 
     @Test
     public void initializeElement_setOtherTemplateAttribute_attributeIsSetAsProperty() {
         initializer.accept(Collections.singletonMap("foo", "bar"));
 
-        Assert.assertEquals("bar", element.getProperty("foo"));
-        Assert.assertNull(element.getAttribute("foo"));
+        Assertions.assertEquals("bar", element.getProperty("foo"));
+        Assertions.assertNull(element.getAttribute("foo"));
     }
 
     @Test
     public void initializeElement_setClass_classIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("class", "foo bar"));
 
-        Assert.assertEquals("foo bar", element.getAttribute("class"));
+        Assertions.assertEquals("foo bar", element.getAttribute("class"));
 
         TestComponent comp = new TestComponent(element);
-        Assert.assertEquals("foo bar", comp.getClassName());
-        Assert.assertTrue(comp.getClassNames().contains("foo"));
+        Assertions.assertEquals("foo bar", comp.getClassName());
+        Assertions.assertTrue(comp.getClassNames().contains("foo"));
     }
 
     @Test
@@ -112,26 +109,24 @@ public class InjectableLitElementInitializerTest {
         initializer.accept(
                 Collections.singletonMap("style", "width:100px;height:50px"));
 
-        Assert.assertEquals("width:100px;height:50px",
+        Assertions.assertEquals("width:100px;height:50px",
                 element.getAttribute("style"));
 
         TestComponent comp = new TestComponent(element);
-        Assert.assertEquals("100px", comp.getStyle().get("width"));
-        Assert.assertEquals("50px", comp.getStyle().get("height"));
+        Assertions.assertEquals("100px", comp.getStyle().get("width"));
+        Assertions.assertEquals("50px", comp.getStyle().get("height"));
     }
 
     @Test
     public void initializeElement_disabled_exceptionIsThrown() {
-
-        expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(
-                Matchers.containsString("element 'div' with id 'labelId'"));
-
         Map<String, String> attributes = new HashMap<>();
         attributes.put("disabled", Boolean.TRUE.toString());
         attributes.put("id", "labelId");
 
-        initializer.accept(attributes);
+        IllegalAttributeException ex = assertThrows(
+                IllegalAttributeException.class,
+                () -> initializer.accept(attributes));
+        assertTrue(ex.getMessage().contains("element 'div' with id 'labelId'"));
     }
 
     @Tag(Tag.DIV)

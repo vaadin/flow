@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.component.littemplate;
 
-import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -30,10 +27,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 
-public class LitTemplateTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
+class LitTemplateTest {
 
     private VaadinService service = Mockito.mock(VaadinService.class);
 
@@ -110,7 +107,7 @@ public class LitTemplateTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -122,41 +119,42 @@ public class LitTemplateTest {
     public void attachExistingElementWithAttributeValue_elementHasAttribute() {
         TestLitTemplate template = new TestLitTemplate(service);
 
-        Assert.assertTrue(template.label.hasAttribute("id"));
-        Assert.assertEquals("labelId", template.label.getAttribute("id"));
+        Assertions.assertTrue(template.label.hasAttribute("id"));
+        Assertions.assertEquals("labelId", template.label.getAttribute("id"));
 
-        Assert.assertTrue(template.label.hasProperty("someattribute"));
-        Assert.assertNotNull(template.label.getProperty("someattribute"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        Assertions.assertTrue(template.label.hasProperty("someattribute"));
+        Assertions.assertNotNull(template.label.getProperty("someattribute"));
+        Assertions.assertEquals(Boolean.TRUE.toString(),
                 template.label.getProperty("someattribute"));
 
-        Assert.assertFalse(template.label.hasProperty("property-binding"));
-        Assert.assertFalse(template.label.hasProperty("propertyBinding"));
+        Assertions.assertFalse(template.label.hasProperty("property-binding"));
+        Assertions.assertFalse(template.label.hasProperty("propertyBinding"));
 
-        Assert.assertFalse(template.label.hasProperty("another-binding"));
-        Assert.assertFalse(template.label.hasProperty("anotherBinding"));
+        Assertions.assertFalse(template.label.hasProperty("another-binding"));
+        Assertions.assertFalse(template.label.hasProperty("anotherBinding"));
 
-        Assert.assertFalse(template.label.hasProperty("attribute-binding"));
-        Assert.assertFalse(template.label.hasProperty("attributeBinding"));
-        Assert.assertFalse(template.label.hasProperty("attribute-binding$"));
-        Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
+        Assertions.assertFalse(template.label.hasProperty("attribute-binding"));
+        Assertions.assertFalse(template.label.hasProperty("attributeBinding"));
+        Assertions
+                .assertFalse(template.label.hasProperty("attribute-binding$"));
+        Assertions.assertFalse(template.label.hasProperty("attributeBinding$"));
 
-        Assert.assertTrue(template.label.hasProperty("another-attribute"));
-        Assert.assertEquals("baz",
+        Assertions.assertTrue(template.label.hasProperty("another-attribute"));
+        Assertions.assertEquals("baz",
                 template.label.getProperty("another-attribute"));
 
-        Assert.assertTrue(template.label.hasAttribute("hidden"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        Assertions.assertTrue(template.label.hasAttribute("hidden"));
+        Assertions.assertEquals(Boolean.TRUE.toString(),
                 template.label.getAttribute("hidden"));
     }
 
     @Test
     public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
-        expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(
-                Matchers.containsString("element 'label' with id 'labelId'"));
-
-        DisabledElementTemplate template = new DisabledElementTemplate(service);
+        IllegalAttributeException ex = assertThrows(
+                IllegalAttributeException.class,
+                () -> new DisabledElementTemplate(service));
+        assertTrue(
+                ex.getMessage().contains("element 'label' with id 'labelId'"));
     }
 
     @Test
@@ -165,7 +163,7 @@ public class LitTemplateTest {
                 service);
 
         // see #10106
-        Assert.assertEquals("", template.label.getText());
+        Assertions.assertEquals("", template.label.getText());
     }
 
     @Test
@@ -173,7 +171,7 @@ public class LitTemplateTest {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 
-        Assert.assertEquals("", template.div.getText());
+        Assertions.assertEquals("", template.div.getText());
     }
 
 }
