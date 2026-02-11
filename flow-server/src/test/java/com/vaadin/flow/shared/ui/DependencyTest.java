@@ -16,7 +16,7 @@
 package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -28,7 +28,7 @@ import static org.hamcrest.core.Is.is;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class DependencyTest {
+class DependencyTest {
 
     @Test
     public void checkJsonSerialization_3ArgsCTor() {
