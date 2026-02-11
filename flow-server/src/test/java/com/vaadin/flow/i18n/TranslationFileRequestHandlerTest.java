@@ -34,7 +34,6 @@ import java.util.ResourceBundle;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,6 +49,10 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class TranslationFileRequestHandlerTest {
@@ -93,8 +96,7 @@ class TranslationFileRequestHandlerTest {
     public void pathDoesNotMatch_requestNotHandled() throws IOException {
         configure(true);
         setRequestParams(null, "other", null, null);
-        Assertions
-                .assertFalse(handler.handleRequest(session, request, response));
+        assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
@@ -284,16 +286,16 @@ class TranslationFileRequestHandlerTest {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 requestedChunks, requestedKeys);
-        Assertions.assertTrue(handler.handleRequest(session, request, response),
+        assertTrue(handler.handleRequest(session, request, response),
                 "The request was not handled by the handler.");
-        Assertions.assertEquals(expectedResponseContent, getResponseContent(),
+        assertEquals(expectedResponseContent, getResponseContent(),
                 "The expected response content does not match the actual response content.");
         if (expectedResponseLanguageTag == null) {
-            Assertions.assertEquals(0,
+            assertEquals(0,
                     retrievedLocaleCapture.getAllValues().size(),
                     "The response language tag was not found.");
         } else {
-            Assertions.assertEquals(expectedResponseLanguageTag,
+            assertEquals(expectedResponseLanguageTag,
                     retrievedLocaleCapture.getValue(),
                     "The expected response language tag does not match the actual response language tag.");
         }
@@ -418,10 +420,10 @@ class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assertions.assertTrue(handler.handleSessionExpired(request, response),
+        assertTrue(handler.handleSessionExpired(request, response),
                 "handleSessionExpired should return true for i18n requests");
 
-        Assertions.assertEquals("{\"title\":\"Suomi\"}", getResponseContent(),
+        assertEquals("{\"title\":\"Suomi\"}", getResponseContent(),
                 "The expected response content does not match.");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
@@ -432,7 +434,7 @@ class TranslationFileRequestHandlerTest {
         configure(true);
         setRequestParams(null, "other", null, null);
 
-        Assertions.assertFalse(handler.handleSessionExpired(request, response),
+        assertFalse(handler.handleSessionExpired(request, response),
                 "handleSessionExpired should return false for non-i18n requests");
     }
 
@@ -449,7 +451,7 @@ class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assertions.assertTrue(handler.handleSessionExpired(request, response),
+        assertTrue(handler.handleSessionExpired(request, response),
                 "handleSessionExpired should return true");
 
         // In dev mode, should return 501 Not Implemented error
@@ -471,7 +473,7 @@ class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assertions.assertTrue(handler.handleSessionExpired(request, response),
+        assertTrue(handler.handleSessionExpired(request, response),
                 "handleSessionExpired should return true");
 
         // In production mode, should return 404 Not Found

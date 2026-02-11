@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,7 +46,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.experimental.FeatureFlags.PROPERTIES_FILENAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class FeatureFlagsTest {
@@ -81,7 +83,7 @@ class FeatureFlagsTest {
 
     @Test
     public void propertiesLoaded() throws IOException {
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should be initially disabled");
 
@@ -92,7 +94,7 @@ class FeatureFlagsTest {
         // mock
         featureFlags.loadProperties();
 
-        Assertions.assertTrue(
+        assertTrue(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should have been enabled");
     }
@@ -102,11 +104,11 @@ class FeatureFlagsTest {
         // Set location and ensure flags are loaded from there
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should be initially disabled");
         featureFlags.setPropertiesLocation(propertiesDir);
-        Assertions.assertTrue(
+        assertTrue(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should have been enabled");
     }
@@ -125,7 +127,7 @@ class FeatureFlagsTest {
         featureFlags.setPropertiesLocation(emptyFolder);
 
         // then the feature should be disabled
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should have been disabled");
     }
@@ -135,24 +137,24 @@ class FeatureFlagsTest {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         featureFlags.loadProperties();
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should be disabled after reading the properties");
         featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true);
-        Assertions.assertTrue(
+        assertTrue(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should have been enabled");
-        Assertions.assertEquals(String.format(
+        assertEquals(String.format(
                 "# %s\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
                 TestFeatureFlagProvider.EXAMPLE.getTitle()),
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 
         featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), false);
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should have been disabled");
-        Assertions.assertEquals("",
+        assertEquals("",
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8),
                 "Feature flags file should be empty when no features are enabled");
@@ -179,7 +181,7 @@ class FeatureFlagsTest {
         UsageStatistics.resetEntries();
         createFeatureFlagsFile("");
         featureFlags.loadProperties();
-        Assertions.assertFalse(
+        assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
 
@@ -189,7 +191,7 @@ class FeatureFlagsTest {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         featureFlags.loadProperties();
-        Assertions.assertTrue(
+        assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
 
@@ -200,7 +202,7 @@ class FeatureFlagsTest {
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         UsageStatistics.resetEntries();
         featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), false);
-        Assertions.assertFalse(
+        assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
 
@@ -211,7 +213,7 @@ class FeatureFlagsTest {
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         UsageStatistics.resetEntries();
         featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true);
-        Assertions.assertTrue(
+        assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
 
@@ -229,9 +231,9 @@ class FeatureFlagsTest {
                     .format("com.vaadin.experimental.%s=false\n", feature);
             createFeatureFlagsFile(fileContents);
             featureFlags.loadProperties();
-            Assertions.assertTrue(
+            assertTrue(
                     featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
-            Assertions.assertEquals(fileContents,
+            assertEquals(fileContents,
                     FileUtils.readFileToString(featureFlagsFile,
                             StandardCharsets.UTF_8),
                     "Feature flags file should not be overwritten by system property value");
@@ -271,9 +273,9 @@ class FeatureFlagsTest {
 
             System.setProperty(propertyName, "true");
             featureFlags.loadProperties();
-            Assertions.assertTrue(
+            assertTrue(
                     featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
-            Assertions.assertFalse(featureFlagsFile.exists(),
+            assertFalse(featureFlagsFile.exists(),
                     "Setting feature flag by system properties should not create feature flag file");
         } finally {
             if (previousValue == null) {
@@ -295,10 +297,10 @@ class FeatureFlagsTest {
         try {
             System.setProperty(propertyName, "true");
             featureFlags.loadProperties();
-            Assertions.assertTrue(
+            assertTrue(
                     featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                     "Feature set with system property should be enabled");
-            Assertions.assertFalse(featureFlagsFile.exists(),
+            assertFalse(featureFlagsFile.exists(),
                     "Setting feature flag by system properties should not create feature flag file");
         } finally {
             if (previousValue == null) {
@@ -322,7 +324,7 @@ class FeatureFlagsTest {
                 System.clearProperty(propertyName);
             }
             featureFlags.loadProperties();
-            Assertions.assertFalse(
+            assertFalse(
                     featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                     "Feature not set with system property should be disabled by default");
         } finally {
@@ -378,7 +380,7 @@ class FeatureFlagsTest {
                     });
                 }).whenComplete(errorLogger);
         CompletableFuture.allOf(directTask, supplierTask);
-        Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS),
+        assertTrue(latch.await(1, TimeUnit.SECONDS),
                 "Futures not completed, potential deadlock");
     }
 
@@ -418,7 +420,7 @@ class FeatureFlagsTest {
             latch.countDown();
         }).whenComplete(errorLogger);
         CompletableFuture.allOf(directTask, supplierTask);
-        Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS),
+        assertTrue(latch.await(1, TimeUnit.SECONDS),
                 "Futures not completed, potential deadlock");
     }
 

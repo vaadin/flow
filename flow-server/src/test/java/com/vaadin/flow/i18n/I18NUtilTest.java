@@ -34,13 +34,16 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class I18NUtilTest {
     @TempDir
@@ -84,15 +87,15 @@ class I18NUtilTest {
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assertions.assertEquals(3, defaultTranslationLocales.size());
+        assertEquals(3, defaultTranslationLocales.size());
 
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("de")),
                 "Missing German bundle");
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("en", "GB")),
                 "Missing English bundle");
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Missing Finnish bundle");
     }
@@ -104,7 +107,7 @@ class I18NUtilTest {
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assertions.assertTrue(defaultTranslationLocales.isEmpty(),
+        assertTrue(defaultTranslationLocales.isEmpty(),
                 "Nothing should be returned for empty folder");
     }
 
@@ -121,7 +124,7 @@ class I18NUtilTest {
 
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(mockLoader);
-        Assertions.assertTrue(defaultTranslationLocales.isEmpty(),
+        assertTrue(defaultTranslationLocales.isEmpty(),
                 "Nothing should be returned for empty folder");
     }
 
@@ -140,7 +143,7 @@ class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        Assertions.assertTrue(
+        assertTrue(
                 I18NUtil.containsDefaultTranslation(urlClassLoader),
                 "Default file should return true");
     }
@@ -155,7 +158,7 @@ class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
 
-        Assertions.assertFalse(
+        assertFalse(
                 I18NUtil.containsDefaultTranslation(urlClassLoader),
                 "Nothing should be returned for empty folder");
     }
@@ -168,18 +171,18 @@ class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { path.toUri().toURL() });
 
-        Assertions.assertTrue(
+        assertTrue(
                 I18NUtil.containsDefaultTranslation(urlClassLoader),
                 "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assertions.assertEquals(2, defaultTranslationLocales.size(),
+        assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
 
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("ja", "JP")),
                 "Japan locale translation should have been found");
     }
@@ -222,18 +225,18 @@ class I18NUtilTest {
             }
         };
 
-        Assertions.assertTrue(
+        assertTrue(
                 I18NUtil.containsDefaultTranslation(urlClassLoader),
                 "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assertions.assertEquals(2, defaultTranslationLocales.size(),
+        assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
 
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("ja", "JP")),
                 "Japan locale translation should have been found");
     }
@@ -309,18 +312,18 @@ class I18NUtilTest {
             }
         };
 
-        Assertions.assertTrue(
+        assertTrue(
                 I18NUtil.containsDefaultTranslation(urlClassLoader),
                 "Default file should return true");
         List<Locale> defaultTranslationLocales = I18NUtil
                 .getDefaultTranslationLocales(urlClassLoader);
-        Assertions.assertEquals(2, defaultTranslationLocales.size(),
+        assertEquals(2, defaultTranslationLocales.size(),
                 "Translation files with locale inside JAR should be resolved");
 
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("fi", "FI")),
                 "Finnish locale translation should have been found");
-        Assertions.assertTrue(
+        assertTrue(
                 defaultTranslationLocales.contains(new Locale("ja", "JP")),
                 "Japan locale translation should have been found");
     }
