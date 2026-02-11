@@ -440,6 +440,22 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
+    public void bindValue_transformingCallback_valueChangeEventTriggered() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, v -> signal.value(v.toUpperCase()));
+
+        AtomicReference<String> eventValue = new AtomicReference<>();
+        input.addValueChangeListener(event -> {
+            eventValue.set(event.getValue());
+        });
+
+        input.setValue("bar");
+        assertEquals("BAR", eventValue.get());
+    }
+
+    @Test
     public void bindValue_noOpCallback_valueChangeEventNotTriggered() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
