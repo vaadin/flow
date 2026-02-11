@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -36,12 +36,12 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public abstract class AbstractDnDUnitTest {
+abstract class AbstractDnDUnitTest {
 
     protected MockUI ui;
     protected boolean compatibilityMode;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -75,9 +75,12 @@ public abstract class AbstractDnDUnitTest {
     public void testExtension_activated_usageStatisticsEntryAdded() {
         runStaticCreateMethodForExtension(new RouterLink());
 
-        Assert.assertTrue("No usage statistics for generic dnd reported",
-                UsageStatistics.getEntries().anyMatch(
-                        entry -> entry.getName().contains("generic-dnd")));
+        Assertions
+                .assertTrue(
+                        UsageStatistics.getEntries()
+                                .anyMatch(entry -> entry.getName()
+                                        .contains("generic-dnd")),
+                        "No usage statistics for generic dnd reported");
     }
 
     protected abstract void runStaticCreateMethodForExtension(
