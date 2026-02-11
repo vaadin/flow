@@ -36,8 +36,6 @@
     <!-- This property is needed to allow some Win-specific IT tests -->
     <!-- to be disabled via system property in CI until they got fixed-->
     <exclude.windows.failed.it.tests/>
-    <testListener/>
-
     <!-- Skip these categories in validation, use -Pslow-tests to run them -->
     <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,

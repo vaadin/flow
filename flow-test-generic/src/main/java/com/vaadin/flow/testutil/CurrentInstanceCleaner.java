@@ -15,23 +15,25 @@
  */
 package com.vaadin.flow.testutil;
 
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunListener;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
 
 /**
  * Removes any CurrentInstance thread locals before running a test.
  */
-public class CurrentInstanceCleaner extends RunListener {
+public class CurrentInstanceCleaner implements TestExecutionListener {
     @Override
-    public void testStarted(Description description) throws Exception {
+    public void executionStarted(TestIdentifier testIdentifier) {
         // Clear current instances before each test so a previous test does not
         // affect the test
-        try {
-            Class<?> cls = Class
-                    .forName("com.vaadin.flow.internal.CurrentInstance");
-            cls.getMethod("clearAll").invoke(null);
-        } catch (Exception e) { // NOSONAR
-            // Not a Flow module
+        if (testIdentifier.isTest()) {
+            try {
+                Class<?> cls = Class
+                        .forName("com.vaadin.flow.internal.CurrentInstance");
+                cls.getMethod("clearAll").invoke(null);
+            } catch (Exception e) { // NOSONAR
+                // Not a Flow module
+            }
         }
     }
 }
