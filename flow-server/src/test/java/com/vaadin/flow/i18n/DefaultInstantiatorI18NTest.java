@@ -217,8 +217,7 @@ class DefaultInstantiatorI18NTest {
                 service);
         Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
-        assertEquals("!{foo.bar}!",
-                I18NProvider.translate("foo.bar"),
+        assertEquals("!{foo.bar}!", I18NProvider.translate("foo.bar"),
                 "Should return the key with !{}! to show no translation available");
     }
 

@@ -291,8 +291,7 @@ class TranslationFileRequestHandlerTest {
         assertEquals(expectedResponseContent, getResponseContent(),
                 "The expected response content does not match the actual response content.");
         if (expectedResponseLanguageTag == null) {
-            assertEquals(0,
-                    retrievedLocaleCapture.getAllValues().size(),
+            assertEquals(0, retrievedLocaleCapture.getAllValues().size(),
                     "The response language tag was not found.");
         } else {
             assertEquals(expectedResponseLanguageTag,
