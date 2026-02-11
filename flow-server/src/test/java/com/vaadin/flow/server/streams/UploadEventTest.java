@@ -73,8 +73,7 @@ class UploadEventTest {
 
         event.reject();
 
-        assertTrue(event.isRejected(),
-                "Event should be marked as rejected");
+        assertTrue(event.isRejected(), "Event should be marked as rejected");
         assertEquals("File rejected", event.getRejectionMessage(),
                 "Default rejection message should be set");
     }
@@ -87,8 +86,7 @@ class UploadEventTest {
         String customMessage = "Only PNG files are accepted";
         event.reject(customMessage);
 
-        assertTrue(event.isRejected(),
-                "Event should be marked as rejected");
+        assertTrue(event.isRejected(), "Event should be marked as rejected");
         assertEquals(customMessage, event.getRejectionMessage(),
                 "Custom rejection message should be set");
     }
@@ -102,8 +100,7 @@ class UploadEventTest {
 
         try {
             event.getInputStream();
-            fail(
-                    "Expected IllegalStateException when accessing rejected upload stream");
+            fail("Expected IllegalStateException when accessing rejected upload stream");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("rejected"),
                     "Exception should mention rejection");

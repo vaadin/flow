@@ -128,9 +128,8 @@ class ClassDownloadHandlerTest {
         assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        assertArrayEquals(new long[] { 65536, 131072 },
-                transferredBytesRecords.stream().mapToLong(Long::longValue)
-                        .toArray());
+        assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
+                .stream().mapToLong(Long::longValue).toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
         assertNull(downloadEvent.getException());
     }
@@ -173,8 +172,7 @@ class ClassDownloadHandlerTest {
                     public void onError(TransferContext context,
                             IOException reason) {
                         invocations.add("onError");
-                        assertEquals("I/O exception",
-                                reason.getMessage());
+                        assertEquals("I/O exception", reason.getMessage());
                     }
                 });
 

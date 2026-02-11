@@ -203,8 +203,7 @@ class AbstractDownloadHandlerTest {
         customHandler.handleDownloadRequest(downloadEvent);
 
         assertTrue(successAtomic.get());
-        assertEquals("Hello",
-                outputStream.toString(StandardCharsets.UTF_8));
+        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
         assertNull(downloadEvent.getException());
 
         OutputStream outputStreamError = Mockito.mock(OutputStream.class);
@@ -269,8 +268,7 @@ class AbstractDownloadHandlerTest {
         handler.whenStart((context) -> invoked.set(true));
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
-        assertTrue(invoked.get(),
-                "Start with context should be invoked");
+        assertTrue(invoked.get(), "Start with context should be invoked");
     }
 
     @Test
@@ -280,8 +278,7 @@ class AbstractDownloadHandlerTest {
                 1024);
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        assertTrue(invoked.get(),
-                "Progress with context should be invoked");
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 
     @Test
@@ -302,7 +299,6 @@ class AbstractDownloadHandlerTest {
             listener.onComplete(mockContext, TRANSFERRED_BYTES);
             listener.onError(mockContext, EXCEPTION);
         });
-        assertTrue(invoked.get(),
-                "Progress with context should be invoked");
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 }

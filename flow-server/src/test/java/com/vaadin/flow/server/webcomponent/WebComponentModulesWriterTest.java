@@ -56,8 +56,7 @@ class WebComponentModulesWriterTest {
                         outputDirectory, null);
 
         assertEquals(1, files.size(), "One file was created");
-        assertEquals("real-tag.js",
-                files.stream().findFirst().get().getName(),
+        assertEquals("real-tag.js", files.stream().findFirst().get().getName(),
                 "File is js module with correct name");
     }
 
@@ -70,8 +69,7 @@ class WebComponentModulesWriterTest {
                         outputDirectory, null);
 
         assertEquals(1, files.size(), "One file was created");
-        assertEquals("foo-bar.js",
-                files.stream().findFirst().get().getName(),
+        assertEquals("foo-bar.js", files.stream().findFirst().get().getName(),
                 "File is js module with correct name");
     }
 

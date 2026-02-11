@@ -98,8 +98,7 @@ class FileDownloadHandlerTest {
                 new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        assertEquals(165000,
-                                context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
@@ -116,8 +115,7 @@ class FileDownloadHandlerTest {
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        assertEquals(165000,
-                                context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals(165000, transferredBytes);
                         assertEquals("download", context.fileName());
                         invocations.add("onComplete");
@@ -136,9 +134,8 @@ class FileDownloadHandlerTest {
         assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        assertArrayEquals(new long[] { 65536, 131072 },
-                transferredBytesRecords.stream().mapToLong(Long::longValue)
-                        .toArray());
+        assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
+                .stream().mapToLong(Long::longValue).toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
         Mockito.verify(response).setContentLengthLong(165000);
         assertNull(downloadEvent.getException());
@@ -176,8 +173,7 @@ class FileDownloadHandlerTest {
                         if (FrontendUtils.isWindows()) {
                             expectedMessage = "non-existing-file (The system cannot find the file specified)";
                         }
-                        assertEquals(expectedMessage,
-                                reason.getMessage());
+                        assertEquals(expectedMessage, reason.getMessage());
                         assertNotNull(context.exception());
                         assertEquals(FileNotFoundException.class,
                                 context.exception().getClass());

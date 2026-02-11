@@ -145,8 +145,7 @@ class WebComponentConfigurationRegistryTest {
         Set<WebComponentConfiguration<MyComponent>> set = registry
                 .getConfigurationsByComponentType(MyComponent.class);
 
-        assertEquals(2, set.size(),
-                "Set should contain two configurations");
+        assertEquals(2, set.size(), "Set should contain two configurations");
 
         assertTrue(
                 set.stream().map(WebComponentConfiguration::getComponentClass)
@@ -174,8 +173,7 @@ class WebComponentConfigurationRegistryTest {
                         .getComponentClass(),
                 "Builders from the first Set should have been added");
 
-        assertFalse(
-                registry.getConfiguration("user-box").isPresent(),
+        assertFalse(registry.getConfiguration("user-box").isPresent(),
                 "Components from the second Set should not have been added");
     }
 
@@ -185,8 +183,7 @@ class WebComponentConfigurationRegistryTest {
 
         Set<?> set = uninitializedRegistry.getConfigurations();
 
-        assertEquals(0, set.size(),
-                "Configuration set should be empty");
+        assertEquals(0, set.size(), "Configuration set should be empty");
     }
 
     @Test

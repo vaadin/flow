@@ -72,12 +72,10 @@ class WebComponentGeneratorTest {
         assertEquals("my-component", replacementsMap.get("TagDash"));
         assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
-        assertEquals("/foo",
-                replacementsMap.get("frontend_resources"));
+        assertEquals("/foo", replacementsMap.get("frontend_resources"));
 
         if (generateUi) {
-            assertEquals(
-                    "<link rel='import' href='web-component-ui.html'>",
+            assertEquals("<link rel='import' href='web-component-ui.html'>",
                     replacementsMap.get("ui_import"));
         } else {
             assertEquals("", replacementsMap.get("ui_import"));

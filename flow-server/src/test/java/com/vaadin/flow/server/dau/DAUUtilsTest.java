@@ -95,9 +95,8 @@ class DAUUtilsTest {
             FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verifyNoInteractions();
 
-            assertThrows(DauEnforcementException.class,
-                    () -> FlowDauIntegration.applyEnforcement(request,
-                            unused -> true));
+            assertThrows(DauEnforcementException.class, () -> FlowDauIntegration
+                    .applyEnforcement(request, unused -> true));
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
         } finally {
@@ -128,9 +127,8 @@ class DAUUtilsTest {
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
 
-            assertThrows(DauEnforcementException.class,
-                    () -> FlowDauIntegration.applyEnforcement(request,
-                            unused -> true));
+            assertThrows(DauEnforcementException.class, () -> FlowDauIntegration
+                    .applyEnforcement(request, unused -> true));
 
         } finally {
             VaadinSession.setCurrent(null);
@@ -253,11 +251,10 @@ class DAUUtilsTest {
     private void assertJsonErrorProperty(String expectedKey,
             String expectedValue, JsonNode json) {
         if (expectedValue != null) {
-            assertEquals(expectedValue,
-                    json.get(expectedKey).asString(), expectedKey);
+            assertEquals(expectedValue, json.get(expectedKey).asString(),
+                    expectedKey);
         } else {
-            assertEquals(JsonNodeType.NULL,
-                    json.get(expectedKey).getNodeType(),
+            assertEquals(JsonNodeType.NULL, json.get(expectedKey).getNodeType(),
                     "expected key " + expectedKey + " to be null");
         }
 

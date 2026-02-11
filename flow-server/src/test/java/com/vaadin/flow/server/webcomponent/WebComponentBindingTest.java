@@ -56,8 +56,7 @@ class WebComponentBindingTest {
     @Test
     public void getPropertyType() {
         assertEquals(Integer.class, binding.getPropertyType("int"));
-        assertEquals(ObjectNode.class,
-                binding.getPropertyType("json"));
+        assertEquals(ObjectNode.class, binding.getPropertyType("json"));
 
         assertNull(binding.getPropertyType("not-a-property"));
     }
@@ -79,8 +78,7 @@ class WebComponentBindingTest {
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
-        assertEquals("{\"String\":\"Value\"}",
-                component.jsonValue.toString());
+        assertEquals("{\"String\":\"Value\"}", component.jsonValue.toString());
     }
 
     @Test
@@ -92,8 +90,7 @@ class WebComponentBindingTest {
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
-        assertEquals("{\"String\":\"Value\"}",
-                component.jsonValue.toString());
+        assertEquals("{\"String\":\"Value\"}", component.jsonValue.toString());
     }
 
     @Tag("tag")

@@ -130,8 +130,7 @@ class UploadTransferProgressTest {
                         expectedFile.set(file);
                         return file;
                     } catch (IOException e) {
-                        fail("Failed to create temp file: "
-                                + e.getMessage());
+                        fail("Failed to create temp file: " + e.getMessage());
                     }
                     return null;
                 }, createTransferProgressListener(invocations,
@@ -245,8 +244,7 @@ class UploadTransferProgressTest {
         return new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                assertEquals(DUMMY_CONTENT_LENGTH,
-                        context.contentLength());
+                assertEquals(DUMMY_CONTENT_LENGTH, context.contentLength());
                 assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onStart");
             }
@@ -263,8 +261,7 @@ class UploadTransferProgressTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                assertEquals(DUMMY_CONTENT_LENGTH,
-                        context.contentLength());
+                assertEquals(DUMMY_CONTENT_LENGTH, context.contentLength());
                 assertEquals(DUMMY_CONTENT_LENGTH, transferredBytes);
                 assertEquals(DUMMY_FILE_NAME, context.fileName());
                 invocations.add("onComplete");
@@ -311,8 +308,7 @@ class UploadTransferProgressTest {
         assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        assertArrayEquals(new long[] { 65536, 131072 },
-                transferredBytesRecords.stream().mapToLong(Long::longValue)
-                        .toArray());
+        assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
+                .stream().mapToLong(Long::longValue).toArray());
     }
 }

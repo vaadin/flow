@@ -62,8 +62,7 @@ class PropertyConfigurationImplTest {
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
 
         // verify default value for completeness
-        assertEquals(1, (int) data.getDefaultValue(),
-                "default value is 1");
+        assertEquals(1, (int) data.getDefaultValue(), "default value is 1");
 
         assertTrue(data.isReadOnly(),
                 "read-only flag should have been set to true");
