@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
@@ -449,7 +450,7 @@ public interface HasSize extends HasElement {
      * @see #setWidth(String)
      */
     default void bindWidth(Signal<String> widthSignal) {
-        java.util.Objects.requireNonNull(widthSignal, "Signal cannot be null");
+        Objects.requireNonNull(widthSignal, "Signal cannot be null");
         getElement().getStyle().bind(STYLE_WIDTH, widthSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_WIDTH_FULL,
                 widthSignal.map(value -> "100%".equals(value) ? "" : null));
@@ -485,7 +486,7 @@ public interface HasSize extends HasElement {
      * @see #setHeight(String)
      */
     default void bindHeight(Signal<String> heightSignal) {
-        java.util.Objects.requireNonNull(heightSignal, "Signal cannot be null");
+        Objects.requireNonNull(heightSignal, "Signal cannot be null");
         getElement().getStyle().bind(STYLE_HEIGHT, heightSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_HEIGHT_FULL,
                 heightSignal.map(value -> "100%".equals(value) ? "" : null));

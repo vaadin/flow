@@ -175,7 +175,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @since 25.1
      */
     public void bindMin(SharedNumberSignal minSignal) {
-        java.util.Objects.requireNonNull(minSignal, "Signal cannot be null");
+        Objects.requireNonNull(minSignal, "Signal cannot be null");
         getElement().bindAttribute("min", minSignal.map(Object::toString));
     }
 
@@ -225,7 +225,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @since 25.1
      */
     public void bindMax(SharedNumberSignal maxSignal) {
-        java.util.Objects.requireNonNull(maxSignal, "Signal cannot be null");
+        Objects.requireNonNull(maxSignal, "Signal cannot be null");
         getElement().bindAttribute("max", maxSignal.map(Object::toString));
     }
 
