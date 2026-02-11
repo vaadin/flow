@@ -17,11 +17,11 @@ package com.vaadin.flow.shared.util;
 
 import java.util.Locale;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SharedUtilTests {
@@ -53,25 +53,23 @@ class SharedUtilTests {
 
     @Test
     public void camelCaseToHumanReadable() {
-        Assertions.assertEquals("First Name",
+        assertEquals("First Name",
                 SharedUtil.camelCaseToHumanFriendly("firstName"));
-        Assertions.assertEquals("First Name",
+        assertEquals("First Name",
                 SharedUtil.camelCaseToHumanFriendly("first name"));
-        Assertions.assertEquals("First Name2",
+        assertEquals("First Name2",
                 SharedUtil.camelCaseToHumanFriendly("firstName2"));
-        Assertions.assertEquals("First",
-                SharedUtil.camelCaseToHumanFriendly("first"));
-        Assertions.assertEquals("First",
-                SharedUtil.camelCaseToHumanFriendly("First"));
-        Assertions.assertEquals("Some XYZ Abbreviation",
+        assertEquals("First", SharedUtil.camelCaseToHumanFriendly("first"));
+        assertEquals("First", SharedUtil.camelCaseToHumanFriendly("First"));
+        assertEquals("Some XYZ Abbreviation",
                 SharedUtil.camelCaseToHumanFriendly("SomeXYZAbbreviation"));
 
         // Javadoc examples
-        Assertions.assertEquals("My Bean Container",
+        assertEquals("My Bean Container",
                 SharedUtil.camelCaseToHumanFriendly("MyBeanContainer"));
-        Assertions.assertEquals("Awesome URL Factory",
+        assertEquals("Awesome URL Factory",
                 SharedUtil.camelCaseToHumanFriendly("AwesomeURLFactory"));
-        Assertions.assertEquals("Some Uri Action",
+        assertEquals("Some Uri Action",
                 SharedUtil.camelCaseToHumanFriendly("SomeUriAction"));
 
     }
@@ -92,7 +90,7 @@ class SharedUtilTests {
 
     private void assertCamelCaseSplit(String camelCaseString, String... parts) {
         String[] splitParts = SharedUtil.splitCamelCase(camelCaseString);
-        Assertions.assertArrayEquals(parts, splitParts);
+        assertArrayEquals(parts, splitParts);
     }
 
     @Test
@@ -100,74 +98,62 @@ class SharedUtilTests {
         String s1 = "foo-bar-baz";
         String s2 = "foo--bar";
 
-        Assertions.assertEquals("foobarbaz",
-                SharedUtil.join(s1.split("-"), ""));
-        Assertions.assertEquals("foo!bar!baz",
-                SharedUtil.join(s1.split("-"), "!"));
-        Assertions.assertEquals("foo!!bar!!baz",
-                SharedUtil.join(s1.split("-"), "!!"));
+        assertEquals("foobarbaz", SharedUtil.join(s1.split("-"), ""));
+        assertEquals("foo!bar!baz", SharedUtil.join(s1.split("-"), "!"));
+        assertEquals("foo!!bar!!baz", SharedUtil.join(s1.split("-"), "!!"));
 
-        Assertions.assertEquals("foo##bar",
-                SharedUtil.join(s2.split("-"), "#"));
+        assertEquals("foo##bar", SharedUtil.join(s2.split("-"), "#"));
     }
 
     @Test
     public void dashSeparatedToCamelCase() {
-        Assertions.assertEquals(null,
-                SharedUtil.dashSeparatedToCamelCase(null));
-        Assertions.assertEquals("", SharedUtil.dashSeparatedToCamelCase(""));
-        Assertions.assertEquals("foo",
-                SharedUtil.dashSeparatedToCamelCase("foo"));
-        Assertions.assertEquals("fooBar",
-                SharedUtil.dashSeparatedToCamelCase("foo-bar"));
-        Assertions.assertEquals("fooBar",
-                SharedUtil.dashSeparatedToCamelCase("foo--bar"));
-        Assertions.assertEquals("fooBarBaz",
+        assertEquals(null, SharedUtil.dashSeparatedToCamelCase(null));
+        assertEquals("", SharedUtil.dashSeparatedToCamelCase(""));
+        assertEquals("foo", SharedUtil.dashSeparatedToCamelCase("foo"));
+        assertEquals("fooBar", SharedUtil.dashSeparatedToCamelCase("foo-bar"));
+        assertEquals("fooBar", SharedUtil.dashSeparatedToCamelCase("foo--bar"));
+        assertEquals("fooBarBaz",
                 SharedUtil.dashSeparatedToCamelCase("foo-bar-baz"));
-        Assertions.assertEquals("fooBarBaz",
+        assertEquals("fooBarBaz",
                 SharedUtil.dashSeparatedToCamelCase("foo-Bar-Baz"));
     }
 
     @Test
     public void camelCaseToDashSeparated() {
-        Assertions.assertEquals(null,
-                SharedUtil.camelCaseToDashSeparated(null));
-        Assertions.assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
-        Assertions.assertEquals("foo",
-                SharedUtil.camelCaseToDashSeparated("foo"));
-        Assertions.assertEquals("foo-bar",
-                SharedUtil.camelCaseToDashSeparated("fooBar"));
-        Assertions.assertEquals("foo--bar",
+        assertEquals(null, SharedUtil.camelCaseToDashSeparated(null));
+        assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
+        assertEquals("foo", SharedUtil.camelCaseToDashSeparated("foo"));
+        assertEquals("foo-bar", SharedUtil.camelCaseToDashSeparated("fooBar"));
+        assertEquals("foo--bar",
                 SharedUtil.camelCaseToDashSeparated("foo--bar"));
-        Assertions.assertEquals("foo-bar-baz",
+        assertEquals("foo-bar-baz",
                 SharedUtil.camelCaseToDashSeparated("fooBarBaz"));
-        Assertions.assertEquals("-my-bean-container",
+        assertEquals("-my-bean-container",
                 SharedUtil.camelCaseToDashSeparated("MyBeanContainer"));
-        Assertions.assertEquals("-awesome-uRL-factory",
+        assertEquals("-awesome-uRL-factory",
                 SharedUtil.camelCaseToDashSeparated("AwesomeURLFactory"));
-        Assertions.assertEquals("some-uri-action",
+        assertEquals("some-uri-action",
                 SharedUtil.camelCaseToDashSeparated("someUriAction"));
     }
 
     @Test
     public void upperCamelCaseToDashSeparatedLowerCase() {
-        Assertions.assertEquals(null,
+        assertEquals(null,
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase(null));
-        Assertions.assertEquals("",
-                SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
-        Assertions.assertEquals("foo",
+        assertEquals("", SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
+        assertEquals("foo",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo"));
-        Assertions.assertEquals("foo-bar",
+        assertEquals("foo-bar",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBar"));
-        Assertions.assertEquals("foo--bar",
+        assertEquals("foo--bar",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("foo--bar"));
-        Assertions.assertEquals("foo-bar-baz",
+        assertEquals("foo-bar-baz",
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase("fooBarBaz"));
-        Assertions.assertEquals("my-bean-container", SharedUtil
+        assertEquals("my-bean-container", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("MyBeanContainer"));
-        Assertions.assertEquals("awesome-url-factory", SharedUtil
+        assertEquals("awesome-url-factory", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("AwesomeURLFactory"));
-        Assertions.assertEquals("some-uri-action", SharedUtil
+        assertEquals("some-uri-action", SharedUtil
                 .upperCamelCaseToDashSeparatedLowerCase("someUriAction"));
     }
 
@@ -176,9 +162,8 @@ class SharedUtilTests {
         Locale defaultLocale = Locale.getDefault();
         try {
             Locale.setDefault(new Locale("tr", "TR"));
-            Assertions.assertEquals("Integer",
-                    SharedUtil.capitalize("integer"));
-            Assertions.assertEquals("I", SharedUtil.capitalize("i"));
+            assertEquals("Integer", SharedUtil.capitalize("integer"));
+            assertEquals("I", SharedUtil.capitalize("i"));
         } finally {
             Locale.setDefault(defaultLocale);
         }

@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
@@ -870,10 +869,10 @@ class BrowserDetailsTest {
             assertOs(bd, agent.os);
             BrowserVersion versions = getMinorMajorVersion(
                     agent.browserVersion);
-            Assertions.assertEquals(versions.browserMajorVersion,
+            assertEquals(versions.browserMajorVersion,
                     bd.getBrowserMajorVersion(),
                     "Major version differs on userAgent " + agent.ua);
-            Assertions.assertEquals(versions.browserMinorVersion,
+            assertEquals(versions.browserMinorVersion,
                     bd.getBrowserMinorVersion(),
                     "Minor version differs on userAgent " + agent.ua);
         }
@@ -1089,8 +1088,7 @@ class BrowserDetailsTest {
         assertFalse(browserDetails.isMacOSX());
         assertFalse(browserDetails.isAndroid());
         assertFalse(browserDetails.isChromeOS());
-        Assertions.assertEquals(isWindowsPhone,
-                browserDetails.isWindowsPhone());
+        assertEquals(isWindowsPhone, browserDetails.isWindowsPhone());
     }
 
     private void assertLinux(BrowserDetails browserDetails) {

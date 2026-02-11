@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.Command;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistrationTest {
     @Test
@@ -31,18 +34,17 @@ class RegistrationTest {
         Command action = () -> {
             boolean calledPreviously = invoked.getAndSet(true);
 
-            Assertions.assertFalse(calledPreviously,
+            assertFalse(calledPreviously,
                     "Command should not invoked previously");
         };
 
         Registration registration = Registration.once(action);
 
-        Assertions.assertFalse(invoked.get(),
-                "Command should not yet be invoked");
+        assertFalse(invoked.get(), "Command should not yet be invoked");
 
         registration.remove();
 
-        Assertions.assertTrue(invoked.get(), "Command should be invoked");
+        assertTrue(invoked.get(), "Command should be invoked");
 
         // Action will throw if invoked again
         registration.remove();
@@ -56,14 +58,13 @@ class RegistrationTest {
         Registration registration = Registration.combine(
                 () -> firstRemoved.set(true), () -> secondRemoved.set(true));
 
-        Assertions.assertFalse(firstRemoved.get(), "Should not be removed yet");
-        Assertions.assertFalse(secondRemoved.get(),
-                "Should not be removed yet");
+        assertFalse(firstRemoved.get(), "Should not be removed yet");
+        assertFalse(secondRemoved.get(), "Should not be removed yet");
 
         registration.remove();
 
-        Assertions.assertTrue(firstRemoved.get(), "Should be removed now");
-        Assertions.assertTrue(secondRemoved.get(), "Should be removed now");
+        assertTrue(firstRemoved.get(), "Should be removed now");
+        assertTrue(secondRemoved.get(), "Should be removed now");
     }
 
     @Test
@@ -73,18 +74,18 @@ class RegistrationTest {
         Object o2 = new Object();
 
         Registration r1 = Registration.addAndRemove(collection, o1);
-        Assertions.assertEquals(1, collection.size());
-        Assertions.assertTrue(collection.contains(o1));
+        assertEquals(1, collection.size());
+        assertTrue(collection.contains(o1));
 
         Registration r2 = Registration.addAndRemove(collection, o2);
-        Assertions.assertEquals(2, collection.size());
-        Assertions.assertTrue(collection.contains(o2));
+        assertEquals(2, collection.size());
+        assertTrue(collection.contains(o2));
 
         r1.remove();
-        Assertions.assertEquals(1, collection.size());
-        Assertions.assertFalse(collection.contains(o1));
+        assertEquals(1, collection.size());
+        assertFalse(collection.contains(o1));
 
         r2.remove();
-        Assertions.assertTrue(collection.isEmpty());
+        assertTrue(collection.isEmpty());
     }
 }

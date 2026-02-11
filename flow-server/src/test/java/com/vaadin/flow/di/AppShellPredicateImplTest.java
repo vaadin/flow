@@ -17,12 +17,14 @@ package com.vaadin.flow.di;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.server.startup.AppShellPredicate;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppShellPredicateImplTest {
 
@@ -35,12 +37,11 @@ class AppShellPredicateImplTest {
 
     @Test
     public void isShell_isAppShellConfigurator_returnsTrue() {
-        Assertions.assertTrue(
-                predicate.isShell(TestAppShellPredicateConfig.class));
+        assertTrue(predicate.isShell(TestAppShellPredicateConfig.class));
     }
 
     @Test
     public void isShell_isNotAppShellConfigurator_returnsFalse() {
-        Assertions.assertFalse(predicate.isShell(List.class));
+        assertFalse(predicate.isShell(List.class));
     }
 }

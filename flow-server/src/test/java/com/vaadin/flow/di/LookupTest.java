@@ -20,10 +20,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LookupTest {
 
@@ -48,12 +51,12 @@ class LookupTest {
     public void of_serviceIsFoundByProvidedTypes_serviceIsNotFoundByNotProvidedTypes() {
         ArrayList<String> service = new ArrayList<String>();
         Lookup lookup = Lookup.of(service, Collection.class);
-        Assertions.assertEquals(service, lookup.lookup(Collection.class));
-        Assertions.assertEquals(1, lookup.lookupAll(Collection.class).size());
-        Assertions.assertEquals(service,
+        assertEquals(service, lookup.lookup(Collection.class));
+        assertEquals(1, lookup.lookupAll(Collection.class).size());
+        assertEquals(service,
                 lookup.lookupAll(Collection.class).iterator().next());
-        Assertions.assertNull(lookup.lookup(List.class));
-        Assertions.assertEquals(0, lookup.lookupAll(List.class).size());
+        assertNull(lookup.lookup(List.class));
+        assertEquals(0, lookup.lookupAll(List.class).size());
     }
 
     @Test
@@ -63,7 +66,7 @@ class LookupTest {
         Lookup lookup2 = Lookup.of(new LinkedList<String>(), Collection.class);
 
         Lookup compose = Lookup.compose(lookup1, lookup2);
-        Assertions.assertSame(service, compose.lookup(Collection.class));
+        assertSame(service, compose.lookup(Collection.class));
     }
 
     @Test
@@ -73,7 +76,7 @@ class LookupTest {
         Lookup lookup2 = Lookup.of(service, Collection.class);
 
         Lookup compose = Lookup.compose(lookup1, lookup2);
-        Assertions.assertSame(service, compose.lookup(Collection.class));
+        assertSame(service, compose.lookup(Collection.class));
     }
 
     @Test
@@ -86,8 +89,8 @@ class LookupTest {
         Lookup compose = Lookup.compose(lookup1, lookup2);
         @SuppressWarnings("rawtypes")
         Collection<List> lookupAll = compose.lookupAll(List.class);
-        Assertions.assertEquals(2, lookupAll.size());
-        Assertions.assertTrue(lookupAll.contains(service1));
-        Assertions.assertTrue(lookupAll.contains(service2));
+        assertEquals(2, lookupAll.size());
+        assertTrue(lookupAll.contains(service1));
+        assertTrue(lookupAll.contains(service2));
     }
 }
