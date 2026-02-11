@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -611,6 +612,32 @@ public class ShortcutRegistrationTest {
         listenOn[0].getEventBus()
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
+        Assert.assertNull(event.get());
+    }
+
+    @Test
+    public void constructedRegistration_lifecycleOwnerNulledBeforeKeyEvent_noNPE()
+            throws Exception {
+        AtomicReference<ShortcutEvent> event = new AtomicReference<>();
+
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event::set, Key.KEY_A);
+
+        mockLifecycle(true);
+        clientResponse();
+
+        // Simulate the race condition: null out lifecycleOwner while
+        // the KeyDown listener is still registered
+        Field field = ShortcutRegistration.class
+                .getDeclaredField("lifecycleOwner");
+        field.setAccessible(true);
+        field.set(registration, null);
+
+        // Fire KeyDown event — should not throw NPE
+        listenOn[0].getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        // Shortcut event should not have been fired
         Assert.assertNull(event.get());
     }
 
