@@ -99,24 +99,12 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_unbindWithNullSignal_keepsCurrentAndStopsUpdates() {
+    public void bindPlaceholder_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("one");
-        component.bindPlaceholder(signal);
-        assertEquals("one", component.getPlaceholder());
 
-        // Unbind by passing null; current value should remain
-        component.bindPlaceholder(null);
-        assertEquals("one", component.getPlaceholder());
-
-        // Further updates to the old signal should not propagate
-        signal.value("two");
-        assertEquals("one", component.getPlaceholder());
-
-        // Manual updates should work after unbind
-        component.setPlaceholder("manual");
-        assertEquals("manual", component.getPlaceholder());
+        assertThrows(NullPointerException.class,
+                () -> component.bindPlaceholder(null));
     }
 
     @Test

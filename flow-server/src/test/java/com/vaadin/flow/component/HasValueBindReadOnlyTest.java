@@ -125,33 +125,12 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_withNullBinding_removesBinding() {
+    public void bindReadOnly_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        component.bindReadOnly(signal);
-        assertTrue(component.isReadOnly());
 
-        component.bindReadOnly(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(component.isReadOnly());
-
-        component.setReadOnly(false);
-        assertFalse(component.isReadOnly());
-    }
-
-    @Test
-    public void bindReadOnly_withNullBinding_allowsSetReadOnly() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        component.bindReadOnly(signal);
-        assertTrue(component.isReadOnly());
-
-        component.bindReadOnly(null); // remove binding
-
-        component.setReadOnly(false);
-        assertFalse(component.isReadOnly());
+        assertThrows(NullPointerException.class,
+                () -> component.bindReadOnly(null));
     }
 
     @Test

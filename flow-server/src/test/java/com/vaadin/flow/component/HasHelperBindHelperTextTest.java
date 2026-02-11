@@ -59,18 +59,10 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHelperText_unbindWithNull_stopsUpdates() {
+    public void bindHelperText_nullSignal_throwsNPE() {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        c.bindHelperText(signal);
-        assertEquals("a", c.getElement().getProperty("helperText"));
-
-        c.bindHelperText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", c.getElement().getProperty("helperText"));
+        assertThrows(NullPointerException.class, () -> c.bindHelperText(null));
     }
 }
