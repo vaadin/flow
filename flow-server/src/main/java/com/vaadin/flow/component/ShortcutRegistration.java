@@ -673,6 +673,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void fireShortcutEvent(Component component) {
+        if (lifecycleOwner == null) {
+            return;
+        }
         if (ancestorsOrSelfAreVisible(lifecycleOwner) && (lifecycleOwner
                 .getElement().isEnabled()
                 || DisabledUpdateMode.ALWAYS.equals(getDisabledUpdateMode()))) {
