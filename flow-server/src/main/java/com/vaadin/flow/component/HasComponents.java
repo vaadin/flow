@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Effect;
@@ -239,7 +238,6 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the value type of the {@link Signal}s in the list
      * @param <S>
      *            the type of the {@link Signal}s in the list
-     * @return a registration that can be used to remove the binding
      * @throws IllegalStateException
      *             thrown if this component isn't empty
      * @throws BindingActiveException
@@ -247,8 +245,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @see ComponentEffect#bindChildren(Component, Signal,
      *      SerializableFunction)
      */
-    default <T, S extends Signal<T>> Registration bindChildren(
-            Signal<List<S>> list,
+    default <T, S extends Signal<T>> void bindChildren(Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
@@ -261,7 +258,6 @@ public interface HasComponents extends HasElement, HasEnabled {
                 "Child component factory cannot be null");
         var binding = ComponentEffect.bindChildren(self, list, childFactory);
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
-        return () -> feature.removeBinding(SignalBindingFeature.CHILDREN);
     }
 
     private void throwIfChildrenBindingIsActive(String methodName) {

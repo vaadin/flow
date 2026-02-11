@@ -148,37 +148,12 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_withNullBinding_removesBinding() {
+    public void bindHtmlContent_nullSignal_throwsNPE() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        ValueSignal<String> signal = new ValueSignal<>(
-                "<div id='b'>after</div>");
-        html.bindHtmlContent(signal);
-        assertEquals("after", html.getInnerHtml());
 
-        // remove binding
-        html.bindHtmlContent(null);
-        // further changes are ignored
-        signal.value("<div id='c'>ignored</div>");
-        assertEquals("after", html.getInnerHtml());
-        assertEquals("b", html.getElement().getAttribute("id"));
-    }
-
-    @Test
-    public void bindHtmlContent_withNullBinding_allowsSetHtmlContent() {
-        Html html = new Html("<div id='a'>init</div>");
-        UI.getCurrent().add(html);
-        ValueSignal<String> signal = new ValueSignal<>(
-                "<div id='b'>after</div>");
-        html.bindHtmlContent(signal);
-        assertEquals("after", html.getInnerHtml());
-
-        // remove binding
-        html.bindHtmlContent(null);
-
-        html.setHtmlContent("<div id='c'>manual</div>");
-        assertEquals("manual", html.getInnerHtml());
-        assertEquals("c", html.getElement().getAttribute("id"));
+        assertThrows(NullPointerException.class,
+                () -> html.bindHtmlContent(null));
     }
 
     @Test

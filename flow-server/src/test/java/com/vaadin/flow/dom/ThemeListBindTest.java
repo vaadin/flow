@@ -149,22 +149,12 @@ public class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindNull_unbindsAndKeepsLastAppliedPresence() {
+    public void bind_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        component.bindThemeName("badge", signal);
-        Assert.assertTrue(component.hasThemeName("badge"));
 
-        // Unbind
-        component.bindThemeName("badge", null);
-
-        // Presence remains as-is
-        Assert.assertTrue(component.hasThemeName("badge"));
-
-        // Further signal changes have no effect
-        signal.value(false);
-        Assert.assertTrue(component.hasThemeName("badge"));
+        Assert.assertThrows(NullPointerException.class,
+                () -> component.bindThemeName("badge", null));
     }
 
     @Test(expected = BindingActiveException.class)

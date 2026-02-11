@@ -131,22 +131,12 @@ public class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindNull_unbindsAndKeepsLastAppliedPresence() {
+    public void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.getClassList().bind("badge", signal);
-        Assert.assertTrue(element.getClassList().contains("badge"));
 
-        // Unbind
-        element.getClassList().bind("badge", null);
-
-        // Presence remains as-is
-        Assert.assertTrue(element.getClassList().contains("badge"));
-
-        // Further signal changes have no effect
-        signal.value(false);
-        Assert.assertTrue(element.getClassList().contains("badge"));
+        Assert.assertThrows(NullPointerException.class,
+                () -> element.getClassList().bind("badge", null));
     }
 
     @Test(expected = BindingActiveException.class)

@@ -125,15 +125,14 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         field.rest.setValue("Vaadin");
         Assert.assertEquals("Hello Vaadin", field.getValue());
         Assert.assertEquals("Hello Vaadin", signal.peek());
+    }
 
-        // remove binding. Value should stay the same.
-        field.bindValue(null);
-        Assert.assertEquals("Hello Vaadin", field.getValue());
-        Assert.assertEquals("Hello Vaadin", signal.peek());
+    @Test
+    public void bindValue_nullSignal_throwsNPE() {
+        MultipleFieldsField field = new MultipleFieldsField();
+        UI.getCurrent().add(field);
 
-        // test that setValue works after unbinding
-        field.setValue("Hey You");
-        Assert.assertEquals("Hey You", field.getValue());
-        Assert.assertEquals("Hello Vaadin", signal.peek());
+        Assert.assertThrows(NullPointerException.class,
+                () -> field.bindValue(null));
     }
 }

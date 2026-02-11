@@ -124,30 +124,12 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_withNullBinding_removesBinding() {
+    public void bindEnabled_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindEnabled(signal);
-        assertTrue(element.isEnabled());
 
-        element.bindEnabled(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(element.isEnabled());
-    }
-
-    @Test
-    public void bindEnabled_withNullBinding_allowsSetEnabled() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindEnabled(signal);
-        assertTrue(element.isEnabled());
-
-        element.bindEnabled(null); // remove binding
-
-        element.setEnabled(false);
-        assertFalse(element.isEnabled());
+        assertThrows(NullPointerException.class,
+                () -> element.bindEnabled(null));
     }
 
     @Test

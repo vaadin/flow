@@ -192,28 +192,12 @@ public class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_unbindText_returnsCorrectValue() {
+    public void bindText_nullSignal_throwsNPE() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>("text");
 
-        element.bindText(signal);
-        element.bindText(null);
-
-        assertEquals("text", element.getText());
-    }
-
-    @Test
-    public void bindText_unbindText_allowsSetText() {
-        Element element = new Element("span");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>("text");
-
-        element.bindText(signal);
-        element.bindText(null);
-
-        element.setText("text2");
-        assertEquals("text2", element.getText());
+        Assert.assertThrows(NullPointerException.class,
+                () -> element.bindText(null));
     }
 
     @Test
@@ -292,10 +276,18 @@ public class ElementBindTextTest {
         // reattach
         UI.getCurrent().add(span);
         assertEquals("text3", span.getText());
+    }
 
-        // unbind and verify setText works
-        span.bindText(null);
-        span.setText("text");
-        assertEquals("text", span.getText());
+    @Test
+    public void bindText_hasText_nullSignal_throwsNPE() {
+        @Tag(Tag.SPAN)
+        class SpanWithHasText extends Component implements HasText {
+        }
+
+        SpanWithHasText span = new SpanWithHasText();
+        UI.getCurrent().add(span);
+
+        Assert.assertThrows(NullPointerException.class,
+                () -> span.bindText(null));
     }
 }
