@@ -73,8 +73,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
         Anchor anchor = new Anchor("/a", "text");
         UI.getCurrent().add(anchor);
 
-        assertThrows(NullPointerException.class,
-                () -> anchor.bindText(null));
+        assertThrows(NullPointerException.class, () -> anchor.bindText(null));
     }
 
     @Test

@@ -59,8 +59,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
-        assertThrows(NullPointerException.class,
-                () -> cell.bindText(null));
+        assertThrows(NullPointerException.class, () -> cell.bindText(null));
     }
 
     @Test

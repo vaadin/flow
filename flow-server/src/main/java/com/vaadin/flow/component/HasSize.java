@@ -485,8 +485,7 @@ public interface HasSize extends HasElement {
      * @see #setHeight(String)
      */
     default void bindHeight(Signal<String> heightSignal) {
-        java.util.Objects.requireNonNull(heightSignal,
-                "Signal cannot be null");
+        java.util.Objects.requireNonNull(heightSignal, "Signal cannot be null");
         getElement().getStyle().bind(STYLE_HEIGHT, heightSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_HEIGHT_FULL,
                 heightSignal.map(value -> "100%".equals(value) ? "" : null));

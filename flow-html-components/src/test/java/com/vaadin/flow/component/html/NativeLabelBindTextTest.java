@@ -59,8 +59,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
-        assertThrows(NullPointerException.class,
-                () -> label.bindText(null));
+        assertThrows(NullPointerException.class, () -> label.bindText(null));
     }
 
     @Test

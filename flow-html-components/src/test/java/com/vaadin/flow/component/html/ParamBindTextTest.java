@@ -61,8 +61,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
         Param param = new Param();
         UI.getCurrent().add(param);
 
-        assertThrows(NullPointerException.class,
-                () -> param.bindName(null));
+        assertThrows(NullPointerException.class, () -> param.bindName(null));
     }
 
     @Test
@@ -97,7 +96,6 @@ public class ParamBindTextTest extends SignalsUnitTest {
         Param param = new Param();
         UI.getCurrent().add(param);
 
-        assertThrows(NullPointerException.class,
-                () -> param.bindValue(null));
+        assertThrows(NullPointerException.class, () -> param.bindValue(null));
     }
 }
