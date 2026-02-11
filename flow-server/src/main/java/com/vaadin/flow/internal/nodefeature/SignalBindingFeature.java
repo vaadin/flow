@@ -220,8 +220,8 @@ public class SignalBindingFeature extends ServerSideFeature {
             if (!valueEquals.test(signalValue, newValue)) {
                 // Signal value differs, revert
                 revertCallback.accept(signalValue);
-                // No change compared to old value, so no need to fire event
-                return !valueEquals.test(signalValue, oldValue);
+                // no need to fire event, signal change triggered that
+                return false;
             }
         } else {
             // Read-only binding: revert and throw

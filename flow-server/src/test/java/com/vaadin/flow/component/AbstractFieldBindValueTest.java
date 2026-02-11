@@ -407,12 +407,15 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.bindValue(signal, signal::value);
 
         AtomicReference<String> eventValue = new AtomicReference<>();
+        AtomicInteger counter = new AtomicInteger(0);
         input.addValueChangeListener(event -> {
             eventValue.set(event.getValue());
+            counter.incrementAndGet();
         });
 
         input.setValue("bar");
         assertEquals("bar", eventValue.get());
+        assertEquals(1, counter.get());
     }
 
     @Test
@@ -423,12 +426,15 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.bindValue(signal, v -> signal.value(v.toUpperCase()));
 
         AtomicReference<String> eventValue = new AtomicReference<>();
+        AtomicInteger counter = new AtomicInteger(0);
         input.addValueChangeListener(event -> {
             eventValue.set(event.getValue());
+            counter.incrementAndGet();
         });
 
         input.setValue("bar");
         assertEquals("BAR", eventValue.get());
+        assertEquals(1, counter.get());
     }
 
     @Test

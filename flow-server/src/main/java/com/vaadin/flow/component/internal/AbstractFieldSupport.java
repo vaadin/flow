@@ -284,7 +284,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                 SignalBindingFeature feature = featureOpt.get();
                 if (component.isAttached()
                         && feature.hasBinding(SignalBindingFeature.VALUE)) {
-                    boolean changed = feature.updateSignalByWriteCallback(
+                    boolean fireEvent = feature.updateSignalByWriteCallback(
                             SignalBindingFeature.VALUE, oldValue, newValue,
                             valueEquals, revertedToValue -> {
                                 // revert component value to the given value
@@ -292,7 +292,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                                 bufferedValue = revertedToValue;
                                 applyValue(revertedToValue);
                             });
-                    if (!changed) {
+                    if (!fireEvent) {
                         // no need to fire value change event when value is not
                         // changed due to signal reversion
                         return;
