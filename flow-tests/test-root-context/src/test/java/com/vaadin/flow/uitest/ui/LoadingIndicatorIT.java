@@ -85,4 +85,43 @@ public class LoadingIndicatorIT extends ChromeBrowserTest {
                 "Default loading indicator theming should not be applied",
                 "auto", loadingIndicator.getCssValue("height"));
     }
+
+    @Test
+    public void fastRequest_indicatorNotShown() throws InterruptedException {
+        open();
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
+        testBench().disableWaitForVaadin();
+
+        // Click button that triggers a fast request (100ms)
+        findElement(By.id("wait100")).click();
+
+        // Wait for the request to complete (200ms to be safe)
+        Thread.sleep(200);
+
+        // Verify indicator never showed (should not have "first" class)
+        // The default firstDelay is 450ms, so a 100ms request should complete
+        // before the indicator appears
+        Assert.assertFalse(
+                "Loading indicator should not show for fast requests",
+                hasCssClass(loadingIndicator, "first"));
+    }
+
+    @Test
+    public void slowRequest_indicatorShown() throws InterruptedException {
+        open();
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
+        testBench().disableWaitForVaadin();
+
+        // Click button that triggers a slow request (1000ms)
+        findElement(By.id("wait1000")).click();
+
+        // Wait past the default firstDelay threshold (450ms)
+        Thread.sleep(600);
+
+        // Verify indicator is showing (should have "first" class)
+        Assert.assertTrue("Loading indicator should show for slow requests",
+                hasCssClass(loadingIndicator, "first"));
+    }
 }

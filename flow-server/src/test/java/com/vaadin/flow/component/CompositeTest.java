@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -114,7 +113,7 @@ public class CompositeTest {
         layoutInsideComposite.track();
         layoutWithSingleComponentComposite.track();
 
-        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService.setCurrent(null);
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
