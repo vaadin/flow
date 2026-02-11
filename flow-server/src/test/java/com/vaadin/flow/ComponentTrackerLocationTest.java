@@ -18,12 +18,13 @@ package com.vaadin.flow;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.server.AbstractConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ComponentTrackerLocationTest {
 
@@ -42,7 +43,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -60,7 +61,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -79,7 +80,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -98,7 +99,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -117,7 +118,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -136,7 +137,7 @@ class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assertions.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
 }

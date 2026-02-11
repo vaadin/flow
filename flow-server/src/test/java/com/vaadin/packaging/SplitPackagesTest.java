@@ -27,8 +27,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 class SplitPackagesTest {
     /*
@@ -51,7 +52,7 @@ class SplitPackagesTest {
         String errors = collectErrors(packageToModules);
 
         if (!errors.isEmpty()) {
-            Assertions.fail(errors);
+            fail(errors);
         }
     }
 
