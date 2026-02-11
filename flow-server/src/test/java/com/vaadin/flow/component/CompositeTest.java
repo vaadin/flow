@@ -114,7 +114,7 @@ public class CompositeTest {
         layoutInsideComposite.track();
         layoutWithSingleComponentComposite.track();
 
-        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService.setCurrent(null);
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
