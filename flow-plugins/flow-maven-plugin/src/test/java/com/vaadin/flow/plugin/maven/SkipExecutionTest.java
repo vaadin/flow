@@ -16,33 +16,31 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class SkipExecutionTest {
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+class SkipExecutionTest {
+    @TempDir
+    Path temporaryFolder;
     private PrepareFrontendMojo mojo;
     private Log mockLog;
     private File projectBase;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mojo = new PrepareFrontendMojo();
         mockLog = Mockito.mock(Log.class);
-        projectBase = temporaryFolder.getRoot();
+        projectBase = temporaryFolder.toFile();
 
         // Set up the mojo with basic configuration
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",

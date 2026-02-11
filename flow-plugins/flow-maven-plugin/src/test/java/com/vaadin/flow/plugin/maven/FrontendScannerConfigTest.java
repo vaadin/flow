@@ -20,15 +20,15 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class FrontendScannerConfigTest {
+class FrontendScannerConfigTest {
 
     @Test
     public void shouldScan_noRules_allArtifactsAccepted() {
         FrontendScannerConfig config = new FrontendScannerConfig();
-        Assert.assertTrue(artifacts().allMatch(config::shouldScan));
+        Assertions.assertTrue(artifacts().allMatch(config::shouldScan));
     }
 
     @Test
@@ -36,25 +36,25 @@ public class FrontendScannerConfigTest {
         FrontendScannerConfig config = new FrontendScannerConfig();
         config.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("com.vaadin", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")));
 
         config.addInclude(new FrontendScannerConfig.ArtifactMatcher(
                 "tools.jackson*", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")));
 
         config.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher(null, "flow-server"));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")));
 
         config.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("vaadin-*", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")
@@ -66,25 +66,25 @@ public class FrontendScannerConfigTest {
         FrontendScannerConfig config = new FrontendScannerConfig();
         config.addExclude(
                 new FrontendScannerConfig.ArtifactMatcher("com.vaadin", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")));
 
         config.addExclude(new FrontendScannerConfig.ArtifactMatcher(
                 "tools.jackson*", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")));
 
         config.addExclude(
                 new FrontendScannerConfig.ArtifactMatcher(null, "flow-server"));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")));
 
         config.addExclude(
                 new FrontendScannerConfig.ArtifactMatcher("vaadin-*", null));
-        Assert.assertTrue(artifacts().filter(config::shouldScan)
+        Assertions.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
                         || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")
@@ -96,7 +96,7 @@ public class FrontendScannerConfigTest {
         FrontendScannerConfig config = new FrontendScannerConfig();
         config.addExclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
         config.addInclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
-        Assert.assertTrue(artifacts().noneMatch(config::shouldScan));
+        Assertions.assertTrue(artifacts().noneMatch(config::shouldScan));
 
         config = new FrontendScannerConfig();
         config.addExclude(new FrontendScannerConfig.ArtifactMatcher(
@@ -106,8 +106,8 @@ public class FrontendScannerConfigTest {
 
         List<Artifact> artifacts = artifacts().filter(config::shouldScan)
                 .toList();
-        Assert.assertFalse(artifacts.isEmpty());
-        Assert.assertTrue(artifacts.stream()
+        Assertions.assertFalse(artifacts.isEmpty());
+        Assertions.assertTrue(artifacts.stream()
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
                         && !a.getArtifactId().startsWith("vaadin-")));
 
@@ -119,7 +119,7 @@ public class FrontendScannerConfigTest {
         config.addExclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
         config.addInclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
         config.setEnabled(false);
-        Assert.assertTrue(artifacts().allMatch(config::shouldScan));
+        Assertions.assertTrue(artifacts().allMatch(config::shouldScan));
     }
 
     private Stream<Artifact> artifacts() {

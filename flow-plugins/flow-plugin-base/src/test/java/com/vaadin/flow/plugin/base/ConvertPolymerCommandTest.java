@@ -18,13 +18,13 @@ package com.vaadin.flow.plugin.base;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
@@ -34,10 +34,9 @@ import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
-public class ConvertPolymerCommandTest {
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
-
+class ConvertPolymerCommandTest {
+    @TempDir
+    Path tmpDir;
     @Mock
     private MockedConstruction<FrontendConverter> frontendConverterMock;
 
@@ -52,22 +51,22 @@ public class ConvertPolymerCommandTest {
 
     private AutoCloseable closeable;
 
-    @Before
+    @BeforeEach
     public void init()
             throws IOException, URISyntaxException, IllegalAccessException {
         closeable = MockitoAnnotations.openMocks(this);
-        TestUtil.stubPluginAdapterBase(adapter, tmpDir.getRoot());
+        TestUtil.stubPluginAdapterBase(adapter, tmpDir.toFile());
 
-        tmpDir.newFile("component.js");
-        tmpDir.newFolder("nested");
-        tmpDir.newFile("nested/component.js");
-        tmpDir.newFolder("node_modules");
-        tmpDir.newFile("node_modules/component.js");
-        tmpDir.newFile("Component.java");
-        tmpDir.newFile("nested/Component.java");
+        Files.createFile(tmpDir.resolve("component.js")).toFile();
+        Files.createDirectory(tmpDir.resolve("nested")).toFile();
+        Files.createFile(tmpDir.resolve("nested/component.js")).toFile();
+        Files.createDirectory(tmpDir.resolve("node_modules")).toFile();
+        Files.createFile(tmpDir.resolve("node_modules/component.js")).toFile();
+        Files.createFile(tmpDir.resolve("Component.java")).toFile();
+        Files.createFile(tmpDir.resolve("nested/Component.java")).toFile();
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         closeable.close();
     }
@@ -184,6 +183,6 @@ public class ConvertPolymerCommandTest {
     }
 
     private Path getTmpFilePath(String path) {
-        return new File(tmpDir.getRoot(), path).toPath();
+        return new File(tmpDir.toFile(), path).toPath();
     }
 }

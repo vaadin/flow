@@ -17,36 +17,34 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
-public class GenerateMavenBOMMojoTest {
+class GenerateMavenBOMMojoTest {
 
     private String bomFilename;
 
     private File resourceOutputDirectory;
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+    @TempDir
+    Path temporaryFolder;
     private GenerateMavenBOMMojo mojo;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.mojo = new GenerateMavenBOMMojo();
 
         MavenProject project = Mockito.mock(MavenProject.class);
-        File projectBase = temporaryFolder.getRoot();
+        File projectBase = temporaryFolder.toFile();
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
@@ -87,9 +85,9 @@ public class GenerateMavenBOMMojoTest {
 
     @Test
     public void shouldGenerateSBOM() throws Exception {
-        Assert.assertFalse(Files.exists(Paths.get(bomFilename)));
+        Assertions.assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
-        Assert.assertTrue(Files.exists(Paths.get(bomFilename)));
+        Assertions.assertTrue(Files.exists(Paths.get(bomFilename)));
     }
 
 }

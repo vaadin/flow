@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
@@ -24,11 +25,10 @@ import java.util.Set;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -41,16 +41,15 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class GenerateNpmBOMMojoTest {
+class GenerateNpmBOMMojoTest {
 
     private String bomFilename;
 
     private File resourceOutputDirectory;
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+    @TempDir
+    Path temporaryFolder;
     private File jarResourcesSource;
     private File nodeModulesDir;
 
@@ -58,11 +57,11 @@ public class GenerateNpmBOMMojoTest {
 
     private Lookup lookup;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
 
-        File projectBase = temporaryFolder.getRoot();
+        File projectBase = temporaryFolder.toFile();
         File frontendDirectory = new File(projectBase,
                 FrontendUtils.DEFAULT_FRONTEND_DIR);
         resourceOutputDirectory = new File(projectBase,
@@ -73,9 +72,9 @@ public class GenerateNpmBOMMojoTest {
         bomFilename = new File(resourceOutputDirectory, "bom-npm.json")
                 .getAbsolutePath();
 
-        nodeModulesDir = new File(temporaryFolder.getRoot(), "node_modules");
+        nodeModulesDir = new File(temporaryFolder.toFile(), "node_modules");
         boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
-        Assert.assertTrue(nodeModulesDirCreated);
+        Assertions.assertTrue(nodeModulesDirCreated);
 
         String manifestFilePath = new File(projectBase, PACKAGE_JSON)
                 .getAbsolutePath();
@@ -131,24 +130,27 @@ public class GenerateNpmBOMMojoTest {
 
     @Test
     public void shouldGenerateSBOM() throws Exception {
-        Assert.assertFalse(Files.exists(Paths.get(bomFilename)));
+        Assertions.assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
-        Assert.assertTrue(Files.exists(Paths.get(bomFilename)));
+        Assertions.assertTrue(Files.exists(Paths.get(bomFilename)));
     }
 
-    @Test(expected = MojoFailureException.class)
+    @Test
     public void shouldFailWhenNoPackageJsonIsPresent() throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo, "packageManifest", "");
-        mojo.execute();
+        assertThrows(MojoFailureException.class, () -> {
+            ReflectionUtils.setVariableValueInObject(mojo, "packageManifest",
+                    "");
+            mojo.execute();
+        });
     }
 
     @Test
     public void shouldRunNpmInstallIfNodeModulesIsNotPresent()
             throws Exception {
-        Assert.assertTrue(nodeModulesDir.delete());
-        Assert.assertFalse(nodeModulesDir.exists());
+        Assertions.assertTrue(nodeModulesDir.delete());
+        Assertions.assertFalse(nodeModulesDir.exists());
         mojo.execute();
-        Assert.assertTrue(nodeModulesDir.exists());
+        Assertions.assertTrue(nodeModulesDir.exists());
     }
 
     @Test
@@ -160,7 +162,7 @@ public class GenerateNpmBOMMojoTest {
 
         List<String> newContent = TestUtils
                 .listFilesRecursively(nodeModulesDir);
-        Assert.assertArrayEquals(originalContent.toArray(),
+        Assertions.assertArrayEquals(originalContent.toArray(),
                 newContent.toArray());
     }
 
