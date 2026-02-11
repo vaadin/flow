@@ -8,15 +8,14 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TemplateModelListProxyTest {
+class TemplateModelListProxyTest {
 
     private static class ClassWithDefaultConstructor {
         private String field;
@@ -74,9 +73,8 @@ public class TemplateModelListProxyTest {
     private static void assertListClearedNormally(
             TemplateModelListProxy<?> list) {
         list.clear();
-        Assert.assertThat(
-                "List should be of size 0, since we've called clear()",
-                list.size(), is(0));
+        assertEquals(0, list.size(),
+                "List should be of size 0, since we've called clear()");
     }
 
     private static <T> TemplateModelListProxy<T> createModelListProxy(

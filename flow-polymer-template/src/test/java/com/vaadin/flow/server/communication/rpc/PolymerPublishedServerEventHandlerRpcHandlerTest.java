@@ -11,10 +11,10 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Properties;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -36,8 +36,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @NotThreadSafe
-public class PolymerPublishedServerEventHandlerRpcHandlerTest {
+class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
     private VaadinService service;
 
@@ -171,9 +173,9 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
             extends Composite<CompositeOfComponentWithMethod> {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws ServiceException {
-        Assert.assertNull(System.getSecurityManager());
+        Assertions.assertNull(System.getSecurityManager());
         service = Mockito.mock(VaadinService.class);
 
         DeploymentConfiguration configuration = Mockito
@@ -191,7 +193,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         Mockito.when(session.getService()).thenReturn(service);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         service = null;
         VaadinService.setCurrent(null);
@@ -204,7 +206,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        Assertions.assertTrue(component.isInvoked);
     }
 
     @Test
@@ -215,7 +217,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
                 composite.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        Assertions.assertTrue(component.isInvoked);
     }
 
     @Test
@@ -226,32 +228,38 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
                 composite.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        Assertions.assertTrue(component.isInvoked);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void methodWithoutArgs_argsProvided() {
-        ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(true);
-        ComponentWithMethod component = new ComponentWithMethod();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", args, -1);
+        assertThrows(IllegalArgumentException.class, () -> {
+            ArrayNode args = JacksonUtils.createArrayNode();
+            args.add(true);
+            ComponentWithMethod component = new ComponentWithMethod();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "method", args, -1);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void twoEventHandlerMethodsWithTheSameName() {
-        ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalStateException.class, () -> {
+            ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "intMethod",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void methodWithParametersInvokedWithoutParameters() {
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalArgumentException.class, () -> {
+            MethodWithParameters component = new MethodWithParameters();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "intMethod",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
     @Test
@@ -266,7 +274,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "intMethod", array, -1);
 
-        Assert.assertEquals(65, component.intArg);
+        Assertions.assertEquals(65, component.intArg);
     }
 
     @Test
@@ -282,8 +290,8 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method1", array, -1);
 
-        Assert.assertEquals("foo", component.strArg);
-        Assert.assertArrayEquals(new boolean[] { true, false },
+        Assertions.assertEquals("foo", component.strArg);
+        Assertions.assertArrayEquals(new boolean[] { true, false },
                 component.arrayArg);
     }
 
@@ -304,13 +312,16 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
-                firstArg.get(1).doubleValue() }, component.doubleArg);
+        Assertions
+                .assertArrayEquals(
+                        new Double[] { firstArg.get(0).doubleValue(),
+                                firstArg.get(1).doubleValue() },
+                        component.doubleArg);
 
-        Assert.assertNotNull(component.varArg);
-        Assert.assertNull(component.varArg[0]);
-        Assert.assertEquals(Integer.valueOf(56), component.varArg[1]);
-        Assert.assertEquals(2, component.varArg.length);
+        Assertions.assertNotNull(component.varArg);
+        Assertions.assertNull(component.varArg[0]);
+        Assertions.assertEquals(Integer.valueOf(56), component.varArg[1]);
+        Assertions.assertEquals(2, component.varArg.length);
     }
 
     @Test
@@ -337,12 +348,15 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method3", array, -1);
 
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new int[] { first.get(0).intValue(), first.get(1).intValue() },
                 component.doubleArray[0]);
 
-        Assert.assertArrayEquals(new int[] { second.get(0).intValue(),
-                second.get(1).intValue() }, component.doubleArray[1]);
+        Assertions
+                .assertArrayEquals(
+                        new int[] { second.get(0).intValue(),
+                                second.get(1).intValue() },
+                        component.doubleArray[1]);
     }
 
     @Test
@@ -358,7 +372,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method4", array, -1);
 
-        Assert.assertEquals(component.jsonValue, json);
+        Assertions.assertEquals(component.jsonValue, json);
     }
 
     @Test
@@ -381,12 +395,18 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
-                firstArg.get(1).doubleValue() }, component.doubleArg);
+        Assertions
+                .assertArrayEquals(
+                        new Double[] { firstArg.get(0).doubleValue(),
+                                firstArg.get(1).doubleValue() },
+                        component.doubleArg);
 
-        Assert.assertNotNull(component.varArg);
-        Assert.assertArrayEquals(new Integer[] { secondArg.get(0).intValue(),
-                null, secondArg.get(2).intValue() }, component.varArg);
+        Assertions.assertNotNull(component.varArg);
+        Assertions
+                .assertArrayEquals(
+                        new Integer[] { secondArg.get(0).intValue(), null,
+                                secondArg.get(2).intValue() },
+                        component.varArg);
     }
 
     @Test
@@ -397,7 +417,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertEquals(0, component.varArg.length);
+        Assertions.assertEquals(0, component.varArg.length);
     }
 
     @Test
@@ -414,11 +434,14 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
-                firstArg.get(1).doubleValue() }, component.doubleArg);
+        Assertions
+                .assertArrayEquals(
+                        new Double[] { firstArg.get(0).doubleValue(),
+                                firstArg.get(1).doubleValue() },
+                        component.doubleArg);
 
-        Assert.assertNotNull(component.varArg);
-        Assert.assertEquals(0, component.varArg.length);
+        Assertions.assertNotNull(component.varArg);
+        Assertions.assertEquals(0, component.varArg.length);
     }
 
     @Test
@@ -431,8 +454,8 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertEquals(1, component.varArg.length);
-        Assert.assertEquals("foo", component.varArg[0]);
+        Assertions.assertEquals(1, component.varArg.length);
+        Assertions.assertEquals("foo", component.varArg[0]);
     }
 
     @Test
@@ -447,7 +470,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertArrayEquals(new String[] { value.get(0).asString() },
+        Assertions.assertArrayEquals(new String[] { value.get(0).asString() },
                 component.varArg);
     }
 
@@ -464,23 +487,27 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "intMethod", array, -1);
 
         // Verify the field was not modified
-        Assert.assertEquals(0, component.intArg);
+        Assertions.assertEquals(0, component.intArg);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void noEventHandlerMethodException() {
-        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalStateException.class, () -> {
+            ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "operation",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void noMethodException() {
-        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation1",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalStateException.class, () -> {
+            ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "operation1",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
     @Test
@@ -491,7 +518,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
                     component.getClass(), "method",
                     JacksonUtils.createArrayNode(), -1);
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getCause() instanceof NullPointerException);
+            Assertions.assertTrue(e.getCause() instanceof NullPointerException);
         }
     }
 
@@ -502,7 +529,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
         requestInvokeMethod(component);
 
-        Assert.assertTrue(component.isInvoked);
+        Assertions.assertTrue(component.isInvoked);
     }
 
     @Test
@@ -514,7 +541,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
         requestInvokeMethod(component);
 
-        Assert.assertFalse(component.isInvoked);
+        Assertions.assertFalse(component.isInvoked);
     }
 
     @Test
@@ -525,7 +552,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
         requestInvokeMethod(component);
 
-        Assert.assertFalse(component.isInvoked);
+        Assertions.assertFalse(component.isInvoked);
     }
 
     @Test
@@ -535,11 +562,11 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
         component.getElement().setEnabled(false);
 
-        Assert.assertFalse(component.isInvoked);
+        Assertions.assertFalse(component.isInvoked);
 
         requestInvokeMethod(component);
 
-        Assert.assertTrue(component.isInvoked);
+        Assertions.assertTrue(component.isInvoked);
     }
 
     private UI attachComponent(Component component) {

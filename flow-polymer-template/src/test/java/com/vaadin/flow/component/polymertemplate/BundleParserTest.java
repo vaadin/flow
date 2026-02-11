@@ -12,21 +12,21 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 
-public class BundleParserTest {
+class BundleParserTest {
 
     private MockVaadinServletService service;
     private DeploymentConfiguration configuration;
 
-    @Before
+    @BeforeEach
     public void init() {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
@@ -53,13 +53,13 @@ public class BundleParserTest {
         Element element = BundleParser.parseTemplateElement("nats.js", source);
 
         Element natsElement = element.getElementById("natsUrlTxt");
-        Assert.assertNotNull("Found element by Id", natsElement);
-        Assert.assertEquals("Invalid tag for element", "vaadin-text-field",
-                natsElement.tagName());
+        Assertions.assertNotNull(natsElement, "Found element by Id");
+        Assertions.assertEquals("vaadin-text-field", natsElement.tagName(),
+                "Invalid tag for element");
 
-        Assert.assertEquals(
-                "Parsed value for attribute 'placeholder' was wrong.",
-                "nats://server:port", natsElement.attr("placeholder"));
+        Assertions.assertEquals("nats://server:port",
+                natsElement.attr("placeholder"),
+                "Parsed value for attribute 'placeholder' was wrong.");
 
     }
 
@@ -68,6 +68,6 @@ public class BundleParserTest {
         String source = "static get template() { return html    `<div id='bar'></div>`;}";
         Element element = BundleParser.parseTemplateElement("foo.js", source);
 
-        Assert.assertNotNull(element.getElementById("bar"));
+        Assertions.assertNotNull(element.getElementById("bar"));
     }
 }

@@ -12,10 +12,10 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -33,13 +33,15 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-public class PolymerPublishedEventRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class PolymerPublishedEventRpcHandlerTest {
 
     private VaadinService service;
 
     private PolymerPublishedEventRpcHandler handler;
 
-    @Before
+    @BeforeEach
     public void setup() {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
@@ -52,7 +54,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         handler = new PolymerPublishedEventRpcHandler();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         VaadinService.setCurrent(null);
     }
@@ -86,7 +88,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
                 String.class);
 
-        Assert.assertTrue(isModelValue);
+        Assertions.assertTrue(isModelValue);
     }
 
     @Test
@@ -99,7 +101,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
                 String.class);
 
-        Assert.assertFalse(isModelValue);
+        Assertions.assertFalse(isModelValue);
     }
 
     @Test
@@ -112,7 +114,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
                 Boolean.class);
 
-        Assert.assertFalse(isModelValue);
+        Assertions.assertFalse(isModelValue);
     }
 
     @Test
@@ -122,7 +124,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         boolean isModelValue = handler.isTemplateModelValue(instance,
                 JacksonUtils.createArrayNode(), String.class);
 
-        Assert.assertFalse(isModelValue);
+        Assertions.assertFalse(isModelValue);
     }
 
     @Test
@@ -136,7 +138,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
                 String.class);
 
-        Assert.assertFalse(isModelValue);
+        Assertions.assertFalse(isModelValue);
     }
 
     public static Object getTemplateItem(Component template, JsonNode argValue,
@@ -155,17 +157,19 @@ public class PolymerPublishedEventRpcHandlerTest {
                 "Event sent for a non attached template component");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void templateNotConnectedToUI_throws() throws NoSuchMethodException {
-        TestModule instance = new TestModule();
+        assertThrows(IllegalArgumentException.class, () -> {
+            TestModule instance = new TestModule();
 
-        ObjectNode json = JacksonUtils.createObjectNode();
-        json.put("nodeId", 0);
-        json.put("message", "bar");
-        final Type messageType = ModelClass.class
-                .getMethod("setMessage", String.class)
-                .getGenericParameterTypes()[0];
+            ObjectNode json = JacksonUtils.createObjectNode();
+            json.put("nodeId", 0);
+            json.put("message", "bar");
+            final Type messageType = ModelClass.class
+                    .getMethod("setMessage", String.class)
+                    .getGenericParameterTypes()[0];
 
-        handler.getTemplateItem(instance, json, messageType);
+            handler.getTemplateItem(instance, json, messageType);
+        });
     }
 }

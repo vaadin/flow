@@ -8,17 +8,17 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class PropertyFilterTest {
+class PropertyFilterTest {
 
     @Test
     public void simpleFilter() {
         PropertyFilter filter = new PropertyFilter("accept"::equals);
 
-        Assert.assertTrue(filter.test("accept"));
-        Assert.assertFalse(filter.test("reject"));
+        Assertions.assertTrue(filter.test("accept"));
+        Assertions.assertFalse(filter.test("reject"));
     }
 
     @Test
@@ -33,13 +33,13 @@ public class PropertyFilterTest {
                 name -> !"baz".equals(name));
 
         // Rejected by outer filter
-        Assert.assertFalse(innerFilter.test("foo"));
+        Assertions.assertFalse(innerFilter.test("foo"));
         // Rejected by middle filter
-        Assert.assertFalse(innerFilter.test("bar"));
+        Assertions.assertFalse(innerFilter.test("bar"));
         // Rejected by inner filter
-        Assert.assertFalse(innerFilter.test("baz"));
+        Assertions.assertFalse(innerFilter.test("baz"));
 
         // Not rejected by any filter
-        Assert.assertTrue(innerFilter.test("foobar"));
+        Assertions.assertTrue(innerFilter.test("foobar"));
     }
 }

@@ -16,8 +16,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
@@ -27,10 +27,11 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
-public class TemplateModelWithEncodersTest extends HasCurrentService {
+class TemplateModelWithEncodersTest extends HasCurrentService {
 
     public static class TemplateWithEncoders extends
             EmptyDivTemplate<TemplateWithEncoders.TemplateModelWithEncoders> {
@@ -636,24 +637,32 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         assertEquals(date, template.getModel().getTestBeans().get(0).getDate());
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void incompatible_Encoder_throws() {
-        new TemplateWithIncompatibleEncoder();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            new TemplateWithIncompatibleEncoder();
+        });
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void parameterized_type_encoding_throws() {
-        new TemplateWithEncoderOnParameterizedType();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            new TemplateWithEncoderOnParameterizedType();
+        });
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void multiple_encoders_for_same_path_throws() {
-        new TemplateWithSamePathInEncoders();
+        assertThrows(RuntimeException.class, () -> {
+            new TemplateWithSamePathInEncoders();
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void unsupported_model_type_in_encoder() {
-        new TemplateWithUnsupportedEncoderModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            new TemplateWithUnsupportedEncoderModel();
+        });
     }
 
     @Test
@@ -661,7 +670,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         TemplateWithEncoders template = new TemplateWithEncoders();
 
         Date date = template.getModel().getDateString();
-        Assert.assertNull(date);
+        Assertions.assertNull(date);
     }
 
     @Test
@@ -687,21 +696,25 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         assertEquals(bean.getDate(), model.getTestBean().getDate());
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void sameEncodersOnAllMethods_notAllowed() {
-        new SameEncodersOnAllMethods();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            new SameEncodersOnAllMethods();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void brokenModelType_throws() {
-        TemplateWithDate template = new TemplateWithDate();
+        assertThrows(IllegalArgumentException.class, () -> {
+            TemplateWithDate template = new TemplateWithDate();
 
-        StateNode node = template.getElement().getNode();
+            StateNode node = template.getElement().getNode();
 
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
-                .resolveModelMap("date");
+            ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
+                    .resolveModelMap("date");
 
-        map.setProperty("day", "foo");
-        template.getModel().getDate();
+            map.setProperty("day", "foo");
+            template.getModel().getDate();
+        });
     }
 }

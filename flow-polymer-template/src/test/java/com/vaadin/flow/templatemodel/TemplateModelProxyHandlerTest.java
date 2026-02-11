@@ -9,8 +9,8 @@
 package com.vaadin.flow.templatemodel;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -20,8 +20,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @NotThreadSafe
-public class TemplateModelProxyHandlerTest extends HasCurrentService {
+class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     public static class Model {
 
@@ -63,17 +65,18 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertSame(m1.getClass(), m2.getClass());
+        Assertions.assertSame(m1.getClass(), m2.getClass());
 
-        Assert.assertFalse(m1.equals(null));
-        Assert.assertFalse(m1.equals("foobar"));
-        Assert.assertFalse(m1.equals(m2));
+        Assertions.assertFalse(m1.equals(null));
+        Assertions.assertFalse(m1.equals("foobar"));
+        Assertions.assertFalse(m1.equals(m2));
 
         ModelDescriptor<EmptyModel> realModelType = ModelDescriptor
                 .get(EmptyModel.class);
 
-        Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(), realModelType)));
+        Assertions.assertTrue(m1.equals(TemplateModelProxyHandler
+                .createModelProxy(emptyModelTemplate1.getElement().getNode(),
+                        realModelType)));
 
         class TestTemplateModelType extends BeanModelType<TemplateModel> {
 
@@ -84,10 +87,11 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         }
 
         BeanModelType<TemplateModel> wrongModelType = new TestTemplateModelType();
-        Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(), wrongModelType)));
+        Assertions.assertFalse(m1.equals(TemplateModelProxyHandler
+                .createModelProxy(emptyModelTemplate1.getElement().getNode(),
+                        wrongModelType)));
 
-        Assert.assertTrue(m2.equals(m2));
+        Assertions.assertTrue(m2.equals(m2));
     }
 
     @Test
@@ -97,7 +101,7 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
-        Assert.assertNotEquals(m1.hashCode(), m2.hashCode());
+        Assertions.assertNotEquals(m1.hashCode(), m2.hashCode());
     }
 
     @Test
@@ -111,8 +115,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         // in toString()
         new UI().add(emptyModelTemplate1, emptyModelTemplate2);
 
-        Assert.assertEquals(m1.toString(), m1.toString());
-        Assert.assertNotEquals(m1.toString(), m2.toString());
+        Assertions.assertEquals(m1.toString(), m1.toString());
+        Assertions.assertNotEquals(m1.toString(), m2.toString());
     }
 
     @Test
@@ -121,7 +125,8 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(), new TestModelType());
-        Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
+        Assertions.assertEquals(System.identityHashCode(proxy),
+                proxy.hashCode());
     }
 
     @Test
@@ -130,30 +135,34 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
                 template.getElement().getNode(), new TestModelType());
-        Assert.assertEquals("foo", proxy.toString());
+        Assertions.assertEquals("foo", proxy.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void noDefaultConstructor_throwsException() {
-        EmptyModelTemplate template = new EmptyModelTemplate();
+        assertThrows(IllegalArgumentException.class, () -> {
+            EmptyModelTemplate template = new EmptyModelTemplate();
 
-        TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), new BeanModelType<>(
-                        BadModel.class, PropertyFilter.ACCEPT_ALL, false));
+            TemplateModelProxyHandler.createModelProxy(
+                    template.getElement().getNode(), new BeanModelType<>(
+                            BadModel.class, PropertyFilter.ACCEPT_ALL, false));
+        });
     }
 
     // https://github.com/vaadin/flow/issues/1205
     public class NotStaticModel {
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nonStaticNestedClass_throwsException() {
-        EmptyModelTemplate template = new EmptyModelTemplate();
+        assertThrows(IllegalArgumentException.class, () -> {
+            EmptyModelTemplate template = new EmptyModelTemplate();
 
-        TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(),
-                new BeanModelType<>(NotStaticModel.class,
-                        PropertyFilter.ACCEPT_ALL, false));
+            TemplateModelProxyHandler.createModelProxy(
+                    template.getElement().getNode(),
+                    new BeanModelType<>(NotStaticModel.class,
+                            PropertyFilter.ACCEPT_ALL, false));
+        });
     }
 
     @Test
@@ -161,12 +170,14 @@ public class TemplateModelProxyHandlerTest extends HasCurrentService {
         EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
         TemplateModelTest.EmptyModel model = emptyModelTemplate1.getModel();
 
-        Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
+        Assertions.assertTrue(model.getClass().getCanonicalName().startsWith(
                 TemplateModelTest.EmptyModel.class.getCanonicalName()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void beanHasNoProperties_throwsException() {
-        new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL, false);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL, false);
+        });
     }
 }

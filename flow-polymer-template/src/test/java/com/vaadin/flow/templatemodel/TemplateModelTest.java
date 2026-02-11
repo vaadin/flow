@@ -17,13 +17,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -39,13 +36,12 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TemplateModelTest extends HasCurrentService {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+class TemplateModelTest extends HasCurrentService {
 
     public interface EmptyModel extends TemplateModel {
     }
@@ -569,7 +565,7 @@ public class TemplateModelTest extends HasCurrentService {
         assertTrue(modelProxy == modelProxy2);
 
         modelProxy2 = new EmptyModelTemplate().getModel();
-        Assert.assertNotSame(modelProxy, modelProxy2);
+        Assertions.assertNotSame(modelProxy, modelProxy2);
     }
 
     @Test
@@ -582,15 +578,15 @@ public class TemplateModelTest extends HasCurrentService {
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        Assertions.assertEquals("foobar", model.getString());
 
         List<NodeChange> changes = new ArrayList<>();
         ElementPropertyMap modelMap = template.getElement().getNode()
                 .getFeature(ElementPropertyMap.class);
         modelMap.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(template.getElement().getNode(),
+        Assertions.assertEquals(1, changes.size());
+        Assertions.assertEquals(template.getElement().getNode(),
                 changes.get(0).getNode());
 
         changes.clear();
@@ -598,10 +594,10 @@ public class TemplateModelTest extends HasCurrentService {
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        Assertions.assertEquals("foobar", model.getString());
         modelMap.collectChanges(changes::add);
 
-        Assert.assertEquals(0, changes.size());
+        Assertions.assertEquals(0, changes.size());
     }
 
     @Test
@@ -609,45 +605,49 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getBoolean());
+        Assertions.assertEquals(null, model.getBoolean());
 
         model.setBoolean(Boolean.TRUE);
 
-        Assert.assertEquals(Boolean.TRUE, model.getBoolean());
+        Assertions.assertEquals(Boolean.TRUE, model.getBoolean());
 
         model.setBoolean(Boolean.FALSE);
 
-        Assert.assertEquals(Boolean.FALSE, model.getBoolean());
+        Assertions.assertEquals(Boolean.FALSE, model.getBoolean());
 
         model.setBoolean(null);
 
-        Assert.assertEquals(null, model.getBoolean());
+        Assertions.assertEquals(null, model.getBoolean());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testBooleanParseString() {
-        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
-        BasicTypeModel model = template.getModel();
+        assertThrows(IllegalArgumentException.class, () -> {
+            BasicTypeModelTemplate template = new BasicTypeModelTemplate();
+            BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getBoolean());
+            Assertions.assertEquals(null, model.getBoolean());
 
-        template.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("boolean", "True");
+            template.getElement().getNode().getFeature(ElementPropertyMap.class)
+                    .setProperty("boolean", "True");
 
-        model.getBoolean();
+            model.getBoolean();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testBooleanPrimitiveParseString() {
-        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
-        BasicTypeModel model = template.getModel();
+        assertThrows(IllegalArgumentException.class, () -> {
+            BasicTypeModelTemplate template = new BasicTypeModelTemplate();
+            BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
+            Assertions.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
 
-        template.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("booleanPrimitive", "TRUE");
+            template.getElement().getNode().getFeature(ElementPropertyMap.class)
+                    .setProperty("booleanPrimitive", "TRUE");
 
-        model.getBooleanPrimitive();
+            model.getBooleanPrimitive();
+        });
     }
 
     @Test
@@ -655,8 +655,8 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertFalse(model.getBooleanPrimitive());
-        Assert.assertFalse(model.isBooleanPrimitive());
+        Assertions.assertFalse(model.getBooleanPrimitive());
+        Assertions.assertFalse(model.isBooleanPrimitive());
 
         model.setBooleanPrimitive(true);
 
@@ -669,11 +669,11 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getDouble());
+        Assertions.assertEquals(null, model.getDouble());
 
         model.setDouble(Double.valueOf(1.0D));
 
-        Assert.assertEquals(Double.valueOf(1.0D), model.getDouble());
+        Assertions.assertEquals(Double.valueOf(1.0D), model.getDouble());
     }
 
     @Test
@@ -681,11 +681,11 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(0.0d, model.getDoublePrimitive(), 0.0d);
+        Assertions.assertEquals(0.0d, model.getDoublePrimitive(), 0.0d);
 
         model.setDoublePrimitive(1.5d);
 
-        Assert.assertEquals(1.5d, model.getDoublePrimitive(), 0.0d);
+        Assertions.assertEquals(1.5d, model.getDoublePrimitive(), 0.0d);
     }
 
     @Test
@@ -693,11 +693,11 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getInteger());
+        Assertions.assertEquals(null, model.getInteger());
 
         model.setInteger(Integer.valueOf(10));
 
-        Assert.assertEquals(Integer.valueOf(10), model.getInteger());
+        Assertions.assertEquals(Integer.valueOf(10), model.getInteger());
     }
 
     @Test
@@ -705,11 +705,11 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(0, model.getInt());
+        Assertions.assertEquals(0, model.getInt());
 
         model.setInt(1000);
 
-        Assert.assertEquals(1000, model.getInt());
+        Assertions.assertEquals(1000, model.getInt());
     }
 
     @Test
@@ -717,11 +717,11 @@ public class TemplateModelTest extends HasCurrentService {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
-        Assert.assertEquals(null, model.getString());
+        Assertions.assertEquals(null, model.getString());
 
         model.setString("foobar");
 
-        Assert.assertEquals("foobar", model.getString());
+        Assertions.assertEquals("foobar", model.getString());
     }
 
     @Test
@@ -736,7 +736,7 @@ public class TemplateModelTest extends HasCurrentService {
         StateNode stateNode = (StateNode) template.getElement().getNode()
                 .getFeature(ElementPropertyMap.class).getProperty("bean");
 
-        Assert.assertEquals(0, beanTriggered.get());
+        Assertions.assertEquals(0, beanTriggered.get());
 
         model.setBean(bean);
 
@@ -745,84 +745,102 @@ public class TemplateModelTest extends HasCurrentService {
 
         // enough to verify that TemplateModelBeanUtil.importBeanIntoModel is
         // triggered, since TemplatemodelBeanUtilTests covers the bean import
-        Assert.assertNotNull(stateNode);
-        Assert.assertEquals(1, beanTriggered.get());
+        Assertions.assertNotNull(stateNode);
+        Assertions.assertEquals(1, beanTriggered.get());
 
         ElementPropertyMap modelMap = ElementPropertyMap.getModel(stateNode);
-        Assert.assertNotNull(modelMap);
-        Assert.assertEquals("foobar", modelMap.getProperty("string"));
+        Assertions.assertNotNull(modelMap);
+        Assertions.assertEquals("foobar", modelMap.getProperty("string"));
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testUnsupportedPrimitiveSetter() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.setLong(0L);
+            model.setLong(0L);
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testUnsupportedPrimitiveGetter() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.getLong();
+            model.getLong();
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testGetterVoid() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.getFoo();
+            model.getFoo();
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testGetterWithParam() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.getFoo(0);
+            model.getFoo(0);
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testSetterReturns() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.setFoo(0);
+            model.setFoo(0);
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testSetterNoParam() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.setFoo();
+            model.setFoo();
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testSetterTwoParams() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.setFoo(1, 2);
+            model.setFoo(1, 2);
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testInvalidSetterMethodName() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.setfoo(1);
+            model.setfoo(1);
+        });
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void testInvalidGetterMethodName() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
 
-        model.isbar();
+            model.isbar();
+        });
     }
 
     @Test
@@ -864,7 +882,7 @@ public class TemplateModelTest extends HasCurrentService {
         SubBeansModel model2 = new SubBeansTemplate().getModel();
         model2.setBeanClass(new SubBean());
 
-        Assert.assertSame(model1.getBeanClass().getClass(),
+        Assertions.assertSame(model1.getBeanClass().getClass(),
                 model2.getBeanClass().getClass());
     }
 
@@ -980,7 +998,7 @@ public class TemplateModelTest extends HasCurrentService {
         SubSubBeanIface subProxy = model.getProxy("bean.bean",
                 SubSubBeanIface.class);
 
-        Assert.assertEquals(4, subProxy.getValue());
+        Assertions.assertEquals(4, subProxy.getValue());
     }
 
     private void setModelPropertyAndVerifyGetter(PolymerTemplate<?> template,
@@ -988,14 +1006,14 @@ public class TemplateModelTest extends HasCurrentService {
             Serializable expected) {
         ElementPropertyMap feature = getModelMap(template, beanPath);
         feature.setProperty(property, expected);
-        Assert.assertEquals(expected, getter.get());
+        Assertions.assertEquals(expected, getter.get());
     }
 
     private void verifyModel(PolymerTemplate<?> template, String beanPath,
             String property, Serializable expected) {
         ElementPropertyMap feature = getModelMap(template, beanPath);
-        Assert.assertNotNull(feature);
-        Assert.assertEquals(expected, feature.getProperty(property));
+        Assertions.assertNotNull(feature);
+        Assertions.assertEquals(expected, feature.getProperty(property));
     }
 
     private ElementPropertyMap getModelMap(PolymerTemplate<?> template,
@@ -1058,12 +1076,11 @@ public class TemplateModelTest extends HasCurrentService {
     @SafeVarargs
     private static <T> void assertListContentsEquals(List<T> list,
             boolean notSameInstances, T... beans) {
-        Assert.assertEquals(beans.length, list.size());
+        Assertions.assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {
-            Assert.assertThat(list.get(i),
-                    Matchers.samePropertyValuesAs(beans[i]));
+            assertThat(list.get(i), Matchers.samePropertyValuesAs(beans[i]));
             if (notSameInstances) {
-                Assert.assertNotSame(beans[i], list.get(i));
+                Assertions.assertNotSame(beans[i], list.get(i));
             }
         }
 
@@ -1076,12 +1093,12 @@ public class TemplateModelTest extends HasCurrentService {
 
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
-        assertTrue("Model should contain included 'doubleValue'",
-                mapKeys.remove("doubleValue"));
-        assertTrue("Model should contain included 'booleanObject'",
-                mapKeys.remove("booleanObject"));
-        assertTrue("model should be empty but contains: " + mapKeys,
-                mapKeys.isEmpty());
+        assertTrue(mapKeys.remove("doubleValue"),
+                "Model should contain included 'doubleValue'");
+        assertTrue(mapKeys.remove("booleanObject"),
+                "Model should contain included 'booleanObject'");
+        assertTrue(mapKeys.isEmpty(),
+                "model should be empty but contains: " + mapKeys);
     }
 
     @Test
@@ -1096,23 +1113,22 @@ public class TemplateModelTest extends HasCurrentService {
         excluded.add("booleanObject");
 
         for (String excludedPropertyName : excluded) {
-            Assert.assertFalse("Model should not contain excluded '"
-                    + excludedPropertyName + "'",
-                    mapKeys.contains(excludedPropertyName));
+            Assertions.assertFalse(mapKeys.contains(excludedPropertyName),
+                    "Model should not contain excluded '" + excludedPropertyName
+                            + "'");
         }
 
         ReflectTools.getSetterMethods(Bean.class)
                 .map(method -> ReflectTools.getPropertyName(method))
                 .forEach(propertyName -> {
                     if (!excluded.contains(propertyName)) {
-                        assertTrue(
+                        assertTrue(mapKeys.remove(propertyName),
                                 "Model should contain the property '"
-                                        + propertyName + "'",
-                                mapKeys.remove(propertyName));
+                                        + propertyName + "'");
                     }
                 });
-        assertTrue("model should be empty but contains: " + mapKeys,
-                mapKeys.isEmpty());
+        assertTrue(mapKeys.isEmpty(),
+                "model should be empty but contains: " + mapKeys);
     }
 
     @Test
@@ -1121,7 +1137,7 @@ public class TemplateModelTest extends HasCurrentService {
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         assertTrue(modelMap.hasProperty("booleanObject"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        Assertions.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
     @Test
@@ -1130,7 +1146,7 @@ public class TemplateModelTest extends HasCurrentService {
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         assertTrue(modelMap.hasProperty("booleanObject"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        Assertions.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
     @Test
@@ -1139,7 +1155,7 @@ public class TemplateModelTest extends HasCurrentService {
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         assertTrue(modelMap.hasProperty("doubleValue"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        Assertions.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
     @Test
@@ -1151,24 +1167,27 @@ public class TemplateModelTest extends HasCurrentService {
 
         template.getModel().setBeanContainingBeans(beanContainer);
 
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
         assertTrue(getModelMap(template, "beanContainingBeans.bean1")
                 .hasProperty("booleanValue"));
         // bean1.booleanObject is excluded
-        Assert.assertFalse(getModelMap(template, "beanContainingBeans.bean1")
-                .hasProperty("booleanObject"));
+        Assertions
+                .assertFalse(getModelMap(template, "beanContainingBeans.bean1")
+                        .hasProperty("booleanObject"));
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void setBeanExcludeSubBeanProperties_getterThrows() {
-        TemplateWithExcludeForSubBean template = new TemplateWithExcludeForSubBean();
-        BeanContainingBeans beanContainer = new BeanContainingBeans();
-        beanContainer.setBean2(new Bean(2));
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            TemplateWithExcludeForSubBean template = new TemplateWithExcludeForSubBean();
+            BeanContainingBeans beanContainer = new BeanContainingBeans();
+            beanContainer.setBean2(new Bean(2));
 
-        template.getModel().setBeanContainingBeans(beanContainer);
+            template.getModel().setBeanContainingBeans(beanContainer);
 
-        template.getModel().getBeanContainingBeans().getBean2();
+            template.getModel().getBeanContainingBeans().getBean2();
+        });
     }
 
     @Test
@@ -1179,24 +1198,26 @@ public class TemplateModelTest extends HasCurrentService {
         beanContainer.setBean2(new Bean(2));
         template.getModel().setBeanContainingBeans(beanContainer);
 
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
 
         ElementPropertyMap bean1Map = getModelMap(template,
                 "beanContainingBeans.bean1");
         Set<String> bean1Keys = getKeys(bean1Map);
         assertTrue(bean1Keys.contains("booleanObject"));
-        Assert.assertEquals(1, bean1Keys.size());
+        Assertions.assertEquals(1, bean1Keys.size());
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
+    @Test
     public void setBeanIncludeSubBeanProperties_getterThrows() {
-        TemplateWithIncludeForSubBean template = new TemplateWithIncludeForSubBean();
-        BeanContainingBeans beanContainer = new BeanContainingBeans();
-        beanContainer.setBean2(new Bean(2));
-        template.getModel().setBeanContainingBeans(beanContainer);
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            TemplateWithIncludeForSubBean template = new TemplateWithIncludeForSubBean();
+            BeanContainingBeans beanContainer = new BeanContainingBeans();
+            beanContainer.setBean2(new Bean(2));
+            template.getModel().setBeanContainingBeans(beanContainer);
 
-        template.getModel().getBeanContainingBeans().getBean2();
+            template.getModel().getBeanContainingBeans().getBean2();
+        });
     }
 
     @Test
@@ -1212,11 +1233,10 @@ public class TemplateModelTest extends HasCurrentService {
                 .getModel(modelList.get(0));
         Set<String> propertiesInMap = bean1.getPropertyNames()
                 .collect(Collectors.toSet());
-        assertTrue("Bean in model should have an 'intValue' property",
-                propertiesInMap.remove("intValue"));
-        Assert.assertEquals(
-                "All other properties should have been filtered out", 0,
-                propertiesInMap.size());
+        assertTrue(propertiesInMap.remove("intValue"),
+                "Bean in model should have an 'intValue' property");
+        Assertions.assertEquals(0, propertiesInMap.size(),
+                "All other properties should have been filtered out");
     }
 
     @Test
@@ -1235,16 +1255,14 @@ public class TemplateModelTest extends HasCurrentService {
 
         Set<String> bean1InMap = getKeys(bean1);
         Set<String> bean2InMap = getKeys(bean2);
-        Assert.assertFalse(
-                "Bean1 in model should not have an 'intValue' property",
-                bean1InMap.contains("intValue"));
-        Assert.assertFalse(
-                "Bean2 in model should not have an 'intValue' property",
-                bean2InMap.contains("intValue"));
-        Assert.assertEquals("All other properties should have been included", 6,
-                bean1InMap.size());
-        Assert.assertEquals("All other properties should have been included", 6,
-                bean2InMap.size());
+        Assertions.assertFalse(bean1InMap.contains("intValue"),
+                "Bean1 in model should not have an 'intValue' property");
+        Assertions.assertFalse(bean2InMap.contains("intValue"),
+                "Bean2 in model should not have an 'intValue' property");
+        Assertions.assertEquals(6, bean1InMap.size(),
+                "All other properties should have been included");
+        Assertions.assertEquals(6, bean2InMap.size(),
+                "All other properties should have been included");
     }
 
     @Test
@@ -1257,7 +1275,7 @@ public class TemplateModelTest extends HasCurrentService {
         template.getModel().setBeanContainingBeans(beanContainingBeans);
 
         ModelList modelList = getModelList(template, "beanContainingBeans");
-        Assert.assertEquals(2, modelList.size());
+        Assertions.assertEquals(2, modelList.size());
 
         ElementPropertyMap container1Map = ElementPropertyMap
                 .getModel(modelList.get(0));
@@ -1266,30 +1284,30 @@ public class TemplateModelTest extends HasCurrentService {
         Set<String> bean1bean2 = new HashSet<>();
         bean1bean2.add("bean1");
         bean1bean2.add("bean2");
-        Assert.assertEquals(bean1bean2,
+        Assertions.assertEquals(bean1bean2,
                 container1Map.getPropertyNames().collect(Collectors.toSet()));
-        Assert.assertEquals(bean1bean2,
+        Assertions.assertEquals(bean1bean2,
                 container2Map.getPropertyNames().collect(Collectors.toSet()));
 
         Set<String> container1Bean1Properties = getKeys(
                 container1Map.resolveModelMap("bean1"));
         assertTrue(container1Bean1Properties.remove("intValue"));
-        Assert.assertEquals(0, container1Bean1Properties.size());
+        Assertions.assertEquals(0, container1Bean1Properties.size());
 
         Set<String> container1Bean2Properties = getKeys(
                 container1Map.resolveModelMap("bean2"));
         assertTrue(container1Bean2Properties.remove("booleanValue"));
-        Assert.assertEquals(0, container1Bean2Properties.size());
+        Assertions.assertEquals(0, container1Bean2Properties.size());
 
         Set<String> container2Bean1Properties = getKeys(
                 container2Map.resolveModelMap("bean1"));
         // Null value in the initial bean implies not imported or created
-        Assert.assertEquals(0, container2Bean1Properties.size());
+        Assertions.assertEquals(0, container2Bean1Properties.size());
 
         Set<String> container2Bean2Properties = getKeys(
                 container2Map.resolveModelMap("bean2"));
         assertTrue(container2Bean2Properties.remove("booleanValue"));
-        Assert.assertEquals(0, container2Bean2Properties.size());
+        Assertions.assertEquals(0, container2Bean2Properties.size());
     }
 
     @Test
@@ -1301,15 +1319,15 @@ public class TemplateModelTest extends HasCurrentService {
         Serializable bean = template.getElement().getNode()
                 .getFeature(ElementPropertyMap.class).getProperty("bean");
 
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
         StateNode node = (StateNode) bean;
-        Assert.assertEquals(0, node.getFeature(ElementPropertyMap.class)
+        Assertions.assertEquals(0, node.getFeature(ElementPropertyMap.class)
                 .getProperty("intValue"));
 
         // Now check properties via API
-        Assert.assertNotNull(template.getModel().getBean());
+        Assertions.assertNotNull(template.getModel().getBean());
 
-        Assert.assertEquals(0, template.getModel().getBean().getIntValue());
+        Assertions.assertEquals(0, template.getModel().getBean().getIntValue());
     }
 
     @Test
@@ -1327,16 +1345,16 @@ public class TemplateModelTest extends HasCurrentService {
         assertTrue(subBean instanceof StateNode);
 
         // Now check properties via API
-        Assert.assertNotNull(template.getModel().getBean().getBean());
+        Assertions.assertNotNull(template.getModel().getBean().getBean());
     }
 
     @Test
     public void beanModelType_setNullAsValue() {
         SubBeansTemplate template = new SubBeansTemplate();
 
-        Assert.assertNotNull(template.getModel().getBean());
+        Assertions.assertNotNull(template.getModel().getBean());
         template.getModel().setBean(null);
-        Assert.assertNull(template.getModel().getBean());
+        Assertions.assertNull(template.getModel().getBean());
     }
 
     @Test
@@ -1347,68 +1365,70 @@ public class TemplateModelTest extends HasCurrentService {
         // available via features
         Serializable bean = template.getElement().getNode()
                 .getFeature(ElementPropertyMap.class).getProperty("beans");
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
 
         StateNode node = (StateNode) bean;
         assertTrue(node.hasFeature(ModelList.class));
 
         // Now check properties via API
         List<Bean> list = template.getModel().getBeans();
-        Assert.assertNotNull(list);
-        Assert.assertEquals(0, list.size());
+        Assertions.assertNotNull(list);
+        Assertions.assertEquals(0, list.size());
     }
 
     @Test
     public void basicModelType_defaultValues() {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
-        Assert.assertNull(template.getModel().getBoolean());
-        Assert.assertFalse(template.getModel().getBooleanPrimitive());
-        Assert.assertNull(template.getModel().getDouble());
-        Assert.assertEquals(String.valueOf(0.0d),
+        Assertions.assertNull(template.getModel().getBoolean());
+        Assertions.assertFalse(template.getModel().getBooleanPrimitive());
+        Assertions.assertNull(template.getModel().getDouble());
+        Assertions.assertEquals(String.valueOf(0.0d),
                 String.valueOf(template.getModel().getDoublePrimitive()));
-        Assert.assertEquals(0, template.getModel().getInt());
-        Assert.assertNull(template.getModel().getInteger());
-        Assert.assertNull(template.getModel().getString());
+        Assertions.assertEquals(0, template.getModel().getInt());
+        Assertions.assertNull(template.getModel().getInteger());
+        Assertions.assertNull(template.getModel().getString());
     }
 
     @Test
     public void modelHasFinalAccessors_throws() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString(BeanWithFinalAccessors.class.getName()),
-                CoreMatchers.containsString(
-                        "property 'bar' has final getter 'getBar'"),
-                CoreMatchers.containsString(
-                        "property 'foo' has final setter 'setFoo'"),
-                CoreMatchers
-                        .containsString("@" + Exclude.class.getSimpleName()),
-                CoreMatchers
-                        .containsString("@" + Include.class.getSimpleName())));
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> new EmptyDivTemplate<BeanWithFinalAccessors>() {
 
-        new EmptyDivTemplate<BeanWithFinalAccessors>() {
+                });
 
-        };
+        String message = exception.getMessage();
+        assertTrue(message.contains(BeanWithFinalAccessors.class.getName()),
+                "Exception message should contain BeanWithFinalAccessors class name");
+        assertTrue(message.contains("property 'bar' has final getter 'getBar'"),
+                "Exception message should mention property 'bar' with final getter");
+        assertTrue(message.contains("property 'foo' has final setter 'setFoo'"),
+                "Exception message should mention property 'foo' with final setter");
+        assertTrue(message.contains("@" + Exclude.class.getSimpleName()),
+                "Exception message should mention @Exclude annotation");
+        assertTrue(message.contains("@" + Include.class.getSimpleName()),
+                "Exception message should mention @Include annotation");
     }
 
     @Test
     public void modelHasSubBeanWithFinalAccessors_throws() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString(BeanWithFinalAccessors.class.getName()),
-                CoreMatchers.containsString(
-                        "property 'bar' has final getter 'getBar'"),
-                CoreMatchers.containsString(
-                        "property 'foo' has final setter 'setFoo'"),
-                CoreMatchers
-                        .containsString("@" + Exclude.class.getSimpleName()),
-                CoreMatchers
-                        .containsString("@" + Include.class.getSimpleName())));
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> new EmptyDivTemplate<BeanWithInvalidSubBean>() {
 
-        new EmptyDivTemplate<BeanWithInvalidSubBean>() {
+                });
 
-        };
+        String message = exception.getMessage();
+        assertTrue(message.contains(BeanWithFinalAccessors.class.getName()),
+                "Exception message should contain BeanWithFinalAccessors class name");
+        assertTrue(message.contains("property 'bar' has final getter 'getBar'"),
+                "Exception message should mention property 'bar' with final getter");
+        assertTrue(message.contains("property 'foo' has final setter 'setFoo'"),
+                "Exception message should mention property 'foo' with final setter");
+        assertTrue(message.contains("@" + Exclude.class.getSimpleName()),
+                "Exception message should mention @Exclude annotation");
+        assertTrue(message.contains("@" + Include.class.getSimpleName()),
+                "Exception message should mention @Include annotation");
     }
 
     @Test
@@ -1421,33 +1441,29 @@ public class TemplateModelTest extends HasCurrentService {
     @Test
     public void emptyModelListShouldBeRepopulatedAfterDetach() {
         TemplateWithIncludeOnList template = new TemplateWithIncludeOnList();
-        assertTrue("Template should have its list empty",
-                template.getModel().getBeans().isEmpty());
+        assertTrue(template.getModel().getBeans().isEmpty(),
+                "Template should have its list empty");
         NodeList<?> nodeList = getModelList(template, "beans");
 
         List<NodeChange> changesAfterAttach = collectChanges(nodeList);
-        assertEquals(
-                "Expect empty model list to create a single change after attach",
-                1, changesAfterAttach.size());
+        assertEquals(1, changesAfterAttach.size(),
+                "Expect empty model list to create a single change after attach");
 
-        assertTrue(
-                "After the empty model list is attached and created a change, no more changes are created",
-                collectChanges(nodeList).isEmpty());
+        assertTrue(collectChanges(nodeList).isEmpty(),
+                "After the empty model list is attached and created a change, no more changes are created");
 
         nodeList.onDetach();
         List<NodeChange> changesAfterDetach = collectChanges(nodeList);
-        assertEquals(
-                "Expect empty model list to create a single change after detach",
-                1, changesAfterDetach.size());
+        assertEquals(1, changesAfterDetach.size(),
+                "Expect empty model list to create a single change after detach");
 
         assertTrue(
-                "Changes to empty list after attach and detach should be the same",
                 changesAfterDetach.get(0).toJson(null)
-                        .equals(changesAfterAttach.get(0).toJson(null)));
+                        .equals(changesAfterAttach.get(0).toJson(null)),
+                "Changes to empty list after attach and detach should be the same");
 
-        assertTrue(
-                "After the empty model list is detached and created a change, no more changes are created",
-                collectChanges(nodeList).isEmpty());
+        assertTrue(collectChanges(nodeList).isEmpty(),
+                "After the empty model list is detached and created a change, no more changes are created");
     }
 
     private List<NodeChange> collectChanges(NodeList<?> nodeList) {

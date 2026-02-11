@@ -8,8 +8,8 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
@@ -25,7 +25,7 @@ public abstract class AbstractTemplateTest {
 
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
@@ -52,7 +52,7 @@ public abstract class AbstractTemplateTest {
         VaadinService.setCurrent(service);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
     }
