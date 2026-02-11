@@ -25,10 +25,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Base class for setting up the environment for testing high-level signal
@@ -133,10 +133,9 @@ public class SignalTestBase {
     @BeforeEach
     void setupExceptionHandler() {
         Thread currentThread = Thread.currentThread();
-        assertSame(
-                "Adjustments are needed if a non-standard exception handler is present",
-                currentThread.getUncaughtExceptionHandler(),
-                currentThread.getThreadGroup());
+        assertSame(currentThread.getUncaughtExceptionHandler(),
+                currentThread.getThreadGroup(),
+                "Adjustments are needed if a non-standard exception handler is present");
 
         currentThread.setUncaughtExceptionHandler((thread, throwable) -> {
             if (throwable.getCause() instanceof AssertionError ae) {
