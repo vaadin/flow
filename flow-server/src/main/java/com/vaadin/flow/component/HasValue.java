@@ -22,8 +22,8 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * A generic interface for field components and other user interface objects
@@ -242,7 +242,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
-     * {@link com.vaadin.signals.BindingActiveException}.
+     * {@link com.vaadin.flow.signals.BindingActiveException}.
      * <p>
      * While a Signal is bound to a value state and the element is in attached
      * state, setting the value with {@link #setValue(Object)} or when a change
@@ -261,7 +261,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      */
@@ -280,7 +280,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * <p>
      * While a Signal is bound to the read-only state, any attempt to set the
      * read-only state manually with {@link #setReadOnly(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -296,7 +296,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @param readOnlySignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)
      */

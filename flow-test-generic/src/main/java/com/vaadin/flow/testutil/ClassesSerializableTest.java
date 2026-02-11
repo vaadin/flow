@@ -72,7 +72,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
-                "com\\.vaadin\\.signals\\..*",
+                "com\\.vaadin\\.flow\\.signals\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
                 "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.stats..*",

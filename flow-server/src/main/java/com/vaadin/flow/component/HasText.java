@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A component that supports text content.
@@ -171,8 +171,8 @@ public interface HasText extends HasElement {
      * existing binding.
      * <p>
      * While a Signal is bound, any attempt to set the text content manually
-     * throws {@link com.vaadin.signals.BindingActiveException}. Same happens
-     * when trying to bind a new Signal while one is already bound.
+     * throws {@link com.vaadin.flow.signals.BindingActiveException}. Same
+     * happens when trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
      *

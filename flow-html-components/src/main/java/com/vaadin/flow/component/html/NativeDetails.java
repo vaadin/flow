@@ -29,7 +29,7 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;details&gt;</code> element.
@@ -86,9 +86,9 @@ public class NativeDetails extends HtmlComponent
      * when the signal's value is updated.
      * <p>
      * While a binding for the summary text is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -199,9 +199,9 @@ public class NativeDetails extends HtmlComponent
      * unchanged.
      * <p>
      * While a binding for the summary text is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -210,7 +210,7 @@ public class NativeDetails extends HtmlComponent
      * @param summarySignal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setSummaryText(String)
      * @see Element#bindText(Signal)
