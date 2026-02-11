@@ -124,8 +124,7 @@ public class RequestResponseTracker {
         // Client-side component will handle timing for each request
         // independently.
         // This ensures rapid successive requests get individual timing instead
-        // of
-        // accumulating time across requests.
+        // of accumulating time across requests.
         ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
         fireEvent(new ResponseHandlingEndedEvent());
