@@ -17,13 +17,16 @@ package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlowDauIntegrationTest {
 
@@ -36,14 +39,14 @@ class FlowDauIntegrationTest {
             Mockito.when(request.isSecure()).thenReturn(true);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             String[] hashAndTime = cookie.getValue().split("\\$");
-            Assertions.assertEquals("hash", hashAndTime[0]);
-            Assertions.assertFalse(hashAndTime[1].isBlank());
-            Assertions.assertEquals(DAUUtils.DAU_COOKIE_NAME, cookie.getName());
-            Assertions.assertTrue(cookie.isHttpOnly());
-            Assertions.assertTrue(cookie.getSecure());
-            Assertions.assertEquals(DAUUtils.DAU_COOKIE_MAX_AGE_IN_SECONDS,
+            assertEquals("hash", hashAndTime[0]);
+            assertFalse(hashAndTime[1].isBlank());
+            assertEquals(DAUUtils.DAU_COOKIE_NAME, cookie.getName());
+            assertTrue(cookie.isHttpOnly());
+            assertTrue(cookie.getSecure());
+            assertEquals(DAUUtils.DAU_COOKIE_MAX_AGE_IN_SECONDS,
                     cookie.getMaxAge());
-            Assertions.assertEquals("/", cookie.getPath());
+            assertEquals("/", cookie.getPath());
         }
     }
 
@@ -55,7 +58,7 @@ class FlowDauIntegrationTest {
             VaadinRequest request = Mockito.mock(VaadinRequest.class);
             Mockito.when(request.isSecure()).thenReturn(false);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
-            Assertions.assertFalse(cookie.getSecure());
+            assertFalse(cookie.getSecure());
         }
     }
 }

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,6 +35,11 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ClassDownloadHandlerTest {
     private static final String PATH_TO_FILE = "downloads/generated_binary_file.bin";
@@ -88,8 +92,8 @@ class ClassDownloadHandlerTest {
                 new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        Assertions.assertEquals(-1, context.contentLength());
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals(-1, context.contentLength());
+                        assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
 
@@ -97,17 +101,17 @@ class ClassDownloadHandlerTest {
                     public void onProgress(TransferContext context,
                             long transferredBytes, long totalBytes) {
                         transferredBytesRecords.add(transferredBytes);
-                        Assertions.assertEquals(-1, totalBytes);
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals(-1, totalBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onProgress");
                     }
 
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        Assertions.assertEquals(-1, context.contentLength());
-                        Assertions.assertEquals(165000, transferredBytes);
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, transferredBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onComplete");
                     }
 
@@ -121,14 +125,14 @@ class ClassDownloadHandlerTest {
         handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
-        Assertions.assertEquals(
+        assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        Assertions.assertArrayEquals(new long[] { 65536, 131072 },
+        assertArrayEquals(new long[] { 65536, 131072 },
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
-        Assertions.assertNull(downloadEvent.getException());
+        assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -169,17 +173,17 @@ class ClassDownloadHandlerTest {
                     public void onError(TransferContext context,
                             IOException reason) {
                         invocations.add("onError");
-                        Assertions.assertEquals("I/O exception",
+                        assertEquals("I/O exception",
                                 reason.getMessage());
                     }
                 });
 
         try {
             handler.handleDownloadRequest(event);
-            Assertions.fail("Expected an IOException to be thrown");
+            fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assertions.assertEquals(List.of("onStart", "onError"), invocations);
+        assertEquals(List.of("onStart", "onError"), invocations);
         Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 

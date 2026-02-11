@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -46,8 +45,10 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -94,7 +95,7 @@ class DAUUtilsTest {
             FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verifyNoInteractions();
 
-            Assertions.assertThrows(DauEnforcementException.class,
+            assertThrows(DauEnforcementException.class,
                     () -> FlowDauIntegration.applyEnforcement(request,
                             unused -> true));
             dauIntegration.verify(
@@ -127,7 +128,7 @@ class DAUUtilsTest {
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
 
-            Assertions.assertThrows(DauEnforcementException.class,
+            assertThrows(DauEnforcementException.class,
                     () -> FlowDauIntegration.applyEnforcement(request,
                             unused -> true));
 
@@ -252,10 +253,10 @@ class DAUUtilsTest {
     private void assertJsonErrorProperty(String expectedKey,
             String expectedValue, JsonNode json) {
         if (expectedValue != null) {
-            Assertions.assertEquals(expectedValue,
+            assertEquals(expectedValue,
                     json.get(expectedKey).asString(), expectedKey);
         } else {
-            Assertions.assertEquals(JsonNodeType.NULL,
+            assertEquals(JsonNodeType.NULL,
                     json.get(expectedKey).getNodeType(),
                     "expected key " + expectedKey + " to be null");
         }

@@ -18,7 +18,6 @@ package com.vaadin.flow.server.webcomponent;
 import java.util.Map;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -28,6 +27,8 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebComponentGeneratorTest {
 
@@ -51,35 +52,35 @@ class WebComponentGeneratorTest {
                                 .create(exporter).getPropertyDataSet(),
                         "/foo", generateUi, null);
 
-        Assertions.assertTrue(replacementsMap.containsKey("TagDash"),
+        assertTrue(replacementsMap.containsKey("TagDash"),
                 "Missing dashed tag name");
-        Assertions.assertTrue(replacementsMap.containsKey("TagCamel"),
+        assertTrue(replacementsMap.containsKey("TagCamel"),
                 "Missing camel cased tag name");
-        Assertions.assertTrue(replacementsMap.containsKey("AttributeChange"),
+        assertTrue(replacementsMap.containsKey("AttributeChange"),
                 "Missing 'AttributeChange'");
-        Assertions.assertTrue(replacementsMap.containsKey("PropertyDefaults"),
+        assertTrue(replacementsMap.containsKey("PropertyDefaults"),
                 "Missing 'PropertyDefaults'");
-        Assertions.assertTrue(replacementsMap.containsKey("PropertyMethods"),
+        assertTrue(replacementsMap.containsKey("PropertyMethods"),
                 "Missing 'PropertyMethods'");
-        Assertions.assertTrue(replacementsMap.containsKey("PropertyValues"),
+        assertTrue(replacementsMap.containsKey("PropertyValues"),
                 "Missing 'PropertyValues'");
-        Assertions.assertTrue(replacementsMap.containsKey("frontend_resources"),
+        assertTrue(replacementsMap.containsKey("frontend_resources"),
                 "Missing frontend resources path");
-        Assertions.assertTrue(replacementsMap.containsKey("ui_import"),
+        assertTrue(replacementsMap.containsKey("ui_import"),
                 "Missing ui import");
 
-        Assertions.assertEquals("my-component", replacementsMap.get("TagDash"));
-        Assertions.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
+        assertEquals("my-component", replacementsMap.get("TagDash"));
+        assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
-        Assertions.assertEquals("/foo",
+        assertEquals("/foo",
                 replacementsMap.get("frontend_resources"));
 
         if (generateUi) {
-            Assertions.assertEquals(
+            assertEquals(
                     "<link rel='import' href='web-component-ui.html'>",
                     replacementsMap.get("ui_import"));
         } else {
-            Assertions.assertEquals("", replacementsMap.get("ui_import"));
+            assertEquals("", replacementsMap.get("ui_import"));
         }
 
         String attributeChange = replacementsMap.get("AttributeChange");

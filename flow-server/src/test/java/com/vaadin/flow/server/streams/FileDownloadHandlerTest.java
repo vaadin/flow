@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -40,6 +39,12 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class FileDownloadHandlerTest {
 
@@ -93,9 +98,9 @@ class FileDownloadHandlerTest {
                 new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        Assertions.assertEquals(165000,
+                        assertEquals(165000,
                                 context.contentLength());
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
 
@@ -103,18 +108,18 @@ class FileDownloadHandlerTest {
                     public void onProgress(TransferContext context,
                             long transferredBytes, long totalBytes) {
                         transferredBytesRecords.add(transferredBytes);
-                        Assertions.assertEquals(165000, totalBytes);
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals(165000, totalBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onProgress");
                     }
 
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        Assertions.assertEquals(165000,
+                        assertEquals(165000,
                                 context.contentLength());
-                        Assertions.assertEquals(165000, transferredBytes);
-                        Assertions.assertEquals("download", context.fileName());
+                        assertEquals(165000, transferredBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onComplete");
                     }
 
@@ -128,15 +133,15 @@ class FileDownloadHandlerTest {
         handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
-        Assertions.assertEquals(
+        assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        Assertions.assertArrayEquals(new long[] { 65536, 131072 },
+        assertArrayEquals(new long[] { 65536, 131072 },
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
         Mockito.verify(response).setContentLengthLong(165000);
-        Assertions.assertNull(downloadEvent.getException());
+        assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -171,22 +176,22 @@ class FileDownloadHandlerTest {
                         if (FrontendUtils.isWindows()) {
                             expectedMessage = "non-existing-file (The system cannot find the file specified)";
                         }
-                        Assertions.assertEquals(expectedMessage,
+                        assertEquals(expectedMessage,
                                 reason.getMessage());
-                        Assertions.assertNotNull(context.exception());
-                        Assertions.assertEquals(FileNotFoundException.class,
+                        assertNotNull(context.exception());
+                        assertEquals(FileNotFoundException.class,
                                 context.exception().getClass());
                     }
                 });
 
         try {
             handler.handleDownloadRequest(downloadEvent);
-            Assertions.fail("Expected an IOException to be thrown");
+            fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assertions.assertEquals(List.of("onError"), invocations);
-        Assertions.assertNotNull(downloadEvent.getException());
-        Assertions.assertEquals(FileNotFoundException.class,
+        assertEquals(List.of("onError"), invocations);
+        assertNotNull(downloadEvent.getException());
+        assertEquals(FileNotFoundException.class,
                 downloadEvent.getException().getClass());
         Mockito.verify(response).setStatus(500);
     }

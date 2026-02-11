@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
@@ -24,6 +23,11 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.JacksonUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebComponentBindingTest {
 
@@ -46,49 +50,49 @@ class WebComponentBindingTest {
 
     @Test
     public void getComponent() {
-        Assertions.assertEquals(component, binding.getComponent());
+        assertEquals(component, binding.getComponent());
     }
 
     @Test
     public void getPropertyType() {
-        Assertions.assertEquals(Integer.class, binding.getPropertyType("int"));
-        Assertions.assertEquals(ObjectNode.class,
+        assertEquals(Integer.class, binding.getPropertyType("int"));
+        assertEquals(ObjectNode.class,
                 binding.getPropertyType("json"));
 
-        Assertions.assertNull(binding.getPropertyType("not-a-property"));
+        assertNull(binding.getPropertyType("not-a-property"));
     }
 
     @Test
     public void hasProperty() {
-        Assertions.assertTrue(binding.hasProperty("int"));
-        Assertions.assertTrue(binding.hasProperty("json"));
+        assertTrue(binding.hasProperty("int"));
+        assertTrue(binding.hasProperty("json"));
 
-        Assertions.assertFalse(binding.hasProperty("not-a-property"));
+        assertFalse(binding.hasProperty("not-a-property"));
     }
 
     @Test
     public void updateValue() {
         binding.updateProperty("int", 5);
-        Assertions.assertEquals(5, component.integer);
+        assertEquals(5, component.integer);
 
         ObjectNode obj = JacksonUtils.createObjectNode();
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
-        Assertions.assertEquals("{\"String\":\"Value\"}",
+        assertEquals("{\"String\":\"Value\"}",
                 component.jsonValue.toString());
     }
 
     @Test
     public void updateValueJackson() {
         binding.updateProperty("int", 5);
-        Assertions.assertEquals(5, component.integer);
+        assertEquals(5, component.integer);
 
         ObjectNode obj = JacksonUtils.createObjectNode();
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
-        Assertions.assertEquals("{\"String\":\"Value\"}",
+        assertEquals("{\"String\":\"Value\"}",
                 component.jsonValue.toString());
     }
 

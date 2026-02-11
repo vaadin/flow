@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,7 +32,9 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebComponentModulesWriterTest {
 
@@ -54,8 +55,8 @@ class WebComponentModulesWriterTest {
                         Collections.singleton(MyExporter.class),
                         outputDirectory, null);
 
-        Assertions.assertEquals(1, files.size(), "One file was created");
-        Assertions.assertEquals("real-tag.js",
+        assertEquals(1, files.size(), "One file was created");
+        assertEquals("real-tag.js",
                 files.stream().findFirst().get().getName(),
                 "File is js module with correct name");
     }
@@ -68,8 +69,8 @@ class WebComponentModulesWriterTest {
                         Collections.singleton(ExporterFactory.class),
                         outputDirectory, null);
 
-        Assertions.assertEquals(1, files.size(), "One file was created");
-        Assertions.assertEquals("foo-bar.js",
+        assertEquals(1, files.size(), "One file was created");
+        assertEquals("foo-bar.js",
                 files.stream().findFirst().get().getName(),
                 "File is js module with correct name");
     }
@@ -81,7 +82,7 @@ class WebComponentModulesWriterTest {
                         WebComponentModulesWriter.class, new HashSet<>(),
                         outputDirectory, null);
 
-        Assertions.assertEquals(0, files.size(), "No files were created");
+        assertEquals(0, files.size(), "No files were created");
     }
 
     @Test
@@ -91,7 +92,7 @@ class WebComponentModulesWriterTest {
                     .generateWebComponentsToDirectory(MyComponent.class,
                             new HashSet<>(), outputDirectory, null);
         });
-        Assertions.assertTrue(ex.getMessage()
+        assertTrue(ex.getMessage()
                 .contains("but it is '" + MyComponent.class.getName() + "'"));
     }
 

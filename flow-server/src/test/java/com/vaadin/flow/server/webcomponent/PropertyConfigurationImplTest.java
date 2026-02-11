@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PropertyConfigurationImplTest {
 
@@ -42,7 +43,7 @@ class PropertyConfigurationImplTest {
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assertions.assertEquals(5, myComponent.value,
+        assertEquals(5, myComponent.value,
                 "onChangeHandler should have been set and value " + "updated");
     }
 
@@ -61,10 +62,10 @@ class PropertyConfigurationImplTest {
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
 
         // verify default value for completeness
-        Assertions.assertEquals(1, (int) data.getDefaultValue(),
+        assertEquals(1, (int) data.getDefaultValue(),
                 "default value is 1");
 
-        Assertions.assertTrue(data.isReadOnly(),
+        assertTrue(data.isReadOnly(),
                 "read-only flag should have been set to true");
     }
 

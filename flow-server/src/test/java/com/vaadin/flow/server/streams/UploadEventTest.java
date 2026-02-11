@@ -18,7 +18,6 @@ package com.vaadin.flow.server.streams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,6 +26,13 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for {@link UploadEvent} rejection functionality.
@@ -54,9 +60,9 @@ class UploadEventTest {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
-        Assertions.assertFalse(event.isRejected(),
+        assertFalse(event.isRejected(),
                 "Event should not be rejected initially");
-        Assertions.assertNull(event.getRejectionMessage(),
+        assertNull(event.getRejectionMessage(),
                 "Rejection message should be null initially");
     }
 
@@ -67,9 +73,9 @@ class UploadEventTest {
 
         event.reject();
 
-        Assertions.assertTrue(event.isRejected(),
+        assertTrue(event.isRejected(),
                 "Event should be marked as rejected");
-        Assertions.assertEquals("File rejected", event.getRejectionMessage(),
+        assertEquals("File rejected", event.getRejectionMessage(),
                 "Default rejection message should be set");
     }
 
@@ -81,9 +87,9 @@ class UploadEventTest {
         String customMessage = "Only PNG files are accepted";
         event.reject(customMessage);
 
-        Assertions.assertTrue(event.isRejected(),
+        assertTrue(event.isRejected(),
                 "Event should be marked as rejected");
-        Assertions.assertEquals(customMessage, event.getRejectionMessage(),
+        assertEquals(customMessage, event.getRejectionMessage(),
                 "Custom rejection message should be set");
     }
 
@@ -96,12 +102,12 @@ class UploadEventTest {
 
         try {
             event.getInputStream();
-            Assertions.fail(
+            fail(
                     "Expected IllegalStateException when accessing rejected upload stream");
         } catch (IllegalStateException e) {
-            Assertions.assertTrue(e.getMessage().contains("rejected"),
+            assertTrue(e.getMessage().contains("rejected"),
                     "Exception should mention rejection");
-            Assertions.assertTrue(e.getMessage().contains("Not allowed"),
+            assertTrue(e.getMessage().contains("Not allowed"),
                     "Exception should include rejection reason");
         }
     }
@@ -111,7 +117,7 @@ class UploadEventTest {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
 
-        Assertions.assertNotNull(event.getInputStream(),
+        assertNotNull(event.getInputStream(),
                 "Should be able to get input stream");
     }
 }
