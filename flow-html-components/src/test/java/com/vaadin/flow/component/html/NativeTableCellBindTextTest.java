@@ -55,19 +55,12 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_stopsUpdates() {
+    public void bindText_nullSignal_throwsNPE() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        cell.bindText(signal);
-        assertEquals("a", cell.getText());
-
-        cell.bindText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", cell.getText());
+        assertThrows(NullPointerException.class,
+                () -> cell.bindText(null));
     }
 
     @Test

@@ -166,8 +166,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * detached state.
      *
      * @param minSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setMin(double)
@@ -176,8 +175,8 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @since 25.1
      */
     public void bindMin(SharedNumberSignal minSignal) {
-        getElement().bindAttribute("min",
-                minSignal == null ? null : minSignal.map(Object::toString));
+        java.util.Objects.requireNonNull(minSignal, "Signal cannot be null");
+        getElement().bindAttribute("min", minSignal.map(Object::toString));
     }
 
     /**
@@ -217,8 +216,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * detached state.
      *
      * @param maxSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setMax(double)
@@ -227,8 +225,8 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @since 25.1
      */
     public void bindMax(SharedNumberSignal maxSignal) {
-        getElement().bindAttribute("max",
-                maxSignal == null ? null : maxSignal.map(Object::toString));
+        java.util.Objects.requireNonNull(maxSignal, "Signal cannot be null");
+        getElement().bindAttribute("max", maxSignal.map(Object::toString));
     }
 
     /**

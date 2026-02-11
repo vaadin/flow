@@ -59,19 +59,12 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_unbindWithNull_stopsUpdates() {
+    public void bindLegendText_nullSignal_throwsNPE() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        fieldSet.bindLegendText(signal);
-        assertEquals("a", fieldSet.getLegend().getText());
-
-        fieldSet.bindLegendText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", fieldSet.getLegend().getText());
+        assertThrows(NullPointerException.class,
+                () -> fieldSet.bindLegendText(null));
     }
 
     @Test

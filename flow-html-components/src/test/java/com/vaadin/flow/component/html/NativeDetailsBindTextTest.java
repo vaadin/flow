@@ -55,19 +55,12 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindSummaryText_unbindWithNull_stopsUpdates() {
+    public void bindSummaryText_nullSignal_throwsNPE() {
         NativeDetails details = new NativeDetails();
         UI.getCurrent().add(details);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        details.bindSummaryText(signal);
-        assertEquals("a", details.getSummaryText());
-
-        details.bindSummaryText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", details.getSummaryText());
+        assertThrows(NullPointerException.class,
+                () -> details.bindSummaryText(null));
     }
 
     @Test
