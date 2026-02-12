@@ -131,6 +131,28 @@ public class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
+    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.getClassList().bind("badge", signal);
+        Assert.assertTrue(element.getClassList().contains("badge"));
+
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.CLASSES + "badge");
+
+        // Signal changes should no longer affect the class list
+        signal.value(false);
+        Assert.assertTrue(element.getClassList().contains("badge"));
+
+        // Manual set should work without throwing
+        element.getClassList().remove("badge");
+        Assert.assertFalse(element.getClassList().contains("badge"));
+    }
+
+    @Test
     public void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);

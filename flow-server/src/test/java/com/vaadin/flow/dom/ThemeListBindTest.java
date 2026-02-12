@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -146,6 +147,28 @@ public class ThemeListBindTest extends SignalsUnitTest {
         bound.value(false);
         bound.value(true);
         Assert.assertFalse(component.hasThemeName("flag"));
+    }
+
+    @Test
+    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        component.bindThemeName("badge", signal);
+        Assert.assertTrue(component.hasThemeName("badge"));
+
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = component.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.THEMES + "badge");
+
+        // Signal changes should no longer affect the theme list
+        signal.value(false);
+        Assert.assertTrue(component.hasThemeName("badge"));
+
+        // Manual set should work without throwing
+        component.removeThemeName("badge");
+        Assert.assertFalse(component.hasThemeName("badge"));
     }
 
     @Test

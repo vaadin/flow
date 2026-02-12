@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -230,6 +231,38 @@ public class HasComponentsTest {
         assertEquals(1, container.getChildren().count());
         assertEquals("second",
                 container.getChildren().toList().get(0).getId().orElse(null));
+    }
+
+    @Test
+    public void bindChildren_removeBindingViaFeature_stopsUpdatesAndAllowsManualAddRemove() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.value()));
+
+        assertEquals(1, container.getChildren().count());
+
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.CHILDREN);
+
+        // Signal changes should no longer affect children
+        items.insertLast("second");
+        assertEquals(1, container.getChildren().count());
+
+        // Manual add and remove should work without throwing
+        TestComponent newChild = new TestComponent("manual");
+        container.add(newChild);
+        assertEquals(2, container.getChildren().count());
+
+        Component firstChild = container.getChildren().toList().get(0);
+        container.remove(firstChild);
+        assertEquals(1, container.getChildren().count());
     }
 
     @Test

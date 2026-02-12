@@ -133,6 +133,28 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
+    public void bindEnabled_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
+        Element element = new Element("foo");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.bindEnabled(signal);
+        assertTrue(element.isEnabled());
+
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.ENABLED);
+
+        // Signal changes should no longer affect the element
+        signal.value(false);
+        assertTrue(element.isEnabled());
+
+        // Manual set should work without throwing
+        element.setEnabled(false);
+        assertFalse(element.isEnabled());
+    }
+
+    @Test
     public void bindEnabled_lazyInitSignalBindingFeature() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
