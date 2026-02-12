@@ -52,11 +52,11 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -912,7 +912,7 @@ class BuildFrontendMojoTest {
         return commercialComponent;
     }
 
-    private void runWithoutLicenseKeys(ThrowingRunnable test) throws Throwable {
+    private void runWithoutLicenseKeys(Executable test) throws Throwable {
         String userHome = System.getProperty("user.home");
         File userHomeFolder = new File(userHome);
         Path vaadinHomeNodeFolder = userHomeFolder.toPath()
@@ -930,7 +930,7 @@ class BuildFrontendMojoTest {
         try {
             System.setProperty("user.home",
                     fakeUserHomeFolder.getAbsolutePath());
-            test.run();
+            test.execute();
         } finally {
             System.setProperty("user.home", userHome);
         }
