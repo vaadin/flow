@@ -2,10 +2,11 @@
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(java|js|ts|css)$|pom\.xml$' || true)
 
 if [ -n "$STAGED_FILES" ]; then
-    echo "Formatting with Spotless..."
-
-    UPSTREAM_REF="$(git rev-parse --abbrev-ref --symbolic-full-name @{u})"
+    # Skip formatting during rebase (detached HEAD, no upstream)
+    UPSTREAM_REF="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)" || exit 0
     BASE_SHA="$(git merge-base HEAD "$UPSTREAM_REF")"
+
+    echo "Formatting with Spotless..."
     if ! mvn spotless:apply -q -Dspotless.ratchetFrom="$BASE_SHA"; then
         echo "Spotless formatting failed."
         exit 1
