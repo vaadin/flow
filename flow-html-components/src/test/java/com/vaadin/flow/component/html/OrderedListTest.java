@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.html.OrderedList.NumberingType;
 
-public class OrderedListTest extends ComponentTest {
+class OrderedListTest extends ComponentTest {
 
     // Actual test methods in super class
 

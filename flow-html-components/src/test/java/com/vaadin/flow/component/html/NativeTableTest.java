@@ -19,14 +19,17 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NativeTableTest extends ComponentTest {
+class NativeTableTest extends ComponentTest {
     // Actual test methods in super class
 
+    @BeforeEach
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
@@ -188,10 +191,12 @@ public class NativeTableTest extends ComponentTest {
                 secondCallBody);
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void getNonExistentBodyByIndex() {
-        var component = (NativeTable) getComponent();
-        component.getBody(1);
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            var component = (NativeTable) getComponent();
+            component.getBody(1);
+        });
     }
 
     @Test

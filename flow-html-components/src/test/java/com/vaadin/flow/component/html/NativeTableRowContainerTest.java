@@ -15,20 +15,20 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NativeTableRowContainerTest {
+class NativeTableRowContainerTest {
 
     private RowContainer container;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         container = new RowContainer();
     }

@@ -15,25 +15,25 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class AnchorTargetValueTest {
+class AnchorTargetValueTest {
 
     @Test
     public void fromString_notEnum_objectHasValueAndEquals() {
         AnchorTargetValue value = AnchorTargetValue.forString("foo");
-        Assert.assertEquals("foo", value.getValue());
+        Assertions.assertEquals("foo", value.getValue());
 
         AnchorTargetValue value1 = AnchorTargetValue.forString("foo");
-        Assert.assertEquals(value, value1);
-        Assert.assertEquals(value.hashCode(), value1.hashCode());
+        Assertions.assertEquals(value, value1);
+        Assertions.assertEquals(value.hashCode(), value1.hashCode());
     }
 
     @Test
     public void fromString_enumValue_resultIsEnum() {
         AnchorTargetValue value = AnchorTargetValue
                 .forString(AnchorTarget.TOP.getValue());
-        Assert.assertEquals(AnchorTarget.TOP, value);
+        Assertions.assertEquals(AnchorTarget.TOP, value);
     }
 }

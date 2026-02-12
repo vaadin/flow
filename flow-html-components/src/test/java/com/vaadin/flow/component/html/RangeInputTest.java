@@ -18,13 +18,15 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RangeInputTest extends ComponentTest {
+class RangeInputTest extends ComponentTest {
 
     // Actual test methods in super class
 
+    @BeforeEach
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
@@ -58,24 +60,25 @@ public class RangeInputTest extends ComponentTest {
     @Test
     public void settingOrientationUpdatesStylesProperly() {
         final RangeInput rangeInput = new RangeInput();
-        Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
-        Assert.assertNull(rangeInput.getStyle().get("appearance"));
-        Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
+        Assertions.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
+        Assertions.assertNull(rangeInput.getStyle().get("appearance"));
+        Assertions.assertNull(rangeInput.getStyle().get("writing-mode"));
+        Assertions.assertEquals(RangeInput.Orientation.HORIZONTAL,
                 rangeInput.getOrientation());
         rangeInput.setOrientation(RangeInput.Orientation.VERTICAL);
-        Assert.assertEquals("slider-vertical",
+        Assertions.assertEquals("slider-vertical",
                 rangeInput.getStyle().get("-webkit-appearance"));
-        Assert.assertEquals("slider-vertical",
+        Assertions.assertEquals("slider-vertical",
                 rangeInput.getStyle().get("appearance"));
-        Assert.assertEquals("bt-lr", rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.VERTICAL,
+        Assertions.assertEquals("bt-lr",
+                rangeInput.getStyle().get("writing-mode"));
+        Assertions.assertEquals(RangeInput.Orientation.VERTICAL,
                 rangeInput.getOrientation());
         rangeInput.setOrientation(RangeInput.Orientation.HORIZONTAL);
-        Assert.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
-        Assert.assertNull(rangeInput.getStyle().get("appearance"));
-        Assert.assertNull(rangeInput.getStyle().get("writing-mode"));
-        Assert.assertEquals(RangeInput.Orientation.HORIZONTAL,
+        Assertions.assertNull(rangeInput.getStyle().get("-webkit-appearance"));
+        Assertions.assertNull(rangeInput.getStyle().get("appearance"));
+        Assertions.assertNull(rangeInput.getStyle().get("writing-mode"));
+        Assertions.assertEquals(RangeInput.Orientation.HORIZONTAL,
                 rangeInput.getOrientation());
     }
 }

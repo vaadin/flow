@@ -18,9 +18,9 @@ package com.vaadin.flow.component.html;
 import java.net.URI;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -34,9 +34,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
-public class HtmlObjectTest extends ComponentTest {
+class HtmlObjectTest extends ComponentTest {
 
-    @After
+    @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
     }
@@ -64,7 +64,7 @@ public class HtmlObjectTest extends ComponentTest {
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
+        Assertions.assertEquals(uri.toASCIIString(),
                 object.getElement().getAttribute("data"));
     }
 
@@ -79,7 +79,7 @@ public class HtmlObjectTest extends ComponentTest {
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
+        Assertions.assertEquals(uri.toASCIIString(),
                 object.getElement().getAttribute("data"));
     }
 
@@ -90,9 +90,10 @@ public class HtmlObjectTest extends ComponentTest {
         HtmlObject object = new HtmlObject();
         object.setData(event -> event.getWriter().write("foo"));
 
-        Assert.assertTrue("Data should be set as dynamic resource.",
+        Assertions.assertTrue(
                 object.getElement().getAttribute("data")
-                        .startsWith("VAADIN/dynamic/resource/-1/"));
+                        .startsWith("VAADIN/dynamic/resource/-1/"),
+                "Data should be set as dynamic resource.");
     }
 
     @Test
@@ -103,9 +104,10 @@ public class HtmlObjectTest extends ComponentTest {
         HtmlObject object = new HtmlObject(
                 event -> event.getWriter().write("foo"), "foo");
 
-        Assert.assertTrue("Data should be set as dynamic resource.",
+        Assertions.assertTrue(
                 object.getElement().getAttribute("data")
-                        .startsWith("VAADIN/dynamic/resource/-1/"));
+                        .startsWith("VAADIN/dynamic/resource/-1/"),
+                "Data should be set as dynamic resource.");
     }
 
     @Test
@@ -141,21 +143,21 @@ public class HtmlObjectTest extends ComponentTest {
             }
         }
         InputStreamDownloadHandler handler = createDummyDownloadHandler();
-        Assert.assertFalse(handler.isInline());
+        Assertions.assertFalse(handler.isInline());
         new TestHtmlObject(handler);
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type");
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type", new Param("param", "paramValue"));
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, new Param("param", "paramValue"));
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
     }
 
     private InputStreamDownloadHandler createDummyDownloadHandler() {

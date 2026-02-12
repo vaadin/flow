@@ -18,12 +18,14 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class InputTest extends ComponentTest {
+class InputTest extends ComponentTest {
 
     // Actual test methods in super class
 
+    @BeforeEach
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,

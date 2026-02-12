@@ -17,7 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Assert utility class.
@@ -56,15 +56,15 @@ class AssertUtils {
             return;
 
         } else if (expected == null || actual == null) {
-            Assert.assertEquals(message, expected, actual);
+            Assertions.assertEquals(expected, actual, message);
         }
 
         if (expected.getClass().isArray() && actual.getClass().isArray()) {
-            Assert.assertArrayEquals(message, (Object[]) expected,
-                    (Object[]) actual);
+            Assertions.assertArrayEquals((Object[]) expected, (Object[]) actual,
+                    message);
 
         } else {
-            Assert.assertEquals(message, expected, actual);
+            Assertions.assertEquals(expected, actual, message);
         }
     }
 

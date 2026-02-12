@@ -19,9 +19,10 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -29,16 +30,17 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 
-public class AnchorTest extends ComponentTest {
+class AnchorTest extends ComponentTest {
 
     private UI ui;
 
-    @After
+    @AfterEach
     public void tearDown() {
         ui = null;
         UI.setCurrent(null);
     }
 
+    @BeforeEach
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
@@ -51,36 +53,36 @@ public class AnchorTest extends ComponentTest {
     public void removeHref() {
         Anchor anchor = new Anchor();
         anchor.setHref("foo");
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
 
         anchor.removeHref();
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assertions.assertFalse(anchor.getElement().hasAttribute("href"));
     }
 
     @Test
     public void createWithComponent() {
         Anchor anchor = new Anchor("#", new Text("Home"));
-        Assert.assertEquals(anchor.getElement().getAttribute("href"), "#");
-        Assert.assertEquals(anchor.getHref(), "#");
-        Assert.assertEquals(anchor.getElement().getText(), "Home");
-        Assert.assertEquals(anchor.getText(), "Home");
+        Assertions.assertEquals(anchor.getElement().getAttribute("href"), "#");
+        Assertions.assertEquals(anchor.getHref(), "#");
+        Assertions.assertEquals(anchor.getElement().getText(), "Home");
+        Assertions.assertEquals(anchor.getText(), "Home");
     }
 
     @Test
     public void createWithTarget() {
         Anchor anchor = new Anchor("#", "Home");
-        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.DEFAULT);
-        Assert.assertEquals(anchor.getTarget(), Optional.empty());
+        Assertions.assertEquals(anchor.getTargetValue(), AnchorTarget.DEFAULT);
+        Assertions.assertEquals(anchor.getTarget(), Optional.empty());
 
         anchor.setTarget(AnchorTarget.BLANK);
 
-        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
-        Assert.assertEquals(anchor.getTarget(),
+        Assertions.assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
+        Assertions.assertEquals(anchor.getTarget(),
                 Optional.of(AnchorTarget.BLANK.getValue()));
 
-        Assert.assertEquals(anchor.getTargetValue(),
+        Assertions.assertEquals(anchor.getTargetValue(),
                 new Anchor("#", "Home", AnchorTarget.BLANK).getTargetValue());
-        Assert.assertEquals(anchor.getTarget(),
+        Assertions.assertEquals(anchor.getTarget(),
                 new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
     }
 
@@ -90,9 +92,9 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.removeHref();
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
-                anchor.getElement().getAttribute("router-ignore"));
+        Assertions.assertEquals("",
+                anchor.getElement().getAttribute("router-ignore"),
+                "Anchor element should have router-ignore " + "attribute");
     }
 
     @Test
@@ -101,9 +103,9 @@ public class AnchorTest extends ComponentTest {
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.setHref("/logout");
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
-                anchor.getElement().getAttribute("router-ignore"));
+        Assertions.assertEquals("",
+                anchor.getElement().getAttribute("router-ignore"),
+                "Anchor element should have router-ignore " + "attribute");
     }
 
     @Test
@@ -111,9 +113,9 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.PARENT);
 
-        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
+        Assertions.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
                 anchor.getTarget());
-        Assert.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
+        Assertions.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
     }
 
     @Test
@@ -121,8 +123,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTargetValue.forString("foo"));
 
-        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
-        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+        Assertions.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assertions.assertEquals("foo", anchor.getTargetValue().getValue());
     }
 
     @Test
@@ -130,9 +132,9 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.SELF.getValue());
 
-        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
+        Assertions.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
                 anchor.getTarget());
-        Assert.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
+        Assertions.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
     }
 
     @Test
@@ -140,8 +142,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setTarget("foo");
 
-        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
-        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+        Assertions.assertEquals(Optional.of("foo"), anchor.getTarget());
+        Assertions.assertEquals("foo", anchor.getTargetValue().getValue());
     }
 
     // Other test methods in super class
@@ -166,7 +168,7 @@ public class AnchorTest extends ComponentTest {
         anchor.setEnabled(false);
 
         anchor.setEnabled(true);
-        Assert.assertTrue(anchor.isEnabled());
+        Assertions.assertTrue(anchor.isEnabled());
 
         anchor.setHref("foo");
         anchor.setEnabled(false);
@@ -179,13 +181,13 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor();
         anchor.setHref("foo");
         anchor.setEnabled(false);
-        Assert.assertEquals("foo", anchor.getHref());
+        Assertions.assertEquals("foo", anchor.getHref());
         anchor.setHref("bar");
-        Assert.assertEquals("bar", anchor.getHref());
+        Assertions.assertEquals("bar", anchor.getHref());
         anchor.removeHref();
-        Assert.assertEquals("", anchor.getHref());
+        Assertions.assertEquals("", anchor.getHref());
         anchor.setEnabled(true);
-        Assert.assertEquals("", anchor.getHref());
+        Assertions.assertEquals("", anchor.getHref());
     }
 
     @Test
@@ -193,11 +195,11 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor("foo", "bar");
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assertions.assertFalse(anchor.getElement().hasAttribute("href"));
 
         anchor.setEnabled(true);
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals("foo", anchor.getHref());
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertEquals("foo", anchor.getHref());
     }
 
     @Test
@@ -209,8 +211,8 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals("baz", anchor.getHref());
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertEquals("baz", anchor.getHref());
     }
 
     @Test
@@ -228,7 +230,7 @@ public class AnchorTest extends ComponentTest {
         });
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
     }
 
     @Test
@@ -246,11 +248,11 @@ public class AnchorTest extends ComponentTest {
         String href = anchor.getHref();
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals(href, anchor.getHref());
+        Assertions.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assertions.assertEquals(href, anchor.getHref());
 
         anchor.setEnabled(true);
-        Assert.assertEquals(href, anchor.getHref());
+        Assertions.assertEquals(href, anchor.getHref());
     }
 
     @Test
@@ -278,8 +280,8 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertNotEquals(href, anchor.getHref());
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertNotEquals(href, anchor.getHref());
     }
 
     @Test
@@ -291,11 +293,11 @@ public class AnchorTest extends ComponentTest {
         String href = anchor.getHref();
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals(href, anchor.getHref());
+        Assertions.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assertions.assertEquals(href, anchor.getHref());
 
         anchor.setEnabled(true);
-        Assert.assertEquals(href, anchor.getHref());
+        Assertions.assertEquals(href, anchor.getHref());
     }
 
     @Test
@@ -317,8 +319,8 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertNotEquals(href, anchor.getHref());
+        Assertions.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assertions.assertNotEquals(href, anchor.getHref());
     }
 
     @Test
@@ -328,9 +330,8 @@ public class AnchorTest extends ComponentTest {
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
     }
 
     @Test
@@ -340,17 +341,15 @@ public class AnchorTest extends ComponentTest {
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
 
         downloadHandler.inline();
 
         anchor.setHref(downloadHandler);
 
-        Assert.assertFalse(
-                "Setting inline download handler should clear download attribute",
-                anchor.isDownload());
+        Assertions.assertFalse(anchor.isDownload(),
+                "Setting inline download handler should clear download attribute");
     }
 
     @Test
@@ -359,15 +358,13 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor("/home", "bar");
         anchor.getElement().setAttribute("download", true);
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
 
         anchor.setHref(event -> event.getWriter().write("foo"));
 
-        Assert.assertTrue(
-                "Setting custom download handler should not clear download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Setting custom download handler should not clear download attribute");
     }
 
     @Test
@@ -377,9 +374,8 @@ public class AnchorTest extends ComponentTest {
                 .forServletResource("null/path").inline();
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertFalse(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        Assertions.assertFalse(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
@@ -390,9 +386,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.DOWNLOAD,
                 "bar");
 
-        Assert.assertTrue(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
@@ -403,9 +398,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.INLINE,
                 "bar");
 
-        Assert.assertFalse(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        Assertions.assertFalse(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
@@ -416,9 +410,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor(event -> {
         }, "bar");
 
-        Assert.assertTrue(
-                "Custom download handlers should by default add download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Custom download handlers should by default add download attribute");
     }
 
     @Test
@@ -429,9 +422,8 @@ public class AnchorTest extends ComponentTest {
         Anchor anchor = new Anchor(event -> {
         }, null, "bar");
 
-        Assert.assertTrue(
-                "Custom download handlers should by default add download attribute",
-                anchor.isDownload());
+        Assertions.assertTrue(anchor.isDownload(),
+                "Custom download handlers should by default add download attribute");
     }
 
     private void mockUI() {

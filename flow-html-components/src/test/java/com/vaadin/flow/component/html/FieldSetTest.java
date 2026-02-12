@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class FieldSetTest extends ComponentTest {
+class FieldSetTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
@@ -30,31 +30,34 @@ public class FieldSetTest extends ComponentTest {
     @Test
     public void testConstructorParams() {
         FieldSet fieldset = new FieldSet("sample-legend");
-        Assert.assertEquals("sample-legend", fieldset.getLegend().getText());
-        Assert.assertEquals(0, fieldset.getContent().count());
+        Assertions.assertEquals("sample-legend",
+                fieldset.getLegend().getText());
+        Assertions.assertEquals(0, fieldset.getContent().count());
 
         fieldset = new FieldSet(new Paragraph("sample-content"));
-        Assert.assertNull(fieldset.getLegend());
-        Assert.assertEquals("sample-content",
+        Assertions.assertNull(fieldset.getLegend());
+        Assertions.assertEquals("sample-content",
                 ((Paragraph) fieldset.getContent().findFirst().get())
                         .getText());
 
         Paragraph content = new Paragraph("content");
         fieldset = new FieldSet("sample-legend", content);
-        Assert.assertEquals("sample-legend", fieldset.getLegend().getText());
-        Assert.assertEquals(content, fieldset.getContent().findFirst().get());
+        Assertions.assertEquals("sample-legend",
+                fieldset.getLegend().getText());
+        Assertions.assertEquals(content,
+                fieldset.getContent().findFirst().get());
     }
 
     @Test
     public void testSetLegendReplacesLegendText() {
         FieldSet fieldset = new FieldSet("legend1", new Paragraph("content"));
-        Assert.assertEquals("legend1", fieldset.getLegend().getText());
+        Assertions.assertEquals("legend1", fieldset.getLegend().getText());
 
         fieldset.setLegendText("legend2");
-        Assert.assertEquals("legend2", fieldset.getLegend().getText());
+        Assertions.assertEquals("legend2", fieldset.getLegend().getText());
 
         fieldset.setLegendText(null);
-        Assert.assertNull(fieldset.getLegend());
+        Assertions.assertNull(fieldset.getLegend());
     }
 
     @Test
@@ -62,20 +65,22 @@ public class FieldSetTest extends ComponentTest {
         Paragraph content1 = new Paragraph("content1");
         Paragraph content2 = new Paragraph("content2");
         FieldSet fieldset = new FieldSet("text-legend", content1);
-        Assert.assertEquals(content1, fieldset.getContent().findFirst().get());
+        Assertions.assertEquals(content1,
+                fieldset.getContent().findFirst().get());
 
         fieldset.remove(content1);
         fieldset.add(content2);
-        Assert.assertEquals(content2, fieldset.getContent().findFirst().get());
+        Assertions.assertEquals(content2,
+                fieldset.getContent().findFirst().get());
 
-        Assert.assertNull(content1.getElement().getParent());
+        Assertions.assertNull(content1.getElement().getParent());
     }
 
     @Test
     public void testFieldSetLegendTextSetting() {
         String expectedText = "Test Legend";
         FieldSet fieldSet = new FieldSet(expectedText);
-        Assert.assertEquals("The legend text should be set correctly.",
-                expectedText, fieldSet.getLegend().getText());
+        Assertions.assertEquals(expectedText, fieldSet.getLegend().getText(),
+                "The legend text should be set correctly.");
     }
 }

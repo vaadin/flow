@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class NativeDetailsTest extends ComponentTest {
+class NativeDetailsTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -34,19 +34,19 @@ public class NativeDetailsTest extends ComponentTest {
     @Test
     public void testConstructorParams() {
         NativeDetails details = new NativeDetails("text-summary");
-        Assert.assertEquals("text-summary", details.getSummaryText());
-        Assert.assertNull(details.getContent());
+        Assertions.assertEquals("text-summary", details.getSummaryText());
+        Assertions.assertNull(details.getContent());
 
         details = new NativeDetails(new Paragraph("text-summary"));
-        Assert.assertEquals("", details.getSummaryText());
-        Assert.assertEquals("text-summary",
+        Assertions.assertEquals("", details.getSummaryText());
+        Assertions.assertEquals("text-summary",
                 details.getSummary().getElement().getTextRecursively());
-        Assert.assertNull(details.getContent());
+        Assertions.assertNull(details.getContent());
 
         Paragraph content = new Paragraph("content");
         details = new NativeDetails("text-summary", content);
-        Assert.assertEquals("text-summary", details.getSummaryText());
-        Assert.assertEquals(content, details.getContent());
+        Assertions.assertEquals("text-summary", details.getSummaryText());
+        Assertions.assertEquals(content, details.getContent());
     }
 
     @Test
@@ -54,14 +54,14 @@ public class NativeDetailsTest extends ComponentTest {
         Paragraph summmary2 = new Paragraph("summary2");
         NativeDetails details = new NativeDetails("summary1",
                 new Paragraph("content"));
-        Assert.assertEquals("summary1", details.getSummaryText());
+        Assertions.assertEquals("summary1", details.getSummaryText());
 
         details.setSummary(summmary2);
-        Assert.assertEquals("summary2",
+        Assertions.assertEquals("summary2",
                 details.getSummary().getElement().getTextRecursively());
 
         details.setSummaryText("summary3");
-        Assert.assertEquals("summary3", details.getSummaryText());
+        Assertions.assertEquals("summary3", details.getSummaryText());
     }
 
     @Test
@@ -69,13 +69,13 @@ public class NativeDetailsTest extends ComponentTest {
         Paragraph content1 = new Paragraph("content1");
         Paragraph content2 = new Paragraph("content2");
         NativeDetails details = new NativeDetails("text-summary", content1);
-        Assert.assertEquals(content1, details.getContent());
-        Assert.assertTrue(content1.getParent().isPresent());
-        Assert.assertFalse(content2.getParent().isPresent());
+        Assertions.assertEquals(content1, details.getContent());
+        Assertions.assertTrue(content1.getParent().isPresent());
+        Assertions.assertFalse(content2.getParent().isPresent());
 
         details.setContent(content2);
-        Assert.assertEquals(content2, details.getContent());
-        Assert.assertTrue(content2.getParent().isPresent());
-        Assert.assertFalse(content1.getParent().isPresent());
+        Assertions.assertEquals(content2, details.getContent());
+        Assertions.assertTrue(content2.getParent().isPresent());
+        Assertions.assertFalse(content1.getParent().isPresent());
     }
 }

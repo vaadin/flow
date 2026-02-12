@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ParagraphTest extends ComponentTest {
+class ParagraphTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override

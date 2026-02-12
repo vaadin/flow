@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class HrTest extends ComponentTest {
+class HrTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -30,7 +30,7 @@ public class HrTest extends ComponentTest {
     @Test
     public void ariaHiddenSetByDefault() {
         Hr hr = new Hr();
-        Assert.assertEquals("true",
+        Assertions.assertEquals("true",
                 hr.getElement().getAttribute("aria-hidden"));
     }
 }

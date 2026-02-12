@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class DivTest extends ComponentTest {
+class DivTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -47,6 +47,6 @@ public class DivTest extends ComponentTest {
 
     @Test
     public void testNonDefaultConstructor() {
-        Assert.assertEquals("text", new Div("text").getText());
+        Assertions.assertEquals("text", new Div("text").getText());
     }
 }

@@ -17,8 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -27,7 +27,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
-public class IFrameTest extends ComponentTest {
+class IFrameTest extends ComponentTest {
 
     // Actual test methods mostly in super class
 
@@ -84,8 +84,8 @@ public class IFrameTest extends ComponentTest {
         // dummy handler
         InputStreamDownloadHandler handler = DownloadHandler
                 .fromInputStream(event -> DownloadResponse.error(500));
-        Assert.assertFalse(handler.isInline());
+        Assertions.assertFalse(handler.isInline());
         new TestIFrame(handler);
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
     }
 }

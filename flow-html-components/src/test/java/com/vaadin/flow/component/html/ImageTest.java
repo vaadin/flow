@@ -19,8 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -34,7 +34,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
-public class ImageTest extends ComponentTest {
+class ImageTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -52,11 +52,11 @@ public class ImageTest extends ComponentTest {
     @Test
     public void emptyAltKeepsAttribute() {
         Image img = new Image("test.png", "");
-        Assert.assertEquals("", img.getAlt().get());
-        Assert.assertTrue(img.getElement().hasAttribute("alt"));
+        Assertions.assertEquals("", img.getAlt().get());
+        Assertions.assertTrue(img.getElement().hasAttribute("alt"));
         img.setAlt(null);
-        Assert.assertEquals(Optional.empty(), img.getAlt());
-        Assert.assertFalse(img.getElement().hasAttribute("alt"));
+        Assertions.assertEquals(Optional.empty(), img.getAlt());
+        Assertions.assertFalse(img.getElement().hasAttribute("alt"));
     }
 
     @Test
@@ -75,9 +75,9 @@ public class ImageTest extends ComponentTest {
         // dummy handler
         InputStreamDownloadHandler handler = DownloadHandler
                 .fromInputStream(event -> DownloadResponse.error(500));
-        Assert.assertFalse(handler.isInline());
+        Assertions.assertFalse(handler.isInline());
         new TestImage(handler, "test.png");
-        Assert.assertTrue(handler.isInline());
+        Assertions.assertTrue(handler.isInline());
     }
 
     /**
@@ -92,8 +92,8 @@ public class ImageTest extends ComponentTest {
                 handlerCaptor.capture());
 
         DownloadHandler handler = handlerCaptor.getValue();
-        Assert.assertTrue("Handler should be InputStreamDownloadHandler",
-                handler instanceof InputStreamDownloadHandler);
+        Assertions.assertTrue(handler instanceof InputStreamDownloadHandler,
+                "Handler should be InputStreamDownloadHandler");
 
         // Create mock event and response to capture content type
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
@@ -136,7 +136,7 @@ public class ImageTest extends ComponentTest {
         Mockito.verify(element).setAttribute("alt", "test.png");
 
         String contentType = captureAndInvokeDownloadHandler(element);
-        Assert.assertEquals("image/png", contentType);
+        Assertions.assertEquals("image/png", contentType);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class ImageTest extends ComponentTest {
         Mockito.verify(element).setAttribute("alt", "test.webp");
 
         String contentType = captureAndInvokeDownloadHandler(element);
-        Assert.assertEquals("image/webp", contentType);
+        Assertions.assertEquals("image/webp", contentType);
     }
 
     @Test
@@ -183,6 +183,6 @@ public class ImageTest extends ComponentTest {
 
         String contentType = captureAndInvokeDownloadHandler(element);
         // When MIME type is null, it falls back to the service's getMimeType
-        Assert.assertEquals("application/octet-stream", contentType);
+        Assertions.assertEquals("application/octet-stream", contentType);
     }
 }

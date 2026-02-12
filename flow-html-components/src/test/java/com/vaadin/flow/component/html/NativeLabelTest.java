@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class NativeLabelTest extends ComponentTest {
+class NativeLabelTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -33,7 +33,7 @@ public class NativeLabelTest extends ComponentTest {
         otherComponent.setId("otherC");
         NativeLabel l = (NativeLabel) getComponent();
         l.setFor(otherComponent);
-        Assert.assertEquals(otherComponent.getId().get(), l.getFor().get());
+        Assertions.assertEquals(otherComponent.getId().get(), l.getFor().get());
     }
 
 }
