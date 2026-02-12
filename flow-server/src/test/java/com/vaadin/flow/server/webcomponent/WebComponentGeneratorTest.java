@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -215,5 +216,54 @@ public class WebComponentGeneratorTest {
                 MyComponent component) {
 
         }
+    }
+
+    public static class JacksonPropertyExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public JacksonPropertyExporter() {
+            super("jackson-tag");
+            addProperty("jsonData", JsonNodeFactory.instance.objectNode());
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+
+        }
+    }
+
+    @Test
+    public void jacksonBaseJsonNodeProperty_generatesCorrectReplacements() {
+        JacksonPropertyExporter exporter = new JacksonPropertyExporter();
+
+        Map<String, String> replacementsMap = WebComponentGenerator
+                .getReplacementsMap("jackson-tag",
+                        new WebComponentExporter.WebComponentConfigurationFactory()
+                                .create(exporter).getPropertyDataSet(),
+                        "/foo", false, null);
+
+        String attributeChange = replacementsMap.get("AttributeChange");
+        MatcherAssert.assertThat(attributeChange,
+                containsString("_deserializeValue(value, Object)"));
+
+        String propertyDefaults = replacementsMap.get("PropertyDefaults");
+        MatcherAssert.assertThat(propertyDefaults, containsString("{}"));
+
+        String propertyMethods = replacementsMap.get("PropertyMethods");
+        MatcherAssert.assertThat(propertyMethods,
+                containsString("get ['jsonData']()"));
+        MatcherAssert.assertThat(propertyMethods,
+                containsString("set ['jsonData'](value)"));
+    }
+
+    @Test
+    public void jacksonBaseJsonNodeProperty_generateModuleSucceeds() {
+        String module = WebComponentGenerator
+                .generateModule(new DefaultWebComponentExporterFactory<>(
+                        JacksonPropertyExporter.class), "", null);
+        Assert.assertNotNull(module);
+        MatcherAssert.assertThat(module,
+                containsString("customElements.define('jackson-tag',"));
     }
 }
