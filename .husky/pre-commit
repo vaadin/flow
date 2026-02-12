@@ -4,7 +4,9 @@ STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(jav
 if [ -n "$STAGED_FILES" ]; then
     echo "Formatting with Spotless..."
 
-    if ! mvn spotless:apply -q; then
+    UPSTREAM_REF="$(git rev-parse --abbrev-ref --symbolic-full-name @{u})"
+    BASE_SHA="$(git merge-base HEAD "$UPSTREAM_REF")"
+    if ! mvn spotless:apply -q -Dspotless.ratchetFrom="$BASE_SHA"; then
         echo "Spotless formatting failed."
         exit 1
     fi

@@ -106,6 +106,7 @@
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <spotless.plugin.version>3.2.1</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
+    <spotless.ratchetFrom></spotless.ratchetFrom>
 
     <!-- Frontend -->
     <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -556,6 +557,7 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.plugin.version}</version>
         <configuration>
+          <ratchetFrom>${spotless.ratchetFrom}</ratchetFrom>
           <java>
             <eclipse>
               <file>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
