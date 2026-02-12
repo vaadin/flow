@@ -252,17 +252,24 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <!-- Exclude JUnit 5 engines so Failsafe uses the JUnit 4 provider.
-               TestBench's ParallelRunner (JUnit 4 @RunWith) handles browser
-               parameterization ([any_Chrome_] suffixes) and is not compatible
-               with the JUnit Platform provider auto-selected when engines are
-               on the classpath. -->
-          <classpathDependencyExcludes>
-            <classpathDependencyExclude>org.junit.jupiter:junit-jupiter-engine</classpathDependencyExclude>
-            <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
-          </classpathDependencyExcludes>
-        </configuration>
+        <!-- Force the JUnit 4 provider for IT tests. TestBench's
+             ParallelRunner (@RunWith) handles browser parameterization
+             ([any_Chrome_] suffixes) and is not compatible with the
+             JUnit Platform provider that is auto-selected when
+             junit-jupiter-engine or junit-vintage-engine are on the
+             classpath (inherited from root pom). -->
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>${maven.failsafe.plugin.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
