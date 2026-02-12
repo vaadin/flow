@@ -581,7 +581,8 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         Registration registration = ElementEffect.bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, registration, get(key), writeCallback), false);
+        put(key, new SignalBinding(signal, registration, get(key),
+                writeCallback), false);
     }
 
     /**

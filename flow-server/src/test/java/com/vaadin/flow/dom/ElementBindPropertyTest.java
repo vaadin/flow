@@ -144,7 +144,7 @@ public class ElementBindPropertyTest {
         UI.getCurrent().add(component);
 
         Assert.assertThrows(NullPointerException.class,
-                () -> component.getElement().bindProperty("foo", null));
+                () -> component.getElement().bindProperty("foo", null, null));
     }
 
     @Test
