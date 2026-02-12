@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.shared;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VaadinUriResolverTest {
+class VaadinUriResolverTest {
 
     private final class NullContextVaadinUriResolver extends VaadinUriResolver {
         public String resolveVaadinUri(String uri) {
