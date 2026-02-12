@@ -17,14 +17,14 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.MockVaadinServletService;
 
-public class ReflectionCacheHotswapperTest {
+class ReflectionCacheHotswapperTest {
 
     private MockVaadinServletService service = new MockVaadinServletService(
             false);
@@ -39,11 +39,10 @@ public class ReflectionCacheHotswapperTest {
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(CacheKey.class), true));
 
-        Assert.assertNull("Should have clean cache for cached class change",
-                cache.get(CacheKey.class).value);
-        Assert.assertEquals(
-                "Should not have cleared cache for other cached class",
-                "SUBCLASS", cache.get(CacheSubKey.class).value);
+        Assertions.assertNull(cache.get(CacheKey.class).value,
+                "Should have clean cache for cached class change");
+        Assertions.assertEquals("SUBCLASS", cache.get(CacheSubKey.class).value,
+                "Should not have cleared cache for other cached class");
     }
 
     @Test
@@ -52,9 +51,8 @@ public class ReflectionCacheHotswapperTest {
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(String.class), true));
 
-        Assert.assertEquals(
-                "Should not have cleared cache for non cached class change",
-                "BEFORE", cache.get(CacheKey.class).value);
+        Assertions.assertEquals("BEFORE", cache.get(CacheKey.class).value,
+                "Should not have cleared cache for non cached class change");
     }
 
     static class CacheKey {

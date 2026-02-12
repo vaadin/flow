@@ -21,17 +21,17 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
@@ -53,33 +53,32 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-public class StyleSheetHotswapperTest {
+class StyleSheetHotswapperTest {
 
     private StyleSheetHotswapper hotswapper;
     private MockVaadinServletService service;
     private VaadinSession session;
     private MockUI ui;
     private AppShellRegistry appShellRegistry;
+    @TempDir
+    Path tempProjectDir;
 
-    @Rule
-    public TemporaryFolder tempProjectDir = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         CurrentInstance.clearAll();
 
         MockDeploymentConfiguration dc = new MockDeploymentConfiguration();
         // Use TemporaryFolder for the project directory required for build
         // resources
-        dc.setProjectFolder(tempProjectDir.getRoot());
+        dc.setProjectFolder(tempProjectDir.toFile());
 
         service = new MockVaadinServletService(dc);
         session = new AlwaysLockedVaadinSession(service);
@@ -101,7 +100,7 @@ public class StyleSheetHotswapperTest {
                 .thenReturn(context -> appConfig);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         appShellRegistry.reset();
         CurrentInstance.clearAll();
@@ -135,10 +134,10 @@ public class StyleSheetHotswapperTest {
                 Set.of(TestAppShell.class), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertFalse("Should not force page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not force page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require refresh");
     }
 
     @Test
@@ -150,10 +149,10 @@ public class StyleSheetHotswapperTest {
                 Set.of(TestAppShell.class), false);
         hotswapper.onClassesChange(event);
 
-        Assert.assertFalse("Should not force page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not force page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require refresh");
 
         // Class is reloaded but without changes stylesheet annotation
         // should compare with store state
@@ -161,10 +160,10 @@ public class StyleSheetHotswapperTest {
                 Set.of(TestAppShell.class), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertFalse("Should not force page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not force page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require refresh");
     }
 
     @Test
@@ -180,16 +179,16 @@ public class StyleSheetHotswapperTest {
                 Set.of(appShell), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertTrue("Should have app.css stylesheet",
-                hasStylesheet("styles/app.css"));
-        Assert.assertEquals("Should add one stylesheet", initialCount + 1,
-                countStylesheets());
+        Assertions.assertTrue(hasStylesheet("styles/app.css"),
+                "Should have app.css stylesheet");
+        Assertions.assertEquals(initialCount + 1, countStylesheets(),
+                "Should add one stylesheet");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -205,11 +204,11 @@ public class StyleSheetHotswapperTest {
 
         assertAppShellStyleSheetRemoved("styles/app.css");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -224,15 +223,16 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         assertAppShellStyleSheetRemoved("styles/app.css");
-        Assert.assertTrue("Should have modified.css stylesheet",
-                hasStylesheet("styles/modified.css"));
-        Assert.assertEquals("Should add one stylesheet", 1, countStylesheets());
+        Assertions.assertTrue(hasStylesheet("styles/modified.css"),
+                "Should have modified.css stylesheet");
+        Assertions.assertEquals(1, countStylesheets(),
+                "Should add one stylesheet");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -241,8 +241,8 @@ public class StyleSheetHotswapperTest {
         hotswapper.onInit(service);
 
         int initialCount = countStylesheets();
-        Assert.assertEquals("Should not have any stylesheet initially", 0,
-                initialCount);
+        Assertions.assertEquals(0, initialCount,
+                "Should not have any stylesheet initially");
 
         Class<?> appShell = modifyStyleSheetAnnotation(
                 TestAppShellNoAnnotation.class, TestAppShellMultiple.class);
@@ -250,17 +250,18 @@ public class StyleSheetHotswapperTest {
                 Set.of(appShell), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertEquals("Should add one stylesheet", 2, countStylesheets());
-        Assert.assertTrue("Should have modified.css stylesheet",
-                hasStylesheet("styles/app.css"));
-        Assert.assertTrue("Should have modified.css stylesheet",
-                hasStylesheet("styles/theme.css"));
+        Assertions.assertEquals(2, countStylesheets(),
+                "Should add one stylesheet");
+        Assertions.assertTrue(hasStylesheet("styles/app.css"),
+                "Should have modified.css stylesheet");
+        Assertions.assertTrue(hasStylesheet("styles/theme.css"),
+                "Should have modified.css stylesheet");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -291,14 +292,14 @@ public class StyleSheetHotswapperTest {
                 Set.of(componentClass), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertTrue("Should have component.css stylesheet",
-                hasStylesheet("styles/component.css"));
+        Assertions.assertTrue(hasStylesheet("styles/component.css"),
+                "Should have component.css stylesheet");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -309,22 +310,20 @@ public class StyleSheetHotswapperTest {
                 Set.of(TestComponentNoAnnotation.class), false);
         hotswapper.onClassesChange(event);
 
-        Assert.assertEquals(
-                "Should not add stylesheets when not annotated component not in UI",
-                initialCount, countStylesheets());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets when not annotated component not in UI");
 
         event = new HotswapClassSessionEvent(service, session,
                 Set.of(TestComponent.class), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertEquals(
-                "Should not add stylesheets when annotated component not in UI",
-                initialCount, countStylesheets());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets when annotated component not in UI");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require page refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require page refresh");
     }
 
     @Test
@@ -340,8 +339,8 @@ public class StyleSheetHotswapperTest {
         ui.getInternals().addComponentDependencies(TestComponent.class);
 
         int initialCount = countStylesheets();
-        Assert.assertTrue("Should have modified-component.css stylesheet",
-                hasStylesheet("styles/component.css"));
+        Assertions.assertTrue(hasStylesheet("styles/component.css"),
+                "Should have modified-component.css stylesheet");
         ui.getInternals().getDependencyList().clearPendingSendToClient();
 
         Class<?> componentClass = modifyStyleSheetAnnotation(
@@ -355,16 +354,16 @@ public class StyleSheetHotswapperTest {
                 Set.of(componentClass), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertTrue("Should have modified-component.css stylesheet",
-                hasStylesheet("styles/modified-component.css"));
-        Assert.assertEquals("Should add one stylesheet", initialCount,
-                countStylesheets());
+        Assertions.assertTrue(hasStylesheet("styles/modified-component.css"),
+                "Should have modified-component.css stylesheet");
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should add one stylesheet");
 
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertEquals("Should require page refresh",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
     }
 
     @Test
@@ -383,12 +382,12 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify: no changes applied
-        Assert.assertEquals("Should not add stylesheets when nothing changed",
-                initialCount, countStylesheets());
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require page refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets when nothing changed");
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require page refresh");
     }
 
     @Test
@@ -403,22 +402,20 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         int initialCount = countStylesheets();
-        Assert.assertEquals(
-                "Should not have any stylesheet pending for non-Component, non-AppShell classes",
-                0, initialCount);
+        Assertions.assertEquals(0, initialCount,
+                "Should not have any stylesheet pending for non-Component, non-AppShell classes");
 
         event = new HotswapClassSessionEvent(service, session,
                 Set.of(NonComponentClass.class), true);
         hotswapper.onClassesChange(event);
 
         // Verify: no stylesheets added
-        Assert.assertEquals(
-                "Should not add stylesheets for non-Component, non-AppShell classes",
-                initialCount, countStylesheets());
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require page refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets for non-Component, non-AppShell classes");
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require page refresh");
     }
 
     @Test
@@ -438,13 +435,12 @@ public class StyleSheetHotswapperTest {
                 Set.of(TestAppShell.class), true);
         hotswapper.onClassesChange(event);
 
-        Assert.assertEquals(
-                "Should not add stylesheets for non-registered AppShell",
-                initialCount, countStylesheets());
-        Assert.assertFalse("Should not require page reload",
-                event.anyUIRequiresPageReload());
-        Assert.assertFalse("Should not require page refresh",
-                event.getUIUpdateStrategy(ui).isPresent());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets for non-registered AppShell");
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        Assertions.assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not require page refresh");
     }
 
     @Test
@@ -467,8 +463,8 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify: no stylesheets added because UI is closing
-        Assert.assertEquals("Should not add stylesheets to closing UI",
-                initialCount, countStylesheets());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should not add stylesheets to closing UI");
     }
 
     @Test
@@ -485,8 +481,8 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify: no crash, returns false
-        Assert.assertFalse("Should not crash on exception",
-                event.anyUIRequiresPageReload());
+        Assertions.assertFalse(event.anyUIRequiresPageReload(),
+                "Should not crash on exception");
     }
 
     @Test
@@ -511,8 +507,8 @@ public class StyleSheetHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify: no stylesheets added for empty value
-        Assert.assertEquals("Should ignore empty stylesheet values",
-                initialCount, countStylesheets());
+        Assertions.assertEquals(initialCount, countStylesheets(),
+                "Should ignore empty stylesheet values");
     }
 
     // ==== Helper method and classes
@@ -526,10 +522,10 @@ public class StyleSheetHotswapperTest {
                 new HotswapResourceEvent(service, Set.of(modified)));
         hotswapper.onResourcesChange(event);
 
-        assertFalse("Page reload is not necessary",
-                event.anyUIRequiresPageReload());
-        assertTrue("Should not refresh UIs",
-                event.getUIUpdateStrategy(new MockUI()).isEmpty());
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Page reload is not necessary");
+        assertTrue(event.getUIUpdateStrategy(new MockUI()).isEmpty(),
+                "Should not refresh UIs");
 
         verify(event, never()).updateClientResource(anyString(), any());
     }
@@ -566,9 +562,10 @@ public class StyleSheetHotswapperTest {
     }
 
     private void assertAppShellStyleSheetRemoved(String path) {
-        Assert.assertTrue("Should have removed app shell stylesheet " + path,
+        Assertions.assertTrue(
                 ui.getInternals().getPendingStyleSheetRemovals()
-                        .contains("appShell-" + path));
+                        .contains("appShell-" + path),
+                "Should have removed app shell stylesheet " + path);
     }
 
     /**
@@ -590,9 +587,8 @@ public class StyleSheetHotswapperTest {
                         getClass().getClassLoader()),
                         ClassLoadingStrategy.Default.CHILD_FIRST)
                 .getLoaded();
-        Assert.assertEquals(
-                "Generated class should have same name as source class",
-                generatedClass.getName(), source.getName());
+        Assertions.assertEquals(generatedClass.getName(), source.getName(),
+                "Generated class should have same name as source class");
         return generatedClass;
     }
 

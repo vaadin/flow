@@ -22,8 +22,8 @@ import java.util.function.Consumer;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -50,7 +50,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 
-public class DebugWindowConnectionLicenseCheckTest {
+class DebugWindowConnectionLicenseCheckTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Product TEST_PRODUCT = new Product(
@@ -67,28 +67,27 @@ public class DebugWindowConnectionLicenseCheckTest {
     @Test
     public void checkLicense_validLicense_sendLicenseOk() {
         DebugWindowMessage message = doLicenseCheck(LicenseCheckResult.VALID);
-        Assert.assertEquals("license-check-ok", message.getCommand());
-        Assert.assertTrue("Expected a Product object in response message",
-                message.getData() instanceof Product);
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals("license-check-ok", message.getCommand());
+        Assertions.assertTrue(message.getData() instanceof Product,
+                "Expected a Product object in response message");
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 message.getData().toString());
     }
 
     @Test
     public void checkLicense_invalidLicense_sendLicenseCheckFailed() {
         DebugWindowMessage message = doLicenseCheck(LicenseCheckResult.INVALID);
-        Assert.assertEquals("license-check-failed", message.getCommand());
-        Assert.assertTrue(
-                "Expected a ProductAndMessage object in response message",
-                message.getData() instanceof ProductAndMessage);
+        Assertions.assertEquals("license-check-failed", message.getCommand());
+        Assertions.assertTrue(message.getData() instanceof ProductAndMessage,
+                "Expected a ProductAndMessage object in response message");
         ProductAndMessage productAndMessage = (ProductAndMessage) message
                 .getData();
-        Assert.assertEquals(INVALID_LICENSE_ERROR,
+        Assertions.assertEquals(INVALID_LICENSE_ERROR,
                 productAndMessage.getMessage());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 productAndMessage.getProduct().toString());
-        Assert.assertNull("Expected pre-trial info to be absent",
-                productAndMessage.getPreTrial());
+        Assertions.assertNull(productAndMessage.getPreTrial(),
+                "Expected pre-trial info to be absent");
     }
 
     @Test
@@ -96,21 +95,20 @@ public class DebugWindowConnectionLicenseCheckTest {
         DebugWindowMessage message = doLicenseCheck(
                 LicenseCheckResult.MISSING_KEYS);
 
-        Assert.assertEquals("license-check-nokey", message.getCommand());
-        Assert.assertTrue(
-                "Expected a ProductAndMessage object in response message",
-                message.getData() instanceof ProductAndMessage);
+        Assertions.assertEquals("license-check-nokey", message.getCommand());
+        Assertions.assertTrue(message.getData() instanceof ProductAndMessage,
+                "Expected a ProductAndMessage object in response message");
         ProductAndMessage productAndMessage = (ProductAndMessage) message
                 .getData();
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 productAndMessage.getMessage().contains(MISSING_KEY_ERROR));
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 productAndMessage.getProduct().toString());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 productAndMessage.getProduct().toString());
-        Assert.assertNotNull("Expected pre-trial info to be present",
-                productAndMessage.getPreTrial());
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(),
+        Assertions.assertNotNull(productAndMessage.getPreTrial(),
+                "Expected pre-trial info to be present");
+        Assertions.assertEquals(TEST_PRE_TRIAL.toString(),
                 productAndMessage.getPreTrial().toString());
     }
 
@@ -118,56 +116,62 @@ public class DebugWindowConnectionLicenseCheckTest {
     public void startPreTrial_preTrialAllowed_sendPreTrialInfo() {
         DebugWindowMessage message = doStartPreTrial(
                 PreTrial.PreTrialState.START_ALLOWED);
-        Assert.assertEquals("license-pretrial-started", message.getCommand());
-        Assert.assertTrue("Expected a PreTrial object in response message",
-                message.getData() instanceof PreTrial);
+        Assertions.assertEquals("license-pretrial-started",
+                message.getCommand());
+        Assertions.assertTrue(message.getData() instanceof PreTrial,
+                "Expected a PreTrial object in response message");
         PreTrial preTrial = (PreTrial) message.getData();
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
+        Assertions.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
     }
 
     @Test
     public void startPreTrial_preTrialRunning_sendPreTrialInfo() {
         DebugWindowMessage message = doStartPreTrial(
                 PreTrial.PreTrialState.RUNNING);
-        Assert.assertEquals("license-pretrial-started", message.getCommand());
-        Assert.assertTrue("Expected a PreTrial object in response message",
-                message.getData() instanceof PreTrial);
+        Assertions.assertEquals("license-pretrial-started",
+                message.getCommand());
+        Assertions.assertTrue(message.getData() instanceof PreTrial,
+                "Expected a PreTrial object in response message");
         PreTrial preTrial = (PreTrial) message.getData();
-        Assert.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
+        Assertions.assertEquals(TEST_PRE_TRIAL.toString(), preTrial.toString());
     }
 
     @Test
     public void startPreTrial_preTrialExpired_sendPreTrialExpiredFailure() {
         DebugWindowMessage message = doStartPreTrial(
                 PreTrial.PreTrialState.EXPIRED);
-        Assert.assertEquals("license-pretrial-expired", message.getCommand());
+        Assertions.assertEquals("license-pretrial-expired",
+                message.getCommand());
     }
 
     @Test
     public void startPreTrial_preTrialNotAllowed_sendPreTrialNotAllowedFailure() {
         DebugWindowMessage message = doStartPreTrial(null);
-        Assert.assertEquals("license-pretrial-failed", message.getCommand());
+        Assertions.assertEquals("license-pretrial-failed",
+                message.getCommand());
     }
 
     @Test
     public void startPreTrial_genericError_sendPreTrialNotAllowedFailure() {
         DebugWindowMessage message = doStartPreTrial(
                 PreTrial.PreTrialState.ACCESS_DENIED);
-        Assert.assertEquals("license-pretrial-failed", message.getCommand());
+        Assertions.assertEquals("license-pretrial-failed",
+                message.getCommand());
     }
 
     @Test
     public void downloadLicenseKey_licenseKeyAvailable_notifiesDownloadStartAndSuccess() {
         AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
         DebugWindowMessage message = doDownloadKey(true, callbackHolder);
-        Assert.assertEquals("license-download-started", message.getCommand());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals("license-download-started",
+                message.getCommand());
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 message.getData().toString());
         callbackHolder.get().run();
-        Assert.assertEquals(1, receiver.messages.size());
-        Assert.assertEquals("license-download-completed",
+        Assertions.assertEquals(1, receiver.messages.size());
+        Assertions.assertEquals("license-download-completed",
                 receiver.messages.get(0).getCommand());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 receiver.messages.get(0).getData().toString());
     }
 
@@ -175,14 +179,15 @@ public class DebugWindowConnectionLicenseCheckTest {
     public void downloadLicenseKey_licenseKeyNotAvailable_notifiesDownloadStartAndFailure() {
         AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
         DebugWindowMessage message = doDownloadKey(false, callbackHolder);
-        Assert.assertEquals("license-download-started", message.getCommand());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals("license-download-started",
+                message.getCommand());
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 message.getData().toString());
         callbackHolder.get().run();
-        Assert.assertEquals(1, receiver.messages.size());
-        Assert.assertEquals("license-download-failed",
+        Assertions.assertEquals(1, receiver.messages.size());
+        Assertions.assertEquals("license-download-failed",
                 receiver.messages.get(0).getCommand());
-        Assert.assertEquals(TEST_PRODUCT.toString(),
+        Assertions.assertEquals(TEST_PRODUCT.toString(),
                 receiver.messages.get(0).getData().toString());
     }
 
@@ -250,7 +255,7 @@ public class DebugWindowConnectionLicenseCheckTest {
         withMockedLicenseChecker(instrumenter,
                 () -> reload.onMessage(receiver.resource, command.toString()));
         int responses = receiver.messages.size();
-        Assert.assertEquals("Expected messages", 1, responses);
+        Assertions.assertEquals(1, responses, "Expected messages");
         DebugWindowMessage message = receiver.messages.get(0);
         receiver.messages.clear();
         return message;

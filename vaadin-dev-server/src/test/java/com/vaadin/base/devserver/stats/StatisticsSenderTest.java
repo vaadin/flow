@@ -20,17 +20,17 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
 import com.sun.net.httpserver.HttpServer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.testutil.net.PortProber;
 
-public class StatisticsSenderTest extends AbstractStatisticsTest {
+class StatisticsSenderTest extends AbstractStatisticsTest {
 
     private static final long SEC_12H = 60 * 60 * 12;
     private static final long SEC_24H = 60 * 60 * 24;
@@ -38,7 +38,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
     private static final long SEC_30D = 60 * 60 * 24 * 30;
     private TestHttpServer server;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         super.setup();
 
@@ -54,7 +54,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
                 .thenReturn("http://localhost:" + server.getPort() + "/");
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         if (server != null) {
             server.close();
@@ -72,11 +72,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Default interval should be 24H in seconds",
-                SEC_24H, sender.getInterval(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("200"),
+                "Status should be 200");
+        Assertions.assertEquals(SEC_24H, sender.getInterval(fullStats),
+                "Default interval should be 24H in seconds");
     }
 
     @Test
@@ -89,11 +91,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         sender.sendStatistics(fullStats);
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Custom interval should be 48H in seconds", SEC_48H,
-                sender.getInterval(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("200"),
+                "Status should be 200");
+        Assertions.assertEquals(SEC_48H, sender.getInterval(fullStats),
+                "Custom interval should be 48H in seconds");
     }
 
     @Test
@@ -105,11 +109,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         sender.sendStatistics(fullStats);
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Minimum interval should be 12H in seconds",
-                SEC_12H, sender.getInterval(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("200"),
+                "Status should be 200");
+        Assertions.assertEquals(SEC_12H, sender.getInterval(fullStats),
+                "Minimum interval should be 12H in seconds");
     }
 
     @Test
@@ -121,12 +127,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         sender.sendStatistics(fullStats);
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be not be updated",
-                newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Maximum interval should be 30D in seconds",
-                SEC_30D, sender.getInterval(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be not be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("200"),
+                "Status should be 200");
+        Assertions.assertEquals(SEC_30D, sender.getInterval(fullStats),
+                "Maximum interval should be 30D in seconds");
     }
 
     @Test
@@ -140,11 +147,13 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         fullStats = storage.read();
 
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 500",
-                sender.getLastSendStatus(fullStats).contains("500"));
-        Assert.assertEquals("In case of errors we should use default interval",
-                SEC_24H, sender.getInterval(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("500"),
+                "Status should be 500");
+        Assertions.assertEquals(SEC_24H, sender.getInterval(fullStats),
+                "In case of errors we should use default interval");
     }
 
     @Test
@@ -157,13 +166,15 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         sender.sendStatistics(fullStats);
         fullStats = storage.read();
         long newSend = sender.getLastSendTime(fullStats);
-        Assert.assertTrue("Send time should be updated", newSend > lastSend);
-        Assert.assertTrue("Status should be 200",
-                sender.getLastSendStatus(fullStats).contains("200"));
-        Assert.assertEquals("Default interval should be 24H in seconds",
-                SEC_24H, sender.getInterval(fullStats));
-        Assert.assertEquals("Message should be returned", "Hello",
-                sender.getLastServerMessage(fullStats));
+        Assertions.assertTrue(newSend > lastSend,
+                "Send time should be updated");
+        Assertions.assertTrue(
+                sender.getLastSendStatus(fullStats).contains("200"),
+                "Status should be 200");
+        Assertions.assertEquals(SEC_24H, sender.getInterval(fullStats),
+                "Default interval should be 24H in seconds");
+        Assertions.assertEquals("Hello", sender.getLastServerMessage(fullStats),
+                "Message should be returned");
     }
 
     /**

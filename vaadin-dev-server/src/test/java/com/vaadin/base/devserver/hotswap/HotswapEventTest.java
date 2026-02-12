@@ -18,8 +18,8 @@ package com.vaadin.base.devserver.hotswap;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class HotswapEventTest {
+class HotswapEventTest {
 
     private final VaadinService service = new MockVaadinServletService(false);
 
@@ -48,7 +48,7 @@ public class HotswapEventTest {
         event2.triggerUpdate(UIUpdateStrategy.REFRESH);
 
         event1.merge(event2);
-        Assert.assertTrue(event1.requiresPageReload());
+        Assertions.assertTrue(event1.requiresPageReload());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class HotswapEventTest {
         event2.triggerUpdate(UIUpdateStrategy.RELOAD);
 
         event1.merge(event2);
-        Assert.assertTrue(event1.requiresPageReload());
+        Assertions.assertTrue(event1.requiresPageReload());
     }
 
     @Test
@@ -77,8 +77,8 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
     }
 
     @Test
@@ -93,8 +93,8 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
     }
 
     @Test
@@ -110,8 +110,8 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
     }
 
     @Test
@@ -127,8 +127,8 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
     }
 
     @Test

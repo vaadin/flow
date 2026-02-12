@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,11 +41,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -67,13 +65,14 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 @NotThreadSafe
-public class DevModeInitializerTest extends DevModeInitializerTestBase {
+class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @JsModule("foo")
     public static class Visited {
@@ -135,9 +134,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             return file.isFile();
         }
     }
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()
@@ -294,9 +290,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         process();
 
-        Assert.assertTrue(hasDevServerProcess(handler));
+        Assertions.assertTrue(hasDevServerProcess(handler));
         runDestroy();
-        Assert.assertFalse(hasDevServerProcess(handler));
+        Assertions.assertFalse(hasDevServerProcess(handler));
     }
 
     @LoadDependenciesOnStartup
@@ -322,9 +318,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         String content = getFlowGeneratedImports();
         // Referenced by the route
-        Assert.assertTrue(content.contains("import 'foo';"));
+        Assertions.assertTrue(content.contains("import 'foo';"));
         // Not referenced by the route
-        Assert.assertFalse(content.contains("import 'bar';"));
+        Assertions.assertFalse(content.contains("import 'bar';"));
     }
 
     private String getFlowGeneratedImports() throws IOException {
@@ -345,9 +341,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         waitForDevServer();
         String content = getFlowGeneratedImports();
         // Referenced by the route
-        Assert.assertTrue(content.contains("import 'foo';"));
+        Assertions.assertTrue(content.contains("import 'foo';"));
         // Not referenced by the route
-        Assert.assertTrue(content.contains("import 'bar';"));
+        Assertions.assertTrue(content.contains("import 'bar';"));
     }
 
     @Test
@@ -365,9 +361,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             // which folder, since the actual task won't be run, just
             // to verify the mocked task is executed.
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    javaSourceFolder.getRoot().getAbsolutePath());
+                    javaSourceFolder.toAbsolutePath().toString());
 
-            Assert.assertFalse(generatedOpenApiJson.exists());
+            Assertions.assertFalse(generatedOpenApiJson.exists());
             try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
                     FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
                 util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
@@ -405,7 +401,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             Mockito.doReturn(null).when(lookup)
                     .lookup(EndpointGeneratorTaskFactory.class);
 
-            Assert.assertFalse(generatedOpenApiJson.exists());
+            Assertions.assertFalse(generatedOpenApiJson.exists());
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
@@ -434,7 +430,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             // which folder, since the actual task won't be run, just
             // to verify the mocked task is executed.
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    javaSourceFolder.getRoot().getAbsolutePath());
+                    javaSourceFolder.toAbsolutePath().toString());
 
             try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
                     FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
@@ -487,28 +483,30 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 appConfig);
 
         process();
-        Assert.assertNotNull(devModeHandlerManager.getDevModeHandler());
+        Assertions.assertNotNull(devModeHandlerManager.getDevModeHandler());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void onStartup_fallbackBaseDirIsNotProjectDirectory_throws()
             throws Exception {
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(null);
-        TemporaryFolder tmp = new TemporaryFolder();
-        tmp.create();
-        baseDir = tmp.getRoot().getPath();
+        assertThrows(IllegalStateException.class, () -> {
+            Mockito.when(appConfig
+                    .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null))
+                    .thenReturn(null);
+            Path tmp = Files.createTempDirectory("devmode-test");
+            baseDir = tmp.toString();
 
-        String originalUserDirValue = null;
-        try {
-            originalUserDirValue = System.getProperty("user.dir");
-            System.setProperty("user.dir", baseDir);
-            devModeStartupListener.onStartup(classes, servletContext);
-        } finally {
-            if (originalUserDirValue != null) {
-                System.setProperty("user.dir", originalUserDirValue);
+            String originalUserDirValue = null;
+            try {
+                originalUserDirValue = System.getProperty("user.dir");
+                System.setProperty("user.dir", baseDir);
+                devModeStartupListener.onStartup(classes, servletContext);
+            } finally {
+                if (originalUserDirValue != null) {
+                    System.setProperty("user.dir", originalUserDirValue);
+                }
             }
-        }
+        });
     }
 
     @Test
@@ -516,10 +514,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(null);
-        TemporaryFolder tmp = new TemporaryFolder();
-        tmp.create();
-        tmp.newFile("pom.xml");
-        baseDir = tmp.getRoot().getPath();
+        Path tmp = Files.createTempDirectory("devmode-test");
+        Files.createFile(tmp.resolve("pom.xml"));
+        baseDir = tmp.toString();
 
         String originalUserDirValue = null;
         try {
@@ -538,10 +535,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(null);
-        TemporaryFolder tmp = new TemporaryFolder();
-        tmp.create();
-        tmp.newFile("build.gradle");
-        baseDir = tmp.getRoot().getPath();
+        Path tmp = Files.createTempDirectory("devmode-test");
+        Files.createFile(tmp.resolve("build.gradle"));
+        baseDir = tmp.toString();
 
         String originalUserDirValue = null;
         try {
@@ -562,7 +558,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         List<String> frontendExtraFileExtensions = DevModeInitializer
                 .getFrontendExtraFileExtensions(appConfig);
-        Assert.assertNull(frontendExtraFileExtensions);
+        Assertions.assertNull(frontendExtraFileExtensions);
     }
 
     @Test
@@ -573,7 +569,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         List<String> frontendExtraFileExtensions = DevModeInitializer
                 .getFrontendExtraFileExtensions(appConfig);
-        Assert.assertEquals(3, frontendExtraFileExtensions.size());
+        Assertions.assertEquals(3, frontendExtraFileExtensions.size());
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
@@ -641,12 +637,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .getFrontendLocationsFromResourceProvider(resourceProvider));
 
         // Assert that jar was found and accepted
-        assertEquals("One jar should have been found and added as a File", 1,
-                jarFilesFromClassloader.size());
+        assertEquals(1, jarFilesFromClassloader.size(),
+                "One jar should have been found and added as a File");
         // Assert that the file can be found from the filesystem by the given
         // path.
-        assertTrue("File in path 'with space' doesn't load from given path",
-                jarFilesFromClassloader.get(0).exists());
+        assertTrue(jarFilesFromClassloader.get(0).exists(),
+                "File in path 'with space' doesn't load from given path");
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
@@ -674,20 +670,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .getFrontendLocationsFromResourceProvider(resourceProvider));
 
         // Assert that resource was found and accepted
-        assertEquals("One resource should have been found and added as a File",
-                1, locations.size());
+        assertEquals(1, locations.size(),
+                "One resource should have been found and added as a File");
         // Assert that the file can be found from the filesystem by the given
         // path.
-        assertTrue("Resource doesn't load from given path",
-                locations.get(0).exists());
+        assertTrue(locations.get(0).exists(),
+                "Resource doesn't load from given path");
     }
 
     private void assertNoDevModeHandlerCreated() {
-        Assert.assertNull(getDevModeHandler());
+        Assertions.assertNull(getDevModeHandler());
     }
 
     private void assertDevModeHandlerStarted() {
-        Assert.assertTrue(hasDevServerProcess(handler));
+        Assertions.assertTrue(hasDevServerProcess(handler));
     }
 
 }

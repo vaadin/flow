@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,8 +34,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -70,14 +72,15 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
 
-    @Rule
-    public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
+    @TempDir
+    public Path javaSourceFolder;
 
     public static class VaadinServletSubClass extends VaadinServlet {
 
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @BeforeEach
     @Override
     public void setup() throws Exception {
         super.setup();
@@ -173,6 +176,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         return packageJson;
     }
 
+    @AfterEach
     @Override
     public void teardown() {
         super.teardown();

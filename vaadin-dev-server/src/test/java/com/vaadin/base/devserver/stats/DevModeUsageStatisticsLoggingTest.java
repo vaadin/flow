@@ -24,10 +24,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.testutil.TestUtils;
@@ -36,7 +36,7 @@ import com.vaadin.flow.testutil.TestUtils;
  * Tests that the telemetry notice is logged on first initialization and
  * suppressed on subsequent runs when the notice marker file already exists.
  */
-public class DevModeUsageStatisticsLoggingTest {
+class DevModeUsageStatisticsLoggingTest {
 
     private Path tempDir;
     private File usageStatisticsFile;
@@ -46,7 +46,7 @@ public class DevModeUsageStatisticsLoggingTest {
     private PrintStream originalErr;
     private ByteArrayOutputStream capturedErr;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Create an isolated directory for this test so the notice marker file
         // does not collide with other tests
@@ -71,7 +71,7 @@ public class DevModeUsageStatisticsLoggingTest {
                 StandardCharsets.UTF_8.name()));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         System.setErr(originalErr);
         // Best-effort cleanup of temp dir
@@ -89,9 +89,9 @@ public class DevModeUsageStatisticsLoggingTest {
         // not exist
         DevModeUsageStatistics.init(tempDir.toFile(), storage, sender);
         String firstRunLogs = capturedErr.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Expected telemetry notice to be logged on first run",
-                firstRunLogs.contains(
-                        "Vaadin collects usage data in order to help us improve your experience."));
+        Assertions.assertTrue(firstRunLogs.contains(
+                "Vaadin collects usage data in order to help us improve your experience."),
+                "Expected telemetry notice to be logged on first run");
 
         // Clear captured logs
         capturedErr.reset();
@@ -100,10 +100,9 @@ public class DevModeUsageStatisticsLoggingTest {
         // exists
         DevModeUsageStatistics.init(tempDir.toFile(), storage, sender);
         String secondRunLogs = capturedErr.toString(StandardCharsets.UTF_8);
-        Assert.assertFalse(
-                "Telemetry notice must not be logged again after marker file is created",
-                secondRunLogs.contains(
-                        "Vaadin collects usage data in order to help us improve your experience."));
+        Assertions.assertFalse(secondRunLogs.contains(
+                "Vaadin collects usage data in order to help us improve your experience."),
+                "Telemetry notice must not be logged again after marker file is created");
     }
 
     private static void copyStatsTemplate(File target) throws IOException {

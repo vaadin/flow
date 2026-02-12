@@ -20,27 +20,27 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.testutil.TestUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
-public class ProjectHelpersTest {
+class ProjectHelpersTest {
 
     private String userHome;
 
-    @Before
+    @BeforeEach
     public void saveUserHome() {
         userHome = System.getProperty("user.home");
     }
 
-    @After
+    @AfterEach
     public void restoreUserHome() {
         System.setProperty("user.home", userHome);
     }
@@ -65,8 +65,8 @@ public class ProjectHelpersTest {
         assertNotNull(newKey);
         assertNotSame(keyString, newKey);
         File userKeyFile = new File(vaadinHome, "userKey");
-        Assert.assertTrue("userKey should be created automatically",
-                userKeyFile.exists());
+        Assertions.assertTrue(userKeyFile.exists(),
+                "userKey should be created automatically");
     }
 
     private File createTempDir() throws IOException {
@@ -81,16 +81,16 @@ public class ProjectHelpersTest {
 
         // Write file
         String userKey = ProjectHelpers.getUserKey();
-        Assert.assertNotNull(userKey);
+        Assertions.assertNotNull(userKey);
 
         // Check file
         File userFile = new File(System.getProperty("user.home"),
                 ".vaadin/userKey");
         String fromFile = Files.readString(userFile.toPath(),
                 StandardCharsets.UTF_8);
-        Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
+        Assertions.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
 
-        Assert.assertEquals(userKey, ProjectHelpers.getUserKey());
+        Assertions.assertEquals(userKey, ProjectHelpers.getUserKey());
     }
 
     @Test

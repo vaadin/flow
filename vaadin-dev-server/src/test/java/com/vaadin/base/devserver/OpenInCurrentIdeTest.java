@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.open.OSUtils;
 
-public class OpenInCurrentIdeTest {
+class OpenInCurrentIdeTest {
 
     @Test
     public void ideaOnMacDetected() throws IOException {
@@ -57,12 +57,12 @@ public class OpenInCurrentIdeTest {
                 replaceInArray(args2, baseDirInCommands, baseDir)));
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // The binary on Mac is /.../IntelliJ IDEA.app/Contents/MacOS/idea
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File(baseDirectory, "MacOS/idea").getAbsolutePath(),
                 new File(OpenInCurrentIde.getBinary(ideCommand.get()))
                         .getAbsolutePath());
@@ -96,11 +96,11 @@ public class OpenInCurrentIdeTest {
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
 
-        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File(baseDirectory, "bin/idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
@@ -134,11 +134,11 @@ public class OpenInCurrentIdeTest {
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
 
-        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File(baseDirectory, "bin/idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
@@ -170,11 +170,11 @@ public class OpenInCurrentIdeTest {
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
 
-        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 new File(baseDirectory, "bin/idea").getAbsolutePath(),
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
@@ -209,11 +209,11 @@ public class OpenInCurrentIdeTest {
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
 
-        Assert.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "C:\\Users\\Somebody\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\223.8214.52\\bin\\idea64.exe",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
@@ -274,12 +274,12 @@ public class OpenInCurrentIdeTest {
         processes.add(mock(cmd5, args5));
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // THe binary is not used for VSCode
-        // Assert.assertEquals("",
+        // Assertions.assertEquals("",
         // OpenInCurrentIde.getBinary(ideCommand.get()));
 
     }
@@ -308,12 +308,12 @@ public class OpenInCurrentIdeTest {
         processes.add(mock(cmd6));
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // THe binary is not used for VSCode
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "C:\\Users\\Somebody\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
 
@@ -376,12 +376,12 @@ public class OpenInCurrentIdeTest {
         processes.add(mock(cmd8, args8));
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // THe binary is not used for VSCode
-        // Assert.assertEquals("/usr/share/code/code",
+        // Assertions.assertEquals("/usr/share/code/code",
         // OpenInCurrentIde.getBinary(ideCommand.get()));
 
     }
@@ -405,11 +405,11 @@ public class OpenInCurrentIdeTest {
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
 
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "C:\\Users\\Somebody\\eclipse\\java-2022-06\\eclipse\\eclipse.exe",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
     }
@@ -464,12 +464,12 @@ public class OpenInCurrentIdeTest {
         processes.add(info2);
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // THe binary is not used for VSCode
-        Assert.assertEquals("/eclipse/install/dir/Eclipse.app",
+        Assertions.assertEquals("/eclipse/install/dir/Eclipse.app",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
 
     }
@@ -536,12 +536,12 @@ public class OpenInCurrentIdeTest {
         processes.add(info4);
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
-        Assert.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
-        Assert.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isIdea(ideCommand.get()));
+        Assertions.assertFalse(OpenInCurrentIde.isVSCode(ideCommand.get()));
+        Assertions.assertTrue(OpenInCurrentIde.isEclipse(ideCommand.get()));
 
         // THe binary is not used for VSCode
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "/home/somebody/eclipse/jee-2022-12/eclipse/eclipse",
                 OpenInCurrentIde.getBinary(ideCommand.get()));
 
@@ -593,7 +593,7 @@ public class OpenInCurrentIdeTest {
         processes.add(info6);
 
         Optional<Info> ideCommand = OpenInCurrentIde.findIdeCommand(processes);
-        Assert.assertTrue(ideCommand.isEmpty());
+        Assertions.assertTrue(ideCommand.isEmpty());
     }
 
     private Info mock(String cmd) {
@@ -624,19 +624,20 @@ public class OpenInCurrentIdeTest {
 
     @Test
     public void runThrowsExceptionOnFailure() throws InterruptedException {
-        Assume.assumeFalse(OSUtils.isWindows());
+        Assumptions.assumeFalse(OSUtils.isWindows());
 
         try {
             OpenInCurrentIde.run("/bin/sh", "-c",
                     "echo 'output1'; echo 'output2'; exit 123");
-            Assert.fail("Should have thrown exception");
+            Assertions.fail("Should have thrown exception");
         } catch (IOException e) {
-            Assert.assertTrue("Exit code should have been reported",
-                    e.getMessage().contains("terminated with exit code 123"));
-            Assert.assertTrue("Output should have been included",
-                    e.getMessage().contains("output1"));
-            Assert.assertTrue("Output should have been included",
-                    e.getMessage().contains("output2"));
+            Assertions.assertTrue(
+                    e.getMessage().contains("terminated with exit code 123"),
+                    "Exit code should have been reported");
+            Assertions.assertTrue(e.getMessage().contains("output1"),
+                    "Output should have been included");
+            Assertions.assertTrue(e.getMessage().contains("output2"),
+                    "Output should have been included");
         }
     }
 }

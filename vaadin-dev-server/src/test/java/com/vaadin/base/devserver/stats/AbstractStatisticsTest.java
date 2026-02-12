@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.testutil.TestUtils;
@@ -55,7 +55,7 @@ public abstract class AbstractStatisticsTest {
         return result;
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         storage = Mockito.spy(new StatisticsStorage());
         storage.usageStatisticsFile = File.createTempFile("test-storage",

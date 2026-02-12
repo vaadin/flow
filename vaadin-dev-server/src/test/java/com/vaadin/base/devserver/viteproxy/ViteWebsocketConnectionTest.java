@@ -35,22 +35,23 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.ThrowingConsumer;
 
 import com.vaadin.flow.internal.ReflectTools;
 
-public class ViteWebsocketConnectionTest {
+class ViteWebsocketConnectionTest {
 
     private HttpServer httpServer;
 
     private ThrowingConsumer<HttpExchange> handlerSupplier;
 
-    @Before
+    @BeforeEach
     public void reservePort() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress("127.0.0.1", 0),
                 10);
@@ -65,7 +66,8 @@ public class ViteWebsocketConnectionTest {
         }
     }
 
-    @Test(timeout = 7000)
+    @Test
+    @Timeout(7)
     public void waitForConnection_clientWebsocketAvailable_blocksUntilConnectionIsEstablished()
             throws ExecutionException, InterruptedException {
         CountDownLatch connectionLatch = new CountDownLatch(1);
@@ -97,16 +99,15 @@ public class ViteWebsocketConnectionTest {
                     "Websocket connection failed: " + error.get().getMessage(),
                     error.get());
         }
-        Assert.assertTrue("Connection NOT established. Elapsed time "
-                + elapsedTime + " ms", established);
-        Assert.assertTrue(
+        Assertions.assertTrue(established,
+                "Connection NOT established. Elapsed time " + elapsedTime
+                        + " ms");
+        Assertions.assertTrue(elapsedTime > 500,
                 "Should have waited for connection to be established (elapsed time: "
-                        + elapsedTime + ")",
-                elapsedTime > 500);
-        Assert.assertTrue(
+                        + elapsedTime + ")");
+        Assertions.assertTrue(elapsedTime < 4000,
                 "Should not have been blocked too long after connection (elapsed time: "
-                        + elapsedTime + ")",
-                elapsedTime < 4000);
+                        + elapsedTime + ")");
         if (!closeLatch.await(500, TimeUnit.MILLISECONDS)) {
             viteConnection.close();
             closeLatch.await(500, TimeUnit.MILLISECONDS);
@@ -124,12 +125,13 @@ public class ViteWebsocketConnectionTest {
                 }, () -> {
                 }, err -> errorLatch.countDown());
         if (!errorLatch.await(5, TimeUnit.SECONDS)) {
-            Assert.fail(
+            Assertions.fail(
                     "Expecting connection failure, but not happened in 5 seconds");
         }
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void close_clientWebsocketNotAvailable_dontBlock()
             throws ExecutionException, InterruptedException {
         AtomicReference<Throwable> connectionError = new AtomicReference<>();
@@ -143,7 +145,8 @@ public class ViteWebsocketConnectionTest {
                 }, connectionError::set);
         connection.close();
         suspendConnectionLatch.countDown();
-        Assert.assertNull("Websocket connection failed", connectionError.get());
+        Assertions.assertNull(connectionError.get(),
+                "Websocket connection failed");
     }
 
     @SuppressWarnings("unchecked")
@@ -186,7 +189,8 @@ public class ViteWebsocketConnectionTest {
             return ReflectTools.getJavaFieldValue(connection,
                     clientWebsocketField) == null;
         });
-        Assert.assertNull("Websocket connection failed", connectionError.get());
+        Assertions.assertNull(connectionError.get(),
+                "Websocket connection failed");
     }
 
     private static void handshake(HttpExchange exchange) throws IOException {

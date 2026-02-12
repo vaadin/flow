@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -86,7 +86,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
-public class HotswapperTest {
+class HotswapperTest {
 
     Hotswapper hotswapper;
     Lookup lookup;
@@ -95,7 +95,7 @@ public class HotswapperTest {
     private VaadinHotswapper hillaHotswapper;
     private BrowserLiveReload liveReload;
 
-    @Before
+    @BeforeEach
     public void setup() {
         service = new MockVaadinServletService();
         lookup = service.getLookup();
@@ -1355,18 +1355,14 @@ public class HotswapperTest {
         };
         Hotswapper.register(vaadinService);
 
-        Assert.assertTrue(
-                "Expected hotswapper SessionInitListener to be registered in development mode, but was not",
-                sessionInitInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper SessionDestroyListener to be registered in development mode, but was not",
-                sessionDestroyInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper ServiceDestroyListener to be registered in development mode, but was not",
-                serviceDestroyInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper UIInitListener to be registered in development mode, but was not",
-                uiInitInstalled.get());
+        Assertions.assertTrue(sessionInitInstalled.get(),
+                "Expected hotswapper SessionInitListener to be registered in development mode, but was not");
+        Assertions.assertTrue(sessionDestroyInstalled.get(),
+                "Expected hotswapper SessionDestroyListener to be registered in development mode, but was not");
+        Assertions.assertTrue(serviceDestroyInstalled.get(),
+                "Expected hotswapper ServiceDestroyListener to be registered in development mode, but was not");
+        Assertions.assertTrue(uiInitInstalled.get(),
+                "Expected hotswapper UIInitListener to be registered in development mode, but was not");
     }
 
     @Test
@@ -1408,18 +1404,14 @@ public class HotswapperTest {
         };
         Hotswapper.register(vaadinService);
 
-        Assert.assertFalse(
-                "Expected hotswapper SessionInitListener not to be registered in production mode, but it was",
-                sessionInitInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  SessionDestroyListener not to be registered in production mode, but it was",
-                sessionDestroyInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  ServiceDestroyListener not to be registered in production mode, but it was",
-                serviceDestroyInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  UIInitListener not to be registered in production mode, but it was",
-                uiInitInstalled.get());
+        Assertions.assertFalse(sessionInitInstalled.get(),
+                "Expected hotswapper SessionInitListener not to be registered in production mode, but it was");
+        Assertions.assertFalse(sessionDestroyInstalled.get(),
+                "Expected hotswapper  SessionDestroyListener not to be registered in production mode, but it was");
+        Assertions.assertFalse(serviceDestroyInstalled.get(),
+                "Expected hotswapper  ServiceDestroyListener not to be registered in production mode, but it was");
+        Assertions.assertFalse(uiInitInstalled.get(),
+                "Expected hotswapper  UIInitListener not to be registered in production mode, but it was");
     }
 
     @Test
@@ -1432,9 +1424,8 @@ public class HotswapperTest {
             session.lock();
             UIInitEvent event = new UIInitEvent(ui, service);
             hotswapper.uiInit(event);
-            Assert.assertTrue(
-                    "Expected Hotswapper to register client side refresh event listener ",
-                    ui.refreshUIClientListenerRegistered);
+            Assertions.assertTrue(ui.refreshUIClientListenerRegistered,
+                    "Expected Hotswapper to register client side refresh event listener ");
         } finally {
             session.unlock();
         }
@@ -1469,7 +1460,7 @@ public class HotswapperTest {
 
         hotswapper = new Hotswapper(service);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 List.of(First.class, DefaultPriority.class, Last.class),
                 executionListener.executed);
     }
@@ -1517,9 +1508,10 @@ public class HotswapperTest {
         Mockito.verify(hotswapper)
                 .onHotswapComplete(eventArgumentCaptor.capture());
         HotswapCompleteEvent capturedEvent = eventArgumentCaptor.getValue();
-        Assert.assertEquals(event.getService(), capturedEvent.getService());
-        Assert.assertEquals(event.getClasses(), capturedEvent.getClasses());
-        Assert.assertEquals(event.isRedefined(), capturedEvent.isRedefined());
+        Assertions.assertEquals(event.getService(), capturedEvent.getService());
+        Assertions.assertEquals(event.getClasses(), capturedEvent.getClasses());
+        Assertions.assertEquals(event.isRedefined(),
+                capturedEvent.isRedefined());
     }
 
     @Tag("my-route")
@@ -1671,27 +1663,22 @@ public class HotswapperTest {
         }
 
         void assertNotRefreshed() {
-            Assert.assertNull(
-                    "Expecting refreshCurrentRoute not to be called, but was invoked",
-                    refreshRouteChainRequested);
+            Assertions.assertNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute not to be called, but was invoked");
         }
 
         void assertRouteRefreshed() {
-            Assert.assertNotNull(
-                    "Expecting refreshCurrentRoute to be called but was not",
-                    refreshRouteChainRequested);
-            Assert.assertFalse(
-                    "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested",
-                    refreshRouteChainRequested);
+            Assertions.assertNotNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            Assertions.assertFalse(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested");
         }
 
         void assertChainRefreshed() {
-            Assert.assertNotNull(
-                    "Expecting refreshCurrentRoute to be called but was not",
-                    refreshRouteChainRequested);
-            Assert.assertTrue(
-                    "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested",
-                    refreshRouteChainRequested);
+            Assertions.assertNotNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            Assertions.assertTrue(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested");
         }
 
         void enablePush() {

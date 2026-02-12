@@ -21,9 +21,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -36,15 +36,16 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-public class HotswapEventsTest {
+class HotswapEventsTest {
 
     private VaadinService vaadinService;
     private Set<Class<?>> classes;
     private ObjectMapper objectMapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         vaadinService = new MockVaadinServletService(false);
         classes = new HashSet<>(Set.of(String.class, Integer.class));
@@ -57,36 +58,38 @@ public class HotswapEventsTest {
     public void constructor_HotswapClassEvent_validParameters_createsInstance() {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
-        Assert.assertNotNull("Event should be created", event);
-        Assert.assertSame(vaadinService, event.getVaadinService());
-        Assert.assertEquals(classes, event.getChangedClasses());
-        Assert.assertTrue(event.isRedefined());
+        Assertions.assertNotNull(event, "Event should be created");
+        Assertions.assertSame(vaadinService, event.getVaadinService());
+        Assertions.assertEquals(classes, event.getChangedClasses());
+        Assertions.assertTrue(event.isRedefined());
     }
 
     @Test
     public void constructor_nullVaadinService_throws() {
-        Exception exception = Assert.assertThrows(NullPointerException.class,
+        Exception exception = Assertions.assertThrows(
+                NullPointerException.class,
                 () -> new HotswapClassEvent(null, classes, true));
-        Assert.assertTrue("Event should not be created with null service",
-                exception.getMessage().contains("VaadinService"));
-        exception = Assert.assertThrows(NullPointerException.class,
+        Assertions.assertTrue(exception.getMessage().contains("VaadinService"),
+                "Event should not be created with null service");
+        exception = Assertions.assertThrows(NullPointerException.class,
                 () -> new HotswapClassSessionEvent(null,
                         new MockVaadinSession(), classes, true));
-        Assert.assertTrue("Event should not be created with null service",
-                exception.getMessage().contains("VaadinService"));
-        exception = Assert.assertThrows(NullPointerException.class,
+        Assertions.assertTrue(exception.getMessage().contains("VaadinService"),
+                "Event should not be created with null service");
+        exception = Assertions.assertThrows(NullPointerException.class,
                 () -> new HotswapResourceEvent(null, new HashSet<>()));
-        Assert.assertTrue("Event should not be created with null service",
-                exception.getMessage().contains("VaadinService"));
+        Assertions.assertTrue(exception.getMessage().contains("VaadinService"),
+                "Event should not be created with null service");
     }
 
     @Test
     public void constructor_HotswapClassEvent_nullClasses_createsInstance() {
-        Exception exception = Assert.assertThrows(NullPointerException.class,
+        Exception exception = Assertions.assertThrows(
+                NullPointerException.class,
                 () -> new HotswapClassEvent(vaadinService, null, true));
-        Assert.assertTrue(
-                "Event should not be created with null changed classes",
-                exception.getMessage().contains("Changed classes"));
+        Assertions.assertTrue(
+                exception.getMessage().contains("Changed classes"),
+                "Event should not be created with null changed classes");
     }
 
     @Test
@@ -94,20 +97,21 @@ public class HotswapEventsTest {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService,
                 new HashSet<>(), false);
 
-        Assert.assertNotNull("Event should be created with empty classes",
-                event);
-        Assert.assertSame(vaadinService, event.getVaadinService());
-        Assert.assertTrue(event.getChangedClasses().isEmpty());
-        Assert.assertFalse(event.isRedefined());
+        Assertions.assertNotNull(event,
+                "Event should be created with empty classes");
+        Assertions.assertSame(vaadinService, event.getVaadinService());
+        Assertions.assertTrue(event.getChangedClasses().isEmpty());
+        Assertions.assertFalse(event.isRedefined());
     }
 
     @Test
     public void constructor_HotswapClassSessionEvent_nullVaadinSession_throws() {
-        Exception exception = Assert.assertThrows(NullPointerException.class,
+        Exception exception = Assertions.assertThrows(
+                NullPointerException.class,
                 () -> new HotswapClassSessionEvent(vaadinService, null, classes,
                         true));
-        Assert.assertTrue("Event should not be created with null session",
-                exception.getMessage().contains("VaadinSession"));
+        Assertions.assertTrue(exception.getMessage().contains("VaadinSession"),
+                "Event should not be created with null session");
     }
 
     @Test
@@ -115,17 +119,19 @@ public class HotswapEventsTest {
         VaadinSession session = new MockVaadinSession();
         HotswapClassSessionEvent event = new HotswapClassSessionEvent(
                 vaadinService, session, classes, true);
-        Assert.assertNotNull("Event should be created with empty classes",
-                event);
-        Assert.assertSame(session, event.getVaadinSession());
+        Assertions.assertNotNull(event,
+                "Event should be created with empty classes");
+        Assertions.assertSame(session, event.getVaadinSession());
     }
 
     @Test
     public void constructor_HotswapResourceEvent_nullResources_throws() {
-        Exception exception = Assert.assertThrows(NullPointerException.class,
+        Exception exception = Assertions.assertThrows(
+                NullPointerException.class,
                 () -> new HotswapResourceEvent(vaadinService, null));
-        Assert.assertTrue("Event should not be created with null resources",
-                exception.getMessage().contains("Changed resources"));
+        Assertions.assertTrue(
+                exception.getMessage().contains("Changed resources"),
+                "Event should not be created with null resources");
     }
 
     @Test
@@ -135,9 +141,9 @@ public class HotswapEventsTest {
         resources.add(URI.create("/path/to/resource2.js"));
         HotswapResourceEvent event = new HotswapResourceEvent(vaadinService,
                 resources);
-        Assert.assertNotNull("Event should be created with empty classes",
-                event);
-        Assert.assertEquals(resources, event.getChangedResources());
+        Assertions.assertNotNull(event,
+                "Event should be created with empty classes");
+        Assertions.assertEquals(resources, event.getChangedResources());
     }
 
     // ========== Global triggerUpdate Tests ==========
@@ -148,20 +154,20 @@ public class HotswapEventsTest {
                 true);
 
         event.triggerUpdate(UIUpdateStrategy.REFRESH);
-        Assert.assertFalse(event.requiresPageReload());
-        Assert.assertFalse(event.anyUIRequiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.anyUIRequiresPageReload());
     }
 
     @Test
     public void triggerUpdate_global_setReload_succeeds() {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
-        Assert.assertFalse("UI update not yet requested",
-                event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload(),
+                "UI update not yet requested");
 
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
-        Assert.assertTrue(event.requiresPageReload());
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.requiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -172,8 +178,8 @@ public class HotswapEventsTest {
         event.triggerUpdate(UIUpdateStrategy.REFRESH);
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
 
-        Assert.assertTrue(event.requiresPageReload());
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.requiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -184,8 +190,8 @@ public class HotswapEventsTest {
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
         event.triggerUpdate(UIUpdateStrategy.REFRESH);
 
-        Assert.assertTrue(event.requiresPageReload());
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.requiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -196,15 +202,15 @@ public class HotswapEventsTest {
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
 
-        Assert.assertTrue(event.requiresPageReload());
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.requiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
     public void triggerUpdate_global_nullStrategy_throws() {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> event.triggerUpdate(null));
     }
 
@@ -216,17 +222,17 @@ public class HotswapEventsTest {
                 true);
         UI ui = createMockUI();
 
-        Assert.assertTrue("UI update should not have yet been triggered",
-                event.getUIUpdateStrategy(ui).isEmpty());
+        Assertions.assertTrue(event.getUIUpdateStrategy(ui).isEmpty(),
+                "UI update should not have yet been triggered");
 
         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
 
-        Assert.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
         Optional<UIUpdateStrategy> strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
 
-        Assert.assertFalse(event.anyUIRequiresPageReload());
+        Assertions.assertFalse(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -239,15 +245,15 @@ public class HotswapEventsTest {
         event.triggerUpdate(ui1, UIUpdateStrategy.REFRESH);
         event.triggerUpdate(ui2, UIUpdateStrategy.RELOAD);
 
-        Assert.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
         Optional<UIUpdateStrategy> strategy1 = event.getUIUpdateStrategy(ui1);
-        Assert.assertTrue(strategy1.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy1.get());
+        Assertions.assertTrue(strategy1.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH, strategy1.get());
         Optional<UIUpdateStrategy> strategy2 = event.getUIUpdateStrategy(ui2);
-        Assert.assertTrue(strategy2.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy2.get());
+        Assertions.assertTrue(strategy2.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy2.get());
 
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -259,12 +265,12 @@ public class HotswapEventsTest {
         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
         event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
 
-        Assert.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
         Optional<UIUpdateStrategy> strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
 
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
 
     }
 
@@ -277,12 +283,12 @@ public class HotswapEventsTest {
         event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
 
-        Assert.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
         Optional<UIUpdateStrategy> strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
 
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -294,12 +300,12 @@ public class HotswapEventsTest {
         event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
         event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
 
-        Assert.assertFalse(event.requiresPageReload());
+        Assertions.assertFalse(event.requiresPageReload());
         Optional<UIUpdateStrategy> strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
 
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     @Test
@@ -307,11 +313,11 @@ public class HotswapEventsTest {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
-        NullPointerException exception = Assert.assertThrows(
+        NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> event.triggerUpdate(null, UIUpdateStrategy.REFRESH));
-        Assert.assertTrue("Should not be able to trigger update for null UI",
-                exception.getMessage().contains("UI"));
+        Assertions.assertTrue(exception.getMessage().contains("UI"),
+                "Should not be able to trigger update for null UI");
     }
 
     @Test
@@ -320,11 +326,12 @@ public class HotswapEventsTest {
                 true);
         UI ui = createMockUI();
 
-        NullPointerException exception = Assert.assertThrows(
+        NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> event.triggerUpdate(ui, null));
-        Assert.assertTrue("Should not be able to trigger update for null UI",
-                exception.getMessage().contains("UI update strategy"));
+        Assertions.assertTrue(
+                exception.getMessage().contains("UI update strategy"),
+                "Should not be able to trigger update for null UI");
     }
 
     @Test
@@ -336,15 +343,15 @@ public class HotswapEventsTest {
         event.triggerUpdate(UIUpdateStrategy.REFRESH);
 
         Optional<UIUpdateStrategy> strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
 
         event.triggerUpdate(UIUpdateStrategy.RELOAD);
         strategy = event.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        Assertions.assertTrue(strategy.isPresent());
+        Assertions.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
 
-        Assert.assertTrue(event.anyUIRequiresPageReload());
+        Assertions.assertTrue(event.anyUIRequiresPageReload());
     }
 
     // ========== updateClientResource Tests ==========
@@ -376,20 +383,24 @@ public class HotswapEventsTest {
         Mockito.verify(reload).update(path, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void updateClientResource_nullPath_throwsException() {
-        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
-                true);
+        assertThrows(IllegalArgumentException.class, () -> {
+            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
+                    classes, true);
 
-        event.updateClientResource(null, "content");
+            event.updateClientResource(null, "content");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void updateClientResource_emptyPath_throwsException() {
-        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
-                true);
+        assertThrows(IllegalArgumentException.class, () -> {
+            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
+                    classes, true);
 
-        event.updateClientResource("", "content");
+            event.updateClientResource("", "content");
+        });
     }
 
     @Test
@@ -465,22 +476,26 @@ public class HotswapEventsTest {
         Mockito.verify(reload).sendHmrEvent(eventName, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void sendHmrEvent_nullEvent_throwsException() {
-        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
-                true);
-        ObjectNode data = objectMapper.createObjectNode();
+        assertThrows(IllegalArgumentException.class, () -> {
+            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
+                    classes, true);
+            ObjectNode data = objectMapper.createObjectNode();
 
-        event.sendHmrEvent(null, data);
+            event.sendHmrEvent(null, data);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void sendHmrEvent_emptyEvent_throwsException() {
-        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
-                true);
-        ObjectNode data = objectMapper.createObjectNode();
+        assertThrows(IllegalArgumentException.class, () -> {
+            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
+                    classes, true);
+            ObjectNode data = objectMapper.createObjectNode();
 
-        event.sendHmrEvent("", data);
+            event.sendHmrEvent("", data);
+        });
     }
 
     @Test

@@ -27,9 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -47,11 +47,11 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class DevModeEndpointTest extends AbstractDevModeTest {
+class DevModeEndpointTest extends AbstractDevModeTest {
 
     Set<Class<?>> classes;
     DevModeStartupListener devModeStartupListener;
@@ -60,15 +60,16 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
     }
 
-    @Before
+    @BeforeEach
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         super.setup();
-        assertFalse("No DevModeHandler should be available at test start",
+        assertFalse(
                 DevModeHandlerManager
                         .getDevModeHandler(
                                 new VaadinServletContext(servletContext))
-                        .isPresent());
+                        .isPresent(),
+                "No DevModeHandler should be available at test start");
 
         createStubNode(false, true, baseDir);
         createStubViteServer("ready in 500 ms", 500, baseDir, true);
@@ -120,7 +121,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 .get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json")
                 .toFile();
 
-        Assert.assertFalse(generatedOpenApiJson.exists());
+        Assertions.assertFalse(generatedOpenApiJson.exists());
         MockedStatic<FrontendUtils> frontendUtils = Mockito
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
         MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
@@ -139,8 +140,8 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
             frontendUtils.close();
             frontendBuildUtils.close();
         }
-        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
-                generatedOpenApiJson.exists());
+        Assertions.assertTrue(generatedOpenApiJson.exists(),
+                "Should generate OpenAPI spec if Endpoint is used.");
     }
 
     @Test

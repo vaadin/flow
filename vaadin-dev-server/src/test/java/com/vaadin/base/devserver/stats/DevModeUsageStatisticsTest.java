@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -30,7 +30,7 @@ import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.pro.licensechecker.MachineId;
 
 @NotThreadSafe
-public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
+class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void clientData() throws Exception {
@@ -52,7 +52,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "pom" + ProjectHelpers.createHash("com.exampledemo"),
                 storage.getProjectId());
     }
@@ -64,7 +64,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
-        Assert.assertEquals("https://start.vaadin.com/test/1",
+        Assertions.assertEquals("https://start.vaadin.com/test/1",
                 json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
@@ -75,7 +75,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
-        Assert.assertEquals("https://start.vaadin.com/test/2",
+        Assertions.assertEquals("https://start.vaadin.com/test/2",
                 json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
@@ -86,7 +86,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
-        Assert.assertEquals("https://start.vaadin.com/test/3",
+        Assertions.assertEquals("https://start.vaadin.com/test/3",
                 json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
@@ -97,7 +97,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         ObjectNode json = storage.readProject();
-        Assert.assertEquals("https://start.vaadin.com/test/4",
+        Assertions.assertEquals("https://start.vaadin.com/test/4",
                 json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
@@ -114,52 +114,61 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         StatisticsContainer projectData = new StatisticsContainer(
                 storage.readProject());
 
-        Assert.assertEquals("Min does not match", 1,
-                projectData.getValueAsDouble("aggregate_min"), 0);
-        Assert.assertEquals("Max does not match", 1,
-                projectData.getValueAsDouble("aggregate_max"), 0);
-        Assert.assertEquals("Average does not match", 1,
-                projectData.getValueAsDouble("aggregate_avg"), 0);
-        Assert.assertEquals("Count does not match", 1,
-                projectData.getValueAsInt("aggregate_count"));
+        Assertions.assertEquals(1,
+                projectData.getValueAsDouble("aggregate_min"), 0,
+                "Min does not match");
+        Assertions.assertEquals(1,
+                projectData.getValueAsDouble("aggregate_max"), 0,
+                "Max does not match");
+        Assertions.assertEquals(1,
+                projectData.getValueAsDouble("aggregate_avg"), 0,
+                "Average does not match");
+        Assertions.assertEquals(1, projectData.getValueAsInt("aggregate_count"),
+                "Count does not match");
 
         DevModeUsageStatistics.collectEvent("aggregate", 2);
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Min does not match", 1,
-                projectData.getValueAsDouble("aggregate_min"), 0);
-        Assert.assertEquals("Max does not match", 2,
-                projectData.getValueAsDouble("aggregate_max"), 0);
-        Assert.assertEquals("Average does not match", 1.5,
-                projectData.getValueAsDouble("aggregate_avg"), 0);
-        Assert.assertEquals("Count does not match", 2,
-                projectData.getValueAsInt("aggregate_count"));
+        Assertions.assertEquals(1,
+                projectData.getValueAsDouble("aggregate_min"), 0,
+                "Min does not match");
+        Assertions.assertEquals(2,
+                projectData.getValueAsDouble("aggregate_max"), 0,
+                "Max does not match");
+        Assertions.assertEquals(1.5,
+                projectData.getValueAsDouble("aggregate_avg"), 0,
+                "Average does not match");
+        Assertions.assertEquals(2, projectData.getValueAsInt("aggregate_count"),
+                "Count does not match");
 
         DevModeUsageStatistics.collectEvent("aggregate", 3);
         projectData = new StatisticsContainer(storage.readProject());
 
-        Assert.assertEquals("Min does not match", 1,
-                projectData.getValueAsDouble("aggregate_min"), 0);
-        Assert.assertEquals("Max does not match", 3,
-                projectData.getValueAsDouble("aggregate_max"), 0);
-        Assert.assertEquals("Average does not match", 2,
-                projectData.getValueAsDouble("aggregate_avg"), 0);
-        Assert.assertEquals("Count does not match", 3,
-                projectData.getValueAsInt("aggregate_count"));
+        Assertions.assertEquals(1,
+                projectData.getValueAsDouble("aggregate_min"), 0,
+                "Min does not match");
+        Assertions.assertEquals(3,
+                projectData.getValueAsDouble("aggregate_max"), 0,
+                "Max does not match");
+        Assertions.assertEquals(2,
+                projectData.getValueAsDouble("aggregate_avg"), 0,
+                "Average does not match");
+        Assertions.assertEquals(3, projectData.getValueAsInt("aggregate_count"),
+                "Count does not match");
 
         // Test count events
         DevModeUsageStatistics.collectEvent("count");
         projectData = new StatisticsContainer(storage.readProject());
 
-        Assert.assertEquals("Increment does not match", 1,
-                projectData.getValueAsInt("count"));
+        Assertions.assertEquals(1, projectData.getValueAsInt("count"),
+                "Increment does not match");
         DevModeUsageStatistics.collectEvent("count");
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Increment does not match", 2,
-                projectData.getValueAsInt("count"));
+        Assertions.assertEquals(2, projectData.getValueAsInt("count"),
+                "Increment does not match");
         DevModeUsageStatistics.collectEvent("count");
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Increment does not match", 3,
-                projectData.getValueAsInt("count"));
+        Assertions.assertEquals(3, projectData.getValueAsInt("count"),
+                "Increment does not match");
 
     }
 
@@ -172,24 +181,24 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         StatisticsContainer projectData = new StatisticsContainer(
                 storage.readProject());
         // Data contains 5 previous starts for this project
-        Assert.assertEquals("Expected to have 6 restarts", 6,
-                projectData.getValueAsInt("devModeStarts"));
+        Assertions.assertEquals(6, projectData.getValueAsInt("devModeStarts"),
+                "Expected to have 6 restarts");
 
         // Switch project to track
         File mavenProjectFolder2 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder2");
         DevModeUsageStatistics.init(mavenProjectFolder2, storage, sender);
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Expected to have one restarts", 1,
-                projectData.getValueAsInt("devModeStarts"));
+        Assertions.assertEquals(1, projectData.getValueAsInt("devModeStarts"),
+                "Expected to have one restarts");
 
         // Switch project to track
         File gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1");
         DevModeUsageStatistics.init(gradleProjectFolder1, storage, sender);
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Expected to have one restarts", 1,
-                projectData.getValueAsInt("devModeStarts"));
+        Assertions.assertEquals(1, projectData.getValueAsInt("devModeStarts"),
+                "Expected to have one restarts");
 
         // Switch project to track
         File gradleProjectFolder2 = TestUtils
@@ -199,13 +208,13 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(gradleProjectFolder2, storage, sender);
         DevModeUsageStatistics.init(gradleProjectFolder2, storage, sender);
         projectData = new StatisticsContainer(storage.readProject());
-        Assert.assertEquals("Expected to have 2 restarts", 2,
-                projectData.getValueAsInt("devModeStarts"));
+        Assertions.assertEquals(2, projectData.getValueAsInt("devModeStarts"),
+                "Expected to have 2 restarts");
 
         // Check that all project are stored correctly
         ObjectNode allData = storage.read();
-        Assert.assertEquals("Expected to have 4 projects", 4,
-                getNumberOfProjects(allData));
+        Assertions.assertEquals(4, getNumberOfProjects(allData),
+                "Expected to have 4 projects");
 
     }
 
@@ -217,9 +226,9 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder2");
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
-        Assert.assertNotNull(id1);
-        Assert.assertNotNull(id2);
-        Assert.assertNotEquals(id1, id2); // Should differ
+        Assertions.assertNotNull(id1);
+        Assertions.assertNotNull(id2);
+        Assertions.assertNotEquals(id1, id2); // Should differ
     }
 
     @Test
@@ -230,8 +239,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder2");
         String source1 = ProjectHelpers.getProjectSource(mavenProjectFolder1);
         String source2 = ProjectHelpers.getProjectSource(mavenProjectFolder2);
-        Assert.assertEquals("https://start.vaadin.com/test/1", source1);
-        Assert.assertEquals("https://start.vaadin.com/test/2", source2);
+        Assertions.assertEquals("https://start.vaadin.com/test/1", source1);
+        Assertions.assertEquals("https://start.vaadin.com/test/2", source2);
     }
 
     @Test
@@ -242,9 +251,9 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/gradle-project-folder2");
         String id1 = ProjectHelpers.generateProjectId(gradleProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(gradleProjectFolder2);
-        Assert.assertNotNull(id1);
-        Assert.assertNotNull(id2);
-        Assert.assertNotEquals(id1, id2); // Should differ
+        Assertions.assertNotNull(id1);
+        Assertions.assertNotNull(id2);
+        Assertions.assertNotEquals(id1, id2); // Should differ
     }
 
     @Test
@@ -255,8 +264,8 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/gradle-project-folder2");
         String source1 = ProjectHelpers.getProjectSource(gradleProjectFolder1);
         String source2 = ProjectHelpers.getProjectSource(gradleProjectFolder2);
-        Assert.assertEquals("https://start.vaadin.com/test/3", source1);
-        Assert.assertEquals("https://start.vaadin.com/test/4", source2);
+        Assertions.assertEquals("https://start.vaadin.com/test/3", source1);
+        Assertions.assertEquals("https://start.vaadin.com/test/4", source2);
     }
 
     @Test
@@ -265,11 +274,11 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         File mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty");
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
-        Assert.assertEquals(DEFAULT_PROJECT_ID, id1);
-        Assert.assertEquals(DEFAULT_PROJECT_ID, id2); // Should be the
-                                                      // default
-                                                      // id in both
-                                                      // cases
+        Assertions.assertEquals(DEFAULT_PROJECT_ID, id1);
+        Assertions.assertEquals(DEFAULT_PROJECT_ID, id2); // Should be the
+        // default
+        // id in both
+        // cases
     }
 
     @Test
@@ -279,7 +288,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
         final ObjectNode project = storage.read();
-        Assert.assertEquals(MachineId.get(),
+        Assertions.assertEquals(MachineId.get(),
                 project.get(StatisticsConstants.FIELD_MACHINE_ID).asString());
     }
 

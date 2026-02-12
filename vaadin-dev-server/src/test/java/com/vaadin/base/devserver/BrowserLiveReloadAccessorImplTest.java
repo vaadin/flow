@@ -15,8 +15,8 @@
  */
 package com.vaadin.base.devserver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class BrowserLiveReloadAccessorImplTest {
+class BrowserLiveReloadAccessorImplTest {
 
     private BrowserLiveReloadAccessorImpl access = new BrowserLiveReloadAccessorImpl();
 
@@ -33,7 +33,7 @@ public class BrowserLiveReloadAccessorImplTest {
     public void getLiveReload_productionMode_nullIsReturned() {
         VaadinService service = mockConfiguration(true, false);
 
-        Assert.assertNull(access.getLiveReload(service));
+        Assertions.assertNull(access.getLiveReload(service));
     }
 
     @Test
@@ -44,7 +44,7 @@ public class BrowserLiveReloadAccessorImplTest {
                 Mockito.any()))
                 .thenReturn(Mockito.mock(BrowserLiveReload.class));
 
-        Assert.assertNotNull(access.getLiveReload(service));
+        Assertions.assertNotNull(access.getLiveReload(service));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class BrowserLiveReloadAccessorImplTest {
                 Mockito.any()))
                 .thenReturn(Mockito.mock(BrowserLiveReload.class));
 
-        Assert.assertNotNull(access.getLiveReload(service));
+        Assertions.assertNotNull(access.getLiveReload(service));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class BrowserLiveReloadAccessorImplTest {
                 Mockito.eq(BrowserLiveReload.class), Mockito.any()))
                 .thenReturn(reload);
 
-        Assert.assertSame(reload, access.getLiveReload(service));
+        Assertions.assertSame(reload, access.getLiveReload(service));
     }
 
     private VaadinService mockConfiguration(boolean productionMode,

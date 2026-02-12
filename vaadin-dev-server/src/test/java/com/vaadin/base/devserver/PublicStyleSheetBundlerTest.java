@@ -19,19 +19,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PublicStyleSheetBundlerTest {
+class PublicStyleSheetBundlerTest {
 
     private static final String EXPECTED_CSS = """
                 DIV.appshell-image {
@@ -42,15 +42,15 @@ public class PublicStyleSheetBundlerTest {
                     height: 100px;
                 }
             """;
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
 
     @Test
     public void bundle_inlinesImportedCss_returnsMergedContent()
             throws IOException {
         // Arrange a temporary fake project structure
-        File project = temporaryFolder.newFolder("project");
+        File project = Files.createDirectory(temporaryFolder.resolve("project"))
+                .toFile();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -73,22 +73,24 @@ public class PublicStyleSheetBundlerTest {
         Optional<String> bundled = bundler.bundle("/main.css", "");
 
         // Assert
-        assertTrue("Bundled CSS should be present", bundled.isPresent());
+        assertTrue(bundled.isPresent(), "Bundled CSS should be present");
         String result = normalizeWhitespace(bundled.get());
         // Should contain both imported and main rules
-        assertTrue("Result should contain imported content",
-                result.contains(".imported{background:blue;}"));
-        assertTrue("Result should contain main content",
-                result.contains(".main{color:red;}"));
+        assertTrue(result.contains(".imported{background:blue;}"),
+                "Result should contain imported content");
+        assertTrue(result.contains(".main{color:red;}"),
+                "Result should contain main content");
         // Imported content should appear before main rule when @import is first
-        assertTrue("Imported content should precede main content",
+        assertTrue(
                 result.indexOf(".imported{background:blue;}") < result
-                        .indexOf(".main{color:red;}"));
+                        .indexOf(".main{color:red;}"),
+                "Imported content should precede main content");
     }
 
     @Test
     public void bundle_supportsContextProtocol() throws IOException {
-        File project = temporaryFolder.newFolder("project2");
+        File project = Files
+                .createDirectory(temporaryFolder.resolve("project2")).toFile();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -139,7 +141,9 @@ public class PublicStyleSheetBundlerTest {
                     background: url('./gobo.png') no-repeat;
                 }
                 """;
-        File project = temporaryFolder.newFolder("project_meta");
+        File project = Files
+                .createDirectory(temporaryFolder.resolve("project_meta"))
+                .toFile();
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         assertTrue(publicRoot.mkdirs());
@@ -152,12 +156,12 @@ public class PublicStyleSheetBundlerTest {
                 .forResourceLocations(java.util.List.of(publicRoot));
 
         Optional<String> bundled = bundler.bundle("./styles.css", "");
-        assertTrue("Bundled CSS should be present", bundled.isPresent());
+        assertTrue(bundled.isPresent(), "Bundled CSS should be present");
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(
                 given.replace("./gobo.png", "/gobo.png"));
-        assertEquals("URL paths in top-level CSS should be preserved", expected,
-                result);
+        assertEquals(expected, result,
+                "URL paths in top-level CSS should be preserved");
     }
 
     @Test
@@ -174,7 +178,9 @@ public class PublicStyleSheetBundlerTest {
         //             │   └── nested-imported.css
         //             └── styles.css
         // @formatter:on
-        File project = temporaryFolder.newFolder("project_meta_import");
+        File project = Files
+                .createDirectory(temporaryFolder.resolve("project_meta_import"))
+                .toFile();
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         File cssRoot = new File(publicRoot, "css");
@@ -201,13 +207,12 @@ public class PublicStyleSheetBundlerTest {
         String result = normalizeWhitespace(bundled.get());
         String expectedImported = normalizeWhitespace(EXPECTED_CSS
                 .replace("../images/gobo.png", "/css/images/gobo.png"));
-        assertTrue(
-                "Imported nested content should be inlined with rebased URLs",
-                result.contains(expectedImported));
-        assertTrue("Main marker should be present after imported content",
-                result.contains(expectedImported));
-        assertFalse("Should not rewrite to VAADIN/themes",
-                result.contains("VAADIN/themes"));
+        assertTrue(result.contains(expectedImported),
+                "Imported nested content should be inlined with rebased URLs");
+        assertTrue(result.contains(expectedImported),
+                "Main marker should be present after imported content");
+        assertFalse(result.contains("VAADIN/themes"),
+                "Should not rewrite to VAADIN/themes");
     }
 
     @Test
@@ -226,7 +231,9 @@ public class PublicStyleSheetBundlerTest {
         //                 │ └── nested-imported.css
         //                 └── view.css
         // @formatter:on
-        File project = temporaryFolder.newFolder("project_meta_import");
+        File project = Files
+                .createDirectory(temporaryFolder.resolve("project_meta_import"))
+                .toFile();
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         File cssRoot = new File(publicRoot, "css");
@@ -264,14 +271,15 @@ public class PublicStyleSheetBundlerTest {
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(given
                 .replace("../../images/viking.png", "/css/images/viking.png"));
-        Assert.assertEquals(
-                "Unexpected bundled content for double nested sub-directories",
-                expected, result);
+        Assertions.assertEquals(expected, result,
+                "Unexpected bundled content for double nested sub-directories");
     }
 
     @Test
     public void bundle_withImport_inlinesWithContextPath() throws IOException {
-        File project = temporaryFolder.newFolder("project_inline_ctx");
+        File project = Files
+                .createDirectory(temporaryFolder.resolve("project_inline_ctx"))
+                .toFile();
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         File cssRoot = new File(publicRoot, "css");
@@ -306,9 +314,8 @@ public class PublicStyleSheetBundlerTest {
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(nested.replace(
                 "../../images/viking.png", "/context/css/images/viking.png"));
-        Assert.assertEquals(
-                "Inline bundled content should contain absolute context-aware URL",
-                expected, result);
+        Assertions.assertEquals(expected, result,
+                "Inline bundled content should contain absolute context-aware URL");
     }
 
     @Test
@@ -319,7 +326,10 @@ public class PublicStyleSheetBundlerTest {
                     background: url('./gobo.png') no-repeat;
                 }
                 """;
-        File project = temporaryFolder.newFolder("project_inline_top_level");
+        File project = Files
+                .createDirectory(
+                        temporaryFolder.resolve("project_inline_top_level"))
+                .toFile();
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         assertTrue(publicRoot.mkdirs());
@@ -335,13 +345,12 @@ public class PublicStyleSheetBundlerTest {
 
         Optional<String> bundled = bundler.bundle("/css/styles.css",
                 "/context");
-        assertTrue("Bundled CSS should be present", bundled.isPresent());
+        assertTrue(bundled.isPresent(), "Bundled CSS should be present");
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(
                 given.replace("./gobo.png", "/context/css/gobo.png"));
-        assertEquals(
-                "Top-level URL should be rewritten to absolute with context path",
-                expected, result);
+        assertEquals(expected, result,
+                "Top-level URL should be rewritten to absolute with context path");
     }
 
     private static String normalizeWhitespace(String s) {

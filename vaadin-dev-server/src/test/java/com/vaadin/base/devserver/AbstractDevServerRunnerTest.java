@@ -37,10 +37,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.opentest4j.TestAbortedException;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -48,7 +48,7 @@ import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 
-public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
+class AbstractDevServerRunnerTest extends AbstractDevModeTest {
 
     private class DummyRunner extends AbstractDevServerRunner {
 
@@ -133,49 +133,45 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                     requestedPath.set((String) invocation.getArguments()[0]);
                     return Mockito.mock(HttpURLConnection.class);
                 });
-        Assert.assertTrue("Dev server should have served the resource",
-                devServer.serveDevModeRequest(request, response));
-        Assert.assertEquals("foo%20bar", requestedPath.get());
+        Assertions.assertTrue(devServer.serveDevModeRequest(request, response),
+                "Dev server should have served the resource");
+        Assertions.assertEquals("foo%20bar", requestedPath.get());
 
     }
 
     @Test
     public void updateServerStartupEnvironment_preferIpv4_LocalhostIpAddressAddedToProcessEnvironment() {
         assertOnDevProcessEnvironment(Inet4Address.class, environment -> {
-            Assert.assertNotNull(
-                    "Expecting watchDogPort to be added to environment, but was not",
-                    environment.get("watchDogPort"));
+            Assertions.assertNotNull(environment.get("watchDogPort"),
+                    "Expecting watchDogPort to be added to environment, but was not");
 
             String watchDogHost = environment.get("watchDogHost");
-            Assert.assertNotNull(
-                    "Expecting watchDogHost to be added to environment, but was not",
-                    watchDogHost);
+            Assertions.assertNotNull(watchDogHost,
+                    "Expecting watchDogHost to be added to environment, but was not");
             // From InetAddress javadocs:
             // The IPv4 loopback address returned is only one of many in the
             // form 127.*.*.*
-            Assert.assertTrue(
+            Assertions.assertTrue(
+                    watchDogHost.matches("127\\.\\d+\\.\\d+\\.\\d+"),
                     "Expecting watchDogHost to be an ipv4 address, but was "
-                            + watchDogHost,
-                    watchDogHost.matches("127\\.\\d+\\.\\d+\\.\\d+"));
+                            + watchDogHost);
         });
     }
 
     @Test
     public void updateServerStartupEnvironment_preferIpv6_LocalhostIpAddressAddedToProcessEnvironment() {
         assertOnDevProcessEnvironment(Inet6Address.class, environment -> {
-            Assert.assertNotNull(
-                    "Expecting watchDogPort to be added to environment, but was not",
-                    environment.get("watchDogPort"));
+            Assertions.assertNotNull(environment.get("watchDogPort"),
+                    "Expecting watchDogPort to be added to environment, but was not");
 
             String watchDogHost = environment.get("watchDogHost");
-            Assert.assertNotNull(
-                    "Expecting watchDogHost to be added to environment, but was not",
-                    watchDogHost);
-            Assert.assertTrue(
-                    "Expecting watchDogHost to be an ipv6 address, but was "
-                            + watchDogHost,
+            Assertions.assertNotNull(watchDogHost,
+                    "Expecting watchDogHost to be added to environment, but was not");
+            Assertions.assertTrue(
                     "0:0:0:0:0:0:0:1".equals(watchDogHost)
-                            || "::1".equals(watchDogHost));
+                            || "::1".equals(watchDogHost),
+                    "Expecting watchDogHost to be an ipv6 address, but was "
+                            + watchDogHost);
         });
     }
 
@@ -184,7 +180,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         try {
             return Arrays.stream(InetAddress.getAllByName("localhost"))
                     .filter(type::isInstance).findFirst()
-                    .orElseThrow(() -> new AssumptionViolatedException(
+                    .orElseThrow(() -> new TestAbortedException(
                             "localhost address not found for "
                                     + type.getName()));
         } catch (UnknownHostException e) {

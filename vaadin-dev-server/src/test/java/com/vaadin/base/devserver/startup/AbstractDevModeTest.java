@@ -20,14 +20,15 @@ import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.CleanupMode;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
@@ -50,8 +51,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public abstract class AbstractDevModeTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir(cleanup = CleanupMode.NEVER)
+    public Path temporaryFolder;
     protected ApplicationConfiguration appConfig;
     protected ServletContext servletContext;
     protected Lookup lookup;
@@ -63,7 +64,7 @@ public abstract class AbstractDevModeTest {
     protected VaadinService vaadinService;
     protected VaadinServletContext vaadinContext;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // Reset static node installation cache to ensure test isolation
         com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
@@ -72,8 +73,8 @@ public abstract class AbstractDevModeTest {
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
         firstMapping.set(null, "/fake-test-mapping");
-        baseDir = temporaryFolder.getRoot().getPath();
-        npmFolder = temporaryFolder.getRoot();
+        baseDir = temporaryFolder.toString();
+        npmFolder = temporaryFolder.toFile();
 
         Boolean enablePnpm = Boolean.TRUE;
         appConfig = Mockito.spy(ApplicationConfiguration.class);
@@ -120,7 +121,7 @@ public abstract class AbstractDevModeTest {
 
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (handler != null) {
             handler.stop();
@@ -169,13 +170,13 @@ public abstract class AbstractDevModeTest {
     }
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {
-        Assert.assertNotNull(devModeHandler);
+        Assertions.assertNotNull(devModeHandler);
         ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
     }
 
     protected static boolean hasDevServerProcess(
             DevModeHandler devModeHandler) {
-        Assert.assertNotNull(devModeHandler);
+        Assertions.assertNotNull(devModeHandler);
         Field devServerProcessField;
         try {
             devServerProcessField = AbstractDevServerRunner.class

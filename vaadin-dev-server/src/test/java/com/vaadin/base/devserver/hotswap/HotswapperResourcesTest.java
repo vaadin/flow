@@ -17,12 +17,12 @@ package com.vaadin.base.devserver.hotswap;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -41,18 +41,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 
-public class HotswapperResourcesTest {
+class HotswapperResourcesTest {
 
     private MockVaadinServletService service;
     private BrowserLiveReload liveReload;
     private Hotswapper hotswapper;
     private VaadinHotswapper flowHotswapper;
     private VaadinHotswapper hillaHotswapper;
+    @TempDir
+    Path tempProjectDir;
 
-    @Rule
-    public TemporaryFolder tempProjectDir = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         service = new MockVaadinServletService();
 

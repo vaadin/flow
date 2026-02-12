@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.component.Component;
@@ -51,9 +51,10 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DevModeClassFinderTest {
+class DevModeClassFinderTest {
 
     private DevModeClassFinder classFinder = new DevModeClassFinder(
             Collections.emptySet());
@@ -75,10 +76,10 @@ public class DevModeClassFinderTest {
                 Layout.class, StyleSheet.class, StyleSheet.Container.class);
 
         for (Class<?> clz : classes) {
-            assertTrue("should be a known class " + clz.getName(),
-                    knownClasses.contains(clz));
+            assertTrue(knownClasses.contains(clz),
+                    "should be a known class " + clz.getName());
         }
-        Assert.assertEquals(knownClasses.size(), classes.size());
+        Assertions.assertEquals(knownClasses.size(), classes.size());
     }
 
     @Test
@@ -114,28 +115,36 @@ public class DevModeClassFinderTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void callGetgetAnnotatedClassesByClass_unexpectedType_throw() {
-        classFinder.getAnnotatedClasses(Test.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            classFinder.getAnnotatedClasses(Test.class);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void callGetgetAnnotatedClassesByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        classFinder.getAnnotatedClasses(ThemeDefinition.class.getName());
+        assertThrows(IllegalArgumentException.class, () -> {
+            classFinder.getAnnotatedClasses(ThemeDefinition.class.getName());
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void callGetSubTypesOfByClass_unexpectedType_throw() {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
-        classFinder.getSubTypesOf(Object.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            DevModeClassFinder classFinder = new DevModeClassFinder(
+                    Collections.emptySet());
+            classFinder.getSubTypesOf(Object.class);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void callGetSubTypesOfByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        classFinder.getSubTypesOf(SessionInitListener.class.getName());
+        assertThrows(IllegalArgumentException.class, () -> {
+            classFinder.getSubTypesOf(SessionInitListener.class.getName());
+        });
     }
 
     private Collection<Class<?>> getApplicableClasses() {

@@ -18,7 +18,7 @@ package com.vaadin.base.devserver.hotswap.impl;
 import java.net.URI;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.base.devserver.hotswap.HotswapResourceEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
@@ -26,16 +26,16 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-public class DefaultTranslationsHotswapperTest {
+class DefaultTranslationsHotswapperTest {
 
     DefaultTranslationsHotswapper hotswapper = new DefaultTranslationsHotswapper();
     VaadinService service = new MockVaadinServletService(false);
@@ -47,13 +47,13 @@ public class DefaultTranslationsHotswapperTest {
                         "file://some/path/vaadin-i18n/translation.properties"))));
         hotswapper.onResourcesChange(event);
 
-        assertFalse("Page reload is not necessary",
-                event.anyUIRequiresPageReload());
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Page reload is not necessary");
 
         UIUpdateStrategy updateStrategy = event
                 .getUIUpdateStrategy(new MockUI()).orElse(null);
-        assertEquals("Should refresh all UIs", UIUpdateStrategy.REFRESH,
-                updateStrategy);
+        assertEquals(UIUpdateStrategy.REFRESH, updateStrategy,
+                "Should refresh all UIs");
 
         verify(event).sendHmrEvent(eq("translations-update"), any());
     }
@@ -65,10 +65,10 @@ public class DefaultTranslationsHotswapperTest {
                         "file://some/path/resources/translation.properties"))));
         hotswapper.onResourcesChange(event);
 
-        assertFalse("Page reload is not necessary",
-                event.anyUIRequiresPageReload());
-        assertTrue("Should not refresh UIs",
-                event.getUIUpdateStrategy(new MockUI()).isEmpty());
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Page reload is not necessary");
+        assertTrue(event.getUIUpdateStrategy(new MockUI()).isEmpty(),
+                "Should not refresh UIs");
 
         verify(event, never()).sendHmrEvent(eq("translations-update"), any());
     }
@@ -80,11 +80,11 @@ public class DefaultTranslationsHotswapperTest {
                         "file://some/path/vaadin-i18n/translation.txt"))));
         hotswapper.onResourcesChange(event);
 
-        assertFalse("Page reload is not necessary",
-                event.anyUIRequiresPageReload());
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Page reload is not necessary");
 
-        assertTrue("Should not refresh UIs",
-                event.getUIUpdateStrategy(new MockUI()).isEmpty());
+        assertTrue(event.getUIUpdateStrategy(new MockUI()).isEmpty(),
+                "Should not refresh UIs");
 
         verify(event, never()).sendHmrEvent(eq("translations-update"), any());
     }
