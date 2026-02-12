@@ -18,7 +18,7 @@ package com.vaadin.flow.tests.data;
 import java.io.Serializable;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -26,9 +26,9 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DataSerializableTest extends ClassesSerializableTest {
+class DataSerializableTest extends ClassesSerializableTest {
 
     /*
      * AbstractDataProvider.addDataProviderListener may return a Registration

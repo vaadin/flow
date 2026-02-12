@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Superclass for testing classes which need to scan project's classpath.
@@ -147,9 +147,13 @@ public abstract class ClassFinder {
         }
 
         // Test classes with a @Test annotation on some method
+        // Check both JUnit 5 and JUnit 4 @Test annotations
         try {
             for (Method method : cls.getMethods()) {
                 if (method.isAnnotationPresent(Test.class)) {
+                    return true;
+                }
+                if (hasJUnit4TestAnnotation(method)) {
                     return true;
                 }
             }
@@ -160,6 +164,17 @@ public abstract class ClassFinder {
         }
 
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean hasJUnit4TestAnnotation(Method method) {
+        try {
+            Class<? extends java.lang.annotation.Annotation> junit4Test = (Class<? extends java.lang.annotation.Annotation>) Class
+                    .forName("org.junit.Test");
+            return method.isAnnotationPresent(junit4Test);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     /**
