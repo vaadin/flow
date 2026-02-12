@@ -154,17 +154,16 @@ class FeatureFlagsTest {
 
     @Test
     public void setEnabledOnlyInDevelopmentMode() throws IOException {
-        assertThrows(IllegalStateException.class, () -> {
-            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
-            createFeatureFlagsFile(
-                    "com.vaadin.experimental.exampleFeatureFlag=true\n");
-            ApplicationConfiguration conf = ApplicationConfiguration
-                    .get(VaadinService.getCurrent().getContext());
-            Mockito.when(conf.isProductionMode()).thenReturn(true);
-            featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(),
-                    true);
-        });
+        createFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        ApplicationConfiguration conf = ApplicationConfiguration
+                .get(VaadinService.getCurrent().getContext());
+        Mockito.when(conf.isProductionMode()).thenReturn(true);
+        assertThrows(IllegalStateException.class,
+                () -> featureFlags.setEnabled(
+                        TestFeatureFlagProvider.EXAMPLE.getId(), true));
     }
 
     @Test
