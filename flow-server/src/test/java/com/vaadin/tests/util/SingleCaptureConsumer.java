@@ -15,9 +15,9 @@
  */
 package com.vaadin.tests.util;
 
-import org.junit.Assert;
-
 import com.vaadin.flow.function.SerializableConsumer;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SingleCaptureConsumer<T> implements SerializableConsumer<T> {
 
@@ -27,7 +27,7 @@ public class SingleCaptureConsumer<T> implements SerializableConsumer<T> {
     @Override
     public void accept(T value) {
         if (captured) {
-            Assert.fail("Consumer has already been run");
+            fail("Consumer has already been run");
         }
         captured = true;
         capturedValue = value;
@@ -35,7 +35,7 @@ public class SingleCaptureConsumer<T> implements SerializableConsumer<T> {
 
     public T getCapturedValue() {
         if (!captured) {
-            Assert.fail("Consumer has not been run");
+            fail("Consumer has not been run");
         }
         return capturedValue;
     }
