@@ -17,8 +17,8 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder;
@@ -33,7 +33,7 @@ public class ValidatorTestBase {
     private Locale locale = Locale.US;
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ui = new UI() {
             @Override
@@ -49,7 +49,7 @@ public class ValidatorTestBase {
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder()));
         if (result.isError()) {
-            Assert.fail(value + " should pass " + validator + " but got "
+            Assertions.fail(value + " should pass " + validator + " but got "
                     + result.getErrorMessage());
         }
     }
@@ -58,8 +58,8 @@ public class ValidatorTestBase {
             Validator<? super T> validator) {
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder(), localeContext));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals(errorMessage, result.getErrorMessage());
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(errorMessage, result.getErrorMessage());
     }
 
     protected <T> void assertFails(T value, AbstractValidator<? super T> v) {

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.data.validator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RegexpValidatorTest extends ValidatorTestBase {
+class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testNullStringFails() {

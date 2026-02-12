@@ -19,9 +19,9 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasValue;
@@ -30,14 +30,14 @@ import com.vaadin.flow.tests.data.bean.Person;
 
 import static com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker.INVALID_DATE_FORMAT;
 
-public class BinderValidationStatusChangeListenerTest
+class BinderValidationStatusChangeListenerTest
         extends BinderTestBase<Binder<Person>, Person> {
 
     private static final String BIRTH_DATE_PROPERTY = "birthDate";
 
     private final Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         binder = new Binder<>(Person.class) {
             @Override
@@ -105,11 +105,12 @@ public class BinderValidationStatusChangeListenerTest
     public void fieldWithHasValidatorFullyOverridden_fieldValidationStatusChangesToFalse_binderHandleErrorIsCalled() {
         var field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
     }
 
     @Test
@@ -117,25 +118,26 @@ public class BinderValidationStatusChangeListenerTest
         binder.setFieldsValidationStatusChangeListenerEnabled(false);
         var field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
     }
 
     @Test
     public void fieldWithHasValidatorFullyOverridden_fieldValidationStatusChangesToTrue_binderClearErrorIsCalled() {
         var field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
 
         field.fireValidationStatusChangeEvent(true);
-        Assert.assertEquals(0, componentErrors.size());
-        Assert.assertNull(componentErrors.get(field));
+        Assertions.assertEquals(0, componentErrors.size());
+        Assertions.assertNull(componentErrors.get(field));
     }
 
     @Test
@@ -145,8 +147,9 @@ public class BinderValidationStatusChangeListenerTest
                 .bind(BIRTH_DATE_PROPERTY);
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
     }
 
     @Test
@@ -156,12 +159,13 @@ public class BinderValidationStatusChangeListenerTest
                 .bind(BIRTH_DATE_PROPERTY);
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
 
         field.fireValidationStatusChangeEvent(true);
-        Assert.assertEquals(0, componentErrors.size());
-        Assert.assertNull(componentErrors.get(field));
+        Assertions.assertEquals(0, componentErrors.size());
+        Assertions.assertNull(componentErrors.get(field));
     }
 
     @Test
@@ -169,19 +173,21 @@ public class BinderValidationStatusChangeListenerTest
         TestHasValidatorDatePicker.DataPickerHasValidatorOverridden field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
         Binder.Binding<Person, LocalDate> binding = binder.bind(field,
                 BIRTH_DATE_PROPERTY);
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
 
         field.fireValidationStatusChangeEvent(false);
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
 
         binding.unbind();
 
         field.fireValidationStatusChangeEvent(true);
         // after unbind is called, validationStatusChangeListener
         // in the binding is not working anymore, errors are not cleared:
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(INVALID_DATE_FORMAT,
+                componentErrors.get(field));
     }
 
     @Test
@@ -194,8 +200,8 @@ public class BinderValidationStatusChangeListenerTest
         binder.setBean(item);
 
         // Verify initial state
-        Assert.assertEquals(initialDate, item.getBirthDate());
-        Assert.assertEquals(initialDate, field.getValue());
+        Assertions.assertEquals(initialDate, item.getBirthDate());
+        Assertions.assertEquals(initialDate, field.getValue());
 
         // Simulate: user enters invalid input (field keeps null value
         // internally,
@@ -204,8 +210,8 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(false);
 
         // Bean should still have old value since validation failed
-        Assert.assertEquals(1, componentErrors.size());
-        Assert.assertEquals(initialDate, item.getBirthDate());
+        Assertions.assertEquals(1, componentErrors.size());
+        Assertions.assertEquals(initialDate, item.getBirthDate());
 
         // Simulate: user clears the field to null (which is now accepted)
         // Field value is already null, but validation now passes
@@ -213,12 +219,11 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(true);
 
         // Error should be cleared
-        Assert.assertEquals(0, componentErrors.size());
+        Assertions.assertEquals(0, componentErrors.size());
 
         // Bug: Bean should be updated to null, but currently it's not
-        Assert.assertNull(
-                "Bean property should be updated to null when validation passes",
-                item.getBirthDate());
+        Assertions.assertNull(item.getBirthDate(),
+                "Bean property should be updated to null when validation passes");
     }
 
 }

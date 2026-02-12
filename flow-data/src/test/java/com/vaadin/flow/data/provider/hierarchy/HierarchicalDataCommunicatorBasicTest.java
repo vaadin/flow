@@ -21,9 +21,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
-public class HierarchicalDataCommunicatorBasicTest
+class HierarchicalDataCommunicatorBasicTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -45,7 +45,7 @@ public class HierarchicalDataCommunicatorBasicTest
     private CompositeDataGenerator<Item> compositeDataGenerator = new CompositeDataGenerator<>();
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -104,7 +104,7 @@ public class HierarchicalDataCommunicatorBasicTest
     @Test
     public void setDataProvider_getDataProvider() {
         dataCommunicator.setDataProvider(treeDataProvider, null);
-        Assert.assertEquals(treeDataProvider,
+        Assertions.assertEquals(treeDataProvider,
                 dataCommunicator.getDataProvider());
     }
 
@@ -114,11 +114,11 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setDataProvider(new TreeDataProvider<Item>(treeData),
                 null);
         dataCommunicator.expand(new Item("Item 0"));
-        Assert.assertTrue(dataCommunicator.isExpanded(new Item("Item 0")));
+        Assertions.assertTrue(dataCommunicator.isExpanded(new Item("Item 0")));
 
         dataCommunicator.setDataProvider(new TreeDataProvider<Item>(treeData),
                 null);
-        Assert.assertFalse(dataCommunicator.isExpanded(new Item("Item 0")));
+        Assertions.assertFalse(dataCommunicator.isExpanded(new Item("Item 0")));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class HierarchicalDataCommunicatorBasicTest
         ListDataProvider<Item> incompatibleDataProvider = DataProvider
                 .ofItems(new Item("Item 0"));
 
-        Assert.assertThrows(IllegalArgumentException.class,
+        Assertions.assertThrows(IllegalArgumentException.class,
                 () -> dataCommunicator.setDataProvider(incompatibleDataProvider,
                         null));
     }
@@ -154,7 +154,7 @@ public class HierarchicalDataCommunicatorBasicTest
                 }, null);
         dataCommunicator.setViewportRange(0, 3);
 
-        Assert.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(IllegalStateException.class,
                 () -> fakeClientCommunication());
     }
 
@@ -182,7 +182,7 @@ public class HierarchicalDataCommunicatorBasicTest
                 }, null);
         dataCommunicator.setViewportRange(0, 3);
 
-        Assert.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(IllegalStateException.class,
                 () -> fakeClientCommunication());
     }
 
@@ -195,23 +195,29 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setViewportRange(0, 4);
 
         // Not loaded yet
-        Assert.assertEquals(-1, dataCommunicator.getDepth(new Item("Item 0")));
-        Assert.assertEquals(-1,
+        Assertions.assertEquals(-1,
+                dataCommunicator.getDepth(new Item("Item 0")));
+        Assertions.assertEquals(-1,
                 dataCommunicator.getDepth(new Item("Item 0-0")));
-        Assert.assertEquals(-1,
+        Assertions.assertEquals(-1,
                 dataCommunicator.getDepth(new Item("Item 0-0-0")));
-        Assert.assertEquals(-1, dataCommunicator.getDepth(new Item("Item 1")));
+        Assertions.assertEquals(-1,
+                dataCommunicator.getDepth(new Item("Item 1")));
 
         fakeClientCommunication();
-        Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 0")));
-        Assert.assertEquals(1, dataCommunicator.getDepth(new Item("Item 0-0")));
-        Assert.assertEquals(2,
+        Assertions.assertEquals(0,
+                dataCommunicator.getDepth(new Item("Item 0")));
+        Assertions.assertEquals(1,
+                dataCommunicator.getDepth(new Item("Item 0-0")));
+        Assertions.assertEquals(2,
                 dataCommunicator.getDepth(new Item("Item 0-0-0")));
-        Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 1")));
+        Assertions.assertEquals(0,
+                dataCommunicator.getDepth(new Item("Item 1")));
 
         dataCommunicator.setViewportRange(4, 4);
         fakeClientCommunication();
-        Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 5")));
+        Assertions.assertEquals(0,
+                dataCommunicator.getDepth(new Item("Item 5")));
     }
 
     @Test
@@ -221,7 +227,7 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
 
-        Assert.assertEquals(-1,
+        Assertions.assertEquals(-1,
                 dataCommunicator.getDepth(new Item("NOT EXISTING")));
     }
 
@@ -230,12 +236,15 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         populateTreeData(treeData, 1, 1);
-        Assert.assertTrue(dataCommunicator.hasChildren(new Item("Item 0")));
-        Assert.assertFalse(dataCommunicator.hasChildren(new Item("Item 0-0")));
+        Assertions.assertTrue(dataCommunicator.hasChildren(new Item("Item 0")));
+        Assertions.assertFalse(
+                dataCommunicator.hasChildren(new Item("Item 0-0")));
 
         populateTreeData(treeData, 1);
-        Assert.assertFalse(dataCommunicator.hasChildren(new Item("Item 0")));
-        Assert.assertFalse(dataCommunicator.hasChildren(new Item("Item 0-0")));
+        Assertions
+                .assertFalse(dataCommunicator.hasChildren(new Item("Item 0")));
+        Assertions.assertFalse(
+                dataCommunicator.hasChildren(new Item("Item 0-0")));
     }
 
     @Test
@@ -243,12 +252,12 @@ public class HierarchicalDataCommunicatorBasicTest
         populateTreeData(treeData, 4, 1, 1);
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")),
                 dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                         new Item("Item 0-0"), new Item("Item 0-0-0"))));
 
-        Assert.assertEquals(Arrays.asList(new Item("Item 1")),
+        Assertions.assertEquals(Arrays.asList(new Item("Item 1")),
                 dataCommunicator.expand(Arrays.asList(new Item("Item 0-0"),
                         new Item("Item 1"))));
     }
@@ -260,7 +269,7 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(Arrays.asList(new Item("Item 0")),
+        Assertions.assertEquals(Arrays.asList(new Item("Item 0")),
                 dataCommunicator.collapse(
                         Arrays.asList(new Item("Item 0"), new Item("Item 1"))));
     }
@@ -412,21 +421,23 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setBackEndSorting(sortOrders);
 
         var query = dataCommunicator.buildQuery(10, 20);
-        Assert.assertNull(query.getParent());
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(20, query.getLimit());
-        Assert.assertEquals(filter, query.getFilter().get());
-        Assert.assertEquals(sortOrders, query.getSortOrders());
-        Assert.assertEquals(comparator, query.getInMemorySorting());
-        Assert.assertEquals(Collections.emptySet(), query.getExpandedItemIds());
+        Assertions.assertNull(query.getParent());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(20, query.getLimit());
+        Assertions.assertEquals(filter, query.getFilter().get());
+        Assertions.assertEquals(sortOrders, query.getSortOrders());
+        Assertions.assertEquals(comparator, query.getInMemorySorting());
+        Assertions.assertEquals(Collections.emptySet(),
+                query.getExpandedItemIds());
 
         query = dataCommunicator.buildQuery(new Item("Parent"), 10, 20);
-        Assert.assertEquals(new Item("Parent"), query.getParent());
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(20, query.getLimit());
-        Assert.assertEquals(filter, query.getFilter().get());
-        Assert.assertEquals(sortOrders, query.getSortOrders());
-        Assert.assertEquals(comparator, query.getInMemorySorting());
-        Assert.assertEquals(Collections.emptySet(), query.getExpandedItemIds());
+        Assertions.assertEquals(new Item("Parent"), query.getParent());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(20, query.getLimit());
+        Assertions.assertEquals(filter, query.getFilter().get());
+        Assertions.assertEquals(sortOrders, query.getSortOrders());
+        Assertions.assertEquals(comparator, query.getInMemorySorting());
+        Assertions.assertEquals(Collections.emptySet(),
+                query.getExpandedItemIds());
     }
 }

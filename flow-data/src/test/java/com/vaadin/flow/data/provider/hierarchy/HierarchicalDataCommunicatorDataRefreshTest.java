@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,7 +29,7 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
 
-public class HierarchicalDataCommunicatorDataRefreshTest
+class HierarchicalDataCommunicatorDataRefreshTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -39,7 +39,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     private HierarchicalDataCommunicator<Item> dataCommunicator;
     private DataKeyMapper<Item> keyMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -217,10 +217,14 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         var keys = captureArrayUpdateItems().values().stream()
                 .map((item) -> item.get("key").asString()).toList();
-        Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(1)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(2)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(3)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(0)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(1)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(2)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(3)).getState());
 
         Item item0_0 = new Item("Item 0-0", "refreshed");
         dataCommunicator.refresh(item0_0);
@@ -228,10 +232,14 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         Item item0_0_0 = new Item("Item 0-0-0", "refreshed");
         dataCommunicator.refresh(item0_0_0);
 
-        Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
-        Assert.assertEquals("refreshed", keyMapper.get(keys.get(1)).getState());
-        Assert.assertEquals("refreshed", keyMapper.get(keys.get(2)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(3)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(0)).getState());
+        Assertions.assertEquals("refreshed",
+                keyMapper.get(keys.get(1)).getState());
+        Assertions.assertEquals("refreshed",
+                keyMapper.get(keys.get(2)).getState());
+        Assertions.assertEquals("initial",
+                keyMapper.get(keys.get(3)).getState());
     }
 
     @Test
@@ -298,9 +306,9 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         dataCommunicator.refresh(new Item("Item 0"), true);
 
-        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
     }
 
     @Test
@@ -359,9 +367,9 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         fakeClientCommunication();
 
         dataCommunicator.reset();
-        Assert.assertFalse(keyMapper.has(new Item("Item 0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
     }
 
     @Test

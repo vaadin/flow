@@ -18,8 +18,8 @@ package com.vaadin.flow.data.binder;
 import java.util.Locale;
 import java.util.Objects;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.validator.ValidatorTestBase;
 
@@ -28,14 +28,14 @@ import com.vaadin.flow.data.validator.ValidatorTestBase;
  * @since 1.0
  *
  */
-public class ValidatorTest extends ValidatorTestBase {
+class ValidatorTest extends ValidatorTestBase {
 
     @Test
     public void alwaysPass() {
         Validator<String> alwaysPass = Validator.alwaysPass();
         ValidationResult result = alwaysPass.apply("foo",
                 new ValueContext(new Binder()));
-        Assert.assertFalse(result.isError());
+        Assertions.assertFalse(result.isError());
     }
 
     @Test
@@ -44,10 +44,10 @@ public class ValidatorTest extends ValidatorTestBase {
                 "Cannot be null");
         ValidationResult result = validator.apply(null,
                 new ValueContext(new Binder()));
-        Assert.assertTrue(result.isError());
+        Assertions.assertTrue(result.isError());
 
         result = validator.apply("", new ValueContext(new Binder()));
-        Assert.assertFalse(result.isError());
+        Assertions.assertFalse(result.isError());
     }
 
     @Test

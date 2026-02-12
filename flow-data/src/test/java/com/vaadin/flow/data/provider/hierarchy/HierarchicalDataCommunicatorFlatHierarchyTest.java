@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -33,7 +33,9 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.Hierarch
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
-public class HierarchicalDataCommunicatorFlatHierarchyTest
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class HierarchicalDataCommunicatorFlatHierarchyTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
 
@@ -42,7 +44,7 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -150,9 +152,11 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         assertArrayUpdateItems("state", Map.of(0, "refreshed"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void refreshItemWithChildren_throws() {
-        dataCommunicator.refresh(new Item("Item 0", "refreshed"), true);
+        assertThrows(UnsupportedOperationException.class, () -> {
+            dataCommunicator.refresh(new Item("Item 0", "refreshed"), true);
+        });
     }
 
     @Test
@@ -187,17 +191,17 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(0));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(0));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(50, dataCommunicator.resolveIndexPath(50));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(50, dataCommunicator.resolveIndexPath(50));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(54, dataCommunicator.resolveIndexPath(-50));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(54, dataCommunicator.resolveIndexPath(-50));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-104));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(-104));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -205,14 +209,14 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(2, 2, 2));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(2, dataCommunicator.resolveIndexPath(2, 2, 2));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(103, dataCommunicator.resolveIndexPath(1000));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(103, dataCommunicator.resolveIndexPath(1000));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-1000));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(-1000));
+        Assertions.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -229,23 +233,23 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         dataCommunicator.expand(new Item("Item 0"));
 
         var query = dataCommunicator.buildQuery(10, 20);
-        Assert.assertNull(query.getParent());
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(20, query.getLimit());
-        Assert.assertEquals(filter, query.getFilter().get());
-        Assert.assertEquals(sortOrders, query.getSortOrders());
-        Assert.assertEquals(comparator, query.getInMemorySorting());
-        Assert.assertEquals(Set.of(new Item("Item 0")),
+        Assertions.assertNull(query.getParent());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(20, query.getLimit());
+        Assertions.assertEquals(filter, query.getFilter().get());
+        Assertions.assertEquals(sortOrders, query.getSortOrders());
+        Assertions.assertEquals(comparator, query.getInMemorySorting());
+        Assertions.assertEquals(Set.of(new Item("Item 0")),
                 query.getExpandedItemIds());
 
         query = dataCommunicator.buildQuery(new Item("Item 0"), 10, 20);
-        Assert.assertEquals(new Item("Item 0"), query.getParent());
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(20, query.getLimit());
-        Assert.assertEquals(filter, query.getFilter().get());
-        Assert.assertEquals(sortOrders, query.getSortOrders());
-        Assert.assertEquals(comparator, query.getInMemorySorting());
-        Assert.assertEquals(Set.of(new Item("Item 0")),
+        Assertions.assertEquals(new Item("Item 0"), query.getParent());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(20, query.getLimit());
+        Assertions.assertEquals(filter, query.getFilter().get());
+        Assertions.assertEquals(sortOrders, query.getSortOrders());
+        Assertions.assertEquals(comparator, query.getInMemorySorting());
+        Assertions.assertEquals(Set.of(new Item("Item 0")),
                 query.getExpandedItemIds());
     }
 }

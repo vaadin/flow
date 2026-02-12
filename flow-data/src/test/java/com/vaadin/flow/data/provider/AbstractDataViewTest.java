@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -36,7 +36,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tests.data.bean.Item;
 
-public class AbstractDataViewTest {
+class AbstractDataViewTest {
 
     private Collection<Item> items;
 
@@ -48,7 +48,7 @@ public class AbstractDataViewTest {
 
     private Component component;
 
-    @Before
+    @BeforeEach
     public void init() {
         items = new ArrayList<>(
                 Arrays.asList(new Item(1L, "first", "description1"),
@@ -62,24 +62,24 @@ public class AbstractDataViewTest {
     @Test
     public void getItems_noFiltersSet_allItemsObtained() {
         Stream<Item> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
+        Assertions.assertArrayEquals(items.toArray(), allItems.toArray(),
+                "Unexpected data set");
     }
 
     @Test
     public void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.getValue().equals("first"));
-        Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[] { "first" },
-                dataView.getItems().map(Item::getValue).toArray());
+        Assertions.assertArrayEquals(new String[] { "first" },
+                dataView.getItems().map(Item::getValue).toArray(),
+                "Unexpected data set after filtering");
     }
 
     @Test
     public void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortOrder(Item::getId, SortDirection.DESCENDING);
-        Assert.assertArrayEquals("Unexpected items sorting",
-                new Long[] { 3L, 2L, 1L },
-                dataView.getItems().map(Item::getId).toArray());
+        Assertions.assertArrayEquals(new Long[] { 3L, 2L, 1L },
+                dataView.getItems().map(Item::getId).toArray(),
+                "Unexpected items sorting");
     }
 
     @Test
@@ -91,19 +91,20 @@ public class AbstractDataViewTest {
         ComponentUtil.fireEvent(component,
                 new ItemCountChangeEvent<>(component, 10, false));
 
-        Assert.assertEquals(10, fired.get());
+        Assertions.assertEquals(10, fired.get());
     }
 
     @Test
     public void refreshAll_listenersNotified() {
         AtomicReference<DataChangeEvent<Item>> refreshAllEvent = new AtomicReference<>();
         dataProvider.addDataProviderListener(event -> {
-            Assert.assertNull(refreshAllEvent.get());
+            Assertions.assertNull(refreshAllEvent.get());
             refreshAllEvent.set(event);
         });
         dataView.refreshAll();
-        Assert.assertNotNull(refreshAllEvent.get());
-        Assert.assertEquals(dataProvider, refreshAllEvent.get().getSource());
+        Assertions.assertNotNull(refreshAllEvent.get());
+        Assertions.assertEquals(dataProvider,
+                refreshAllEvent.get().getSource());
     }
 
     @Test
@@ -147,7 +148,7 @@ public class AbstractDataViewTest {
             }
         };
         wrapperDataProvider = getWrapperDataProvider();
-        Assert.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(IllegalStateException.class,
                 () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 
@@ -162,7 +163,7 @@ public class AbstractDataViewTest {
             }
         };
         wrapperDataProvider = dataProvider.withConfigurableFilter();
-        Assert.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(IllegalStateException.class,
                 () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 

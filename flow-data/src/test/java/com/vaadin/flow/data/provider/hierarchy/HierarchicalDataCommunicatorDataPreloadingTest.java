@@ -19,17 +19,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
-public class HierarchicalDataCommunicatorDataPreloadingTest
+class HierarchicalDataCommunicatorDataPreloadingTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -54,7 +54,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
                 "Item 0, Item 0-0, Item 0-1, Item 1, Item 2, Item 2-0, Item 2-0-0, Item 2-0-1, Item 2-1, Item 3",
                 items);
 
-        Assert.assertEquals(26, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(26, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         assertPreloadedRange(
                 "Item 9, Item 9-0, Item 9-1, Item 10, Item 11, Item 12", items);
 
-        Assert.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
                 "Item 18, Item 19, Item 19-0, Item 19-1, Item 19-1-0, Item 19-1-1",
                 items);
 
-        Assert.assertEquals(24, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(24, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         var items = dataCommunicator.preloadFlatRangeForward(19, 10);
         assertPreloadedRange("Item 19, Item 19-0, Item 19-1", items);
 
-        Assert.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -100,9 +100,9 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
                 new Item("Item 9"), new Item("Item 19")));
 
         var items = dataCommunicator.preloadFlatRangeForward(100, 10);
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
-        Assert.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -117,7 +117,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
                 "Item 16, Item 16-0, Item 16-1, Item 17, Item 18, Item 18-0, Item 18-1, Item 18-1-0, Item 18-1-1, Item 19",
                 items);
 
-        Assert.assertEquals(26, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(26, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -129,7 +129,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         assertPreloadedRange(
                 "Item 9, Item 9-0, Item 9-1, Item 10, Item 11, Item 12", items);
 
-        Assert.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(22, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -142,7 +142,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
                 "Item 0, Item 0-0, Item 0-1, Item 0-1-0, Item 0-1-1, Item 1",
                 items);
 
-        Assert.assertEquals(24, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(24, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -153,7 +153,7 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         var items = dataCommunicator.preloadFlatRangeBackward(0, 10);
         assertPreloadedRange("Item 0", items);
 
-        Assert.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -161,13 +161,13 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                 new Item("Item 9"), new Item("Item 19")));
         var items = dataCommunicator.preloadFlatRangeBackward(-100, 10);
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
-        Assert.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(20, dataCommunicator.rootCache.getFlatSize());
     };
 
     private void assertPreloadedRange(String expectedItems, List<Item> items) {
-        Assert.assertEquals(expectedItems, items.stream().map(Item::getName)
+        Assertions.assertEquals(expectedItems, items.stream().map(Item::getName)
                 .collect(Collectors.joining(", ")));
     }
 }

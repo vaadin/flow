@@ -18,9 +18,9 @@ package com.vaadin.flow.data.validator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StringLengthValidatorTest extends ValidatorTestBase {
+class StringLengthValidatorTest extends ValidatorTestBase {
 
     private static final String LONG_STRING = Stream.generate(() -> "x")
             .limit(1000).collect(Collectors.joining());

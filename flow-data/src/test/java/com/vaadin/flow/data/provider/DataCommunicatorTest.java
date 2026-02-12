@@ -16,8 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,14 +26,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -59,8 +52,9 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
-@RunWith(Parameterized.class)
-public class DataCommunicatorTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+public abstract class DataCommunicatorTest {
     /**
      * Test item that uses id for identity.
      */
@@ -98,9 +92,6 @@ public class DataCommunicatorTest {
         }
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private DataCommunicator<Item> dataCommunicator;
 
     @Mock
@@ -118,19 +109,9 @@ public class DataCommunicatorTest {
     public int lastUpdateId = -1;
     private int pageSize;
 
-    private final boolean dataProviderWithParallelStream;
+    abstract boolean isDataProviderWithParallelStream();
 
-    public DataCommunicatorTest(boolean dataProviderWithParallelStream) {
-        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Boolean> testParameters() {
-        // Runs tests with both sequential and parallel data provider streams
-        return Arrays.asList(false, true);
-    }
-
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
@@ -173,18 +154,16 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
-        Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. This may make us loop.",
-                lastClear);
+        Assertions.assertEquals(Range.withLength(0, 0), lastSet);
+        Assertions.assertNull(lastClear,
+                "Only requestAll should clear items. This may make us loop.");
 
         dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
-        Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. Which would make us loop.",
-                lastClear);
+        Assertions.assertEquals(Range.withLength(0, 0), lastSet);
+        Assertions.assertNull(lastClear,
+                "Only requestAll should clear items. Which would make us loop.");
     }
 
     @Test
@@ -194,15 +173,14 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "Expected request range for 50 items on first request.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected request range for 50 items on first request.");
 
         dataCommunicator.setViewportRange(0, 70);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected request range for 20 new items.",
-                Range.withLength(50, 20), lastSet);
+        Assertions.assertEquals(Range.withLength(50, 20), lastSet,
+                "Expected request range for 20 new items.");
     }
 
     @Test
@@ -211,20 +189,20 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no during reattach.", lastSet);
+        Assertions.assertNull(lastSet, "Expected no during reattach.");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset after reattach");
     }
 
     @Test
@@ -233,18 +211,20 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
 
-        Assert.assertNull("Expected no communication during reattach", lastSet);
+        Assertions.assertNull(lastSet,
+                "Expected no communication during reattach");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no communication after reattach", lastSet);
+        Assertions.assertNull(lastSet,
+                "Expected no communication after reattach");
     }
 
     @Test
@@ -266,12 +246,12 @@ public class DataCommunicatorTest {
         });
 
         fakeClientCommunication();
-        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 6), lastSet);
         lastSet = null;
 
         dataCommunicator.refreshViewport();
         fakeClientCommunication();
-        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 6), lastSet);
     }
 
     @Test
@@ -282,7 +262,7 @@ public class DataCommunicatorTest {
                 }, element.getNode()) {
             @Override
             public void reset() {
-                Assert.assertTrue("Should not fall into endless reset loop",
+                Assertions.assertTrue(
                         listenerInvocationCounter.incrementAndGet() < 5);
                 super.reset();
             }
@@ -307,12 +287,11 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
+        Assertions.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
 
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertNull(
-                "The KeyMapper should be reset when a new DataProvider is set",
-                dataCommunicator.getKeyMapper().get("1"));
+        Assertions.assertNull(dataCommunicator.getKeyMapper().get("1"),
+                "The KeyMapper should be reset when a new DataProvider is set");
     }
 
     @Test
@@ -325,11 +304,11 @@ public class DataCommunicatorTest {
                 .fromCallbacks(query -> items.stream(), query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit() or "
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> dataCommunicator.fetchFromProvider(0, 1));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("The data provider hasn't ever called getLimit() or "
                         + "getPageSize()"));
-        dataCommunicator.fetchFromProvider(0, 1);
     }
 
     @Test
@@ -345,10 +324,10 @@ public class DataCommunicatorTest {
                 }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> dataCommunicator.fetchFromProvider(1, 1));
+        Assertions.assertTrue(ex.getMessage().contains(
                 "The data provider hasn't ever called getOffset() or getPage()"));
-        dataCommunicator.fetchFromProvider(1, 1);
     }
 
     @Test
@@ -364,7 +343,7 @@ public class DataCommunicatorTest {
                     return items.stream();
                 }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
-        Assert.assertEquals(2,
+        Assertions.assertEquals(2,
                 dataCommunicator.fetchFromProvider(1, 1).count());
     }
 
@@ -387,12 +366,11 @@ public class DataCommunicatorTest {
         // 4 items, which is incorrect
         Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 3);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "exceeds the limit specified by the query (4)."));
-
-        stream.forEach(item -> {
-        });
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> stream.forEach(item -> {
+                }));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("exceeds the limit specified by the query (4)."));
     }
 
     @Test
@@ -411,7 +389,7 @@ public class DataCommunicatorTest {
         Item originalItem = items.get(0);
         String key = dataCommunicator.getKeyMapper().key(originalItem);
 
-        Assert.assertSame(originalItem,
+        Assertions.assertSame(originalItem,
                 dataCommunicator.getKeyMapper().get(key));
 
         Item updatedItem = new Item(originalItem.id, "Updated");
@@ -420,7 +398,7 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertSame(updatedItem,
+        Assertions.assertSame(updatedItem,
                 dataCommunicator.getKeyMapper().get(key));
     }
 
@@ -437,7 +415,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(40, lastSet.getEnd());
+        Assertions.assertEquals(40, lastSet.getEnd());
         // Assert takes into acount the inital size query for setting
         // dataprovider.
         Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
@@ -451,7 +429,7 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setViewportRange(0, 50);
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        Assertions.assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
@@ -460,14 +438,14 @@ public class DataCommunicatorTest {
             sizeCallbackCall.set(true);
             return 100;
         });
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        Assertions.assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertTrue("SizeCallback not called",
-                sizeCallbackCall.getAndSet(false));
-        Assert.assertEquals("Size not used", 100,
-                dataCommunicator.getItemCount());
+        Assertions.assertTrue(sizeCallbackCall.getAndSet(false),
+                "SizeCallback not called");
+        Assertions.assertEquals(100, dataCommunicator.getItemCount(),
+                "Size not used");
 
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
@@ -479,14 +457,16 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
 
-        Assert.assertFalse("SizeCallback called when should not have",
-                sizeCallbackCall.get());
+        Assertions.assertFalse(sizeCallbackCall.get(),
+                "SizeCallback called when should not have");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setSizeCallback_null_throws() {
-        dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setCountCallback(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            dataCommunicator.setDataProvider(createDataProvider(), null);
+            dataCommunicator.setCountCallback(null);
+        });
     }
 
     @Test
@@ -502,13 +482,13 @@ public class DataCommunicatorTest {
         dataCommunicator
                 .setItemCountEstimateIncrease(itemCountEstimateIncrease);
         dataCommunicator.setViewportRange(150, 50);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        Assertions.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial estimate+increase not used",
-                itemCountEstimate + itemCountEstimateIncrease,
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(itemCountEstimate + itemCountEstimateIncrease,
+                dataCommunicator.getItemCount(),
+                "initial estimate+increase not used");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -518,14 +498,14 @@ public class DataCommunicatorTest {
             sizeCallbackCall.set(true);
             return exactSize;
         });
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        Assertions.assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertTrue("SizeCallback not called",
-                sizeCallbackCall.getAndSet(false));
-        Assert.assertEquals("Size not used", exactSize,
-                dataCommunicator.getItemCount());
+        Assertions.assertTrue(sizeCallbackCall.getAndSet(false),
+                "SizeCallback not called");
+        Assertions.assertEquals(exactSize, dataCommunicator.getItemCount(),
+                "Size not used");
     }
 
     @Test
@@ -538,12 +518,13 @@ public class DataCommunicatorTest {
         final int initialCountEstimate = 100;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
         dataCommunicator.setViewportRange(0, 50);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        Assertions.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial size estimate not used",
-                initialCountEstimate, dataCommunicator.getItemCount());
+        Assertions.assertEquals(initialCountEstimate,
+                dataCommunicator.getItemCount(),
+                "initial size estimate not used");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -551,9 +532,9 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial size estimate was not discarded",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "initial size estimate was not discarded");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
     }
@@ -570,15 +551,14 @@ public class DataCommunicatorTest {
 
         final int initialCountEstimate = 111;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        Assertions.assertFalse(dataCommunicator.isDefinedSize());
 
         dataCommunicator.setViewportRange(50, 100);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "too small initial size estimate should not be applied",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "too small initial size estimate should not be applied");
     }
 
     @Test
@@ -594,10 +574,9 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
 
         fakeClientCommunication();
-        Assert.assertEquals(
-                "Size should be automatically adjusted for too small estimate",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "Size should be automatically adjusted for too small estimate");
     }
 
     @Test
@@ -616,10 +595,10 @@ public class DataCommunicatorTest {
                 .setItemCountEstimateIncrease(itemCountEstimateIncrease);
 
         fakeClientCommunication();
-        Assert.assertEquals(
-                "Size should be automatically adjusted for too small estimate",
+        Assertions.assertEquals(
                 initialCountEstimate + (3 * itemCountEstimateIncrease),
-                dataCommunicator.getItemCount());
+                dataCommunicator.getItemCount(),
+                "Size should be automatically adjusted for too small estimate");
     }
 
     @Test
@@ -635,7 +614,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(itemCountEstimate, dataCommunicator.getItemCount());
+        Assertions.assertEquals(itemCountEstimate,
+                dataCommunicator.getItemCount());
 
         // if the user scrolls far from the exact size of the backend,
         // the exact size is resolved on the server side without causing a new
@@ -645,7 +625,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(900, 100);
         fakeClientCommunication();
 
-        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        Assertions.assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         // 1. initial call 0-50, 2. then: 900-950, 800-850, ... ,
         // 200-250, 100-150, 150-200.
@@ -669,14 +649,16 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        Assertions.assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setInitialCountEstimate_lessThanOne_throws() {
-        dataCommunicator.setItemCountEstimate(0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            dataCommunicator.setItemCountEstimate(0);
+        });
     }
 
     @Test
@@ -684,20 +666,20 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(createDataProvider(300), null);
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
-        Assert.assertEquals("Wrong active item", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Wrong active item", new Item(49),
-                dataCommunicator.getItem(49));
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Wrong active item");
+        Assertions.assertEquals(new Item(49), dataCommunicator.getItem(49),
+                "Wrong active item");
 
         dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Wrong active item", new Item(50),
-                dataCommunicator.getItem(50));
-        Assert.assertEquals("Wrong active item", new Item(69),
-                dataCommunicator.getItem(69));
-        Assert.assertEquals("Wrong active item", new Item(99),
-                dataCommunicator.getItem(99));
+        Assertions.assertEquals(new Item(50), dataCommunicator.getItem(50),
+                "Wrong active item");
+        Assertions.assertEquals(new Item(69), dataCommunicator.getItem(69),
+                "Wrong active item");
+        Assertions.assertEquals(new Item(99), dataCommunicator.getItem(99),
+                "Wrong active item");
     }
 
     @Test
@@ -705,27 +687,27 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
 
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(0)));
+        Assertions.assertFalse(dataCommunicator.isItemActive(new Item(0)),
+                "Item should not be active");
 
         fakeClientCommunication();
 
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(0)));
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(49)));
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(50)));
+        Assertions.assertTrue(dataCommunicator.isItemActive(new Item(0)),
+                "Item should be active");
+        Assertions.assertTrue(dataCommunicator.isItemActive(new Item(49)),
+                "Item should be active");
+        Assertions.assertFalse(dataCommunicator.isItemActive(new Item(50)),
+                "Item should not be active");
 
         dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(50)));
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(99)));
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(100)));
+        Assertions.assertTrue(dataCommunicator.isItemActive(new Item(50)),
+                "Item should be active");
+        Assertions.assertTrue(dataCommunicator.isItemActive(new Item(99)),
+                "Item should be active");
+        Assertions.assertFalse(dataCommunicator.isItemActive(new Item(100)),
+                "Item should not be active");
     }
 
     @Test
@@ -740,8 +722,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request the item within the active range
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
 
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.range(0, 300).mapToObj(Item::new)
@@ -751,14 +733,12 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request an item outside the active range
-        Assert.assertEquals("Invalid item on index 260", new Item(260),
-                dataCommunicator.getItem(260));
+        Assertions.assertEquals(new Item(260), dataCommunicator.getItem(260),
+                "Invalid item on index 260");
     }
 
     @Test
     public void getItem_withDefinedSizeAndNegativeIndex() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Index must be non-negative");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -767,13 +747,15 @@ public class DataCommunicatorTest {
         }, query -> 1), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(-1);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(-1));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Index must be non-negative"));
     }
 
     @Test
     public void getItem_withDefinedSizeAndEmptyDataset() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Requested index 0 on empty data.");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -782,14 +764,15 @@ public class DataCommunicatorTest {
         }, query -> 0), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(0);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(0));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Requested index 0 on empty data."));
     }
 
     @Test
     public void getItem_withDefinedSizeAndIndexOutsideOfRange() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage(
-                "Given index 3 is outside of the accepted range '0 - 2'");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -798,7 +781,11 @@ public class DataCommunicatorTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(3);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(3));
+        Assertions.assertTrue(ex.getMessage().contains(
+                "Given index 3 is outside of the accepted range '0 - 2'"));
     }
 
     @Test
@@ -816,14 +803,14 @@ public class DataCommunicatorTest {
                 }, query -> 1), initialFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataCommunicator.getItem(0));
+        Assertions.assertEquals(initialFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
 
         newFilterProvider.accept(newFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataCommunicator.getItem(0));
+        Assertions.assertEquals(newFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
     }
 
     @Test
@@ -840,23 +827,23 @@ public class DataCommunicatorTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(1),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(2),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(0),
-                dataCommunicator.getItem(2));
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        Assertions.assertEquals(new Item(2), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
 
         dataCommunicator
                 .setInMemorySorting((i1, i2) -> Integer.compare(i1.id, i2.id));
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(2),
-                dataCommunicator.getItem(2));
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        Assertions.assertEquals(new Item(2), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
     }
 
     @Test
@@ -871,10 +858,10 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request the item within the active range
-        Assert.assertEquals("Wrong item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Wrong item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Wrong item on index 0");
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Wrong item on index 1");
 
         dataCommunicator.setViewportRange(100, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
@@ -889,13 +876,13 @@ public class DataCommunicatorTest {
 
         // Request the item outside the active range, but within the
         // estimation (and present in the backend)
-        Assert.assertEquals("Wrong item on index 375", new Item(375),
-                dataCommunicator.getItem(375));
+        Assertions.assertEquals(new Item(375), dataCommunicator.getItem(375),
+                "Wrong item on index 375");
 
         // Request the item outside the active range, and outside the
         // estimation (and present in the backend)
-        Assert.assertEquals("Wrong item on index 450", new Item(450),
-                dataCommunicator.getItem(450));
+        Assertions.assertEquals(new Item(450), dataCommunicator.getItem(450),
+                "Wrong item on index 450");
     }
 
     @Test
@@ -909,8 +896,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
         // This checks the situation when the fetch actions has not happened
         // yet but the data set contains the requested item
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
 
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -922,8 +909,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         // This checks the situation when the fetch actions has happened
         // but the data set is empty
-        Assert.assertNull("Item on index 0 supposed to be null",
-                dataCommunicator.getItem(0));
+        Assertions.assertNull(dataCommunicator.getItem(0),
+                "Item on index 0 supposed to be null");
     }
 
     @Test
@@ -939,18 +926,16 @@ public class DataCommunicatorTest {
 
         // Index 3 is outside of estimation but the requested item is in
         // backend anyway
-        Assert.assertEquals("Invalid item on index 3", new Item(3),
-                dataCommunicator.getItem(3));
+        Assertions.assertEquals(new Item(3), dataCommunicator.getItem(3),
+                "Invalid item on index 3");
 
         // Index 5 is outside of estimation and not in the backend
-        Assert.assertNull("Item on index 5 supposed to be null",
-                dataCommunicator.getItem(5));
+        Assertions.assertNull(dataCommunicator.getItem(5),
+                "Item on index 5 supposed to be null");
     }
 
     @Test
     public void getItem_withUndefinedSizeAndNegativeIndex() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Index must be non-negative");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -960,7 +945,11 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setItemCountEstimate(1);
         fakeClientCommunication();
-        dataCommunicator.getItem(-1);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(-1));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Index must be non-negative"));
     }
 
     @Test
@@ -980,14 +969,14 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataCommunicator.getItem(0));
+        Assertions.assertEquals(initialFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
 
         newFilterProvider.accept(newFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataCommunicator.getItem(0));
+        Assertions.assertEquals(newFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
     }
 
     @Test
@@ -1006,23 +995,23 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(1),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(2),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(0),
-                dataCommunicator.getItem(2));
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        Assertions.assertEquals(new Item(2), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
 
         dataCommunicator
                 .setInMemorySorting((i1, i2) -> Integer.compare(i1.id, i2.id));
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(2),
-                dataCommunicator.getItem(2));
+        Assertions.assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        Assertions.assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        Assertions.assertEquals(new Item(2), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
     }
 
     @Test
@@ -1034,22 +1023,22 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         dataCommunicator.getItem(0);
 
-        Assert.assertTrue(streamIsClosed.get());
+        Assertions.assertTrue(streamIsClosed.get());
     }
 
     @Test
     public void itemCountEstimateAndStep_defaults() {
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimate(),
                 pageSize * 4);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 pageSize * 4);
 
         int customPageSize = 100;
         dataCommunicator.setPageSize(customPageSize);
 
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimate(),
                 customPageSize * 4);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customPageSize * 4);
 
         int customItemCountEstimate = 123;
@@ -1058,9 +1047,9 @@ public class DataCommunicatorTest {
         dataCommunicator
                 .setItemCountEstimateIncrease(customItemCountEstimateStep);
 
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimate(),
                 customItemCountEstimate);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+        Assertions.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customItemCountEstimateStep);
     }
 
@@ -1074,7 +1063,7 @@ public class DataCommunicatorTest {
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
+                    Assertions.assertNull(cachedEvent.get());
                     cachedEvent.set((ItemCountChangeEvent<?>) event);
                 }));
         int exactCount = 500;
@@ -1085,19 +1074,19 @@ public class DataCommunicatorTest {
 
         ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
 
-        Assert.assertEquals("Invalid count provided", exactCount,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        Assertions.assertEquals(exactCount, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertFalse(event.isItemCountEstimated());
         // no new event fired
         dataCommunicator.setViewportRange(450, 50);
         fakeClientCommunication();
-        Assert.assertNull(cachedEvent.get());
+        Assertions.assertNull(cachedEvent.get());
 
         // creating a new data provider with same exact size -> no new event
         // fired
         dataCommunicator.setDataProvider(createDataProvider(500), null);
         fakeClientCommunication();
-        Assert.assertNull(cachedEvent.get());
+        Assertions.assertNull(cachedEvent.get());
 
         // new data provider with different size
         dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000),
@@ -1105,9 +1094,9 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         event = cachedEvent.getAndSet(null);
 
-        Assert.assertEquals("Invalid count provided", exactCount,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        Assertions.assertEquals(exactCount, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertFalse(event.isItemCountEstimated());
     }
 
     @Test
@@ -1120,7 +1109,7 @@ public class DataCommunicatorTest {
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
+                    Assertions.assertNull(cachedEvent.get());
                     cachedEvent.set((ItemCountChangeEvent<?>) event);
                 }));
         int exactCount = 500;
@@ -1131,34 +1120,34 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 200,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        Assertions.assertEquals(200, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(150, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 400,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        Assertions.assertEquals(400, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(350, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 600,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        Assertions.assertEquals(600, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(550, 50);
         fakeClientCommunication();
 
         // reaching exact size
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 500,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        Assertions.assertEquals(500, event.getItemCount(),
+                "Invalid count provided");
+        Assertions.assertFalse(event.isItemCountEstimated());
     }
 
     @Test
@@ -1190,7 +1179,7 @@ public class DataCommunicatorTest {
         Mockito.verify(stateNode).runWhenAttached(Mockito.any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
-        Assert.assertEquals(300, dataCommunicator.getItemCount());
+        Assertions.assertEquals(300, dataCommunicator.getItemCount());
     }
 
     @Test
@@ -1198,8 +1187,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(DataProvider.ofItems(new Item(0)),
                 null);
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(0, 100);
-        Assert.assertNotNull(itemStream);
-        Assert.assertEquals(1, itemStream.count());
+        Assertions.assertNotNull(itemStream);
+        Assertions.assertEquals(1, itemStream.count());
     }
 
     @Test
@@ -1220,31 +1209,31 @@ public class DataCommunicatorTest {
                 .fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(30, items.size());
+        Assertions.assertEquals(30, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
+        Assertions.assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
-        Assert.assertEquals(3, allQueries.size());
+        Assertions.assertEquals(3, allQueries.size());
 
         Query query = allQueries.get(0);
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        Assertions.assertEquals(0, query.getOffset());
+        Assertions.assertEquals(10, query.getLimit());
+        Assertions.assertEquals(0, query.getPage());
+        Assertions.assertEquals(10, query.getPageSize());
 
         query = allQueries.get(1);
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(1, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(10, query.getLimit());
+        Assertions.assertEquals(1, query.getPage());
+        Assertions.assertEquals(10, query.getPageSize());
 
         query = allQueries.get(2);
-        Assert.assertEquals(20, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(2, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        Assertions.assertEquals(20, query.getOffset());
+        Assertions.assertEquals(10, query.getLimit());
+        Assertions.assertEquals(2, query.getPage());
+        Assertions.assertEquals(10, query.getPageSize());
 
         Mockito.reset(dataProvider);
         // Use a limit value so that it's multiple by page size
@@ -1268,16 +1257,16 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(50, items.size());
+        Assertions.assertEquals(50, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
+        Assertions.assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(50, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(50, query.getPageSize());
+        Assertions.assertEquals(0, query.getOffset());
+        Assertions.assertEquals(50, query.getLimit());
+        Assertions.assertEquals(0, query.getPage());
+        Assertions.assertEquals(50, query.getPageSize());
     }
 
     @Test
@@ -1295,16 +1284,16 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(42, items.size());
+        Assertions.assertEquals(42, items.size());
 
-        Assert.assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
+        Assertions.assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(42, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(42, query.getPageSize());
+        Assertions.assertEquals(10, query.getOffset());
+        Assertions.assertEquals(42, query.getLimit());
+        Assertions.assertEquals(0, query.getPage());
+        Assertions.assertEquals(42, query.getPageSize());
     }
 
     @Test
@@ -1324,19 +1313,19 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(123, items.size());
+        Assertions.assertEquals(123, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
+        Assertions.assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
-        Assert.assertEquals(1, allQueries.size());
+        Assertions.assertEquals(1, allQueries.size());
 
         Query query = allQueries.get(0);
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(123, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(123, query.getPageSize());
+        Assertions.assertEquals(0, query.getOffset());
+        Assertions.assertEquals(123, query.getLimit());
+        Assertions.assertEquals(0, query.getPage());
+        Assertions.assertEquals(123, query.getPageSize());
     }
 
     @Test
@@ -1393,8 +1382,8 @@ public class DataCommunicatorTest {
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(100, 13);
         List<Item> itemList = itemStream.toList();
 
-        Assert.assertEquals(13, itemList.size());
-        Assert.assertEquals(new Item(101), itemList.get(0));
+        Assertions.assertEquals(13, itemList.size());
+        Assertions.assertEquals(new Item(101), itemList.get(0));
 
     }
 
@@ -1421,8 +1410,8 @@ public class DataCommunicatorTest {
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(20, 7);
         List<Item> itemList = itemStream.toList();
 
-        Assert.assertEquals(7, itemList.size());
-        Assert.assertEquals(new Item(21), itemList.get(0));
+        Assertions.assertEquals(7, itemList.size());
+        Assertions.assertEquals(new Item(21), itemList.get(0));
 
     }
 
@@ -1435,17 +1424,17 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertTrue(streamIsClosed.get());
+        Assertions.assertTrue(streamIsClosed.get());
     }
 
     @Test
     public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
         dataCommunicator.setFetchEnabled(false);
-        Assert.assertEquals(0, dataCommunicator.getItemCount());
+        Assertions.assertEquals(0, dataCommunicator.getItemCount());
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertEquals(100, dataCommunicator.getItemCount());
+        Assertions.assertEquals(100, dataCommunicator.getItemCount());
     }
 
     @Test
@@ -1454,7 +1443,7 @@ public class DataCommunicatorTest {
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertNotNull(dataCommunicator.getItem(42));
+        Assertions.assertNotNull(dataCommunicator.getItem(42));
     }
 
     @Test
@@ -1488,10 +1477,11 @@ public class DataCommunicatorTest {
 
     @Test
     public void setPageSize_setIncorrectPageSize_throws() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException
-                .expectMessage("Page size cannot be less than 1, got 0");
-        dataCommunicator.setPageSize(0);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> dataCommunicator.setPageSize(0));
+        Assertions.assertTrue(ex.getMessage()
+                .contains("Page size cannot be less than 1, got 0"));
     }
 
     @Test
@@ -1500,17 +1490,17 @@ public class DataCommunicatorTest {
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1);
 
-        Assert.assertNotNull("Expected initial filter to be set",
-                dataCommunicator.getFilter());
+        Assertions.assertNotNull(dataCommunicator.getFilter(),
+                "Expected initial filter to be set");
 
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull("Filter should be retained after data request",
-                dataCommunicator.getFilter());
+        Assertions.assertNotNull(dataCommunicator.getFilter(),
+                "Filter should be retained after data request");
 
-        Assert.assertEquals("Unexpected items count", 2,
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(2, dataCommunicator.getItemCount(),
+                "Unexpected items count");
 
         // Check that the filter change works properly
         filterConsumer.accept(item -> item.id > 2);
@@ -1518,11 +1508,11 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull("Filter should be retained after data request",
-                dataCommunicator.getFilter());
+        Assertions.assertNotNull(dataCommunicator.getFilter(),
+                "Filter should be retained after data request");
 
-        Assert.assertEquals("Unexpected items count", 1,
-                dataCommunicator.getItemCount());
+        Assertions.assertEquals(1, dataCommunicator.getItemCount(),
+                "Unexpected items count");
     }
 
     @Test
@@ -1533,8 +1523,8 @@ public class DataCommunicatorTest {
 
         testComponent.addItemChangeListener(event -> {
             eventTriggered.set(true);
-            Assert.assertEquals("Unexpected item count", 2,
-                    event.getItemCount());
+            Assertions.assertEquals(2, event.getItemCount(),
+                    "Unexpected item count");
         });
 
         dataCommunicator.setDataProvider(
@@ -1544,8 +1534,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Expected event to be triggered",
-                eventTriggered.get());
+        Assertions.assertTrue(eventTriggered.get(),
+                "Expected event to be triggered");
     }
 
     @Test
@@ -1553,7 +1543,7 @@ public class DataCommunicatorTest {
         TestComponent testComponent = new TestComponent(element);
 
         testComponent.addItemChangeListener(
-                event -> Assert.fail("Event triggering not expected"));
+                event -> Assertions.fail("Event triggering not expected"));
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
@@ -1575,27 +1565,30 @@ public class DataCommunicatorTest {
                 }) {
         };
 
-        Assert.assertEquals("Unexpected items count before filter", 3,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order before sorting",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
+        Assertions.assertEquals(3, listDataView.getItems().count(),
+                "Unexpected items count before filter");
+        Assertions.assertEquals(new Item(0),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order before sorting");
 
         listDataView.setFilter(item -> item.id < 2);
         listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
 
-        Assert.assertEquals("Unexpected items count after filter", 2,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
-                listDataView.getItems().findFirst().orElse(null));
+        Assertions.assertEquals(2, listDataView.getItems().count(),
+                "Unexpected items count after filter");
+        Assertions.assertEquals(new Item(1),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order after sorting");
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
                 null);
 
-        Assert.assertEquals("Unexpected items count after data provider reset",
-                3, listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after data provider reset",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
+        Assertions.assertEquals(3, listDataView.getItems().count(),
+                "Unexpected items count after data provider reset");
+        Assertions.assertEquals(new Item(0),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order after data provider reset");
     }
 
     @Test // for https://github.com/vaadin/flow/issues/9988
@@ -1610,7 +1603,8 @@ public class DataCommunicatorTest {
                                 || filter.get().equals(item))
                         .limit(query.getLimit()).skip(query.getOffset()),
                 query -> {
-                    Assert.fail("Count query is not expected in this test.");
+                    Assertions
+                            .fail("Count query is not expected in this test.");
                     return 0;
                 });
 
@@ -1632,10 +1626,10 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Check the filtered item
-        Assert.assertEquals("Expected 1 item after the filtering", 1,
-                dataCommunicator.getItemCount());
-        Assert.assertEquals("Expected the item with value 42", filter.get(),
-                dataCommunicator.getItem(0));
+        Assertions.assertEquals(1, dataCommunicator.getItemCount(),
+                "Expected 1 item after the filtering");
+        Assertions.assertEquals(filter.get(), dataCommunicator.getItem(0),
+                "Expected the item with value 42");
     }
 
     @Test
@@ -1661,10 +1655,9 @@ public class DataCommunicatorTest {
         ui.add(componentWithDataProvider);
         fakeClientCommunication();
 
-        Assert.assertEquals(
+        Assertions.assertEquals(2, listenerInvocationCounter.get(),
                 "Expected two DataCommunicator::reset() invocations: upon "
-                        + "setting the data provider and component attaching",
-                2, listenerInvocationCounter.get());
+                        + "setting the data provider and component attaching");
 
         // when
         // the data is being refreshed -> data provider's listeners are being
@@ -1673,10 +1666,9 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // then
-        Assert.assertEquals(
+        Assertions.assertEquals(3, listenerInvocationCounter.get(),
                 "Expected only one reset() invocation, because the old "
-                        + "listener was removed and then only one listener is stored",
-                3, listenerInvocationCounter.get());
+                        + "listener was removed and then only one listener is stored");
     }
 
     @Test
@@ -1695,10 +1687,9 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(queryCaptor.capture());
 
-        Assert.assertEquals(
+        Assertions.assertEquals(500, queryCaptor.getValue().getLimit(),
                 "Expected the requested items count to be limited"
-                        + " to allowed threshold",
-                500, queryCaptor.getValue().getLimit());
+                        + " to allowed threshold");
     }
 
     @Test
@@ -1736,10 +1727,9 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(queryCaptor.capture());
 
-        Assert.assertEquals(
+        Assertions.assertEquals(600, queryCaptor.getValue().getLimit(),
                 "Expected two pages with page size = 300 to be "
-                        + "requested and not limited",
-                600, queryCaptor.getValue().getLimit());
+                        + "requested and not limited");
     }
 
     // Simulates a flush request enqueued during a page reload with
@@ -1758,8 +1748,8 @@ public class DataCommunicatorTest {
         ui = newUI;
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
     }
 
     @Tag("test-component")
@@ -1871,7 +1861,7 @@ public class DataCommunicatorTest {
     }
 
     private IntStream asParallelIfRequired(IntStream stream) {
-        if (dataProviderWithParallelStream) {
+        if (isDataProviderWithParallelStream()) {
             return stream.parallel();
         }
         return stream;
@@ -1927,10 +1917,11 @@ public class DataCommunicatorTest {
         /*
          * Used to make sure there's at least one reference to the mock session
          * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * eaten by GC in tests where @BeforeEach creates a session and sets it
+         * as the current instance without keeping any direct reference to it.
+         * This pattern has a chance of leaking memory if the session is not
+         * unlocked in the right way, but it should be acceptable for testing
+         * use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 

@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.UI;
@@ -37,14 +37,14 @@ import com.vaadin.flow.tests.data.bean.Person;
 /**
  * Tests for Binder and Binding integration with Signals.
  */
-public class BinderSignalTest extends SignalsUnitTest {
+class BinderSignalTest extends SignalsUnitTest {
 
     private TestTextField firstNameField;
     private TestTextField lastNameField;
     private Binder<Person> binder;
     private Person item;
 
-    @Before
+    @BeforeEach
     public void setup() {
         binder = new Binder<>(Person.class);
         item = new Person();
@@ -71,13 +71,13 @@ public class BinderSignalTest extends SignalsUnitTest {
         var field = new TestTextField();
         var binding = binder.bind(field, "firstName");
 
-        Assert.assertEquals("", binding.value());
-        Assert.assertEquals("", field.getValue());
+        Assertions.assertEquals("", binding.value());
+        Assertions.assertEquals("", field.getValue());
 
         binder.setBean(item);
 
-        Assert.assertEquals("Alice", binding.value());
-        Assert.assertEquals("Alice", field.getValue());
+        Assertions.assertEquals("Alice", binding.value());
+        Assertions.assertEquals("Alice", field.getValue());
     }
 
     // verifies that Binding.value() works with getter/setter bindings
@@ -90,13 +90,13 @@ public class BinderSignalTest extends SignalsUnitTest {
         var binding = binder.bind(field, Person::getFirstName,
                 Person::setFirstName);
 
-        Assert.assertEquals("", binding.value());
-        Assert.assertEquals("", field.getValue());
+        Assertions.assertEquals("", binding.value());
+        Assertions.assertEquals("", field.getValue());
 
         binder.setBean(item);
 
-        Assert.assertEquals("Alice", binding.value());
-        Assert.assertEquals("Alice", field.getValue());
+        Assertions.assertEquals("Alice", binding.value());
+        Assertions.assertEquals("Alice", field.getValue());
     }
 
     // verifies that Binding.value() with a signal-bound field works correctly
@@ -115,17 +115,17 @@ public class BinderSignalTest extends SignalsUnitTest {
         binder.setBean(item);
         signal.value("foo");
 
-        Assert.assertEquals("Alice", binding.value());
+        Assertions.assertEquals("Alice", binding.value());
 
         UI.getCurrent().add(field);
-        Assert.assertEquals("foo", binding.value());
+        Assertions.assertEquals("foo", binding.value());
 
         signal.value("bar");
-        Assert.assertEquals("bar", binding.value());
+        Assertions.assertEquals("bar", binding.value());
 
         field.bindValue(null);
         signal.value("baz");
-        Assert.assertEquals("bar", binding.value());
+        Assertions.assertEquals("bar", binding.value());
     }
 
     // verifies that cross-field validation works with signal-bound fields
@@ -150,13 +150,13 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         // change of last name triggers validation of first name binding
         lastNameSignal.value("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required", binder
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required", binder
                 .validate().getValidationErrors().getFirst().getErrorMessage());
     }
 
@@ -177,13 +177,13 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         // change of last name triggers validation of first name binding
         lastNameField.setValue("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required", binder
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required", binder
                 .validate().getValidationErrors().getFirst().getErrorMessage());
     }
 
@@ -226,36 +226,37 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("age");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         // change of any field triggers validation of age field binding
         emailField.setValue("");
 
-        Assert.assertTrue(ageField.isInvalid());
-        Assert.assertEquals(ageValidationError, ageField.getErrorMessage());
+        Assertions.assertTrue(ageField.isInvalid());
+        Assertions.assertEquals(ageValidationError, ageField.getErrorMessage());
 
         // rest of the test changes fields one by one to verify that age field
         // validation is re-triggered each time
         emailField.setValue("email");
-        Assert.assertFalse(ageField.isInvalid());
+        Assertions.assertFalse(ageField.isInvalid());
 
         firstNameField.setValue("");
-        Assert.assertTrue(ageField.isInvalid());
-        Assert.assertEquals(ageValidationError, ageField.getErrorMessage());
+        Assertions.assertTrue(ageField.isInvalid());
+        Assertions.assertEquals(ageValidationError, ageField.getErrorMessage());
 
         firstNameField.setValue("John");
         lastNameField.setValue("");
-        Assert.assertTrue(ageField.isInvalid());
-        Assert.assertEquals(ageValidationError, ageField.getErrorMessage());
+        Assertions.assertTrue(ageField.isInvalid());
+        Assertions.assertEquals(ageValidationError, ageField.getErrorMessage());
 
         lastNameField.setValue("Smith");
         ageField.setValue("0");
-        Assert.assertTrue(ageField.isInvalid());
-        Assert.assertEquals(ageValidationError, ageField.getErrorMessage());
+        Assertions.assertTrue(ageField.isInvalid());
+        Assertions.assertEquals(ageValidationError, ageField.getErrorMessage());
 
         ageField.setValue("10");
-        Assert.assertFalse(ageField.isInvalid());
-        Assert.assertEquals(0, binder.validate().getValidationErrors().size());
+        Assertions.assertFalse(ageField.isInvalid());
+        Assertions.assertEquals(0,
+                binder.validate().getValidationErrors().size());
     }
 
     // verifies that cross-field validation works correctly with setBean
@@ -274,25 +275,25 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
 
         // Initially no bean is set, fields should be empty
-        Assert.assertEquals("", firstNameField.getValue());
-        Assert.assertEquals("", lastNameField.getValue());
+        Assertions.assertEquals("", firstNameField.getValue());
+        Assertions.assertEquals("", lastNameField.getValue());
 
         // Set bean - fields should be populated
         binder.setBean(item);
 
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name to empty - should trigger validation of first name
         lastNameField.setValue("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
 
         // Bean should be updated immediately with setBean
-        Assert.assertEquals("", item.getLastName());
+        Assertions.assertEquals("", item.getLastName());
     }
 
     // verifies that cross-field validation works correctly with readBean
@@ -311,25 +312,25 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
 
         // Initially no bean is set, fields should be empty
-        Assert.assertEquals("", firstNameField.getValue());
-        Assert.assertEquals("", lastNameField.getValue());
+        Assertions.assertEquals("", firstNameField.getValue());
+        Assertions.assertEquals("", lastNameField.getValue());
 
         // Read bean - fields should be populated
         binder.readBean(item);
 
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name to empty - should trigger validation of first name
         lastNameField.setValue("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
 
         // Bean should NOT be updated with readBean
-        Assert.assertEquals("Smith", item.getLastName());
+        Assertions.assertEquals("Smith", item.getLastName());
     }
 
     // verifies that cross-field validation works correctly with readBean and
@@ -356,19 +357,19 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         binder.readBean(item);
 
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name via signal
         lastNameSignal.value("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
 
         // Bean should NOT be updated with readBean
-        Assert.assertEquals("Smith", item.getLastName());
+        Assertions.assertEquals("Smith", item.getLastName());
     }
 
     // verifies that switching from setBean to readBean works correctly
@@ -393,25 +394,25 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // Start with setBean
         binder.setBean(item1);
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
 
         // Modify fields - should update item1
         firstNameField.setValue("Charlie");
-        Assert.assertEquals("Charlie", item1.getFirstName());
+        Assertions.assertEquals("Charlie", item1.getFirstName());
 
         // Switch to readBean with item2
         binder.readBean(item2);
-        Assert.assertEquals("Bob", firstNameField.getValue());
-        Assert.assertEquals("Jones", lastNameField.getValue());
+        Assertions.assertEquals("Bob", firstNameField.getValue());
+        Assertions.assertEquals("Jones", lastNameField.getValue());
 
         // Modify fields - should NOT update item2
         firstNameField.setValue("David");
-        Assert.assertEquals("Bob", item2.getFirstName());
+        Assertions.assertEquals("Bob", item2.getFirstName());
 
         // Cross-field validation should still work
         lastNameField.setValue("");
-        Assert.assertTrue(firstNameField.isInvalid());
+        Assertions.assertTrue(firstNameField.isInvalid());
     }
 
     // verifies that cross-field validation works with records
@@ -435,15 +436,15 @@ public class BinderSignalTest extends SignalsUnitTest {
         // Read record - fields should be populated
         binder.readRecord(record);
 
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name to empty - should trigger validation of first name
         lastNameField.setValue("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
     }
 
@@ -474,15 +475,15 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         binder.readRecord(record);
 
-        Assert.assertEquals("Alice", firstNameField.getValue());
-        Assert.assertEquals("Smith", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Alice", firstNameField.getValue());
+        Assertions.assertEquals("Smith", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name via signal
         lastNameSignal.value("");
 
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
     }
 
@@ -513,24 +514,24 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // Set first bean - should be valid
         binder.setBean(item1);
-        Assert.assertTrue(binder.isValid());
-        Assert.assertFalse(firstNameField.isInvalid());
+        Assertions.assertTrue(binder.isValid());
+        Assertions.assertFalse(firstNameField.isInvalid());
 
         // Set second bean with empty last name - should be invalid
         binder.setBean(item2);
-        Assert.assertEquals("Bob", firstNameField.getValue());
-        Assert.assertEquals("", lastNameField.getValue());
-        Assert.assertFalse(binder.isValid());
+        Assertions.assertEquals("Bob", firstNameField.getValue());
+        Assertions.assertEquals("", lastNameField.getValue());
+        Assertions.assertFalse(binder.isValid());
 
         // Validate to trigger error display
         binder.validate();
-        Assert.assertTrue(firstNameField.isInvalid());
+        Assertions.assertTrue(firstNameField.isInvalid());
 
         // Set third bean - should be valid again
         binder.setBean(item3);
-        Assert.assertEquals("Charlie", firstNameField.getValue());
-        Assert.assertEquals("Brown", lastNameField.getValue());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertEquals("Charlie", firstNameField.getValue());
+        Assertions.assertEquals("Brown", lastNameField.getValue());
+        Assertions.assertTrue(binder.isValid());
     }
 
     // verifies that cross-field validation state is preserved when changing
@@ -557,17 +558,17 @@ public class BinderSignalTest extends SignalsUnitTest {
         // Set first bean and make it invalid
         binder.setBean(item1);
         lastNameField.setValue("");
-        Assert.assertTrue(firstNameField.isInvalid());
+        Assertions.assertTrue(firstNameField.isInvalid());
 
         // Set second bean - validation state should be cleared
         binder.setBean(item2);
-        Assert.assertEquals("", firstNameField.getValue());
-        Assert.assertEquals("", lastNameField.getValue());
+        Assertions.assertEquals("", firstNameField.getValue());
+        Assertions.assertEquals("", lastNameField.getValue());
 
         // Validate the new bean
         binder.validate();
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
     }
 
@@ -594,7 +595,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         binder.setBean(item);
 
         // Fields are NOT attached yet
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         // Change last name via signal - should NOT trigger cross-field
         // validation
@@ -603,21 +604,21 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // First name field should still be valid because the signal change
         // doesn't trigger cross-field validation when detached
-        Assert.assertFalse(firstNameField.isInvalid());
+        Assertions.assertFalse(firstNameField.isInvalid());
 
         // Change last name field directly - should NOT trigger cross-field
         // validation because fields are not attached and ComponentEffect is not
         // active for Binder's internal trigger signal.
         lastNameField.setValue("");
 
-        Assert.assertFalse(firstNameField.isInvalid());
-        Assert.assertEquals("", firstNameField.getErrorMessage());
+        Assertions.assertFalse(firstNameField.isInvalid());
+        Assertions.assertEquals("", firstNameField.getErrorMessage());
 
         // Reset to valid state
         lastNameField.setValue("Smith");
         binder.validate();
-        Assert.assertFalse(firstNameField.isInvalid());
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertFalse(firstNameField.isInvalid());
+        Assertions.assertTrue(binder.isValid());
 
         // Now attach the fields
         UI.getCurrent().add(firstNameField, lastNameField);
@@ -628,8 +629,8 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // First name field should be invalid because cross-field validation
         // is triggered automatically when fields are attached
-        Assert.assertTrue(firstNameField.isInvalid());
-        Assert.assertEquals("First and last name are required",
+        Assertions.assertTrue(firstNameField.isInvalid());
+        Assertions.assertEquals("First and last name are required",
                 firstNameField.getErrorMessage());
     }
 
@@ -660,12 +661,12 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // Change firstName via signal - should trigger cross-field validation
         firstNameSignal.value("");
-        Assert.assertTrue(lastNameField.isInvalid());
+        Assertions.assertTrue(lastNameField.isInvalid());
 
         // Reset to valid state
         firstNameSignal.value("Alice");
         binder.validate();
-        Assert.assertFalse(lastNameField.isInvalid());
+        Assertions.assertFalse(lastNameField.isInvalid());
 
         // Unbind the firstName binding
         firstNameBinding.unbind();
@@ -675,7 +676,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         // Change firstName via signal - should NOT trigger cross-field
         // validation
         firstNameSignal.value("");
-        Assert.assertFalse(lastNameField.isInvalid());
+        Assertions.assertFalse(lastNameField.isInvalid());
     }
 
     @Test
@@ -691,16 +692,16 @@ public class BinderSignalTest extends SignalsUnitTest {
             return true;
         }, "Bean level validation failed");
 
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         binder.withValidator(bean -> {
             firstNameSignal.value(); // causes error
             return true;
         }, "Bean level validation with a signal failed");
 
-        Assert.assertThrows(Binder.InvalidSignalUsageError.class,
+        Assertions.assertThrows(Binder.InvalidSignalUsageError.class,
                 () -> binder.validate());
-        Assert.assertThrows(Binder.InvalidSignalUsageError.class,
+        Assertions.assertThrows(Binder.InvalidSignalUsageError.class,
                 () -> binder.isValid());
     }
 
@@ -708,19 +709,17 @@ public class BinderSignalTest extends SignalsUnitTest {
     public void getValidationStatus_signalInitialized() {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
                 .getValidationStatus();
-        Assert.assertNotNull(
-                "getValidationStatus() should setup validation status signal",
-                statusSignal);
-        Assert.assertNotNull(
-                "validation status signal value should not be null initially",
-                statusSignal.value());
+        Assertions.assertNotNull(statusSignal,
+                "getValidationStatus() should setup validation status signal");
+        Assertions.assertNotNull(statusSignal.value(),
+                "validation status signal value should not be null initially");
     }
 
     @Test
     public void getValidationStatus_signalIsReadOnly() {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
                 .getValidationStatus();
-        Assert.assertThrows(ClassCastException.class,
+        Assertions.assertThrows(ClassCastException.class,
                 () -> ((WritableSignal<BinderValidationStatus<Person>>) statusSignal)
                         .value(null));
     }
@@ -736,18 +735,18 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .withValidator(value -> !value.isEmpty(), "").bind("lastName");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+        Assertions.assertTrue(binder.getValidationStatus().value().isOk());
 
         firstNameField.setValue("");
-        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        Assertions.assertFalse(binder.getValidationStatus().value().isOk());
         firstNameField.setValue("foo");
-        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+        Assertions.assertTrue(binder.getValidationStatus().value().isOk());
         lastNameField.setValue("");
-        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        Assertions.assertFalse(binder.getValidationStatus().value().isOk());
         firstNameField.setValue("");
-        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        Assertions.assertFalse(binder.getValidationStatus().value().isOk());
         firstNameField.setValue("foo");
-        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        Assertions.assertFalse(binder.getValidationStatus().value().isOk());
     }
 
     // verifies that field-specific validation statuses are updated correctly
@@ -763,14 +762,14 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.getValidationStatus().value()
+        Assertions.assertTrue(binder.getValidationStatus().value()
                 .getFieldValidationStatuses().stream()
                 .noneMatch(BindingValidationStatus::isError));
-        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+        Assertions.assertTrue(binder.getValidationStatus().value().isOk());
 
         lastNameField.setValue(""); // change to invalid state
 
-        Assert.assertFalse(binder.getValidationStatus().value().isOk());
+        Assertions.assertFalse(binder.getValidationStatus().value().isOk());
         var firstNameValidationStatuses = binder.getValidationStatus().value()
                 .getFieldValidationStatuses().stream()
                 .filter(status -> status.getBinding() == firstNameBinding)
@@ -779,19 +778,17 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .getFieldValidationStatuses().stream()
                 .filter(status -> status.getBinding() != firstNameBinding)
                 .toList();
-        Assert.assertEquals(
-                "Expected one BindingValidationStatus for first name field", 1,
-                firstNameValidationStatuses.size());
-        Assert.assertEquals(
-                "Expected one BindingValidationStatus for last name field", 1,
-                otherValidationStatuses.size());
-        Assert.assertFalse("Expected last name field to NOT have an error",
-                otherValidationStatuses.get(0).isError());
-        Assert.assertTrue("Expected first name field to have an error",
-                firstNameValidationStatuses.get(0).isError());
+        Assertions.assertEquals(1, firstNameValidationStatuses.size(),
+                "Expected one BindingValidationStatus for first name field");
+        Assertions.assertEquals(1, otherValidationStatuses.size(),
+                "Expected one BindingValidationStatus for last name field");
+        Assertions.assertFalse(otherValidationStatuses.get(0).isError(),
+                "Expected last name field to NOT have an error");
+        Assertions.assertTrue(firstNameValidationStatuses.get(0).isError(),
+                "Expected first name field to have an error");
 
         lastNameField.setValue("Smith");
-        Assert.assertTrue(binder.getValidationStatus().value().isOk());
+        Assertions.assertTrue(binder.getValidationStatus().value().isOk());
     }
 
     @Test
@@ -825,17 +822,17 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("age");
         binder.setBean(item);
 
-        Assert.assertTrue(binder.isValid());
+        Assertions.assertTrue(binder.isValid());
 
         // change of last name doesn't trigger validation of age field binding
         // because converter is run inside UsageTracker.untracked()
         lastNameField.setValue("");
 
-        Assert.assertFalse(ageField.isInvalid());
-        Assert.assertEquals("", ageField.getErrorMessage());
-        Assert.assertTrue("Converter should be called at least once",
-                converterCalls.get() > 0);
-        Assert.assertFalse(binder.isValid()); // reruns all validators
+        Assertions.assertFalse(ageField.isInvalid());
+        Assertions.assertEquals("", ageField.getErrorMessage());
+        Assertions.assertTrue(converterCalls.get() > 0,
+                "Converter should be called at least once");
+        Assertions.assertFalse(binder.isValid()); // reruns all validators
     }
 
     @Test
@@ -867,25 +864,24 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         // change field values to valid and invalid back-and-forth
         firstNameField.setValue("");
-        Assert.assertFalse(prevStatus.get());
-        Assert.assertEquals(2, effectCalled.get());
+        Assertions.assertFalse(prevStatus.get());
+        Assertions.assertEquals(2, effectCalled.get());
 
         firstNameField.setValue("foo");
-        Assert.assertEquals(3, effectCalled.get());
-        Assert.assertTrue(prevStatus.get());
+        Assertions.assertEquals(3, effectCalled.get());
+        Assertions.assertTrue(prevStatus.get());
 
         lastNameField.setValue("");
-        Assert.assertEquals(4, effectCalled.get());
-        Assert.assertFalse(prevStatus.get());
+        Assertions.assertEquals(4, effectCalled.get());
+        Assertions.assertFalse(prevStatus.get());
 
         firstNameField.setValue("");
-        Assert.assertFalse(prevStatus.get());
-        Assert.assertEquals(5, effectCalled.get());
+        Assertions.assertFalse(prevStatus.get());
+        Assertions.assertEquals(5, effectCalled.get());
         firstNameField.setValue("foo");
-        Assert.assertEquals(6, effectCalled.get());
-        Assert.assertFalse(
-                "Binder status change signal should be invalid when other field is still invalid.",
-                prevStatus.get());
+        Assertions.assertEquals(6, effectCalled.get());
+        Assertions.assertFalse(prevStatus.get(),
+                "Binder status change signal should be invalid when other field is still invalid.");
     }
 
     @Test
@@ -911,15 +907,15 @@ public class BinderSignalTest extends SignalsUnitTest {
             prevStatus.set(binder.getValidationStatus().value().isOk());
         });
 
-        Assert.assertFalse(prevStatus.get());
+        Assertions.assertFalse(prevStatus.get());
 
         firstNameField.setValue("foo");
-        Assert.assertTrue(prevStatus.get());
+        Assertions.assertTrue(prevStatus.get());
 
         var person = new Person();
         person.setFirstName("");
 
         binderSetup.accept(person);
-        Assert.assertFalse(prevStatus.get());
+        Assertions.assertFalse(prevStatus.get());
     }
 }

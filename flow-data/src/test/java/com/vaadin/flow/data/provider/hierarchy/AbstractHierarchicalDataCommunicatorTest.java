@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -83,14 +83,14 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
 
     protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
         Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
                 .thenReturn(arrayUpdate);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         UI.setCurrent(null);
     }
@@ -108,7 +108,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
      *            the expected property values of items
      */
     protected void assertArrayUpdateItems(String property, String... expected) {
-        Assert.assertEquals(Arrays.asList(expected),
+        Assertions.assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().values().stream()
                         .map((item) -> item.get(property).asString()).toList());
     }
@@ -122,7 +122,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
      */
     protected void assertArrayUpdateItems(String property,
             Map<Integer, String> expected) {
-        Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
+        Assertions.assertEquals(expected, captureArrayUpdateItems().entrySet()
                 .stream().collect(Collectors.toMap(//
                         (entry) -> entry.getKey(),
                         (entry) -> entry.getValue().get(property).asString())));

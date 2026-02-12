@@ -20,14 +20,14 @@ import jakarta.validation.Validation;
 import java.util.Calendar;
 import java.util.Locale;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
-public class BeanValidatorTest extends ValidatorTestBase {
+class BeanValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testFirstNameNullFails() {
@@ -93,7 +93,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
         assertPasses(null, validator("nickname"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         UI.setCurrent(null);
     }

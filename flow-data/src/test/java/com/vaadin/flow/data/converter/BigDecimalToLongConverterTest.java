@@ -17,14 +17,14 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class BigDecimalToLongConverterTest {
+class BigDecimalToLongConverterTest {
 
     BigDecimalToLongConverter converter = new BigDecimalToLongConverter();
 

@@ -18,19 +18,19 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.provider.DataProviderListener;
 import com.vaadin.flow.shared.Registration;
 
-public class HierarchicalDataProviderTest {
+class HierarchicalDataProviderTest {
 
     @Test
     public void getParent_throwsUnsupportedOperationException() {
         var dataProvider = new TestDataProvider();
         var rootItem = new TestBean(null, 0, 3);
-        Assert.assertThrows(UnsupportedOperationException.class,
+        Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> dataProvider.getParent(rootItem));
     }
 
@@ -39,7 +39,7 @@ public class HierarchicalDataProviderTest {
         var dataProvider = new TestDataProvider();
         dataProvider.setInMemory(true);
         var query = new HierarchicalQuery<TestBean, Object>(null, null);
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> dataProvider.getItemIndex(null, query));
     }
 
@@ -48,7 +48,7 @@ public class HierarchicalDataProviderTest {
         var dataProvider = new TestDataProvider();
         dataProvider.setInMemory(true);
         var rootItem = new TestBean(null, 0, 3);
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> dataProvider.getItemIndex(rootItem, null));
     }
 
@@ -56,7 +56,7 @@ public class HierarchicalDataProviderTest {
     public void defaultDataProvider_getItemIndex_throwsUnsupportedOperationException() {
         var dataProvider = new TestDataProvider();
         var rootItem = new TestBean(null, 0, 3);
-        Assert.assertThrows(UnsupportedOperationException.class,
+        Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> dataProvider.getItemIndex(rootItem, null));
     }
 
@@ -67,7 +67,7 @@ public class HierarchicalDataProviderTest {
         var rootItem = new TestBean(null, 0, 3);
         var query = new HierarchicalQuery<TestBean, Object>(null, null);
         var itemIndex = dataProvider.getItemIndex(rootItem, query);
-        Assert.assertEquals(3, itemIndex);
+        Assertions.assertEquals(3, itemIndex);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class HierarchicalDataProviderTest {
         var childItem = new TestBean(rootItem.getId(), 1, 3);
         var query = new HierarchicalQuery<>(null, rootItem);
         var itemIndex = dataProvider.getItemIndex(childItem, query);
-        Assert.assertEquals(3, itemIndex);
+        Assertions.assertEquals(3, itemIndex);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class HierarchicalDataProviderTest {
         var anotherRootItem = new TestBean(null, 0, 4);
         var query = new HierarchicalQuery<>(null, anotherRootItem);
         var itemIndex = dataProvider.getItemIndex(rootItem, query);
-        Assert.assertEquals(-1, itemIndex);
+        Assertions.assertEquals(-1, itemIndex);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class HierarchicalDataProviderTest {
         var notPresentItem = new TestBean(null, 0, 20000);
         var query = new HierarchicalQuery<TestBean, Object>(null, null);
         var itemIndex = dataProvider.getItemIndex(notPresentItem, query);
-        Assert.assertEquals(-1, itemIndex);
+        Assertions.assertEquals(-1, itemIndex);
     }
 
     private static class TestDataProvider

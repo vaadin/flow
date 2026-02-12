@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.data.validator;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -27,15 +27,15 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @since 1.0
  *
  */
-public class NotEmptyValidatorTest {
+class NotEmptyValidatorTest {
 
     @Test
     public void nullValueIsDisallowed() {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
         ValidationResult result = validator.apply(null,
                 new ValueContext(new Binder()));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals("foo", result.getErrorMessage());
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals("foo", result.getErrorMessage());
     }
 
     @Test
@@ -43,8 +43,8 @@ public class NotEmptyValidatorTest {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
         ValidationResult result = validator.apply("",
                 new ValueContext(new Binder()));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals("foo", result.getErrorMessage());
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals("foo", result.getErrorMessage());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class NotEmptyValidatorTest {
         Object value = new Object();
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder()));
-        Assert.assertFalse(result.isError());
-        Assert.assertFalse(result.isError());
+        Assertions.assertFalse(result.isError());
+        Assertions.assertFalse(result.isError());
     }
 }

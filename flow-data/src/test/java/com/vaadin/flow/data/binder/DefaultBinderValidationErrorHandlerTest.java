@@ -17,15 +17,15 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.dom.ThemeList;
 
-public class DefaultBinderValidationErrorHandlerTest {
+class DefaultBinderValidationErrorHandlerTest {
 
     private DefaultBinderValidationErrorHandler handler = new DefaultBinderValidationErrorHandler();
 
@@ -45,9 +45,9 @@ public class DefaultBinderValidationErrorHandlerTest {
     public void handleError_setValidationStatus_setErrorTheme() {
         handler.handleError(field, ValidationResult.error(""));
 
-        Assert.assertTrue(field.isInvalid());
+        Assertions.assertTrue(field.isInvalid());
 
-        Assert.assertTrue(field.getElement().getThemeList()
+        Assertions.assertTrue(field.getElement().getThemeList()
                 .contains(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH)));
     }
 
@@ -67,9 +67,9 @@ public class DefaultBinderValidationErrorHandlerTest {
                 .add(ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH));
         handler.clearError(field);
 
-        Assert.assertFalse(field.isInvalid());
+        Assertions.assertFalse(field.isInvalid());
 
-        Assert.assertFalse(field.getElement().getThemeList().contains(
+        Assertions.assertFalse(field.getElement().getThemeList().contains(
                 ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH)));
     }
 

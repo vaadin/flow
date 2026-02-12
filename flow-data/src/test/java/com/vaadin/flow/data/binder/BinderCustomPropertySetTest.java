@@ -21,13 +21,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.function.ValueProvider;
 
-public class BinderCustomPropertySetTest {
+class BinderCustomPropertySetTest {
     public static class MapPropertyDefinition
             implements PropertyDefinition<Map<String, String>, String> {
 
@@ -127,9 +127,8 @@ public class BinderCustomPropertySetTest {
         binder.setBean(map);
 
         field.setValue("value");
-        Assert.assertEquals(
-                "Field value should propagate to the corresponding key in the map",
-                "value", map.get("key"));
+        Assertions.assertEquals("value", map.get("key"),
+                "Field value should propagate to the corresponding key in the map");
     }
 
     @Test
@@ -141,18 +140,15 @@ public class BinderCustomPropertySetTest {
 
         binder.bindInstanceFields(instanceFields);
 
-        Assert.assertNotNull(
-                "Field corresponding to supported property name should be bound",
-                instanceFields.one);
-        Assert.assertNull(
-                "Field corresponding to unsupported property name should be ignored",
-                instanceFields.another);
+        Assertions.assertNotNull(instanceFields.one,
+                "Field corresponding to supported property name should be bound");
+        Assertions.assertNull(instanceFields.another,
+                "Field corresponding to unsupported property name should be ignored");
 
         binder.setBean(map);
 
         instanceFields.one.setValue("value");
-        Assert.assertEquals(
-                "Field value should propagate to the corresponding key in the map",
-                "value", map.get("one"));
+        Assertions.assertEquals("value", map.get("one"),
+                "Field value should propagate to the corresponding key in the map");
     }
 }

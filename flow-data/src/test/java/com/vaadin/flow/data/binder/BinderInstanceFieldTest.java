@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
@@ -39,7 +39,9 @@ import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.ConvertibleValues;
 import com.vaadin.flow.tests.data.bean.Person;
 
-public class BinderInstanceFieldTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class BinderInstanceFieldTest {
 
     public static class BindAllFields extends TestFormLayout {
         private TestTextField firstName;
@@ -250,21 +252,27 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
-        Assert.assertEquals(person.getBirthDate(), form.birthDate.getValue());
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
+        Assertions.assertEquals(person.getBirthDate(),
+                form.birthDate.getValue());
 
         form.firstName.setValue("bar");
         form.birthDate.setValue(person.getBirthDate().plusDays(345));
 
-        Assert.assertEquals(form.firstName.getValue(), person.getFirstName());
-        Assert.assertEquals(form.birthDate.getValue(), person.getBirthDate());
+        Assertions.assertEquals(form.firstName.getValue(),
+                person.getFirstName());
+        Assertions.assertEquals(form.birthDate.getValue(),
+                person.getBirthDate());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bind_instanceFields_noArgsConstructor() {
-        BindAllFields form = new BindAllFields();
-        Binder<Person> binder = new Binder<>();
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindAllFields form = new BindAllFields();
+            Binder<Person> binder = new Binder<>();
+            binder.bindInstanceFields(form);
+        });
     }
 
     @Test
@@ -278,13 +286,15 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
 
-        Assert.assertNull(form.noFieldInPerson);
+        Assertions.assertNull(form.noFieldInPerson);
 
         form.firstName.setValue("bar");
 
-        Assert.assertEquals(form.firstName.getValue(), person.getFirstName());
+        Assertions.assertEquals(form.firstName.getValue(),
+                person.getFirstName());
     }
 
     @Test
@@ -298,7 +308,7 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertNull(form.firstName);
+        Assertions.assertNull(form.firstName);
     }
 
     @Test
@@ -312,53 +322,67 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
 
         form.firstName.setValue("bar");
 
-        Assert.assertEquals(form.firstName.getValue(), person.getFirstName());
+        Assertions.assertEquals(form.firstName.getValue(),
+                person.getFirstName());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_genericFieldWithWrongTypeParameter() {
-        BindGenericWrongTypeParameterField form = new BindGenericWrongTypeParameterField();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindGenericWrongTypeParameterField form = new BindGenericWrongTypeParameterField();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_generic() {
-        BindGeneric<String> form = new BindGeneric<>();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindGeneric<String> form = new BindGeneric<>();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_rawFieldType() {
-        BindRaw form = new BindRaw();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindRaw form = new BindRaw();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_abstractFieldType() {
-        BindAbstract form = new BindAbstract();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindAbstract form = new BindAbstract();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_noInstantiatableFieldType() {
-        BindNonInstantiatableType form = new BindNonInstantiatableType();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindNonInstantiatableType form = new BindNonInstantiatableType();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void bindInstanceFields_wrongFieldType() {
-        BindWrongTypeParameterField form = new BindWrongTypeParameterField();
-        Binder<Person> binder = new Binder<>(Person.class);
-        binder.bindInstanceFields(form);
+        assertThrows(IllegalStateException.class, () -> {
+            BindWrongTypeParameterField form = new BindWrongTypeParameterField();
+            Binder<Person> binder = new Binder<>(Person.class);
+            binder.bindInstanceFields(form);
+        });
     }
 
     @Test
@@ -372,11 +396,13 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
 
         form.firstName.setValue("bar");
 
-        Assert.assertEquals(form.firstName.getValue(), person.getFirstName());
+        Assertions.assertEquals(form.firstName.getValue(),
+                person.getFirstName());
     }
 
     @Test
@@ -392,7 +418,7 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(name, form.firstName);
+        Assertions.assertEquals(name, form.firstName);
     }
 
     @Test
@@ -407,15 +433,17 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.nameField.getValue());
-        Assert.assertEquals(person.getBirthDate(),
+        Assertions.assertEquals(person.getFirstName(),
+                form.nameField.getValue());
+        Assertions.assertEquals(person.getBirthDate(),
                 form.birthDateField.getValue());
 
         form.nameField.setValue("bar");
         form.birthDateField.setValue(person.getBirthDate().plusDays(345));
 
-        Assert.assertEquals(form.nameField.getValue(), person.getFirstName());
-        Assert.assertEquals(form.birthDateField.getValue(),
+        Assertions.assertEquals(form.nameField.getValue(),
+                person.getFirstName());
+        Assertions.assertEquals(form.birthDateField.getValue(),
                 person.getBirthDate());
     }
 
@@ -432,14 +460,14 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals("Reading nested properties bound using annotation",
-                person.getAddress().getStreetAddress(),
-                form.streetAddressField.getValue());
+        Assertions.assertEquals(person.getAddress().getStreetAddress(),
+                form.streetAddressField.getValue(),
+                "Reading nested properties bound using annotation");
 
         form.streetAddressField.setValue("Bar ave.");
-        Assert.assertEquals("Changing nested properties bound using annotation",
-                form.streetAddressField.getValue(),
-                person.getAddress().getStreetAddress());
+        Assertions.assertEquals(form.streetAddressField.getValue(),
+                person.getAddress().getStreetAddress(),
+                "Changing nested properties bound using annotation");
     }
 
     @Test
@@ -461,18 +489,17 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(couple);
 
-        Assert.assertEquals("Binding deep nested properties using annotation",
-                couple.first.getAddress().getStreetAddress(),
-                form.firstStreetField.getValue());
-        Assert.assertEquals(
-                "Binding parallel deep nested properties using annotation",
-                couple.second.getAddress().getStreetAddress(),
-                form.secondStreetField.getValue());
+        Assertions.assertEquals(couple.first.getAddress().getStreetAddress(),
+                form.firstStreetField.getValue(),
+                "Binding deep nested properties using annotation");
+        Assertions.assertEquals(couple.second.getAddress().getStreetAddress(),
+                form.secondStreetField.getValue(),
+                "Binding parallel deep nested properties using annotation");
 
         form.firstStreetField.setValue(second.getAddress().getStreetAddress());
-        Assert.assertEquals("Updating value in deep nested properties",
-                form.firstStreetField.getValue(),
-                first.getAddress().getStreetAddress());
+        Assertions.assertEquals(form.firstStreetField.getValue(),
+                first.getAddress().getStreetAddress(),
+                "Updating value in deep nested properties");
     }
 
     @Test
@@ -497,16 +524,14 @@ public class BinderInstanceFieldTest {
             root = ns;
         }
         binder.setBean(parent);
-        Assert.assertEquals(child.getName(), form.childName.getValue());
-        Assert.assertEquals(grandchild.getName(),
+        Assertions.assertEquals(child.getName(), form.childName.getValue());
+        Assertions.assertEquals(grandchild.getName(),
                 form.grandchildName.getValue());
-        Assert.assertNotNull(
-                "Reading nested properties within default supported nested depth (max 10 levels)",
-                form.eighthLevelGrandchildName);
+        Assertions.assertNotNull(form.eighthLevelGrandchildName,
+                "Reading nested properties within default supported nested depth (max 10 levels)");
         // only 10 levels of nesting properties are scanned by default
-        Assert.assertNull(
-                "By default, only 10 levels of nesting properties are scanned.",
-                form.distantGreatGrandchildName);
+        Assertions.assertNull(form.distantGreatGrandchildName,
+                "By default, only 10 levels of nesting properties are scanned.");
     }
 
     @Test
@@ -534,13 +559,12 @@ public class BinderInstanceFieldTest {
             root = ns;
         }
         binder.setBean(parent);
-        Assert.assertEquals(child.getName(), form.childName.getValue());
-        Assert.assertEquals(
-                "Reading 3rd level nesting works when custom scanning depth is 5",
-                grandchild.getName(), form.grandchildName.getValue());
-        Assert.assertNull(
-                "Reading eighth level nesting doesn't work when custom scanning depth is 5",
-                form.eighthLevelGrandchildName);
+        Assertions.assertEquals(child.getName(), form.childName.getValue());
+        Assertions.assertEquals(grandchild.getName(),
+                form.grandchildName.getValue(),
+                "Reading 3rd level nesting works when custom scanning depth is 5");
+        Assertions.assertNull(form.eighthLevelGrandchildName,
+                "Reading eighth level nesting doesn't work when custom scanning depth is 5");
     }
 
     @Test
@@ -564,20 +588,23 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
-        Assert.assertEquals(person.getBirthDate(), form.birthDate.getValue());
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
+        Assertions.assertEquals(person.getBirthDate(),
+                form.birthDate.getValue());
         // the instance is not overridden
-        Assert.assertEquals(name, form.firstName);
+        Assertions.assertEquals(name, form.firstName);
 
         // Test automatic binding
         form.birthDate.setValue(person.getBirthDate().plusDays(345));
-        Assert.assertEquals(form.birthDate.getValue(), person.getBirthDate());
+        Assertions.assertEquals(form.birthDate.getValue(),
+                person.getBirthDate());
 
         // Test custom binding
         form.firstName.setValue("aa");
-        Assert.assertEquals(personName, person.getFirstName());
+        Assertions.assertEquals(personName, person.getFirstName());
 
-        Assert.assertFalse(binder.validate().isOk());
+        Assertions.assertFalse(binder.validate().isOk());
     }
 
     @Test
@@ -607,24 +634,25 @@ public class BinderInstanceFieldTest {
 
         binder.setBean(person);
 
-        Assert.assertEquals(person.getFirstName(), form.firstName.getValue());
-        Assert.assertEquals(String.valueOf(person.getAge()),
+        Assertions.assertEquals(person.getFirstName(),
+                form.firstName.getValue());
+        Assertions.assertEquals(String.valueOf(person.getAge()),
                 form.noFieldInPerson.getValue());
         // the instances are not overridden
-        Assert.assertEquals(name, form.firstName);
-        Assert.assertEquals(ageField, form.noFieldInPerson);
+        Assertions.assertEquals(name, form.firstName);
+        Assertions.assertEquals(ageField, form.noFieldInPerson);
 
         // Test correct age
         age += 56;
         form.noFieldInPerson.setValue(String.valueOf(age));
-        Assert.assertEquals(form.noFieldInPerson.getValue(),
+        Assertions.assertEquals(form.noFieldInPerson.getValue(),
                 String.valueOf(person.getAge()));
 
         // Test incorrect name
         form.firstName.setValue("aa");
-        Assert.assertEquals(personName, person.getFirstName());
+        Assertions.assertEquals(personName, person.getFirstName());
 
-        Assert.assertFalse(binder.validate().isOk());
+        Assertions.assertFalse(binder.validate().isOk());
     }
 
     @Test
@@ -642,7 +670,7 @@ public class BinderInstanceFieldTest {
         person.setFirstName("first");
         person.setAge(45);
         binder.setBean(person);
-        Assert.assertEquals("90", form.age.getValue());
+        Assertions.assertEquals("90", form.age.getValue());
     }
 
     @Test
@@ -720,23 +748,27 @@ public class BinderInstanceFieldTest {
 
             binder.setBean(data);
 
-            Assert.assertEquals("20.23", form.stringToBigDecimal.getValue());
-            Assert.assertEquals("30", form.stringToBigInteger.getValue());
-            Assert.assertEquals("40.56", form.stringToDouble.getValue());
-            Assert.assertEquals("50.78",
+            Assertions.assertEquals("20.23",
+                    form.stringToBigDecimal.getValue());
+            Assertions.assertEquals("30", form.stringToBigInteger.getValue());
+            Assertions.assertEquals("40.56", form.stringToDouble.getValue());
+            Assertions.assertEquals("50.78",
                     form.stringToPrimitiveDouble.getValue());
-            Assert.assertEquals("60.23", form.stringToFloat.getValue());
-            Assert.assertEquals("70.12",
+            Assertions.assertEquals("60.23", form.stringToFloat.getValue());
+            Assertions.assertEquals("70.12",
                     form.stringToPrimitiveFloat.getValue());
-            Assert.assertEquals("80", form.stringToInteger.getValue());
-            Assert.assertEquals("90", form.stringToPrimitiveInteger.getValue());
-            Assert.assertEquals("100", form.stringToLong.getValue());
-            Assert.assertEquals("110", form.stringToPrimitiveLong.getValue());
-            Assert.assertEquals("true", form.stringToBoolean.getValue());
-            Assert.assertEquals("false",
+            Assertions.assertEquals("80", form.stringToInteger.getValue());
+            Assertions.assertEquals("90",
+                    form.stringToPrimitiveInteger.getValue());
+            Assertions.assertEquals("100", form.stringToLong.getValue());
+            Assertions.assertEquals("110",
+                    form.stringToPrimitiveLong.getValue());
+            Assertions.assertEquals("true", form.stringToBoolean.getValue());
+            Assertions.assertEquals("false",
                     form.stringToPrimitiveBoolean.getValue());
-            Assert.assertEquals(now, form.localDateToDate.getValue());
-            Assert.assertEquals(uuid.toString(), form.stringToUUID.getValue());
+            Assertions.assertEquals(now, form.localDateToDate.getValue());
+            Assertions.assertEquals(uuid.toString(),
+                    form.stringToUUID.getValue());
         } finally {
             Locale.setDefault(defaultLocale);
         }
@@ -759,7 +791,7 @@ public class BinderInstanceFieldTest {
         ConvertibleValues data = new ConvertibleValues();
         binder.setBean(data);
 
-        Assert.assertEquals("EMPTY", form.stringToInteger.getValue());
+        Assertions.assertEquals("EMPTY", form.stringToInteger.getValue());
     }
 
     @Test
@@ -773,16 +805,15 @@ public class BinderInstanceFieldTest {
                         integer -> Integer.toString(integer * 2));
         binder.bindInstanceFields(form);
 
-        Assert.assertFalse(
-                "Expecting incomplete binding to be ignored by Binder, but field was bound",
-                binder.getBinding("age").isPresent());
+        Assertions.assertFalse(binder.getBinding("age").isPresent(),
+                "Expecting incomplete binding to be ignored by Binder, but field was bound");
 
         ageBinding.bind(Person::getAge, Person::setAge);
 
         Person person = new Person();
         person.setAge(45);
         binder.setBean(person);
-        Assert.assertEquals("90", form.age.getValue());
+        Assertions.assertEquals("90", form.age.getValue());
     }
 
     @Test
@@ -801,7 +832,7 @@ public class BinderInstanceFieldTest {
         Person person = new Person();
         person.setFirstName("Hello!");
         binder.setBean(person);
-        Assert.assertEquals("Hello!Hello!", form.firstName.getValue());
+        Assertions.assertEquals("Hello!Hello!", form.firstName.getValue());
     }
 
     @Test
@@ -820,7 +851,7 @@ public class BinderInstanceFieldTest {
         Person person = new Person();
         person.setFirstName("Hello!");
         binder.setBean(person);
-        Assert.assertEquals("Hello!Hello!", form.firstName.getValue());
+        Assertions.assertEquals("Hello!Hello!", form.firstName.getValue());
     }
 
     @Test
@@ -833,9 +864,8 @@ public class BinderInstanceFieldTest {
                 str -> str.substring(str.length() / 2), str -> str + str);
         binder.bindInstanceFields(form);
 
-        Assert.assertFalse(
-                "Expecting incomplete binding to be ignored by Binder, but field was bound",
-                binder.getBinding("firstName").isPresent());
+        Assertions.assertFalse(binder.getBinding("firstName").isPresent(),
+                "Expecting incomplete binding to be ignored by Binder, but field was bound");
     }
 
 }

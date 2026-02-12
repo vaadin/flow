@@ -19,14 +19,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class LocalDateTimeToInstantConverterTest {
+class LocalDateTimeToInstantConverterTest {
 
     private static final Instant INSTANT_EXAMPLE = Instant
             .parse("2007-12-03T10:15:30.00Z");

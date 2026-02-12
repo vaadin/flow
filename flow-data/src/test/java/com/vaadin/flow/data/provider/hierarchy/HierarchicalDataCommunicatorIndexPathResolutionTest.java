@@ -18,18 +18,18 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
-public class HierarchicalDataCommunicatorIndexPathResolutionTest
+class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -51,26 +51,26 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                 new Item("Item 1"), new Item("Item 1-1")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(0));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(0));
+        Assertions.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(0, 0));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(1, dataCommunicator.resolveIndexPath(0, 0));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(3, dataCommunicator.resolveIndexPath(1));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(3, dataCommunicator.resolveIndexPath(1));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(1, 0));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(4, dataCommunicator.resolveIndexPath(1, 0));
+        Assertions.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5, dataCommunicator.resolveIndexPath(1, 1));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(5, dataCommunicator.resolveIndexPath(1, 1));
+        Assertions.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(6, dataCommunicator.resolveIndexPath(1, 1, 0));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6, dataCommunicator.resolveIndexPath(1, 1, 0));
+        Assertions.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(7, dataCommunicator.resolveIndexPath(2));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(7, dataCommunicator.resolveIndexPath(2));
+        Assertions.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -78,26 +78,27 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                 new Item("Item 1"), new Item("Item 1-1")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-3));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(-3));
+        Assertions.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(-3, -2));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(1, dataCommunicator.resolveIndexPath(-3, -2));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(3, dataCommunicator.resolveIndexPath(-2));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(3, dataCommunicator.resolveIndexPath(-2));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(-2, -2));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(4, dataCommunicator.resolveIndexPath(-2, -2));
+        Assertions.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5, dataCommunicator.resolveIndexPath(-2, -1));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(5, dataCommunicator.resolveIndexPath(-2, -1));
+        Assertions.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(6, dataCommunicator.resolveIndexPath(-2, -1, -1));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6,
+                dataCommunicator.resolveIndexPath(-2, -1, -1));
+        Assertions.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(7, dataCommunicator.resolveIndexPath(-1));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(7, dataCommunicator.resolveIndexPath(-1));
+        Assertions.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -105,19 +106,19 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 2"), new Item("Item 2-1")));
 
-        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(2, dataCommunicator.resolveIndexPath(100));
+        Assertions.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(100, 100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(4, dataCommunicator.resolveIndexPath(100, 100));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5,
+        Assertions.assertEquals(5,
                 dataCommunicator.resolveIndexPath(100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5,
+        Assertions.assertEquals(5,
                 dataCommunicator.resolveIndexPath(100, 100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
@@ -125,19 +126,20 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(0, dataCommunicator.resolveIndexPath(-100));
+        Assertions.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(-100, -100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(1,
+                dataCommunicator.resolveIndexPath(-100, -100));
+        Assertions.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(2,
+        Assertions.assertEquals(2,
                 dataCommunicator.resolveIndexPath(-100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(2,
+        Assertions.assertEquals(2,
                 dataCommunicator.resolveIndexPath(-100, -100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        Assertions.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test

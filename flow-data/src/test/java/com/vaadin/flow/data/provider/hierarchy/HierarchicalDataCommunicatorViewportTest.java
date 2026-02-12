@@ -17,8 +17,8 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicator;
 
-public class HierarchicalDataCommunicatorViewportTest
+class HierarchicalDataCommunicatorViewportTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -34,7 +34,7 @@ public class HierarchicalDataCommunicatorViewportTest
 
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 

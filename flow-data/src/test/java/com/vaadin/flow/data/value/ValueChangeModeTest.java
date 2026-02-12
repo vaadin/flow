@@ -17,8 +17,8 @@ package com.vaadin.flow.data.value;
 
 import java.util.EnumSet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Tag;
@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
-public class ValueChangeModeTest {
+class ValueChangeModeTest {
 
     @Tag("tag")
     private static class ValueChangeModeField
@@ -81,9 +81,9 @@ public class ValueChangeModeTest {
         assertValueSynchronizedWithEvent(field, "blur");
 
         field.setValueChangeMode(null);
-        Assert.assertNull("value should not be a synchronized property",
-                getDisabledUpdateMode(field));
-        Assert.assertNull(field.getSynchronizationRegistration());
+        Assertions.assertNull(getDisabledUpdateMode(field),
+                "value should not be a synchronized property");
+        Assertions.assertNull(field.getSynchronizationRegistration());
 
         field.setValueChangeMode(ValueChangeMode.EAGER);
         assertValueSynchronizedWithEvent(field, "value-changed");
@@ -136,26 +136,25 @@ public class ValueChangeModeTest {
     private void assertDebounceEquals(ValueChangeModeField field,
             EnumSet<DebouncePhase> phases, int timeout) {
         DomListenerRegistration reg = field.getSynchronizationRegistration();
-        Assert.assertEquals(timeout, reg.getDebounceTimeout());
-        Assert.assertEquals(phases, reg.getDebouncePhases());
+        Assertions.assertEquals(timeout, reg.getDebounceTimeout());
+        Assertions.assertEquals(phases, reg.getDebouncePhases());
     }
 
     private void assertDebounceDisabled(ValueChangeModeField field) {
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                 field.getSynchronizationRegistration().getDebounceTimeout());
     }
 
     private void assertValueSynchronizedWithEvent(ValueChangeModeField field,
             String eventName) {
 
-        Assert.assertNotNull("value should be a synchronized property",
-                getDisabledUpdateMode(field));
+        Assertions.assertNotNull(getDisabledUpdateMode(field),
+                "value should be a synchronized property");
 
         DomListenerRegistration reg = field.getSynchronizationRegistration();
 
-        Assert.assertEquals(
-                eventName + " should be the synchronized property-event",
-                eventName, reg.getEventType());
+        Assertions.assertEquals(eventName, reg.getEventType(),
+                eventName + " should be the synchronized property-event");
     }
 
     private DisabledUpdateMode getDisabledUpdateMode(

@@ -17,9 +17,9 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasElement;
@@ -32,7 +32,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class DefaultBindingExceptionHandlerTest {
+class DefaultBindingExceptionHandlerTest {
 
     private DefaultBindingExceptionHandler handler = new DefaultBindingExceptionHandler();
 
@@ -44,7 +44,7 @@ public class DefaultBindingExceptionHandlerTest {
 
     private Element element = ElementFactory.createAnchor();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Mockito.when(component.getElement()).thenReturn(element);
     }
@@ -56,7 +56,7 @@ public class DefaultBindingExceptionHandlerTest {
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "An exception has been thrown inside binding logic for the field element [id='foo']",
                 message);
     }
@@ -68,7 +68,7 @@ public class DefaultBindingExceptionHandlerTest {
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "An exception has been thrown inside binding logic for the field element [label='foo']",
                 message);
     }
@@ -84,7 +84,7 @@ public class DefaultBindingExceptionHandlerTest {
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "An exception has been thrown inside binding logic for the field element [baz='foo-bar', foo='bar']",
                 message);
     }
@@ -99,7 +99,7 @@ public class DefaultBindingExceptionHandlerTest {
         Optional<BindingException> result = handler.handleException(component,
                 new Exception());
 
-        Assert.assertFalse(result.isPresent());
+        Assertions.assertFalse(result.isPresent());
     }
 
     private UI mockUI(boolean productionMode) {

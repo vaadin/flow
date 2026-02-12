@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -32,7 +32,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public abstract class AbstractListDataViewListenerTest {
+abstract class AbstractListDataViewListenerTest {
 
     @Test
     public void addItemCountChangeListener_itemsCountChanged_listenersAreNotified() {
@@ -58,10 +58,9 @@ public abstract class AbstractListDataViewListenerTest {
 
         fakeClientCall(ui);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(1, invocationCounter.get(),
                 "Unexpected number of item count change listener invocations "
-                        + "occurred",
-                1, invocationCounter.get());
+                        + "occurred");
     }
 
     @Test
@@ -87,8 +86,8 @@ public abstract class AbstractListDataViewListenerTest {
         // count stays the same.
         fakeClientCall(ui);
 
-        Assert.assertFalse("Unexpected item count listener invocation",
-                invocationChecker.get());
+        Assertions.assertFalse(invocationChecker.get(),
+                "Unexpected item count listener invocation");
     }
 
     @Test
@@ -106,9 +105,9 @@ public abstract class AbstractListDataViewListenerTest {
         fakeClientCall(ui);
 
         dataView.addItemCountChangeListener(event -> {
-            Assert.assertEquals("Unexpected item count", 1,
-                    event.getItemCount());
-            Assert.assertFalse(event.isItemCountEstimated());
+            Assertions.assertEquals(1, event.getItemCount(),
+                    "Unexpected item count");
+            Assertions.assertFalse(event.isItemCountEstimated());
             invocationChecker.set(true);
         });
 
@@ -118,8 +117,8 @@ public abstract class AbstractListDataViewListenerTest {
         // filtering.
         fakeClientCall(ui);
 
-        Assert.assertTrue("Item count change never called",
-                invocationChecker.get());
+        Assertions.assertTrue(invocationChecker.get(),
+                "Item count change never called");
     }
 
     @Test
@@ -133,13 +132,13 @@ public abstract class AbstractListDataViewListenerTest {
 
         listDataView.setFilter(filter);
 
-        Assert.assertEquals("Unexpected filtered item count", 1,
-                listDataView.getItemCount());
+        Assertions.assertEquals(1, listDataView.getItemCount(),
+                "Unexpected filtered item count");
 
         listDataView = component.setItems("item1", "item2", "item3");
 
-        Assert.assertEquals("Non-filtered item count expected", 3,
-                listDataView.getItemCount());
+        Assertions.assertEquals(3, listDataView.getItemCount(),
+                "Non-filtered item count expected");
     }
 
     protected abstract HasListDataView<String, ? extends AbstractListDataView<String>> getComponent();
@@ -189,10 +188,11 @@ public abstract class AbstractListDataViewListenerTest {
         /*
          * Used to make sure there's at least one reference to the mock session
          * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * eaten by GC in tests where @BeforeEach creates a session and sets it
+         * as the current instance without keeping any direct reference to it.
+         * This pattern has a chance of leaking memory if the session is not
+         * unlocked in the right way, but it should be acceptable for testing
+         * use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
         private ReentrantLock lock = new ReentrantLock();

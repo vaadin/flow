@@ -17,9 +17,9 @@ package com.vaadin.flow.data.binder;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -31,12 +31,11 @@ import com.vaadin.flow.tests.data.bean.Person;
  * @since 1.0
  *
  */
-public class BinderStatusChangeTest
-        extends BinderTestBase<Binder<Person>, Person> {
+class BinderStatusChangeTest extends BinderTestBase<Binder<Person>, Person> {
 
     private AtomicReference<StatusChangeEvent> event;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         binder = new Binder<>();
         item = new Person();
@@ -50,7 +49,7 @@ public class BinderStatusChangeTest
         BindingBuilder<Person, String> binding = binder.forField(nameField);
 
         nameField.setValue("");
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binding.bind(Person::getFirstName, Person::setFirstName);
         verifyEvent();
@@ -60,7 +59,7 @@ public class BinderStatusChangeTest
     public void bindBinder_unbound_singleEventWhenBound() {
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binder.setBean(item);
 
@@ -73,7 +72,7 @@ public class BinderStatusChangeTest
 
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.removeBean();
         verifyEvent();
     }
@@ -82,9 +81,9 @@ public class BinderStatusChangeTest
     public void removeBean_unbound_noEventWhenUnBound() {
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.removeBean();
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
@@ -95,7 +94,7 @@ public class BinderStatusChangeTest
 
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent();
     }
@@ -111,7 +110,7 @@ public class BinderStatusChangeTest
 
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent();
     }
@@ -124,7 +123,7 @@ public class BinderStatusChangeTest
 
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(true);
     }
@@ -139,7 +138,7 @@ public class BinderStatusChangeTest
 
         binder.addStatusChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(true);
     }
@@ -149,7 +148,7 @@ public class BinderStatusChangeTest
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.readBean(item);
         verifyEvent();
     }
@@ -162,7 +161,7 @@ public class BinderStatusChangeTest
                 .withConverter(new StringToIntegerConverter(""))
                 .bind(Person::getAge, Person::setAge);
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.readBean(item);
         verifyEvent();
     }
@@ -170,7 +169,7 @@ public class BinderStatusChangeTest
     @Test
     public void readBean_hasNoBindings_singleEvent() {
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.readBean(item);
         verifyEvent();
     }
@@ -179,7 +178,7 @@ public class BinderStatusChangeTest
     public void writeBean_hasNoBindings_singleEvent()
             throws ValidationException {
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBean(item);
         verifyEvent();
     }
@@ -187,7 +186,7 @@ public class BinderStatusChangeTest
     @Test
     public void writeBeanIfValid_hasNoBindings_singleEvent() {
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent();
     }
@@ -199,7 +198,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBean(item);
         verifyEvent();
     }
@@ -215,7 +214,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBean(item);
         verifyEvent();
     }
@@ -227,7 +226,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent();
     }
@@ -242,7 +241,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent();
     }
@@ -254,7 +253,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         try {
             binder.writeBean(item);
         } catch (ValidationException ignore) {
@@ -269,7 +268,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent(true);
     }
@@ -284,7 +283,7 @@ public class BinderStatusChangeTest
         binder.readBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent(true);
     }
@@ -297,7 +296,7 @@ public class BinderStatusChangeTest
         binder.withValidator(Validator.from(person -> false, ""));
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         try {
             binder.writeBean(item);
         } catch (ValidationException ignore) {
@@ -313,7 +312,7 @@ public class BinderStatusChangeTest
         binder.withValidator(Validator.from(person -> false, ""));
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent(true);
     }
@@ -327,7 +326,7 @@ public class BinderStatusChangeTest
         binder.withValidator(Validator.from(person -> true, ""));
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBean(item);
         verifyEvent();
     }
@@ -340,7 +339,7 @@ public class BinderStatusChangeTest
         binder.withValidator(Validator.from(person -> true, ""));
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         binder.writeBeanIfValid(item);
         verifyEvent();
     }
@@ -355,7 +354,7 @@ public class BinderStatusChangeTest
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binder.validate();
         verifyEvent();
@@ -371,7 +370,7 @@ public class BinderStatusChangeTest
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binder.validate();
         verifyEvent(true);
@@ -387,7 +386,7 @@ public class BinderStatusChangeTest
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binding.validate();
         verifyEvent();
@@ -404,7 +403,7 @@ public class BinderStatusChangeTest
         binder.setBean(item);
 
         binder.addStatusChangeListener(this::statusChanged);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binding.validate();
         verifyEvent(true);
@@ -416,15 +415,15 @@ public class BinderStatusChangeTest
 
     private void verifyEvent(boolean validationErrors) {
         StatusChangeEvent statusChangeEvent = event.get();
-        Assert.assertNotNull(statusChangeEvent);
-        Assert.assertEquals(binder, statusChangeEvent.getBinder());
-        Assert.assertEquals(binder, statusChangeEvent.getSource());
-        Assert.assertEquals(validationErrors,
+        Assertions.assertNotNull(statusChangeEvent);
+        Assertions.assertEquals(binder, statusChangeEvent.getBinder());
+        Assertions.assertEquals(binder, statusChangeEvent.getSource());
+        Assertions.assertEquals(validationErrors,
                 statusChangeEvent.hasValidationErrors());
     }
 
     private void statusChanged(StatusChangeEvent evt) {
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         event.set(evt);
     }
 }

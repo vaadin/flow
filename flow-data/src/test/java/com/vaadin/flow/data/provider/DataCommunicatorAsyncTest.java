@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -26,11 +24,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -46,8 +42,9 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
-@RunWith(Parameterized.class)
-public class DataCommunicatorAsyncTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+abstract class DataCommunicatorAsyncTest {
 
     /**
      * Test item that uses id for identity.
@@ -105,19 +102,9 @@ public class DataCommunicatorAsyncTest {
     public Range lastSet = null;
     public int lastUpdateId = -1;
 
-    private final boolean dataProviderWithParallelStream;
+    abstract boolean isDataProviderWithParallelStream();
 
-    public DataCommunicatorAsyncTest(boolean dataProviderWithParallelStream) {
-        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Boolean> testParameters() {
-        // Runs tests with both sequential and parallel data provider streams
-        return Arrays.asList(false, true);
-    }
-
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
@@ -151,13 +138,15 @@ public class DataCommunicatorAsyncTest {
                 }, element.getNode());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void asyncExcutorPushDisabledThrows() {
-        ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
-        dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setViewportRange(0, 50);
-        fakeClientCommunication();
+        assertThrows(IllegalStateException.class, () -> {
+            ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+            dataCommunicator.setDataProvider(createDataProvider(), null);
+            dataCommunicator.enablePushUpdates(executor);
+            dataCommunicator.setViewportRange(0, 50);
+            fakeClientCommunication();
+        });
     }
 
     @Test
@@ -169,8 +158,8 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotEquals("Expected initial reset not yet done.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertNotEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial reset not yet done.");
 
         try {
             latch.await();
@@ -178,14 +167,14 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no during reattach.", lastSet);
+        Assertions.assertNull(lastSet, "Expected no during reattach.");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
@@ -198,8 +187,8 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        Assertions.assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset after reattach");
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
@@ -237,7 +226,7 @@ public class DataCommunicatorAsyncTest {
     }
 
     private IntStream asParallelIfRequired(IntStream stream) {
-        if (dataProviderWithParallelStream) {
+        if (isDataProviderWithParallelStream()) {
             return stream.parallel();
         }
         return stream;
@@ -295,10 +284,11 @@ public class DataCommunicatorAsyncTest {
         /*
          * Used to make sure there's at least one reference to the mock session
          * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * eaten by GC in tests where @BeforeEach creates a session and sets it
+         * as the current instance without keeping any direct reference to it.
+         * This pattern has a chance of leaking memory if the session is not
+         * unlocked in the right way, but it should be acceptable for testing
+         * use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 

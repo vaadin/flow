@@ -17,16 +17,16 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 
-public class HierarchicalDataCommunicatorDataGenerationTest
+class HierarchicalDataCommunicatorDataGenerationTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -37,7 +37,7 @@ public class HierarchicalDataCommunicatorDataGenerationTest
     @Mock
     private DataGenerator<Item> dataGenerator;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -53,9 +53,8 @@ public class HierarchicalDataCommunicatorDataGenerationTest
         Mockito.doAnswer((invocation) -> {
             Item item = invocation.getArgument(0);
 
-            Assert.assertTrue(
-                    "Item should be in keyMapper when generateData is called",
-                    dataCommunicator.getKeyMapper().has(item));
+            Assertions.assertTrue(dataCommunicator.getKeyMapper().has(item),
+                    "Item should be in keyMapper when generateData is called");
 
             return null;
         }).when(dataGenerator).destroyData(Mockito.any());

@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -36,14 +36,13 @@ import com.vaadin.flow.tests.data.bean.Person;
  * @since 1.0
  *
  */
-public class BinderValueChangeTest
-        extends BinderTestBase<Binder<Person>, Person> {
+class BinderValueChangeTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
     private AtomicReference<ValueChangeEvent<?>> event;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
@@ -69,32 +68,32 @@ public class BinderValueChangeTest
         BindingBuilder<Person, String> binding = binder.forField(nameField);
 
         nameField.setValue("");
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binding.bind(Person::getFirstName, Person::setFirstName);
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
     public void setBean_unbound_noEvents() {
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binder.setBean(item);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
     public void readBean_unbound_noEvents() {
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
 
         binder.readBean(item);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
     }
 
     @Test
@@ -107,7 +106,7 @@ public class BinderValueChangeTest
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(nameField);
     }
@@ -123,7 +122,7 @@ public class BinderValueChangeTest
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         nameField.setValue("foo");
         verifyEvent(nameField);
     }
@@ -139,7 +138,7 @@ public class BinderValueChangeTest
 
         binder.addValueChangeListener(this::statusChanged);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         field.getElement().getNode().getFeature(ElementPropertyMap.class)
                 .setProperty("value", "foo", false);
         verifyEvent(field, true);
@@ -156,7 +155,7 @@ public class BinderValueChangeTest
                 .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         ageField.setValue(String.valueOf(1));
         verifyEvent(ageField);
     }
@@ -167,13 +166,13 @@ public class BinderValueChangeTest
 
     private void verifyEvent(HasValue<?, ?> field, boolean isUserOriginated) {
         ValueChangeEvent<?> changeEvent = event.get();
-        Assert.assertNotNull(changeEvent);
-        Assert.assertEquals(field, changeEvent.getHasValue());
-        Assert.assertEquals(isUserOriginated, changeEvent.isFromClient());
+        Assertions.assertNotNull(changeEvent);
+        Assertions.assertEquals(field, changeEvent.getHasValue());
+        Assertions.assertEquals(isUserOriginated, changeEvent.isFromClient());
     }
 
     private void statusChanged(ValueChangeEvent<?> evt) {
-        Assert.assertNull(event.get());
+        Assertions.assertNull(event.get());
         event.set(evt);
     }
 }

@@ -17,9 +17,9 @@ package com.vaadin.flow.data.validator;
 
 import java.time.LocalDate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RangeValidatorTest extends ValidatorTestBase {
+class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testIntegerRangeValidIntPasses() {

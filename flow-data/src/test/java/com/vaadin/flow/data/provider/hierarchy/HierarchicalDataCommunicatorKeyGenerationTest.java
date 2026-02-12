@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.function.ValueProvider;
 
-public class HierarchicalDataCommunicatorKeyGenerationTest
+class HierarchicalDataCommunicatorKeyGenerationTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -34,7 +34,7 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
     private HierarchicalDataCommunicator<Item> dataCommunicator;
     private DataKeyMapper<Item> keyMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
         super.init();
 
@@ -111,41 +111,41 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
         dataCommunicator.confirmUpdate(captureArrayUpdateId());
-        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 1")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 2")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-1")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 1")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 2")));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(2, 4);
         fakeClientCommunication(); // not confirmed yet
-        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-0")));
 
         dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
-        Assert.assertFalse(keyMapper.has(new Item("Item 0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 1")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 2")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 3")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-1")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 1")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 2")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 3")));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication(); // not confirmed yet
-        Assert.assertTrue(keyMapper.has(new Item("Item 2")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 3")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 2")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 3")));
 
         dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
-        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 1")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 2")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 3")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-1")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 1")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 2")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 3")));
     }
 
     @Test
@@ -154,13 +154,13 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertTrue(keyMapper.has(new Item("Item 0-1")));
 
         dataCommunicator.collapse(new Item("Item 0"));
         fakeClientCommunication();
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-1")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assertions.assertFalse(keyMapper.has(new Item("Item 0-1")));
     }
 
     @Test
@@ -187,6 +187,6 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
 
         var key = keyMapper.key(new Item("Item 4"));
         dataCommunicator.reset();
-        Assert.assertEquals(new Item("Item 4"), keyMapper.get(key));
+        Assertions.assertEquals(new Item("Item 4"), keyMapper.get(key));
     }
 }

@@ -20,11 +20,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,9 +32,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AbstractLazyDataViewTest {
+class AbstractLazyDataViewTest {
 
     private static final String ITEM1 = "foo";
 
@@ -53,10 +51,7 @@ public class AbstractLazyDataViewTest {
     @Mock
     private ArrayUpdater arrayUpdater;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         component = new TestComponent();
@@ -103,27 +98,28 @@ public class AbstractLazyDataViewTest {
     @Test
     public void defaults_withCorrectDataProvider_noErrors() {
         dataCommunicator.setDataProvider(dataProvider, null);
-        Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
-        Assert.assertEquals(BackEndDataProvider.class,
+        Assertions.assertTrue(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertEquals(BackEndDataProvider.class,
                 dataView.getSupportedDataProviderType());
-        Assert.assertEquals(3, dataView.getDataCommunicator().getItemCount());
-        Assert.assertEquals(200, dataView.getItemCountEstimate());
-        Assert.assertEquals(200, dataView.getItemCountEstimateIncrease());
+        Assertions.assertEquals(3,
+                dataView.getDataCommunicator().getItemCount());
+        Assertions.assertEquals(200, dataView.getItemCountEstimate());
+        Assertions.assertEquals(200, dataView.getItemCountEstimateIncrease());
 
         dataView.setItemCountUnknown();
-        Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertFalse(dataView.getDataCommunicator().isDefinedSize());
 
         dataView.setItemCountFromDataProvider();
-        Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
         dataView.setItemCountEstimate(500);
-        Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertFalse(dataView.getDataCommunicator().isDefinedSize());
 
         dataView.setItemCountFromDataProvider();
-        Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
         dataView.setItemCountEstimateIncrease(200);
-        Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
+        Assertions.assertFalse(dataView.getDataCommunicator().isDefinedSize());
     }
 
     @Test
@@ -151,23 +147,28 @@ public class AbstractLazyDataViewTest {
         });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void dataViewAPIUsed_beforeSettingDataProvider_throws() {
-        AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
-                new DataCommunicator<>((item, jsonObject) -> {
-                }, null, null, component.getElement().getNode()), component) {
-        };
+        assertThrows(IllegalStateException.class, () -> {
+            AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
+                    new DataCommunicator<>((item, jsonObject) -> {
+                    }, null, null, component.getElement().getNode()),
+                    component) {
+            };
 
-        // Check that the verification not passed for any 'lazy load'
-        // specific method
-        dataView.setItemCountUnknown();
+            // Check that the verification not passed for any 'lazy load'
+            // specific method
+            dataView.setItemCountUnknown();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void existingDataView_dataProviderIsChangedToInMemory_throws() {
-        dataCommunicator.setDataProvider(badProvider, null);
-        // any method call should be enough to trigger the check for type
-        dataView.setItemCountUnknown();
+        assertThrows(IllegalStateException.class, () -> {
+            dataCommunicator.setDataProvider(badProvider, null);
+            // any method call should be enough to trigger the check for type
+            dataView.setItemCountUnknown();
+        });
     }
 
     @Test
@@ -177,11 +178,13 @@ public class AbstractLazyDataViewTest {
                 event -> itemCount.set(event.getItemCount()));
         dataCommunicator.setViewportRange(0, 50);
 
-        Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
+        Assertions.assertEquals(0, itemCount.get(),
+                "Invalid item count reported");
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+        Assertions.assertEquals(3, itemCount.get(),
+                "Invalid item count reported");
     }
 
     @Test
@@ -192,20 +195,24 @@ public class AbstractLazyDataViewTest {
         dataCommunicator.setViewportRange(0, 50);
         dataView.setItemCountUnknown();
 
-        Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
+        Assertions.assertEquals(0, itemCount.get(),
+                "Invalid item count reported");
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+        Assertions.assertEquals(3, itemCount.get(),
+                "Invalid item count reported");
 
         dataView.setItemCountEstimate(500);
 
         // since the size was "locked", there is no estimate
-        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+        Assertions.assertEquals(3, itemCount.get(),
+                "Invalid item count reported");
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+        Assertions.assertEquals(3, itemCount.get(),
+                "Invalid item count reported");
 
         // setting new data provider triggers new size from data provider
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
@@ -213,20 +220,23 @@ public class AbstractLazyDataViewTest {
             return Stream.generate(String::new).limit(query.getLimit());
         }, query -> 2), null);
 
-        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+        Assertions.assertEquals(3, itemCount.get(),
+                "Invalid item count reported");
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
+        Assertions.assertEquals(2, itemCount.get(),
+                "Invalid item count reported");
 
         dataView.setItemCountEstimate(300);
 
-        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
+        Assertions.assertEquals(2, itemCount.get(),
+                "Invalid item count reported");
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 300,
-                itemCount.get());
+        Assertions.assertEquals(300, itemCount.get(),
+                "Invalid item count reported");
     }
 
     @Test
@@ -239,8 +249,8 @@ public class AbstractLazyDataViewTest {
         }, query -> 99), null);
 
         Stream<String> items = dataView.getItems();
-        Assert.assertEquals("Invalid amount of items returned", 99,
-                items.count());
+        Assertions.assertEquals(99, items.count(),
+                "Invalid amount of items returned");
     }
 
     @Test
@@ -258,15 +268,15 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 itemCountEstimate
                         + dataCommunicator.getItemCountEstimateIncrease(),
                 dataCommunicator.getItemCount());
 
         limit.set(70);
         Stream<String> items = dataView.getItems();
-        Assert.assertEquals("Invalid amount of items returned", limit.get(),
-                items.count());
+        Assertions.assertEquals(limit.get(), items.count(),
+                "Invalid amount of items returned");
     }
 
     @Test
@@ -280,14 +290,12 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item on index 1", "bar",
-                dataView.getItem(1));
+        Assertions.assertEquals("bar", dataView.getItem(1),
+                "Invalid item on index 1");
     }
 
     @Test
     public void getItem_negativeIndex_throws() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Index must be non-negative");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -296,13 +304,14 @@ public class AbstractLazyDataViewTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        dataView.getItem(-1);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class, () -> dataView.getItem(-1));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Index must be non-negative"));
     }
 
     @Test
     public void getItem_emptyData_throws() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Requested index 0 on empty data.");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -311,14 +320,14 @@ public class AbstractLazyDataViewTest {
         }, query -> 0), null);
 
         fakeClientCommunication();
-        dataView.getItem(0);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class, () -> dataView.getItem(0));
+        Assertions.assertTrue(
+                ex.getMessage().contains("Requested index 0 on empty data."));
     }
 
     @Test
     public void getItem_outsideOfRange_throws() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index 3 is outside of the accepted range '0 - 2'");
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -327,12 +336,15 @@ public class AbstractLazyDataViewTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        dataView.getItem(3);
+        IndexOutOfBoundsException ex = assertThrows(
+                IndexOutOfBoundsException.class, () -> dataView.getItem(3));
+        Assertions.assertTrue(ex.getMessage().contains(
+                "Given index 3 is outside of the accepted range '0 - 2'"));
     }
 
     @Test
     public void getItemIndex_withoutItemIndexProvider_throwUnsupportedOperationException() {
-        Assert.assertThrows(UnsupportedOperationException.class,
+        Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> dataView.getItemIndex("bar"));
     }
 
@@ -340,16 +352,17 @@ public class AbstractLazyDataViewTest {
     public void getItemIndex_itemPresentedInDataSet_indexFound() {
         dataView.setItemIndexProvider(
                 (item, query) -> "bar".equals(item) ? 1 : null);
-        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
-                dataView.getItemIndex("bar"));
+        Assertions.assertEquals(Optional.of(1), dataView.getItemIndex("bar"),
+                "Wrong index returned for item");
     }
 
     @Test
     public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
         dataView.setItemIndexProvider(
                 (item, query) -> "bar".equals(item) ? 1 : null);
-        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
-                dataView.getItemIndex("notPresent"));
+        Assertions.assertEquals(Optional.empty(),
+                dataView.getItemIndex("notPresent"),
+                "Wrong index returned for item");
     }
 
     @Test
@@ -429,16 +442,16 @@ public class AbstractLazyDataViewTest {
         Query<Item, Void> query;
 
         query = new Query<>(0, 20, null, null, null);
-        Assert.assertEquals(0L, query.getPage());
-        Assert.assertEquals(20, query.getPageSize());
+        Assertions.assertEquals(0L, query.getPage());
+        Assertions.assertEquals(20, query.getPageSize());
 
         query = new Query<>(20, 20, null, null, null);
-        Assert.assertEquals(1L, query.getPage());
-        Assert.assertEquals(20, query.getPageSize());
+        Assertions.assertEquals(1L, query.getPage());
+        Assertions.assertEquals(20, query.getPageSize());
 
         query = new Query<>(200, 40, null, null, null);
-        Assert.assertEquals(5L, query.getPage());
-        Assert.assertEquals(40, query.getPageSize());
+        Assertions.assertEquals(5L, query.getPage());
+        Assertions.assertEquals(40, query.getPageSize());
 
     }
 
@@ -446,13 +459,13 @@ public class AbstractLazyDataViewTest {
     public void getItems_withOffsetAndLimit_correctQuery() {
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            Assert.assertEquals("Invalid offset", 10, query.getOffset());
-            Assert.assertEquals("Invalid limit", 20, query.getLimit());
+            Assertions.assertEquals(10, query.getOffset(), "Invalid offset");
+            Assertions.assertEquals(20, query.getLimit(), "Invalid limit");
             return Stream.of("foo", "bar");
         }, query -> 100), null);
 
         Stream<String> items = dataView.getItems(10, 20);
-        Assert.assertEquals(2, items.count());
+        Assertions.assertEquals(2, items.count());
     }
 
     @Test
@@ -463,7 +476,7 @@ public class AbstractLazyDataViewTest {
         AtomicInteger fetchCount = new AtomicInteger(0);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             if (query.getOffset() == 90) {
-                Assert.assertEquals("Invalid limit", 10, query.getLimit());
+                Assertions.assertEquals(10, query.getLimit(), "Invalid limit");
                 fetchCount.incrementAndGet();
                 return Stream.of("foo");
             }
@@ -475,8 +488,8 @@ public class AbstractLazyDataViewTest {
         fakeClientCommunication(); // To settle size
 
         Stream<String> items = dataView.getItems(90, 20);
-        Assert.assertEquals(1, items.count());
-        Assert.assertEquals(1, fetchCount.get());
+        Assertions.assertEquals(1, items.count());
+        Assertions.assertEquals(1, fetchCount.get());
     }
 
     @Test
@@ -494,7 +507,7 @@ public class AbstractLazyDataViewTest {
         fakeClientCommunication();
 
         Stream<String> items = dataView.getItems(110, 20);
-        Assert.assertEquals(0, items.count());
+        Assertions.assertEquals(0, items.count());
     }
 
     private void fakeClientCommunication() {
@@ -508,7 +521,7 @@ public class AbstractLazyDataViewTest {
         IndexOutOfBoundsException exception = assertThrows(
                 IndexOutOfBoundsException.class,
                 () -> dataView.getItems(-1, 10));
-        Assert.assertEquals("Offset must be non-negative",
+        Assertions.assertEquals("Offset must be non-negative",
                 exception.getMessage());
     }
 
@@ -517,7 +530,7 @@ public class AbstractLazyDataViewTest {
         IndexOutOfBoundsException exception = assertThrows(
                 IndexOutOfBoundsException.class,
                 () -> dataView.getItems(0, -1));
-        Assert.assertEquals("Limit must be non-negative",
+        Assertions.assertEquals("Limit must be non-negative",
                 exception.getMessage());
     }
 }
