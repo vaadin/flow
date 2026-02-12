@@ -29,14 +29,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.NumericNode;
 
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Alias;
@@ -113,7 +114,7 @@ public class MutableTreeRevision extends TreeRevision {
      * helps decompose complex single operations into individually evaluated
      * steps.
      */
-    private class TreeManipulator {
+    private class TreeManipulator implements Serializable {
         private final Map<Id, Node> updatedNodes = new HashMap<>();
         private final Set<Id> detachedNodes = new HashSet<>();
         private final Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts = new HashMap<>();
@@ -266,7 +267,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private Data updateMapChildren(Data node,
-                Consumer<Map<String, Id>> mapUpdater) {
+                SerializableConsumer<Map<String, Id>> mapUpdater) {
             LinkedHashMap<String, Id> map = new LinkedHashMap<>(
                     node.mapChildren());
             mapUpdater.accept(map);
@@ -277,7 +278,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private Data updateListChildren(Data node,
-                Consumer<List<Id>> listUpdater) {
+                SerializableConsumer<List<Id>> listUpdater) {
             ArrayList<Id> list = new ArrayList<>(node.listChildren());
             listUpdater.accept(list);
 
@@ -417,16 +418,17 @@ public class MutableTreeRevision extends TreeRevision {
             return new NodeModification(original, newNode);
         }
 
-        private static Map<Class<? extends SignalCommand>, BiConsumer<TreeManipulator, ? extends SignalCommand>> handlers = new HashMap<>();
+        private static Map<Class<? extends SignalCommand>, SerializableBiConsumer<TreeManipulator, ? extends SignalCommand>> handlers = new HashMap<>();
 
         private static <T extends SignalCommand> void addHandler(
-                Class<T> commandType, BiConsumer<TreeManipulator, T> handler) {
+                Class<T> commandType,
+                SerializableBiConsumer<TreeManipulator, T> handler) {
             handlers.put(commandType, handler);
         }
 
         private static <T extends ConditionCommand> void addConditionHandler(
                 Class<T> commandType,
-                BiFunction<TreeManipulator, T, CommandResult> handler) {
+                SerializableBiFunction<TreeManipulator, T, CommandResult> handler) {
             addHandler(commandType, (manipulator, command) -> manipulator
                     .setResult(handler.apply(manipulator, command)));
         }
@@ -463,7 +465,7 @@ public class MutableTreeRevision extends TreeRevision {
 
         public CommandResult handleCommand(SignalCommand command) {
             @SuppressWarnings("unchecked")
-            BiConsumer<TreeManipulator, SignalCommand> handler = (BiConsumer<TreeManipulator, SignalCommand>) handlers
+            SerializableBiConsumer<TreeManipulator, SignalCommand> handler = (SerializableBiConsumer<TreeManipulator, SignalCommand>) handlers
                     .get(command.getClass());
 
             handler.accept(this, command);

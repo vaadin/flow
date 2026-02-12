@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
 /**
  * Computes a new signal value based on the current value, enabling atomic
  * compare-and-swap updates with automatic retry on conflicts.
@@ -26,7 +28,7 @@ package com.vaadin.flow.signals.function;
  *            the signal value type
  */
 @FunctionalInterface
-public interface SignalUpdater<T> {
+public interface SignalUpdater<T> extends Serializable {
     /**
      * Computes a new value based on the current value.
      *

@@ -23,15 +23,15 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
- * Serializable test component using ComponentEffect.
+ * Serializable test component using ComponentEffect and local signal.
  */
 @Tag("div")
-class SerializedComponent extends Component {
+class SerializedLocalSignalComponent extends Component {
     int effectExecutionCounter = 0;
     ValueSignal<String> signal;
     Registration registration;
 
-    SerializedComponent(ValueSignal<String> signal) {
+    SerializedLocalSignalComponent(ValueSignal<String> signal) {
         this.signal = signal;
 
         registration = ComponentEffect.effect(this, () -> {
