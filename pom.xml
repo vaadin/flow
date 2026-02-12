@@ -755,10 +755,10 @@
                 </goals>
                 <phase>initialize</phase>
                 <configuration>
-                  <executable>npx</executable>
+                  <executable>node</executable>
                   <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
                   <arguments>
-                    <argument>husky@9.1.7</argument>
+                    <argument>${maven.multiModuleProjectDirectory}/scripts/installHusky.js</argument>
                   </arguments>
                 </configuration>
               </execution>
