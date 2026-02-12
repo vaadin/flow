@@ -101,7 +101,7 @@ public class BasicElementStyle implements Style {
         ElementUtil.validateStylePropertyName(name);
         String attribute = StyleUtil.stylePropertyToAttribute(name);
         Element owner = Element.get(propertyMap.getNode());
-        propertyMap.bindSignal(owner, attribute, signal);
+        propertyMap.bindSignal(owner, attribute, signal, null);
         return this;
     }
 

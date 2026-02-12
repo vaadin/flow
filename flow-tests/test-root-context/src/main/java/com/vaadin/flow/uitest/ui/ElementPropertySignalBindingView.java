@@ -46,11 +46,12 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Div signalValue = createAndAddDiv(SIGNAL_VALUE_DIV_ID);
         Div listenerCountDiv = createAndAddDiv(LISTENER_COUNT_DIV_ID);
 
-        Signal<String> signal = new ValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         ComponentEffect.effect(this, () -> {
             signalValue.setText("Signal value: " + signal.get());
         });
-        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal);
+        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
+                signal::value);
 
         target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
                 "change", event -> {
@@ -67,7 +68,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Signal<String> computedSignal = Signal
                 .computed(() -> "computed-" + signal.get());
         shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
-                computedSignal);
+                computedSignal, null);
         shouldThrowTarget.getElement().addPropertyChangeListener(
                 TEST_PROPERTY_NAME, "change", event -> {
                     // NOP; listener is needed to synchronize the property

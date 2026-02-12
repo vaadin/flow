@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -152,7 +153,8 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     public record SignalBinding(Signal<?> signal, Registration registration,
-            Serializable value) implements Serializable {
+            Serializable value,
+            SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
     private Values values;
@@ -541,7 +543,8 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Binds the given signal to the given key.
+     * Binds a signal to a given key using a setter function and stores the
+     * writeCallback in SignalBindingFeature.
      *
      * @param owner
      *            the element owning the key, not <code>null</code>
@@ -550,7 +553,10 @@ public abstract class NodeMap extends NodeFeature {
      * @param signal
      *            the signal to bind, not <code>null</code>
      * @param setter
-     *            the setter to apply the signal value to the element
+     *            the function to call when the signal value changes
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @param <T>
      *            the type of the signal value
      *
@@ -560,7 +566,8 @@ public abstract class NodeMap extends NodeFeature {
      *
      */
     protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
-            SerializableBiConsumer<Element, T> setter) {
+            SerializableBiConsumer<Element, T> setter,
+            SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBinding previousSignalBinding;
         if (doGet(key) instanceof SignalBinding binding) {
@@ -574,7 +581,7 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         Registration registration = ElementEffect.bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, registration, get(key)), false);
+        put(key, new SignalBinding(signal, registration, get(key), writeCallback), false);
     }
 
     /**

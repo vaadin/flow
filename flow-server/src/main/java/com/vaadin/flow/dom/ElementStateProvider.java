@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -68,7 +69,8 @@ public interface ElementStateProvider extends Serializable {
     void setAttribute(StateNode node, String attribute, String value);
 
     /**
-     * Binds the given signal to the given attribute.
+     * Binds the given signal to the given attribute. <code>null</code> signal
+     * unbinds existing binding.
      *
      * @param owner
      *            the owner element for which the signal is bound, not
@@ -272,11 +274,15 @@ public interface ElementStateProvider extends Serializable {
      *            the property name, not <code>null</code>
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    void bindPropertySignal(Element owner, String name, Signal<?> signal);
+    void bindPropertySignal(Element owner, String name, Signal<?> signal,
+            SerializableConsumer<?> writeCallback);
 
     /**
      * Checks if the given property has been set.

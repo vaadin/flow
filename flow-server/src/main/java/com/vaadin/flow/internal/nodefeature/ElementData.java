@@ -162,7 +162,7 @@ public class ElementData extends NodeMap {
      */
     public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
         bindSignal(owner, NodeProperties.VISIBLE, signal,
-                (element, value) -> putVisibleSignalValue(value));
+                (element, value) -> putVisibleSignalValue(value), null);
     }
 
     private void putVisibleSignalValue(Boolean value) {
@@ -170,7 +170,7 @@ public class ElementData extends NodeMap {
         if (hasSignal(NodeProperties.VISIBLE)) {
             SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
             put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
-                    b.registration(), booleanValue));
+                    b.registration(), booleanValue, null));
         } else {
             put(NodeProperties.VISIBLE, booleanValue);
         }

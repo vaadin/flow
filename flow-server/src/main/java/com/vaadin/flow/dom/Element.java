@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -871,28 +872,44 @@ public class Element extends Node<Element> {
      * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
      * {@code Signal<Map<?,?>}.
      * <p>
-     * Example of usage:
+     * While a Signal is bound to a property and the element is in attached
+     * state, when a property change originates from the client (e.g., via a
+     * synchronized property change listener), the write callback will be
+     * invoked to propagate the value back.
+     * <p>
+     * If the write callback is <code>null</code>, the binding is read-only.
+     * <p>
+     * Example of usage for two-way binding:
      *
      * <pre>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
-     * Element element = new Element("span");
+     * Element element = new Element("input");
      * getElement().appendChild(element);
-     * element.bindProperty("mol", signal);
-     * signal.set("42"); // The element now has property mol="42"
+     * element.bindProperty("value", signal, signal::get);
+     * element.addPropertyChangeListener("value", "input", event -&gt; {
+     *     // Property change listener needed to synchronize the property
+     * });
+     * signal.set("Hello"); // The element property value="Hello"
+     * // When user types in the input, the signal is updated via the callback
      * </pre>
      *
      * @param name
      *            the name of the property
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes originated from the
+     *            client back, or <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public void bindProperty(String name, Signal<?> signal) {
+    public <T> void bindProperty(String name, Signal<T> signal,
+            SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
-        getStateProvider().bindPropertySignal(this, name, signal);
+        getStateProvider().bindPropertySignal(this, name, signal,
+                writeCallback);
     }
 
     /**

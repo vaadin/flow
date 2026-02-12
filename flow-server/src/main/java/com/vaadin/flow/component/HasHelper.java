@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -93,12 +94,12 @@ public interface HasHelper extends HasElement {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setHelperText(String)
-     * @see Element#bindProperty(String, Signal)
+     * @see Element#bindProperty(String, Signal, SerializableConsumer)
      *
      * @since 25.1
      */
     default void bindHelperText(Signal<String> helperTextSignal) {
-        getElement().bindProperty("helperText", helperTextSignal);
+        getElement().bindProperty("helperText", helperTextSignal, null);
     }
 
     /**
