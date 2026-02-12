@@ -248,7 +248,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
      *         Todo::setDone);
      *
-     * checkbox.bindValue(doneSignal); // Two-way binding
+     * checkbox.bindValue(doneSignal, doneSignal::value); // Two-way binding
      * </pre>
      *
      * @param <C>

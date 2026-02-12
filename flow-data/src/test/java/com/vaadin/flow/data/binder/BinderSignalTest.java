@@ -108,7 +108,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         var signal = new ValueSignal<>("");
 
         var field = new TestTextField();
-        field.bindValue(signal);
+        field.bindValue(signal, signal::value);
 
         var binding = binder.bind(field, Person::getFirstName,
                 Person::setFirstName);
@@ -129,7 +129,7 @@ public class BinderSignalTest extends SignalsUnitTest {
     public void bindValue_nullSignal_throwsNPE() {
         var field = new TestTextField();
         Assert.assertThrows(NullPointerException.class,
-                () -> field.bindValue(null));
+                () -> field.bindValue(null, null));
     }
 
     // verifies that cross-field validation works with signal-bound fields
@@ -141,8 +141,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         var firstNameSignal = new ValueSignal<>("");
         var lastNameSignal = new ValueSignal<>("");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
 
         UI.getCurrent().add(firstNameField, lastNameField);
 
@@ -204,10 +204,10 @@ public class BinderSignalTest extends SignalsUnitTest {
         var lastNameSignal = new ValueSignal<>("");
         var ageSignal = new ValueSignal<>("0");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
         var ageField = new TestTextField();
-        ageField.bindValue(ageSignal);
+        ageField.bindValue(ageSignal, ageSignal::value);
 
         var emailField = new TestTextField();
 
@@ -346,8 +346,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         var firstNameSignal = new ValueSignal<>("");
         var lastNameSignal = new ValueSignal<>("");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
 
         UI.getCurrent().add(firstNameField, lastNameField);
 
@@ -464,8 +464,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         var firstNameSignal = new ValueSignal<>("");
         var lastNameSignal = new ValueSignal<>("");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
 
         UI.getCurrent().add(firstNameField, lastNameField);
 
@@ -585,8 +585,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         var firstNameSignal = new ValueSignal<>("");
         var lastNameSignal = new ValueSignal<>("");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
 
         var lastNameBinding = binder.forField(lastNameField).bind("lastName");
 
@@ -646,8 +646,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         var firstNameSignal = new ValueSignal<>("");
         var lastNameSignal = new ValueSignal<>("");
 
-        firstNameField.bindValue(firstNameSignal);
-        lastNameField.bindValue(lastNameSignal);
+        firstNameField.bindValue(firstNameSignal, firstNameSignal::value);
+        lastNameField.bindValue(lastNameSignal, lastNameSignal::value);
 
         UI.getCurrent().add(firstNameField, lastNameField);
 
