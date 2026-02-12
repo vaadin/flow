@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -119,6 +121,7 @@ public class DataCommunicatorAsyncTest {
 
     @Before
     public void init() {
+        CurrentInstance.clearAll();
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         element = new Element("div");
@@ -149,6 +152,11 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     @Test(expected = IllegalStateException.class)
