@@ -288,8 +288,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                     boolean fireEvent = feature.updateSignalByWriteCallback(
                             SignalBindingFeature.VALUE, oldValue, newValue,
                             valueEquals, revertedToValue -> {
-                                // revert component value to the given value
-                                // which is in sync with the signal
+                                // revert component value to the signal's new value
                                 bufferedValue = revertedToValue;
                                 applyValue(revertedToValue);
                             });
