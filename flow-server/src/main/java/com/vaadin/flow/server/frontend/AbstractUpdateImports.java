@@ -412,7 +412,7 @@ abstract class AbstractUpdateImports implements Runnable {
             appShellLines.add(IMPORT_INJECT);
             appShellLines.addAll(appShellCssLines);
         }
-        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
             String importPath = "Frontend/"
                     + options.getFrontendDirectory().toPath()
                             .relativize(options.getFrontendGeneratedFolder()
