@@ -55,19 +55,11 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_stopsUpdates() {
+    public void bindText_nullSignal_throwsNPE() {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        label.bindText(signal);
-        assertEquals("a", label.getText());
-
-        label.bindText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", label.getText());
+        assertThrows(NullPointerException.class, () -> label.bindText(null));
     }
 
     @Test

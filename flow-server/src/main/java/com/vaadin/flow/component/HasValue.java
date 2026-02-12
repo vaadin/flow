@@ -237,8 +237,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Binds a {@link Signal}'s value to the value state of this component and
      * keeps the state synchronized with the signal value while the element is
      * in attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * changes have no effect.
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
@@ -268,8 +267,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * </pre>
      *
      * @param valueSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding (writeCallback is ignored when null)
+     *            the signal to bind, not <code>null</code>
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
@@ -288,8 +286,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Binds a {@link Signal}'s value to the read-only state of this component
      * and keeps the state synchronized with the signal value while the
      * component is in attached state. When the component is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * While a Signal is bound to the read-only state, any attempt to set the
      * read-only state manually with {@link #setReadOnly(boolean)} throws
@@ -307,8 +304,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * </pre>
      *
      * @param readOnlySignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)

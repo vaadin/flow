@@ -89,8 +89,7 @@ public interface HasHelper extends HasElement {
      * detached state.
      *
      * @param helperTextSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setHelperText(String)

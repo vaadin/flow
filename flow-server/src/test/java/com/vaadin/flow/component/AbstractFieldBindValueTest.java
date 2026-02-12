@@ -138,33 +138,35 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_withNullBinding_removesBinding() {
+    public void bindValue_nullSignal_throwsNPE() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal, signal::value);
-        assertEquals("foo", input.getValue());
 
-        input.bindValue(null, null); // remove binding
-        signal.value("bar"); // no effect
-        assertEquals("foo", input.getValue());
-
-        input.setValue("bar");
-        assertEquals("bar", input.getValue());
+        Assert.assertThrows(NullPointerException.class,
+                () -> input.bindValue(null, null));
     }
 
     @Test
-    public void bindValue_withNullBinding_allowsSetValue() {
+    public void bindValue_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal, signal::value);
         assertEquals("foo", input.getValue());
 
-        input.bindValue(null, null); // remove binding
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = input.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.VALUE);
 
-        input.setValue("bar");
-        assertEquals("bar", input.getValue());
+        // Signal changes should no longer affect the component
+        signal.value("bar");
+        assertEquals("foo", input.getValue());
+
+        // Manual set should work and not update the signal
+        input.setValue("baz");
+        assertEquals("baz", input.getValue());
+        assertEquals("bar", signal.peek());
     }
 
     @Test

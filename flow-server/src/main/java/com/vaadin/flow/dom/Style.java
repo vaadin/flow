@@ -198,10 +198,6 @@ public interface Style extends Serializable {
      * Binds the given style property to the provided string signal and keeps
      * the style property value synchronized with the signal.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the given style property. When unbinding, the current presence of the
-     * style property is left unchanged.
-     * <p>
      * When a binding is in place, the style signal mirrors
      * {@code signal.value()}. If the signal value is {@code null}, the style
      * property is removed; otherwise it is set to the string value.
@@ -220,8 +216,7 @@ public interface Style extends Serializable {
      * @param name
      *            the style property name, not {@code null}
      * @param signal
-     *            the signal that provides the style signal; {@code null}
-     *            removes an existing binding for the given name
+     *            the signal that provides the style value, not {@code null}
      * @return this style instance
      * @throws BindingActiveException
      *             thrown when there is already an existing binding

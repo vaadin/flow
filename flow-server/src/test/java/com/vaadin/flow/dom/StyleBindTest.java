@@ -147,25 +147,13 @@ public class StyleBindTest {
         Assert.assertNull(element.getStyle().get("borderBottomWidth"));
     }
 
-    // Unbinding via null does not force removal
     @Test
-    public void bindNull_unbindsWithoutForcingRemoval() {
+    public void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        ValueSignal<String> color = new ValueSignal<>("red");
-        element.getStyle().bind("background-color", color);
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
-
-        // Unbind
-        element.getStyle().bind("background-color", null);
-
-        // Value remains as-is
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
-
-        // Further changes do not affect
-        color.value("blue");
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        Assert.assertThrows(NullPointerException.class,
+                () -> element.getStyle().bind("background-color", null));
     }
 
     // Getters semantics

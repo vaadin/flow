@@ -165,7 +165,7 @@ public interface HasTheme extends HasElement {
      * @param name
      *            the theme name to bind, not {@code null} or blank
      * @param signal
-     *            the boolean signal to bind to, or {@code null} to unbind
+     *            the boolean signal to bind to, not {@code null}
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1

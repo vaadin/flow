@@ -48,10 +48,6 @@ public interface ThemeList extends Set<String>, Serializable {
      * the theme name is added when the signal value is {@code true} and removed
      * when the value is {@code false}.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the given theme name. When unbinding, the current presence of the
-     * theme name is left unchanged.
-     * <p>
      * While a binding for the given theme name is active, manual calls to
      * {@link #add(Object)}, {@link #remove(Object)},
      * {@link #set(String, boolean)}, {@link #addAll(Collection)},
@@ -69,7 +65,7 @@ public interface ThemeList extends Set<String>, Serializable {
      * @param name
      *            the theme name to bind, not {@code null} or blank
      * @param signal
-     *            the boolean signal to bind to, or {@code null} to unbind
+     *            the boolean signal to bind to, not {@code null}
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1

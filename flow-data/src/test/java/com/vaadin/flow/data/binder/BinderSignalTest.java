@@ -122,10 +122,14 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         signal.value("bar");
         Assert.assertEquals("bar", binding.value());
+    }
 
-        field.bindValue(null, null);
-        signal.value("baz");
-        Assert.assertEquals("bar", binding.value());
+    // verifies that bindValue throws NPE for null signal
+    @Test
+    public void bindValue_nullSignal_throwsNPE() {
+        var field = new TestTextField();
+        Assert.assertThrows(NullPointerException.class,
+                () -> field.bindValue(null, null));
     }
 
     // verifies that cross-field validation works with signal-bound fields

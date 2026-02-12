@@ -105,7 +105,7 @@ public interface HasValidation extends Serializable {
      * state.
      *
      * @param signal
-     *            the signal providing error messages, or {@code null} to unbind
+     *            the signal providing error messages, not {@code null}
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1

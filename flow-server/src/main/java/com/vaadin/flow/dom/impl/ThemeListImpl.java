@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -92,24 +93,21 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public void bind(String name, Signal<Boolean> signal) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
 
-        if (signal == null) {
-            feature.removeBinding(SignalBindingFeature.THEMES + name);
-        } else {
-            if (feature.hasBinding(SignalBindingFeature.THEMES + name)) {
-                throw new BindingActiveException("Theme name '" + name
-                        + "' is already bound to a signal");
-            }
-
-            Registration registration = ElementEffect.bind(
-                    Element.get(element.getNode()), signal,
-                    (element, value) -> internalSetPresence(name,
-                            Boolean.TRUE.equals(value)));
-            feature.setBinding(SignalBindingFeature.THEMES + name, registration,
-                    signal);
+        if (feature.hasBinding(SignalBindingFeature.THEMES + name)) {
+            throw new BindingActiveException(
+                    "Theme name '" + name + "' is already bound to a signal");
         }
+
+        Registration registration = ElementEffect.bind(
+                Element.get(element.getNode()), signal,
+                (element, value) -> internalSetPresence(name,
+                        Boolean.TRUE.equals(value)));
+        feature.setBinding(SignalBindingFeature.THEMES + name, registration,
+                signal);
     }
 
     private void internalSetPresence(String name, boolean set) {

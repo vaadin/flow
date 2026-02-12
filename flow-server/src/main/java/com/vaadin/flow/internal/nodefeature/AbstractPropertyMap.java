@@ -150,16 +150,14 @@ public abstract class AbstractPropertyMap extends NodeMap {
     }
 
     /**
-     * Binds the given signal to the given property. <code>null</code> signal
-     * unbinds existing binding.
+     * Binds the given signal to the given property.
      *
      * @param owner
      *            the element owning the property, not <code>null</code>
      * @param name
      *            the name of the property
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property

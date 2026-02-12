@@ -82,15 +82,13 @@ public class ElementAttributeMap extends NodeMap {
 
     /**
      * Binds the given signal to the given attribute. <code>null</code> signal
-     * unbinds existing binding.
      *
      * @param owner
      *            the element owning the attribute, not <code>null</code>
      * @param attribute
      *            the name of the attribute
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given attribute

@@ -541,48 +541,40 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Binds the given signal to the given key. <code>null</code> signal unbinds
-     * existing binding.
+     * Binds the given signal to the given key.
      *
      * @param owner
      *            the element owning the key, not <code>null</code>
      * @param key
      *            the key of the node map
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
+     * @param setter
+     *            the setter to apply the signal value to the element
      * @param <T>
      *            the type of the signal value
-     * 
+     *
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given key
-     * 
+     *
      */
     protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBinding previousSignalBinding;
         if (doGet(key) instanceof SignalBinding binding) {
             previousSignalBinding = binding;
         } else {
             previousSignalBinding = null;
         }
-        if (signal != null && previousSignalBinding != null
+        if (previousSignalBinding != null
                 && previousSignalBinding.signal() != null) {
             throw new BindingActiveException();
         }
 
-        Registration registration = signal != null
-                ? ElementEffect.bind(owner, signal, setter)
-                : null;
-        if (signal == null && previousSignalBinding != null) {
-            if (previousSignalBinding.registration() != null) {
-                previousSignalBinding.registration().remove();
-            }
-            put(key, get(key), false);
-        } else {
-            put(key, new SignalBinding(signal, registration, get(key)), false);
-        }
+        Registration registration = ElementEffect.bind(owner, signal, setter);
+        put(key, new SignalBinding(signal, registration, get(key)), false);
     }
 
     /**

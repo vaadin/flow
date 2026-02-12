@@ -181,8 +181,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * Binds a {@link Signal}'s value to the value state of the field and keeps
      * the state synchronized with the signal value while the element is in
      * attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * changes have no effect.
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
@@ -203,8 +202,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * {@link IllegalStateException}.
      *
      * @param valueSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
@@ -215,22 +213,18 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      */
     public void bindValue(Signal<T> valueSignal,
             SerializableConsumer<T> writeCallback) {
+        Objects.requireNonNull(valueSignal, "Signal cannot be null");
         SignalBindingFeature feature = component.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
 
-        if (valueSignal == null) {
-            feature.removeBinding(SignalBindingFeature.VALUE);
-        } else {
-            if (feature.hasBinding(SignalBindingFeature.VALUE)) {
-                throw new BindingActiveException();
-            }
-
-            Registration registration = ElementEffect.bind(
-                    component.getElement(), valueSignal,
-                    (element, value) -> setValueFromSignal(value));
-            feature.setBinding(SignalBindingFeature.VALUE, registration,
-                    valueSignal, writeCallback);
+        if (feature.hasBinding(SignalBindingFeature.VALUE)) {
+            throw new BindingActiveException();
         }
+
+        Registration registration = ElementEffect.bind(component.getElement(),
+                valueSignal, (element, value) -> setValueFromSignal(value));
+        feature.setBinding(SignalBindingFeature.VALUE, registration,
+                valueSignal, writeCallback);
     }
 
     private void setValueFromSignal(T value) {

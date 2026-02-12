@@ -202,22 +202,12 @@ public class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_withNullBinding_removesBinding() {
+    public void bindAttribute_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
-        component.getElement().bindAttribute("foo", signal);
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-
-        component.getElement().bindAttribute("foo", null);
-
-        signal.value("baz");
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assert.assertThrows(NullPointerException.class,
+                () -> component.getElement().bindAttribute("foo", null));
     }
 
     @Test

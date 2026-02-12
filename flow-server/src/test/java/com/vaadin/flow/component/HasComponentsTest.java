@@ -21,8 +21,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -234,7 +234,7 @@ public class HasComponentsTest {
     }
 
     @Test
-    public void bindChildren_registrationRemove_stopsUpdating() {
+    public void bindChildren_removeBindingViaFeature_stopsUpdatesAndAllowsManualAddRemove() {
         CurrentInstance.clearAll();
         TestComponent container = new TestComponent();
         new MockUI().add(container);
@@ -242,17 +242,27 @@ public class HasComponentsTest {
         SharedListSignal<String> items = new SharedListSignal<>(String.class);
         items.insertFirst("first");
 
-        Registration registration = container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.value()));
 
         assertEquals(1, container.getChildren().count());
 
-        registration.remove();
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.CHILDREN);
 
+        // Signal changes should no longer affect children
         items.insertLast("second");
-        assertEquals(
-                "After removing registration, children should not be updated",
-                1, container.getChildren().count());
+        assertEquals(1, container.getChildren().count());
+
+        // Manual add and remove should work without throwing
+        TestComponent newChild = new TestComponent("manual");
+        container.add(newChild);
+        assertEquals(2, container.getChildren().count());
+
+        Component firstChild = container.getChildren().toList().get(0);
+        container.remove(firstChild);
+        assertEquals(1, container.getChildren().count());
     }
 
     @Test
@@ -316,32 +326,6 @@ public class HasComponentsTest {
 
         assertThrows("remove should throw while binding is active",
                 BindingActiveException.class, () -> container.remove(child));
-    }
-
-    @Test
-    public void bindChildren_addAndRemoveWorkAfterRegistrationRemoved() {
-        CurrentInstance.clearAll();
-        TestComponent container = new TestComponent();
-        new MockUI().add(container);
-
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
-        items.insertFirst("first");
-
-        Registration registration = container.bindChildren(items,
-                item -> new TestComponent(item.value()));
-
-        assertEquals(1, container.getChildren().count());
-
-        registration.remove();
-
-        // Now add and remove should work normally
-        TestComponent newChild = new TestComponent("manual");
-        container.add(newChild);
-        assertEquals(2, container.getChildren().count());
-
-        Component firstChild = container.getChildren().toList().get(0);
-        container.remove(firstChild);
-        assertEquals(1, container.getChildren().count());
     }
 
 }

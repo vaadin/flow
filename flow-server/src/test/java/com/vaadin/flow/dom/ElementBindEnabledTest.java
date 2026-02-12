@@ -124,28 +124,32 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_withNullBinding_removesBinding() {
+    public void bindEnabled_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindEnabled(signal);
-        assertTrue(element.isEnabled());
 
-        element.bindEnabled(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(element.isEnabled());
+        assertThrows(NullPointerException.class,
+                () -> element.bindEnabled(null));
     }
 
     @Test
-    public void bindEnabled_withNullBinding_allowsSetEnabled() {
+    public void bindEnabled_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         assertTrue(element.isEnabled());
 
-        element.bindEnabled(null); // remove binding
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.ENABLED);
 
+        // Signal changes should no longer affect the element
+        signal.value(false);
+        assertTrue(element.isEnabled());
+
+        // Manual set should work without throwing
         element.setEnabled(false);
         assertFalse(element.isEnabled());
     }
