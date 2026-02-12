@@ -855,8 +855,7 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the given property and keeps the
      * property value synchronized with the signal value while the element is in
      * attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * changes have no effect.
      * <p>
      * Same rules apply for the property name and value from the bound Signal as
      * in {@link #setProperty(String, String)}.
