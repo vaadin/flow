@@ -19,7 +19,8 @@ import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -43,14 +44,13 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-class FlowClassesSerializableTest extends ClassesSerializableTest {
+public class FlowClassesSerializableTest extends ClassesSerializableTest {
 
     /**
      * {@link HtmlComponent} and {@link HtmlContainer} are not covered by
@@ -83,11 +83,11 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
             Element element = new Element("dummy-element");
             StreamReceiver streamReceiver = new StreamReceiver(
                     element.getNode(), "upload", new MyStreamVariable());
-            assertEquals(ui, UI.getCurrent());
+            Assert.assertEquals(ui, UI.getCurrent());
             element.setAttribute("target", streamReceiver);
             serializeAndDeserialize(element);
-            assertTrue(element.getAttribute("target").length() > 10,
-                    "Basic smoke test with ");
+            assertTrue("Basic smoke test with ",
+                    element.getAttribute("target").length() > 10);
 
         } finally {
             UI.setCurrent(null);
@@ -134,11 +134,11 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         SerializedComponent component = new SerializedComponent(signal);
         ui.add(component);
-        assertEquals(1, component.effectExecutionCounter);
+        Assert.assertEquals(1, component.effectExecutionCounter);
 
         // verify that signal works before serialization
         signal.value("changed");
-        assertEquals(2, component.effectExecutionCounter);
+        Assert.assertEquals(2, component.effectExecutionCounter);
 
         SerializedComponent deserializedComponent;
         VaadinSession deserializedSession = null;
@@ -164,40 +164,41 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
 
         UI.setCurrent(deserializedUi);
         deserializedComponent.signal.value("changed after deserialization");
-        assertEquals(3, deserializedComponent.effectExecutionCounter);
+        Assert.assertEquals(3, deserializedComponent.effectExecutionCounter);
         deserializedComponent.signal.value("changed");
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         signal.value("changed in original signal");
         // original signal change should not affect deserialized component
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
         deserializedComponent.signal.value("foo");
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // verify various bindX methods
-        assertEquals("foo", deserializedComponent.getElement().getText());
-        assertEquals("foo",
+        Assert.assertEquals("foo",
+                deserializedComponent.getElement().getText());
+        Assert.assertEquals("foo",
                 deserializedComponent.getElement().getAttribute("attr"));
-        assertEquals("foo",
+        Assert.assertEquals("foo",
                 deserializedComponent.getElement().getProperty("prop"));
-        assertEquals("foo!!!",
+        Assert.assertEquals("foo!!!",
                 deserializedComponent.getElement().getProperty("two-way-prop"));
         // verify that two-way-binding works
         emulateClientUpdate(deserializedComponent.getElement(), "two-way-prop",
                 "bar!!!");
-        assertEquals("bar!!!",
+        Assert.assertEquals("bar!!!",
                 deserializedComponent.getElement().getProperty("two-way-prop"));
-        assertEquals("bar", deserializedComponent.signal.peek());
+        Assert.assertEquals("bar", deserializedComponent.signal.peek());
 
         // verify mapped and computed signals with bindEnabled and bindVisible
-        assertTrue(deserializedComponent.getElement().isEnabled());
-        assertTrue(deserializedComponent.getElement().isVisible());
+        Assert.assertTrue(deserializedComponent.getElement().isEnabled());
+        Assert.assertTrue(deserializedComponent.getElement().isVisible());
         deserializedComponent.signal.value(null);
-        assertFalse(deserializedComponent.getElement().isEnabled());
-        assertFalse(deserializedComponent.getElement().isVisible());
+        Assert.assertFalse(deserializedComponent.getElement().isEnabled());
+        Assert.assertFalse(deserializedComponent.getElement().isVisible());
 
         deserializedSession.unlock();
         VaadinService.setCurrent(null);
@@ -210,7 +211,8 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         try {
             childModel.deferredUpdateFromClient(property, value);
         } catch (PropertyChangeDeniedException e) {
-            fail("Failed to update property from client: " + e.getMessage());
+            Assert.fail(
+                    "Failed to update property from client: " + e.getMessage());
         }
     }
 
