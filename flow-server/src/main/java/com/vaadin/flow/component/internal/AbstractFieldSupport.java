@@ -193,7 +193,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * {@link #setModelValue(Object, boolean)}, or when a change originates from
      * the client, will invoke the write callback to propagate the value back.
      * After the callback, the signal is re-consulted and if its value differs
-     * from what was set, the component reverts to the signal's value.
+     * from what was being set, the new value is ignored and the signal's updated
+     * value is used instead, i.e. in cases where write callback has `signal.value("different")`, whereas a value being set is "a new value", the "different" value wins.
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only and
      * any attempt to set the value while attached will throw an
