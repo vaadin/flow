@@ -20,34 +20,43 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LookupTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Test(expected = NullPointerException.class)
+class LookupTest {
+
+    @Test
     public void of_nullServiceObject_throws() {
-        Lookup.of(null);
+        assertThrows(NullPointerException.class, () -> {
+            Lookup.of(null);
+        });
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void of_serviceNotExtendingType_throws() {
-        String service = "";
-        Class type = List.class;
-        Lookup.of(service, type);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String service = "";
+            Class type = List.class;
+            Lookup.of(service, type);
+        });
     }
 
     @Test
     public void of_serviceIsFoundByProvidedTypes_serviceIsNotFoundByNotProvidedTypes() {
         ArrayList<String> service = new ArrayList<String>();
         Lookup lookup = Lookup.of(service, Collection.class);
-        Assert.assertEquals(service, lookup.lookup(Collection.class));
-        Assert.assertEquals(1, lookup.lookupAll(Collection.class).size());
-        Assert.assertEquals(service,
+        assertEquals(service, lookup.lookup(Collection.class));
+        assertEquals(1, lookup.lookupAll(Collection.class).size());
+        assertEquals(service,
                 lookup.lookupAll(Collection.class).iterator().next());
-        Assert.assertNull(lookup.lookup(List.class));
-        Assert.assertEquals(0, lookup.lookupAll(List.class).size());
+        assertNull(lookup.lookup(List.class));
+        assertEquals(0, lookup.lookupAll(List.class).size());
     }
 
     @Test
@@ -57,7 +66,7 @@ public class LookupTest {
         Lookup lookup2 = Lookup.of(new LinkedList<String>(), Collection.class);
 
         Lookup compose = Lookup.compose(lookup1, lookup2);
-        Assert.assertSame(service, compose.lookup(Collection.class));
+        assertSame(service, compose.lookup(Collection.class));
     }
 
     @Test
@@ -67,7 +76,7 @@ public class LookupTest {
         Lookup lookup2 = Lookup.of(service, Collection.class);
 
         Lookup compose = Lookup.compose(lookup1, lookup2);
-        Assert.assertSame(service, compose.lookup(Collection.class));
+        assertSame(service, compose.lookup(Collection.class));
     }
 
     @Test
@@ -80,8 +89,8 @@ public class LookupTest {
         Lookup compose = Lookup.compose(lookup1, lookup2);
         @SuppressWarnings("rawtypes")
         Collection<List> lookupAll = compose.lookupAll(List.class);
-        Assert.assertEquals(2, lookupAll.size());
-        Assert.assertTrue(lookupAll.contains(service1));
-        Assert.assertTrue(lookupAll.contains(service2));
+        assertEquals(2, lookupAll.size());
+        assertTrue(lookupAll.contains(service1));
+        assertTrue(lookupAll.contains(service2));
     }
 }
