@@ -161,9 +161,8 @@ class FeatureFlagsTest {
         ApplicationConfiguration conf = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
         Mockito.when(conf.isProductionMode()).thenReturn(true);
-        assertThrows(IllegalStateException.class,
-                () -> featureFlags.setEnabled(
-                        TestFeatureFlagProvider.EXAMPLE.getId(), true));
+        assertThrows(IllegalStateException.class, () -> featureFlags
+                .setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true));
     }
 
     @Test
