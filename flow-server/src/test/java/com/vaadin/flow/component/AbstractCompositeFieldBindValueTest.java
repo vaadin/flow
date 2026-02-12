@@ -21,8 +21,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
@@ -71,8 +70,8 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     public void multipleFieldsField_bindValue_detached_setValueDoesNotUpdateSignal() {
         MultipleFieldsField field = new MultipleFieldsField();
 
-        WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal);
+        ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
+        field.bindValue(signal, signal::value);
         // not attached yet, so presentation value not used from the signal
         Assert.assertEquals("", field.start.getValue());
         Assert.assertEquals("", field.rest.getValue());
@@ -87,8 +86,8 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     public void multipleFieldsField_bindValue_detached_setModelValueDoesNotUpdateSignal() {
         MultipleFieldsField field = new MultipleFieldsField();
 
-        WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal);
+        ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
+        field.bindValue(signal, signal::value);
         // not attached yet, so presentation value not used from the signal
         Assert.assertEquals("", field.start.getValue());
         Assert.assertEquals("", field.rest.getValue());
@@ -105,8 +104,8 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 
-        WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal);
+        ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
+        field.bindValue(signal, signal::value);
         Assert.assertEquals("Hello", field.start.getValue());
         Assert.assertEquals("Cool World", field.rest.getValue());
 
@@ -125,15 +124,14 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         field.rest.setValue("Vaadin");
         Assert.assertEquals("Hello Vaadin", field.getValue());
         Assert.assertEquals("Hello Vaadin", signal.peek());
+    }
 
-        // remove binding. Value should stay the same.
-        field.bindValue(null);
-        Assert.assertEquals("Hello Vaadin", field.getValue());
-        Assert.assertEquals("Hello Vaadin", signal.peek());
+    @Test
+    public void bindValue_nullSignal_throwsNPE() {
+        MultipleFieldsField field = new MultipleFieldsField();
+        UI.getCurrent().add(field);
 
-        // test that setValue works after unbinding
-        field.setValue("Hey You");
-        Assert.assertEquals("Hey You", field.getValue());
-        Assert.assertEquals("Hello Vaadin", signal.peek());
+        Assert.assertThrows(NullPointerException.class,
+                () -> field.bindValue(null, null));
     }
 }

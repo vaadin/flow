@@ -47,9 +47,9 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -136,22 +136,12 @@ public class ElementBindPropertyTest {
     }
 
     @Test
-    public void bindProperty_withNullBinding_removesBinding() {
+    public void bindProperty_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
-        component.getElement().bindProperty("foo", signal);
-
-        assertEquals("bar", component.getElement().getProperty("foo"));
-
-        component.getElement().bindProperty("foo", null);
-
-        signal.value("baz");
-
-        assertEquals("bar", component.getElement().getProperty("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assert.assertThrows(NullPointerException.class,
+                () -> component.getElement().bindProperty("foo", null));
     }
 
     @Test
@@ -196,7 +186,7 @@ public class ElementBindPropertyTest {
     }
 
     @Test
-    public void bindPropertyJacksonNullAndJacksonObjectNode_getPropertyValue_returnsCorrectValue() {
+    public void bindPropertyJacksonNull_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -205,14 +195,19 @@ public class ElementBindPropertyTest {
         assertEquals(JacksonUtils.nullNode(),
                 component.getElement().getPropertyRaw("foo"));
         assertEquals(null, component.getElement().getProperty("foo"));
+    }
 
-        component.getElement().bindProperty("foo", null);
-        computedSignal = Signal.computed(JacksonUtils::createObjectNode);
-        component.getElement().bindProperty("foo", computedSignal);
+    @Test
+    public void bindPropertyJacksonObjectNode_getPropertyValue_returnsCorrectValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        Signal<?> computedSignal = Signal
+                .computed(JacksonUtils::createObjectNode);
+        component.getElement().bindProperty("bar", computedSignal);
         assertEquals(JacksonUtils.createObjectNode(),
-                component.getElement().getPropertyRaw("foo"));
-        assertEquals("{}", component.getElement().getProperty("foo"));
-
+                component.getElement().getPropertyRaw("bar"));
+        assertEquals("{}", component.getElement().getProperty("bar"));
     }
 
     @Test

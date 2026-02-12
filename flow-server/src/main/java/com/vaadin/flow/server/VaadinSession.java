@@ -54,8 +54,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is

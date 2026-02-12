@@ -24,8 +24,8 @@ import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,24 +69,11 @@ public class AnchorBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_keepsCurrentAndStopsUpdates() {
-        UI.getCurrent(); // ensure UI exists
-        var signal = new ValueSignal<>("A");
-        Anchor anchor = new Anchor("/a", signal);
+    public void bindText_nullSignal_throwsNPE() {
+        Anchor anchor = new Anchor("/a", "text");
         UI.getCurrent().add(anchor);
-        assertEquals("A", anchor.getText());
 
-        // Unbind using null
-        anchor.bindText(null);
-        assertEquals("A", anchor.getText());
-
-        // Further updates no longer propagate
-        signal.value("B");
-        assertEquals("A", anchor.getText());
-
-        // Manual setText works after unbind
-        anchor.setText("manual");
-        assertEquals("manual", anchor.getText());
+        assertThrows(NullPointerException.class, () -> anchor.bindText(null));
     }
 
     @Test

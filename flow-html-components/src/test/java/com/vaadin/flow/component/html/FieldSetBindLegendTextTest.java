@@ -19,15 +19,15 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 /**
- * Tests for {@link FieldSet#bindLegendText(com.vaadin.signals.Signal)} using
- * {@link SignalsUnitTest} setup.
+ * Tests for {@link FieldSet#bindLegendText(com.vaadin.flow.signals.Signal)}
+ * using {@link SignalsUnitTest} setup.
  */
 public class FieldSetBindLegendTextTest extends SignalsUnitTest {
 
@@ -59,19 +59,12 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_unbindWithNull_stopsUpdates() {
+    public void bindLegendText_nullSignal_throwsNPE() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        fieldSet.bindLegendText(signal);
-        assertEquals("a", fieldSet.getLegend().getText());
-
-        fieldSet.bindLegendText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", fieldSet.getLegend().getText());
+        assertThrows(NullPointerException.class,
+                () -> fieldSet.bindLegendText(null));
     }
 
     @Test

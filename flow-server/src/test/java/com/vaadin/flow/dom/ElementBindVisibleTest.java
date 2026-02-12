@@ -18,8 +18,8 @@ package com.vaadin.flow.dom;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -125,43 +125,11 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindVisible_withNullBinding_removesBinding() {
+    public void bindVisible_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindVisible(signal);
-        assertTrue(element.isVisible());
 
-        element.bindVisible(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(element.isVisible());
-        assertTrue(events.isEmpty());
-    }
-
-    @Test
-    public void bindVisible_withNullBinding_removesBindingPreserveState() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(false);
-        element.bindVisible(signal);
-        assertFalse(element.isVisible());
-
-        element.bindVisible(null); // remove binding
-        assertFalse(element.isVisible());
-        assertTrue(events.isEmpty());
-    }
-
-    @Test
-    public void bindVisible_withNullBinding_allowsSetVisible() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindVisible(signal);
-        assertTrue(element.isVisible());
-
-        element.bindVisible(null); // remove binding
-
-        element.setVisible(false);
-        assertFalse(element.isVisible());
+        assertThrows(NullPointerException.class,
+                () -> element.bindVisible(null));
     }
 }

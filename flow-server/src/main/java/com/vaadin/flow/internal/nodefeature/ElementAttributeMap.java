@@ -37,8 +37,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Map for element attribute values.
@@ -82,16 +82,14 @@ public class ElementAttributeMap extends NodeMap {
 
     /**
      * Binds the given signal to the given attribute. <code>null</code> signal
-     * unbinds existing binding.
      *
      * @param owner
      *            the element owning the attribute, not <code>null</code>
      * @param attribute
      *            the name of the attribute
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given attribute
      */

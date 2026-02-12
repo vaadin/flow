@@ -64,10 +64,10 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.impl.UsageTracker;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data
@@ -421,7 +421,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * // Same works also with a Signal directly:
          * ValueSignal<String> passwordSignal = new ValueSignal<>("");
-         * passwordField.bindValue(passwordSignal);
+         * passwordField.bindValue(passwordSignal, passwordSignal::value);
          * binder.forField(confirmField)
          *         .withValidator(text -> text.equals(passwordSignal.value()),
          *                 "Both fields must match")

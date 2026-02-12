@@ -22,7 +22,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting
@@ -150,17 +150,15 @@ public abstract class AbstractPropertyMap extends NodeMap {
     }
 
     /**
-     * Binds the given signal to the given property. <code>null</code> signal
-     * unbinds existing binding.
+     * Binds the given signal to the given property.
      *
      * @param owner
      *            the element owning the property, not <code>null</code>
      * @param name
      *            the name of the property
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */

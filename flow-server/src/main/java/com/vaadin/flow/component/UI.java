@@ -83,8 +83,8 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.WritableSignal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every

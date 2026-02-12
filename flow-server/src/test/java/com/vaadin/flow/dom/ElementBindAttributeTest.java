@@ -32,9 +32,9 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -202,22 +202,12 @@ public class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_withNullBinding_removesBinding() {
+    public void bindAttribute_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
-        component.getElement().bindAttribute("foo", signal);
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-
-        component.getElement().bindAttribute("foo", null);
-
-        signal.value("baz");
-
-        assertEquals("bar", component.getElement().getAttribute("foo"));
-        Assert.assertTrue(events.isEmpty());
+        Assert.assertThrows(NullPointerException.class,
+                () -> component.getElement().bindAttribute("foo", null));
     }
 
     @Test

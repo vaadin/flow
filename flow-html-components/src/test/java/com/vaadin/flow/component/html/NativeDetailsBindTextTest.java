@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -55,19 +55,12 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindSummaryText_unbindWithNull_stopsUpdates() {
+    public void bindSummaryText_nullSignal_throwsNPE() {
         NativeDetails details = new NativeDetails();
         UI.getCurrent().add(details);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        details.bindSummaryText(signal);
-        assertEquals("a", details.getSummaryText());
-
-        details.bindSummaryText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", details.getSummaryText());
+        assertThrows(NullPointerException.class,
+                () -> details.bindSummaryText(null));
     }
 
     @Test

@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.shared.SharedNumberSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.shared.SharedNumberSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -55,19 +55,12 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMin_unbindWithNull_stopsUpdates() {
+    public void bindMin_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(1.0);
-        rangeInput.bindMin(signal);
-        assertEquals("1.0", rangeInput.getElement().getAttribute("min"));
-
-        rangeInput.bindMin(null);
-        signal.value(2.0);
-
-        // After unbinding, value should remain as before
-        assertEquals("1.0", rangeInput.getElement().getAttribute("min"));
+        assertThrows(NullPointerException.class,
+                () -> rangeInput.bindMin(null));
     }
 
     @Test
@@ -98,18 +91,11 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_unbindWithNull_stopsUpdates() {
+    public void bindMax_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(100.0);
-        rangeInput.bindMax(signal);
-        assertEquals("100.0", rangeInput.getElement().getAttribute("max"));
-
-        rangeInput.bindMax(null);
-        signal.value(200.0);
-
-        // After unbinding, value should remain as before
-        assertEquals("100.0", rangeInput.getElement().getAttribute("max"));
+        assertThrows(NullPointerException.class,
+                () -> rangeInput.bindMax(null));
     }
 }

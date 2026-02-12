@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -55,19 +55,11 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_stopsUpdates() {
+    public void bindText_nullSignal_throwsNPE() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        cell.bindText(signal);
-        assertEquals("a", cell.getText());
-
-        cell.bindText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", cell.getText());
+        assertThrows(NullPointerException.class, () -> cell.bindText(null));
     }
 
     @Test

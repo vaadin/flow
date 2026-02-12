@@ -31,9 +31,9 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -208,32 +208,16 @@ public class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_nullWithNotYetBound_noEffect() {
+    public void bind_nullSignal_throwsNPE() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        signalPropertySupport.bind(null);
 
-        assertNull(signalPropertySupport.get());
-    }
-
-    @Test
-    public void bind_nullWithAlreadyBound_removeBinding() {
-        var component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
-                .create(component, value -> {
-                });
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        signalPropertySupport.bind(new ValueSignal<>("foo"));
-        assertEquals("foo", signalPropertySupport.get());
-        signalPropertySupport.bind(null);
-        signal.value("bar");
-        assertEquals("foo", signalPropertySupport.get());
+        assertThrows(NullPointerException.class,
+                () -> signalPropertySupport.bind(null));
     }
 
     @Test

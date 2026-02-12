@@ -1,0 +1,177 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.signals.shared.impl;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.SignalCommand;
+
+/**
+ * A list of signal commands together with their result handlers.
+ */
+public class CommandsAndHandlers implements Serializable {
+    /**
+     * Handles the result of a signal command execution.
+     */
+    @FunctionalInterface
+    public interface CommandResultHandler extends Serializable {
+        /**
+         * Handles the result of a command execution.
+         *
+         * @param result
+         *            the command result, not <code>null</code>
+         */
+        void handle(CommandResult result);
+    }
+
+    private final List<SignalCommand> commands = new ArrayList<>();
+    private final Map<Id, CommandResultHandler> resultHandlers = new HashMap<>();
+
+    /**
+     * Creates a new empty command list.
+     */
+    public CommandsAndHandlers() {
+
+    }
+
+    /**
+     * Creates a new command list with the given commands and result handlers.
+     *
+     * @param commands
+     *            the commands to use, not <code>null</code>
+     * @param resultHandlers
+     *            the result handlers to use, not <code>null</code>
+     */
+    public CommandsAndHandlers(List<SignalCommand> commands,
+            Map<Id, CommandResultHandler> resultHandlers) {
+        this.commands.addAll(commands);
+        this.resultHandlers.putAll(resultHandlers);
+    }
+
+    /**
+     * Creates a new command list with a single command and optional result
+     * handler.
+     *
+     * @param command
+     *            the command to use, not <code>null</code>
+     * @param resultHandler
+     *            the result handler to use, or <code>null</code> to not use a
+     *            result handler
+     */
+    public CommandsAndHandlers(SignalCommand command,
+            CommandResultHandler resultHandler) {
+        assert command != null;
+        commands.add(command);
+        if (resultHandler != null) {
+            resultHandlers.put(command.commandId(), resultHandler);
+        }
+    }
+
+    /**
+     * Removes commands based on a collection of handled commands. Note that the
+     * corresponding result handlers are not removed but there's instead an
+     * assumption that the caller will invoke {@link #notifyResultHandlers(Map)}
+     * separately.
+     *
+     * @param handledCommandIds
+     *            a collection of handled commands ids, not <code>null</code>
+     */
+    public void removeHandledCommands(Collection<Id> handledCommandIds) {
+        commands.removeIf(
+                command -> handledCommandIds.contains(command.commandId()));
+    }
+
+    /**
+     * Notifies and removes result handlers for the given results.
+     *
+     * @param results
+     *            a map of command results, not <code>null</code>
+     */
+    public void notifyResultHandlers(Map<Id, CommandResult> results) {
+        notifyResultHandlers(results, commands);
+    }
+
+    /**
+     * Notifies and removes result handlers for the given results in the given
+     * order. Commands in the order that have no corresponding result are
+     * ignored.
+     *
+     * @param results
+     *            the map of command results, not <code>null</code>
+     * @param commandOrder
+     *            a list of commands in the order the results should be applied.
+     */
+    public void notifyResultHandlers(Map<Id, CommandResult> results,
+            List<SignalCommand> commandOrder) {
+        for (SignalCommand command : commandOrder) {
+            if (command instanceof SignalCommand.TransactionCommand tx) {
+                notifyResultHandlers(results, tx.commands());
+            }
+            CommandResultHandler handler = resultHandlers
+                    .remove(command.commandId());
+            if (handler != null) {
+                handler.handle(results.get(command.commandId()));
+            }
+        }
+    }
+
+    /**
+     * Gets an unmodifiable view of the commands.
+     *
+     * @return an unmodifiable list of commands, not <code>null</code>
+     */
+    public List<SignalCommand> getCommands() {
+        return Collections.unmodifiableList(commands);
+    }
+
+    /**
+     * Gets an unmodifiable map of the result handlers.
+     *
+     * @return an unmodifiable map of result handlers, not <code>null</code>
+     */
+    public Map<Id, CommandResultHandler> getResultHandlers() {
+        return Collections.unmodifiableMap(resultHandlers);
+    }
+
+    /**
+     * Adds another collection of commands and handlers to this one.
+     *
+     *
+     * @param other
+     *            the instance to import entries from, not <code>null</code>
+     */
+    public void add(CommandsAndHandlers other) {
+        this.commands.addAll(other.commands);
+        this.resultHandlers.putAll(other.resultHandlers);
+    }
+
+    /**
+     * Checks whether there are any commands in this list.
+     *
+     * @return <code>true</code> if there are no commands in this list,
+     *         <code>false</code> if there are commands
+     */
+    public boolean isEmpty() {
+        return commands.isEmpty();
+    }
+}

@@ -38,8 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -62,29 +61,40 @@ import com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
-public class LookupInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class LookupInitializerTest {
 
     private LookupInitializer initializer = new LookupInitializer();
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void createLookup_instantiatorsAreProvidedAsAService_lookupThrows()
             throws ServletException {
-        // Java standard SPI is used to register several instantiators via
-        // META-INF/services
-        Lookup lookup = initializer.createLookup(null, new HashMap<>());
+        assertThrows(IllegalStateException.class, () -> {
+            // Java standard SPI is used to register several instantiators via
+            // META-INF/services
+            Lookup lookup = initializer.createLookup(null, new HashMap<>());
 
-        lookup.lookup(InstantiatorFactory.class);
+            lookup.lookup(InstantiatorFactory.class);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void createLookup_instantiatorsAreProvidedAsScannedClasses_multipleInstantiatorInstances_lookupThrows()
             throws ServletException {
-        Lookup lookup = initializer.createLookup(null,
-                Collections.singletonMap(InstantiatorFactory.class,
-                        Arrays.asList(TestInstantiatorFactory.class,
-                                AnotherTestInstantiatorFactory.class)));
+        assertThrows(IllegalStateException.class, () -> {
+            Lookup lookup = initializer.createLookup(null,
+                    Collections.singletonMap(InstantiatorFactory.class,
+                            Arrays.asList(TestInstantiatorFactory.class,
+                                    AnotherTestInstantiatorFactory.class)));
 
-        lookup.lookup(InstantiatorFactory.class);
+            lookup.lookup(InstantiatorFactory.class);
+        });
     }
 
     @Test
@@ -116,8 +126,8 @@ public class LookupInitializerTest {
         Mockito.when(service.getClassLoader()).thenReturn(loader);
 
         StaticFileHandler handler = factory.createHandler(service);
-        Assert.assertNotNull(handler);
-        Assert.assertEquals(StaticFileServer.class, handler.getClass());
+        assertNotNull(handler);
+        assertEquals(StaticFileServer.class, handler.getClass());
     }
 
     @Test
@@ -131,7 +141,7 @@ public class LookupInitializerTest {
             protected <T> void ensureService(
                     Map<Class<?>, Collection<Class<?>>> services,
                     Class<T> serviceType, Class<? extends T> serviceImpl) {
-                Assert.assertSame(mock, services);
+                assertSame(mock, services);
                 if (StaticFileHandlerFactory.class.equals(serviceType)) {
                     factoryIsPassed.set(true);
                 }
@@ -142,7 +152,7 @@ public class LookupInitializerTest {
 
         initializer.initialize(null, mock, capture::set);
 
-        Assert.assertTrue(factoryIsPassed.get());
+        assertTrue(factoryIsPassed.get());
     }
 
     @Test
@@ -154,8 +164,8 @@ public class LookupInitializerTest {
         Lookup lookup = capture.get();
         OneTimeInitializerPredicate predicate = lookup
                 .lookup(OneTimeInitializerPredicate.class);
-        Assert.assertNotNull(predicate);
-        Assert.assertTrue(predicate.runOnce());
+        assertNotNull(predicate);
+        assertTrue(predicate.runOnce());
     }
 
     @Test
@@ -165,9 +175,9 @@ public class LookupInitializerTest {
                 ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
-        Assert.assertEquals(1, collection.size());
+        assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(ResourceProviderImpl.class, clazz);
+        assertEquals(ResourceProviderImpl.class, clazz);
     }
 
     @Test
@@ -179,9 +189,9 @@ public class LookupInitializerTest {
                 ResourceProviderImpl.class);
 
         Collection<Class<?>> collection = map.get(ResourceProvider.class);
-        Assert.assertEquals(1, collection.size());
+        assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(ResourceProviderImpl.class, clazz);
+        assertEquals(ResourceProviderImpl.class, clazz);
     }
 
     @Test
@@ -191,9 +201,9 @@ public class LookupInitializerTest {
                 DefaultRoutePathProvider.class);
 
         Collection<Class<?>> collection = map.get(RoutePathProvider.class);
-        Assert.assertEquals(1, collection.size());
+        assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(DefaultRoutePathProvider.class, clazz);
+        assertEquals(DefaultRoutePathProvider.class, clazz);
     }
 
     @Test
@@ -205,9 +215,9 @@ public class LookupInitializerTest {
                 DefaultRoutePathProvider.class);
 
         Collection<Class<?>> collection = map.get(RoutePathProvider.class);
-        Assert.assertEquals(1, collection.size());
+        assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(DefaultRoutePathProvider.class, clazz);
+        assertEquals(DefaultRoutePathProvider.class, clazz);
     }
 
     @Test
@@ -221,8 +231,8 @@ public class LookupInitializerTest {
 
         Collection<Class<?>> factories = map
                 .get(ApplicationConfigurationFactory.class);
-        Assert.assertEquals(1, factories.size());
-        Assert.assertEquals(DefaultApplicationConfigurationFactory.class,
+        assertEquals(1, factories.size());
+        assertEquals(DefaultApplicationConfigurationFactory.class,
                 factories.iterator().next());
     }
 
@@ -236,10 +246,9 @@ public class LookupInitializerTest {
 
         Collection<Class<?>> collection = map
                 .get(ApplicationConfigurationFactory.class);
-        Assert.assertEquals(1, collection.size());
+        assertEquals(1, collection.size());
         Class<?> clazz = collection.iterator().next();
-        Assert.assertEquals(DefaultApplicationConfigurationFactory.class,
-                clazz);
+        assertEquals(DefaultApplicationConfigurationFactory.class, clazz);
     }
 
     @SuppressWarnings("rawtypes")
@@ -255,18 +264,17 @@ public class LookupInitializerTest {
 
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
-        Assert.assertEquals(TestResourceProvider.class,
-                resourceProvider.getClass());
+        assertEquals(TestResourceProvider.class, resourceProvider.getClass());
 
         Collection<List> lists = lookup.lookupAll(List.class);
-        Assert.assertEquals(2, lists.size());
+        assertEquals(2, lists.size());
 
         Iterator<List> iterator = lists.iterator();
         List next = iterator.next();
-        Assert.assertEquals(ArrayList.class, next.getClass());
+        assertEquals(ArrayList.class, next.getClass());
 
         next = iterator.next();
-        Assert.assertEquals(LinkedList.class, next.getClass());
+        assertEquals(LinkedList.class, next.getClass());
     }
 
     @Test
@@ -279,25 +287,24 @@ public class LookupInitializerTest {
         Lookup lookup = initializer.createLookup(null, map);
 
         InstantiatorFactory factory = lookup.lookup(InstantiatorFactory.class);
-        Assert.assertNotNull(factory);
-        Assert.assertEquals(TestInstantiatorFactory.class, factory.getClass());
+        assertNotNull(factory);
+        assertEquals(TestInstantiatorFactory.class, factory.getClass());
 
         Collection<InstantiatorFactory> factories = lookup
                 .lookupAll(InstantiatorFactory.class);
 
-        Assert.assertEquals(3, factories.size());
+        assertEquals(3, factories.size());
 
         Iterator<InstantiatorFactory> iterator = factories.iterator();
-        Assert.assertEquals(TestInstantiatorFactory.class,
-                iterator.next().getClass());
+        assertEquals(TestInstantiatorFactory.class, iterator.next().getClass());
 
         Set<Class<?>> factoryClasses = new HashSet<>();
         factoryClasses.add(iterator.next().getClass());
         factoryClasses.add(iterator.next().getClass());
 
-        Assert.assertTrue(
+        assertTrue(
                 factoryClasses.contains(AnotherTestInstantiatorFactory.class));
-        Assert.assertTrue(
+        assertTrue(
                 factoryClasses.contains(OneMoreTestInstantiatorFactory.class));
     }
 
@@ -333,10 +340,10 @@ public class LookupInitializerTest {
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
         initializer.ensureService(services, List.class, ArrayList.class);
 
-        Assert.assertEquals(1, services.size());
+        assertEquals(1, services.size());
         Collection<Class<?>> collection = services.get(List.class);
-        Assert.assertEquals(1, collection.size());
-        Assert.assertEquals(ArrayList.class, collection.iterator().next());
+        assertEquals(1, collection.size());
+        assertEquals(ArrayList.class, collection.iterator().next());
     }
 
     @Test
@@ -345,47 +352,49 @@ public class LookupInitializerTest {
         services.put(List.class, Collections.singleton(ArrayList.class));
         initializer.ensureService(services, List.class, ArrayList.class);
 
-        Assert.assertEquals(1, services.size());
+        assertEquals(1, services.size());
         Collection<Class<?>> collection = services.get(List.class);
-        Assert.assertEquals(1, collection.size());
-        Assert.assertEquals(ArrayList.class, collection.iterator().next());
+        assertEquals(1, collection.size());
+        assertEquals(ArrayList.class, collection.iterator().next());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void ensureService_severalServicesProvided_throws() {
-        Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
-        services.put(List.class, Arrays.asList(Vector.class, LinkedList.class));
-        initializer.ensureService(services, List.class, ArrayList.class);
+        assertThrows(IllegalStateException.class, () -> {
+            Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
+            services.put(List.class,
+                    Arrays.asList(Vector.class, LinkedList.class));
+            initializer.ensureService(services, List.class, ArrayList.class);
+        });
     }
 
     private void assertResourceProvider(ResourceProvider resourceProvider)
             throws IOException {
-        Assert.assertEquals(ResourceProviderImpl.class,
-                resourceProvider.getClass());
+        assertEquals(ResourceProviderImpl.class, resourceProvider.getClass());
         // ======== resourceProvider.getApplicationResource(s)(String)
         URL applicationResource = resourceProvider
                 .getApplicationResource("resource-provider/some-resource.json");
 
-        Assert.assertNotNull(applicationResource);
+        assertNotNull(applicationResource);
 
         List<URL> resources = resourceProvider.getApplicationResources(
                 "resource-provider/some-resource.json");
 
-        Assert.assertEquals(1, resources.size());
+        assertEquals(1, resources.size());
 
-        Assert.assertNotNull(resources.get(0));
+        assertNotNull(resources.get(0));
 
         URL nonExistent = resourceProvider
                 .getApplicationResource("resource-provider/non-existent.txt");
 
-        Assert.assertNull(nonExistent);
+        assertNull(nonExistent);
 
         // =========== resourceProvider.getClientResource
 
         URL clientResource = resourceProvider
                 .getClientResource("resource-provider/some-resource.json");
 
-        Assert.assertNotNull(clientResource);
+        assertNotNull(clientResource);
 
         InputStream stream = resourceProvider.getClientResourceAsStream(
                 "resource-provider/some-resource.json");
@@ -393,6 +402,6 @@ public class LookupInitializerTest {
         String content = IOUtils.readLines(stream, StandardCharsets.UTF_8)
                 .stream().collect(Collectors.joining("\n"));
         ObjectNode object = JacksonUtils.readTree(content);
-        Assert.assertTrue(object.get("client-resource").booleanValue());
+        assertTrue(object.get("client-resource").booleanValue());
     }
 }

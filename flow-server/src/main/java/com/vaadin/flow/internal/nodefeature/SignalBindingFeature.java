@@ -19,10 +19,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -40,8 +41,8 @@ public class SignalBindingFeature extends ServerSideFeature {
 
     private Map<String, SignalBinding> values;
 
-    private record SignalBinding(Signal<?> signal,
-            Registration registration) implements Serializable {
+    private record SignalBinding(Signal<?> signal, Registration registration,
+            SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
     /**
@@ -66,8 +67,26 @@ public class SignalBindingFeature extends ServerSideFeature {
      */
     public void setBinding(String key, Registration registration,
             Signal<?> signal) {
+        setBinding(key, registration, signal, null);
+    }
+
+    /**
+     * Sets a binding for the given key with a write callback.
+     *
+     * @param key
+     *            the key
+     * @param registration
+     *            the registration
+     * @param signal
+     *            the signal
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
+     */
+    public void setBinding(String key, Registration registration,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         ensureValues();
-        values.put(key, new SignalBinding(signal, registration));
+        values.put(key, new SignalBinding(signal, registration, writeCallback));
     }
 
     /**
@@ -127,22 +146,23 @@ public class SignalBindingFeature extends ServerSideFeature {
     }
 
     /**
-     * Updates the value of the writable signal bound to the given key.
-     * 
+     * Gets the write callback for the given key.
+     *
      * @param key
      *            the key
-     * @param value
-     *            the new value
      * @param <T>
-     *            the type of the value
+     *            the type of the consumer value
+     * @return the write callback for the given key, or null if no callback is
+     *         set
      */
-    public <T> void updateWritableSignalValue(String key, T value) {
-        if (hasBinding(SignalBindingFeature.VALUE)) {
-            Signal<T> signal = getSignal(key);
-            if (signal instanceof WritableSignal<T> writableSignal) {
-                writableSignal.value(value);
-            }
+    @SuppressWarnings("unchecked")
+    public <T> SerializableConsumer<T> getWriteCallback(String key) {
+        if (values == null) {
+            return null;
         }
+        SignalBinding binding = values.get(key);
+        return binding != null ? (SerializableConsumer<T>) binding.writeCallback
+                : null;
     }
 
     /**
@@ -160,6 +180,57 @@ public class SignalBindingFeature extends ServerSideFeature {
         }
         SignalBinding binding = values.get(key);
         return binding != null ? (Signal<T>) values.get(key).signal : null;
+    }
+
+    /**
+     * Updates the signal value by invoking the write callback for the given
+     * key. The callback is expected to update the signal value, and this method
+     * will check whether the signal value was updated to the expected new
+     * value. If the signal value differs from the expected new value after the
+     * callback, the revert callback will be invoked with the current signal
+     * value to revert the change.
+     * 
+     * @param key
+     *            the key for which to update the signal value
+     * @param oldValue
+     *            the old value before the update, used for comparison in case
+     *            of revert
+     * @param newValue
+     *            the expected new value to be set by the write callback
+     * @param valueEquals
+     *            a predicate to compare signal values for equality
+     * @param revertCallback
+     *            a callback to revert the component value to the updated
+     *            signal's value if the signal value does not match the expected
+     *            new value after invoking the write callback
+     * @return true if the signal value was updated to the expected new value,
+     *         false if a revert was performed
+     * @param <T>
+     *            the type of the signal value
+     */
+    public <T> boolean updateSignalByWriteCallback(String key, T oldValue,
+            T newValue, SerializableBiPredicate<T, T> valueEquals,
+            SerializableConsumer<T> revertCallback) {
+        SerializableConsumer<T> callback = getWriteCallback(key);
+        Signal<T> signal = getSignal(key);
+        if (callback != null) {
+            callback.accept(newValue);
+            // Re-consult the signal after the callback
+            T signalValue = signal.peek();
+            if (!valueEquals.test(signalValue, newValue)) {
+                // Signal value differs, revert
+                revertCallback.accept(signalValue);
+                // no need to fire event, signal change triggered that
+                return false;
+            }
+        } else {
+            // Read-only binding: revert and throw
+            revertCallback.accept(oldValue);
+            throw new IllegalStateException(
+                    "Cannot set value on a read-only signal binding. "
+                            + "Provide a write callback to enable two-way binding.");
+        }
+        return true;
     }
 
     private void ensureValues() {

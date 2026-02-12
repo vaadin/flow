@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -142,29 +142,12 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindWidth_withNullBinding_removesBinding() {
+    public void bindWidth_nullSignal_throwsNPE() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindWidth(signal);
-        assertEquals("200px", component.getWidth());
 
-        component.bindWidth(null);
-        signal.value("300px");
-        assertEquals("200px", component.getWidth());
-    }
-
-    @Test
-    public void bindWidth_withNullBinding_allowsSetWidth() {
-        HasSizeComponent component = new HasSizeComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindWidth(signal);
-        assertEquals("200px", component.getWidth());
-
-        component.bindWidth(null);
-        component.setWidth("300px");
-        assertEquals("300px", component.getWidth());
+        assertThrows(NullPointerException.class,
+                () -> component.bindWidth(null));
     }
 
     @Test
@@ -331,29 +314,12 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHeight_withNullBinding_removesBinding() {
+    public void bindHeight_nullSignal_throwsNPE() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindHeight(signal);
-        assertEquals("200px", component.getHeight());
 
-        component.bindHeight(null);
-        signal.value("300px");
-        assertEquals("200px", component.getHeight());
-    }
-
-    @Test
-    public void bindHeight_withNullBinding_allowsSetHeight() {
-        HasSizeComponent component = new HasSizeComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindHeight(signal);
-        assertEquals("200px", component.getHeight());
-
-        component.bindHeight(null);
-        component.setHeight("300px");
-        assertEquals("300px", component.getHeight());
+        assertThrows(NullPointerException.class,
+                () -> component.bindHeight(null));
     }
 
     @Test

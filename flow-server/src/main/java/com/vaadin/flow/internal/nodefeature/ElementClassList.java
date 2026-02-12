@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.ClassList;
@@ -22,8 +23,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Handles CSS class names for an element.
@@ -86,24 +87,21 @@ public class ElementClassList extends SerializableNodeList<String> {
         @Override
         public void bind(String name, Signal<Boolean> signal) {
             validate(name);
+            Objects.requireNonNull(signal, "Signal cannot be null");
             SignalBindingFeature feature = getNode()
                     .getFeature(SignalBindingFeature.class);
 
-            if (signal == null) {
-                feature.removeBinding(SignalBindingFeature.CLASSES + name);
-            } else {
-                if (feature.hasBinding(SignalBindingFeature.CLASSES + name)) {
-                    throw new BindingActiveException("Class name '" + name
-                            + "' is already bound to a signal");
-                }
-
-                Registration registration = ElementEffect.bind(
-                        Element.get(getNode()), signal,
-                        (element, value) -> internalSetPresence(name,
-                                Boolean.TRUE.equals(value)));
-                feature.setBinding(SignalBindingFeature.CLASSES + name,
-                        registration, signal);
+            if (feature.hasBinding(SignalBindingFeature.CLASSES + name)) {
+                throw new BindingActiveException("Class name '" + name
+                        + "' is already bound to a signal");
             }
+
+            Registration registration = ElementEffect.bind(
+                    Element.get(getNode()), signal,
+                    (element, value) -> internalSetPresence(name,
+                            Boolean.TRUE.equals(value)));
+            feature.setBinding(SignalBindingFeature.CLASSES + name,
+                    registration, signal);
         }
 
         @Override

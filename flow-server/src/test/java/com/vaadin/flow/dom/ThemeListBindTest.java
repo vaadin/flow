@@ -24,9 +24,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Tests for binding theme attribute presence to a Signal using ThemeList.bind.
@@ -149,22 +150,34 @@ public class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindNull_unbindsAndKeepsLastAppliedPresence() {
+    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindThemeName("badge", signal);
         Assert.assertTrue(component.hasThemeName("badge"));
 
-        // Unbind
-        component.bindThemeName("badge", null);
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = component.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.THEMES + "badge");
 
-        // Presence remains as-is
-        Assert.assertTrue(component.hasThemeName("badge"));
-
-        // Further signal changes have no effect
+        // Signal changes should no longer affect the theme list
         signal.value(false);
         Assert.assertTrue(component.hasThemeName("badge"));
+
+        // Manual set should work without throwing
+        component.removeThemeName("badge");
+        Assert.assertFalse(component.hasThemeName("badge"));
+    }
+
+    @Test
+    public void bind_nullSignal_throwsNPE() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        Assert.assertThrows(NullPointerException.class,
+                () -> component.bindThemeName("badge", null));
     }
 
     @Test(expected = BindingActiveException.class)

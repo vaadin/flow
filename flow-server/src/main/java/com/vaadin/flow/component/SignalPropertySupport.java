@@ -20,8 +20,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Helper class for binding a {@link Signal} to a property of a
@@ -113,34 +113,27 @@ public class SignalPropertySupport<T> implements Serializable {
      * Binds a {@link Signal}'s value to this property support and keeps the
      * value synchronized with the signal value while the component is in
      * attached state. When the component is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * changes have no effect.
      * <p>
      * While a Signal is bound to a property support, any attempt to set value
-     * manually throws {@link com.vaadin.signals.BindingActiveException}. Same
-     * happens when trying to bind a new Signal while one is already bound.
+     * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     * Same happens when trying to bind a new Signal while one is already bound.
      *
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
     public void bind(Signal<T> signal) {
-        if (signal != null && this.signal != null) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
+        if (this.signal != null) {
             throw new BindingActiveException();
         }
         this.signal = signal;
-        if (signal == null && registration != null) {
-            registration.remove();
-            registration = null;
-        }
-        if (signal != null) {
-            registration = ComponentEffect.effect(owner, () -> {
-                value = signal.value();
-                valueChangeConsumer.accept(value);
-            });
-        }
+        registration = ComponentEffect.effect(owner, () -> {
+            value = signal.value();
+            valueChangeConsumer.accept(value);
+        });
     }
 
     /**
@@ -157,7 +150,7 @@ public class SignalPropertySupport<T> implements Serializable {
      *
      * @param value
      *            the value to set
-     * @throws com.vaadin.signals.BindingActiveException
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is an existing binding
      */
     public void set(T value) {

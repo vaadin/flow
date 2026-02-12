@@ -94,7 +94,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.flow.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

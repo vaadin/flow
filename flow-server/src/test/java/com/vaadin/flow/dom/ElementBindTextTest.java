@@ -34,9 +34,9 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -192,28 +192,34 @@ public class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_unbindText_returnsCorrectValue() {
+    public void bindText_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
-
         element.bindText(signal);
-        element.bindText(null);
-
         assertEquals("text", element.getText());
+
+        // Remove binding via the node's TextBindingFeature
+        TextBindingFeature feature = element.getNode()
+                .getFeature(TextBindingFeature.class);
+        feature.removeBinding();
+
+        // Signal changes should no longer affect the element
+        signal.value("text2");
+        assertEquals("text", element.getText());
+
+        // Manual set should work without throwing
+        element.setText("manual");
+        assertEquals("manual", element.getText());
     }
 
     @Test
-    public void bindText_unbindText_allowsSetText() {
+    public void bindText_nullSignal_throwsNPE() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>("text");
 
-        element.bindText(signal);
-        element.bindText(null);
-
-        element.setText("text2");
-        assertEquals("text2", element.getText());
+        Assert.assertThrows(NullPointerException.class,
+                () -> element.bindText(null));
     }
 
     @Test
@@ -292,10 +298,18 @@ public class ElementBindTextTest {
         // reattach
         UI.getCurrent().add(span);
         assertEquals("text3", span.getText());
+    }
 
-        // unbind and verify setText works
-        span.bindText(null);
-        span.setText("text");
-        assertEquals("text", span.getText());
+    @Test
+    public void bindText_hasText_nullSignal_throwsNPE() {
+        @Tag(Tag.SPAN)
+        class SpanWithHasText extends Component implements HasText {
+        }
+
+        SpanWithHasText span = new SpanWithHasText();
+        UI.getCurrent().add(span);
+
+        Assert.assertThrows(NullPointerException.class,
+                () -> span.bindText(null));
     }
 }

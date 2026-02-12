@@ -20,11 +20,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>signals</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>
       <version>1.0.0</version>

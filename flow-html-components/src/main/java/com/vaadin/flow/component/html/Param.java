@@ -22,7 +22,7 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;param&gt;</code> element for
@@ -85,17 +85,16 @@ public class Param extends HtmlComponent {
      * <p>
      * While a binding for the "value" attribute is active, any attempt to set
      * the attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
      * detached state.
      *
      * @param valueSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(String)
      * @see Element#bindAttribute(String, Signal)
@@ -120,23 +119,18 @@ public class Param extends HtmlComponent {
      * Binds a signal's value to the "name" attribute as a one-way binding, so
      * that the attribute is updated when the signal's value is updated.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the "name" attribute. When unbinding, the current attribute value is
-     * left unchanged.
-     * <p>
      * While a binding for the "name" attribute is active, any attempt to set
      * the attribute manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
      * detached state.
      *
      * @param nameSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setName(String)
      * @see Element#bindAttribute(String, Signal)

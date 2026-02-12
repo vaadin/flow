@@ -15,18 +15,21 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-public class PropertyConfigurationImplTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PropertyConfigurationImplTest {
 
     PropertyConfigurationImpl<MyComponent, Integer> intPropertyConf;
 
-    @Before
+    @BeforeEach
     public void init() {
         intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class,
                 "int", Integer.class, 1);
@@ -40,15 +43,16 @@ public class PropertyConfigurationImplTest {
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assert.assertEquals(
-                "onChangeHandler should have been set and value " + "updated",
-                5, myComponent.value);
+        assertEquals(5, myComponent.value,
+                "onChangeHandler should have been set and value " + "updated");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void onChange_throwsIfCalledTwice() {
-        intPropertyConf.onChange(MyComponent::setInt);
-        intPropertyConf.onChange(MyComponent::setInt);
+        assertThrows(IllegalStateException.class, () -> {
+            intPropertyConf.onChange(MyComponent::setInt);
+            intPropertyConf.onChange(MyComponent::setInt);
+        });
     }
 
     @Test
@@ -58,11 +62,10 @@ public class PropertyConfigurationImplTest {
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
 
         // verify default value for completeness
-        Assert.assertEquals("default value is 1", 1,
-                (int) data.getDefaultValue());
+        assertEquals(1, (int) data.getDefaultValue(), "default value is 1");
 
-        Assert.assertTrue("read-only flag should have been set to true",
-                data.isReadOnly());
+        assertTrue(data.isReadOnly(),
+                "read-only flag should have been set to true");
     }
 
     @Tag("for-reasons")
