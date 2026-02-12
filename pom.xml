@@ -88,6 +88,7 @@
     <jaxb.version>4.0.6</jaxb.version>
     <guava.version>33.5.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
+    <junit.jupiter.version>6.0.2</junit.jupiter.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -217,6 +218,26 @@
         <version>4.13.2</version>
       </dependency>
       <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>5.21.0</version>
@@ -248,6 +269,16 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

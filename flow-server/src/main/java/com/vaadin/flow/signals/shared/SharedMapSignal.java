@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
@@ -300,7 +304,7 @@ public class SharedMapSignal<T>
      * @return an unmodifiable map of signal instances, not <code>null</code>
      */
     static <T extends Signal<?>> Map<String, T> children(Data node,
-            Function<Id, T> factory) {
+            SerializableFunction<Id, T> factory) {
         LinkedHashMap<String, T> children = new LinkedHashMap<String, T>();
 
         node.mapChildren()
@@ -330,4 +334,9 @@ public class SharedMapSignal<T>
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        LoggerFactory.getLogger(SharedMapSignal.class).warn(
+                "Serializing SharedMapSignal. Sharing signals across a cluster is not yet implemented.");
+        out.defaultWriteObject();
+    }
 }

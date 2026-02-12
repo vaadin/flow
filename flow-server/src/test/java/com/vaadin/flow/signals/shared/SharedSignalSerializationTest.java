@@ -13,25 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.signals.local;
+package com.vaadin.flow.signals.shared;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class LocalSignalSerializationTest {
+public class SharedSignalSerializationTest {
 
-    private void assertSerializeAndDeserialize(Object obj) {
+    private <T> T assertSerializeAndDeserialize(T obj) {
         try {
-            serializeAndDeserialize(obj);
+            return serializeAndDeserialize(obj);
         } catch (Throwable e) {
             fail("Not Serializable: " + e.getClass().getName() + ": "
                     + e.getMessage());
+            return null;
         }
     }
 
@@ -62,8 +64,8 @@ public class LocalSignalSerializationTest {
     }
 
     @Test
-    public void valueSignal_serializable() {
-        ValueSignal<String> signal = new ValueSignal<>();
+    public void sharedValueSignal_serializable() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
         signal.value("Test");
@@ -71,11 +73,41 @@ public class LocalSignalSerializationTest {
     }
 
     @Test
-    void listSignal_serializable() {
-        ListSignal<String> signal = new ListSignal<>();
+    void sharedListSignal_serializable() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         assertSerializeAndDeserialize(signal);
 
         signal.insertFirst("Test");
+        assertSerializeAndDeserialize(signal);
+    }
+
+    @Test
+    void sharedMapSignal_serializable() {
+        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
+        assertSerializeAndDeserialize(signal);
+
+        signal.put("key", "Test");
+        assertSerializeAndDeserialize(signal);
+    }
+
+    @Test
+    void sharedNodeSignal_serializable() {
+        SharedNodeSignal signal = new SharedNodeSignal();
+        assertSerializeAndDeserialize(signal);
+
+        signal.putChildWithValue("key", "Test");
+        signal = assertSerializeAndDeserialize(signal);
+
+        Assert.assertEquals("Test", signal.value().mapChildren().get("key")
+                .value().value(String.class));
+    }
+
+    @Test
+    void sharedNumberSignal_serializable() {
+        SharedNumberSignal signal = new SharedNumberSignal(0.0);
+        assertSerializeAndDeserialize(signal);
+
+        signal.value(123.45);
         assertSerializeAndDeserialize(signal);
     }
 }

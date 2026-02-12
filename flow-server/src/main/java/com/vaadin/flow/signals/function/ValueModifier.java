@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
 /**
  * Receives the current value of a signal for in-place modification. Used with
  * reference signals to apply changes to mutable values while ensuring
@@ -27,7 +29,7 @@ package com.vaadin.flow.signals.function;
  *            the value type
  */
 @FunctionalInterface
-public interface ValueModifier<T> {
+public interface ValueModifier<T> extends Serializable {
     /**
      * Modifies the provided value in place.
      *
