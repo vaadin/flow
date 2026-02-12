@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.signal;
 
+import java.util.Locale;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -45,8 +48,16 @@ public class BindValueView extends Div {
 
         TestInput target = new TestInput();
         target.setId("target");
-        target.bindValue(signal);
-        target.addValueChangeListener(event -> {
+        target.bindValue(signal, signal::value);
+        Registration targetListener = target.addValueChangeListener(event -> {
+            valueInfoDiv.setText("Value: " + event.getValue());
+            counter++;
+            counterDiv.setText("ValueChange #" + counter);
+        });
+
+        TestInput target2 = new TestInput();
+        target2.setId("target2");
+        target2.addValueChangeListener(event -> {
             valueInfoDiv.setText("Value: " + event.getValue());
             counter++;
             counterDiv.setText("ValueChange #" + counter);
@@ -67,9 +78,26 @@ public class BindValueView extends Div {
                 e -> target.setModelValue("bar", false));
         changeValueInternallyButton.setId("internal-change-value-button");
 
+        NativeButton bindUppercaseInputValueButton = new NativeButton(
+                "bindValue(signal, transformToUppercase)", e -> {
+                    target.setEnabled(false);
+                    // unregister other input's listener
+                    targetListener.remove();
+                    target2.bindValue(signal, value -> signal
+                            .value(value.toUpperCase(Locale.ENGLISH)));
+                });
+        bindUppercaseInputValueButton.setId("bind-uppercase-value-button");
+
+        NativeButton changeUppercaseInputValueButton = new NativeButton(
+                "setValue(\"foo\")", e -> {
+                    target2.setValue("foo");
+                });
+        changeUppercaseInputValueButton.setId("change-uppercase-value-button");
+
         add(target, changeInputValueButton, changeSignalValueButton,
-                changeValueInternallyButton, valueInfoDiv, signalValueInfoDiv,
-                counterDiv);
+                changeValueInternallyButton, target2,
+                bindUppercaseInputValueButton, changeUppercaseInputValueButton,
+                valueInfoDiv, signalValueInfoDiv, counterDiv);
     }
 
     private static class TestInput extends Input {

@@ -119,7 +119,7 @@ public interface WritableSignal<T> extends Signal<T> {
      * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done,
      *         Todo::withDone);
      *
-     * checkbox.bindValue(doneSignal); // Two-way binding
+     * checkbox.bindValue(doneSignal, doneSignal::value); // Two-way binding
      * </pre>
      *
      * @param <C>

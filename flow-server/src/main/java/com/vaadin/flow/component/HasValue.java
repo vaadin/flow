@@ -21,9 +21,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * A generic interface for field components and other user interface objects
@@ -234,11 +234,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     boolean isRequiredIndicatorVisible();
 
     /**
-     * Binds a {@link WritableSignal}'s value to the value state of this
-     * component and keeps the state synchronized with the signal value while
-     * the element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * Binds a {@link Signal}'s value to the value state of this component and
+     * keeps the state synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
@@ -246,7 +246,16 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * <p>
      * While a Signal is bound to a value state and the element is in attached
      * state, setting the value with {@link #setValue(Object)} or when a change
-     * originates from the client, will update the signal value.
+     * originates from the client will invoke the write callback to propagate
+     * the value back. After the callback, the signal is re-consulted via
+     * {@link Signal#peek()} and if its value differs from what was being set,
+     * the new value is ignored and the signal's updated value is used instead,
+     * i.e. in cases where write callback has `signal.value("different")`,
+     * whereas a value being set is "a new value", the "different" value wins.
+     * <p>
+     * If the write callback is <code>null</code>, the binding is read-only and
+     * any attempt to set the value while the element is attached will throw an
+     * {@link IllegalStateException}.
      * <p>
      * Example of usage:
      *
@@ -254,18 +263,22 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Input component = new Input();
      * add(component);
-     * component.bindValue(signal);
+     * component.bindValue(signal, signal::value);
      * signal.value("Hello"); // The input's value changes
      * </pre>
      *
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            binding (writeCallback is ignored when null)
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      */
-    default void bindValue(WritableSignal<V> valueSignal) {
+    default void bindValue(Signal<V> valueSignal,
+            SerializableConsumer<V> writeCallback) {
         throw new UnsupportedOperationException(
                 "Binding value to a Signal is not supported by "
                         + getClass().getSimpleName());
