@@ -200,9 +200,9 @@ public class SignalBindingFeature extends ServerSideFeature {
      * @param valueEquals
      *            a predicate to compare signal values for equality
      * @param revertCallback
-     *            a callback to revert the value change if the signal value does
-     *            not match the expected new value after invoking the write
-     *            callback
+     *            a callback to revert the component value to the updated signal's value 
+     *            if the signal value does not match the expected new value after invoking     
+     *            the write callback
      * @return true if the signal value was updated to the expected new value,
      *         false if a revert was performed
      * @param <T>
