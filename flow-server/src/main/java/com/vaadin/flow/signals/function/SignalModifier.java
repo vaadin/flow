@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -51,7 +53,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @see ValueSignal#mapMutable(SignalMapper, SignalModifier)
  */
 @FunctionalInterface
-public interface SignalModifier<P, C> {
+public interface SignalModifier<P, C> extends Serializable {
     /**
      * Modifies the parent value in place with the new child value.
      *

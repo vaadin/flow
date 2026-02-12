@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
@@ -222,7 +226,7 @@ public class SharedListSignal<T>
      * @return a list of signal instances, not <code>null</code>
      */
     static <T extends Signal<?>> List<T> children(Data node,
-            Function<Id, T> factory) {
+            SerializableFunction<Id, T> factory) {
         return node.listChildren().stream().map(factory).toList();
     }
 
@@ -400,4 +404,9 @@ public class SharedListSignal<T>
                 .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
     }
 
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        LoggerFactory.getLogger(SharedListSignal.class).warn(
+                "Serializing SharedListSignal. Sharing signals across a cluster is not yet implemented.");
+        out.defaultWriteObject();
+    }
 }

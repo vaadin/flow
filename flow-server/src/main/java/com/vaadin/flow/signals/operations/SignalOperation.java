@@ -18,7 +18,7 @@ package com.vaadin.flow.signals.operations;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
-import com.vaadin.flow.signals.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * An operation triggered on a signal instance. The result will be populated

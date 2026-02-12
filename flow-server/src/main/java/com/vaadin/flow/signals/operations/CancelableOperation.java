@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.signals.operations;
 
-import com.vaadin.flow.signals.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * An operation that can be cancelled.

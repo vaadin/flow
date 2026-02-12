@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
@@ -239,5 +243,11 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     @Override
     public String toString() {
         return "SharedValueSignal[" + peek() + "]";
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        LoggerFactory.getLogger(SharedValueSignal.class).warn(
+                "Serializing SharedValueSignal. Sharing signals across a cluster is not yet implemented.");
+        out.defaultWriteObject();
     }
 }

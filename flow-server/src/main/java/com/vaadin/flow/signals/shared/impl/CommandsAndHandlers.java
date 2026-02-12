@@ -29,7 +29,7 @@ import com.vaadin.flow.signals.SignalCommand;
 /**
  * A list of signal commands together with their result handlers.
  */
-public class CommandsAndHandlers {
+public class CommandsAndHandlers implements Serializable {
     /**
      * Handles the result of a signal command execution.
      */
