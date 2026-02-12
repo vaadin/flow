@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -40,7 +39,13 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public class InputStreamDownloadHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class InputStreamDownloadHandlerTest {
     private static final int SIMULATED_DOWNLOAD_SIZE = 165000;
 
     private VaadinRequest request;
@@ -52,7 +57,7 @@ public class InputStreamDownloadHandlerTest {
     private Element owner;
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
@@ -94,9 +99,8 @@ public class InputStreamDownloadHandlerTest {
         }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
-                        context.contentLength());
-                Assert.assertEquals("download", context.fileName());
+                assertEquals(SIMULATED_DOWNLOAD_SIZE, context.contentLength());
+                assertEquals("download", context.fileName());
                 invocations.add("onStart");
             }
 
@@ -104,18 +108,17 @@ public class InputStreamDownloadHandlerTest {
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, totalBytes);
-                Assert.assertEquals("download", context.fileName());
+                assertEquals(SIMULATED_DOWNLOAD_SIZE, totalBytes);
+                assertEquals("download", context.fileName());
                 invocations.add("onProgress");
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
-                        context.contentLength());
-                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, transferredBytes);
-                Assert.assertEquals("download", context.fileName());
+                assertEquals(SIMULATED_DOWNLOAD_SIZE, context.contentLength());
+                assertEquals(SIMULATED_DOWNLOAD_SIZE, transferredBytes);
+                assertEquals("download", context.fileName());
                 invocations.add("onComplete");
             }
 
@@ -128,12 +131,11 @@ public class InputStreamDownloadHandlerTest {
         handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
-        Assert.assertEquals(
+        assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        Assert.assertArrayEquals(new long[] { 65536, 131072 },
-                transferredBytesRecords.stream().mapToLong(Long::longValue)
-                        .toArray());
+        assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
+                .stream().mapToLong(Long::longValue).toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
 
@@ -163,16 +165,15 @@ public class InputStreamDownloadHandlerTest {
 
         try {
             handler.handleDownloadRequest(event);
-            Assert.fail("Expected an IOException to be thrown");
+            fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"),
+        assertEquals(List.of("onStart", "onError"),
                 transferListener.invocations);
-        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
-                whenCompleteResult.get());
-        Assert.assertFalse(
-                "Expected whenComplete to be invoked with false result, but got true",
-                whenCompleteResult.get());
+        assertNotNull(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked, but was not");
+        assertFalse(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked with false result, but got true");
         Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
@@ -197,15 +198,14 @@ public class InputStreamDownloadHandlerTest {
 
         try {
             handler.handleDownloadRequest(event);
-            Assert.fail("Expected an IOException to be thrown");
+            fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onError"), transferListener.invocations);
-        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
-                whenCompleteResult.get());
-        Assert.assertFalse(
-                "Expected whenComplete to be invoked with false result, but got true",
-                whenCompleteResult.get());
+        assertEquals(List.of("onError"), transferListener.invocations);
+        assertNotNull(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked, but was not");
+        assertFalse(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked with false result, but got true");
         Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
@@ -230,15 +230,14 @@ public class InputStreamDownloadHandlerTest {
 
         try {
             handler.handleDownloadRequest(event);
-            Assert.fail("Expected an exception to be thrown");
+            fail("Expected an exception to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onError"), transferListener.invocations);
-        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
-                whenCompleteResult.get());
-        Assert.assertFalse(
-                "Expected whenComplete to be invoked with false result, but got true",
-                whenCompleteResult.get());
+        assertEquals(List.of("onError"), transferListener.invocations);
+        assertNotNull(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked, but was not");
+        assertFalse(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked with false result, but got true");
         Mockito.verify(event).setException(Mockito.any(RuntimeException.class));
     }
 
@@ -263,12 +262,11 @@ public class InputStreamDownloadHandlerTest {
                 });
 
         handler.handleDownloadRequest(event);
-        Assert.assertEquals(List.of("onError"), transferListener.invocations);
-        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
-                whenCompleteResult.get());
-        Assert.assertFalse(
-                "Expected whenComplete to be invoked with false result, but got true",
-                whenCompleteResult.get());
+        assertEquals(List.of("onError"), transferListener.invocations);
+        assertNotNull(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked, but was not");
+        assertFalse(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked with false result, but got true");
         Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
@@ -291,7 +289,7 @@ public class InputStreamDownloadHandlerTest {
             @Override
             public void onError(TransferContext context, IOException reason) {
                 invocations.add("onError");
-                Assert.assertEquals("Runtime exception", reason.getMessage());
+                assertEquals("Runtime exception", reason.getMessage());
             }
         };
         DownloadHandler handler = DownloadHandler
@@ -303,12 +301,11 @@ public class InputStreamDownloadHandlerTest {
                 });
 
         handler.handleDownloadRequest(event);
-        Assert.assertEquals(List.of("onError"), transferListener.invocations);
-        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
-                whenCompleteResult.get());
-        Assert.assertFalse(
-                "Expected whenComplete to be invoked with false result, but got true",
-                whenCompleteResult.get());
+        assertEquals(List.of("onError"), transferListener.invocations);
+        assertNotNull(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked, but was not");
+        assertFalse(whenCompleteResult.get(),
+                "Expected whenComplete to be invoked with false result, but got true");
         Mockito.verify(event).setException(responseException);
     }
 
@@ -502,7 +499,7 @@ public class InputStreamDownloadHandlerTest {
         @Override
         public void onError(TransferContext context, IOException reason) {
             invocations.add("onError");
-            Assert.assertEquals("I/O exception", reason.getMessage());
+            assertEquals("I/O exception", reason.getMessage());
         }
     }
 

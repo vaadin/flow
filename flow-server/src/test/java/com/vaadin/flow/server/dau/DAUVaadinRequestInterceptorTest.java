@@ -21,9 +21,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -50,7 +50,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static com.vaadin.flow.server.dau.DAUUtils.DAU_MIN_ACTIVITY_IN_SECONDS;
 import static com.vaadin.flow.server.dau.DAUVaadinRequestInterceptorTest.FakeAppShell.BASE_ICON_PATH;
 
-public class DAUVaadinRequestInterceptorTest {
+class DAUVaadinRequestInterceptorTest {
 
     public static final String APP_ID = "MY-APP";
     private MockDeploymentConfiguration configuration;
@@ -58,7 +58,7 @@ public class DAUVaadinRequestInterceptorTest {
     private DAUVaadinRequestInterceptor interceptor;
     private String originalSubscriptionKey;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         configuration = new MockDeploymentConfiguration();
         configuration.setApplicationOrSystemProperty(
@@ -70,7 +70,7 @@ public class DAUVaadinRequestInterceptorTest {
         System.setProperty("vaadin.subscriptionKey", "sub-123");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (originalSubscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey",

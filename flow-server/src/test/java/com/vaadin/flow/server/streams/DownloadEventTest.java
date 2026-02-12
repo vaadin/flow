@@ -17,8 +17,8 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.EncodeUtil;
@@ -26,12 +26,12 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
-public class DownloadEventTest {
+class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
