@@ -192,6 +192,28 @@ public class ElementBindTextTest {
     }
 
     @Test
+    public void bindText_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+        assertEquals("text", element.getText());
+
+        // Remove binding via the node's TextBindingFeature
+        TextBindingFeature feature = element.getNode()
+                .getFeature(TextBindingFeature.class);
+        feature.removeBinding();
+
+        // Signal changes should no longer affect the element
+        signal.value("text2");
+        assertEquals("text", element.getText());
+
+        // Manual set should work without throwing
+        element.setText("manual");
+        assertEquals("manual", element.getText());
+    }
+
+    @Test
     public void bindText_nullSignal_throwsNPE() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
