@@ -144,8 +144,7 @@ class RouteRegistryInitializerTest {
         try {
             routeRegistryInitializer.process(null, servletContext);
         } catch (Exception e) {
-            fail(
-                    "RouteRegistryInitializer.process should not throw with null arguments");
+            fail("RouteRegistryInitializer.process should not throw with null arguments");
         }
     }
 
@@ -326,8 +325,7 @@ class RouteRegistryInitializerTest {
                         AbsoluteRoute.class, ExtendingPrefix.class)
                 .collect(Collectors.toSet()), servletContext);
 
-        assertEquals("",
-                registry.getTargetUrl(NavigationTarget.class).get());
+        assertEquals("", registry.getTargetUrl(NavigationTarget.class).get());
         assertEquals("foo",
                 registry.getTargetUrl(NavigationTargetFoo.class).get());
         assertEquals("absolute",
@@ -560,8 +558,7 @@ class RouteRegistryInitializerTest {
 
         assertTrue(navigationTarget.isPresent(),
                 "Could not find navigation target for `" + path + "`");
-        assertEquals(routeClass, navigationTarget.get(),
-                errorMessage);
+        assertEquals(routeClass, navigationTarget.get(), errorMessage);
     }
 
     /* @Viewport tests */
@@ -961,8 +958,7 @@ class RouteRegistryInitializerTest {
 
                     routeRegistryInitializer.validateLayoutAnnotations(classes);
                 });
-        assertTrue(
-                thrown.getMessage().contains(messageBuilder.toString()));
+        assertTrue(thrown.getMessage().contains(messageBuilder.toString()));
     }
 
     @Test
@@ -1088,11 +1084,9 @@ class RouteRegistryInitializerTest {
         // RouteData should be sorted by template
         assertEquals("", registeredRoutes.get(0).getTemplate(),
                 "Sort order was not the one expected");
-        assertEquals("absolute",
-                registeredRoutes.get(1).getTemplate(),
+        assertEquals("absolute", registeredRoutes.get(1).getTemplate(),
                 "Sort order was not the one expected");
-        assertEquals("absolute/levels",
-                registeredRoutes.get(2).getTemplate(),
+        assertEquals("absolute/levels", registeredRoutes.get(2).getTemplate(),
                 "Sort order was not the one expected");
         assertEquals(
                 HasUrlParameterFormat.getTemplate("parameter",
@@ -1101,8 +1095,7 @@ class RouteRegistryInitializerTest {
                 "Sort order was not the one expected");
         assertEquals("parent", registeredRoutes.get(4).getTemplate(),
                 "Sort order was not the one expected");
-        assertEquals("parent/prefix",
-                registeredRoutes.get(5).getTemplate(),
+        assertEquals("parent/prefix", registeredRoutes.get(5).getTemplate(),
                 "Sort order was not the one expected");
         assertEquals(
                 HasUrlParameterFormat.getTemplate("string",
@@ -1163,27 +1156,20 @@ class RouteRegistryInitializerTest {
         assertEquals(7, registeredRoutes.size(),
                 "Not all registered routes were returned");
 
-        assertEquals(0,
-                registeredRoutes.get(0).getRouteParameters().size(),
+        assertEquals(0, registeredRoutes.get(0).getRouteParameters().size(),
                 "Unexpected parameters encountered");
-        assertEquals(0,
-                registeredRoutes.get(1).getRouteParameters().size(),
+        assertEquals(0, registeredRoutes.get(1).getRouteParameters().size(),
                 "Unexpected parameters encountered");
-        assertEquals(0,
-                registeredRoutes.get(2).getRouteParameters().size(),
+        assertEquals(0, registeredRoutes.get(2).getRouteParameters().size(),
                 "Unexpected parameters encountered");
-        assertEquals(1,
-                registeredRoutes.get(3).getRouteParameters().size(),
+        assertEquals(1, registeredRoutes.get(3).getRouteParameters().size(),
                 "Missing parameters");
 
-        assertEquals(0,
-                registeredRoutes.get(4).getRouteParameters().size(),
+        assertEquals(0, registeredRoutes.get(4).getRouteParameters().size(),
                 "Unexpected parameters encountered");
-        assertEquals(0,
-                registeredRoutes.get(5).getRouteParameters().size(),
+        assertEquals(0, registeredRoutes.get(5).getRouteParameters().size(),
                 "Unexpected parameters encountered");
-        assertEquals(1,
-                registeredRoutes.get(6).getRouteParameters().size(),
+        assertEquals(1, registeredRoutes.get(6).getRouteParameters().size(),
                 "Missing parameters");
 
         assertEquals(
@@ -1216,18 +1202,15 @@ class RouteRegistryInitializerTest {
 
         List<RouteAliasData> routeAliases = routeData.getRouteAliases();
 
-        assertEquals("absolute/alias2",
-                routeAliases.get(0).getTemplate(),
+        assertEquals("absolute/alias2", routeAliases.get(0).getTemplate(),
                 "Sort order was not the one expected");
         assertEquals("alias3", routeAliases.get(1).getTemplate(),
                 "Sort order was not the one expected");
         assertEquals("alias4", routeAliases.get(2).getTemplate(),
                 "Sort order was not the one expected");
-        assertEquals("parent/alias1",
-                routeAliases.get(3).getTemplate(),
+        assertEquals("parent/alias1", routeAliases.get(3).getTemplate(),
                 "Sort order was not the one expected");
-        assertEquals("parent/middle/alias5",
-                routeAliases.get(4).getTemplate(),
+        assertEquals("parent/middle/alias5", routeAliases.get(4).getTemplate(),
                 "Sort order was not the one expected");
 
         assertEquals(AbsoluteMiddleParent.class,
@@ -1242,8 +1225,7 @@ class RouteRegistryInitializerTest {
         assertEquals(ParentWithRoutePrefix.class,
                 routeAliases.get(3).getParentLayout(),
                 "Sort order was not the one expected");
-        assertEquals(MiddleParent.class,
-                routeAliases.get(4).getParentLayout(),
+        assertEquals(MiddleParent.class, routeAliases.get(4).getParentLayout(),
                 "Sort order was not the one expected");
     }
 
@@ -1292,8 +1274,7 @@ class RouteRegistryInitializerTest {
         List<?> registeredTargets = registry.getRegisteredRoutes().stream()
                 .map(RouteData::getNavigationTarget)
                 .collect(Collectors.toList());
-        assertEquals(Arrays.asList(NavigationTarget.class),
-                registeredTargets);
+        assertEquals(Arrays.asList(NavigationTarget.class), registeredTargets);
     }
 
     public static class IgnoredErrorView extends Component
@@ -1312,8 +1293,8 @@ class RouteRegistryInitializerTest {
                 Stream.of(IgnoredErrorView.class, FileNotFound.class)
                         .collect(Collectors.toSet()));
 
-        assertTrue(registry
-                .getErrorNavigationTarget(new NotFoundException()).isPresent());
+        assertTrue(registry.getErrorNavigationTarget(new NotFoundException())
+                .isPresent());
 
         ErrorTargetEntry errorTargetEntry = registry
                 .getErrorNavigationTarget(new Exception()).get();
@@ -1480,8 +1461,7 @@ class RouteRegistryInitializerTest {
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
         assertEquals(1, registry.getRegisteredRoutes().size());
-        assertTrue(
-                registry.getTemplate(BaseRouteTarget.class).isPresent());
+        assertTrue(registry.getTemplate(BaseRouteTarget.class).isPresent());
     }
 
     @Test
@@ -1500,8 +1480,7 @@ class RouteRegistryInitializerTest {
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
         // two routes: manually added and set during init phase
 
-        assertTrue(
-                registry.getTemplate(BaseRouteTarget.class).isPresent());
+        assertTrue(registry.getTemplate(BaseRouteTarget.class).isPresent());
         assertTrue(registry.getNavigationTarget(
                 PathUtil.getPath("manual-route", Collections.emptyList()))
                 .isPresent());
