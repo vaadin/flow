@@ -317,10 +317,11 @@ public class SharedNodeSignal
         Id commandId = Id.random();
         return submit(new SignalCommand.PutIfAbsentCommand(commandId, id(),
                 null, Objects.requireNonNull(key), null), success -> {
-                    boolean created = !success.updates().isEmpty();
+                    boolean created = success.updates()
+                            .containsKey(commandId);
                     Id childId = created ? commandId
-                            : tree().confirmed().data(id()).orElseThrow()
-                                    .mapChildren().get(key);
+                            : ((Data) success.updates().get(id())
+                                    .newNode()).mapChildren().get(key);
                     return new PutIfAbsentResult<>(created, child(childId));
                 });
     }
