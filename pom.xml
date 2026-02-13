@@ -113,6 +113,7 @@
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <spotless.plugin.version>3.2.1</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
+    <spotless.ratchetFrom/>
 
     <!-- Frontend -->
     <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -593,6 +594,7 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${spotless.plugin.version}</version>
         <configuration>
+          <ratchetFrom>${spotless.ratchetFrom}</ratchetFrom>
           <java>
             <eclipse>
               <file>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
@@ -769,6 +771,39 @@
     </extensions>
   </build>
   <profiles>
+    <profile>
+      <id>install-git-hooks</id>
+      <activation>
+        <file>
+          <missing>${maven.multiModuleProjectDirectory}/.husky/_</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${maven.exec.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>install-git-hooks</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <executable>node</executable>
+                  <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
+                  <arguments>
+                    <argument>${maven.multiModuleProjectDirectory}/scripts/installHusky.js</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>default</id>
       <activation>
