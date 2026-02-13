@@ -21,11 +21,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class SerializableNodeListTest
         extends AbstractNodeFeatureTest<ElementClassList> {
@@ -46,16 +49,16 @@ class SerializableNodeListTest
         NodeList<Serializable> copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeList));
 
-        Assertions.assertNotSame(nodeList, copy);
+        assertNotSame(nodeList, copy);
 
-        Assertions.assertEquals(values.size(), copy.size());
+        assertEquals(values.size(), copy.size());
         for (int i = 0; i < size; i++) {
-            Assertions.assertEquals(values.get(i), copy.get(i));
+            assertEquals(values.get(i), copy.get(i));
         }
         // Also verify that original value wasn't changed by the serialization
-        Assertions.assertEquals(values.size(), nodeList.size());
+        assertEquals(values.size(), nodeList.size());
         for (int i = 0; i < size; i++) {
-            Assertions.assertEquals(values.get(i), nodeList.get(i));
+            assertEquals(values.get(i), nodeList.get(i));
         }
 
     }
@@ -73,24 +76,21 @@ class SerializableNodeListTest
         i.next();
         i.remove();
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        assertEquals(1, changes.size());
+        assertEquals(0, ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         i.next();
         i.next();
         i.remove();
         changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals(1,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        assertEquals(1, changes.size());
+        assertEquals(1, ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         List<String> actual = new ArrayList<>();
         for (int j = 0; j < nodeList.size(); j++) {
             actual.add(nodeList.get(j));
         }
-        Assertions.assertArrayEquals(new String[] { "2", "4", "5" },
-                actual.toArray());
+        assertArrayEquals(new String[] { "2", "4", "5" }, actual.toArray());
 
     }
 
@@ -107,11 +107,9 @@ class SerializableNodeListTest
         i.remove();
 
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(2, changes.size());
-        Assertions.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(0)).getIndex());
-        Assertions.assertEquals(0,
-                ((ListRemoveChange<?>) changes.get(1)).getIndex());
-        Assertions.assertEquals(0, nodeList.size());
+        assertEquals(2, changes.size());
+        assertEquals(0, ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        assertEquals(0, ((ListRemoveChange<?>) changes.get(1)).getIndex());
+        assertEquals(0, nodeList.size());
     }
 }

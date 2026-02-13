@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,11 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
 import com.vaadin.flow.internal.nodefeature.NodeList.SetView;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ListFeatureSetViewTest {
 
@@ -82,15 +85,15 @@ class ListFeatureSetViewTest {
     @Test
     public void testSetViewSize() {
         set.add("0");
-        Assertions.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.add("1");
-        Assertions.assertEquals(2, set.size());
+        assertEquals(2, set.size());
         set.remove("1");
-        Assertions.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.remove("1"); // Not in the list
-        Assertions.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.remove("0");
-        Assertions.assertEquals(0, set.size());
+        assertEquals(0, set.size());
     }
 
     @Test
@@ -127,10 +130,10 @@ class ListFeatureSetViewTest {
         set.add("c");
 
         Iterator<String> i = set.iterator();
-        Assertions.assertEquals("a", i.next());
-        Assertions.assertEquals("b", i.next());
-        Assertions.assertEquals("c", i.next());
-        Assertions.assertFalse(i.hasNext());
+        assertEquals("a", i.next());
+        assertEquals("b", i.next());
+        assertEquals("c", i.next());
+        assertFalse(i.hasNext());
     }
 
     @Test
@@ -153,10 +156,10 @@ class ListFeatureSetViewTest {
         set.add("b");
         set.add("c");
 
-        Assertions.assertTrue(set.contains("a"));
-        Assertions.assertTrue(set.contains("b"));
-        Assertions.assertTrue(set.contains("c"));
-        Assertions.assertFalse(set.contains("d"));
+        assertTrue(set.contains("a"));
+        assertTrue(set.contains("b"));
+        assertTrue(set.contains("c"));
+        assertFalse(set.contains("d"));
     }
 
     @Test
@@ -165,8 +168,8 @@ class ListFeatureSetViewTest {
 
         TestSetView otherSet = new TestSetView(feature);
 
-        Assertions.assertEquals(set, otherSet);
-        Assertions.assertEquals(set.hashCode(), otherSet.hashCode());
+        assertEquals(set, otherSet);
+        assertEquals(set.hashCode(), otherSet.hashCode());
     }
 
     @Test
@@ -176,8 +179,8 @@ class ListFeatureSetViewTest {
         TestSetView otherSet = new TestSetView(otherFeature);
         otherSet.add("a");
 
-        Assertions.assertEquals(set, otherSet);
-        Assertions.assertEquals(set.hashCode(), otherSet.hashCode());
+        assertEquals(set, otherSet);
+        assertEquals(set.hashCode(), otherSet.hashCode());
 
     }
 
@@ -186,7 +189,7 @@ class ListFeatureSetViewTest {
         for (int i = 0; i < feature.size(); i++) {
             actual[i] = feature.get(i);
         }
-        Assertions.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
 
     }
 }

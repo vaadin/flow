@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -37,6 +36,14 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.Command;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // Using ElementStylePropertyMap since it closely maps to the underlying map
 class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
@@ -73,46 +80,46 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
 
     @Test
     public void testBasicFunctionality() {
-        Assertions.assertFalse(nodeMap.contains(KEY));
-        Assertions.assertNull(nodeMap.get(KEY));
+        assertFalse(nodeMap.contains(KEY));
+        assertNull(nodeMap.get(KEY));
 
         nodeMap.put(KEY, "value");
-        Assertions.assertTrue(nodeMap.contains(KEY));
-        Assertions.assertEquals("value", nodeMap.get(KEY));
+        assertTrue(nodeMap.contains(KEY));
+        assertEquals("value", nodeMap.get(KEY));
 
         nodeMap.remove(KEY);
-        Assertions.assertFalse(nodeMap.contains(KEY));
-        Assertions.assertNull(nodeMap.get(KEY));
+        assertFalse(nodeMap.contains(KEY));
+        assertNull(nodeMap.get(KEY));
     }
 
     @Test
     public void testCollectChange() {
         List<NodeChange> initialChanges = collectChanges(nodeMap);
-        Assertions.assertEquals(0, initialChanges.size());
+        assertEquals(0, initialChanges.size());
 
         nodeMap.put(KEY, "value");
         List<NodeChange> putChanges = collectChanges(nodeMap);
-        Assertions.assertEquals(1, putChanges.size());
+        assertEquals(1, putChanges.size());
 
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assertions.assertEquals(KEY, putChange.getKey());
-        Assertions.assertEquals("value", putChange.getValue());
+        assertEquals(KEY, putChange.getKey());
+        assertEquals("value", putChange.getValue());
 
         nodeMap.put(KEY, null);
         List<NodeChange> putNullChanges = collectChanges(nodeMap);
-        Assertions.assertEquals(1, putNullChanges.size());
+        assertEquals(1, putNullChanges.size());
 
         MapPutChange putNullChange = (MapPutChange) putNullChanges.get(0);
-        Assertions.assertEquals(KEY, putNullChange.getKey());
-        Assertions.assertEquals(null, putNullChange.getValue());
+        assertEquals(KEY, putNullChange.getKey());
+        assertEquals(null, putNullChange.getValue());
 
         nodeMap.remove(KEY);
 
         List<NodeChange> removeChanges = collectChanges(nodeMap);
-        Assertions.assertEquals(1, removeChanges.size());
+        assertEquals(1, removeChanges.size());
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
-        Assertions.assertEquals(KEY, removeChange.getKey());
+        assertEquals(KEY, removeChange.getKey());
     }
 
     @Test
@@ -121,23 +128,23 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value", null));
         List<NodeChange> putChanges = collectChanges(nodeMap);
 
-        Assertions.assertEquals(1, putChanges.size());
+        assertEquals(1, putChanges.size());
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assertions.assertEquals(KEY, putChange.getKey());
-        Assertions.assertEquals("value", putChange.getValue());
+        assertEquals(KEY, putChange.getKey());
+        assertEquals("value", putChange.getValue());
     }
 
     @Test
     public void testNoChangeEvent() {
         nodeMap.put(KEY, "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put(KEY, "value", true);
         changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put(KEY, "bar", true);
         changes = collectChanges(nodeMap);
-        Assertions.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
     }
 
     @Test
@@ -145,13 +152,12 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put(KEY, "value", true);
         nodeMap.put(KEY, "foobar", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
 
         nodeMap.put(KEY, "urk");
         changes = collectChanges(nodeMap);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals("urk",
-                ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
 
     }
 
@@ -161,7 +167,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -170,9 +176,8 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put(KEY, "value2");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals("value2",
-                ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("value2", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -183,7 +188,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put(KEY, "otherValue");
         nodeMap.put(KEY, "value");
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -195,7 +200,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put(KEY, "value");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -206,9 +211,8 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.generateChangesFromEmpty();
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals("value",
-                ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("value", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -220,7 +224,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -238,22 +242,22 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         } catch (AssertionError expected) {
             threw = true;
         }
-        Assertions.assertTrue(threw, name + " should throw AssertionError");
+        assertTrue(threw, name + " should throw AssertionError");
     }
 
     @Test
     public void testPutAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        Assertions.assertNull(child.getParent());
+        assertNull(child.getParent());
 
         nodeMap.put(KEY, child);
 
-        Assertions.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.put(KEY, "foo");
 
-        Assertions.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -262,11 +266,11 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
 
         nodeMap.put(KEY, child);
 
-        Assertions.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.remove(KEY);
 
-        Assertions.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -289,11 +293,11 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         NodeMap copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeMap));
 
-        Assertions.assertNotSame(nodeMap, copy);
+        assertNotSame(nodeMap, copy);
 
-        Assertions.assertEquals(values.keySet(), copy.keySet());
+        assertEquals(values.keySet(), copy.keySet());
         // Also verify that original value wasn't changed by the serialization
-        Assertions.assertEquals(values.keySet(), nodeMap.keySet());
+        assertEquals(values.keySet(), nodeMap.keySet());
 
         values.keySet().forEach(key -> {
             if (key.startsWith("json")) {
@@ -301,64 +305,59 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
                 BaseJsonNode originalValue = (BaseJsonNode) nodeMap.get(key);
                 BaseJsonNode copyValue = (BaseJsonNode) copy.get(key);
 
-                Assertions.assertEquals(originalValue.toString(),
-                        copyValue.toString());
+                assertEquals(originalValue.toString(), copyValue.toString());
             } else {
-                Assertions.assertEquals(nodeMap.get(key), copy.get(key));
+                assertEquals(nodeMap.get(key), copy.get(key));
             }
 
             // Verify original was not touched
-            Assertions.assertSame(values.get(key), nodeMap.get(key));
+            assertSame(values.get(key), nodeMap.get(key));
         });
     }
 
     @Test
     public void testGetIntDefaultValue() {
-        Assertions.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, 24);
-        Assertions.assertEquals(24, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(24, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, null);
-        Assertions.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.remove(KEY);
-        Assertions.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
     }
 
     @Test
     public void testGetBooleanDefaultValue() {
-        Assertions.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assertions.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, true);
-        Assertions.assertTrue(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, null);
-        Assertions.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assertions.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.remove(KEY);
-        Assertions.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assertions.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
     }
 
     @Test
     public void testGetStringDefaultValue() {
-        Assertions.assertEquals("default",
-                nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, "assigned");
-        Assertions.assertEquals("assigned",
-                nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("assigned", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, null);
-        Assertions.assertEquals("default",
-                nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.remove(KEY);
-        Assertions.assertEquals("default",
-                nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
     }
 
     @Test
@@ -367,10 +366,10 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put("bar", 1);
         nodeMap.put("baz", 1);
         nodeMap.clear();
-        Assertions.assertEquals(0, nodeMap.getPropertyNames().count());
-        Assertions.assertFalse(nodeMap.hasProperty("foo"));
-        Assertions.assertFalse(nodeMap.hasProperty("bar"));
-        Assertions.assertFalse(nodeMap.hasProperty("baz"));
+        assertEquals(0, nodeMap.getPropertyNames().count());
+        assertFalse(nodeMap.hasProperty("foo"));
+        assertFalse(nodeMap.hasProperty("bar"));
+        assertFalse(nodeMap.hasProperty("baz"));
     }
 
     @Test
@@ -381,7 +380,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
 
         AtomicBoolean listenerIsCalled = new AtomicBoolean();
         child.addAttachListener(() -> {
-            Assertions.assertFalse(listenerIsCalled.get());
+            assertFalse(listenerIsCalled.get());
             listenerIsCalled.set(true);
         });
 
@@ -390,7 +389,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         tree.getRootNode().getFeature(ElementChildrenList.class)
                 .add(child.getParent());
 
-        Assertions.assertTrue(listenerIsCalled.get());
+        assertTrue(listenerIsCalled.get());
 
         // The attach listener is not called one more time
         nodeMap.put("foo", child);
@@ -400,22 +399,21 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     public void put_replaceSingleValue_stillUseSingleValue() {
         nodeMap.put("foo", "bar");
 
-        Assertions.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
 
         nodeMap.put("foo", "baz");
 
-        Assertions.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
     }
 
     @Test
     public void streamSingleNullValue() {
         nodeMap.put("foo", null);
 
-        Assertions.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
 
         nodeMap.forEachChild(child -> {
-            Assertions.fail(
-                    "Should not happen, but forEachChild shouldn't explode either");
+            fail("Should not happen, but forEachChild shouldn't explode either");
         });
     }
 
@@ -444,19 +442,19 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         map.put("foo", "bar");
 
         Set<StateNode> nodes = tree.collectDirtyNodes();
-        Assertions.assertTrue(nodes.contains(node));
+        assertTrue(nodes.contains(node));
 
         // clear dirty nodes
         tree.collectChanges(change -> {
         });
 
-        Assertions.assertTrue(tree.collectDirtyNodes().isEmpty());
+        assertTrue(tree.collectDirtyNodes().isEmpty());
 
         // set once again the same value
         map.put("foo", "bar");
 
         nodes = tree.collectDirtyNodes();
-        Assertions.assertTrue(nodes.contains(node));
+        assertTrue(nodes.contains(node));
     }
 
     @Test
@@ -474,19 +472,19 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         map.put("foo", "bar");
 
         Set<StateNode> nodes = tree.collectDirtyNodes();
-        Assertions.assertFalse(nodes.contains(node));
+        assertFalse(nodes.contains(node));
 
         // clear dirty nodes
         tree.collectChanges(change -> {
         });
 
-        Assertions.assertTrue(tree.collectDirtyNodes().isEmpty());
+        assertTrue(tree.collectDirtyNodes().isEmpty());
 
         // set another value
         map.put("foo", "baz");
 
         nodes = tree.collectDirtyNodes();
-        Assertions.assertFalse(nodes.contains(node));
+        assertFalse(nodes.contains(node));
     }
 
     @Test
@@ -507,7 +505,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         List<NodeChange> changes = new ArrayList<>();
         map.collectChanges(changes::add);
 
-        Assertions.assertTrue(changes.isEmpty());
+        assertTrue(changes.isEmpty());
     }
 
     private void assertChangeCollected(AlwaysProduceChangeMap map) {
@@ -516,7 +514,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         List<NodeChange> changes = new ArrayList<>();
         map.collectChanges(changes::add);
 
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals(MapPutChange.class, changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(MapPutChange.class, changes.get(0).getClass());
     }
 }

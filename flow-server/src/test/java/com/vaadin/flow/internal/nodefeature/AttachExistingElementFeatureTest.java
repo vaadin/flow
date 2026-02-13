@@ -18,7 +18,6 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -26,6 +25,9 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.StateNode;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AttachExistingElementFeatureTest {
 
@@ -44,9 +46,9 @@ class AttachExistingElementFeatureTest {
 
         Mockito.verify(child).setParent(node);
 
-        Assertions.assertEquals(callback, feature.getCallback(child));
-        Assertions.assertEquals(parent, feature.getParent(child));
-        Assertions.assertEquals(element, feature.getPreviousSibling(child));
+        assertEquals(callback, feature.getCallback(child));
+        assertEquals(parent, feature.getParent(child));
+        assertEquals(element, feature.getPreviousSibling(child));
     }
 
     @Test
@@ -64,8 +66,8 @@ class AttachExistingElementFeatureTest {
 
         List<StateNode> children = new ArrayList<>(1);
         feature.forEachChild(children::add);
-        Assertions.assertEquals(1, children.size());
-        Assertions.assertEquals(child, children.get(0));
+        assertEquals(1, children.size());
+        assertEquals(child, children.get(0));
     }
 
     @Test
@@ -83,8 +85,8 @@ class AttachExistingElementFeatureTest {
 
         feature.unregister(child);
 
-        Assertions.assertNull(feature.getCallback(child));
-        Assertions.assertNull(feature.getParent(child));
-        Assertions.assertNull(feature.getPreviousSibling(child));
+        assertNull(feature.getCallback(child));
+        assertNull(feature.getParent(child));
+        assertNull(feature.getPreviousSibling(child));
     }
 }

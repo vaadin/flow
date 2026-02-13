@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -28,6 +27,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ClientCallableHandlersTest {
 
@@ -52,7 +53,7 @@ class ClientCallableHandlersTest {
         StateNode stateNode = new StateNode(ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
@@ -65,7 +66,7 @@ class ClientCallableHandlersTest {
                 ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
@@ -93,9 +94,9 @@ class ClientCallableHandlersTest {
 
     private void assertListFeature(SerializableNodeList<String> feature,
             String... expected) {
-        Assertions.assertEquals(expected.length, feature.size());
+        assertEquals(expected.length, feature.size());
         for (int i = 0; i < expected.length; i++) {
-            Assertions.assertEquals(expected[i], feature.get(i));
+            assertEquals(expected[i], feature.get(i));
         }
 
     }

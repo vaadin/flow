@@ -22,7 +22,6 @@ import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -33,6 +32,10 @@ import com.vaadin.flow.internal.change.ListClearChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     protected ElementClassList nodeList = createFeature();
@@ -49,9 +52,9 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
         nodeList.clear();
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         verifyCleared(changes);
-        Assertions.assertEquals(0, nodeList.size());
+        assertEquals(0, nodeList.size());
     }
 
     @Test
@@ -68,18 +71,18 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = collectChanges(nodeList);
 
         // normal behavior: one remove and one add change in order
-        Assertions.assertEquals(2, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
-        Assertions.assertTrue(changes.get(1) instanceof ListAddChange<?>);
+        assertEquals(2, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertTrue(changes.get(1) instanceof ListAddChange<?>);
 
         ListRemoveChange<?> remove = (ListRemoveChange<?>) changes.get(0);
-        Assertions.assertEquals(items.size() - 2, remove.getIndex());
-        Assertions.assertEquals(removed, remove.getRemovedItem());
+        assertEquals(items.size() - 2, remove.getIndex());
+        assertEquals(removed, remove.getRemovedItem());
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(1);
-        Assertions.assertEquals(items.size() - 1, add.getIndex());
-        Assertions.assertEquals(1, add.getNewItems().size());
-        Assertions.assertEquals(removed, add.getNewItems().get(0));
+        assertEquals(items.size() - 1, add.getIndex());
+        assertEquals(1, add.getNewItems().size());
+        assertEquals(removed, add.getNewItems().get(0));
     }
 
     @Test
@@ -94,7 +97,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = collectChanges(nodeList);
 
         // changes are discarded
-        Assertions.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -110,14 +113,14 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
         // As a result: "remove" change is discarded and the "add" is adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(0);
-        Assertions.assertEquals(nodeList.size() - 2, add.getIndex());
-        Assertions.assertEquals(2, add.getNewItems().size());
+        assertEquals(nodeList.size() - 2, add.getIndex());
+        assertEquals(2, add.getNewItems().size());
         items.remove(1);
-        Assertions.assertEquals(items, add.getNewItems());
+        assertEquals(items, add.getNewItems());
     }
 
     @Test
@@ -139,13 +142,13 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
                     ListAddChange<String> addChange = (ListAddChange<String>) change;
                     return addChange.getNewItems().contains(item);
                 }).findFirst();
-        Assertions.assertFalse(optionalChange.isPresent());
-        Assertions.assertEquals(2, nodeList.getChangeTracker().size());
+        assertFalse(optionalChange.isPresent());
+        assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
 
         // remove is discarded, the fist add is discarded, others are adjusted
-        Assertions.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
         verifyAdded(changes, Arrays.asList("bar", "bar1"), index, index + 1);
     }
 
@@ -163,7 +166,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         nodeList.remove(nodeList.size() - 1);
 
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         verifyAdded(changes, Arrays.asList("bar"), index);
     }
 
@@ -184,21 +187,21 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
         // As a result: "remove" change is discarded and the "add" are adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
 
-        Assertions.assertTrue(changes.get(0) instanceof ListAddChange<?>);
-        Assertions.assertTrue(changes.get(1) instanceof ListAddChange<?>);
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertTrue(changes.get(1) instanceof ListAddChange<?>);
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(0);
-        Assertions.assertEquals(index - 2, add.getIndex());
-        Assertions.assertEquals(2, add.getNewItems().size());
+        assertEquals(index - 2, add.getIndex());
+        assertEquals(2, add.getNewItems().size());
         items.remove(0);
-        Assertions.assertEquals(items, add.getNewItems());
+        assertEquals(items, add.getNewItems());
 
         add = (ListAddChange<?>) changes.get(1);
-        Assertions.assertEquals(index - 1, add.getIndex());
-        Assertions.assertEquals(1, add.getNewItems().size());
-        Assertions.assertEquals("bar", add.getNewItems().get(0));
+        assertEquals(index - 1, add.getIndex());
+        assertEquals(1, add.getNewItems().size());
+        assertEquals("bar", add.getNewItems().get(0));
     }
 
     @Test
@@ -215,8 +218,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         // As a result: "remove" and "add" before it are discarded and the "add"
         // operation is not affected
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
 
         verifyAdded(changes, Arrays.asList(newItem), index);
     }
@@ -233,8 +236,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         // As a result: "remove" and "add" before it are discarded and the last
         // "remove" operation is not affected
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
     }
@@ -255,8 +258,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         // As a result: "remove" and its corresponding "add" are discarded and
         // the "remove" in between operation is adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
     }
@@ -278,9 +281,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
         List<NodeChange> changes = collectChanges(nodeList);
         // only one clear changes: add is compensated by remove
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals(ListClearChange.class,
-                changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(ListClearChange.class, changes.get(0).getClass());
         // what's important: no any exception causes by incorrect index
         // (IndexOutOfBoundsException)
     }
@@ -301,14 +303,14 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
         List<NodeChange> changes = collectChanges(nodeList);
 
-        Assertions.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(ListClearChange.class));
         MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
-        Assertions.assertEquals(1, nodeList.size());
-        Assertions.assertEquals("baz", nodeList.get(0));
+        assertEquals(1, nodeList.size());
+        assertEquals("baz", nodeList.get(0));
     }
 
     @Test
@@ -332,7 +334,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         // attach, but it should still be collected
         nodeList.getNode().collectChanges(changes::add);
 
-        Assertions.assertEquals(3, changes.size());
+        assertEquals(3, changes.size());
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         MatcherAssert.assertThat(changes.get(1),
@@ -346,8 +348,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         nodeList.getNode().collectChanges(changes::add);
         // Now there is no anymore clear change (so the previous one is not
         // preserved)
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
     }
 
     @Test
@@ -383,12 +385,10 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assertions.assertEquals(3, changes.size());
-        Assertions.assertEquals(NodeAttachChange.class,
-                changes.get(0).getClass());
-        Assertions.assertEquals(ListClearChange.class,
-                changes.get(1).getClass());
-        Assertions.assertEquals(ListAddChange.class, changes.get(2).getClass());
+        assertEquals(3, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(ListAddChange.class, changes.get(2).getClass());
 
         changes.clear();
 
@@ -397,8 +397,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         nodeList.getNode().collectChanges(changes::add);
         // Now there is no anymore clear change (so the previous one is not
         // preserved)
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
     }
 
     @Test
@@ -415,11 +415,9 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assertions.assertEquals(2, changes.size());
-        Assertions.assertEquals(NodeAttachChange.class,
-                changes.get(0).getClass());
-        Assertions.assertEquals(ListClearChange.class,
-                changes.get(1).getClass());
+        assertEquals(2, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
     }
 
     @Test
@@ -453,11 +451,9 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assertions.assertEquals(2, changes.size());
-        Assertions.assertEquals(NodeAttachChange.class,
-                changes.get(0).getClass());
-        Assertions.assertEquals(ListClearChange.class,
-                changes.get(1).getClass());
+        assertEquals(2, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
     }
 
     @Test
@@ -479,8 +475,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         nodeList.add("foo");
 
         nodeList.getNode().collectChanges(changes::add);
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertEquals(ListAddChange.class, changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(ListAddChange.class, changes.get(0).getClass());
     }
 
     @Test
@@ -497,12 +493,10 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assertions.assertEquals(3, changes.size());
-        Assertions.assertEquals(NodeAttachChange.class,
-                changes.get(0).getClass());
-        Assertions.assertEquals(ListClearChange.class,
-                changes.get(1).getClass());
-        Assertions.assertEquals(ListAddChange.class, changes.get(2).getClass());
+        assertEquals(3, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(ListAddChange.class, changes.get(2).getClass());
     }
 
     private List<String> addOriginalItems(int numberOfOriginalItems) {
@@ -532,12 +526,12 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
     private void verifyNodeListContent(Object... items) {
         for (int i = 0; i < items.length; i++) {
-            Assertions.assertEquals(items[i], nodeList.get(i));
+            assertEquals(items[i], nodeList.get(i));
         }
     }
 
     private void verifyCleared(List<NodeChange> changes) {
-        Assertions.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
         MatcherAssert.assertThat(nodeChange,
                 CoreMatchers.instanceOf(ListClearChange.class));
@@ -545,14 +539,14 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
 
     private void verifyRemoved(List<NodeChange> changes, List<String> items,
             Integer... indexes) {
-        Assertions.assertTrue(changes.size() > 0);
+        assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
             MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
-            Assertions.assertEquals(indexes[i].intValue(), change.getIndex());
-            Assertions.assertEquals(items.get(i), change.getRemovedItem());
+            assertEquals(indexes[i].intValue(), change.getIndex());
+            assertEquals(items.get(i), change.getRemovedItem());
         }
     }
 
@@ -563,9 +557,9 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
             MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
-            Assertions.assertEquals(indexes[i].intValue(), change.getIndex());
-            Assertions.assertEquals(1, change.getNewItems().size());
-            Assertions.assertEquals(items.get(i), change.getNewItems().get(0));
+            assertEquals(indexes[i].intValue(), change.getIndex());
+            assertEquals(1, change.getNewItems().size());
+            assertEquals(items.get(i), change.getNewItems().get(0));
         }
     }
 

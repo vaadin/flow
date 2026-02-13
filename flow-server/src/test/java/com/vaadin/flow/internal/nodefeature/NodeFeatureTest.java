@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {
@@ -115,13 +116,12 @@ class NodeFeatureTest {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
-        Assertions.assertEquals(expectedIds.size(),
+        assertEquals(expectedIds.size(),
                 NodeFeatureRegistry.nodeFeatures.size(),
                 "The number of expected features is not up to date");
 
         expectedIds.forEach((type, expectedId) -> {
-            Assertions.assertEquals(expectedId.intValue(),
-                    NodeFeatureRegistry.getId(type),
+            assertEquals(expectedId.intValue(), NodeFeatureRegistry.getId(type),
                     "Unexpected id for " + type.getName());
         });
     }
@@ -131,8 +131,7 @@ class NodeFeatureTest {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         expectedIds.forEach((expectedType, id) -> {
-            Assertions.assertEquals(expectedType,
-                    NodeFeatureRegistry.getFeature(id),
+            assertEquals(expectedType, NodeFeatureRegistry.getFeature(id),
                     "Unexpected type for id " + id);
         });
     }
@@ -180,13 +179,13 @@ class NodeFeatureTest {
                 PollConfigurationMap.class,
                 ReconnectDialogConfigurationMap.class);
 
-        Assertions.assertEquals(expectedOrder.size(), priorityOrder.size());
+        assertEquals(expectedOrder.size(), priorityOrder.size());
 
         for (int i = 0; i < priorityOrder.size(); i++) {
             if (priorityOrder.get(i) != expectedOrder.get(i)) {
-                Assertions.fail("Invalid priority ordering at index " + i
-                        + ". Expected " + expectedOrder.get(i).getSimpleName()
-                        + " but got " + priorityOrder.get(i).getSimpleName());
+                fail("Invalid priority ordering at index " + i + ". Expected "
+                        + expectedOrder.get(i).getSimpleName() + " but got "
+                        + priorityOrder.get(i).getSimpleName());
             }
         }
     }

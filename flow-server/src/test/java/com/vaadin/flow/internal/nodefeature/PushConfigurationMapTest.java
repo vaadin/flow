@@ -18,12 +18,15 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.ui.Transport;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PushConfigurationMapTest
         extends AbstractNodeFeatureTest<PushConfigurationMap> {
@@ -33,48 +36,45 @@ class PushConfigurationMapTest
     @Test
     public void transportWebsocket() {
         ns.setTransport(Transport.WEBSOCKET);
-        Assertions.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assertions.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assertions.assertEquals(Transport.WEBSOCKET, ns.getTransport());
+        assertFalse(ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        assertEquals(Transport.WEBSOCKET, ns.getTransport());
     }
 
     @Test
     public void transportLongPolling() {
         ns.setTransport(Transport.LONG_POLLING);
-        Assertions.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+        assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("transport"));
-        Assertions.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assertions.assertEquals(Transport.LONG_POLLING, ns.getTransport());
+        assertFalse(ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        assertEquals(Transport.LONG_POLLING, ns.getTransport());
     }
 
     @Test
     public void transportLongWebsocketXHR() {
         ns.setTransport(Transport.WEBSOCKET_XHR);
-        Assertions.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assertions.assertTrue((Boolean) ns
+        assertTrue((Boolean) ns
                 .get(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assertions.assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
+        assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
     }
 
     @Test
     public void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
-        Assertions.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+        assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
-        Assertions.assertEquals(Transport.LONG_POLLING,
-                ns.getFallbackTransport());
+        assertEquals(Transport.LONG_POLLING, ns.getFallbackTransport());
     }
 
     @Test
     public void fallbackTransportWebsocket() {
         ns.setFallbackTransport(Transport.WEBSOCKET);
-        Assertions.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
-        Assertions.assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
+        assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
     }
 
     @Test
@@ -87,7 +87,7 @@ class PushConfigurationMapTest
     @Test
     public void parameterNames() {
         ns.setParameter("foo", "bar");
-        Assertions.assertArrayEquals(new String[] { "foo" },
+        assertArrayEquals(new String[] { "foo" },
                 ns.getParameterNames().toArray());
 
         ns.setTransport(Transport.WEBSOCKET);
@@ -101,7 +101,7 @@ class PushConfigurationMapTest
         // getParmeterNames does not guarantee order
         Arrays.sort(expected);
         Arrays.sort(actual);
-        Assertions.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
     }
 
 }

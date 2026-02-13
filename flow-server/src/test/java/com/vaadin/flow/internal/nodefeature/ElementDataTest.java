@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,6 +28,10 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     private final ElementData elementData = new StateNode(
             Collections.singletonList(ElementData.class))
@@ -36,23 +39,21 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
 
     @Test
     public void setGetTag() {
-        Assertions.assertNull(elementData.getTag(),
-                "Tag should initially be null");
+        assertNull(elementData.getTag(), "Tag should initially be null");
 
         elementData.setTag("myTag");
 
-        Assertions.assertEquals("myTag", elementData.getTag());
+        assertEquals("myTag", elementData.getTag());
     }
 
     @Test
     public void setGetPayload() {
-        Assertions.assertNull(elementData.getPayload(),
-                "Tag should initially be null");
+        assertNull(elementData.getPayload(), "Tag should initially be null");
 
         ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
 
-        Assertions.assertEquals(object, elementData.getPayload());
+        assertEquals(object, elementData.getPayload());
     }
 
     @Test
@@ -61,14 +62,14 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
 
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
 
         MapPutChange change = (MapPutChange) changes.get(0);
 
-        Assertions.assertEquals(NodeProperties.TAG, change.getKey());
-        Assertions.assertEquals(elementData.getNode(), change.getNode());
-        Assertions.assertEquals("foo", change.getValue());
+        assertEquals(NodeProperties.TAG, change.getKey());
+        assertEquals(elementData.getNode(), change.getNode());
+        assertEquals("foo", change.getValue());
     }
 
     @Test
@@ -78,13 +79,13 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
 
-        Assertions.assertEquals(1, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
         MapPutChange change = (MapPutChange) changes.get(0);
 
-        Assertions.assertEquals(NodeProperties.PAYLOAD, change.getKey());
-        Assertions.assertEquals(elementData.getNode(), change.getNode());
-        Assertions.assertEquals(object, change.getValue());
+        assertEquals(NodeProperties.PAYLOAD, change.getKey());
+        assertEquals(elementData.getNode(), change.getNode());
+        assertEquals(object, change.getValue());
     }
 
     @Test
@@ -96,19 +97,19 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
 
-        Assertions.assertEquals(2, changes.size());
-        Assertions.assertTrue(changes.get(0) instanceof MapPutChange);
-        Assertions.assertTrue(changes.get(1) instanceof MapPutChange);
+        assertEquals(2, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
+        assertTrue(changes.get(1) instanceof MapPutChange);
 
         MapPutChange change = getChange(changes, NodeProperties.TAG);
-        Assertions.assertEquals(NodeProperties.TAG, change.getKey());
-        Assertions.assertEquals(elementData.getNode(), change.getNode());
-        Assertions.assertEquals("foo", change.getValue());
+        assertEquals(NodeProperties.TAG, change.getKey());
+        assertEquals(elementData.getNode(), change.getNode());
+        assertEquals("foo", change.getValue());
 
         change = getChange(changes, NodeProperties.PAYLOAD);
-        Assertions.assertEquals(NodeProperties.PAYLOAD, change.getKey());
-        Assertions.assertEquals(elementData.getNode(), change.getNode());
-        Assertions.assertEquals(object, change.getValue());
+        assertEquals(NodeProperties.PAYLOAD, change.getKey());
+        assertEquals(elementData.getNode(), change.getNode());
+        assertEquals(object, change.getValue());
     }
 
     private MapPutChange getChange(List<NodeChange> changes, String key) {
@@ -116,8 +117,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
                 .filter(MapPutChange.class::isInstance)
                 .map(MapPutChange.class::cast)
                 .filter(chang -> chang.getKey().equals(key)).findFirst();
-        Assertions.assertTrue(keyFound.isPresent(),
-                "No " + key + " change found");
+        assertTrue(keyFound.isPresent(), "No " + key + " change found");
         return keyFound.get();
     }
 }

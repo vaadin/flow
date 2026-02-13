@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
@@ -29,6 +28,10 @@ import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class StateNodeNodeListTest
@@ -42,41 +45,39 @@ class StateNodeNodeListTest
 
         nodeList.add(value1);
 
-        Assertions.assertEquals(1, nodeList.size());
-        Assertions.assertSame(value1, nodeList.get(0));
+        assertEquals(1, nodeList.size());
+        assertSame(value1, nodeList.get(0));
 
         List<NodeChange> firstAddChanges = collectChanges(nodeList);
-        Assertions.assertEquals(1, firstAddChanges.size());
+        assertEquals(1, firstAddChanges.size());
         ListAddChange<?> firstAddChange = (ListAddChange<?>) firstAddChanges
                 .get(0);
-        Assertions.assertEquals(0, firstAddChange.getIndex());
-        Assertions.assertEquals(Arrays.asList(value1),
-                firstAddChange.getNewItems());
+        assertEquals(0, firstAddChange.getIndex());
+        assertEquals(Arrays.asList(value1), firstAddChange.getNewItems());
 
         nodeList.add(0, value2);
-        Assertions.assertEquals(2, nodeList.size());
-        Assertions.assertSame(value2, nodeList.get(0));
-        Assertions.assertSame(value1, nodeList.get(1));
+        assertEquals(2, nodeList.size());
+        assertSame(value2, nodeList.get(0));
+        assertSame(value1, nodeList.get(1));
 
         List<NodeChange> secondAddChanges = collectChanges(nodeList);
-        Assertions.assertEquals(1, secondAddChanges.size());
+        assertEquals(1, secondAddChanges.size());
         ListAddChange<?> secondAddChange = (ListAddChange<?>) secondAddChanges
                 .get(0);
-        Assertions.assertEquals(0, secondAddChange.getIndex());
-        Assertions.assertEquals(Arrays.asList(value2),
-                secondAddChange.getNewItems());
+        assertEquals(0, secondAddChange.getIndex());
+        assertEquals(Arrays.asList(value2), secondAddChange.getNewItems());
 
         StateNode removedItem = nodeList.remove(0);
 
-        Assertions.assertEquals(1, nodeList.size());
-        Assertions.assertSame(value1, nodeList.get(0));
-        Assertions.assertSame(value2, removedItem);
+        assertEquals(1, nodeList.size());
+        assertSame(value1, nodeList.get(0));
+        assertSame(value2, removedItem);
 
         List<NodeChange> removeChanges = collectChanges(nodeList);
-        Assertions.assertEquals(1, removeChanges.size());
+        assertEquals(1, removeChanges.size());
         ListRemoveChange<?> removeChange = (ListRemoveChange<?>) removeChanges
                 .get(0);
-        Assertions.assertEquals(0, removeChange.getIndex());
+        assertEquals(0, removeChange.getIndex());
     }
 
     @Test
@@ -93,26 +94,25 @@ class StateNodeNodeListTest
 
         List<NodeChange> changes = collectChanges(nodeList);
 
-        Assertions.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         ListAddChange<?> change = (ListAddChange<?>) changes.get(0);
-        Assertions.assertEquals(0, change.getIndex());
-        Assertions.assertEquals(Arrays.asList(value1, value2),
-                change.getNewItems());
+        assertEquals(0, change.getIndex());
+        assertEquals(Arrays.asList(value1, value2), change.getNewItems());
     }
 
     @Test
     public void testAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        Assertions.assertNull(child.getParent());
+        assertNull(child.getParent());
 
         nodeList.add(child);
 
-        Assertions.assertSame(nodeList.getNode(), child.getParent());
+        assertSame(nodeList.getNode(), child.getParent());
 
         nodeList.remove(0);
 
-        Assertions.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -123,9 +123,9 @@ class StateNodeNodeListTest
 
         nodeList.add(one);
         nodeList.add(two);
-        Assertions.assertEquals(0, nodeList.indexOf(one));
-        Assertions.assertEquals(1, nodeList.indexOf(two));
-        Assertions.assertEquals(-1, nodeList.indexOf(three));
+        assertEquals(0, nodeList.indexOf(one));
+        assertEquals(1, nodeList.indexOf(two));
+        assertEquals(-1, nodeList.indexOf(three));
     }
 
     @Test
@@ -135,9 +135,9 @@ class StateNodeNodeListTest
 
         nodeList.add(one);
         nodeList.add(two);
-        Assertions.assertEquals(2, nodeList.size());
+        assertEquals(2, nodeList.size());
         nodeList.clear();
-        Assertions.assertEquals(0, nodeList.size());
+        assertEquals(0, nodeList.size());
     }
 
     @Test
@@ -168,14 +168,14 @@ class StateNodeNodeListTest
         NodeList<StateNode> copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeList));
 
-        Assertions.assertNotSame(nodeList, copy);
+        assertNotSame(nodeList, copy);
 
-        Assertions.assertEquals(values.size(), copy.size());
+        assertEquals(values.size(), copy.size());
         for (int i = 0; i < size; i++) {
             assertNodeEquals(values.get(i), copy.get(i));
         }
         // Also verify that original value wasn't changed by the serialization
-        Assertions.assertEquals(values.size(), nodeList.size());
+        assertEquals(values.size(), nodeList.size());
         for (int i = 0; i < size; i++) {
             assertNodeEquals(values.get(i), nodeList.get(i));
         }
