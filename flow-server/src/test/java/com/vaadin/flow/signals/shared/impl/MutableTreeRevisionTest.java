@@ -498,7 +498,8 @@ public class MutableTreeRevisionTest {
         Accept accept = assertAccepted(result);
         assertEquals(1, accept.updates().size());
         NodeModification parentModification = accept.updates().get(Id.ZERO);
-        assertEquals(parentModification.oldNode(), parentModification.newNode());
+        assertEquals(parentModification.oldNode(),
+                parentModification.newNode());
         assertEquals(child,
                 ((Data) parentModification.newNode()).mapChildren().get("key"));
 

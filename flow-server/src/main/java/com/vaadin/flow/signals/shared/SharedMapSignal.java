@@ -162,11 +162,10 @@ public class SharedMapSignal<T>
                 new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
-                    boolean created = success.updates()
-                            .containsKey(commandId);
+                    boolean created = success.updates().containsKey(commandId);
                     Id childId = created ? commandId
-                            : ((Data) success.updates().get(id())
-                                    .newNode()).mapChildren().get(key);
+                            : ((Data) success.updates().get(id()).newNode())
+                                    .mapChildren().get(key);
                     return new PutIfAbsentResult<>(created, child(childId));
                 });
     }
