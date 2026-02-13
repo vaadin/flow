@@ -13,6 +13,13 @@
   <packaging>pom</packaging>
   <name>Flow Bill of Materials</name>
   <description>Flow Bill of Materials</description>
+  <url>https://vaadin.com/flow</url>
+
+  <scm>
+    <connection>scm:https:https://github.com/vaadin/flow.git</connection>
+    <developerConnection>scm:git:git@github.com:vaadin/flow.git</developerConnection>
+    <url>https://github.com/vaadin/flow</url>
+  </scm>
 
   <properties>
     <flow.apicmp.skip>true</flow.apicmp.skip>
