@@ -23,10 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -50,9 +49,10 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @NotThreadSafe
-public class StreamRequestHandlerTest {
+class StreamRequestHandlerTest {
 
     private StreamRequestHandler handler = new StreamRequestHandler();
     private MockVaadinSession session;
@@ -61,7 +61,7 @@ public class StreamRequestHandlerTest {
     private StreamResourceRegistry streamResourceRegistry;
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
 
@@ -82,7 +82,7 @@ public class StreamRequestHandlerTest {
         UI.setCurrent(ui);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         CurrentInstance.clearAll();
     }
@@ -286,8 +286,8 @@ public class StreamRequestHandlerTest {
         for (int i = 0; i < testBytes.length; i++) {
             buf[i] = testBytes[i];
         }
-        Assert.assertArrayEquals("Output differed from expected", buf,
-                argument.getValue());
+        assertArrayEquals(buf, argument.getValue(),
+                "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
@@ -315,8 +315,8 @@ public class StreamRequestHandlerTest {
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
         Mockito.verify(outputStream).write(argument.capture());
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                argument.getValue());
+        assertArrayEquals(testBytes, argument.getValue(),
+                "Output differed from expected");
         Mockito.verify(response).setCacheTime(Mockito.anyLong());
         Mockito.verify(response).setContentType("application/octet-stream");
     }

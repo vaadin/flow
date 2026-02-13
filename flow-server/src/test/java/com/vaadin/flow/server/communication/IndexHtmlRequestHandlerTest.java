@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,12 +41,10 @@ import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
@@ -80,10 +80,13 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -105,11 +108,10 @@ public class IndexHtmlRequestHandlerTest {
     private String springTokenString;
     private final String springTokenHeaderName = "x-CSRF-TOKEN";
     private final String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
+    @TempDir
+    Path temporaryFolder;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         UsageStatistics.resetEntries();
@@ -139,12 +141,10 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue(
-                "Response should have content from the index.html template",
-                indexHtml.contains("index.html template content"));
-        Assert.assertTrue(
-                "Response should have styles for the system-error dialogs",
-                indexHtml.contains(".v-system-error"));
+        assertTrue(indexHtml.contains("index.html template content"),
+                "Response should have content from the index.html template");
+        assertTrue(indexHtml.contains(".v-system-error"),
+                "Response should have styles for the system-error dialogs");
     }
 
     @Test
@@ -179,7 +179,7 @@ public class IndexHtmlRequestHandlerTest {
                 UncheckedIOException.class,
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
                         vaadinRequest, response));
-        Assert.assertEquals(expectedError, expectedException.getMessage());
+        assertEquals(expectedError, expectedException.getMessage());
     }
 
     @Test
@@ -188,8 +188,8 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Response should have a language attribute",
-                indexHtml.contains("<html lang"));
+        assertTrue(indexHtml.contains("<html lang"),
+                "Response should have a language attribute");
     }
 
     @Test
@@ -198,8 +198,8 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Response should have correct base href",
-                indexHtml.contains("<base href=\".\""));
+        assertTrue(indexHtml.contains("<base href=\".\""),
+                "Response should have correct base href");
     }
 
     @Test
@@ -208,8 +208,8 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/some/path"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Response should have correct base href",
-                indexHtml.contains("<base href=\"./..\""));
+        assertTrue(indexHtml.contains("<base href=\"./..\""),
+                "Response should have correct base href");
     }
 
     @Test
@@ -218,26 +218,26 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Response should have Feature Flags updater function",
-                indexHtml.contains(
-                        "window.Vaadin.featureFlagsUpdaters.push((activator) => {"));
+        assertTrue(indexHtml.contains(
+                "window.Vaadin.featureFlagsUpdaters.push((activator) => {"),
+                "Response should have Feature Flags updater function");
     }
 
     @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/"));
-        Assert.assertTrue("The handler should handle a root path request",
-                canHandleRequest);
+        assertTrue(canHandleRequest,
+                "The handler should handle a root path request");
     }
 
     @Test
     public void canHandleRequest_withoutBootstrapUrlPredicate() {
-        Assert.assertTrue(indexHtmlRequestHandler
+        assertTrue(indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/nested/picture.png")));
-        Assert.assertTrue(indexHtmlRequestHandler
+        assertTrue(indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertTrue(indexHtmlRequestHandler
+        assertTrue(indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("com.foo.MyTest")));
     }
 
@@ -249,50 +249,56 @@ public class IndexHtmlRequestHandlerTest {
             return !req.getPathInfo().matches(".+\\.[A-z][A-z\\d]+$");
         });
 
-        Assert.assertTrue(
-                "The handler should handle a route with " + "parameter",
+        assertTrue(
                 indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/some/route")));
-        Assert.assertTrue("The handler should handle a normal route",
+                        .canHandleRequest(createVaadinRequest("/some/route")),
+                "The handler should handle a route with " + "parameter");
+        assertTrue(
                 indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/myroute")));
-        Assert.assertTrue("The handler should handle a directory request",
+                        .canHandleRequest(createVaadinRequest("/myroute")),
+                "The handler should handle a normal route");
+        assertTrue(
                 indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/myroute/ends/withslash/")));
-        Assert.assertTrue(
+                        createVaadinRequest("/myroute/ends/withslash/")),
+                "The handler should handle a directory request");
+        assertTrue(
+                indexHtmlRequestHandler.canHandleRequest(
+                        createVaadinRequest("/documentation/10.0.x1/flow")),
                 "The handler should handle a request if it has "
-                        + "extension pattern in the middle of the path",
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/documentation/10.0.x1/flow")));
+                        + "extension pattern in the middle of the path");
 
-        assertFalse("The handler should not handle request with extension",
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/picture.png")));
         assertFalse(
-                "The handler should not handle request with capital extension",
                 indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/CAPITAL.PNG")));
-        assertFalse("The handler should not handle request with extension",
+                        createVaadinRequest("/nested/picture.png")),
+                "The handler should not handle request with extension");
+        assertFalse(
+                indexHtmlRequestHandler.canHandleRequest(
+                        createVaadinRequest("/nested/CAPITAL.PNG")),
+                "The handler should not handle request with capital extension");
+        assertFalse(
                 indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/script.js")));
+                        .canHandleRequest(createVaadinRequest("/script.js")),
+                "The handler should not handle request with extension");
 
-        assertFalse("The handler should not handle request with extension",
+        assertFalse(
                 indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/music.mp3")));
-        assertFalse("The handler should not handle request with only extension",
+                        .canHandleRequest(createVaadinRequest("/music.mp3")),
+                "The handler should not handle request with extension");
+        assertFalse(
                 indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/.htaccess")));
+                        .canHandleRequest(createVaadinRequest("/.htaccess")),
+                "The handler should not handle request with only extension");
     }
 
     @Test
     public void canHandleRequest_allow_oldBrowser() {
-        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+        assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", null, null)));
     }
 
     @Test
     public void canHandleRequest_handle_indexHtmlRequest() {
-        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+        assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "document", "navigate")));
     }
 
@@ -318,17 +324,16 @@ public class IndexHtmlRequestHandlerTest {
     public void canHandleRequest_doNotHandle_vaadinReservedFolders() {
         for (String reservedFolder : HandlerHelper
                 .getPublicInternalFolderPaths()) {
-            assertFalse(reservedFolder
-                    + " was handled even though it should not init index handler",
-                    indexHtmlRequestHandler.canHandleRequest(
-                            createRequestWithDestination(reservedFolder, null,
-                                    null)));
+            assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                    createRequestWithDestination(reservedFolder, null, null)),
+                    reservedFolder
+                            + " was handled even though it should not init index handler");
         }
     }
 
     @Test
     public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
-        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+        assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "empty", "same-origin")));
     }
 
@@ -350,11 +355,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
         int expectedScripts = 2;
-        Assert.assertEquals(expectedScripts, scripts.size());
-        Assert.assertEquals("testing.1",
-                scripts.get(expectedScripts - 2).attr("src"));
-        Assert.assertEquals("testing.2",
-                scripts.get(expectedScripts - 1).attr("src"));
+        assertEquals(expectedScripts, scripts.size());
+        assertEquals("testing.1", scripts.get(expectedScripts - 2).attr("src"));
+        assertEquals("testing.2", scripts.get(expectedScripts - 1).attr("src"));
     }
 
     @Test
@@ -370,7 +373,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
-        Assert.assertEquals("", initialUidlScript.attr("initial"));
+        assertEquals("", initialUidlScript.attr("initial"));
     }
 
     private static Element findScript(Elements scripts, String needle) {
@@ -394,10 +397,10 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
 
-        Assert.assertEquals(
+        assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
-        Assert.assertEquals("", initialUidlScript.attr("initial"));
+        assertEquals("", initialUidlScript.attr("initial"));
     }
 
     @Test
@@ -418,13 +421,14 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
 
-        Assert.assertEquals("", initialUidlScript.attr("initial"));
+        assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
-        Assert.assertTrue(scriptContent.contains("Could not navigate"));
-        assertFalse("Initial object content should not be escaped",
+        assertTrue(scriptContent.contains("Could not navigate"));
+        assertFalse(
                 scriptContent.contains("&lt;")
-                        || scriptContent.contains("&gt;"));
-        Assert.assertNotNull(UI.getCurrent());
+                        || scriptContent.contains("&gt;"),
+                "Initial object content should not be escaped");
+        assertNotNull(UI.getCurrent());
     }
 
     @Test
@@ -444,11 +448,11 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
-        Assert.assertEquals(
+        assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
-        Assert.assertEquals("", initialUidlScript.attr("initial"));
-        Assert.assertNull(UI.getCurrent());
+        assertEquals("", initialUidlScript.attr("initial"));
+        assertNull(UI.getCurrent());
     }
 
     @Test
@@ -467,7 +471,7 @@ public class IndexHtmlRequestHandlerTest {
 
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
 
-        Assert.assertNotNull(captor.getValue().getUI());
+        assertNotNull(captor.getValue().getUI());
     }
 
     @Test
@@ -491,13 +495,11 @@ public class IndexHtmlRequestHandlerTest {
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
 
         Optional<UI> maybeUI = captor.getValue().getUI();
-        Assert.assertNotNull(maybeUI);
+        assertNotNull(maybeUI);
         QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
                 .getQueryParameters();
-        Assert.assertEquals(List.of("a", "b"),
-                locationParams.getParameters("param1"));
-        Assert.assertEquals(List.of("2"),
-                locationParams.getParameters("param2"));
+        assertEquals(List.of("a", "b"), locationParams.getParameters("param1"));
+        assertEquals(List.of("2"), locationParams.getParameters("param2"));
     }
 
     @Test
@@ -513,7 +515,7 @@ public class IndexHtmlRequestHandlerTest {
 
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
 
-        Assert.assertEquals(Optional.empty(), captor.getValue().getUI());
+        assertEquals(Optional.empty(), captor.getValue().getUI());
     }
 
     @Test
@@ -539,7 +541,7 @@ public class IndexHtmlRequestHandlerTest {
                 INITIAL_UIDL_SEARCH_STRING);
         assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
-        Assert.assertEquals("", initialUidlScript.attr("initial"));
+        assertEquals("", initialUidlScript.attr("initial"));
     }
 
     @Test
@@ -552,9 +554,9 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
-        Assert.assertEquals(0, document.head()
+        assertEquals(0, document.head()
                 .getElementsByAttribute(SPRING_CSRF_ATTRIBUTE).size());
-        Assert.assertEquals(0,
+        assertEquals(0,
                 document.head().getElementsByAttribute("_csrf_header").size());
     }
 
@@ -603,45 +605,44 @@ public class IndexHtmlRequestHandlerTest {
 
         Optional<Element> viewPort = findFirstElementByNameAttrEqualTo(elements,
                 "viewport");
-        assertTrue("'viewport' meta link should exist.", viewPort.isPresent());
+        assertTrue(viewPort.isPresent(), "'viewport' meta link should exist.");
         assertEquals("my-viewport", viewPort.get().attr("content"));
 
         Optional<Element> appleMobileWebAppCapable = findFirstElementByNameAttrEqualTo(
                 elements, "apple-mobile-web-app-capable");
-        assertTrue("'apple-mobile-web-app-capable' meta link should exist.",
-                appleMobileWebAppCapable.isPresent());
+        assertTrue(appleMobileWebAppCapable.isPresent(),
+                "'apple-mobile-web-app-capable' meta link should exist.");
         assertEquals("yes", appleMobileWebAppCapable.get().attr("content"));
 
         Optional<Element> themeColor = findFirstElementByNameAttrEqualTo(
                 elements, "theme-color");
-        assertTrue("'theme-color' meta link should exists.",
-                themeColor.isPresent());
+        assertTrue(themeColor.isPresent(),
+                "'theme-color' meta link should exists.");
         assertEquals("#ffffff", themeColor.get().attr("content"));
 
         Optional<Element> appleMobileWebAppStatusBar = findFirstElementByNameAttrEqualTo(
                 elements, "apple-mobile-web-app-status-bar-style");
-        assertTrue(
-                "'apple-mobile-web-app-status-bar-style' meta link should exists.",
-                appleMobileWebAppStatusBar.isPresent());
+        assertTrue(appleMobileWebAppStatusBar.isPresent(),
+                "'apple-mobile-web-app-status-bar-style' meta link should exists.");
         assertEquals("#ffffff",
                 appleMobileWebAppStatusBar.get().attr("content"));
 
         Optional<Element> mobileWebAppCapableElements = findFirstElementByNameAttrEqualTo(
                 elements, "mobile-web-app-capable");
-        assertTrue("'mobile-web-app-capable' meta link should exists.",
-                mobileWebAppCapableElements.isPresent());
+        assertTrue(mobileWebAppCapableElements.isPresent(),
+                "'mobile-web-app-capable' meta link should exists.");
         assertEquals("yes", mobileWebAppCapableElements.get().attr("content"));
 
         Optional<Element> appleTouchFullScreenElements = findFirstElementByNameAttrEqualTo(
                 elements, "apple-touch-fullscreen");
-        assertTrue("'apple-touch-fullscreen' meta link should exist.",
-                appleTouchFullScreenElements.isPresent());
+        assertTrue(appleTouchFullScreenElements.isPresent(),
+                "'apple-touch-fullscreen' meta link should exist.");
         assertEquals("yes", appleTouchFullScreenElements.get().attr("content"));
 
         Optional<Element> appleMobileWebAppTitleElements = findFirstElementByNameAttrEqualTo(
                 elements, "apple-mobile-web-app-title");
-        assertTrue("'apple-mobile-web-app-title' should exist.",
-                appleMobileWebAppTitleElements.isPresent());
+        assertTrue(appleMobileWebAppTitleElements.isPresent(),
+                "'apple-mobile-web-app-title' should exist.");
         assertEquals("n", appleMobileWebAppTitleElements.get().attr("content"));
 
         Elements headInlineAndStyleElements = document.head()
@@ -660,7 +661,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_add_elements_when_appShellWithConfigurator()
             throws Exception {
-        File projectRootFolder = temporaryFolder.newFolder();
+        File projectRootFolder = Files
+                .createTempDirectory(temporaryFolder, "temp").toFile();
         TestUtil.createIndexHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
@@ -721,7 +723,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_export_usage_statistics_in_development_mode()
             throws IOException {
-        File projectRootFolder = temporaryFolder.newFolder();
+        File projectRootFolder = Files
+                .createTempDirectory(temporaryFolder, "temp").toFile();
         TestUtil.createIndexHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
@@ -796,7 +799,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void devTools_disable_stubPushFunctionRegistered()
             throws IOException {
-        File projectRootFolder = temporaryFolder.newFolder();
+        File projectRootFolder = Files
+                .createTempDirectory(temporaryFolder, "temp").toFile();
         TestUtil.createIndexHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setDevToolsEnabled(false);
@@ -810,13 +814,12 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         assertTrue(
-                "Expected devToolsPlugins.push function when dev-tools are disabled",
                 document.head().getElementsByTag("script").stream()
                         .map(Element::html)
                         .anyMatch(script -> script
                                 .contains("window.Vaadin.devToolsPlugins = {")
-                                && script
-                                        .contains("push: function(plugin) {")));
+                                && script.contains("push: function(plugin) {")),
+                "Expected devToolsPlugins.push function when dev-tools are disabled");
 
     }
 
@@ -924,7 +927,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_append_colorScheme_to_existing_style()
             throws IOException {
-        File projectRootFolder = temporaryFolder.newFolder();
+        File projectRootFolder = Files
+                .createTempDirectory(temporaryFolder, "temp").toFile();
 
         // Create custom index.html with existing style attribute on html
         // element
@@ -944,7 +948,7 @@ public class IndexHtmlRequestHandlerTest {
         File frontendDir = new File(projectRootFolder, "frontend");
         frontendDir.mkdirs();
         File indexHtml = new File(frontendDir, "index.html");
-        java.nio.file.Files.writeString(indexHtml.toPath(), indexHtmlWithStyle);
+        Files.writeString(indexHtml.toPath(), indexHtmlWithStyle);
 
         TestUtil.createStatsJsonStub(projectRootFolder);
 
@@ -977,7 +981,7 @@ public class IndexHtmlRequestHandlerTest {
                 UI.getCurrent().getInternals().getAppShellTitle());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
@@ -1024,11 +1028,11 @@ public class IndexHtmlRequestHandlerTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
-        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
 
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
-        Assert.assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
+        assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
 
@@ -1046,14 +1050,13 @@ public class IndexHtmlRequestHandlerTest {
 
         final boolean value = bootstrapHandler.synchronizedHandleRequest(
                 mocks.getSession(), request, response);
-        Assert.assertTrue("No further request handlers should be called",
-                value);
+        assertTrue(value, "No further request handlers should be called");
 
-        Assert.assertEquals("Invalid status code reported", 400,
-                response.getErrorCode());
-        Assert.assertEquals("Invalid message reported",
+        assertEquals(400, response.getErrorCode(),
+                "Invalid status code reported");
+        assertEquals(
                 "Invalid location: Relative path cannot contain .. segments",
-                response.getErrorMessage());
+                response.getErrorMessage(), "Invalid message reported");
     }
 
     @Test
@@ -1071,7 +1074,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void servingStylesCss_productionMode_noLinkTagAdded()
             throws IOException {
-        File projectRootFolder = temporaryFolder.newFolder();
+        File projectRootFolder = Files
+                .createTempDirectory(temporaryFolder, "temp").toFile();
         deploymentConfiguration.setProductionMode(true);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
 
@@ -1103,23 +1107,23 @@ public class IndexHtmlRequestHandlerTest {
 
             Elements csrfMetaEelement = document.head()
                     .getElementsByAttributeValue("name", SPRING_CSRF_ATTRIBUTE);
-            Assert.assertEquals(1, csrfMetaEelement.size());
-            Assert.assertEquals(springTokenString,
+            assertEquals(1, csrfMetaEelement.size());
+            assertEquals(springTokenString,
                     csrfMetaEelement.first().attr("content"));
 
             Elements csrfHeaderMetaElement = document.head()
                     .getElementsByAttributeValue("name", "_csrf_header");
-            Assert.assertEquals(1, csrfHeaderMetaElement.size());
-            Assert.assertEquals(springTokenHeaderName,
+            assertEquals(1, csrfHeaderMetaElement.size());
+            assertEquals(springTokenHeaderName,
                     csrfHeaderMetaElement.first().attr("content"));
 
             Elements csrfParameterMetaElement = document.head()
                     .getElementsByAttributeValue("name", "_csrf_parameter");
-            Assert.assertEquals(1, csrfParameterMetaElement.size());
-            Assert.assertEquals(springTokenParamName,
+            assertEquals(1, csrfParameterMetaElement.size());
+            assertEquals(springTokenParamName,
                     csrfParameterMetaElement.first().attr("content"));
         } catch (Exception e) {
-            Assert.fail("Unable to parse the index html page");
+            fail("Unable to parse the index html page");
         }
     }
 
@@ -1161,183 +1165,167 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void devTools_loopbackAllowedByDefault() {
-        Assert.assertTrue(isAllowedDevToolsHost(null, "127.0.0.1"));
-        Assert.assertTrue(isAllowedDevToolsHost(null, "0:0:0:0:0:0:0:1"));
-        Assert.assertTrue(isAllowedDevToolsHost(null, "::1"));
+        assertTrue(isAllowedDevToolsHost(null, "127.0.0.1"));
+        assertTrue(isAllowedDevToolsHost(null, "0:0:0:0:0:0:0:1"));
+        assertTrue(isAllowedDevToolsHost(null, "::1"));
 
-        Assert.assertTrue(isAllowedDevToolsHost("", "127.0.0.1"));
-        Assert.assertTrue(isAllowedDevToolsHost("", "0:0:0:0:0:0:0:1"));
-        Assert.assertTrue(isAllowedDevToolsHost("", "::1"));
+        assertTrue(isAllowedDevToolsHost("", "127.0.0.1"));
+        assertTrue(isAllowedDevToolsHost("", "0:0:0:0:0:0:0:1"));
+        assertTrue(isAllowedDevToolsHost("", "::1"));
 
-        Assert.assertTrue(isAllowedDevToolsHost("   ", "127.0.0.1"));
-        Assert.assertTrue(isAllowedDevToolsHost("   ", "0:0:0:0:0:0:0:1"));
-        Assert.assertTrue(isAllowedDevToolsHost("   ", "::1"));
+        assertTrue(isAllowedDevToolsHost("   ", "127.0.0.1"));
+        assertTrue(isAllowedDevToolsHost("   ", "0:0:0:0:0:0:0:1"));
+        assertTrue(isAllowedDevToolsHost("   ", "::1"));
     }
 
     @Test
     public void devTools_externalOrNoIpDeniedByDefault() {
-        Assert.assertFalse(isAllowedDevToolsHost(null, "192.168.1.1"));
-        Assert.assertFalse(isAllowedDevToolsHost(null, "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost(null, null));
+        assertFalse(isAllowedDevToolsHost(null, "192.168.1.1"));
+        assertFalse(isAllowedDevToolsHost(null, "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost(null, null));
 
-        Assert.assertFalse(isAllowedDevToolsHost("", "192.168.1.1"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("", null));
+        assertFalse(isAllowedDevToolsHost("", "192.168.1.1"));
+        assertFalse(isAllowedDevToolsHost("", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("", null));
 
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "192.168.1.1"));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", null));
+        assertFalse(isAllowedDevToolsHost("   ", "192.168.1.1"));
+        assertFalse(isAllowedDevToolsHost("   ", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("   ", null));
     }
 
     @Test
     public void devTools_allowedHostsMatchesIp() {
-        Assert.assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
-        Assert.assertTrue(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
+        assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
+        assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
+        assertFalse(isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
 
         // Localhost is always allowed
-        Assert.assertTrue(isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
+        assertTrue(isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
 
     }
 
     @Test
     public void devTools_allowedHostsMatchesIpAndForwardedFor() {
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
-        Assert.assertFalse(
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
+        assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
+        assertFalse(
                 isAllowedDevToolsHost("   ", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
 
         // Local proxy
-        Assert.assertTrue(
-                isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
+        assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
 
         // Non local proxy
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5", "5.5.5.5",
+        assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5", "5.5.5.5",
                 "   1.2.3.4    "));
-        Assert.assertTrue(
+        assertTrue(
                 isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5", "1.2.3.4"));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
                 "   1.2.3.4 , 3.4.5.6   "));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
-                "5.5.5.5", "1.2.3.4, 3.4.5.6"));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
-                "5.5.5.5", "   1.2.3.4 , 3.4.5.6   "));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*", "5.5.5.5",
+                "1.2.3.4, 3.4.5.6"));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*", "5.5.5.5",
+                "   1.2.3.4 , 3.4.5.6   "));
 
         // Verify full chain
         String forwardedChain = "1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7";
-        Assert.assertFalse(
+        assertFalse(
                 isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", forwardedChain));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5", "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5", "127.0.0.1",
                 forwardedChain));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6",
                 "127.0.0.1", forwardedChain));
-        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,7.7.7.7",
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,7.7.7.7",
                 "127.0.0.1", forwardedChain));
-        Assert.assertTrue(
-                isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7",
-                        "127.0.0.1", forwardedChain));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7",
+                "127.0.0.1", forwardedChain));
 
     }
 
     @Test
     public void devTools_forwardedForIsLocal_denyAccess() {
-        Assert.assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "::1"));
-        Assert.assertFalse(
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "::1"));
+        assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
 
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "0:0:0:0:0:0:0:1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "172.16.0.4"));
 
-        Assert.assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
-        Assert.assertFalse(
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
+        assertFalse(
                 isAllowedDevToolsHost("   ", "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "172.16.0.4"));
 
         // Access for local addresses in forwarded-for for should be denied
         // disregarding hostsAllow property
-        Assert.assertFalse(
+        assertFalse(
                 isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "127.0.0.1"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
 
     }
 
     @Test
     public void devTools_forwardedForIsEmpty_denyAccess() {
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ""));
-        Assert.assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ""));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ""));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ""));
 
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "   "));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "   "));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "   "));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "   "));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "   "));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "   "));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "   "));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "   "));
 
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ","));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ","));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ","));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ","));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ","));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ","));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ","));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ","));
 
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ", ,, ,"));
-        Assert.assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ", ,, ,"));
-        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ", ,, ,"));
-        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ", ,, ,"));
     }
 
     @Test
     public void devTools_multipleForwardedForHeader_allChecked() {
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
-        Assert.assertFalse(isAllowedDevToolsHost("1.1.1.1", "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost("1.1.1.1", "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
-        Assert.assertFalse(isAllowedDevToolsHost("2.2.2.2", "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost("2.2.2.2", "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
 
-        Assert.assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", List.of("", "")));
-        Assert.assertFalse(
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", List.of("", "")));
+        assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", List.of("  ", "   ")));
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
                 List.of("1.1.1.1", "", "2.2.2.2")));
-        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
                 List.of("1.1.1.1", "  ", "2.2.2.2")));
 
-        Assert.assertTrue(isAllowedDevToolsHost("1.1.1.1, 2.2.2.2", "127.0.0.1",
+        assertTrue(isAllowedDevToolsHost("1.1.1.1, 2.2.2.2", "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
 
     }
@@ -1368,14 +1356,14 @@ public class IndexHtmlRequestHandlerTest {
         };
 
         // remote ip header is mandatory
-        Assert.assertFalse(verifier.test(null, null));
-        Assert.assertFalse(verifier.test(null, "1.2.3.4"));
+        assertFalse(verifier.test(null, null));
+        assertFalse(verifier.test(null, "1.2.3.4"));
 
         // Should verify only remote ip header value
-        Assert.assertFalse(verifier.test("5.5.5.5", null));
-        Assert.assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
-        Assert.assertTrue(verifier.test("1.2.3.4", null));
-        Assert.assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
+        assertFalse(verifier.test("5.5.5.5", null));
+        assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
+        assertTrue(verifier.test("1.2.3.4", null));
+        assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
     }
 
     @Test
@@ -1403,7 +1391,8 @@ public class IndexHtmlRequestHandlerTest {
             boolean productionMode, Boolean commercialBannerFlag)
             throws IOException {
         if (!productionMode) {
-            File projectRootFolder = temporaryFolder.newFolder();
+            File projectRootFolder = Files
+                    .createTempDirectory(temporaryFolder, "temp").toFile();
             TestUtil.createIndexHtmlStub(projectRootFolder);
             TestUtil.createStatsJsonStub(projectRootFolder);
             deploymentConfiguration.setProjectFolder(projectRootFolder);
@@ -1424,21 +1413,19 @@ public class IndexHtmlRequestHandlerTest {
         Elements commercialBannerScript = document.head().select(
                 "script[type=\"module\"]:containsData(<vaadin-commercial-banner></vaadin-commercial-banner>)");
         if (expectBanner) {
-            assertEquals(
+            assertEquals(1, commercialBannerScript.size(),
                     "Commercial banner should be applied in %s mode with commercial banner token %s"
                             .formatted(
                                     ((productionMode) ? "production"
                                             : "development"),
-                                    commercialBannerFlag),
-                    1, commercialBannerScript.size());
+                                    commercialBannerFlag));
         } else {
-            assertTrue(
+            assertTrue(commercialBannerScript.isEmpty(),
                     "Commercial banner should not be applied in %s mode with commercial banner token %s"
                             .formatted(
                                     ((productionMode) ? "production"
                                             : "development"),
-                                    commercialBannerFlag),
-                    commercialBannerScript.isEmpty());
+                                    commercialBannerFlag));
         }
     }
 
