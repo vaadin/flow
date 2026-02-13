@@ -27,7 +27,6 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
-import com.vaadin.flow.signals.Node.Alias;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -487,7 +486,7 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void putIfAbsentCommand_present_aliasCreated() {
+    void putIfAbsentCommand_present_parentInUpdates() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key",
                 new StringNode("1")));
@@ -497,18 +496,17 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Accept accept = assertAccepted(result);
-        assertEquals(1, accept.updates().size(), "Only alias is updated");
-        NodeModification modification = accept.updates().get(commandId);
-        assertNull(modification.oldNode());
-        assertInstanceOf(Node.Alias.class, modification.newNode());
-        assertEquals(child, ((Alias) modification.newNode()).target());
+        assertEquals(1, accept.updates().size());
+        NodeModification parentModification = accept.updates().get(Id.ZERO);
+        assertEquals(parentModification.oldNode(),
+                parentModification.newNode());
+        assertEquals(child,
+                ((Data) parentModification.newNode()).mapChildren().get("key"));
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", child));
         assertValue(child, "1");
-        assertValue(commandId, "1");
-        assertInstanceOf(Node.Data.class, revision.nodes().get(child));
-        assertInstanceOf(Node.Alias.class, revision.nodes().get(commandId));
+        assertNull(revision.nodes().get(commandId));
     }
 
     @Test
@@ -559,6 +557,24 @@ public class MutableTreeRevisionTest {
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, child, Id.ZERO, ListPosition.last()));
+
+        // Check result object
+        assertFalse(result.accepted());
+
+        // Check revision state
+        assertListChildren(Id.ZERO, child);
+    }
+
+    @Test
+    void adoptAtCommand_childAdoptsParentAlias_reject() {
+        Id child = Id.random();
+        applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
+                SharedListSignal.ListPosition.last()));
+
+        Id alias = createAlias(Id.ZERO);
+
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
+                commandId, child, alias, ListPosition.last()));
 
         // Check result object
         assertFalse(result.accepted());

@@ -32,7 +32,7 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
-import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.impl.CommandResult.NodeModification;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
@@ -144,24 +144,30 @@ public class SharedMapSignal<T>
     /**
      * Creates a new entry with the given value if an entry with the given key
      * doesn't already exist. If an entry exists, then the given value is
-     * ignored. The returned operation has a reference to a signal that
-     * corresponds to the given key regardless of whether an entry existed for
-     * the key. The operation will be resolved as successful regardless of
-     * whether they key was already used.
+     * ignored. The operation will be resolved as successful regardless of
+     * whether the key was already used. The result contains information about
+     * whether a new entry was created and a reference to the signal for the
+     * entry.
      *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing a signal for the entry and the eventual
-     *         result
+     * @return an operation containing the eventual result with the entry signal
      */
-    public InsertOperation<SharedValueSignal<T>> putIfAbsent(String key,
-            T value) {
-        return submitInsert(
-                new SignalCommand.PutIfAbsentCommand(Id.random(), id(), null,
+    public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
+            String key, T value) {
+        Id commandId = Id.random();
+        return submit(
+                new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
                         Objects.requireNonNull(key), toJson(value)),
-                this::child);
+                success -> {
+                    boolean created = success.updates().containsKey(commandId);
+                    Id childId = created ? commandId
+                            : ((Data) success.updates().get(id()).newNode())
+                                    .mapChildren().get(key);
+                    return new PutIfAbsentResult<>(created, child(childId));
+                });
     }
 
     /**

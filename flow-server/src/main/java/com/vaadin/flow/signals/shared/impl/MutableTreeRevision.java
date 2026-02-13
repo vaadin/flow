@@ -682,12 +682,9 @@ public class MutableTreeRevision extends TreeRevision {
             String key = putIfAbsent.key();
 
             mapChild(nodeId, key).ifPresentOrElse(childId -> {
-                if (data(commandId).isPresent()) {
-                    fail("Node already exists");
-                    return;
-                }
-
-                updatedNodes.put(commandId, new Alias(resolveAlias(childId)));
+                // Include parent node in updates so the callback can read the
+                // existing mapping
+                useData(nodeId, (node, id) -> updatedNodes.put(id, node));
             }, () -> {
                 createNode(commandId, putIfAbsent.value(),
                         putIfAbsent.scopeOwner());
