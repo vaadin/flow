@@ -27,7 +27,6 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
-import com.vaadin.flow.signals.Node.Alias;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.shared.SharedListSignal;

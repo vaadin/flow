@@ -315,10 +315,8 @@ public class SharedNodeSignal
     public SignalOperation<PutIfAbsentResult<SharedNodeSignal>> putChildIfAbsent(
             String key) {
         Id commandId = Id.random();
-        return submit(
-                new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
-                        Objects.requireNonNull(key), null),
-                success -> {
+        return submit(new SignalCommand.PutIfAbsentCommand(commandId, id(),
+                null, Objects.requireNonNull(key), null), success -> {
                     boolean created = !success.updates().isEmpty();
                     Id childId = created ? commandId
                             : tree().confirmed().data(id()).orElseThrow()

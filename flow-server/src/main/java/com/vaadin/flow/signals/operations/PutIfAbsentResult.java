@@ -26,11 +26,11 @@ import com.vaadin.flow.signals.Signal;
  * @param <S>
  *            the signal type
  * @param created
- *            <code>true</code> if a new entry was inserted,
- *            <code>false</code> if the key already existed
+ *            <code>true</code> if a new entry was inserted, <code>false</code>
+ *            if the key already existed
  * @param entry
  *            the signal for the map entry, not <code>null</code>
  */
-public record PutIfAbsentResult<S extends Signal<?>>(boolean created, S entry)
-        implements Serializable {
+public record PutIfAbsentResult<S extends Signal<?>>(boolean created,
+        S entry) implements Serializable {
 }
