@@ -96,21 +96,21 @@ public class ElementBindPropertyTest {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
-                () -> element.bindProperty(null, signal, signal::get));
+                () -> element.bindProperty(null, signal, signal::set));
     }
 
     @Test
     public void bindProperty_illegalProperty_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
-        assertThrows(IllegalArgumentException.class, () -> element
-                .bindProperty("textContent", signal, signal::get));
         assertThrows(IllegalArgumentException.class,
-                () -> element.bindProperty("classList", signal, signal::get));
+                () -> element.bindProperty("textContent", signal, signal::set));
         assertThrows(IllegalArgumentException.class,
-                () -> element.bindProperty("className", signal, signal::get));
+                () -> element.bindProperty("classList", signal, signal::set));
         assertThrows(IllegalArgumentException.class,
-                () -> element.bindProperty("outerHTML", signal, signal::get));
+                () -> element.bindProperty("className", signal, signal::set));
+        assertThrows(IllegalArgumentException.class,
+                () -> element.bindProperty("outerHTML", signal, signal::set));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        element.bindProperty("foobar", signal, signal::get);
+        element.bindProperty("foobar", signal, signal::set);
         Assert.assertTrue(events.isEmpty());
     }
 
@@ -131,7 +131,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setProperty("foo", "baz"));
@@ -154,7 +154,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeProperty("foo"));
@@ -219,7 +219,7 @@ public class ElementBindPropertyTest {
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         component.getElement().addPropertyChangeListener("foo", "event",
@@ -249,7 +249,7 @@ public class ElementBindPropertyTest {
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         component.getElement().addPropertyChangeListener("foo", "event",
@@ -275,7 +275,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertNull(component.getElement().getProperty("foo"));
     }
@@ -287,7 +287,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         component.removeFromParent();
 
@@ -304,7 +304,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertTrue(component.getElement().getProperty("foo", false));
         Assert.assertTrue(events.isEmpty());
@@ -317,7 +317,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
-        component.getElement().bindProperty("foo", signal, signal::get);
+        component.getElement().bindProperty("foo", signal, signal::set);
         assertTrue(component.getElement().getProperty("foo", false));
 
         component.removeFromParent();
@@ -340,7 +340,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Double> signal = new ValueSignal<>(1.0d);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertNull(component.getElement().getProperty("foo"));
     }
@@ -352,7 +352,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Double> signal = new ValueSignal<>(1.0d);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         component.removeFromParent();
 
@@ -370,7 +370,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Double> signal = new ValueSignal<>(1.0d);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
                 0.0d);
@@ -384,7 +384,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Double> signal = new ValueSignal<>(1.0d);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
         assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
                 0.0d);
 
@@ -410,7 +410,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Integer> signal = new ValueSignal<>(1);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertNull(component.getElement().getProperty("foo"));
     }
@@ -422,7 +422,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Integer> signal = new ValueSignal<>(1);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         component.removeFromParent();
 
@@ -439,7 +439,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Integer> signal = new ValueSignal<>(1);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertEquals(1, component.getElement().getProperty("foo", -1));
         assertTrue(events.isEmpty());
@@ -452,7 +452,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<Integer> signal = new ValueSignal<>(1);
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
         assertEquals(1, component.getElement().getProperty("foo", -1));
 
         component.removeFromParent();
@@ -475,7 +475,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertNull(component.getElement().getProperty("foo", null));
     }
@@ -487,7 +487,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         component.removeFromParent();
 
@@ -505,7 +505,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertEquals("bar",
                 component.getElement().getProperty("foo", "default"));
@@ -519,7 +519,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
         assertEquals("bar",
                 component.getElement().getProperty("foo", "default"));
 
@@ -545,7 +545,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(
                 createJohn());
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertNull(component.getElement().getProperty("foo", null));
     }
@@ -557,7 +557,7 @@ public class ElementBindPropertyTest {
 
         JacksonUtilsTest.Person john = createJohn();
         ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         component.removeFromParent();
 
@@ -576,7 +576,7 @@ public class ElementBindPropertyTest {
 
         JacksonUtilsTest.Person john = createJohn();
         ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertPersonEquals(john,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
@@ -590,7 +590,7 @@ public class ElementBindPropertyTest {
 
         JacksonUtilsTest.Person john = createJohn();
         ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
-        component.getElement().bindProperty("foo", signal, signal::value);
+        component.getElement().bindProperty("foo", signal, signal::set);
 
         assertPersonEquals(john,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
@@ -814,7 +814,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        component.getElement().bindProperty("prop", signal, signal::value);
+        component.getElement().bindProperty("prop", signal, signal::set);
 
         AtomicReference<Serializable> eventValue = new AtomicReference<>();
         AtomicInteger counter = new AtomicInteger(0);

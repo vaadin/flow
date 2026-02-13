@@ -49,7 +49,7 @@ class SerializedLocalSignalComponent extends Component {
         var twoWayMappedSignal = signal.map(str -> str + "!!!",
                 (str, value) -> value.replace("!!!", ""));
         getElement().bindProperty("two-way-prop", twoWayMappedSignal,
-                twoWayMappedSignal::value);
+                twoWayMappedSignal::set);
 
         // sync property from the client
         getElement().addPropertyChangeListener("two-way-prop",
