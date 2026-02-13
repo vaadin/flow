@@ -368,11 +368,11 @@ public class PublicResourcesLiveUpdaterTest {
                 // Wait until the non-Lumo URL is processed (bundled at least
                 // once)
                 Awaitility.await().untilAsserted(() -> {
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("/css/app.css"), anyString());
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("context://css/app.css"), anyString());
-                    Mockito.verify(bundler, Mockito.times(1))
+                    Mockito.verify(bundler, Mockito.atLeastOnce())
                             .bundle(eq("base://css/app.css"), anyString());
                 });
 
