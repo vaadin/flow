@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -31,6 +30,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @PWA(name = "foo", shortName = "bar")
 class PwaRegistryTest {
@@ -73,7 +76,7 @@ class PwaRegistryTest {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         pwaIcon.write(stream);
         // the default image has 47 on the position 36
-        Assertions.assertEquals(26, stream.toByteArray()[36]);
+        assertEquals(26, stream.toByteArray()[36]);
     }
 
     private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
@@ -109,7 +112,7 @@ class PwaRegistryTest {
 
     @Test
     public void pwaWithCustomBaseIconPath_splashScreenIconForAllSupportedAppleDevicesAndOrientationsAreGenerated() {
-        Assertions.assertEquals(26, splashIconsForAppleDevices.size());
+        assertEquals(26, splashIconsForAppleDevices.size());
     }
 
     @Test
@@ -117,7 +120,7 @@ class PwaRegistryTest {
         boolean customBaseNameUsedInIconGeneration = splashIconsForAppleDevices
                 .stream().allMatch(
                         icon -> icon.getHref().startsWith("icons/splash/foo"));
-        Assertions.assertTrue(customBaseNameUsedInIconGeneration);
+        assertTrue(customBaseNameUsedInIconGeneration);
     }
 
     @Test
@@ -130,9 +133,9 @@ class PwaRegistryTest {
                 .stream().filter(iPadPro129)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPadPro129.stream()
+        assertEquals(1, mediaQueriesForIPadPro129.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPadPro129.stream()
+        assertEquals(1, mediaQueriesForIPadPro129.stream()
                 .filter(media -> media.contains("landscape")).count());
 
         // iPad Pro 11, 10.5
@@ -143,9 +146,9 @@ class PwaRegistryTest {
                 .stream().filter(iPadPro11And105)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPadPro11And105.stream()
+        assertEquals(1, mediaQueriesForIPadPro11And105.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPadPro11And105.stream()
+        assertEquals(1, mediaQueriesForIPadPro11And105.stream()
                 .filter(media -> media.contains("landscape")).count());
 
         // iPad Air 10.5
@@ -156,9 +159,9 @@ class PwaRegistryTest {
                 .stream().filter(iPadAir105)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPadAir105.stream()
+        assertEquals(1, mediaQueriesForIPadAir105.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPadAir105.stream()
+        assertEquals(1, mediaQueriesForIPadAir105.stream()
                 .filter(media -> media.contains("landscape")).count());
 
         // iPad 10.2
@@ -169,9 +172,9 @@ class PwaRegistryTest {
                 .stream().filter(iPad102)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPad102.stream()
+        assertEquals(1, mediaQueriesForIPad102.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPad102.stream()
+        assertEquals(1, mediaQueriesForIPad102.stream()
                 .filter(media -> media.contains("landscape")).count());
 
         // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9
@@ -182,9 +185,9 @@ class PwaRegistryTest {
                 .stream().filter(iPad97And79)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPad97And79.stream()
+        assertEquals(1, mediaQueriesForIPad97And79.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPad97And79.stream()
+        assertEquals(1, mediaQueriesForIPad97And79.stream()
                 .filter(media -> media.contains("landscape")).count());
     }
 
@@ -198,10 +201,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone13ProMaxAnd12ProMax)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax
-                .stream().filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax
-                .stream().filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
+                .filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
+                .filter(media -> media.contains("landscape")).count());
 
         // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12
         Predicate<PwaIcon> iPhone13ProAnd12ProAnd13And12 = icon -> (icon
@@ -211,10 +214,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone13ProAnd12ProAnd13And12)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12
-                .stream().filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12
-                .stream().filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
+                .filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
+                .filter(media -> media.contains("landscape")).count());
 
         // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
         Predicate<PwaIcon> iPhone13MiniAnd12MiniAnd11ProAndXSAndX = icon -> (icon
@@ -224,12 +227,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone13MiniAnd12MiniAnd11ProAndXSAndX)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1,
-                mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX.stream()
-                        .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1,
-                mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX.stream()
-                        .filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
+                .stream().filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
+                .stream().filter(media -> media.contains("landscape")).count());
 
         // iPhone 11 Pro Max, iPhone XS Max
         Predicate<PwaIcon> iPhone11ProMaxAndXSMax = icon -> (icon
@@ -239,10 +240,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone11ProMaxAndXSMax)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax
-                .stream().filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax
-                .stream().filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
+                .filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
+                .filter(media -> media.contains("landscape")).count());
 
         // iPhone 11, iPhone XR
         Predicate<PwaIcon> iPhone11AndXR = icon -> (icon.getWidth() == 828
@@ -252,9 +253,9 @@ class PwaRegistryTest {
                 .stream().filter(iPhone11AndXR)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
+        assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
                 .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
+        assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
                 .filter(media -> media.contains("landscape")).count());
 
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus
@@ -265,12 +266,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone8PlusAnd7PlusAnd6sPlusAnd6Plus)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1,
-                mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus.stream()
-                        .filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1,
-                mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus.stream()
-                        .filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
+                .stream().filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
+                .stream().filter(media -> media.contains("landscape")).count());
 
         // iPhone 8, 7, 6s, 6, SE 4.7
         Predicate<PwaIcon> iPhone8And7And6sAnd6AndSE47 = icon -> (icon
@@ -280,10 +279,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone8And7And6sAnd6AndSE47)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47
-                .stream().filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47
-                .stream().filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
+                .filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
+                .filter(media -> media.contains("landscape")).count());
 
         // iPhone 5, SE 4, iPod touch 5th Gen and later
         Predicate<PwaIcon> iPhone5AndSE47AndIPod5AndLater = icon -> (icon
@@ -293,10 +292,10 @@ class PwaRegistryTest {
                 .stream().filter(iPhone5AndSE47AndIPod5AndLater)
                 .map(icon -> icon.asElement().attr("media"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater
-                .stream().filter(media -> media.contains("portrait")).count());
-        Assertions.assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater
-                .stream().filter(media -> media.contains("landscape")).count());
+        assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
+                .filter(media -> media.contains("portrait")).count());
+        assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
+                .filter(media -> media.contains("landscape")).count());
     }
 
     @Test
@@ -304,9 +303,9 @@ class PwaRegistryTest {
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithCustomOfflinePath.class.getAnnotation(PWA.class));
-        Assertions.assertTrue(registry.getRuntimeServiceWorkerJs()
+        assertTrue(registry.getRuntimeServiceWorkerJs()
                 .contains("some/path.html"));
-        Assertions.assertFalse(registry.getRuntimeServiceWorkerJs()
+        assertFalse(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: '.', revision:"));
     }
 
@@ -315,7 +314,7 @@ class PwaRegistryTest {
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
-        Assertions.assertTrue(registry.getRuntimeServiceWorkerJs()
+        assertTrue(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: '.', revision:"));
     }
 

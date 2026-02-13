@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -43,6 +42,10 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class ErrorHandlerUtilTest {
@@ -171,7 +174,7 @@ class ErrorHandlerUtilTest {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
-        Assertions.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -179,9 +182,9 @@ class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new NullPointerException("NPE")));
 
-        Assertions.assertTrue(ErrorView.initialized);
-        Assertions.assertTrue(ErrorView.setError);
-        Assertions.assertEquals(1, ui.getElement().getChildren().count());
+        assertTrue(ErrorView.initialized);
+        assertTrue(ErrorView.setError);
+        assertEquals(1, ui.getElement().getChildren().count());
     }
 
     @Test
@@ -189,7 +192,7 @@ class ErrorHandlerUtilTest {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
-        Assertions.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -197,9 +200,9 @@ class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new IllegalArgumentException("IAE")));
 
-        Assertions.assertFalse(ErrorView.initialized);
-        Assertions.assertFalse(ErrorView.setError);
-        Assertions.assertEquals(0, ui.getElement().getChildren().count());
+        assertFalse(ErrorView.initialized);
+        assertFalse(ErrorView.setError);
+        assertEquals(0, ui.getElement().getChildren().count());
     }
 
     @Test
@@ -207,7 +210,7 @@ class ErrorHandlerUtilTest {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorWithParentView.class));
 
-        Assertions.assertEquals(0, ui.getElement().getChildren().count());
+        assertEquals(0, ui.getElement().getChildren().count());
 
         ui.access(() -> {
         });
@@ -215,11 +218,11 @@ class ErrorHandlerUtilTest {
         session.getPendingAccessQueue().forEach(futureAccess -> futureAccess
                 .handleError(new NullPointerException("NPE")));
 
-        Assertions.assertTrue(ErrorWithParentView.initialized);
-        Assertions.assertTrue(ErrorWithParentView.setError);
+        assertTrue(ErrorWithParentView.initialized);
+        assertTrue(ErrorWithParentView.setError);
 
-        Assertions.assertTrue(ParentView.initialized);
+        assertTrue(ParentView.initialized);
 
-        Assertions.assertEquals(1, ui.getElement().getChildren().count());
+        assertEquals(1, ui.getElement().getChildren().count());
     }
 }

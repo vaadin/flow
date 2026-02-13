@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.server;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SystemMessagesTest {
 
@@ -24,13 +29,12 @@ class SystemMessagesTest {
     public void syncError_defaultValues() {
         SystemMessages messages = new CustomizedSystemMessages();
 
-        Assertions.assertNull(messages.getSyncErrorURL(),
-                "Default URL should be null");
-        Assertions.assertTrue(messages.isSyncErrorNotificationEnabled(),
+        assertNull(messages.getSyncErrorURL(), "Default URL should be null");
+        assertTrue(messages.isSyncErrorNotificationEnabled(),
                 "Default notification should be enabled");
-        Assertions.assertEquals("Synchronization Error",
-                messages.getSyncErrorCaption(), "Default caption should match");
-        Assertions.assertEquals(
+        assertEquals("Synchronization Error", messages.getSyncErrorCaption(),
+                "Default caption should match");
+        assertEquals(
                 "Your session needs to be refreshed. Click here or press ESC to reload and restore your last saved state.",
                 messages.getSyncErrorMessage(), "Default message should match");
     }
@@ -40,9 +44,9 @@ class SystemMessagesTest {
         SystemMessages messages = new CustomizedSystemMessages();
 
         // By default, notification is enabled
-        Assertions.assertTrue(messages.isSyncErrorNotificationEnabled());
-        Assertions.assertNotNull(messages.getSyncErrorCaption());
-        Assertions.assertNotNull(messages.getSyncErrorMessage());
+        assertTrue(messages.isSyncErrorNotificationEnabled());
+        assertNotNull(messages.getSyncErrorCaption());
+        assertNotNull(messages.getSyncErrorMessage());
     }
 
     @Test
@@ -53,11 +57,11 @@ class SystemMessagesTest {
         messages.setSyncErrorCaption("Custom Caption");
         messages.setSyncErrorMessage("Custom message text");
 
-        Assertions.assertFalse(messages.isSyncErrorNotificationEnabled(),
+        assertFalse(messages.isSyncErrorNotificationEnabled(),
                 "Notification should be disabled");
-        Assertions.assertNull(messages.getSyncErrorCaption(),
+        assertNull(messages.getSyncErrorCaption(),
                 "Caption should be null when notification is disabled");
-        Assertions.assertNull(messages.getSyncErrorMessage(),
+        assertNull(messages.getSyncErrorMessage(),
                 "Message should be null when notification is disabled");
     }
 
@@ -69,6 +73,6 @@ class SystemMessagesTest {
         messages.setSyncErrorNotificationEnabled(false);
 
         // URL should still be returned even when notification is disabled
-        Assertions.assertEquals("/redirect-url", messages.getSyncErrorURL());
+        assertEquals("/redirect-url", messages.getSyncErrorURL());
     }
 }

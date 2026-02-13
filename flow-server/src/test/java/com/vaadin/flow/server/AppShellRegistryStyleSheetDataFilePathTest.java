@@ -20,13 +20,14 @@ import java.util.List;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AppShellRegistryStyleSheetDataFilePathTest {
 
@@ -68,31 +69,29 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assertions.assertEquals(4, links.size());
+        assertEquals(4, links.size());
 
         // 1) Absolute path: href preserved, data-file-path drops leading '/'
         Element abs = links.get(0);
-        Assertions.assertEquals("/absolute.css", abs.attr("href"));
-        Assertions.assertEquals("absolute.css", abs.attr("data-file-path"));
+        assertEquals("/absolute.css", abs.attr("href"));
+        assertEquals("absolute.css", abs.attr("data-file-path"));
 
         // 2) Relative with './': href resolved with context path,
         // data-file-path drops './'
         Element rel = links.get(1);
-        Assertions.assertEquals("/ctx/relative/path.css", rel.attr("href"));
-        Assertions.assertEquals("relative/path.css",
-                rel.attr("data-file-path"));
+        assertEquals("/ctx/relative/path.css", rel.attr("href"));
+        assertEquals("relative/path.css", rel.attr("data-file-path"));
 
         // 3) context:// should resolve to context path in href, and
         // data-file-path strips context protocol prefix
         Element ctx = links.get(2);
-        Assertions.assertEquals("/ctx/from-context.css", ctx.attr("href"));
-        Assertions.assertEquals("from-context.css", ctx.attr("data-file-path"));
+        assertEquals("/ctx/from-context.css", ctx.attr("href"));
+        assertEquals("from-context.css", ctx.attr("data-file-path"));
 
         // 4) Remote http(s) URL unchanged, data-file-path remains original
         Element remote = links.get(3);
-        Assertions.assertEquals("https://cdn.example.com/remote.css",
-                remote.attr("href"));
-        Assertions.assertEquals("https://cdn.example.com/remote.css",
+        assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
+        assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("data-file-path"));
     }
 

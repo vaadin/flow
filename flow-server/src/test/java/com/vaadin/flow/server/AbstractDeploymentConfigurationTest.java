@@ -21,11 +21,12 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test for {@link AbstractDeploymentConfiguration}
@@ -40,7 +41,7 @@ class AbstractDeploymentConfigurationTest {
         String ui = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER,
                 ui);
-        Assertions.assertEquals(ui, config.getUIClassName(),
+        assertEquals(ui, config.getUIClassName(),
                 "Unexpected UI class configuration option value");
     }
 
@@ -48,7 +49,7 @@ class AbstractDeploymentConfigurationTest {
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
-        Assertions.assertEquals(classLoader, config.getClassLoaderName(),
+        assertEquals(classLoader, config.getClassLoaderName(),
                 "Unexpected classLoader configuration option value");
     }
 

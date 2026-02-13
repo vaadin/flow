@@ -20,8 +20,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for VAADIN_USAGE_STATS_ENABLED environment variable affecting
@@ -63,30 +64,30 @@ class ConstantsUsageStatsEnvTest {
     @Test
     public void whenEnvNotSet_statsEnabledByDefault() throws Exception {
         String out = runIsolated(false, null);
-        Assertions.assertEquals("true", out);
+        assertEquals("true", out);
     }
 
     @Test
     public void whenEnvFalse_statsDisabled() throws Exception {
         String out = runIsolated(true, "false");
-        Assertions.assertEquals("false", out);
+        assertEquals("false", out);
     }
 
     @Test
     public void whenEnvFALSE_statsDisabled() throws Exception {
         String out = runIsolated(true, "FALSE");
-        Assertions.assertEquals("false", out);
+        assertEquals("false", out);
     }
 
     @Test
     public void whenEnvTrue_statsEnabled() throws Exception {
         String out = runIsolated(true, "true");
-        Assertions.assertEquals("true", out);
+        assertEquals("true", out);
     }
 
     @Test
     public void whenEnvRandom_statsEnabled() throws Exception {
         String out = runIsolated(true, "random-value");
-        Assertions.assertEquals("true", out);
+        assertEquals("true", out);
     }
 }

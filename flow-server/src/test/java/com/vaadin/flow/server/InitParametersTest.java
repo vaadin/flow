@@ -18,8 +18,10 @@ package com.vaadin.flow.server;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InitParametersTest {
     @Test
@@ -27,11 +29,11 @@ class InitParametersTest {
         for (Field field : InitParameters.class.getDeclaredFields()) {
             int modifiers = field.getModifiers();
             if (Modifier.isPublic(modifiers)) {
-                Assertions.assertEquals(String.class, field.getType(), String
+                assertEquals(String.class, field.getType(), String
                         .format("field '%s' expected String", field.getName()));
-                Assertions.assertTrue(Modifier.isStatic(modifiers), String
+                assertTrue(Modifier.isStatic(modifiers), String
                         .format("field '%s' expected static", field.getName()));
-                Assertions.assertTrue(Modifier.isFinal(modifiers), String
+                assertTrue(Modifier.isFinal(modifiers), String
                         .format("field '%s' expected final", field.getName()));
             }
         }

@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,6 +26,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DevToolsTokenTest {
     @TempDir
@@ -59,13 +60,13 @@ class DevToolsTokenTest {
     @Test
     public void init_tokenFileNotExising_createTokenFile() {
         DevToolsToken.init(service);
-        Assertions.assertEquals(initialToken, DevToolsToken.getToken());
+        assertEquals(initialToken, DevToolsToken.getToken());
 
         overwriteToken("EMPTY");
 
         // Token restored from file
         DevToolsToken.init(service);
-        Assertions.assertEquals(initialToken, DevToolsToken.getToken());
+        assertEquals(initialToken, DevToolsToken.getToken());
     }
 
     @Test
@@ -75,7 +76,7 @@ class DevToolsTokenTest {
         String testToken = UUID.randomUUID().toString();
         overwriteToken(testToken);
         DevToolsToken.init(service);
-        Assertions.assertEquals(testToken, DevToolsToken.getToken());
+        assertEquals(testToken, DevToolsToken.getToken());
     }
 
     private void overwriteToken(String token) {

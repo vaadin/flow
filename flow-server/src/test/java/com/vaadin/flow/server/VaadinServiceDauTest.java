@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -36,6 +35,9 @@ import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 
 public class VaadinServiceDauTest {
@@ -71,8 +73,7 @@ public class VaadinServiceDauTest {
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
         // VaadinService.init() is called in the constructor
         MockVaadinServletService service = new MockVaadinServletService(config);
-        Assertions.assertTrue(
-                vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR),
+        assertTrue(vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR),
                 "Expecting DAU interceptor not to be installed");
         dauIntegrationMock.verifyNoInteractions();
     }
@@ -84,8 +85,7 @@ public class VaadinServiceDauTest {
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "false");
         // VaadinService.init() is called in the constructor
         MockVaadinServletService service = new MockVaadinServletService(config);
-        Assertions.assertTrue(
-                vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR),
+        assertTrue(vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR),
                 "Expecting DAU interceptor not to be installed");
         dauIntegrationMock.verifyNoInteractions();
     }
@@ -97,8 +97,7 @@ public class VaadinServiceDauTest {
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
         // VaadinService.init() is called in the constructor
         MockVaadinServletService service = new MockVaadinServletService(config);
-        Assertions.assertTrue(
-                vaadinInterceptors(service).anyMatch(IS_DAU_INTERCEPTOR),
+        assertTrue(vaadinInterceptors(service).anyMatch(IS_DAU_INTERCEPTOR),
                 "Expecting DAU interceptor to be installed");
         dauIntegrationMock
                 .verify(() -> DauIntegration.startTracking(anyString()));
@@ -114,7 +113,7 @@ public class VaadinServiceDauTest {
         config.setProductionMode(true);
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
         // VaadinService.init() is called in the constructor
-        Assertions.assertThrows(LicenseException.class,
+        assertThrows(LicenseException.class,
                 () -> new MockVaadinServletService(config));
     }
 
@@ -139,7 +138,7 @@ public class VaadinServiceDauTest {
         // Ugly way to ensure custom user identity function in use
         UserIdentitySupplier userIdentitySupplier = extractUserIdentitySupplierFromDauInterceptor(
                 interceptor);
-        Assertions.assertSame(providedIdentitySupplier, userIdentitySupplier);
+        assertSame(providedIdentitySupplier, userIdentitySupplier);
     }
 
     public static VaadinService vaadinServiceWithDau(DAUCustomizer customizer) {

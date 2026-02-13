@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -75,13 +77,13 @@ class VaadinServletContextTest {
 
     @Test
     public void getAttributeWithProvider() {
-        Assertions.assertNull(context.getAttribute(String.class));
+        assertNull(context.getAttribute(String.class));
 
         String value = context.getAttribute(String.class,
                 VaadinServletContextTest::testAttributeProvider);
-        Assertions.assertEquals(testAttributeProvider(), value);
+        assertEquals(testAttributeProvider(), value);
 
-        Assertions.assertEquals(testAttributeProvider(),
+        assertEquals(testAttributeProvider(),
                 context.getAttribute(String.class),
                 "Value from provider should be persisted");
     }
@@ -96,7 +98,7 @@ class VaadinServletContextTest {
     @Test
     public void getMissingAttributeWithoutProvider() {
         String value = context.getAttribute(String.class);
-        Assertions.assertNull(value);
+        assertNull(value);
     }
 
     @Test
@@ -104,17 +106,17 @@ class VaadinServletContextTest {
         String value = testAttributeProvider();
         context.setAttribute(value);
         String result = context.getAttribute(String.class);
-        Assertions.assertEquals(value, result);
+        assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
         context.setAttribute(newValue);
         result = context.getAttribute(String.class);
-        Assertions.assertEquals(newValue, result);
+        assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
         result = context.getAttribute(String.class, () -> {
             throw new AssertionError("Should not be called");
         });
-        Assertions.assertEquals(newValue, result);
+        assertEquals(newValue, result);
     }
 
     @Test
@@ -123,7 +125,7 @@ class VaadinServletContextTest {
         context.setAttribute(value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assertions.assertNull(retrieved,
+        assertNull(retrieved,
                 "Value set base on its own type should not be found based on a super type");
     }
 
@@ -133,7 +135,7 @@ class VaadinServletContextTest {
         context.setAttribute(CharSequence.class, value);
 
         CharSequence retrieved = context.getAttribute(CharSequence.class);
-        Assertions.assertSame(value, retrieved,
+        assertSame(value, retrieved,
                 "Value should be found based on the type used when setting");
     }
 
@@ -142,7 +144,7 @@ class VaadinServletContextTest {
         context.setAttribute(testAttributeProvider());
         context.removeAttribute(String.class);
 
-        Assertions.assertNull(context.getAttribute(String.class),
+        assertNull(context.getAttribute(String.class),
                 "Value should be removed");
     }
 
@@ -151,7 +153,7 @@ class VaadinServletContextTest {
         context.setAttribute(testAttributeProvider());
         context.setAttribute(String.class, null);
 
-        Assertions.assertNull(context.getAttribute(String.class),
+        assertNull(context.getAttribute(String.class),
                 "Value should be removed");
     }
 
@@ -159,11 +161,10 @@ class VaadinServletContextTest {
     public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections
                 .list(context.getContextParameterNames());
-        Assertions.assertEquals(properties.size(), list.size(),
+        assertEquals(properties.size(), list.size(),
                 "Context should return only keys defined in ServletContext");
         for (String key : properties.keySet()) {
-            Assertions.assertEquals(properties.get(key),
-                    context.getContextParameter(key),
+            assertEquals(properties.get(key), context.getContextParameter(key),
                     String.format(
                             "Value should be same from context for key '%s'",
                             key));

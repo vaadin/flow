@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +32,9 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class VaadinServiceSignalsInitializationTest {
@@ -72,13 +73,13 @@ class VaadinServiceSignalsInitializationTest {
 
             phaser.awaitAdvanceInterruptibly(0, 500, TimeUnit.MILLISECONDS);
 
-            Assertions.assertEquals(1, invocations.size(),
+            assertEquals(1, invocations.size(),
                     "Expected effect to be executed");
 
             var execution = invocations.get(0);
-            Assertions.assertEquals(null, execution.ui,
+            assertEquals(null, execution.ui,
                     "Expected UI to not be available during effect execution");
-            Assertions.assertTrue(
+            assertTrue(
                     execution.threadName
                             .startsWith("VaadinTaskExecutor-thread-"),
                     "Expected effect to be executed in Vaadin Executor thread");
@@ -91,13 +92,13 @@ class VaadinServiceSignalsInitializationTest {
 
         phaser.awaitAdvanceInterruptibly(1, 500, TimeUnit.MILLISECONDS);
 
-        Assertions.assertEquals(2, invocations.size(),
+        assertEquals(2, invocations.size(),
                 "Expected effect to be executed twice");
 
         var execution = invocations.get(1);
-        Assertions.assertEquals(null, execution.ui,
+        assertEquals(null, execution.ui,
                 "Expected UI to not be available during effect execution");
-        Assertions.assertTrue(
+        assertTrue(
                 execution.threadName.startsWith("VaadinTaskExecutor-thread-"),
                 "Expected effect to be executed in Vaadin Executor thread");
     }

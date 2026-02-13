@@ -41,7 +41,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class DeploymentConfigurationFactoryTest {
 
@@ -215,11 +215,9 @@ class DeploymentConfigurationFactoryTest {
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
-        Assertions.assertFalse(
-                config.getInitParameters().containsKey("someKey"),
+        assertFalse(config.getInitParameters().containsKey("someKey"),
                 "Expecting null parameter to be ignored, but was in configuration");
-        Assertions.assertTrue(
-                config.getInitParameters().containsKey("someNotNullKey"),
+        assertTrue(config.getInitParameters().containsKey("someNotNullKey"),
                 "Expecting not null parameter to be in configuration, but was not");
     }
 
@@ -247,7 +245,7 @@ class DeploymentConfigurationFactoryTest {
                     createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                             tokenFile.getPath()));
                 });
-        Assertions.assertTrue(thrown.getMessage()
+        assertTrue(thrown.getMessage()
                 .contains(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm")));
     }
 
@@ -263,7 +261,7 @@ class DeploymentConfigurationFactoryTest {
                     createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                             tokenFile.getPath()));
                 });
-        Assertions.assertTrue(thrown.getMessage().contains(
+        assertTrue(thrown.getMessage().contains(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }
 
@@ -286,7 +284,7 @@ class DeploymentConfigurationFactoryTest {
                     createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                             tokenFile.getPath()));
                 });
-        Assertions.assertTrue(thrown.getMessage().contains(
+        assertTrue(thrown.getMessage().contains(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }
 
@@ -355,8 +353,8 @@ class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assertions.assertEquals("baz", parameters.get("foo"));
-        Assertions.assertFalse(parameters.contains("bar"));
+        assertEquals("baz", parameters.get("foo"));
+        assertFalse(parameters.contains("bar"));
     }
 
     @Test
@@ -408,18 +406,16 @@ class DeploymentConfigurationFactoryTest {
                 // the one we set from flow-build-info.json
                 if (paramName.equals(
                         InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    Assertions.assertEquals("true", parameters.get(paramName),
+                    assertEquals("true", parameters.get(paramName),
                             InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE
                                     + " (boolean parameter) does not have expected value set from token file");
                 } else {
-                    Assertions.assertEquals("false", parameters.get(paramName),
-                            paramName
-                                    + " (boolean parameter) does not have expected value set from servlet config");
+                    assertEquals("false", parameters.get(paramName), paramName
+                            + " (boolean parameter) does not have expected value set from servlet config");
                 }
             } else {
-                Assertions.assertEquals("foo", parameters.get(paramName),
-                        paramName
-                                + "(string parameter) does not have expected value set from servlet config");
+                assertEquals("foo", parameters.get(paramName), paramName
+                        + "(string parameter) does not have expected value set from servlet config");
             }
         }
     }
@@ -439,7 +435,7 @@ class DeploymentConfigurationFactoryTest {
                 }
                 allParamsList.add(paramName);
             } catch (IllegalAccessException illegalAccess) {
-                Assertions.fail("Illegal access to InitParameters class: "
+                fail("Illegal access to InitParameters class: "
                         + illegalAccess.getMessage());
             }
         }
@@ -460,7 +456,7 @@ class DeploymentConfigurationFactoryTest {
                 }
 
             } catch (IllegalAccessException illegalAccess) {
-                Assertions.fail("Illegal access to InitParameters class: "
+                fail("Illegal access to InitParameters class: "
                         + illegalAccess.getMessage());
             }
             if (i < fields.length - 1) {
@@ -488,9 +484,9 @@ class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assertions.assertEquals("http://my.server/static/stats.json",
+        assertEquals("http://my.server/static/stats.json",
                 parameters.get(Constants.EXTERNAL_STATS_URL));
-        Assertions.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
     }
 
@@ -511,7 +507,7 @@ class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assertions.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
     }
 
@@ -532,7 +528,7 @@ class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assertions.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
@@ -600,12 +596,10 @@ class DeploymentConfigurationFactoryTest {
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        Assertions.assertEquals(Boolean.TRUE.toString(),
-                config.getInitParameters().getProperty(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assertions.assertEquals(Boolean.TRUE.toString(),
-                config.getInitParameters().getProperty(
-                        InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+        assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
     }
 
     @Test
@@ -627,13 +621,11 @@ class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 Boolean.FALSE.toString());
 
-        Assertions.assertEquals(Boolean.FALSE.toString(),
-                config.getInitParameters().getProperty(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assertions.assertEquals(Boolean.FALSE.toString(),
-                config.getInitParameters().getProperty(
-                        InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
-        Assertions.assertEquals(Boolean.FALSE.toString(),
+        assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+        assertEquals(Boolean.FALSE.toString(),
                 config.getInitParameters().getProperty(
                         InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }

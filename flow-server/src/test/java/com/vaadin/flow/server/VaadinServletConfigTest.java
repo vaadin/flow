@@ -23,10 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test VaadinServletConfig property handling and function with VaadinContext.
@@ -70,11 +71,10 @@ class VaadinServletConfigTest {
     @Test
     public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(config.getConfigParameterNames());
-        Assertions.assertEquals(properties.size(), list.size(),
+        assertEquals(properties.size(), list.size(),
                 "Context should return only keys defined in ServletContext");
         for (String key : properties.keySet()) {
-            Assertions.assertEquals(properties.get(key),
-                    config.getConfigParameter(key),
+            assertEquals(properties.get(key), config.getConfigParameter(key),
                     String.format(
                             "Value should be same from context for key '%s'",
                             key));
@@ -86,16 +86,16 @@ class VaadinServletConfigTest {
         String value = "my-attribute";
         config.getVaadinContext().setAttribute(value);
         String result = config.getVaadinContext().getAttribute(String.class);
-        Assertions.assertEquals(value, result);
+        assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
         config.getVaadinContext().setAttribute(newValue);
         result = config.getVaadinContext().getAttribute(String.class);
-        Assertions.assertEquals(newValue, result);
+        assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
         result = config.getVaadinContext().getAttribute(String.class, () -> {
             throw new AssertionError("Should not be called");
         });
-        Assertions.assertEquals(newValue, result);
+        assertEquals(newValue, result);
     }
 }

@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -39,6 +38,12 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 /**
@@ -80,28 +85,26 @@ class VaadinServletServiceTest {
     public void resolveNullThrows() {
         try {
             service.resolveResource(null);
-            Assertions.fail("null should not resolve");
+            fail("null should not resolve");
         } catch (NullPointerException e) {
-            Assertions.assertEquals("Url cannot be null", e.getMessage());
+            assertEquals("Url cannot be null", e.getMessage());
         }
     }
 
     @Test
     public void resolveResource() {
-        Assertions.assertEquals("", service.resolveResource(""));
-        Assertions.assertEquals("foo", service.resolveResource("foo"));
-        Assertions.assertEquals("/foo",
-                service.resolveResource("context://foo"));
+        assertEquals("", service.resolveResource(""));
+        assertEquals("foo", service.resolveResource("foo"));
+        assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
     public void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
 
-        Assertions.assertEquals("", service.resolveResource(""));
-        Assertions.assertEquals("foo", service.resolveResource("foo"));
-        Assertions.assertEquals("/foo",
-                service.resolveResource("context://foo"));
+        assertEquals("", service.resolveResource(""));
+        assertEquals("foo", service.resolveResource("foo"));
+        assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
@@ -114,30 +117,30 @@ class VaadinServletServiceTest {
         // should return . (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "");
-        Assertions.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host:8080/contextpath/servlet/
         // should return ./.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "/");
-        Assertions.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host:8080/servlet
         // should return "."
         location = testLocation("http://dummy.host:8080", "", "/servlet", "");
-        Assertions.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host/contextpath/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host", "/contextpath", "/servlet",
                 "/extra/stuff");
-        Assertions.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host/context/path/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /context/path)
         location = testLocation("http://dummy.host", "/context/path",
                 "/servlet", "/extra/stuff");
-        Assertions.assertEquals("./../", location);
+        assertEquals("./../", location);
 
     }
 
@@ -170,7 +173,7 @@ class VaadinServletServiceTest {
 
         service.init();
 
-        Assertions.assertSame(loader, service.getClassLoader());
+        assertSame(loader, service.getClassLoader());
     }
 
     @Test
@@ -182,7 +185,7 @@ class VaadinServletServiceTest {
                 i -> vaadinServlet.getServletConfig().getServletContext());
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
-        Assertions.assertNotNull(service.getPwaRegistry());
+        assertNotNull(service.getPwaRegistry());
     }
 
     @Test
@@ -195,7 +198,7 @@ class VaadinServletServiceTest {
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
         vaadinServlet.destroy();
-        Assertions.assertNull(service.getPwaRegistry());
+        assertNull(service.getPwaRegistry());
     }
 
     private String testLocation(String base, String contextPath,
@@ -317,16 +320,15 @@ class VaadinServletServiceTest {
         try {
             service.handleRequest(request, response);
         } catch (ServiceException ex) {
-            Assertions.assertTrue(ex.getMessage().contains("BOOM!"),
+            assertTrue(ex.getMessage().contains("BOOM!"),
                     "The exception was the one coming from RequestHandler");
         }
 
-        Assertions.assertEquals("true", request.getAttribute("started"),
+        assertEquals("true", request.getAttribute("started"),
                 "Filter was called on request start");
-        Assertions.assertEquals("true",
-                request.getAttribute("exception handled"),
+        assertEquals("true", request.getAttribute("exception handled"),
                 "Filter was called on exception handling");
-        Assertions.assertEquals("true", request.getAttribute("ended"),
+        assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
     }
 
@@ -355,7 +357,7 @@ class VaadinServletServiceTest {
                 VaadinResponse response, VaadinSession vaadinSession,
                 Exception t) {
             if (t instanceof IllegalStateException ex) {
-                Assertions.assertEquals("BOOM!", ex.getMessage());
+                assertEquals("BOOM!", ex.getMessage());
                 request.setAttribute("exception handled", "true");
                 return;
             }

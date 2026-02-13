@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractConfigurationTest {
     @TempDir
@@ -63,12 +66,12 @@ class AbstractConfigurationTest {
     @Test
     public void getProjectFolder_unknownProject_throws() throws IOException {
         withTemporaryUserDir(() -> {
-            IllegalStateException exception = Assertions.assertThrows(
+            IllegalStateException exception = assertThrows(
                     IllegalStateException.class,
                     configuration::getProjectFolder);
-            Assertions.assertTrue(exception.getMessage().contains(
+            assertTrue(exception.getMessage().contains(
                     "Failed to determine project directory for dev mode"));
-            Assertions.assertTrue(exception.getMessage()
+            assertTrue(exception.getMessage()
                     .contains(temporaryFolder.toFile().getAbsolutePath()));
         });
     }
@@ -78,7 +81,7 @@ class AbstractConfigurationTest {
         Files.createFile(temporaryFolder.resolve(projectFile)).toFile();
         withTemporaryUserDir(() -> {
             File projectFolder = configuration.getProjectFolder();
-            Assertions.assertEquals(temporaryFolder.toFile(), projectFolder);
+            assertEquals(temporaryFolder.toFile(), projectFolder);
         });
     }
 

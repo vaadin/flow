@@ -26,7 +26,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -38,6 +37,10 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
 public class I18NProviderTest {
@@ -51,7 +54,7 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         initServletAndService(config);
 
-        Assertions.assertEquals(Locale.getDefault(),
+        assertEquals(Locale.getDefault(),
                 VaadinSession.getCurrent().getLocale(),
                 "Locale was not the expected default locale");
     }
@@ -66,7 +69,7 @@ public class I18NProviderTest {
 
         Instantiator instantiator = VaadinService.getCurrent()
                 .getInstantiator();
-        Assertions.assertEquals(TestProvider.class,
+        assertEquals(TestProvider.class,
                 instantiator.getI18NProvider().getClass(),
                 "Found wrong registry");
     }
@@ -82,9 +85,9 @@ public class I18NProviderTest {
         Instantiator instantiator = VaadinService.getCurrent()
                 .getInstantiator();
         I18NProvider i18NProvider = instantiator.getI18NProvider();
-        Assertions.assertNotNull(i18NProvider, "No provider for ");
+        assertNotNull(i18NProvider, "No provider for ");
 
-        Assertions.assertEquals(i18NProvider.getProvidedLocales().get(0),
+        assertEquals(i18NProvider.getProvidedLocales().get(0),
                 VaadinSession.getCurrent().getLocale(),
                 "Locale was not the defined locale");
     }
@@ -97,7 +100,7 @@ public class I18NProviderTest {
 
         initServletAndService(config);
 
-        Assertions.assertEquals("!foo.bar!", I18NProvider.translate("foo.bar"),
+        assertEquals("!foo.bar!", I18NProvider.translate("foo.bar"),
                 "translate method should return a value");
     }
 
@@ -106,8 +109,7 @@ public class I18NProviderTest {
             throws ServletException, ServiceException {
         initServletAndService(config);
 
-        Assertions.assertEquals("!{foo.bar}!",
-                I18NProvider.translate("foo.bar"),
+        assertEquals("!{foo.bar}!", I18NProvider.translate("foo.bar"),
                 "Should return the key with !{}! to show no translation available");
     }
 
@@ -121,7 +123,7 @@ public class I18NProviderTest {
 
         VaadinService.setCurrent(null);
 
-        Assertions.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> I18NProvider.translate("foo.bar"),
                 "Should throw exception without active VaadinService");
     }
@@ -142,7 +144,7 @@ public class I18NProviderTest {
 
         VaadinService.setCurrent(service);
 
-        Assertions.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> I18NProvider.translate("foo.bar"),
                 "Should throw exception without active VaadinService");
     }

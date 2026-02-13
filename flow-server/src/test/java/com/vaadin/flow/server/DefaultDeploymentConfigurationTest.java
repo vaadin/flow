@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -37,8 +36,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link DefaultDeploymentConfiguration}
@@ -191,13 +192,13 @@ class DefaultDeploymentConfigurationTest {
 
         // Note: application configuration doesn't contain production mode
         // parameter !
-        Assertions.assertNull(appConfig.getStringProperty(
+        assertNull(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, null));
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
-        Assertions.assertTrue(config.isProductionMode());
-        Assertions.assertTrue(config.getProperties().isEmpty());
+        assertTrue(config.isProductionMode());
+        assertTrue(config.getProperties().isEmpty());
     }
 
     @Test
@@ -213,7 +214,7 @@ class DefaultDeploymentConfigurationTest {
                 appConfig, initParameters);
         // the deployment configuration parameter takes precedence over parent
         // config
-        Assertions.assertTrue(config.isProductionMode());
+        assertTrue(config.isProductionMode());
     }
 
     @Test
@@ -223,14 +224,14 @@ class DefaultDeploymentConfigurationTest {
 
         // Note: application configuration doesn't contain production mode
         // parameter !
-        Assertions.assertNull(appConfig.getStringProperty(
+        assertNull(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                 null));
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
-        Assertions.assertTrue(config.isXsrfProtectionEnabled());
-        Assertions.assertTrue(config.getProperties().isEmpty());
+        assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.getProperties().isEmpty());
     }
 
     @Test
@@ -247,21 +248,20 @@ class DefaultDeploymentConfigurationTest {
                 appConfig, initParameters);
         // the deployment configuration parameter takes precedence over parent
         // config
-        Assertions.assertTrue(config.isXsrfProtectionEnabled());
+        assertTrue(config.isXsrfProtectionEnabled());
     }
 
     @Test
     public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
-        Assertions.assertEquals(Mode.DEVELOPMENT_BUNDLE, config.getMode(),
+        assertEquals(Mode.DEVELOPMENT_BUNDLE, config.getMode(),
                 "Expected dev server to be disabled by default");
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
-        Assertions.assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
-                config.getMode(),
+        assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
                 "Expected dev server to be enabled when set true");
     }
 
@@ -273,8 +273,7 @@ class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
 
-        Assertions.assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
-                config.getMode(),
+        assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
                 "Expected dev server to be enabled from parent configuration");
     }
 
@@ -283,7 +282,7 @@ class DefaultDeploymentConfigurationTest {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assertions.assertEquals(SessionLockCheckStrategy.ASSERT,
+        assertEquals(SessionLockCheckStrategy.ASSERT,
                 config.getSessionLockCheckStrategy());
     }
 
@@ -294,7 +293,7 @@ class DefaultDeploymentConfigurationTest {
                 "throw");
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assertions.assertEquals(SessionLockCheckStrategy.THROW,
+        assertEquals(SessionLockCheckStrategy.THROW,
                 config.getSessionLockCheckStrategy());
     }
 
@@ -306,7 +305,7 @@ class DefaultDeploymentConfigurationTest {
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        Assertions.assertTrue(config.isProductionMode(),
+        assertTrue(config.isProductionMode(),
                 "ProductionMode should be enabled");
     }
 
@@ -322,7 +321,7 @@ class DefaultDeploymentConfigurationTest {
         File legacyFrontendViews = new File(legacyFrontend,
                 FrontendUtils.HILLA_VIEWS_PATH);
         if (!legacyFrontendViews.mkdir()) {
-            Assertions.fail("Failed to generate legacy frontend views folder");
+            fail("Failed to generate legacy frontend views folder");
         }
 
         File viewFile = new File(legacyFrontendViews, "MyView.tsx");
@@ -337,8 +336,8 @@ class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
-            Assertions.assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
-                    config.getMode(), "Should use the legacy frontend folder");
+            assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode(),
+                    "Should use the legacy frontend folder");
         }
     }
 

@@ -24,7 +24,6 @@ import java.util.Map;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,6 +31,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for Aura theme auto-loading behavior in AppShellRegistry.
@@ -92,12 +94,12 @@ class AppShellRegistryAuraAutoLoadTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assertions.assertEquals(1, links.size(),
+        assertEquals(1, links.size(),
                 "Expected Aura stylesheet to be auto-loaded");
 
         Element aura = links.get(0);
-        Assertions.assertEquals("aura/aura.css", aura.attr("data-file-path"));
-        Assertions.assertTrue(aura.attr("href").contains("aura.css"),
+        assertEquals("aura/aura.css", aura.attr("data-file-path"));
+        assertTrue(aura.attr("href").contains("aura.css"),
                 "Aura href should contain aura.css");
     }
 
@@ -114,7 +116,7 @@ class AppShellRegistryAuraAutoLoadTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assertions.assertEquals(0, links.size(),
+        assertEquals(0, links.size(),
                 "Aura should NOT be auto-loaded when not available");
     }
 
@@ -141,7 +143,7 @@ class AppShellRegistryAuraAutoLoadTest {
                     .select("link[rel=stylesheet]");
             // Empty AppShellConfigurator has no stylesheets, but Aura should
             // NOT be auto-added
-            Assertions.assertEquals(0, links.size(),
+            assertEquals(0, links.size(),
                     "Aura should NOT be auto-loaded when AppShellConfigurator exists");
         } finally {
             VaadinService.setCurrent(null);

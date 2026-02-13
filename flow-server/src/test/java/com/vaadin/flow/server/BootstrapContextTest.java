@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,6 +36,9 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BootstrapContextTest {
 
@@ -88,11 +90,10 @@ class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assertions.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assertions.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assertions.assertEquals(Transport.LONG_POLLING,
-                pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 
     @Test
@@ -108,11 +109,10 @@ class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assertions.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assertions.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assertions.assertEquals(Transport.LONG_POLLING,
-                pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 
     @Test
@@ -131,11 +131,10 @@ class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assertions.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assertions.assertEquals(PushMode.AUTOMATIC, pushAnnotation.value());
-        Assertions.assertEquals(Transport.WEBSOCKET,
-                pushAnnotation.transport());
+        assertEquals(PushMode.AUTOMATIC, pushAnnotation.value());
+        assertEquals(Transport.WEBSOCKET, pushAnnotation.transport());
     }
 
     @Test
@@ -154,10 +153,9 @@ class BootstrapContextTest {
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
-        Assertions.assertTrue(push.isPresent());
+        assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
-        Assertions.assertEquals(PushMode.MANUAL, pushAnnotation.value());
-        Assertions.assertEquals(Transport.LONG_POLLING,
-                pushAnnotation.transport());
+        assertEquals(PushMode.MANUAL, pushAnnotation.value());
+        assertEquals(Transport.LONG_POLLING, pushAnnotation.transport());
     }
 }
