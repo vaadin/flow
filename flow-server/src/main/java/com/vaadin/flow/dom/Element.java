@@ -878,18 +878,14 @@ public class Element extends Node<Element> {
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only.
      * <p>
-     * Example of usage for two-way binding:
+     * Example of usage:
      *
      * <pre>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Element element = new Element("input");
      * getElement().appendChild(element);
-     * element.bindProperty("value", signal, signal::get);
-     * element.addPropertyChangeListener("value", "input", event -&gt; {
-     *     // Property change listener needed to synchronize the property
-     * });
+     * element.bindProperty("value", signal, null);
      * signal.set("Hello"); // The element property value="Hello"
-     * // When user types in the input, the signal is updated via the callback
      * </pre>
      *
      * @param name
