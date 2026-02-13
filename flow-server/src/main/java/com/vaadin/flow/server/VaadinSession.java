@@ -396,7 +396,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Gets a signal that holds the current locale of this session.
      * <p>
      * The signal is the source of truth for the locale. Use
-     * {@link WritableSignal#value()} to read the locale reactively (creates a
+     * {@link WritableSignal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
      * for non-reactive reads.
      * <p>

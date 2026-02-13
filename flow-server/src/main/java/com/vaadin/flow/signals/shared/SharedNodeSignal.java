@@ -37,7 +37,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
 import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
- * A signal representing a node in a tree structure. The {@link #value()} of a
+ * A signal representing a node in a tree structure. The {@link #get()} of a
  * node signal is an immutable object that consists of:
  * <ul>
  * <li>the node's own value</li>
@@ -47,7 +47,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * </ul>
  *
  * A child node is always either a list child or a map child but it cannot have
- * both roles at the same time. The {@link #value()} of a detached node is
+ * both roles at the same time. The {@link #get()} of a detached node is
  * <code>null</code>.
  * <p>
  * This class does not provide methods for all possible operation you could do

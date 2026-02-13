@@ -146,7 +146,7 @@ public final class ComponentEffect implements Serializable {
      * list and returns a corresponding {@link Component}. It shouldn't return
      * <code>null</code>. The signal can be further bound to the returned
      * component as needed. Note that <code>childFactory</code> is run inside a
-     * {@link Effect}, and therefore {@link Signal#value()} calls makes effect
+     * {@link Effect}, and therefore {@link Signal#get()} calls makes effect
      * re-run automatically on signal value change.
      * <p>
      * Example of usage:
