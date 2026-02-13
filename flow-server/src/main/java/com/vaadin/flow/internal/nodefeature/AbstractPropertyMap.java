@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -63,8 +64,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
 
         if (hasSignal(name)) {
             SignalBinding b = (SignalBinding) super.get(name);
-            put(name, new SignalBinding(b.signal(), b.registration(), value),
-                    emitChange);
+            put(name, new SignalBinding(b.signal(), b.registration(), value,
+                    b.writeCallback()), emitChange);
         } else {
             put(name, value, emitChange);
         }
@@ -142,15 +143,15 @@ public abstract class AbstractPropertyMap extends NodeMap {
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {
             SignalBinding b = (SignalBinding) super.get(key);
-            super.updateFromClient(key,
-                    new SignalBinding(b.signal(), b.registration(), value));
+            super.updateFromClient(key, new SignalBinding(b.signal(),
+                    b.registration(), value, b.writeCallback()));
         } else {
             super.updateFromClient(key, value);
         }
     }
 
     /**
-     * Binds the given signal to the given property.
+     * Binds the given signal to the given property with a write callback.
      *
      * @param owner
      *            the element owning the property, not <code>null</code>
@@ -158,13 +159,18 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *            the name of the property
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    public void bindSignal(Element owner, String name, Signal<?> signal) {
-        bindSignal(owner, name, signal,
-                (element, value) -> setPropertyFromSignal(name, value));
+    public void bindSignal(Element owner, String name, Signal<?> signal,
+            SerializableConsumer<?> writeCallback) {
+        super.bindSignal(owner, name, signal,
+                (element, value) -> setPropertyFromSignal(name, value),
+                writeCallback);
     }
 
     /**

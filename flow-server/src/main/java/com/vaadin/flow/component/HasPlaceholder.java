@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -74,11 +75,11 @@ public interface HasPlaceholder extends HasElement {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setPlaceholder(String)
-     * @see Element#bindProperty(String, Signal)
+     * @see Element#bindProperty(String, Signal, SerializableConsumer)
      *
      * @since 25.1
      */
     default void bindPlaceholder(Signal<String> placeholderSignal) {
-        getElement().bindProperty("placeholder", placeholderSignal);
+        getElement().bindProperty("placeholder", placeholderSignal, null);
     }
 }

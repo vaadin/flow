@@ -53,6 +53,6 @@ public interface HasValueAndElement<E extends ValueChangeEvent<V>, V>
 
     @Override
     default void bindReadOnly(Signal<Boolean> readOnlySignal) {
-        getElement().bindProperty("readonly", readOnlySignal);
+        getElement().bindProperty("readonly", readOnlySignal, null);
     }
 }

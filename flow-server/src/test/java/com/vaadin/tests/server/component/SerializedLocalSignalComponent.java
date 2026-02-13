@@ -41,13 +41,15 @@ class SerializedLocalSignalComponent extends Component {
 
         getElement().bindText(signal);
         getElement().bindAttribute("attr", signal);
-        getElement().bindProperty("prop", signal);
+        getElement().bindProperty("prop", signal, null);
         getElement().bindEnabled(
                 signal.map(value -> value != null && !value.isEmpty()));
         getElement().bindVisible(Signal.computed(() -> signal.get() != null));
 
-        getElement().bindProperty("two-way-prop", signal.map(str -> str + "!!!",
-                (str, value) -> value.replace("!!!", "")));
+        var twoWayMappedSignal = signal.map(str -> str + "!!!",
+                (str, value) -> value.replace("!!!", ""));
+        getElement().bindProperty("two-way-prop", twoWayMappedSignal,
+                twoWayMappedSignal::set);
 
         // sync property from the client
         getElement().addPropertyChangeListener("two-way-prop",

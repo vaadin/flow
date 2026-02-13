@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -135,8 +136,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name,
-            Signal<?> signal) {
+    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
+            SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 

@@ -96,7 +96,7 @@ public class ElementAttributeMap extends NodeMap {
     public void bindSignal(Element owner, String attribute,
             Signal<String> signal) {
         bindSignal(owner, attribute, signal,
-                (element, value) -> doSet(attribute, value));
+                (element, value) -> doSet(attribute, value), null);
     }
 
     /**
@@ -288,7 +288,7 @@ public class ElementAttributeMap extends NodeMap {
         if (hasSignal(attribute)) {
             SignalBinding binding = (SignalBinding) super.get(attribute);
             put(attribute, new SignalBinding(binding.signal(),
-                    binding.registration(), (String) value));
+                    binding.registration(), (String) value, null));
         } else if (value == null) {
             super.remove(attribute);
         } else {
