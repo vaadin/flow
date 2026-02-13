@@ -36,7 +36,7 @@ import com.vaadin.flow.signals.Signal;
  * MyComponent component = new MyComponent();
  * add(component);
  * component.bindTextContent(signal);
- * signal.value("Hello"); // component content showing now "Content: Hello" text
+ * signal.set("Hello"); // component content showing now "Content: Hello" text
  * </pre>
  * 
  * <pre>
@@ -131,7 +131,7 @@ public class SignalPropertySupport<T> implements Serializable {
         }
         this.signal = signal;
         registration = ComponentEffect.effect(owner, () -> {
-            value = signal.value();
+            value = signal.get();
             valueChangeConsumer.accept(value);
         });
     }

@@ -48,7 +48,7 @@ public class BindValueView extends Div {
 
         TestInput target = new TestInput();
         target.setId("target");
-        target.bindValue(signal, signal::value);
+        target.bindValue(signal, signal::set);
         Registration targetListener = target.addValueChangeListener(event -> {
             valueInfoDiv.setText("Value: " + event.getValue());
             counter++;
@@ -70,7 +70,7 @@ public class BindValueView extends Div {
         changeInputValueButton.setId("change-value-button");
 
         NativeButton changeSignalValueButton = new NativeButton(
-                "signal.value(\"bar\")", e -> signal.value("bar"));
+                "signal.set(\"bar\")", e -> signal.set("bar"));
         changeSignalValueButton.setId("change-signal-value-button");
 
         NativeButton changeValueInternallyButton = new NativeButton(
@@ -84,7 +84,7 @@ public class BindValueView extends Div {
                     // unregister other input's listener
                     targetListener.remove();
                     target2.bindValue(signal, value -> signal
-                            .value(value.toUpperCase(Locale.ENGLISH)));
+                            .set(value.toUpperCase(Locale.ENGLISH)));
                 });
         bindUppercaseInputValueButton.setId("bind-uppercase-value-button");
 

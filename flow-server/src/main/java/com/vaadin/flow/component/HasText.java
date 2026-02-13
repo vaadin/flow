@@ -181,7 +181,7 @@ public interface HasText extends HasElement {
      * Span component = new Span("");
      * add(component);
      * component.bindText(signal);
-     * signal.value("text"); // The component text content is set to "text"
+     * signal.set("text"); // The component text content is set to "text"
      * </pre>
      *
      * @param textSignal

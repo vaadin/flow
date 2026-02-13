@@ -39,10 +39,10 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         fieldSet.bindLegendText(signal);
 
-        signal.value("legend-1");
+        signal.set("legend-1");
         assertEquals("legend-1", fieldSet.getLegend().getText());
 
-        signal.value("legend-2");
+        signal.set("legend-2");
         assertEquals("legend-2", fieldSet.getLegend().getText());
     }
 
@@ -80,7 +80,7 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
         UI.getCurrent().remove(fieldSet);
 
         // Update value after detach – legend text should remain unchanged
-        signal.value("b");
+        signal.set("b");
         assertEquals("a", fieldSet.getLegend().getText());
     }
 }

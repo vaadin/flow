@@ -58,7 +58,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public T value() {
+    public T get() {
         lock.lock();
         try {
             checkPreconditions();

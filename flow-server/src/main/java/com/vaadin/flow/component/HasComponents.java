@@ -210,7 +210,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * from the list and returns a corresponding {@link Component}. It shouldn't
      * return <code>null</code>. The {@link Signal} can be further bound to the
      * returned component as needed. Note that <code>childFactory</code> is run
-     * inside a {@link Effect}, and therefore {@link Signal#value()} calls makes
+     * inside a {@link Effect}, and therefore {@link Signal#get()} calls makes
      * effect re-run automatically on signal value change.
      * <p>
      * Example of usage:

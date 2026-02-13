@@ -816,7 +816,7 @@ public class UI extends Component
      * Gets a signal that holds the current locale of this UI.
      * <p>
      * The signal is the source of truth for the locale. Use
-     * {@link WritableSignal#value()} to read the locale reactively (creates a
+     * {@link WritableSignal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
      * for non-reactive reads.
      * <p>
@@ -846,7 +846,7 @@ public class UI extends Component
     public void setLocale(Locale locale) {
         assert locale != null : "Null locale is not supported!";
         if (!getLocale().equals(locale)) {
-            localeSignal.value(locale);
+            localeSignal.set(locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }

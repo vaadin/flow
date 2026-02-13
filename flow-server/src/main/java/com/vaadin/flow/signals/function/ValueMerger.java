@@ -41,7 +41,7 @@ import com.vaadin.flow.signals.WritableSignal;
  * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done,
  *         Todo::withDone);
  *
- * doneSignal.value(true); // Updates todoSignal to Todo("Buy milk", true)
+ * doneSignal.set(true); // Updates todoSignal to Todo("Buy milk", true)
  * </pre>
  *
  * @param <O>

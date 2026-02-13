@@ -147,7 +147,7 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         Assert.assertEquals(1, component.effectExecutionCounter);
 
         // verify that signal works before serialization
-        signal.value("changed");
+        signal.set("changed");
         Assert.assertEquals(2, component.effectExecutionCounter);
 
         SerializedLocalSignalComponent deserializedComponent;
@@ -173,18 +173,18 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertNotSame(deserializedComponent, component);
 
         UI.setCurrent(deserializedUi);
-        deserializedComponent.signal.value("changed after deserialization");
+        deserializedComponent.signal.set("changed after deserialization");
         Assert.assertEquals(3, deserializedComponent.effectExecutionCounter);
-        deserializedComponent.signal.value("changed");
+        deserializedComponent.signal.set("changed");
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
-        signal.value("changed in original signal");
+        signal.set("changed in original signal");
         // original signal change should not affect deserialized component
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
-        deserializedComponent.signal.value("foo");
+        deserializedComponent.signal.set("foo");
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // verify various bindX methods
@@ -206,7 +206,7 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         // verify mapped and computed signals with bindEnabled and bindVisible
         Assert.assertTrue(deserializedComponent.getElement().isEnabled());
         Assert.assertTrue(deserializedComponent.getElement().isVisible());
-        deserializedComponent.signal.value(null);
+        deserializedComponent.signal.set(null);
         Assert.assertFalse(deserializedComponent.getElement().isEnabled());
         Assert.assertFalse(deserializedComponent.getElement().isVisible());
 
@@ -227,7 +227,7 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         Assert.assertEquals(1, component.effectExecutionCounter);
 
         // verify that signal works before serialization
-        signal.value("changed");
+        signal.set("changed");
         Assert.assertEquals(2, component.effectExecutionCounter);
 
         SerializedSharedSignalComponent deserializedComponent;
@@ -253,18 +253,18 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertNotSame(deserializedComponent, component);
 
         UI.setCurrent(deserializedUi);
-        deserializedComponent.signal.value("changed after deserialization");
+        deserializedComponent.signal.set("changed after deserialization");
         Assert.assertEquals(3, deserializedComponent.effectExecutionCounter);
-        deserializedComponent.signal.value("changed");
+        deserializedComponent.signal.set("changed");
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
-        signal.value("changed in original signal");
+        signal.set("changed in original signal");
         // original signal change should not affect deserialized component
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
-        deserializedComponent.signal.value("foo");
+        deserializedComponent.signal.set("foo");
         Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         deserializedSession.unlock();

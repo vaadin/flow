@@ -136,7 +136,7 @@ public class SignalPropertySupportTest {
         assertEquals("foo", signalPropertySupport.get());
         assertEquals("foo", lastValue.get());
 
-        signal.value("bar");
+        signal.set("bar");
 
         assertEquals("bar", signalPropertySupport.get());
         assertEquals("bar", lastValue.get());
@@ -189,7 +189,7 @@ public class SignalPropertySupportTest {
                 .create(component, lastValue::set);
         ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport
-                .bind(Signal.computed(() -> "computed-" + signal.value()));
+                .bind(Signal.computed(() -> "computed-" + signal.get()));
         assertEquals("computed-foo", signalPropertySupport.get());
         assertEquals("computed-foo", lastValue.get());
     }
@@ -246,7 +246,7 @@ public class SignalPropertySupportTest {
         signalPropertySupport.bind(signal);
         assertEquals("foo", signalPropertySupport.get());
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", signalPropertySupport.get());
         UI.getCurrent().add(component);
         assertEquals("bar", signalPropertySupport.get());

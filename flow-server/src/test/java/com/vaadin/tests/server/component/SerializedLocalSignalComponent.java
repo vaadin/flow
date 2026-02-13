@@ -35,7 +35,7 @@ class SerializedLocalSignalComponent extends Component {
         this.signal = signal;
 
         registration = ComponentEffect.effect(this, () -> {
-            signal.value();
+            signal.get();
             effectExecutionCounter++;
         });
 
@@ -44,7 +44,7 @@ class SerializedLocalSignalComponent extends Component {
         getElement().bindProperty("prop", signal);
         getElement().bindEnabled(
                 signal.map(value -> value != null && !value.isEmpty()));
-        getElement().bindVisible(Signal.computed(() -> signal.value() != null));
+        getElement().bindVisible(Signal.computed(() -> signal.get() != null));
 
         getElement().bindProperty("two-way-prop", signal.map(str -> str + "!!!",
                 (str, value) -> value.replace("!!!", "")));

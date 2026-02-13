@@ -71,7 +71,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         MultipleFieldsField field = new MultipleFieldsField();
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal, signal::value);
+        field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
         Assert.assertEquals("", field.start.getValue());
         Assert.assertEquals("", field.rest.getValue());
@@ -87,7 +87,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         MultipleFieldsField field = new MultipleFieldsField();
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal, signal::value);
+        field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
         Assert.assertEquals("", field.start.getValue());
         Assert.assertEquals("", field.rest.getValue());
@@ -105,7 +105,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         UI.getCurrent().add(field);
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
-        field.bindValue(signal, signal::value);
+        field.bindValue(signal, signal::set);
         Assert.assertEquals("Hello", field.start.getValue());
         Assert.assertEquals("Cool World", field.rest.getValue());
 
@@ -114,7 +114,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("", field.getValue());
         Assert.assertEquals("", signal.peek());
 
-        signal.value("Hello Cool World");
+        signal.set("Hello Cool World");
         // setValue for CompositeField's components value change listeners
         // update the value by internal setModelValue method
         field.rest.setValue("");

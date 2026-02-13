@@ -90,7 +90,7 @@ public class ElementBindTextTest {
 
         ValueSignal<String> signal = new ValueSignal<>("text");
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
         element.bindText(computedSignal);
 
         assertEquals("computed-text", element.getText());
@@ -117,7 +117,7 @@ public class ElementBindTextTest {
 
         assertEquals("text", element.getText());
         UI.getCurrent().getElement().removeChild(element);
-        signal.value("text2");
+        signal.set("text2");
         assertEquals("text", element.getText());
         UI.getCurrent().getElement().appendChild(element);
         assertEquals("text2", element.getText());
@@ -162,7 +162,7 @@ public class ElementBindTextTest {
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
-        signal.value(null);
+        signal.set(null);
         Assert.assertTrue(events.isEmpty());
         assertEquals("", element.getText());
     }
@@ -205,7 +205,7 @@ public class ElementBindTextTest {
         feature.removeBinding();
 
         // Signal changes should no longer affect the element
-        signal.value("text2");
+        signal.set("text2");
         assertEquals("text", element.getText());
 
         // Manual set should work without throwing
@@ -240,7 +240,7 @@ public class ElementBindTextTest {
 
         assertEquals("text", element.getText());
 
-        signal.value("text2");
+        signal.set("text2");
         assertEquals("text2", element.getText());
     }
 
@@ -280,11 +280,11 @@ public class ElementBindTextTest {
         span.bindText(signal);
         assertEquals("text", span.getText());
 
-        signal.value("text2");
+        signal.set("text2");
         assertEquals("text2", span.getText());
 
         // verify text is blank with null signal value
-        signal.value(null);
+        signal.set(null);
         assertEquals("", span.getText());
 
         // verify setText throws with active binding
@@ -293,7 +293,7 @@ public class ElementBindTextTest {
 
         // detach
         UI.getCurrent().remove(span);
-        signal.value("text3");
+        signal.set("text3");
         assertEquals("", span.getText());
         // reattach
         UI.getCurrent().add(span);

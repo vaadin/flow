@@ -39,10 +39,10 @@ public class ClassListBindTest extends SignalsUnitTest {
         // Initially false -> not present
         Assert.assertFalse(element.getClassList().contains("highlight"));
 
-        signal.value(true);
+        signal.set(true);
         Assert.assertTrue(element.getClassList().contains("highlight"));
 
-        signal.value(false);
+        signal.set(false);
         Assert.assertFalse(element.getClassList().contains("highlight"));
     }
 
@@ -57,7 +57,7 @@ public class ClassListBindTest extends SignalsUnitTest {
         UI.getCurrent().getElement().removeChild(element);
 
         // Change signal while detached – should NOT apply
-        signal.value(true);
+        signal.set(true);
         Assert.assertFalse(element.getClassList().contains("active"));
 
         // Reattach – current value true should be applied
@@ -101,10 +101,10 @@ public class ClassListBindTest extends SignalsUnitTest {
         Assert.assertFalse(element.getClassList().contains("b"));
 
         // Toggling signals has no effect (bindings were cleared)
-        a.value(false);
-        b.value(false);
-        a.value(true);
-        b.value(true);
+        a.set(false);
+        b.set(false);
+        a.set(true);
+        b.set(true);
         Assert.assertFalse(element.getClassList().contains("a"));
         Assert.assertFalse(element.getClassList().contains("b"));
         Assert.assertFalse(element.getClassList().iterator().hasNext());
@@ -125,8 +125,8 @@ public class ClassListBindTest extends SignalsUnitTest {
         Assert.assertFalse(element.getClassList().contains("flag"));
 
         // Binding should be cleared, so toggling has no effect
-        bound.value(false);
-        bound.value(true);
+        bound.set(false);
+        bound.set(true);
         Assert.assertFalse(element.getClassList().contains("flag"));
     }
 
@@ -144,7 +144,7 @@ public class ClassListBindTest extends SignalsUnitTest {
         feature.removeBinding(SignalBindingFeature.CLASSES + "badge");
 
         // Signal changes should no longer affect the class list
-        signal.value(false);
+        signal.set(false);
         Assert.assertTrue(element.getClassList().contains("badge"));
 
         // Manual set should work without throwing
@@ -184,14 +184,14 @@ public class ClassListBindTest extends SignalsUnitTest {
 
         // Flip to true a couple of times; should not throw and should not
         // duplicate class entries.
-        signal.value(true);
-        signal.value(true); // no-op update
+        signal.set(true);
+        signal.set(true); // no-op update
         Assert.assertTrue(element.getClassList().contains("spin"));
         Assert.assertEquals(1,
                 element.getClassList().stream().filter("spin"::equals).count());
 
-        signal.value(false);
-        signal.value(false); // no-op update
+        signal.set(false);
+        signal.set(false); // no-op update
         Assert.assertFalse(element.getClassList().contains("spin"));
     }
 

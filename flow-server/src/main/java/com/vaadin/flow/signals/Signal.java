@@ -38,7 +38,7 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  * Reactivity is based on {@link Signal#effect(EffectAction)} callbacks that
  * detect the signals used during invocation. The callback will be run again
  * whenever there's a change to any of the signal instances used in the previous
- * invocation. Detection is based on running {@link #value()}.
+ * invocation. Detection is based on running {@link #get()}.
  * {@link #untracked(ValueSupplier)} can be used to read the value within an
  * effect without registering a dependency.
  * <p>
@@ -68,11 +68,11 @@ public interface Signal<T> extends Serializable {
      *
      * @return the signal value
      */
-    T value();
+    T get();
 
     /**
      * Reads the value without setting up any dependencies. This method returns
-     * the same value as {@link #value()} but without creating a dependency when
+     * the same value as {@link #get()} but without creating a dependency when
      * used inside a transaction, effect or computed signal.
      *
      * @return the signal value
@@ -82,7 +82,7 @@ public interface Signal<T> extends Serializable {
          * Subclasses are encouraged to use an approach with less overhead than
          * what this very generic implementation can do.
          */
-        return untracked(() -> value());
+        return untracked(() -> get());
     }
 
     /**
@@ -104,7 +104,7 @@ public interface Signal<T> extends Serializable {
      * @return the computed signal, not <code>null</code>
      */
     default <C> Signal<C> map(SignalMapper<T, C> mapper) {
-        return () -> mapper.map(value());
+        return () -> mapper.map(get());
     }
 
     /*

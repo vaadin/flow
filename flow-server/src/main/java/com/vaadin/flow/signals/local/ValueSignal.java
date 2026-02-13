@@ -88,7 +88,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     }
 
     @Override
-    public SignalOperation<T> value(T value) {
+    public SignalOperation<T> set(T value) {
         lock();
         try {
             checkPreconditions();
@@ -248,7 +248,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
      *         Todo::setDone);
      *
-     * checkbox.bindValue(doneSignal, doneSignal::value); // Two-way binding
+     * checkbox.bindValue(doneSignal, doneSignal::set); // Two-way binding
      * </pre>
      *
      * @param <C>

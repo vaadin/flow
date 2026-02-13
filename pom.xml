@@ -77,6 +77,13 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
+    <!--
+      Ensures modules that do not declare this POM as parent
+      (like flow-bom) are updated as well when using versions:set
+      to change the project version
+    -->
+    <processAllModules>true</processAllModules>
+
     <!-- Dependencies -->
     <spring.boot.version>4.0.2</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>

@@ -35,10 +35,10 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         details.bindSummaryText(signal);
 
-        signal.value("summary-1");
+        signal.set("summary-1");
         assertEquals("summary-1", details.getSummaryText());
 
-        signal.value("summary-2");
+        signal.set("summary-2");
         assertEquals("summary-2", details.getSummaryText());
     }
 
@@ -71,7 +71,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", details.getSummaryText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", details.getSummaryText());
     }
 
@@ -85,7 +85,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
         assertEquals("initial", details.getSummaryText());
         assertEquals(content, details.getContent());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", details.getSummaryText());
     }
 }
