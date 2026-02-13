@@ -19,8 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -31,6 +29,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.shared.JsonConstants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EventRpcHandlerTest {
 

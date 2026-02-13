@@ -22,11 +22,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -39,6 +34,11 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for @ClientCallable method support with bean and collection parameters
@@ -261,8 +261,7 @@ class ClientCallableBeanSupportTest {
         NestedBean received = component.getReceivedNestedBean();
         assertNotNull(received, "Nested bean should be received");
         assertEquals("OuterBean", received.title);
-        assertNotNull(received.simple,
-                "Inner bean should be present");
+        assertNotNull(received.simple, "Inner bean should be present");
         assertEquals("InnerBean", received.simple.name);
         assertEquals(456, received.simple.value);
         assertFalse(received.simple.active);

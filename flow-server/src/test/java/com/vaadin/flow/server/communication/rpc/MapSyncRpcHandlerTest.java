@@ -79,11 +79,9 @@ class MapSyncRpcHandlerTest {
         ui.add(c);
         assertFalse(element.hasProperty(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value1");
-        assertEquals("value1",
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
-        assertEquals("value2",
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -124,8 +122,8 @@ class MapSyncRpcHandlerTest {
         StateNode newNode = (StateNode) testPropertyValue;
         assertNotEquals(item.getId(), newNode.getId());
 
-        assertEquals("baz", newNode
-                .getFeature(ElementPropertyMap.class).getProperty("bar"));
+        assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
+                .getProperty("bar"));
     }
 
     @Test
@@ -210,8 +208,7 @@ class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        assertNotEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertNotEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -227,8 +224,7 @@ class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        assertEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -245,8 +241,7 @@ class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        assertEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -262,8 +257,7 @@ class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        assertEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -280,8 +274,7 @@ class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        assertEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
@@ -311,10 +304,8 @@ class MapSyncRpcHandlerTest {
                             createSyncPropertyInvocation(element.getNode(),
                                     TEST_PROPERTY, NEW_VALUE));
                 });
-        assertTrue(
-                thrown.getMessage().contains("Element with tag 'foo'"));
-        assertTrue(
-                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
+        assertTrue(thrown.getMessage().contains("Element with tag 'foo'"));
+        assertTrue(thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test
@@ -330,8 +321,7 @@ class MapSyncRpcHandlerTest {
                 });
         assertTrue(thrown.getMessage()
                 .contains("Component " + TestComponent.class.getName()));
-        assertTrue(
-                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
+        assertTrue(thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test
@@ -352,8 +342,7 @@ class MapSyncRpcHandlerTest {
                 });
         assertTrue(thrown.getMessage()
                 .contains("Component " + TestComponent.class.getName()));
-        assertTrue(
-                thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
+        assertTrue(thrown.getMessage().contains("'" + TEST_PROPERTY + "'"));
     }
 
     @Test

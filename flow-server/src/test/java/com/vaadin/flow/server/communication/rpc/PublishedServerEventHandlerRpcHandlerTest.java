@@ -468,10 +468,8 @@ class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        assertArrayEquals(
-                new Double[] { firstArg.get(0).doubleValue(),
-                        firstArg.get(1).doubleValue() },
-                component.doubleArg);
+        assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
+                firstArg.get(1).doubleValue() }, component.doubleArg);
 
         assertNotNull(component.varArg);
         assertEquals(0, component.varArg.length);

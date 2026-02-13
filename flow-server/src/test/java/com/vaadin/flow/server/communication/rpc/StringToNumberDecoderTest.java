@@ -32,32 +32,32 @@ class StringToNumberDecoderTest {
 
     @Test
     public void isApplicable_applicableToStringAndNumber() {
-        assertTrue(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), Number.class));
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Number.class));
     }
 
     @Test
     public void isApplicable_notApplicableToBooleanAndNumber() {
-        assertFalse(decoder
-                .isApplicable(JacksonUtils.createNode(true), Number.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
+                Number.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndString() {
-        assertFalse(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), String.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                String.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndAtomicInteger() {
-        assertFalse(decoder.isApplicable(
-                JacksonUtils.createNode("foo"), AtomicInteger.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                AtomicInteger.class));
     }
 
     @Test
     public void isApplicable_applicableToStringAndLong() {
-        assertTrue(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), Long.class));
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Long.class));
     }
 
     @Test

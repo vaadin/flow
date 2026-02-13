@@ -34,26 +34,26 @@ class EnumDecoderTest {
 
     @Test
     public void isApplicable_applicableToStringAndEnum() {
-        assertTrue(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), Title.class));
+        assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Title.class));
     }
 
     @Test
     public void isApplicable_notApplicableToBooleanAndEnum() {
-        assertFalse(decoder
-                .isApplicable(JacksonUtils.createNode(true), Enum.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
+                Enum.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndString() {
-        assertFalse(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), String.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                String.class));
     }
 
     @Test
     public void isApplicable_notApplicableToStringAndAbstractEnum() {
-        assertFalse(decoder
-                .isApplicable(JacksonUtils.createNode("foo"), Enum.class));
+        assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
+                Enum.class));
     }
 
     @Test

@@ -19,11 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -39,6 +34,11 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.communication.ReturnChannelHandler;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ReturnChannelHandlerTest {
     private MockUI ui = new MockUI();

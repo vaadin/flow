@@ -17,8 +17,6 @@ package com.vaadin.flow.server.communication.rpc;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
@@ -29,6 +27,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AttachExistingElementRpcHandlerTest {
 
