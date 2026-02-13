@@ -38,7 +38,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
 
         assertNotNull("localeSignal() should never return null", signal);
         assertEquals("Signal value should match getLocale()", ui.getLocale(),
-                signal.value());
+                signal.get());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
         ui.setLocale(newLocale);
 
         assertEquals("Signal should reflect the new locale after setLocale()",
-                newLocale, signal.value());
+                newLocale, signal.get());
         assertEquals("getLocale() should also return the new locale", newLocale,
                 ui.getLocale());
     }
@@ -75,12 +75,12 @@ public class UILocaleSignalTest extends SignalsUnitTest {
             newLocale = Locale.GERMAN;
         }
 
-        signal.value(newLocale);
+        signal.set(newLocale);
 
         assertEquals("getLocale() should reflect the new locale after "
                 + "writing to signal", newLocale, ui.getLocale());
         assertEquals("Signal should have the new value", newLocale,
-                signal.value());
+                signal.get());
     }
 
     @Test
@@ -100,13 +100,13 @@ public class UILocaleSignalTest extends SignalsUnitTest {
         WritableSignal<Locale> signal = ui.localeSignal();
 
         ui.setLocale(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, signal.value());
+        assertEquals(Locale.FRENCH, signal.get());
 
         ui.setLocale(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, signal.value());
+        assertEquals(Locale.GERMAN, signal.get());
 
         ui.setLocale(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, signal.value());
+        assertEquals(Locale.JAPANESE, signal.get());
     }
 
     @Test
@@ -114,13 +114,13 @@ public class UILocaleSignalTest extends SignalsUnitTest {
         UI ui = UI.getCurrent();
         WritableSignal<Locale> signal = ui.localeSignal();
 
-        signal.value(Locale.FRENCH);
+        signal.set(Locale.FRENCH);
         assertEquals(Locale.FRENCH, ui.getLocale());
 
-        signal.value(Locale.GERMAN);
+        signal.set(Locale.GERMAN);
         assertEquals(Locale.GERMAN, ui.getLocale());
 
-        signal.value(Locale.JAPANESE);
+        signal.set(Locale.JAPANESE);
         assertEquals(Locale.JAPANESE, ui.getLocale());
     }
 }

@@ -43,7 +43,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
  *         Todo::setDone);
  *
- * doneSignal.value(true); // Calls todoSignal.modify(t -&gt; t.setDone(true))
+ * doneSignal.set(true); // Calls todoSignal.modify(t -&gt; t.setDone(true))
  * </pre>
  *
  * @param <P>

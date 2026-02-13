@@ -66,7 +66,7 @@ public class VaadinServiceSignalsInitializationTest {
             Signal.effect(() -> {
                 invocations.add(new EffectExecution(UI.getCurrent(),
                         Thread.currentThread().getName()));
-                signal.value();
+                signal.get();
                 phaser.arrive();
             });
 

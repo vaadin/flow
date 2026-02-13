@@ -119,7 +119,7 @@ public interface HasEnabled extends HasElement {
      * Span component = new Span();
      * add(component);
      * component.bindEnabled(signal);
-     * signal.value(false); // The component is disabled
+     * signal.set(false); // The component is disabled
      * </pre>
      *
      * @param enabledSignal

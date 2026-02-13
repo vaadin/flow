@@ -594,7 +594,7 @@ public abstract class Component
      * Span component = new Span();
      * add(component);
      * component.bindVisible(signal);
-     * signal.value(false); // The component is set hidden
+     * signal.set(false); // The component is set hidden
      * </pre>
      *
      * or with the multiple boolean conditions:
@@ -605,8 +605,8 @@ public abstract class Component
      * VerticalLayout visaSection = new VerticalLayout();
      * add(visaSection);
      * // using lambda expression as a computed signal
-     * visaSection.bindVisible(() -> needsVisaSignal.value()
-     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
+     * visaSection.bindVisible(() -> needsVisaSignal.get()
+     *         &amp;&amp; visaTypeSignal.get() == VisaType.H1B);
      * </pre>
      *
      * @param visibleSignal

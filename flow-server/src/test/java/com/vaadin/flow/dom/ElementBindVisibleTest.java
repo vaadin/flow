@@ -64,11 +64,11 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         assertFalse(element.isVisible());
 
         // false -> true
-        signal.value(true);
+        signal.set(true);
         assertTrue(element.isVisible());
 
         // null transforms to false
-        signal.value(null);
+        signal.set(null);
         assertFalse(element.isVisible());
         assertTrue(events.isEmpty());
     }
@@ -78,7 +78,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
-        signal.value(false); // ignored
+        signal.set(false); // ignored
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
     }
@@ -90,7 +90,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
-        signal.value(false); // ignored
+        signal.set(false); // ignored
 
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
@@ -103,7 +103,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
-        signal.value(false);
+        signal.set(false);
         UI.getCurrent().getElement().appendChild(element);
 
         assertFalse(element.isVisible());

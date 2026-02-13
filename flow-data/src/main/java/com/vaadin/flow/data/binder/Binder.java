@@ -421,13 +421,13 @@ public class Binder<BEAN> implements Serializable {
          *
          * // Same works also with a Signal directly:
          * ValueSignal<String> passwordSignal = new ValueSignal<>("");
-         * passwordField.bindValue(passwordSignal, passwordSignal::value);
+         * passwordField.bindValue(passwordSignal, passwordSignal::set);
          * binder.forField(confirmField)
-         *         .withValidator(text -> text.equals(passwordSignal.value()),
+         *         .withValidator(text -> text.equals(passwordSignal.get()),
          *                 "Both fields must match")
          *         .bind("confirmPassword");
-         * passwordSignal.value("secret"); // confirmField shows validation
-         *                                 // error
+         * passwordSignal.set("secret"); // confirmField shows validation
+         *                               // error
          * }
          * </pre>
          *
@@ -1747,7 +1747,7 @@ public class Binder<BEAN> implements Serializable {
                     // Trigger re-validation signal to notify validators using
                     // value()
                     internalValidationTriggerSignal
-                            .value(!internalValidationTriggerSignal.peek());
+                            .set(!internalValidationTriggerSignal.peek());
                 }
             }
         }
@@ -1992,7 +1992,7 @@ public class Binder<BEAN> implements Serializable {
                 internalValidationTriggerSignal = new ValueSignal<>(false);
             }
             // registers tracking
-            internalValidationTriggerSignal.value();
+            internalValidationTriggerSignal.get();
         }
 
     }
@@ -3142,10 +3142,10 @@ public class Binder<BEAN> implements Serializable {
                 return UsageTracker.track(() -> validator.apply(value, context),
                         usage -> {
                             throw new InvalidSignalUsageError(
-                                    "Detected Signal.value() call inside a bean level validator. "
+                                    "Detected Signal.get() call inside a bean level validator. "
                                             + "This is not supported since bean level validators "
                                             + "are not run inside a reactive effect. "
-                                            + "Use of Signal.value() is only supported in field level validators.");
+                                            + "Use of Signal.get() is only supported in field level validators.");
                         });
             }
         });
@@ -4408,7 +4408,7 @@ public class Binder<BEAN> implements Serializable {
                         .getBinding() != statusChange.getBinding())
                 .toList());
         fieldValidationStatuses.add(statusChange);
-        binderValidationStatusSignal.value(new BinderValidationStatus<>(
+        binderValidationStatusSignal.set(new BinderValidationStatus<>(
                 oldStatus.getBinder(), fieldValidationStatuses,
                 oldStatus.getBeanValidationErrors()));
     }
@@ -4418,9 +4418,9 @@ public class Binder<BEAN> implements Serializable {
             return;
         }
         if (statusChange != null) {
-            binderValidationStatusSignal.value(statusChange);
+            binderValidationStatusSignal.set(statusChange);
         } else {
-            binderValidationStatusSignal.value(validate(false));
+            binderValidationStatusSignal.set(validate(false));
         }
     }
 

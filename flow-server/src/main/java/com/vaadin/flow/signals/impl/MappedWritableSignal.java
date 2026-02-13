@@ -64,8 +64,8 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public C value() {
-        return getter.map(parent.value());
+    public C get() {
+        return getter.map(parent.get());
     }
 
     @Override
@@ -74,7 +74,7 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public SignalOperation<C> value(C newChildValue) {
+    public SignalOperation<C> set(C newChildValue) {
         // Using update() ensures the change is applied atomically to the
         // current parent value. If the parent value changes concurrently, the
         // new child value is applied to the updated parent. This gives the user

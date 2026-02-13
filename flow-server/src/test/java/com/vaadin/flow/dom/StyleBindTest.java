@@ -74,11 +74,11 @@ public class StyleBindTest {
 
         Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
 
-        color.value("blue");
+        color.set("blue");
         Assert.assertEquals("blue", element.getStyle().get("backgroundColor"));
 
         // Null removes the style
-        color.value(null);
+        color.set(null);
         Assert.assertNull(element.getStyle().get("backgroundColor"));
     }
 
@@ -97,7 +97,7 @@ public class StyleBindTest {
         UI.getCurrent().getElement().removeChild(element);
 
         // Change while detached -> should not apply
-        color.value("green");
+        color.set("green");
         Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
 
         // Reattach -> current signal value should be applied
@@ -141,8 +141,8 @@ public class StyleBindTest {
         Assert.assertNull(element.getStyle().get("borderBottomWidth"));
 
         // Toggling signals should have no effect
-        a.value("3");
-        b.value("4");
+        a.set("3");
+        b.set("4");
         Assert.assertNull(element.getStyle().get("borderTopWidth"));
         Assert.assertNull(element.getStyle().get("borderBottomWidth"));
     }
@@ -169,7 +169,7 @@ public class StyleBindTest {
 
         // a applied, then set b to null which should remove the style
         Assert.assertEquals("10px", element.getStyle().get("marginTop"));
-        b.value(null);
+        b.set(null);
         Assert.assertNull(element.getStyle().get("marginBottom"));
 
         // getNames should include names that have recorded last-applied values.
@@ -204,7 +204,7 @@ public class StyleBindTest {
                 element.getStyle().get("backgroundColor"));
 
         // Set null -> should remove the style and has() should report false
-        color.value(null);
+        color.set(null);
         Assert.assertNull(element.getStyle().get("backgroundColor"));
         Assert.assertFalse(element.getStyle().has("background-color"));
 
@@ -212,7 +212,7 @@ public class StyleBindTest {
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
         Assert.assertTrue(names.contains("background-color"));
-        color.value("rgba(0, 0, 255, 1)");
+        color.set("rgba(0, 0, 255, 1)");
         Assert.assertEquals("rgba(0, 0, 255, 1)",
                 element.getStyle().get("backgroundColor"));
     }

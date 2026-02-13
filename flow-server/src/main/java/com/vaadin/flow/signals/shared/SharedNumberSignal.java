@@ -93,8 +93,8 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     }
 
     @Override
-    public Double value() {
-        Double value = super.value();
+    public Double get() {
+        Double value = super.get();
 
         if (value == null) {
             return Double.valueOf(0);
@@ -105,13 +105,13 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
 
     /**
      * Gets the value of this signal as an integer. This method works in the
-     * same way was {@link #value()} with regards to transactions and dependency
+     * same way was {@link #get()} with regards to transactions and dependency
      * tracking.
      *
      * @return the signal value as an integer
      */
     public int valueAsInt() {
-        return value().intValue();
+        return get().intValue();
     }
 
     /**
@@ -122,8 +122,8 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Double> value(int value) {
-        return value(Double.valueOf(value));
+    public SignalOperation<Double> set(int value) {
+        return set(Double.valueOf(value));
     }
 
     /**

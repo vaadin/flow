@@ -48,8 +48,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * <p>
  * This signal may be synchronized across a cluster. In that case, changes to
  * the signal value are only confirmed asynchronously. The regular signal
- * {@link #value()} returns the assumed value based on local modifications
- * whereas {@link #peekConfirmed()} gives access to the confirmed value.
+ * {@link #get()} returns the assumed value based on local modifications whereas
+ * {@link #peekConfirmed()} gives access to the confirmed value.
  *
  * @param <T>
  *            the signal value type
@@ -153,7 +153,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     }
 
     @Override
-    public T value() {
+    public T get() {
         Transaction transaction = Transaction.getCurrent();
         Data data = data(transaction);
 
@@ -240,7 +240,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * that to the current value to determine if the value has changed.
      * <p>
      * The implementation should return an object that changes if and only if
-     * the {@link #value()} of this signal changes.
+     * the {@link #get()} of this signal changes.
      *
      * @param data
      *            the data node to read from, not <code>null</code>

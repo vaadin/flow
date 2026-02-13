@@ -34,7 +34,7 @@ public class SerializedSharedSignalComponent extends Component {
         this.signal = signal;
 
         registration = ComponentEffect.effect(this, () -> {
-            signal.value();
+            signal.get();
             effectExecutionCounter++;
         });
     }

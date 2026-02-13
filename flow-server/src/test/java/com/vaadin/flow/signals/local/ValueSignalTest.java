@@ -46,29 +46,29 @@ public class ValueSignalTest extends SignalTestBase {
     void constructor_noArgs_nullValue() {
         ValueSignal<Object> signal = new ValueSignal<>();
 
-        assertNull(signal.value());
+        assertNull(signal.get());
     }
 
     @Test
     void constructor_initialValue_initialValueUsed() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 
-        assertEquals("value", signal.value());
+        assertEquals("value", signal.get());
     }
 
     @Test
     void setValue_valueUsed() {
         ValueSignal<String> signal = new ValueSignal<>();
-        signal.value("value");
+        signal.set("value");
 
-        assertEquals("value", signal.value());
+        assertEquals("value", signal.get());
     }
 
     @Test
     void setValue_oldValueInResult() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        SignalOperation<String> operation = signal.value("update");
+        SignalOperation<String> operation = signal.set("update");
 
         String resultValue = TestUtil.assertSuccess(operation);
         assertEquals("initial", resultValue);
@@ -81,7 +81,7 @@ public class ValueSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = signal.replace("initial", "update");
 
         TestUtil.assertSuccess(operation);
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ValueSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = signal.replace("other", "update");
 
         TestUtil.assertFailure(operation);
-        assertEquals("initial", signal.value());
+        assertEquals("initial", signal.get());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ValueSignalTest extends SignalTestBase {
         String oldValue = TestUtil.assertSuccess(operation);
         assertEquals("initial", oldValue);
 
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -135,7 +135,7 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         assertEquals("update", holder[0]);
-        assertSame(holder, signal.value());
+        assertSame(holder, signal.get());
     }
 
     @Test
@@ -151,8 +151,8 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
-        signal.value("update");
-        assertEquals("update", readonly.value());
+        signal.set("update");
+        assertEquals("update", readonly.get());
     }
 
     @Test
@@ -160,7 +160,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -172,7 +172,7 @@ public class ValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("update");
+        signal.set("update");
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
@@ -183,7 +183,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         AtomicBoolean invoked = new AtomicBoolean(false);
@@ -204,10 +204,10 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update");
+        signal.set("update");
 
         AtomicBoolean invoked = new AtomicBoolean(false);
         usage.onNextChange(initial -> {
@@ -224,10 +224,10 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update1");
+        signal.set("update1");
 
         AtomicInteger count = new AtomicInteger();
         usage.onNextChange(ignore -> {
@@ -236,11 +236,11 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         // Verify preserving after initial and trigger subsequent update
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(2, count.get());
 
         // Verify subsequent update
-        signal.value("update3");
+        signal.set("update3");
         assertEquals(3, count.get());
     }
 
@@ -249,10 +249,10 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update1");
+        signal.set("update1");
 
         AtomicInteger count = new AtomicInteger();
         usage.onNextChange(ignore -> {
@@ -262,7 +262,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertEquals(1, count.intValue());
 
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(1, count.intValue());
     }
 
@@ -271,7 +271,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         AtomicInteger count = new AtomicInteger();
@@ -280,10 +280,10 @@ public class ValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("update1");
+        signal.set("update1");
         assertEquals(1, count.intValue());
 
-        signal.value("update2");
+        signal.set("update2");
         assertEquals(1, count.intValue());
     }
 
@@ -292,7 +292,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         signal.modify(value -> {
@@ -330,7 +330,7 @@ public class ValueSignalTest extends SignalTestBase {
         AtomicInteger completed = new AtomicInteger();
 
         Thread.startVirtualThread(() -> {
-            signal.value();
+            signal.get();
             completed.incrementAndGet();
         });
 
@@ -340,7 +340,7 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         Thread.startVirtualThread(() -> {
-            signal.value("update");
+            signal.set("update");
             completed.incrementAndGet();
         });
 
@@ -401,12 +401,11 @@ public class ValueSignalTest extends SignalTestBase {
         // Wait until other thread is inside the modify method
         modifyStarted.acquireUninterruptibly();
 
-        assertThrows(ConcurrentModificationException.class,
-                () -> signal.value());
+        assertThrows(ConcurrentModificationException.class, () -> signal.get());
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.peek());
         assertThrows(ConcurrentModificationException.class,
-                () -> signal.value("update"));
+                () -> signal.set("update"));
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.replace("foo", "bar"));
         assertThrows(ConcurrentModificationException.class,
@@ -424,7 +423,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {
-                signal.value();
+                signal.get();
             });
         });
     }
@@ -435,7 +434,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
     }

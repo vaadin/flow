@@ -68,7 +68,7 @@ public class SharedSignalSerializationTest {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
-        signal.value("Test");
+        signal.set("Test");
         assertSerializeAndDeserialize(signal);
     }
 
@@ -98,8 +98,8 @@ public class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        Assert.assertEquals("Test", signal.value().mapChildren().get("key")
-                .value().value(String.class));
+        Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
+                .value(String.class));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class SharedSignalSerializationTest {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
         assertSerializeAndDeserialize(signal);
 
-        signal.value(123.45);
+        signal.set(123.45);
         assertSerializeAndDeserialize(signal);
     }
 }

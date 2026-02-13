@@ -40,7 +40,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    SignalOperation<T> value(T value);
+    SignalOperation<T> set(T value);
 
     /**
      * Sets the value of this signal if and only if the signal has the expected
@@ -93,7 +93,7 @@ public interface WritableSignal<T> extends Signal<T> {
      * @return the new readonly signal, not <code>null</code>
      */
     default Signal<T> asReadonly() {
-        return () -> value();
+        return () -> get();
     }
 
     /**
@@ -119,7 +119,7 @@ public interface WritableSignal<T> extends Signal<T> {
      * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done,
      *         Todo::withDone);
      *
-     * checkbox.bindValue(doneSignal, doneSignal::value); // Two-way binding
+     * checkbox.bindValue(doneSignal, doneSignal::set); // Two-way binding
      * </pre>
      *
      * @param <C>
