@@ -330,7 +330,7 @@ public class SharedMapSignal<T>
     @Override
     public String toString() {
         return peek().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue().value())
+                .map(entry -> entry.getKey() + "=" + entry.getValue().get())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 

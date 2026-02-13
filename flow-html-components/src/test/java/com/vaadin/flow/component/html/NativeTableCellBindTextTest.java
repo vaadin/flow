@@ -35,10 +35,10 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         cell.bindText(signal);
 
-        signal.value("text-1");
+        signal.set("text-1");
         assertEquals("text-1", cell.getText());
 
-        signal.value("text-2");
+        signal.set("text-2");
         assertEquals("text-2", cell.getText());
     }
 
@@ -70,7 +70,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", cell.getText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", cell.getText());
     }
 }

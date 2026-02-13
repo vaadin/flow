@@ -147,7 +147,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertEquals(1, component.effectExecutionCounter);
 
         // verify that signal works before serialization
-        signal.value("changed");
+        signal.set("changed");
         assertEquals(2, component.effectExecutionCounter);
 
         SerializedLocalSignalComponent deserializedComponent;
@@ -173,18 +173,18 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertNotSame(deserializedComponent, component);
 
         UI.setCurrent(deserializedUi);
-        deserializedComponent.signal.value("changed after deserialization");
+        deserializedComponent.signal.set("changed after deserialization");
         assertEquals(3, deserializedComponent.effectExecutionCounter);
-        deserializedComponent.signal.value("changed");
+        deserializedComponent.signal.set("changed");
         assertEquals(4, deserializedComponent.effectExecutionCounter);
 
-        signal.value("changed in original signal");
+        signal.set("changed in original signal");
         // original signal change should not affect deserialized component
         assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
-        deserializedComponent.signal.value("foo");
+        deserializedComponent.signal.set("foo");
         assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // verify various bindX methods
@@ -205,7 +205,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         // verify mapped and computed signals with bindEnabled and bindVisible
         assertTrue(deserializedComponent.getElement().isEnabled());
         assertTrue(deserializedComponent.getElement().isVisible());
-        deserializedComponent.signal.value(null);
+        deserializedComponent.signal.set(null);
         assertFalse(deserializedComponent.getElement().isEnabled());
         assertFalse(deserializedComponent.getElement().isVisible());
 
@@ -223,11 +223,11 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         SerializedSharedSignalComponent component = new SerializedSharedSignalComponent(
                 signal);
         ui.add(component);
-        Assert.assertEquals(1, component.effectExecutionCounter);
+        assertEquals(1, component.effectExecutionCounter);
 
         // verify that signal works before serialization
-        signal.value("changed");
-        Assert.assertEquals(2, component.effectExecutionCounter);
+        signal.set("changed");
+        assertEquals(2, component.effectExecutionCounter);
 
         SerializedSharedSignalComponent deserializedComponent;
         VaadinSession deserializedSession = null;
@@ -252,19 +252,19 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertNotSame(deserializedComponent, component);
 
         UI.setCurrent(deserializedUi);
-        deserializedComponent.signal.value("changed after deserialization");
-        Assert.assertEquals(3, deserializedComponent.effectExecutionCounter);
-        deserializedComponent.signal.value("changed");
-        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+        deserializedComponent.signal.set("changed after deserialization");
+        assertEquals(3, deserializedComponent.effectExecutionCounter);
+        deserializedComponent.signal.set("changed");
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
-        signal.value("changed in original signal");
+        signal.set("changed in original signal");
         // original signal change should not affect deserialized component
-        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         // remove registration and verify that effect is not called anymore
         deserializedComponent.registration.remove();
-        deserializedComponent.signal.value("foo");
-        Assert.assertEquals(4, deserializedComponent.effectExecutionCounter);
+        deserializedComponent.signal.set("foo");
+        assertEquals(4, deserializedComponent.effectExecutionCounter);
 
         deserializedSession.unlock();
         VaadinService.setCurrent(null);

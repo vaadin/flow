@@ -67,11 +67,11 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         assertFalse(element.isEnabled());
 
         // false -> true
-        signal.value(true);
+        signal.set(true);
         assertTrue(element.isEnabled());
 
         // null transforms to false
-        signal.value(null);
+        signal.set(null);
         assertFalse(element.isEnabled());
     }
 
@@ -80,7 +80,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
-        signal.value(false);
+        signal.set(false);
 
         assertTrue(element.isEnabled());
     }
@@ -92,7 +92,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
-        signal.value(false); // ignored
+        signal.set(false); // ignored
 
         assertTrue(element.isEnabled());
     }
@@ -104,7 +104,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
-        signal.value(false);
+        signal.set(false);
         UI.getCurrent().getElement().appendChild(element);
 
         assertFalse(element.isEnabled());
@@ -146,7 +146,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         feature.removeBinding(SignalBindingFeature.ENABLED);
 
         // Signal changes should no longer affect the element
-        signal.value(false);
+        signal.set(false);
         assertTrue(element.isEnabled());
 
         // Manual set should work without throwing

@@ -440,7 +440,7 @@ public interface HasSize extends HasElement {
      * Div component = new Div();
      * add(component);
      * component.bindWidth(signal);
-     * signal.value("300px"); // The component width is set to "300px"
+     * signal.set("300px"); // The component width is set to "300px"
      * </pre>
      *
      * @param widthSignal
@@ -476,7 +476,7 @@ public interface HasSize extends HasElement {
      * Div component = new Div();
      * add(component);
      * component.bindHeight(signal);
-     * signal.value("300px"); // The component height is set to "300px"
+     * signal.set("300px"); // The component height is set to "300px"
      * </pre>
      *
      * @param heightSignal

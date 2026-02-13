@@ -56,35 +56,35 @@ public class SharedValueSignalTest extends SignalTestBase {
     void constructor_type_noValueAndTypeIsUsed() {
         SharedValueSignal<String> signal = new SharedValueSignal<>(
                 String.class);
-        assertNull(signal.value());
+        assertNull(signal.get());
 
-        signal.value("a string");
-        assertEquals("a string", signal.value());
+        signal.set("a string");
+        assertEquals("a string", signal.get());
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
-            raw.value(new Object());
+            raw.set(new Object());
         });
-        assertEquals("a string", signal.value());
+        assertEquals("a string", signal.get());
     }
 
     @Test
     void constructor_initialValue_valueUsedAndTypeIsInferred() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        assertEquals("initial", signal.value());
+        assertEquals("initial", signal.get());
 
-        signal.value("a string");
-        assertEquals("a string", signal.value());
+        signal.set("a string");
+        assertEquals("a string", signal.get());
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
-            raw.value(new Object());
+            raw.set(new Object());
         });
-        assertEquals("a string", signal.value());
+        assertEquals("a string", signal.get());
     }
 
     @Test
@@ -109,18 +109,18 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String[]> signal = new SharedValueSignal<>(array);
 
         array[0] = "modified";
-        assertEquals("initial", signal.value()[0]);
+        assertEquals("initial", signal.get()[0]);
 
-        signal.value()[0] = "modified";
-        assertEquals("initial", signal.value()[0]);
+        signal.get()[0] = "modified";
+        assertEquals("initial", signal.get()[0]);
     }
 
     @Test
     void value_hasPrevious_previousInResult() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        SignalOperation<String> operation = signal.value("update");
-        assertEquals("update", signal.value());
+        SignalOperation<String> operation = signal.set("update");
+        assertEquals("update", signal.get());
 
         String resultValue = assertSuccess(operation);
         assertEquals("initial", resultValue);
@@ -129,9 +129,9 @@ public class SharedValueSignalTest extends SignalTestBase {
     @Test
     void peekConfirmed_hasUnconfirmedChange_changeIngored() {
         AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
-        signal.value("update");
+        signal.set("update");
 
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
         assertNull(signal.peekConfirmed());
 
         signal.tree().confirmSubmitted();
@@ -144,7 +144,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
 
         assertSuccess(operation);
     }
@@ -155,7 +155,7 @@ public class SharedValueSignalTest extends SignalTestBase {
                 "unexpected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
-        assertEquals("unexpected", signal.value());
+        assertEquals("unexpected", signal.get());
 
         assertFailure(operation);
     }
@@ -206,7 +206,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.tree().confirmSubmitted();
         assertNull(assertSuccess(operation));
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -218,7 +218,7 @@ public class SharedValueSignalTest extends SignalTestBase {
             if (previous < 5) {
                 // Provoke a conflict while still making progress
                 Signal.runWithoutTransaction(() -> {
-                    signal.value(previous + 1);
+                    signal.set(previous + 1);
                 });
             }
 
@@ -226,7 +226,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertEquals(5, assertSuccess(operation));
-        assertEquals(6, signal.value());
+        assertEquals(6, signal.get());
     }
 
     @Test
@@ -258,9 +258,9 @@ public class SharedValueSignalTest extends SignalTestBase {
             return true;
         });
 
-        wrapper.value("update");
+        wrapper.set("update");
 
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
         assertEquals(1, validatedCommands.size());
         assertInstanceOf(SignalCommand.SetCommand.class,
                 validatedCommands.get(0));
@@ -277,14 +277,14 @@ public class SharedValueSignalTest extends SignalTestBase {
             return true;
         });
 
-        SignalOperation<String> updateResult = wrapper.value("update");
+        SignalOperation<String> updateResult = wrapper.set("update");
         assertSuccess(updateResult);
-        assertEquals("update", wrapper.value());
+        assertEquals("update", wrapper.get());
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            wrapper.value(null);
+            wrapper.set(null);
         });
-        assertEquals("update", wrapper.value());
+        assertEquals("update", wrapper.get());
     }
 
     @Test
@@ -295,9 +295,9 @@ public class SharedValueSignalTest extends SignalTestBase {
             throw new RuntimeException();
         });
 
-        signal.value("update");
+        signal.set("update");
 
-        assertEquals("update", wrapper.value());
+        assertEquals("update", wrapper.get());
     }
 
     @Test
@@ -323,7 +323,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         Signal.runInTransaction(() -> {
-            wrapper.value("update");
+            wrapper.set("update");
         });
 
         assertEquals(1, validatedCommands.size());
@@ -336,10 +336,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> readonly = signal.asReadonly();
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            readonly.value("Update");
+            readonly.set("Update");
         });
 
-        assertEquals("initial", readonly.value());
+        assertEquals("initial", readonly.get());
     }
 
     @Test
@@ -348,7 +348,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -358,11 +358,11 @@ public class SharedValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(1, count.intValue());
         assertTrue(usage.hasChanges());
 
-        signal.value("anohter");
+        signal.set("anohter");
         assertEquals(1, count.intValue());
     }
 
@@ -372,7 +372,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         usage.onNextChange(immediate -> {
@@ -380,10 +380,10 @@ public class SharedValueSignalTest extends SignalTestBase {
             return true;
         });
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(1, count.intValue());
 
-        signal.value("anohter");
+        signal.set("anohter");
         assertEquals(2, count.intValue());
     }
 
@@ -393,7 +393,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         usage.onNextChange(immediate -> {
@@ -401,11 +401,11 @@ public class SharedValueSignalTest extends SignalTestBase {
             return false;
         });
 
-        signal.value("initial");
+        signal.set("initial");
         assertEquals(0, count.intValue());
         assertFalse(usage.hasChanges());
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(1, count.intValue());
         assertTrue(usage.hasChanges());
     }
@@ -416,7 +416,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         usage.onNextChange(immediate -> {
@@ -428,7 +428,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertEquals(0, count.intValue());
         assertFalse(usage.hasChanges());
 
-        signal.value("update");
+        signal.set("update");
         assertEquals(1, count.intValue());
         assertTrue(usage.hasChanges());
     }
@@ -440,10 +440,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger trueCount = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update");
+        signal.set("update");
 
         usage.onNextChange(immediate -> {
             falseCount.incrementAndGet();
@@ -457,7 +457,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
         assertEquals(1, trueCount.intValue());
 
-        signal.value("again");
+        signal.set("again");
         assertEquals(1, falseCount.intValue());
         assertEquals(2, trueCount.intValue());
     }
@@ -468,7 +468,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = list.insertLast("value").signal();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         list.remove(signal);
@@ -484,7 +484,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         list.remove(signal);
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -496,7 +496,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>(
                 String.class);
-        SignalOperation<String> operation = signal.value("update");
+        SignalOperation<String> operation = signal.set("update");
 
         assertFalse(operation.result().isDone());
         assertEquals(1, notifier.countPendingTasks());
@@ -591,15 +591,15 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         Signal.runInTransaction(() -> {
             // Read to make signal participate in transaction
-            signal.value();
+            signal.get();
 
             Signal.runWithoutTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
 
-            assertEquals("value", signal.value());
+            assertEquals("value", signal.get());
         });
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -607,13 +607,13 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         Signal.runInTransaction(() -> {
-            signal.value("update");
+            signal.set("update");
 
             Signal.runWithoutTransaction(() -> {
-                assertEquals("value", signal.value());
+                assertEquals("value", signal.get());
             });
         });
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -621,15 +621,15 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
-            signal.value(signal.value() + " update");
+            signal.set(signal.get() + " update");
 
             Signal.runWithoutTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
 
         assertFailure(operation);
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
     }
 
     @Test
@@ -637,15 +637,15 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
-            signal.value(signal.peek() + " update");
+            signal.set(signal.peek() + " update");
 
             Signal.runWithoutTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
 
         assertSuccess(operation);
-        assertEquals("value update", signal.value());
+        assertEquals("value update", signal.get());
     }
 
     @Test
@@ -653,15 +653,15 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
-            signal.value(signal.peekConfirmed() + " update");
+            signal.set(signal.peekConfirmed() + " update");
 
             Signal.runWithoutTransaction(() -> {
-                signal.value("update");
+                signal.set("update");
             });
         });
 
         assertSuccess(operation);
-        assertEquals("value update", signal.value());
+        assertEquals("value update", signal.get());
     }
 
     @Test

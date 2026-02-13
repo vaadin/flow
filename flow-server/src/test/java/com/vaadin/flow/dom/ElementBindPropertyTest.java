@@ -165,7 +165,7 @@ public class ElementBindPropertyTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
         component.getElement().bindProperty("foo", computedSignal);
 
         assertEquals("computed-bar",
@@ -236,7 +236,7 @@ public class ElementBindPropertyTest {
                         JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "foo"),
                 ElementListenersTest.getExpressions(listenerMap, "event"));
 
-        signal.value("changedValue");
+        signal.set("changedValue");
         Assert.assertEquals("changedValue", listenerValue.get());
     }
 
@@ -252,13 +252,13 @@ public class ElementBindPropertyTest {
         component.getElement().addPropertyChangeListener("foo", "event",
                 event -> listenerValue.set(event.getValue()));
 
-        signal.value("changedValue");
+        signal.set("changedValue");
         Assert.assertEquals("changedValue", listenerValue.get());
 
         // When detached, signal change should not propagate to the property and
         // the listener should not be triggered
         component.removeFromParent();
-        signal.value("secondChangedValue");
+        signal.set("secondChangedValue");
         Assert.assertEquals("changedValue", listenerValue.get());
         Assert.assertEquals("changedValue",
                 component.getElement().getProperty("foo"));
@@ -288,7 +288,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(false);
+        signal.set(false);
 
         Assert.assertTrue(events.isEmpty());
         assertTrue(component.getElement().getProperty("foo", false));
@@ -318,7 +318,7 @@ public class ElementBindPropertyTest {
         assertTrue(component.getElement().getProperty("foo", false));
 
         component.removeFromParent();
-        signal.value(false);
+        signal.set(false);
 
         assertEquals(false, signal.peek());
         assertTrue(component.getElement().getProperty("foo", false));
@@ -353,7 +353,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(2.0d);
+        signal.set(2.0d);
 
         assertTrue(events.isEmpty());
         assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
@@ -386,7 +386,7 @@ public class ElementBindPropertyTest {
                 0.0d);
 
         component.removeFromParent();
-        signal.value(2.0d);
+        signal.set(2.0d);
 
         assertEquals(2.0d, signal.peek(), 0.0d);
         assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
@@ -423,7 +423,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(2);
+        signal.set(2);
 
         assertTrue(events.isEmpty());
         assertEquals(1, component.getElement().getProperty("foo", -1));
@@ -453,7 +453,7 @@ public class ElementBindPropertyTest {
         assertEquals(1, component.getElement().getProperty("foo", -1));
 
         component.removeFromParent();
-        signal.value(2);
+        signal.set(2);
 
         assertEquals(2, (long) signal.peek());
         assertEquals(1, component.getElement().getProperty("foo", -1));
@@ -488,7 +488,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value("baz");
+        signal.set("baz");
 
         Assert.assertTrue(events.isEmpty());
         assertEquals("bar",
@@ -521,7 +521,7 @@ public class ElementBindPropertyTest {
                 component.getElement().getProperty("foo", "default"));
 
         component.removeFromParent();
-        signal.value("baz");
+        signal.set("baz");
 
         assertEquals("baz", signal.peek());
         assertEquals("bar",
@@ -558,7 +558,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(createPerson("Jack", 52, false));
+        signal.set(createPerson("Jack", 52, false));
 
         assertPersonEquals(john,
                 (JsonNode) component.getElement().getPropertyRaw("foo"));
@@ -594,7 +594,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
         JacksonUtilsTest.Person jack = createJack();
-        signal.value(jack);
+        signal.set(jack);
 
         assertEquals(jack, signal.peek());
         assertPersonEquals(john,
@@ -635,7 +635,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(Arrays.asList(createJack(), createJohn()));
+        signal.set(Arrays.asList(createJack(), createJohn()));
         assertEquals("John",
                 getFromList(component, "foo", 0).get("name").asString());
         assertEquals("Jack",
@@ -676,7 +676,7 @@ public class ElementBindPropertyTest {
                 getFromList(component, "foo", 1).get("name").asString());
 
         component.removeFromParent();
-        signal.value(Arrays.asList(createJack(), createJohn()));
+        signal.set(Arrays.asList(createJack(), createJohn()));
 
         // assert signal value updated
         assertEquals("Jack", (signal.peek().getFirst()).name());
@@ -725,7 +725,7 @@ public class ElementBindPropertyTest {
 
         component.removeFromParent();
 
-        signal.value(createPersonMap(createJack(), createJohn()));
+        signal.set(createPersonMap(createJack(), createJohn()));
         assertEquals("John",
                 getFromMap(component, "foo", "0").get("name").asString());
         assertEquals("Jack",
@@ -766,7 +766,7 @@ public class ElementBindPropertyTest {
                 getFromMap(component, "foo", "1").get("name").asString());
 
         component.removeFromParent();
-        signal.value(createPersonMap(createJack(), createJohn()));
+        signal.set(createPersonMap(createJack(), createJohn()));
 
         // assert signal value updated
         assertEquals("Jack", (signal.peek().get("0")).name());

@@ -48,7 +48,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
 
         Signal<String> signal = new ValueSignal<>("foo");
         ComponentEffect.effect(this, () -> {
-            signalValue.setText("Signal value: " + signal.value());
+            signalValue.setText("Signal value: " + signal.get());
         });
         target.getElement().bindProperty(TEST_PROPERTY_NAME, signal);
 
@@ -65,7 +65,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         // should throw an exception
         Div shouldThrowTarget = createAndAddDiv(SHOULD_THROW_TARGET_DIV_ID);
         Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.value());
+                .computed(() -> "computed-" + signal.get());
         shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
                 computedSignal);
         shouldThrowTarget.getElement().addPropertyChangeListener(
