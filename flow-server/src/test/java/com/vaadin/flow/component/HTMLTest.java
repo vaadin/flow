@@ -19,11 +19,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.Element;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class HTMLTest {
@@ -73,38 +73,37 @@ class HTMLTest {
     @Test
     public void simpleHtml() {
         Html html = new Html("<span>hello</span>");
-        Assertions.assertEquals(Tag.SPAN, html.getElement().getTag());
-        Assertions.assertEquals("hello", html.getInnerHtml());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
     public void setHtmlContent() {
         Html html = new Html("<span>hello</span>");
-        Assertions.assertEquals(Tag.SPAN, html.getElement().getTag());
-        Assertions.assertEquals("hello", html.getInnerHtml());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals("hello", html.getInnerHtml());
         html.setHtmlContent("<span>world</span>");
-        Assertions.assertEquals("world", html.getInnerHtml());
+        assertEquals("world", html.getInnerHtml());
     }
 
     @Test
     public void setHtmlContent_tagMismatch() {
         assertThrows(IllegalStateException.class, () -> {
             Html html = new Html("<span>hello</span>");
-            Assertions.assertEquals(Tag.SPAN, html.getElement().getTag());
-            Assertions.assertEquals("hello", html.getInnerHtml());
+            assertEquals(Tag.SPAN, html.getElement().getTag());
+            assertEquals("hello", html.getInnerHtml());
             html.setHtmlContent("<div>world</div>");
-            Assertions.assertEquals("world", html.getInnerHtml());
+            assertEquals("world", html.getInnerHtml());
         });
     }
 
     @Test
     public void rootAttributes() {
         Html html = new Html("<span foo='bar'>hello</span>");
-        Assertions.assertEquals(Tag.SPAN, html.getElement().getTag());
-        Assertions.assertEquals(1,
-                html.getElement().getAttributeNames().count());
-        Assertions.assertEquals("bar", html.getElement().getAttribute("foo"));
-        Assertions.assertEquals("hello", html.getInnerHtml());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals(1, html.getElement().getAttributeNames().count());
+        assertEquals("bar", html.getElement().getAttribute("foo"));
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
@@ -112,12 +111,12 @@ class HTMLTest {
         Html html = new Html(
                 "<span class='foo' style='color: red'>hello</span>");
         Element element = html.getElement();
-        Assertions.assertEquals(Tag.SPAN, element.getTag());
+        assertEquals(Tag.SPAN, element.getTag());
 
-        Assertions.assertEquals(2, element.getAttributeNames().count());
-        Assertions.assertEquals("foo", element.getAttribute("class"));
-        Assertions.assertEquals("color:red", element.getAttribute("style"));
-        Assertions.assertEquals("hello", html.getInnerHtml());
+        assertEquals(2, element.getAttributeNames().count());
+        assertEquals("foo", element.getAttribute("class"));
+        assertEquals("color:red", element.getAttribute("style"));
+        assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
@@ -129,8 +128,8 @@ class HTMLTest {
     @Test
     public void brokenHtml() {
         Html html = new Html("<b></div>");
-        Assertions.assertEquals("b", html.getElement().getTag());
-        Assertions.assertEquals("", html.getInnerHtml());
+        assertEquals("b", html.getElement().getTag());
+        assertEquals("", html.getInnerHtml());
     }
 
     @Test
@@ -143,26 +142,26 @@ class HTMLTest {
                 + "" //
                 + "";
         Html html = new Html(input);
-        Assertions.assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals(Tag.SPAN, html.getElement().getTag());
         String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "")
                 .replaceAll("</span>[ ]*$", "");
-        Assertions.assertEquals(expectedInnerHtml, html.getInnerHtml());
+        assertEquals(expectedInnerHtml, html.getInnerHtml());
     }
 
     @Test
     public void emptyAttribute_elementIsCreatedAndHasAttribute() {
         Html html = new Html("<audio controls></audio>");
 
-        Assertions.assertEquals("", html.getElement().getAttribute("controls"));
+        assertEquals("", html.getElement().getAttribute("controls"));
 
-        Assertions.assertEquals("<audio controls></audio>",
+        assertEquals("<audio controls></audio>",
                 html.getElement().getOuterHTML());
     }
 
     @Test
     public void styleElementAsString_elementIsUsed() {
         Html html = new Html("<style></style>");
-        Assertions.assertEquals("style", html.getElement().getTag());
+        assertEquals("style", html.getElement().getTag());
     }
 
     @Test
@@ -170,7 +169,7 @@ class HTMLTest {
     public void styleElementAsStream_elementIsUsed() {
         Html html = new Html(new ByteArrayInputStream(
                 "<style></style>".getBytes(StandardCharsets.UTF_8)));
-        Assertions.assertEquals("style", html.getElement().getTag());
+        assertEquals("style", html.getElement().getTag());
     }
 
 }

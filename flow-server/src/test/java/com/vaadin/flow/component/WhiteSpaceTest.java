@@ -15,24 +15,23 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.HasText.WhiteSpace;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WhiteSpaceTest {
 
     @Test
     public void toString_styleValueIsReturned() {
-        Assertions.assertEquals("nowrap", WhiteSpace.NOWRAP.toString());
-        Assertions.assertEquals("pre-line", WhiteSpace.PRE_LINE.toString());
+        assertEquals("nowrap", WhiteSpace.NOWRAP.toString());
+        assertEquals("pre-line", WhiteSpace.PRE_LINE.toString());
     }
 
     @Test
     public void forString_enumIsReturned() {
-        Assertions.assertEquals(WhiteSpace.NORMAL,
-                WhiteSpace.forString("normal"));
-        Assertions.assertEquals(WhiteSpace.PRE_WRAP,
-                WhiteSpace.forString("pre-wrap"));
+        assertEquals(WhiteSpace.NORMAL, WhiteSpace.forString("normal"));
+        assertEquals(WhiteSpace.PRE_WRAP, WhiteSpace.forString("pre-wrap"));
     }
 }

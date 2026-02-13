@@ -18,10 +18,11 @@ package com.vaadin.flow.component;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SvgTest {
 
@@ -73,27 +74,27 @@ class SvgTest {
     @Test
     public void simpleSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
-        Assertions.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }
 
     @Test
     public void withDocType() {
         Svg svg = new Svg(SVG_WITH_DOCTYPE_ET_AL);
-        Assertions.assertTrue(getSvgDocumentBody(svg).startsWith("<svg"));
+        assertTrue(getSvgDocumentBody(svg).startsWith("<svg"));
     }
 
     @Test
     public void resetSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
-        Assertions.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
         svg.setSvg(TRIVIAL_SVG2);
-        Assertions.assertEquals(TRIVIAL_SVG2, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG2, getSvgDocumentBody(svg));
     }
 
     @Test
     public void fromStream() {
         Svg svg = new Svg(new ByteArrayInputStream(TRIVIAL_SVG.getBytes()));
-        Assertions.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }
 
     private static String getSvgDocumentBody(Svg svg) {

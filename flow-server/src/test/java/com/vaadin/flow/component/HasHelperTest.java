@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HasHelperTest {
 
@@ -28,20 +30,20 @@ class HasHelperTest {
     @Test
     public void getHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
-        Assertions.assertNull(c.getHelperText());
+        assertNull(c.getHelperText());
     }
 
     @Test
     public void getHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
-        Assertions.assertNull(c.getHelperComponent());
+        assertNull(c.getHelperComponent());
     }
 
     @Test
     public void setHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
-        Assertions.assertEquals("helper", c.getHelperText());
+        assertEquals("helper", c.getHelperText());
     }
 
     @Test
@@ -49,17 +51,17 @@ class HasHelperTest {
         final HasHelperComponent c = new HasHelperComponent();
         final HasHelperComponent slotted = new HasHelperComponent();
         c.setHelperComponent(slotted);
-        Assertions.assertEquals(slotted, c.getHelperComponent());
+        assertEquals(slotted, c.getHelperComponent());
     }
 
     @Test
     public void removeHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
-        Assertions.assertEquals("helper", c.getHelperText());
+        assertEquals("helper", c.getHelperText());
 
         c.setHelperText(null);
-        Assertions.assertNull(c.getHelperText());
+        assertNull(c.getHelperText());
     }
 
     @Test
@@ -68,9 +70,9 @@ class HasHelperTest {
         final HasHelperComponent slotted = new HasHelperComponent();
 
         c.setHelperComponent(slotted);
-        Assertions.assertEquals(slotted, c.getHelperComponent());
+        assertEquals(slotted, c.getHelperComponent());
 
         c.setHelperComponent(null);
-        Assertions.assertNull(c.getHelperComponent());
+        assertNull(c.getHelperComponent());
     }
 }

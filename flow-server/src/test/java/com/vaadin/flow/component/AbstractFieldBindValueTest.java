@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
@@ -31,6 +30,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class AbstractFieldBindValueTest extends SignalsUnitTest {
 
@@ -142,7 +142,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
-        Assertions.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
                 () -> input.bindValue(null, null));
     }
 
@@ -177,7 +177,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.getValue();
         input.getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> Assertions.fail(
+                .ifPresent(feature -> fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -201,9 +201,9 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
 
-        Assertions.assertNull(listenerValue.get());
+        assertNull(listenerValue.get());
         signal.set("bar");
-        Assertions.assertEquals("bar", listenerValue.get());
+        assertEquals("bar", listenerValue.get());
     }
 
     @Test
@@ -216,10 +216,10 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
-        Assertions.assertNull(listenerValue.get());
+        assertNull(listenerValue.get());
         input.bindValue(signal, signal::set);
 
-        Assertions.assertEquals("foo", listenerValue.get());
+        assertEquals("foo", listenerValue.get());
     }
 
     @Test
@@ -235,25 +235,25 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
             counter.incrementAndGet();
         });
 
-        Assertions.assertEquals(0, counter.get());
+        assertEquals(0, counter.get());
         UI.getCurrent().add(input);
         // effect run once on attach
-        Assertions.assertEquals(1, counter.get());
+        assertEquals(1, counter.get());
 
         input.setValue("bar");
-        Assertions.assertEquals(2, counter.get());
+        assertEquals(2, counter.get());
 
         input.setValue("bar");
-        Assertions.assertEquals(2, counter.get());
+        assertEquals(2, counter.get());
 
         input.setValue("foo");
-        Assertions.assertEquals(3, counter.get());
+        assertEquals(3, counter.get());
 
         signal.set("baz");
-        Assertions.assertEquals(4, counter.get());
+        assertEquals(4, counter.get());
 
         input.setValue("baz");
-        Assertions.assertEquals(4, counter.get());
+        assertEquals(4, counter.get());
     }
 
     @Test
@@ -266,25 +266,25 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
                 event -> listenerValue.set(event.getValue()));
-        Assertions.assertEquals("", input.getValue());
-        Assertions.assertNull(listenerValue.get());
+        assertEquals("", input.getValue());
+        assertNull(listenerValue.get());
         input.bindValue(signal, signal::set);
 
         // value after bindValue
-        Assertions.assertEquals("foo", input.getValue());
-        Assertions.assertEquals("foo", listenerValue.get());
+        assertEquals("foo", input.getValue());
+        assertEquals("foo", listenerValue.get());
 
         // value after signal value change
         signal.set("bar");
-        Assertions.assertEquals("bar", input.getValue());
-        Assertions.assertEquals("bar", listenerValue.get());
+        assertEquals("bar", input.getValue());
+        assertEquals("bar", listenerValue.get());
 
         // null is not allowed in TestPropertyInput. Default value is "".
         signal.set(null);
         // value doesn't change
-        Assertions.assertEquals("bar", input.getValue());
-        Assertions.assertEquals("bar", listenerValue.get());
-        Assertions.assertEquals(1, events.size());
+        assertEquals("bar", input.getValue());
+        assertEquals("bar", listenerValue.get());
+        assertEquals(1, events.size());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
     }
@@ -393,12 +393,10 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("foo", input.getValue());
 
         input.addValueChangeListener(event -> {
-            Assertions.fail(
-                    "Value change listener should not be triggered when write callback throws");
+            fail("Value change listener should not be triggered when write callback throws");
         });
 
-        Assertions.assertThrows(RuntimeException.class,
-                () -> input.setValue("bar"));
+        assertThrows(RuntimeException.class, () -> input.setValue("bar"));
     }
 
     @Test
@@ -448,8 +446,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         });
 
         input.addValueChangeListener(event -> {
-            Assertions.fail(
-                    "Value change listener should not be triggered with a no-op callback");
+            fail("Value change listener should not be triggered with a no-op callback");
         });
 
         // With a no-op callback, value is not changed and event should not be

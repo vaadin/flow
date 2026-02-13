@@ -24,10 +24,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableFunction;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class DependencyTreeCacheTest {
     @Test
@@ -39,13 +43,13 @@ class DependencyTreeCacheTest {
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assertions.assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")),
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")),
                 dependencies);
 
         // Parse again, should not trigger exception because things are parsed
         // multiple times
         Set<String> dependencies2 = cache.getDependencies("/a");
-        Assertions.assertEquals(dependencies, dependencies2);
+        assertEquals(dependencies, dependencies2);
     }
 
     @Test
@@ -57,8 +61,7 @@ class DependencyTreeCacheTest {
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assertions.assertEquals(
-                new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")),
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")),
                 dependencies);
     }
 
@@ -84,14 +87,13 @@ class DependencyTreeCacheTest {
 
         long end = System.currentTimeMillis();
 
-        Assertions.assertEquals(new HashSet<>(Arrays.asList("/a", "/b")),
-                dependencies);
-        Assertions.assertEquals(dependencies, threadResult);
+        assertEquals(new HashSet<>(Arrays.asList("/a", "/b")), dependencies);
+        assertEquals(dependencies, threadResult);
 
         long duration = (end - start);
 
-        Assertions.assertTrue(duration < 200);
-        Assertions.assertTrue(duration >= 100,
+        assertTrue(duration < 200);
+        assertTrue(duration >= 100,
                 "Parsing should take at least 100 ms, was " + duration);
     }
 
@@ -107,10 +109,8 @@ class DependencyTreeCacheTest {
             if (iterationCount++ > 30) {
                 // Less than 1/10^9 chance that 50/50 randomization will give
                 // the same result 30 times in a row
-                Assertions.fail(
-                        "Did not observe both slowdown and speedup. Max duration: "
-                                + maxDuration + ", min duration: "
-                                + minDuration);
+                fail("Did not observe both slowdown and speedup. Max duration: "
+                        + maxDuration + ", min duration: " + minDuration);
             }
 
             MockParser parser = new MockParser().addResult("/a", 25, "/b", "/c")
@@ -129,7 +129,7 @@ class DependencyTreeCacheTest {
             long end = System.currentTimeMillis();
             int duration = (int) (end - start);
 
-            Assertions.assertTrue(duration >= 50,
+            assertTrue(duration >= 50,
                     "Duration should never be less than 50, was " + duration);
 
             maxDuration = Math.max(maxDuration, duration);
@@ -158,9 +158,9 @@ class DependencyTreeCacheTest {
                     USED_PLACEHOLDER);
 
             if (supplier == USED_PLACEHOLDER) {
-                Assertions.fail("Path " + path + " has already been parsed");
+                fail("Path " + path + " has already been parsed");
             } else if (supplier == null) {
-                Assertions.fail("Parser cannot find " + path);
+                fail("Parser cannot find " + path);
             }
 
             return supplier.get();
@@ -191,9 +191,8 @@ class DependencyTreeCacheTest {
         }
 
         public void assertConsumed() {
-            items.forEach(
-                    (path, value) -> Assertions.assertSame(USED_PLACEHOLDER,
-                            value, path + " should have been parsed"));
+            items.forEach((path, value) -> assertSame(USED_PLACEHOLDER, value,
+                    path + " should have been parsed"));
         }
     }
 

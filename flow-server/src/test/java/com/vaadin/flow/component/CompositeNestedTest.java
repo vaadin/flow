@@ -17,13 +17,14 @@ package com.vaadin.flow.component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 import com.vaadin.flow.dom.ElementFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CompositeNestedTest {
     TestLayout layout;
@@ -96,25 +97,25 @@ class CompositeNestedTest {
 
     @Test
     public void compositeOuterElement() {
-        Assertions.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeOuter.getElement());
     }
 
     @Test
     public void compositeInnerElement() {
-        Assertions.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeInner.getElement());
     }
 
     @Test
     public void getParentElement_compositeOuter() {
-        Assertions.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeOuter.getElement().getParent());
     }
 
     @Test
     public void getParentElement_compositeInner() {
-        Assertions.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeInner.getElement().getParent());
     }
 
@@ -126,19 +127,17 @@ class CompositeNestedTest {
 
     @Test
     public void getParent_compositeOuter() {
-        Assertions.assertEquals(layout, compositeOuter.getParent().get());
+        assertEquals(layout, compositeOuter.getParent().get());
     }
 
     @Test
     public void getParent_compositeInner() {
-        Assertions.assertEquals(compositeOuter,
-                compositeInner.getParent().get());
+        assertEquals(compositeOuter, compositeInner.getParent().get());
     }
 
     @Test
     public void getParent_componentInComposite() {
-        Assertions.assertEquals(compositeInner,
-                componentInComposite.getParent().get());
+        assertEquals(compositeInner, componentInComposite.getParent().get());
     }
 
     @Test

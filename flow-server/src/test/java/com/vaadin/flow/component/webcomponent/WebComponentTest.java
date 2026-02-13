@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -30,6 +29,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -47,9 +48,9 @@ class WebComponentTest {
 
     @Test
     void fireEvent_throwsWhenNameIsNull() {
-        NullPointerException ex = Assertions.assertThrows(
-                NullPointerException.class, () -> webComponent.fireEvent(null));
-        Assertions.assertTrue(ex.getMessage().contains("eventName"));
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> webComponent.fireEvent(null));
+        assertTrue(ex.getMessage().contains("eventName"));
     }
 
     @Test
@@ -59,19 +60,16 @@ class WebComponentTest {
 
     @Test
     void fireEvent_throwsWhenOptionsIsNull() {
-        NullPointerException ex = Assertions.assertThrows(
-                NullPointerException.class,
+        NullPointerException ex = assertThrows(NullPointerException.class,
                 () -> webComponent.fireEvent("name", (JsonNode) null, null));
-        Assertions.assertTrue(ex.getMessage().contains("options"));
+        assertTrue(ex.getMessage().contains("options"));
     }
 
     @Test
     void setProperty_throwsOnNullPropertyConfiguration() {
-        NullPointerException ex = Assertions.assertThrows(
-                NullPointerException.class,
+        NullPointerException ex = assertThrows(NullPointerException.class,
                 () -> webComponent.setProperty(null, "value"));
-        Assertions
-                .assertTrue(ex.getMessage().contains("propertyConfiguration"));
+        assertTrue(ex.getMessage().contains("propertyConfiguration"));
     }
 
     @Test
@@ -85,10 +83,10 @@ class WebComponentTest {
         PropertyConfigurationImpl<Component, String> configuration = new PropertyConfigurationImpl<>(
                 Component.class, "property", String.class, "value");
 
-        IllegalArgumentException ex = Assertions.assertThrows(
+        IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> webComponent.setProperty(configuration, "newValue"));
-        Assertions.assertTrue(ex.getMessage()
+        assertTrue(ex.getMessage()
                 .contains("WebComponent does not have a property identified"));
     }
 
@@ -107,13 +105,12 @@ class WebComponentTest {
         PropertyConfigurationImpl<Component, String> stringConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", String.class, "value");
 
-        IllegalArgumentException ex = Assertions
-                .assertThrows(IllegalArgumentException.class, () -> webComponent
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class, () -> webComponent
                         .setProperty(stringConfiguration, "newValue"));
-        Assertions.assertTrue(ex.getMessage()
-                .contains("Property 'property' of type "
-                        + "'java.lang.Integer' cannot be assigned value of type "
-                        + "'java.lang.String'!"));
+        assertTrue(ex.getMessage().contains("Property 'property' of type "
+                + "'java.lang.Integer' cannot be assigned value of type "
+                + "'java.lang.String'!"));
     }
 
     @Test

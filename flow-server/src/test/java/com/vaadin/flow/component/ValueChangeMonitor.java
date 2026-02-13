@@ -15,23 +15,28 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
-
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ValueChangeMonitor<T> {
     public ValueChangeMonitor(HasValue<?, T> obserable) {
         obserable.addValueChangeListener(event -> {
             if (capturedEvent != null) {
-                Assertions.fail("There is already an event. Old event: "
-                        + capturedEvent + ", new event: " + event);
+                fail("There is already an event. Old event: " + capturedEvent
+                        + ", new event: " + event);
             }
 
-            Assertions.assertSame(obserable, event.getHasValue());
+            assertSame(obserable, event.getHasValue());
 
             if (event instanceof ComponentValueChangeEvent<?, ?>) {
-                Assertions.assertSame(obserable,
+                assertSame(obserable,
                         ((ComponentValueChangeEvent<?, ?>) event).getSource());
             }
 
@@ -42,13 +47,13 @@ public class ValueChangeMonitor<T> {
     ValueChangeEvent<T> capturedEvent;
 
     public void discard() {
-        Assertions.assertNotNull(capturedEvent, "There should be an event");
+        assertNotNull(capturedEvent, "There should be an event");
         capturedEvent = null;
     }
 
     public void assertEvent(boolean fromClient, T oldValue, T newValue) {
-        Assertions.assertNotNull(capturedEvent, "There should be an event");
-        Assertions.assertTrue(fromClient == capturedEvent.isFromClient());
+        assertNotNull(capturedEvent, "There should be an event");
+        assertTrue(fromClient == capturedEvent.isFromClient());
 
         assertEventValues(capturedEvent, oldValue, newValue);
 
@@ -56,12 +61,12 @@ public class ValueChangeMonitor<T> {
     }
 
     public void assertNoEvent() {
-        Assertions.assertNull(capturedEvent, "There should be no event");
+        assertNull(capturedEvent, "There should be no event");
     }
 
     public static <T> void assertEventValues(ValueChangeEvent<T> event,
             T oldValue, T newValue) {
-        Assertions.assertEquals(oldValue, event.getOldValue());
-        Assertions.assertEquals(newValue, event.getValue());
+        assertEquals(oldValue, event.getOldValue());
+        assertEquals(newValue, event.getValue());
     }
 }

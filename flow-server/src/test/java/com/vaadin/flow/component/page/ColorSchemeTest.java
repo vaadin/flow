@@ -15,70 +15,65 @@
  */
 package com.vaadin.flow.component.page;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ColorSchemeTest {
 
     @Test
     public void getValue_returnsCorrectValue() {
-        Assertions.assertEquals("light", ColorScheme.Value.LIGHT.getValue());
-        Assertions.assertEquals("dark", ColorScheme.Value.DARK.getValue());
-        Assertions.assertEquals("light dark",
-                ColorScheme.Value.LIGHT_DARK.getValue());
-        Assertions.assertEquals("dark light",
-                ColorScheme.Value.DARK_LIGHT.getValue());
-        Assertions.assertEquals("normal", ColorScheme.Value.NORMAL.getValue());
-        Assertions.assertEquals("light dark",
-                ColorScheme.Value.SYSTEM.getValue());
+        assertEquals("light", ColorScheme.Value.LIGHT.getValue());
+        assertEquals("dark", ColorScheme.Value.DARK.getValue());
+        assertEquals("light dark", ColorScheme.Value.LIGHT_DARK.getValue());
+        assertEquals("dark light", ColorScheme.Value.DARK_LIGHT.getValue());
+        assertEquals("normal", ColorScheme.Value.NORMAL.getValue());
+        assertEquals("light dark", ColorScheme.Value.SYSTEM.getValue());
     }
 
     @Test
     public void getThemeValue_singleValue_returnsUnchanged() {
-        Assertions.assertEquals("light",
-                ColorScheme.Value.LIGHT.getThemeValue());
-        Assertions.assertEquals("dark", ColorScheme.Value.DARK.getThemeValue());
-        Assertions.assertEquals("normal",
-                ColorScheme.Value.NORMAL.getThemeValue());
+        assertEquals("light", ColorScheme.Value.LIGHT.getThemeValue());
+        assertEquals("dark", ColorScheme.Value.DARK.getThemeValue());
+        assertEquals("normal", ColorScheme.Value.NORMAL.getThemeValue());
     }
 
     @Test
     public void getThemeValue_multiValue_replacesSpaceWithHyphen() {
-        Assertions.assertEquals("light-dark",
+        assertEquals("light-dark",
                 ColorScheme.Value.LIGHT_DARK.getThemeValue());
-        Assertions.assertEquals("dark-light",
+        assertEquals("dark-light",
                 ColorScheme.Value.DARK_LIGHT.getThemeValue());
-        Assertions.assertEquals("light-dark",
-                ColorScheme.Value.SYSTEM.getThemeValue());
+        assertEquals("light-dark", ColorScheme.Value.SYSTEM.getThemeValue());
     }
 
     @Test
     public void fromString_validValues_returnsCorrectEnum() {
-        Assertions.assertEquals(ColorScheme.Value.LIGHT,
+        assertEquals(ColorScheme.Value.LIGHT,
                 ColorScheme.Value.fromString("light"));
-        Assertions.assertEquals(ColorScheme.Value.DARK,
+        assertEquals(ColorScheme.Value.DARK,
                 ColorScheme.Value.fromString("dark"));
-        Assertions.assertEquals(ColorScheme.Value.LIGHT_DARK,
+        assertEquals(ColorScheme.Value.LIGHT_DARK,
                 ColorScheme.Value.fromString("light dark"));
-        Assertions.assertEquals(ColorScheme.Value.DARK_LIGHT,
+        assertEquals(ColorScheme.Value.DARK_LIGHT,
                 ColorScheme.Value.fromString("dark light"));
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
+        assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString("normal"));
     }
 
     @Test
     public void fromString_nullOrEmpty_returnsNormal() {
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
+        assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString(null));
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
+        assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString(""));
     }
 
     @Test
     public void fromString_unrecognizedValue_returnsNormal() {
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
+        assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString("invalid"));
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
+        assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString("light-dark"));
     }
 
@@ -86,10 +81,10 @@ class ColorSchemeTest {
     public void fromString_lightDark_returnsLightDarkNotSystem() {
         // Ensure backward compatibility: parsing "light dark" returns
         // LIGHT_DARK
-        Assertions.assertEquals(ColorScheme.Value.LIGHT_DARK,
+        assertEquals(ColorScheme.Value.LIGHT_DARK,
                 ColorScheme.Value.fromString("light dark"));
         // SYSTEM and LIGHT_DARK should be functionally equivalent
-        Assertions.assertEquals(ColorScheme.Value.LIGHT_DARK.getValue(),
+        assertEquals(ColorScheme.Value.LIGHT_DARK.getValue(),
                 ColorScheme.Value.SYSTEM.getValue());
     }
 }

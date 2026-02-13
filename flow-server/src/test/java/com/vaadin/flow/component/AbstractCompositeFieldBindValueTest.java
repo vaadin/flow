@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.local.ValueSignal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
@@ -73,13 +75,13 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
-        Assertions.assertEquals("", field.start.getValue());
-        Assertions.assertEquals("", field.rest.getValue());
+        assertEquals("", field.start.getValue());
+        assertEquals("", field.rest.getValue());
 
         // setValue doesn't update the bound signal when detached
         field.setValue("Hey You");
-        Assertions.assertEquals("Hey You", field.getValue());
-        Assertions.assertEquals("Hello Cool World", signal.peek());
+        assertEquals("Hey You", field.getValue());
+        assertEquals("Hello Cool World", signal.peek());
     }
 
     @Test
@@ -89,14 +91,14 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
-        Assertions.assertEquals("", field.start.getValue());
-        Assertions.assertEquals("", field.rest.getValue());
+        assertEquals("", field.start.getValue());
+        assertEquals("", field.rest.getValue());
 
         // setModelValue doesn't update the bound signal when detached
         field.start.setValue("Hey");
         field.rest.setValue("You");
-        Assertions.assertEquals("Hey You", field.getValue());
-        Assertions.assertEquals("Hello Cool World", signal.peek());
+        assertEquals("Hey You", field.getValue());
+        assertEquals("Hello Cool World", signal.peek());
     }
 
     @Test
@@ -106,24 +108,24 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
-        Assertions.assertEquals("Hello", field.start.getValue());
-        Assertions.assertEquals("Cool World", field.rest.getValue());
+        assertEquals("Hello", field.start.getValue());
+        assertEquals("Cool World", field.rest.getValue());
 
         // test that setValue updates the signal
         field.setValue("");
-        Assertions.assertEquals("", field.getValue());
-        Assertions.assertEquals("", signal.peek());
+        assertEquals("", field.getValue());
+        assertEquals("", signal.peek());
 
         signal.set("Hello Cool World");
         // setValue for CompositeField's components value change listeners
         // update the value by internal setModelValue method
         field.rest.setValue("");
-        Assertions.assertEquals("Hello", field.getValue());
-        Assertions.assertEquals("Hello", signal.peek());
+        assertEquals("Hello", field.getValue());
+        assertEquals("Hello", signal.peek());
 
         field.rest.setValue("Vaadin");
-        Assertions.assertEquals("Hello Vaadin", field.getValue());
-        Assertions.assertEquals("Hello Vaadin", signal.peek());
+        assertEquals("Hello Vaadin", field.getValue());
+        assertEquals("Hello Vaadin", signal.peek());
     }
 
     @Test
@@ -131,7 +133,7 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 
-        Assertions.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
                 () -> field.bindValue(null, null));
     }
 }

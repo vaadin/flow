@@ -24,7 +24,6 @@ import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -66,6 +65,7 @@ import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaScriptBootstrapUITest {
 
@@ -641,7 +641,7 @@ class JavaScriptBootstrapUITest {
             return;
         }
         // self control: code inside catch should be invoked
-        Assertions.fail();
+        fail();
     }
 
     private void assertExceptionComponent(Class<?> errorClass,
@@ -649,14 +649,14 @@ class JavaScriptBootstrapUITest {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
-        Assertions.assertTrue(visibleComponent.isPresent(),
+        assertTrue(visibleComponent.isPresent(),
                 "No navigation component visible");
 
         Component internalServerError = visibleComponent.get();
-        Assertions.assertEquals(errorClass, internalServerError.getClass());
+        assertEquals(errorClass, internalServerError.getClass());
         String errorText = internalServerError.getElement().getText();
         for (String exceptionText : exceptionTexts) {
-            Assertions.assertTrue(errorText.contains(exceptionText),
+            assertTrue(errorText.contains(exceptionText),
                     "Expected the error text to contain '" + exceptionText
                             + "'");
         }

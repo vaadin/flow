@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasEnabledTest {
 
@@ -30,7 +32,7 @@ class HasEnabledTest {
     public void enabledComponent_isEnabledReturnsTrue() {
         TestComponent component = new TestComponent();
 
-        Assertions.assertTrue(component.isEnabled());
+        assertTrue(component.isEnabled());
     }
 
     @Test
@@ -38,7 +40,7 @@ class HasEnabledTest {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 
-        Assertions.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
     @Test
@@ -50,7 +52,7 @@ class HasEnabledTest {
 
         parent.add(component);
 
-        Assertions.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
     @Test
@@ -64,7 +66,7 @@ class HasEnabledTest {
 
         parent.remove(component);
 
-        Assertions.assertTrue(component.isEnabled());
+        assertTrue(component.isEnabled());
     }
 
     @Test
@@ -77,11 +79,11 @@ class HasEnabledTest {
 
         parent.setEnabled(false);
 
-        Assertions.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
 
         parent.setEnabled(true);
 
-        Assertions.assertFalse(component.isEnabled());
+        assertFalse(component.isEnabled());
     }
 
 }

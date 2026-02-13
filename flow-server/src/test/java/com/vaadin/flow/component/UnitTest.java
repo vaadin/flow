@@ -15,18 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class UnitTest {
 
     @Test
     public void getUnit() {
-        Assertions.assertFalse(Unit.getUnit(null).isPresent());
-        Assertions.assertFalse(Unit.getUnit("").isPresent());
-        Assertions.assertFalse(Unit.getUnit("10unknown").isPresent());
+        assertFalse(Unit.getUnit(null).isPresent());
+        assertFalse(Unit.getUnit("").isPresent());
+        assertFalse(Unit.getUnit("10unknown").isPresent());
 
-        Assertions.assertEquals(Unit.PERCENTAGE, Unit.getUnit("100%").get());
-        Assertions.assertEquals(Unit.PIXELS, Unit.getUnit("100px").get());
+        assertEquals(Unit.PERCENTAGE, Unit.getUnit("100%").get());
+        assertEquals(Unit.PIXELS, Unit.getUnit("100px").get());
     }
 }

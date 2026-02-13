@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +27,9 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class HasComponentsTest {
 
@@ -64,7 +65,7 @@ class HasComponentsTest {
         TestComponent component = new TestComponent();
         component.add(text);
 
-        Assertions.assertEquals(text, component.getElement().getText());
+        assertEquals(text, component.getElement().getText());
     }
 
     @Test
@@ -74,7 +75,7 @@ class HasComponentsTest {
         innerComponent.setId("insert-component-first");
         component.addComponentAsFirst(innerComponent);
         checkChildren(4, component);
-        Assertions.assertEquals(innerComponent.getId(),
+        assertEquals(innerComponent.getId(),
                 component.getChildren().findFirst().get().getId());
     }
 
@@ -85,8 +86,8 @@ class HasComponentsTest {
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assertions.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(2).getComponent().get().getId());
+        assertEquals(innerComponent.getId(), component.getElement().getChild(2)
+                .getComponent().get().getId());
     }
 
     @Test
@@ -131,9 +132,9 @@ class HasComponentsTest {
 
         try {
             component.remove(child, innerComponent);
-            Assertions.fail();
+            fail();
         } catch (IllegalArgumentException exception) {
-            Assertions.assertEquals(component, child.getParent().get());
+            assertEquals(component, child.getParent().get());
         }
     }
 
@@ -147,9 +148,9 @@ class HasComponentsTest {
         TestComponent notAChild = new TestComponent();
 
         component.remove(notAChild, child);
-        Assertions.assertFalse(child.getParent().isPresent());
-        Assertions.assertFalse(component.getChildren()
-                .filter(comp -> comp.equals(child)).findAny().isPresent());
+        assertFalse(child.getParent().isPresent());
+        assertFalse(component.getChildren().filter(comp -> comp.equals(child))
+                .findAny().isPresent());
     }
 
     @Test
@@ -163,7 +164,7 @@ class HasComponentsTest {
 
         component.remove(innerComponent);
 
-        Assertions.assertEquals(size, component.getChildren().count());
+        assertEquals(size, component.getChildren().count());
     }
 
     @Test
@@ -190,7 +191,7 @@ class HasComponentsTest {
     }
 
     private void checkChildren(int number, TestComponent component) {
-        Assertions.assertEquals(number, component.getChildren().count());
+        assertEquals(number, component.getChildren().count());
     }
 
     @Test

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +30,9 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class LocationObserverTest {
 
@@ -48,7 +50,7 @@ class LocationObserverTest {
         public void localeChange(LocaleChangeEvent event) {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
-            Assertions.assertNotNull(event.getUI());
+            assertNotNull(event.getUI());
         }
     }
 
@@ -75,18 +77,18 @@ class LocationObserverTest {
 
         ui.navigate("");
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "Expected event amount was wrong");
-        Assertions.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
         ui.setLocale(Locale.CANADA);
 
-        Assertions.assertEquals(2, eventCollector.size(),
+        assertEquals(2, eventCollector.size(),
                 "Expected event amount was wrong");
-        Assertions.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.CANADA.getDisplayName(),
                 eventCollector.get(1));
@@ -96,23 +98,23 @@ class LocationObserverTest {
     public void location_change_should_only_fire_if_location_actually_changed() {
         ui.add(new Translations());
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "Expected event amount was wrong");
-        Assertions.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
         ui.setLocale(ui.getLocale());
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "Expected event amount was wrong");
 
         ui.setLocale(Locale.FRENCH);
 
-        Assertions.assertEquals(2, eventCollector.size(),
+        assertEquals(2, eventCollector.size(),
                 "Expected event amount was wrong");
-        Assertions.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.FRENCH.getDisplayName(),
                 eventCollector.get(1));
@@ -124,14 +126,14 @@ class LocationObserverTest {
 
         ui.add(root);
 
-        Assertions.assertEquals(0, eventCollector.size(),
+        assertEquals(0, eventCollector.size(),
                 "Expected event amount was wrong");
 
         root.getElement().appendChild(new Translations().getElement());
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "Expected event amount was wrong");
-        Assertions.assertEquals(
+        assertEquals(
                 "Received locale change event for locale: "
                         + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
@@ -143,22 +145,22 @@ class LocationObserverTest {
 
         ui.add(root);
 
-        Assertions.assertEquals(0, eventCollector.size(),
+        assertEquals(0, eventCollector.size(),
                 "No change observers so no events should be gotten.");
 
         Translations translations = new Translations();
         root.getElement().appendChild(translations.getElement());
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "Observer should have been notified on attach");
 
         translations.getElement().removeFromParent();
 
-        Assertions.assertEquals(1, eventCollector.size(),
+        assertEquals(1, eventCollector.size(),
                 "No event should have been gotten for removal");
 
         root.getElement().appendChild(translations.getElement());
-        Assertions.assertEquals(2, eventCollector.size(),
+        assertEquals(2, eventCollector.size(),
                 "Reattach should have given an event");
 
     }

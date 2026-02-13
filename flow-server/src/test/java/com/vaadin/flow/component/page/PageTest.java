@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -39,7 +38,11 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class PageTest {
 
@@ -143,8 +146,8 @@ class PageTest {
         // then
         final int jsInvocations = mockUI.getInternals()
                 .dumpPendingJavaScriptInvocations().size();
-        Assertions.assertEquals(1, jsInvocations);
-        Assertions.assertEquals(2, callbackInvocations.get());
+        assertEquals(1, jsInvocations);
+        assertEquals(2, callbackInvocations.get());
     }
 
     @Test
@@ -156,8 +159,7 @@ class PageTest {
             public PendingJavaScriptResult executeJs(String expression,
                     Object... params) {
                 super.executeJs(expression, params);
-                Assertions.assertEquals("return window.location.href",
-                        expression,
+                assertEquals("return window.location.href", expression,
                         "Expected javascript for fetching location is wrong.");
 
                 return new PendingJavaScriptResult() {
@@ -191,13 +193,13 @@ class PageTest {
         page.fetchCurrentURL(receiver);
 
         // then
-        Assertions.assertEquals("http://localhost:8080/home",
+        assertEquals("http://localhost:8080/home",
                 callbackInvocations.get().toString(), "Returned URL was wrong");
     }
 
     @Test
     public void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             final UI mockUI = new MockUI();
             Page page = new Page(mockUI);
             page.fetchCurrentURL(null);
@@ -219,24 +221,23 @@ class PageTest {
         Collection<Dependency> pendingSendToClient = ui.getInternals()
                 .getDependencyList().getPendingSendToClient();
 
-        Assertions.assertEquals(4, pendingSendToClient.size(),
+        assertEquals(4, pendingSendToClient.size(),
                 "There should be 4 dependencies added.");
 
         for (Dependency dependency : pendingSendToClient) {
-            Assertions.assertEquals(Dependency.Type.JS_MODULE,
-                    dependency.getType(), "Dependency should be a JSModule");
-            Assertions.assertEquals(LoadMode.EAGER, dependency.getLoadMode(),
+            assertEquals(Dependency.Type.JS_MODULE, dependency.getType(),
+                    "Dependency should be a JSModule");
+            assertEquals(LoadMode.EAGER, dependency.getLoadMode(),
                     "JS module dependency should be EAGER");
 
-            Assertions.assertTrue(urls.contains(dependency.getUrl()),
+            assertTrue(urls.contains(dependency.getUrl()),
                     "Dependency " + dependency.getUrl()
                             + " is not found in the source list.");
 
             urls.remove(dependency.getUrl());
         }
 
-        Assertions.assertEquals(0, urls.size(),
-                "Not all urls were added as dependencies");
+        assertEquals(0, urls.size(), "Not all urls were added as dependencies");
     }
 
     @Test
@@ -244,8 +245,7 @@ class PageTest {
         try {
             page.addJsModule("mod.js");
 
-            Assertions.fail(
-                    "Adding a file without starting \"/\" is not to be allowed.");
+            fail("Adding a file without starting \"/\" is not to be allowed.");
         } catch (IllegalArgumentException e) {
         }
     }
@@ -260,12 +260,10 @@ class PageTest {
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
-                Assertions.assertNull(oldExpression,
-                        "There should be no old expression");
+                assertNull(oldExpression, "There should be no old expression");
 
                 Object[] oldParams = invokedParams.getAndSet(parameters);
-                Assertions.assertNull(oldParams,
-                        "There should be no old params");
+                assertNull(oldParams, "There should be no old params");
 
                 return null;
             }
@@ -274,11 +272,11 @@ class PageTest {
         PendingJavaScriptResult executionCanceler = page.executeJs("foo", 1,
                 true);
 
-        Assertions.assertNull(executionCanceler);
+        assertNull(executionCanceler);
 
-        Assertions.assertEquals("foo", invokedExpression.get());
-        Assertions.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
-        Assertions.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+        assertEquals("foo", invokedExpression.get());
+        assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Test
@@ -298,7 +296,7 @@ class PageTest {
         page.setLocation("foo");
 
         // self check
-        Assertions.assertEquals("_self", params.get(1));
+        assertEquals("_self", params.get(1));
 
         MatcherAssert.assertThat(capture.get(),
                 CoreMatchers.containsString("this.stopApplication();"));
@@ -321,11 +319,11 @@ class PageTest {
         page.setLocation("/logout-landing");
 
         String expression = capture.get();
-        Assertions.assertTrue(expression.contains("vaadin-redirect-pending"),
+        assertTrue(expression.contains("vaadin-redirect-pending"),
                 "Should dispatch vaadin-redirect-pending event");
-        Assertions.assertTrue(expression.contains("window.open"),
+        assertTrue(expression.contains("window.open"),
                 "Should call window.open");
-        Assertions.assertEquals("/logout-landing", params.get(0),
+        assertEquals("/logout-landing", params.get(0),
                 "URL parameter should be passed");
     }
 
@@ -347,11 +345,9 @@ class PageTest {
         // Verify event dispatch comes before window.open
         int eventDispatchIndex = expression.indexOf("vaadin-redirect-pending");
         int windowOpenIndex = expression.indexOf("window.open");
-        Assertions.assertTrue(eventDispatchIndex >= 0,
-                "Event dispatch should be present");
-        Assertions.assertTrue(windowOpenIndex >= 0,
-                "window.open should be present");
-        Assertions.assertTrue(eventDispatchIndex < windowOpenIndex,
+        assertTrue(eventDispatchIndex >= 0, "Event dispatch should be present");
+        assertTrue(windowOpenIndex >= 0, "window.open should be present");
+        assertTrue(eventDispatchIndex < windowOpenIndex,
                 "Event dispatch should come before window.open in the script");
     }
 
@@ -373,14 +369,13 @@ class PageTest {
         page.setColorScheme(ColorScheme.Value.DARK);
 
         String js = capturedExpression.get();
-        Assertions.assertTrue(js.contains("setAttribute('theme', $0)"),
+        assertTrue(js.contains("setAttribute('theme', $0)"),
                 "Should set theme attribute");
-        Assertions.assertTrue(js.contains("style.colorScheme = $1"),
+        assertTrue(js.contains("style.colorScheme = $1"),
                 "Should set color-scheme property");
         Object[] params = capturedParams.get();
-        Assertions.assertEquals("dark", params[0],
-                "Theme attribute should be 'dark'");
-        Assertions.assertEquals("dark", params[1],
+        assertEquals("dark", params[0], "Theme attribute should be 'dark'");
+        assertEquals("dark", params[1],
                 "Color scheme property should be 'dark'");
     }
 
@@ -402,14 +397,14 @@ class PageTest {
         page.setColorScheme(ColorScheme.Value.LIGHT_DARK);
 
         String js = capturedExpression.get();
-        Assertions.assertTrue(js.contains("setAttribute('theme', $0)"),
+        assertTrue(js.contains("setAttribute('theme', $0)"),
                 "Should set theme attribute");
-        Assertions.assertTrue(js.contains("style.colorScheme = $1"),
+        assertTrue(js.contains("style.colorScheme = $1"),
                 "Should set color-scheme property");
         Object[] params = capturedParams.get();
-        Assertions.assertEquals("light-dark", params[0],
+        assertEquals("light-dark", params[0],
                 "Theme attribute should use hyphen");
-        Assertions.assertEquals("light dark", params[1],
+        assertEquals("light dark", params[1],
                 "Color scheme property should use space");
     }
 
@@ -430,12 +425,11 @@ class PageTest {
         page.setColorScheme(null);
 
         String js = capturedExpression.get();
-        Assertions.assertTrue(js.contains("removeAttribute('theme')"),
+        assertTrue(js.contains("removeAttribute('theme')"),
                 "Should remove theme attribute");
-        Assertions.assertTrue(js.contains("style.colorScheme = ''"),
+        assertTrue(js.contains("style.colorScheme = ''"),
                 "Should clear inline style");
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
@@ -455,16 +449,14 @@ class PageTest {
         page.setColorScheme(ColorScheme.Value.NORMAL);
 
         String js = capturedExpression.get();
-        Assertions.assertTrue(js.contains("style.colorScheme = ''"));
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertTrue(js.contains("style.colorScheme = ''"));
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
     public void getColorScheme_returnsNormal_whenNotSet() {
         Page page = new Page(new MockUI());
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
@@ -477,7 +469,7 @@ class PageTest {
         mockUI.getInternals().setExtendedClientDetails(details);
 
         Page page = new Page(mockUI);
-        Assertions.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
+        assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
     }
 
     @Test
@@ -497,21 +489,18 @@ class PageTest {
             }
         };
 
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
 
         page.setColorScheme(ColorScheme.Value.DARK);
-        Assertions.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
+        assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
 
         page.setColorScheme(ColorScheme.Value.LIGHT);
-        Assertions.assertEquals(ColorScheme.Value.LIGHT, page.getColorScheme());
+        assertEquals(ColorScheme.Value.LIGHT, page.getColorScheme());
 
         page.setColorScheme(null);
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
 
         page.setColorScheme(ColorScheme.Value.NORMAL);
-        Assertions.assertEquals(ColorScheme.Value.NORMAL,
-                page.getColorScheme());
+        assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 }

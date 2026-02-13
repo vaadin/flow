@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +36,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,12 +72,12 @@ class WebComponentWrapperTest {
     public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("MyMessage"));
 
-        Assertions.assertEquals("MyMessage", component.message,
+        assertEquals("MyMessage", component.message,
                 "Message field should have updated with new value");
 
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(10));
 
-        Assertions.assertEquals(10, component.integerValue,
+        assertEquals(10, component.integerValue,
                 "IntegerValue field should contain a matching integer value");
     }
 
@@ -87,18 +89,17 @@ class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldMessages.size(),
+        assertEquals(3, component.oldMessages.size(),
                 "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldIntegers.size(),
+        assertEquals(3, component.oldIntegers.size(),
                 "Three integer messages should have come through");
 
-        Assertions.assertEquals(Arrays.asList("", "one", "three"),
-                component.oldMessages,
+        assertEquals(Arrays.asList("", "one", "three"), component.oldMessages,
                 "String messages arrived in correct order");
 
-        Assertions.assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
                 "Integer messages arrived in correct order");
 
     }
@@ -116,19 +117,19 @@ class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldMessages.size(),
+        assertEquals(3, component.oldMessages.size(),
                 "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldIntegers.size(),
+        assertEquals(3, component.oldIntegers.size(),
                 "Three integer messages should have come through");
 
-        Assertions.assertEquals(
+        assertEquals(
                 Arrays.asList("Extended ", "Extended one", "Extended three"),
                 component.oldMessages,
                 "String messages arrived in correct order");
 
-        Assertions.assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
                 "Integer messages arrived in correct order");
     }
 
@@ -146,21 +147,21 @@ class WebComponentWrapperTest {
         wrapper.sync(BOOLEAN_PROPERTY, JacksonUtils.writeValue(true));
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldMessages.size(),
+        assertEquals(3, component.oldMessages.size(),
                 "Three string messages should have come through");
 
         // 3, since creation sets the initial value
-        Assertions.assertEquals(3, component.oldIntegers.size(),
+        assertEquals(3, component.oldIntegers.size(),
                 "Three integer messages should have come through");
 
-        Assertions.assertEquals(Arrays.asList("Default", "one", "three"),
+        assertEquals(Arrays.asList("Default", "one", "three"),
                 component.oldMessages,
                 "String messages arrived in correct order");
 
-        Assertions.assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
+        assertEquals(Arrays.asList(0, 2, 4), component.oldIntegers,
                 "Integer messages arrived in correct order");
 
-        Assertions.assertTrue(component.booleanValue,
+        assertTrue(component.booleanValue,
                 "Boolean property should have been set to true");
     }
 
@@ -175,14 +176,14 @@ class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assertions.assertTrue(wrapper.getParent().isPresent(),
+        assertTrue(wrapper.getParent().isPresent(),
                 "Wrapper should still be connected on the server");
 
         wrapper.reconnect();
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assertions.assertTrue(wrapper.getParent().isPresent(),
+        assertTrue(wrapper.getParent().isPresent(),
                 "Wrapper should stay connected on the server");
     }
 
@@ -197,12 +198,12 @@ class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assertions.assertTrue(wrapper.getParent().isPresent(),
+        assertTrue(wrapper.getParent().isPresent(),
                 "Wrapper should still be connected on the server");
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assertions.assertFalse(wrapper.getParent().isPresent(),
+        assertFalse(wrapper.getParent().isPresent(),
                 "Wrapper should have been disconnected also on the server");
     }
 

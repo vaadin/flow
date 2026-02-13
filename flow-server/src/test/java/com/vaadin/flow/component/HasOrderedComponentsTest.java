@@ -18,12 +18,13 @@ package com.vaadin.flow.component;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class HasOrderedComponentsTest {
@@ -65,12 +66,12 @@ class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
                         Mockito.mock(Component.class)).stream());
 
-        Assertions.assertEquals(1, components.indexOf(comp));
+        assertEquals(1, components.indexOf(comp));
 
         contianer = new TestComponentContianer();
         comp = new Anchor();
         contianer.add(new Text(""), comp);
-        Assertions.assertEquals(1, contianer.indexOf(comp));
+        assertEquals(1, contianer.indexOf(comp));
     }
 
     @Test
@@ -80,7 +81,7 @@ class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
 
-        Assertions.assertEquals(-1, components.indexOf(comp));
+        assertEquals(-1, components.indexOf(comp));
     }
 
     @Test
@@ -97,11 +98,11 @@ class HasOrderedComponentsTest {
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
-        Assertions.assertEquals(2, components.getComponentCount());
+        assertEquals(2, components.getComponentCount());
 
         contianer = new TestComponentContianer();
         contianer.add(new Text(""), new Anchor());
-        Assertions.assertEquals(2, contianer.getComponentCount());
+        assertEquals(2, contianer.getComponentCount());
     }
 
     @Test
@@ -111,12 +112,12 @@ class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
                         Mockito.mock(Component.class)).stream());
 
-        Assertions.assertSame(comp, components.getComponentAt(1));
+        assertSame(comp, components.getComponentAt(1));
 
         contianer = new TestComponentContianer();
         comp = new Anchor();
         contianer.add(new Text(""), comp);
-        Assertions.assertSame(comp, contianer.getComponentAt(1));
+        assertSame(comp, contianer.getComponentAt(1));
     }
 
     @Test

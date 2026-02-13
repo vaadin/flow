@@ -17,10 +17,11 @@ package com.vaadin.flow.component;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasSizeUnitTest {
 
@@ -34,7 +35,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setWidth(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(), c.getWidth());
+            assertEquals("100.0" + unit.toString(), c.getWidth());
         }
     }
 
@@ -43,7 +44,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinWidth(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(), c.getMinWidth());
+            assertEquals("100.0" + unit.toString(), c.getMinWidth());
         }
     }
 
@@ -52,7 +53,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxWidth(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(), c.getMaxWidth());
+            assertEquals("100.0" + unit.toString(), c.getMaxWidth());
         }
     }
 
@@ -61,7 +62,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setHeight(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(), c.getHeight());
+            assertEquals("100.0" + unit.toString(), c.getHeight());
         }
     }
 
@@ -70,8 +71,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMinHeight(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(),
-                    c.getMinHeight());
+            assertEquals("100.0" + unit.toString(), c.getMinHeight());
         }
     }
 
@@ -80,8 +80,7 @@ class HasSizeUnitTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             c.setMaxHeight(100, unit);
-            Assertions.assertEquals("100.0" + unit.toString(),
-                    c.getMaxHeight());
+            assertEquals("100.0" + unit.toString(), c.getMaxHeight());
         }
     }
 
@@ -90,8 +89,8 @@ class HasSizeUnitTest {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             Optional<Unit> theUnit = Unit.getUnit(cssSize);
-            Assertions.assertTrue(theUnit.isPresent());
-            Assertions.assertEquals(theUnit.get(), unit);
+            assertTrue(theUnit.isPresent());
+            assertEquals(theUnit.get(), unit);
         }
     }
 
@@ -100,12 +99,12 @@ class HasSizeUnitTest {
         for (Unit unit : Unit.values()) {
             String cssSize = 100f + unit.toString();
             float size = Unit.getSize(cssSize);
-            Assertions.assertEquals(100f, size, 0.01);
+            assertEquals(100f, size, 0.01);
         }
         for (Unit unit : Unit.values()) {
             String cssSize = unit.toString();
             float size = Unit.getSize(cssSize);
-            Assertions.assertEquals(0f, size, 0.01);
+            assertEquals(0f, size, 0.01);
         }
     }
 

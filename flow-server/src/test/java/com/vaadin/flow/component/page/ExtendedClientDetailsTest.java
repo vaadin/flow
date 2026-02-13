@@ -16,13 +16,16 @@
 package com.vaadin.flow.component.page;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtendedClientDetailsTest {
 
@@ -36,25 +39,23 @@ class ExtendedClientDetailsTest {
         final ExtendedClientDetails details = new ExtendBuilder()
                 .buildDetails();
 
-        Assertions.assertEquals(2560, details.getScreenWidth());
-        Assertions.assertEquals(1450, details.getScreenHeight());
-        Assertions.assertEquals(2400, details.getWindowInnerWidth());
-        Assertions.assertEquals(1400, details.getWindowInnerHeight());
-        Assertions.assertEquals(1600, details.getBodyClientWidth());
-        Assertions.assertEquals(1360, details.getBodyClientHeight());
-        Assertions.assertEquals(16200000, details.getTimezoneOffset());
-        Assertions.assertEquals("Asia/Tehran", details.getTimeZoneId());
-        Assertions.assertEquals(12600000, details.getRawTimezoneOffset());
-        Assertions.assertEquals(3600000, details.getDSTSavings());
-        Assertions.assertEquals(true, details.isDSTInEffect());
-        Assertions.assertEquals(false, details.isTouchDevice());
-        Assertions.assertEquals(2.0D, details.getDevicePixelRatio(), 0.0);
-        Assertions.assertEquals("ROOT-1234567-0.1234567",
-                details.getWindowName());
-        Assertions.assertFalse(details.isIPad());
-        Assertions.assertEquals(ColorScheme.Value.LIGHT,
-                details.getColorScheme());
-        Assertions.assertEquals("aura", details.getThemeName());
+        assertEquals(2560, details.getScreenWidth());
+        assertEquals(1450, details.getScreenHeight());
+        assertEquals(2400, details.getWindowInnerWidth());
+        assertEquals(1400, details.getWindowInnerHeight());
+        assertEquals(1600, details.getBodyClientWidth());
+        assertEquals(1360, details.getBodyClientHeight());
+        assertEquals(16200000, details.getTimezoneOffset());
+        assertEquals("Asia/Tehran", details.getTimeZoneId());
+        assertEquals(12600000, details.getRawTimezoneOffset());
+        assertEquals(3600000, details.getDSTSavings());
+        assertEquals(true, details.isDSTInEffect());
+        assertEquals(false, details.isTouchDevice());
+        assertEquals(2.0D, details.getDevicePixelRatio(), 0.0);
+        assertEquals("ROOT-1234567-0.1234567", details.getWindowName());
+        assertFalse(details.isIPad());
+        assertEquals(ColorScheme.Value.LIGHT, details.getColorScheme());
+        assertEquals("aura", details.getThemeName());
 
         // Don't test getCurrentDate() and time delta due to the dependency on
         // server-side time
@@ -65,24 +66,23 @@ class ExtendedClientDetailsTest {
         ExtendBuilder detailsBuilder = new ExtendBuilder();
 
         ExtendedClientDetails details = detailsBuilder.buildDetails();
-        Assertions.assertFalse(details.isIPad(), "Linux is not an iPad");
+        assertFalse(details.isIPad(), "Linux is not an iPad");
 
         detailsBuilder.setNavigatorPlatform("iPad");
         details = detailsBuilder.buildDetails();
 
-        Assertions.assertTrue(details.isIPad(), "'iPad' is an iPad");
+        assertTrue(details.isIPad(), "'iPad' is an iPad");
 
         // See https://github.com/vaadin/flow/issues/14517
         detailsBuilder.setNavigatorPlatform("MacIntel");
         details = detailsBuilder.buildDetails();
-        Assertions.assertFalse(details.isIPad(),
+        assertFalse(details.isIPad(),
                 "MacIntel on non touch device is not an iPad");
 
         // See https://github.com/vaadin/flow/issues/14517
         detailsBuilder.setTouchDevice("true");
         details = detailsBuilder.buildDetails();
-        Assertions.assertTrue(details.isIPad(),
-                "MacIntel on touch device is an iPad");
+        assertTrue(details.isIPad(), "MacIntel on touch device is an iPad");
     }
 
     @Test
@@ -96,7 +96,7 @@ class ExtendedClientDetailsTest {
         Mockito.when(session.getBrowser()).thenReturn(browser);
         Mockito.when(browser.isIPhone()).thenReturn(false);
 
-        Assertions.assertTrue(details.isIOS());
+        assertTrue(details.isIOS());
 
         CurrentInstance.clearAll();
     }
@@ -108,7 +108,7 @@ class ExtendedClientDetailsTest {
         Mockito.doCallRealMethod().when(details).isIOS();
         Mockito.when(details.isIPad()).thenReturn(true);
 
-        Assertions.assertTrue(details.isIOS());
+        assertTrue(details.isIOS());
     }
 
     @Test
@@ -125,7 +125,7 @@ class ExtendedClientDetailsTest {
 
         Mockito.when(browser.isIPhone()).thenReturn(true);
 
-        Assertions.assertTrue(details.isIOS());
+        assertTrue(details.isIOS());
     }
 
     @Test
@@ -141,7 +141,7 @@ class ExtendedClientDetailsTest {
         Mockito.when(session.getBrowser()).thenReturn(browser);
         Mockito.when(browser.isIPhone()).thenReturn(false);
 
-        Assertions.assertFalse(details.isIOS());
+        assertFalse(details.isIOS());
     }
 
     /**

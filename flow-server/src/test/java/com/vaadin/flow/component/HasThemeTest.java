@@ -19,8 +19,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasThemeTest {
 
@@ -76,7 +80,7 @@ class HasThemeTest {
     @Test
     public void setThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assertions.assertNull(component.getThemeName());
+        assertNull(component.getThemeName());
         component.setThemeName("foo");
         assertThemes(component, "foo");
         component.setThemeName("bar");
@@ -92,11 +96,11 @@ class HasThemeTest {
     @Test
     public void getThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assertions.assertNull(component.getThemeName());
+        assertNull(component.getThemeName());
         component.setThemeName("foo");
-        Assertions.assertEquals("foo", component.getThemeName());
+        assertEquals("foo", component.getThemeName());
         component.setThemeName("");
-        Assertions.assertEquals("", component.getThemeName());
+        assertEquals("", component.getThemeName());
     }
 
     @Test
@@ -120,13 +124,13 @@ class HasThemeTest {
     @Test
     public void hasThemeName() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
-        Assertions.assertFalse(component.hasThemeName("foo"));
+        assertFalse(component.hasThemeName("foo"));
         component.setThemeName("foo");
-        Assertions.assertTrue(component.hasThemeName("foo"));
-        Assertions.assertFalse(component.hasThemeName("fo"));
+        assertTrue(component.hasThemeName("foo"));
+        assertFalse(component.hasThemeName("fo"));
         component.setThemeName("foo bar");
-        Assertions.assertTrue(component.hasThemeName("foo"));
-        Assertions.assertTrue(component.hasThemeName("bar"));
+        assertTrue(component.hasThemeName("foo"));
+        assertTrue(component.hasThemeName("bar"));
 
     }
 
@@ -134,7 +138,7 @@ class HasThemeTest {
     public void getThemeList_elementThemeList() {
         HasThemeTest.HasThemeComponent component = new HasThemeTest.HasThemeComponent();
 
-        Assertions.assertEquals(component.getElement().getThemeList().isEmpty(),
+        assertEquals(component.getElement().getThemeList().isEmpty(),
                 component.getThemeNames().isEmpty());
     }
 
@@ -168,7 +172,7 @@ class HasThemeTest {
             String... expectedThemes) {
         Set<String> actual = c.getThemeNames();
         Set<String> expected = new HashSet<>(Arrays.asList(expectedThemes));
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
 }

@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -40,6 +39,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class InvalidUrlTest {
 
@@ -72,7 +72,7 @@ class InvalidUrlTest {
         if (initialLocation.isEmpty()) {
             pathInfo = null;
         } else {
-            Assertions.assertFalse(initialLocation.startsWith("/"));
+            assertFalse(initialLocation.startsWith("/"));
             pathInfo = "/" + initialLocation;
         }
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);

@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -28,7 +27,10 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class PageTest {
@@ -56,33 +58,33 @@ class PageTest {
 
     @Test
     public void testJavasScriptExecutionCancel() {
-        Assertions.assertEquals(0, countPendingInvocations());
+        assertEquals(0, countPendingInvocations());
 
         PendingJavaScriptResult executeJavaScript = page
                 .executeJs("window.alert('$0');", "foobar");
 
-        Assertions.assertEquals(1, countPendingInvocations());
+        assertEquals(1, countPendingInvocations());
 
-        Assertions.assertTrue(executeJavaScript.cancelExecution());
+        assertTrue(executeJavaScript.cancelExecution());
 
-        Assertions.assertEquals(0, countPendingInvocations());
+        assertEquals(0, countPendingInvocations());
     }
 
     @Test
     public void testJavaScriptExecutionTooLateCancel() {
-        Assertions.assertEquals(0, countPendingInvocations());
+        assertEquals(0, countPendingInvocations());
 
         PendingJavaScriptResult executeJavaScript = page
                 .executeJs("window.alert('$0');", "foobar");
 
-        Assertions.assertEquals(1, countPendingInvocations());
+        assertEquals(1, countPendingInvocations());
 
-        Assertions.assertEquals(1,
+        assertEquals(1,
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
 
-        Assertions.assertEquals(0, countPendingInvocations());
+        assertEquals(0, countPendingInvocations());
 
-        Assertions.assertFalse(executeJavaScript.cancelExecution());
+        assertFalse(executeJavaScript.cancelExecution());
     }
 
     @Test
@@ -91,9 +93,9 @@ class PageTest {
 
         DependencyList list = ui.getInternals().getDependencyList();
         Collection<Dependency> dependencies = list.getPendingSendToClient();
-        Assertions.assertEquals(1, dependencies.size());
+        assertEquals(1, dependencies.size());
         Dependency dependency = dependencies.iterator().next();
-        Assertions.assertEquals("foo", dependency.getUrl());
+        assertEquals("foo", dependency.getUrl());
     }
 
     private long countPendingInvocations() {

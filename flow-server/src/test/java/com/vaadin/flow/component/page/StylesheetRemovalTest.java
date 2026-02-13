@@ -18,7 +18,6 @@ package com.vaadin.flow.component.page;
 import java.util.Collection;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
@@ -32,6 +31,11 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Comprehensive tests for stylesheet registration, removal, and re-addition
@@ -57,9 +61,8 @@ class StylesheetRemovalTest {
         Registration reg1 = page.addStyleSheet("styles.css");
         Registration reg2 = page.addStyleSheet("styles.css", LoadMode.LAZY);
 
-        Assertions.assertNotNull(reg1,
-                "addStyleSheet should return a Registration");
-        Assertions.assertNotNull(reg2,
+        assertNotNull(reg1, "addStyleSheet should return a Registration");
+        assertNotNull(reg2,
                 "addStyleSheet with LoadMode should return a Registration");
     }
 
@@ -69,26 +72,23 @@ class StylesheetRemovalTest {
 
         // Add stylesheet
         Registration registration = page.addStyleSheet(url);
-        Assertions.assertNotNull(registration,
-                "Registration should not be null");
+        assertNotNull(registration, "Registration should not be null");
 
         // Check that dependency is added
         Collection<Dependency> dependencies = dependencyList
                 .getPendingSendToClient();
-        Assertions.assertEquals(1, dependencies.size(),
-                "Should have one dependency");
+        assertEquals(1, dependencies.size(), "Should have one dependency");
         Dependency dep = dependencies.iterator().next();
-        Assertions.assertEquals(url, dep.getUrl(), "URL should match");
-        Assertions.assertNotNull(dep.getId(), "Dependency should have ID");
+        assertEquals(url, dep.getUrl(), "URL should match");
+        assertNotNull(dep.getId(), "Dependency should have ID");
 
         // Remove stylesheet
         registration.remove();
 
         // Check that removal is tracked
         Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assertions.assertEquals(1, removals.size(),
-                "Should have one removal pending");
-        Assertions.assertEquals(dep.getId(), removals.iterator().next(),
+        assertEquals(1, removals.size(), "Should have one removal pending");
+        assertEquals(dep.getId(), removals.iterator().next(),
                 "Removal ID should match dependency ID");
     }
 
@@ -98,25 +98,23 @@ class StylesheetRemovalTest {
 
         Registration reg1 = page.addStyleSheet(url);
         Collection<Dependency> deps1 = dependencyList.getPendingSendToClient();
-        Assertions.assertEquals(1, deps1.size());
+        assertEquals(1, deps1.size());
         Dependency firstDep = deps1.iterator().next();
         String firstId = firstDep.getId();
 
         dependencyList.clearPendingSendToClient();
 
         reg1.remove();
-        Assertions.assertTrue(
-                internals.getPendingStyleSheetRemovals().contains(firstId));
+        assertTrue(internals.getPendingStyleSheetRemovals().contains(firstId));
         internals.clearPendingStyleSheetRemovals();
 
         Registration reg2 = page.addStyleSheet(url);
         Collection<Dependency> deps2 = dependencyList.getPendingSendToClient();
-        Assertions.assertEquals(1, deps2.size());
+        assertEquals(1, deps2.size());
         Dependency secondDep = deps2.iterator().next();
 
-        Assertions.assertNotEquals(firstId, secondDep.getId(),
-                "IDs should differ");
-        Assertions.assertEquals(url, secondDep.getUrl(), "URLs should match");
+        assertNotEquals(firstId, secondDep.getId(), "IDs should differ");
+        assertEquals(url, secondDep.getUrl(), "URLs should match");
     }
 
     @Test
@@ -128,7 +126,7 @@ class StylesheetRemovalTest {
         Dependency firstDep = dependencyList.getPendingSendToClient().iterator()
                 .next();
         String firstId = firstDep.getId();
-        Assertions.assertEquals(LoadMode.LAZY, firstDep.getLoadMode());
+        assertEquals(LoadMode.LAZY, firstDep.getLoadMode());
 
         dependencyList.clearPendingSendToClient();
         reg1.remove();
@@ -139,10 +137,9 @@ class StylesheetRemovalTest {
         Dependency secondDep = dependencyList.getPendingSendToClient()
                 .iterator().next();
 
-        Assertions.assertNotEquals(firstId, secondDep.getId(),
-                "IDs should differ");
-        Assertions.assertEquals(url, secondDep.getUrl(), "URLs should match");
-        Assertions.assertEquals(LoadMode.EAGER, secondDep.getLoadMode());
+        assertNotEquals(firstId, secondDep.getId(), "IDs should differ");
+        assertEquals(url, secondDep.getUrl(), "URLs should match");
+        assertEquals(LoadMode.EAGER, secondDep.getLoadMode());
     }
 
     @Test
@@ -158,8 +155,7 @@ class StylesheetRemovalTest {
 
         Collection<Dependency> allDeps = dependencyList
                 .getPendingSendToClient();
-        Assertions.assertEquals(3, allDeps.size(),
-                "Should have three dependencies");
+        assertEquals(3, allDeps.size(), "Should have three dependencies");
 
         // Find the dependency for url2
         String idToRemove = null;
@@ -169,7 +165,7 @@ class StylesheetRemovalTest {
                 break;
             }
         }
-        Assertions.assertNotNull(idToRemove, "Should find dependency for url2");
+        assertNotNull(idToRemove, "Should find dependency for url2");
 
         dependencyList.clearPendingSendToClient();
 
@@ -177,8 +173,8 @@ class StylesheetRemovalTest {
         reg2.remove();
 
         Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assertions.assertEquals(1, removals.size(), "Should have one removal");
-        Assertions.assertEquals(idToRemove, removals.iterator().next(),
+        assertEquals(1, removals.size(), "Should have one removal");
+        assertEquals(idToRemove, removals.iterator().next(),
                 "Should remove the correct stylesheet");
     }
 
@@ -201,18 +197,17 @@ class StylesheetRemovalTest {
         ObjectNode response = writer.createUidl(ui, false);
 
         // Check that removals are included in response
-        Assertions.assertTrue(response.has("stylesheetRemovals"),
+        assertTrue(response.has("stylesheetRemovals"),
                 "Response should contain stylesheetRemovals");
         ArrayNode removalsArray = (ArrayNode) response
                 .get("stylesheetRemovals");
-        Assertions.assertEquals(1, removalsArray.size(),
-                "Should have one removal");
-        Assertions.assertEquals(depId, removalsArray.get(0).asString(),
+        assertEquals(1, removalsArray.size(), "Should have one removal");
+        assertEquals(depId, removalsArray.get(0).asString(),
                 "Removal ID should match");
 
         // After creating UIDL, removals should be cleared
         Set<String> pendingRemovals = internals.getPendingStyleSheetRemovals();
-        Assertions.assertTrue(pendingRemovals.isEmpty(),
+        assertTrue(pendingRemovals.isEmpty(),
                 "Pending removals should be cleared after UIDL creation");
     }
 
@@ -222,19 +217,16 @@ class StylesheetRemovalTest {
 
         // Add stylesheet
         Registration reg = page.addStyleSheet(url);
-        Assertions.assertEquals(1,
-                dependencyList.getPendingSendToClient().size());
+        assertEquals(1, dependencyList.getPendingSendToClient().size());
         dependencyList.clearPendingSendToClient();
 
         page.addStyleSheet(url);
-        Assertions.assertEquals(0,
-                dependencyList.getPendingSendToClient().size());
+        assertEquals(0, dependencyList.getPendingSendToClient().size());
 
         reg.remove();
 
         page.addStyleSheet(url);
-        Assertions.assertEquals(1,
-                dependencyList.getPendingSendToClient().size());
+        assertEquals(1, dependencyList.getPendingSendToClient().size());
     }
 
     @Test
@@ -248,16 +240,14 @@ class StylesheetRemovalTest {
         dependencyList.clearPendingSendToClient();
 
         Registration reg2 = page.addStyleSheet(url);
-        Assertions.assertEquals(0,
-                dependencyList.getPendingSendToClient().size(),
+        assertEquals(0, dependencyList.getPendingSendToClient().size(),
                 "Second add should not create pending send");
 
         // First registration should be able to remove the stylesheet
         reg1.remove();
         Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assertions.assertEquals(1, removals.size(),
-                "Should have one removal pending");
-        Assertions.assertEquals(firstDepId, removals.iterator().next(),
+        assertEquals(1, removals.size(), "Should have one removal pending");
+        assertEquals(firstDepId, removals.iterator().next(),
                 "Should use the same dependency ID");
     }
 
@@ -272,18 +262,16 @@ class StylesheetRemovalTest {
         dependencyList.clearPendingSendToClient();
 
         Registration reg2 = page.addStyleSheet(url);
-        Assertions.assertEquals(0,
-                dependencyList.getPendingSendToClient().size(),
+        assertEquals(0, dependencyList.getPendingSendToClient().size(),
                 "Second add should not create pending send");
 
         // Second registration uses the same ID as the first
         reg2.remove();
         Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assertions.assertEquals(1, removals.size(),
-                "Should have one removal pending");
+        assertEquals(1, removals.size(), "Should have one removal pending");
         String removedId = removals.iterator().next();
         // Both registrations use the same dependency ID
-        Assertions.assertEquals(firstDepId, removedId,
+        assertEquals(firstDepId, removedId,
                 "Should use the same ID as the original");
     }
 }

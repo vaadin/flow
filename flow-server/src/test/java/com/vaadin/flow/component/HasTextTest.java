@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,6 +23,8 @@ import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HasTextTest {
 
@@ -42,26 +43,26 @@ class HasTextTest {
     public void setWhiteSpace_styleIsSet() {
         hasText.setWhiteSpace(WhiteSpace.NOWRAP);
 
-        Assertions.assertEquals("nowrap",
+        assertEquals("nowrap",
                 hasText.getElement().getStyle().get("white-space"));
     }
 
     @Test
     public void getWhiteSpace_getStyleValue() {
         hasText.getElement().getStyle().setWhiteSpace(Style.WhiteSpace.INHERIT);
-        Assertions.assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
+        assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
     }
 
     @Test
     public void getWhiteSpace_noStyleIsSet_normalIsReturned() {
-        Assertions.assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
+        assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
     }
 
     @Test
     public void getWhiteSpace_notStandardValue_nullIsReturned() {
         hasText.getElement().getStyle().set("white-space", "foo");
 
-        Assertions.assertEquals(null, hasText.getWhiteSpace());
+        assertEquals(null, hasText.getWhiteSpace());
     }
 
 }

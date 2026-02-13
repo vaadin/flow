@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebComponentConfigurationFactoryTest {
 
@@ -35,17 +40,17 @@ class WebComponentConfigurationFactoryTest {
         WebComponentConfiguration<? extends Component> config2 = factory
                 .create(new MyComponentExporter());
 
-        Assertions.assertNotNull(config1,
+        assertNotNull(config1,
                 "create() from class should have been successful");
-        Assertions.assertNotNull(config2,
+        assertNotNull(config2,
                 "create() from instance should have been " + "successful");
     }
 
     @Test
     public void create_instance_throwsOnNullArgument() {
-        NullPointerException ex = Assertions.assertThrows(
-                NullPointerException.class, () -> factory.create(null));
-        Assertions.assertTrue(ex.getMessage().contains("'exporter'"));
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> factory.create(null));
+        assertTrue(ex.getMessage().contains("'exporter'"));
     }
 
     @Test
@@ -64,18 +69,15 @@ class WebComponentConfigurationFactoryTest {
                 new DefaultWebComponentExporterFactory<>(SimilarExporter3.class)
                         .create());
 
-        Assertions.assertNotEquals(myComponentConfig.hashCode(),
-                similarConfig1.hashCode(),
+        assertNotEquals(myComponentConfig.hashCode(), similarConfig1.hashCode(),
                 "Configurations with different tags should have "
                         + "not have same hashCodes");
 
-        Assertions.assertNotEquals(similarConfig1.hashCode(),
-                similarConfig2.hashCode(),
+        assertNotEquals(similarConfig1.hashCode(), similarConfig2.hashCode(),
                 "Configurations with same tag, but different "
                         + "properties should not have same hashCodes");
 
-        Assertions.assertEquals(similarConfig2.hashCode(),
-                similarConfig3.hashCode(),
+        assertEquals(similarConfig2.hashCode(), similarConfig3.hashCode(),
                 "Configurations with same tag and same properties "
                         + "but different defaults should have the same hashCode");
     }
@@ -96,16 +98,16 @@ class WebComponentConfigurationFactoryTest {
                 new DefaultWebComponentExporterFactory<>(SimilarExporter3.class)
                         .create());
 
-        Assertions.assertNotEquals(myComponentConfig, similarConfig1,
+        assertNotEquals(myComponentConfig, similarConfig1,
                 "Configurations with different tags should " + "not be equal");
 
-        Assertions.assertNotEquals(similarConfig1, similarConfig2,
+        assertNotEquals(similarConfig1, similarConfig2,
                 "Configurations with same tag, but different "
                         + "properties should not be equal");
 
         // even though the classes are different, they define the same
         // embeddable web component
-        Assertions.assertEquals(similarConfig2, similarConfig3,
+        assertEquals(similarConfig2, similarConfig3,
                 "Configurations with same tag and same properties "
                         + "but different defaults should be equal");
     }

@@ -21,8 +21,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ShortcutSerializationTest {
 
@@ -37,7 +38,7 @@ class ShortcutSerializationTest {
         }, Key.KEY_A);
 
         UI ui2 = (UI) deserialize(serialize(ui));
-        Assertions.assertNotNull(ui2);
+        assertNotNull(ui2);
     }
 
     @Test
@@ -52,7 +53,7 @@ class ShortcutSerializationTest {
         ui.remove(owner);
 
         UI ui2 = (UI) deserialize(serialize(ui));
-        Assertions.assertNotNull(ui2);
+        assertNotNull(ui2);
     }
 
     private byte[] serialize(Object object) throws IOException {

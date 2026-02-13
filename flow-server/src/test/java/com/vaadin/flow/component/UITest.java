@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -90,10 +89,13 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class UITest {
 
@@ -225,7 +227,7 @@ public class UITest {
         if (initialLocation.isEmpty()) {
             pathInfo = null;
         } else {
-            Assertions.assertFalse(initialLocation.startsWith("/"));
+            assertFalse(initialLocation.startsWith("/"));
             pathInfo = "/" + initialLocation;
         }
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
@@ -281,7 +283,7 @@ public class UITest {
     @Test
     public void scrollAttribute() {
         UI ui = new UI();
-        Assertions.assertNull(ui.getElement().getAttribute("scroll"),
+        assertNull(ui.getElement().getAttribute("scroll"),
                 "'scroll' attribute shouldn't be set for the "
                         + "UI element which represents 'body' tag");
     }
@@ -307,7 +309,7 @@ public class UITest {
                 ui.getInternals().getActiveViewLocation().getPath());
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
-        Assertions.assertEquals(1, chain.size());
+        assertEquals(1, chain.size());
         Component currentRoute = ui.getCurrentView();
         MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
@@ -333,8 +335,8 @@ public class UITest {
                 ArgumentMatchers.eq(NavigationTrigger.UI_NAVIGATE));
 
         Location value = location.getValue();
-        Assertions.assertEquals(route, value.getPath());
-        Assertions.assertEquals(params, value.getQueryParameters());
+        assertEquals(route, value.getPath());
+        assertEquals(params, value.getQueryParameters());
     }
 
     @Test
@@ -355,7 +357,7 @@ public class UITest {
                 ui.getInternals().getActiveViewLocation().getPath());
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
-        Assertions.assertEquals(2, chain.size());
+        assertEquals(2, chain.size());
         MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
         MatcherAssert.assertThat(chain.get(1), CoreMatchers
@@ -381,7 +383,7 @@ public class UITest {
                 .getActiveViewLocation().getPathWithQueryParameters());
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
-        Assertions.assertEquals(2, chain.size());
+        assertEquals(2, chain.size());
         MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
         MatcherAssert.assertThat(chain.get(1), CoreMatchers
@@ -399,9 +401,9 @@ public class UITest {
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
                 .dumpPendingJsInvocations();
 
-        Assertions.assertEquals(1, pendingJavaScriptInvocations.size());
-        Assertions.assertEquals("rtl", pendingJavaScriptInvocations.get(0)
-                .getInvocation().getParameters().get(0));
+        assertEquals(1, pendingJavaScriptInvocations.size());
+        assertEquals("rtl", pendingJavaScriptInvocations.get(0).getInvocation()
+                .getParameters().get(0));
     }
 
     @Test
@@ -430,7 +432,7 @@ public class UITest {
 
         initUI(ui, "baz", statusCodeCaptor);
 
-        Assertions.assertEquals(1, ui.getChildren().count());
+        assertEquals(1, ui.getChildren().count());
         Optional<Component> errorComponent = ui.getChildren().findFirst();
         MatcherAssert.assertThat(errorComponent.get(),
                 CoreMatchers.instanceOf(RouteNotFoundError.class));
@@ -596,8 +598,7 @@ public class UITest {
 
         ui.getSession().access(() -> ui.getInternals().setSession(null));
         ui.access(() -> {
-            Assertions.fail(
-                    "We should never get here because the UI is detached");
+            fail("We should never get here because the UI is detached");
         });
 
         // Unlock to run pending access tasks
@@ -606,10 +607,10 @@ public class UITest {
         String logOutput = ((MockLogger) ui.getLogger()).getLogs();
         String logOutputNoDebug = logOutput.replaceAll("^\\[Debug\\].*", "");
 
-        Assertions.assertFalse(logOutput.contains("NullPointerException"),
+        assertFalse(logOutput.contains("NullPointerException"),
                 "No NullPointerException should be logged but got: "
                         + logOutput);
-        Assertions.assertFalse(logOutputNoDebug.contains("UIDetachedException"),
+        assertFalse(logOutputNoDebug.contains("UIDetachedException"),
                 "No UIDetachedException should be logged but got: "
                         + logOutputNoDebug);
     }
@@ -631,8 +632,8 @@ public class UITest {
         // Unlock to run pending access tasks
         ui.getSession().unlock();
 
-        Assertions.assertTrue(errorHandlerCalled.get());
-        Assertions.assertEquals(ui, uiInErrorHandler.get());
+        assertTrue(errorHandlerCalled.get());
+        assertEquals(ui, uiInErrorHandler.get());
     }
 
     @Test
@@ -648,11 +649,11 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assertions.assertTrue(results.size() == 3,
+        assertTrue(results.size() == 3,
                 "There should be 3 results in the list");
 
         for (int i = 0; i < results.size(); i++) {
-            Assertions.assertEquals(i, results.get(i).intValue(),
+            assertEquals(i, results.get(i).intValue(),
                     "The result at index '" + i + "' should be " + i);
         }
     }
@@ -674,11 +675,11 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(2));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assertions.assertTrue(results.size() == 5,
+        assertTrue(results.size() == 5,
                 "There should be 5 results in the list");
 
         for (int i = 0; i < results.size(); i++) {
-            Assertions.assertEquals(i, results.get(i).intValue(),
+            assertEquals(i, results.get(i).intValue(),
                     "The result at index '" + i + "' should be " + i);
         }
     }
@@ -698,12 +699,12 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assertions.assertTrue(results.size() == 2,
+        assertTrue(results.size() == 2,
                 "There should be 2 results in the list");
 
-        Assertions.assertEquals(1, results.get(0).intValue(),
+        assertEquals(1, results.get(0).intValue(),
                 "The result at index '0' should be " + 1);
-        Assertions.assertEquals(3, results.get(1).intValue(),
+        assertEquals(3, results.get(1).intValue(),
                 "The result at index '1' should be " + 3);
     }
 
@@ -729,16 +730,16 @@ public class UITest {
         ui.beforeClientResponse(rootComponent, context -> results.add(3));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        Assertions.assertTrue(results.size() == 4,
+        assertTrue(results.size() == 4,
                 "There should be 4 results in the list");
 
-        Assertions.assertEquals(1, results.get(0).intValue(),
+        assertEquals(1, results.get(0).intValue(),
                 "The result at index '0' should be 1");
-        Assertions.assertEquals(3, results.get(1).intValue(),
+        assertEquals(3, results.get(1).intValue(),
                 "The result at index '1' should be 3");
-        Assertions.assertEquals(0, results.get(2).intValue(),
+        assertEquals(0, results.get(2).intValue(),
                 "The result at index '2' should be 0");
-        Assertions.assertEquals(2, results.get(3).intValue(),
+        assertEquals(2, results.get(3).intValue(),
                 "The result at index '3' should be 2");
     }
 
@@ -755,13 +756,13 @@ public class UITest {
         AtomicInteger callCounter = new AtomicInteger();
 
         ui.beforeClientResponse(root, context -> {
-            Assertions.assertTrue(context.isClientSideInitialized(),
+            assertTrue(context.isClientSideInitialized(),
                     "Root component should be marked as 'clientSideInitialized'");
             callCounter.incrementAndGet();
 
         });
         ui.beforeClientResponse(leaf, context -> {
-            Assertions.assertFalse(context.isClientSideInitialized(),
+            assertFalse(context.isClientSideInitialized(),
                     "Leaf component should NOT be marked as 'clientSideInitialized'");
             callCounter.incrementAndGet();
         });
@@ -770,7 +771,7 @@ public class UITest {
         ui.remove(root);
         ui.add(root);
         ui.beforeClientResponse(root, context -> {
-            Assertions.assertTrue(context.isClientSideInitialized(),
+            assertTrue(context.isClientSideInitialized(),
                     "Reattached root component (in the same request) should be marked as 'clientSideInitialized'");
             callCounter.incrementAndGet();
         });
@@ -781,14 +782,13 @@ public class UITest {
         });
         ui.add(root);
         ui.beforeClientResponse(root, context -> {
-            Assertions.assertFalse(context.isClientSideInitialized(),
+            assertFalse(context.isClientSideInitialized(),
                     "Reattached root component (in different requests) should NOT be marked as 'clientSideInitialized'");
             callCounter.incrementAndGet();
         });
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals(4, callCounter.get(),
-                "There should be 4 invocations");
+        assertEquals(4, callCounter.get(), "There should be 4 invocations");
     }
 
     @Test
@@ -806,12 +806,12 @@ public class UITest {
         Component component = new AttachableComponent();
         anotherUI.add(component);
 
-        IllegalArgumentException exception = Assertions.assertThrows(
+        IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> firstUI.beforeClientResponse(component, context -> {
                 }));
 
-        Assertions.assertEquals(
+        assertEquals(
                 "The given component doesn't belong to the UI the task to be executed on",
                 exception.getMessage());
     }
@@ -1001,8 +1001,8 @@ public class UITest {
         assertThrows(UIDetachedException.class, () -> {
             UI ui = createTestUI();
 
-            SerializableRunnable wrapped = ui.accessLater(
-                    () -> Assertions.fail("Action should never run"), null);
+            SerializableRunnable wrapped = ui
+                    .accessLater(() -> fail("Action should never run"), null);
             wrapped.run();
         });
     }
@@ -1014,7 +1014,7 @@ public class UITest {
         UI ui = createTestUI();
 
         SerializableRunnable wrapped = ui.accessLater(
-                () -> Assertions.fail("Action should never run"),
+                () -> fail("Action should never run"),
                 runCount::incrementAndGet);
 
         assertEquals(0, runCount.get(), "Handler should not yet have run");
@@ -1048,7 +1048,7 @@ public class UITest {
         CurrentInstance.clearAll();
         try {
             UI.getCurrentOrThrow();
-            Assertions.fail("Should have thrown IllegalStateException");
+            fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("UI context"),
                     "Exception message should mention UI context");
@@ -1062,7 +1062,7 @@ public class UITest {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();
 
-        Assertions.assertNotEquals(token1, token2,
+        assertNotEquals(token1, token2,
                 "Each UI should have a unique CSRF token");
     }
 
@@ -1072,7 +1072,7 @@ public class UITest {
         String token1 = ui.getCsrfToken();
         String token2 = ui.getCsrfToken();
 
-        Assertions.assertEquals(token1, token2,
+        assertEquals(token1, token2,
                 "getCsrfToken() should always return the same value for the same UI");
     }
 
@@ -1115,7 +1115,7 @@ public class UITest {
             UI ui = createTestUI();
 
             SerializableConsumer<Object> wrapped = ui.accessLater(
-                    value -> Assertions.fail("Action should never run"), null);
+                    value -> fail("Action should never run"), null);
             wrapped.accept(null);
         });
     }
@@ -1127,7 +1127,7 @@ public class UITest {
         UI ui = createTestUI();
 
         SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> Assertions.fail("Action should never run"),
+                value -> fail("Action should never run"),
                 runCount::incrementAndGet);
 
         assertEquals(0, runCount.get(), "Handler should not yet have run");
@@ -1149,7 +1149,7 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.navigate(Parameterized.class, "baz");
-        Assertions.assertEquals("foo-bar/baz", loc.get());
+        assertEquals("foo-bar/baz", loc.get());
     }
 
     @Test
@@ -1159,35 +1159,31 @@ public class UITest {
 
         try {
             ui.navigate(Parameterized.class);
-            Assertions.fail("IllegalArgumentException expected.");
+            fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
-            Assertions.assertTrue(
-                    e.getMessage().endsWith("requires a parameter."));
+            assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
 
         try {
             ui.navigate(Parameterized.class, (String) null);
-            Assertions.fail("IllegalArgumentException expected.");
+            fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
-            Assertions.assertTrue(
-                    e.getMessage().endsWith("requires a parameter."));
+            assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
 
         try {
             ui.navigate(Parameterized.class, RouteParameters.empty());
-            Assertions.fail("IllegalArgumentException expected.");
+            fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
-            Assertions.assertTrue(
-                    e.getMessage().endsWith("requires a parameter."));
+            assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
 
         try {
             ui.navigate(Parameterized.class,
                     new RouteParameters("some", "value"));
-            Assertions.fail("IllegalArgumentException expected.");
+            fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
-            Assertions.assertTrue(
-                    e.getMessage().endsWith("requires a parameter."));
+            assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
     }
 
@@ -1198,26 +1194,23 @@ public class UITest {
 
         try {
             ui.navigate((String) null);
-            Assertions.fail("NullPointerException expected.");
+            fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assertions.assertEquals("Location must not be null",
-                    e.getMessage());
+            assertEquals("Location must not be null", e.getMessage());
         }
 
         try {
             ui.navigate((String) null, QueryParameters.empty());
-            Assertions.fail("NullPointerException expected.");
+            fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assertions.assertEquals("Location must not be null",
-                    e.getMessage());
+            assertEquals("Location must not be null", e.getMessage());
         }
 
         try {
             ui.navigate("foo-bar", null);
-            Assertions.fail("NullPointerException expected.");
+            fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assertions.assertEquals("Query parameters must not be null",
-                    e.getMessage());
+            assertEquals("Query parameters must not be null", e.getMessage());
         }
     }
 
@@ -1228,20 +1221,20 @@ public class UITest {
 
         try {
             ui.navigate(FooBarParamNavigationTarget.class);
-            Assertions.fail("NotFoundException expected.");
+            fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
 
         try {
             ui.navigate(ParameterizedNotRoute.class, 1);
-            Assertions.fail("NotFoundException expected.");
+            fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
 
         try {
             ui.navigate(FooBarParamNavigationTarget.class,
                     new RouteParameters("fooParam", "123"));
-            Assertions.fail("NotFoundException expected.");
+            fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
     }
@@ -1249,44 +1242,44 @@ public class UITest {
     @Test
     public void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
         final TestFixture fixture = new TestFixture();
-        Assertions.assertTrue(fixture.ui.hasModalComponent(),
+        assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
 
         fixture.ui.setChildComponentModal(fixture.modalComponent, false);
 
-        Assertions.assertFalse(fixture.ui.hasModalComponent(),
+        assertFalse(fixture.ui.hasModalComponent(),
                 "Setting modal to false should have removed all modality");
     }
 
     @Test
     public void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
         final TestFixture fixture = new TestFixture();
-        Assertions.assertTrue(fixture.ui.hasModalComponent(),
+        assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
 
         fixture.ui.setChildComponentModal(fixture.modalComponent,
                 ModalityMode.VISUAL);
 
-        Assertions.assertFalse(fixture.ui.hasModalComponent(),
+        assertFalse(fixture.ui.hasModalComponent(),
                 "Setting modal to VISUAL should have removed all server side modality");
     }
 
     @Test
     public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
         final TestFixture fixture = new TestFixture();
-        Assertions.assertEquals(fixture.modalComponent,
+        assertEquals(fixture.modalComponent,
                 fixture.ui.getInternals().getActiveModalComponent(),
                 "modalComponent should be modal");
 
         fixture.ui.setChildComponentModal(fixture.routingComponent, true);
 
-        Assertions.assertEquals(fixture.routingComponent,
+        assertEquals(fixture.routingComponent,
                 fixture.ui.getInternals().getActiveModalComponent(),
                 "routingComponent should override modalComponent as active modal component");
 
         fixture.ui.setChildComponentModal(fixture.routingComponent, false);
 
-        Assertions.assertEquals(fixture.modalComponent,
+        assertEquals(fixture.modalComponent,
                 fixture.ui.getInternals().getActiveModalComponent(),
                 "modalComponent should return to active modal component when routingComponent made non modal");
 
@@ -1299,10 +1292,9 @@ public class UITest {
         fixture.ui.addToModalComponent(test);
 
         final Optional<Component> testComponentParent = test.getParent();
-        Assertions.assertTrue(testComponentParent.isPresent(),
+        assertTrue(testComponentParent.isPresent(),
                 "test component was not attached");
-        Assertions.assertEquals(
-                fixture.ui.getInternals().getActiveModalComponent(),
+        assertEquals(fixture.ui.getInternals().getActiveModalComponent(),
                 testComponentParent.get(),
                 "test component should have been attached to modalComponent");
     }
@@ -1614,13 +1606,11 @@ public class UITest {
     public void getCurrentView_routingNotInitialized_throws()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
-        Assertions.assertThrows(IllegalStateException.class,
-                ui::getCurrentView);
+        assertThrows(IllegalStateException.class, ui::getCurrentView);
     }
 
     private void verifyInert(Component component, boolean inert) {
-        Assertions.assertEquals(inert,
-                component.getElement().getNode().isInert(),
+        assertEquals(inert, component.getElement().getNode().isInert(),
                 "Invalid inert state");
     }
 
