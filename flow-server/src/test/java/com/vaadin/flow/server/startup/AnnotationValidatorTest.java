@@ -133,15 +133,12 @@ class AnnotationValidatorTest {
     public void onStartUp_all_failing_annotations_are_marked_for_class()
             throws ServletException {
         InvalidApplicationConfigurationException thrown = assertThrows(
-                InvalidApplicationConfigurationException.class, () -> {
-                    annotationValidator
-                            .process(
-                                    Stream.of(FailingMultiAnnotation.class)
-                                            .collect(Collectors.toSet()),
-                                    servletContext);
-
-                    fail("No exception was thrown for faulty setup.");
-                });
+                InvalidApplicationConfigurationException.class,
+                () -> annotationValidator.process(
+                        Stream.of(FailingMultiAnnotation.class)
+                                .collect(Collectors.toSet()),
+                        servletContext),
+                "No exception was thrown for faulty setup.");
         assertTrue(thrown.getMessage()
                 .contains(ERROR_MESSAGE_BEGINNING + String.format(NON_PARENT,
                         FailingMultiAnnotation.class.getName(),
