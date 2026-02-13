@@ -291,9 +291,8 @@ public sealed interface SignalCommand extends Serializable {
 
     /**
      * Stores the given value in a child node with the given key if it doesn't
-     * already exist. If the key exists, then the value is not updated but a new
-     * alias is created to reference the existing entry. If the key doesn't
-     * exist, then a new node is created to hold the value.
+     * already exist. If the key exists, then no changes are applied. If the key
+     * doesn't exist, then a new node is created to hold the value.
      *
      * @param commandId
      *            the unique command id used to track the status of this command

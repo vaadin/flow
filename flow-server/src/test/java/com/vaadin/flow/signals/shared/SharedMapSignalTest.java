@@ -28,7 +28,7 @@ import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 
 import static com.vaadin.flow.signals.TestUtil.assertFailure;
@@ -108,11 +108,13 @@ public class SharedMapSignalTest extends SignalTestBase {
     void putIfAbsent_missingKey_newEntryCreated() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
 
-        InsertOperation<SharedValueSignal<String>> operation = signal
+        SignalOperation<PutIfAbsentResult<SharedValueSignal<String>>> operation = signal
                 .putIfAbsent("key", "value");
-        SharedValueSignal<String> child = operation.signal();
 
-        assertSuccess(operation);
+        PutIfAbsentResult<SharedValueSignal<String>> result = assertSuccess(
+                operation);
+        assertTrue(result.created());
+        SharedValueSignal<String> child = result.entry();
         assertEquals("value", child.get());
         assertChildren(signal, "key", "value");
 
@@ -121,24 +123,22 @@ public class SharedMapSignalTest extends SignalTestBase {
     }
 
     @Test
-    void putIfAbsent_existingKey_noUpdateAndEntiresLinked() {
+    void putIfAbsent_existingKey_noUpdateAndEntryUnchanged() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "value");
         SharedValueSignal<String> child = signal.get().get("key");
 
-        InsertOperation<SharedValueSignal<String>> operation = signal
+        SignalOperation<PutIfAbsentResult<SharedValueSignal<String>>> operation = signal
                 .putIfAbsent("key", "update");
-        SharedValueSignal<String> insertChild = operation.signal();
 
-        assertNotEquals(child.id(), insertChild.id());
+        PutIfAbsentResult<SharedValueSignal<String>> result = assertSuccess(
+                operation);
+        assertFalse(result.created());
+        SharedValueSignal<String> resultChild = result.entry();
 
-        assertSuccess(operation);
-        assertEquals("value", insertChild.get());
+        assertEquals("value", resultChild.get());
         assertChildren(signal, "key", "value");
-
-        insertChild.set("update");
-        assertEquals("update", child.get());
-        assertChildren(signal, "key", "update");
+        assertEquals(child.id(), resultChild.id());
     }
 
     @Test
@@ -348,17 +348,18 @@ public class SharedMapSignalTest extends SignalTestBase {
     void equalsHashCode_children() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
 
-        SharedValueSignal<String> operationChild = signal
-                .putIfAbsent("child", "value").signal();
-        SharedValueSignal<String> other = signal.putIfAbsent("other", "other")
-                .signal();
+        signal.putIfAbsent("child", "value");
+        signal.putIfAbsent("other", "other");
+
+        SharedValueSignal<String> child = signal.get().get("child");
+        SharedValueSignal<String> other = signal.get().get("other");
 
         SharedValueSignal<String> valueChild = signal.get().get("child");
 
-        assertEquals(operationChild, valueChild);
-        assertEquals(operationChild.hashCode(), valueChild.hashCode());
+        assertEquals(child, valueChild);
+        assertEquals(child.hashCode(), valueChild.hashCode());
 
-        assertNotEquals(operationChild, other);
+        assertNotEquals(child, other);
     }
 
     @Test

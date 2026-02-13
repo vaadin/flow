@@ -31,6 +31,7 @@ import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
@@ -302,19 +303,28 @@ public class SharedNodeSignal
 
     /**
      * Creates a new node with no value if a map node with the given key doesn't
-     * already exist. The returned operation has a reference to a signal that
-     * corresponds to the given key regardless of whether a node existed for the
-     * key. The operation will be resolved as successful regardless of whether
-     * the key was already used.
+     * already exist. The operation will be resolved as successful regardless of
+     * whether the key was already used. The result contains information about
+     * whether a new entry was created and a reference to the signal for the
+     * entry.
      *
      * @param key
      *            the key to use, not <code>null</code>
-     * @return an operation containing a signal for the entry and the eventual
-     *         result
+     * @return an operation containing the eventual result with the entry signal
      */
-    public InsertOperation<SharedNodeSignal> putChildIfAbsent(String key) {
-        return submitInsert(new SignalCommand.PutIfAbsentCommand(Id.random(),
-                id(), null, Objects.requireNonNull(key), null), this::child);
+    public SignalOperation<PutIfAbsentResult<SharedNodeSignal>> putChildIfAbsent(
+            String key) {
+        Id commandId = Id.random();
+        return submit(
+                new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
+                        Objects.requireNonNull(key), null),
+                success -> {
+                    boolean created = !success.updates().isEmpty();
+                    Id childId = created ? commandId
+                            : tree().confirmed().data(id()).orElseThrow()
+                                    .mapChildren().get(key);
+                    return new PutIfAbsentResult<>(created, child(childId));
+                });
     }
 
     /**

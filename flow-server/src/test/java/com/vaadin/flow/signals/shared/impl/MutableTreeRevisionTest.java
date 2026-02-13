@@ -487,7 +487,7 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void putIfAbsentCommand_present_aliasCreated() {
+    void putIfAbsentCommand_present_noChanges() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key",
                 new StringNode("1")));
@@ -497,18 +497,12 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Accept accept = assertAccepted(result);
-        assertEquals(1, accept.updates().size(), "Only alias is updated");
-        NodeModification modification = accept.updates().get(commandId);
-        assertNull(modification.oldNode());
-        assertInstanceOf(Node.Alias.class, modification.newNode());
-        assertEquals(child, ((Alias) modification.newNode()).target());
+        assertTrue(accept.updates().isEmpty());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", child));
         assertValue(child, "1");
-        assertValue(commandId, "1");
-        assertInstanceOf(Node.Data.class, revision.nodes().get(child));
-        assertInstanceOf(Node.Alias.class, revision.nodes().get(commandId));
+        assertNull(revision.nodes().get(commandId));
     }
 
     @Test
