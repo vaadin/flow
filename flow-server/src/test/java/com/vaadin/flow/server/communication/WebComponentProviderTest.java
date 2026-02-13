@@ -255,8 +255,7 @@ class WebComponentProviderTest {
         byte[] first = out1.toByteArray();
         byte[] second = out2.toByteArray();
 
-        assertNotEquals(first, second,
-                "Stream output should not match");
+        assertNotEquals(first, second, "Stream output should not match");
     }
 
     @Test
@@ -272,8 +271,8 @@ class WebComponentProviderTest {
     public void setExporters_exportersHasOnePush_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class, MyComponentExporter.class);
-        assertTrue(registry
-                .getEmbeddedApplicationAnnotation(Push.class).isPresent());
+        assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
     }
 
     @Test
@@ -281,8 +280,8 @@ class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
-        assertTrue(registry
-                .getEmbeddedApplicationAnnotation(Push.class).isPresent());
+        assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
         assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }

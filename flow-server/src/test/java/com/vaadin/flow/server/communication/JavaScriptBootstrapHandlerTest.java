@@ -148,12 +148,10 @@ class JavaScriptBootstrapHandlerTest {
         BasicElementStateProvider.get().visit(ui.getElement().getNode(),
                 visitor);
 
-        assertTrue(
-                hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
         assertTrue(hasNodeTag(visitor, "^<flow-container-.*>.*",
                 ElementType.VIRTUAL_ATTACHED));
-        assertTrue(
-                hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
+        assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         // There are no routes, so it will get the "no views found" message
         assertTrue(hasNodeTag(visitor, "^<div>.*No views found.*",
                 ElementType.REGULAR));
@@ -244,8 +242,7 @@ class JavaScriptBootstrapHandlerTest {
 
         final boolean value = bootstrapHandler.synchronizedHandleRequest(
                 mocks.getSession(), request, response);
-        assertTrue(value,
-                "No further request handlers should be called");
+        assertTrue(value, "No further request handlers should be called");
 
         assertEquals(400, response.getErrorCode(),
                 "Invalid status code reported");
@@ -267,8 +264,7 @@ class JavaScriptBootstrapHandlerTest {
 
         final boolean value = bootstrapHandler.synchronizedHandleRequest(
                 mocks.getSession(), request, response);
-        assertTrue(value,
-                "No further request handlers should be called");
+        assertTrue(value, "No further request handlers should be called");
 
         assertEquals(400, response.getErrorCode(),
                 "Invalid status code reported");

@@ -169,8 +169,7 @@ class AtmospherePushConnectionTest {
             return null;
         });
 
-        assertTrue(latch.await(3, TimeUnit.SECONDS),
-                "Push not completed");
+        assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }

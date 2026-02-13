@@ -326,8 +326,7 @@ class WebComponentBootstrapHandlerViteTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        assertTrue(
-                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
+        assertTrue(result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
         assertFalse(
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
@@ -364,8 +363,7 @@ class WebComponentBootstrapHandlerViteTest {
 
         // no "export" chunk, expect "bundle" in result instead
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        assertTrue(
-                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+        assertTrue(result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
     @Test
@@ -392,7 +390,7 @@ class WebComponentBootstrapHandlerViteTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
-                        .getName().equals(Constants.STATISTICS_EXPORTED_WC)));
+                .getName().equals(Constants.STATISTICS_EXPORTED_WC)));
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {

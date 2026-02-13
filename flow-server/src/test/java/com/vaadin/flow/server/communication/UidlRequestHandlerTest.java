@@ -100,8 +100,8 @@ class UidlRequestHandlerTest {
                 .getStringWhenWriteBytesOffsetLength(outputStream);
 
         // response shouldn't contain async
-        assertEquals("{\"meta\":{\"sessionExpired\":true}}",
-                responseContent, "Invalid response");
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}", responseContent,
+                "Invalid response");
     }
 
     @Test
@@ -115,15 +115,14 @@ class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, null);
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
 
         // response shouldn't contain async
-        assertEquals("{\"meta\":{\"sessionExpired\":true}}",
-                responseContent, "Invalid response");
+        assertEquals("{\"meta\":{\"sessionExpired\":true}}", responseContent,
+                "Invalid response");
     }
 
     @Test
@@ -166,8 +165,7 @@ class UidlRequestHandlerTest {
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response,
                         requestBody);
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -179,8 +177,7 @@ class UidlRequestHandlerTest {
 
         result = handler.synchronizedHandleRequest(session, request, response,
                 requestBody);
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String resendResponseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -358,8 +355,7 @@ class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -407,8 +403,7 @@ class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
@@ -416,8 +411,7 @@ class UidlRequestHandlerTest {
         // Verify custom sync error notification is returned
         assertTrue(responseContent.contains("Custom Sync Caption"),
                 "Response should contain custom caption");
-        assertTrue(
-                responseContent.contains("Custom sync error message"),
+        assertTrue(responseContent.contains("Custom sync error message"),
                 "Response should contain custom message");
         assertTrue(responseContent.contains("/custom-redirect"),
                 "Response should contain custom URL");
@@ -456,8 +450,7 @@ class UidlRequestHandlerTest {
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response, "");
-        assertTrue(result.isPresent(),
-                "ResponseWriter should be present");
+        assertTrue(result.isPresent(), "ResponseWriter should be present");
         result.get().writeResponse();
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);

@@ -356,10 +356,8 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         int expectedScripts = 2;
         assertEquals(expectedScripts, scripts.size());
-        assertEquals("testing.1",
-                scripts.get(expectedScripts - 2).attr("src"));
-        assertEquals("testing.2",
-                scripts.get(expectedScripts - 1).attr("src"));
+        assertEquals("testing.1", scripts.get(expectedScripts - 2).attr("src"));
+        assertEquals("testing.2", scripts.get(expectedScripts - 1).attr("src"));
     }
 
     @Test
@@ -500,10 +498,8 @@ public class IndexHtmlRequestHandlerTest {
         assertNotNull(maybeUI);
         QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
                 .getQueryParameters();
-        assertEquals(List.of("a", "b"),
-                locationParams.getParameters("param1"));
-        assertEquals(List.of("2"),
-                locationParams.getParameters("param2"));
+        assertEquals(List.of("a", "b"), locationParams.getParameters("param1"));
+        assertEquals(List.of("2"), locationParams.getParameters("param2"));
     }
 
     @Test
@@ -1032,13 +1028,11 @@ public class IndexHtmlRequestHandlerTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
-        assertTrue(
-                BootstrapHandler.isFrameworkInternalRequest(request));
+        assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
 
         Mockito.when(request.getParameter("v-r")).thenReturn("init");
-        assertTrue(
-                BootstrapHandler.isFrameworkInternalRequest(request));
+        assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
 
@@ -1056,8 +1050,7 @@ public class IndexHtmlRequestHandlerTest {
 
         final boolean value = bootstrapHandler.synchronizedHandleRequest(
                 mocks.getSession(), request, response);
-        assertTrue(value,
-                "No further request handlers should be called");
+        assertTrue(value, "No further request handlers should be called");
 
         assertEquals(400, response.getErrorCode(),
                 "Invalid status code reported");
@@ -1202,12 +1195,9 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void devTools_allowedHostsMatchesIp() {
-        assertTrue(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
-        assertTrue(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
-        assertFalse(
-                isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
+        assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
+        assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
+        assertFalse(isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
 
         // Localhost is always allowed
         assertTrue(isAllowedDevToolsHost("192.168.1.*", "127.0.0.1"));
@@ -1216,126 +1206,106 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void devTools_allowedHostsMatchesIpAndForwardedFor() {
-        assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4"));
-        assertFalse(
-                isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
+        assertFalse(isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
         assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
         assertFalse(
                 isAllowedDevToolsHost("   ", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
         assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
 
         // Local proxy
-        assertTrue(
-                isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
         assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
-        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6",
-                "127.0.0.1", "1.2.3.4, 3.4.5.6"));
-        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6",
-                "127.0.0.1", "   1.2.3.4 , 3.4.5.6   "));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
+                "1.2.3.4, 3.4.5.6"));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
+                "   1.2.3.4 , 3.4.5.6   "));
 
         // Non local proxy
-        assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5",
-                "5.5.5.5", "   1.2.3.4    "));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5", "5.5.5.5",
+                "   1.2.3.4    "));
         assertTrue(
                 isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5", "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
         assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
                 "   1.2.3.4 , 3.4.5.6   "));
-        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
-                "5.5.5.5", "1.2.3.4, 3.4.5.6"));
-        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
-                "5.5.5.5", "   1.2.3.4 , 3.4.5.6   "));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*", "5.5.5.5",
+                "1.2.3.4, 3.4.5.6"));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*", "5.5.5.5",
+                "   1.2.3.4 , 3.4.5.6   "));
 
         // Verify full chain
         String forwardedChain = "1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7";
         assertFalse(
                 isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", forwardedChain));
-        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5",
-                "127.0.0.1", forwardedChain));
+        assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5", "127.0.0.1",
+                forwardedChain));
         assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6",
                 "127.0.0.1", forwardedChain));
         assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,7.7.7.7",
                 "127.0.0.1", forwardedChain));
-        assertTrue(
-                isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7",
-                        "127.0.0.1", forwardedChain));
+        assertTrue(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7",
+                "127.0.0.1", forwardedChain));
 
     }
 
     @Test
     public void devTools_forwardedForIsLocal_denyAccess() {
-        assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "::1"));
         assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
 
-        assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
-        assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "0:0:0:0:0:0:0:1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "172.16.0.4"));
 
-        assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
         assertFalse(
                 isAllowedDevToolsHost("   ", "127.0.0.1", "0:0:0:0:0:0:0:1"));
-        assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "172.16.0.4"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "172.16.0.4"));
 
         // Access for local addresses in forwarded-for for should be denied
         // disregarding hostsAllow property
         assertFalse(
                 isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "127.0.0.1"));
-        assertFalse(
-                isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
-        assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
 
     }
 
     @Test
     public void devTools_forwardedForIsEmpty_denyAccess() {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ""));
-        assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
         assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ""));
 
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "   "));
-        assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "   "));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "   "));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "   "));
         assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "   "));
 
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ","));
-        assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ","));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ","));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ","));
         assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ","));
 
-        assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", ", ,, ,"));
-        assertFalse(
-                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ", ,, ,"));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ", ,, ,"));
-        assertFalse(
-                isAllowedDevToolsHost("   ", "127.0.0.1", ", ,, ,"));
+        assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ", ,, ,"));
     }
 
     @Test
@@ -1347,8 +1317,7 @@ public class IndexHtmlRequestHandlerTest {
         assertFalse(isAllowedDevToolsHost("2.2.2.2", "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
 
-        assertFalse(
-                isAllowedDevToolsHost(null, "127.0.0.1", List.of("", "")));
+        assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", List.of("", "")));
         assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", List.of("  ", "   ")));
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
@@ -1356,8 +1325,8 @@ public class IndexHtmlRequestHandlerTest {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
                 List.of("1.1.1.1", "  ", "2.2.2.2")));
 
-        assertTrue(isAllowedDevToolsHost("1.1.1.1, 2.2.2.2",
-                "127.0.0.1", List.of("1.1.1.1", "2.2.2.2")));
+        assertTrue(isAllowedDevToolsHost("1.1.1.1, 2.2.2.2", "127.0.0.1",
+                List.of("1.1.1.1", "2.2.2.2")));
 
     }
 

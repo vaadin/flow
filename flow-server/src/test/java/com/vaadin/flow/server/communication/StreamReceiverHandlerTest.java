@@ -418,8 +418,7 @@ class StreamReceiverHandlerTest {
                 .streamingFinished(endEventArgumentCaptor.capture());
         assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
-        assertEquals(fileName,
-                endEventArgumentCaptor.getValue().getFileName());
+        assertEquals(fileName, endEventArgumentCaptor.getValue().getFileName());
         assertEquals(contentType,
                 endEventArgumentCaptor.getValue().getMimeType());
 
@@ -488,8 +487,7 @@ class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        assertEquals("test.txt",
-                endEventCaptor.getValue().getFileName());
+        assertEquals("test.txt", endEventCaptor.getValue().getFileName());
     }
 
     @Test
@@ -524,8 +522,7 @@ class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        assertEquals("text/plain",
-                endEventCaptor.getValue().getMimeType());
+        assertEquals("text/plain", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
@@ -542,8 +539,7 @@ class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        assertEquals("unknown",
-                endEventCaptor.getValue().getMimeType());
+        assertEquals("unknown", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
@@ -559,8 +555,7 @@ class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        assertEquals("unknown",
-                endEventCaptor.getValue().getFileName());
+        assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 
 }

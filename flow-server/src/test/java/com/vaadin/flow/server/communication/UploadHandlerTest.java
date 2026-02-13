@@ -280,8 +280,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        assertArrayEquals(testBytes, output,
-                "Output differed from expected");
+        assertArrayEquals(testBytes, output, "Output differed from expected");
 
         assertEquals(testBytes.length, amount.get(), "");
     }
@@ -316,8 +315,7 @@ class UploadHandlerTest {
         session.getPendingAccessQueue()
                 .forEach(futureAccess -> futureAccess.run());
 
-        assertArrayEquals(testBytes, output,
-                "Output differed from expected");
+        assertArrayEquals(testBytes, output, "Output differed from expected");
     }
 
     @Test
@@ -522,8 +520,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        assertTrue(handled.get(),
-                "Handled was not called at the end");
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -555,8 +552,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        assertTrue(handled.get(),
-                "Handled was not called at the end");
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -597,8 +593,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        assertTrue(handled.get(),
-                "Handled was not called at the end");
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -630,8 +625,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        assertTrue(handled.get(),
-                "Handled was not called at the end");
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -656,8 +650,7 @@ class UploadHandlerTest {
         };
         handler.handleRequest(request, response, session, element);
         assertTrue(startFired.get(), "Start event was not fired");
-        assertTrue(completeFired.get(),
-                "Complete event was not fired");
+        assertTrue(completeFired.get(), "Complete event was not fired");
 
         startFired.set(false);
         completeFired.set(false);
@@ -701,10 +694,8 @@ class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        assertEquals(2, startFired.get(),
-                "Start event was not fired");
-        assertEquals(2, completeFired.get(),
-                "Complete event was not fired");
+        assertEquals(2, startFired.get(), "Start event was not fired");
+        assertEquals(2, completeFired.get(), "Complete event was not fired");
     }
 
     @Test
@@ -738,10 +729,8 @@ class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        assertEquals(2, startFired.get(),
-                "Start event was not fired");
-        assertEquals(2, completeFired.get(),
-                "Complete event was not fired");
+        assertEquals(2, startFired.get(), "Start event was not fired");
+        assertEquals(2, completeFired.get(), "Complete event was not fired");
     }
 
     @Test

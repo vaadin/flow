@@ -48,8 +48,7 @@ class FragmentedMessageTest {
         String part2 = textWithLength
                 .substring(PushConstants.WEBSOCKET_BUFFER_SIZE);
 
-        assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE,
-                part1.length());
+        assertEquals(PushConstants.WEBSOCKET_BUFFER_SIZE, part1.length());
         assertEquals(
                 textWithLength.length() - PushConstants.WEBSOCKET_BUFFER_SIZE,
                 part2.length());
