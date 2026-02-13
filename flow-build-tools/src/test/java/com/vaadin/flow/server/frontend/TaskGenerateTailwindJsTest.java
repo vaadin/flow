@@ -83,14 +83,14 @@ public class TaskGenerateTailwindJsTest {
     private void verifyTailwindJs(String tailwindJsContent) {
         Assert.assertTrue("Should have tailwind.css import",
                 tailwindJsContent.contains(
-                        "import tailwindCss from './tailwind.css?inline';\n"));
+                        "import tailwindCss from './tailwind.css?inline';" + System.lineSeparator()));
         Assert.assertTrue("Should define applyTailwindCss function",
                 tailwindJsContent.contains("function applyTailwindCss(css)"));
         Assert.assertTrue("Should apply Tailwind CSS",
-                tailwindJsContent.contains("applyTailwindCss(tailwindCss);\n"));
+                tailwindJsContent.contains("applyTailwindCss(tailwindCss);" + System.lineSeparator()));
         Assert.assertTrue("Should inject as global CSS",
                 tailwindJsContent.contains(
-                        "injectGlobalCss(css.toString(), 'CSSImport end', document);\n"));
+                        "injectGlobalCss(css.toString(), 'CSSImport end', document);" + System.lineSeparator()));
         Assert.assertTrue("Should support hot module reload", tailwindJsContent
                 .contains("import.meta.hot.accept('./tailwind.css?inline',"));
     }
