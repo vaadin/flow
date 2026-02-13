@@ -618,10 +618,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
             // use new SignalBindingFeature instance to update the signal value
             SignalBindingFeature feat = new SignalBindingFeature(getNode());
-            feat.setBinding("value", binding.registration(), binding.signal(),
-                    binding.writeCallback());
-            feat.updateSignalByWriteCallback("value", get(key), value,
-                    Objects::equals, putValue::set);
+            feat.setBinding(SignalBindingFeature.VALUE, binding.registration(),
+                    binding.signal(), binding.writeCallback());
+            feat.updateSignalByWriteCallback(SignalBindingFeature.VALUE,
+                    get(key), value, Objects::equals, putValue::set);
             // never trigger change event here since the change event will be
             // triggered by the signal update
             Serializable oldValue = super.put(key,
