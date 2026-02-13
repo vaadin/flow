@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.HashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -28,31 +28,43 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class AttachTemplateChildRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    @Test(expected = IllegalStateException.class)
+class AttachTemplateChildRpcHandlerTest {
+
+    @Test
     public void handleNode_attachById_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_elementNotFound(JacksonUtils.createNode("id"));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void handleNode_attachCustomElement_elementNotFound() {
-        doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_elementNotFound(JacksonUtils.nullNode());
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void handleNode_attachByIdExistingRequest_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_throwReservedId(JacksonUtils.createNode(2));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void handleNode_attachCustonElementCustomId_throwReservedId() {
-        doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
+        assertThrows(IllegalStateException.class, () -> {
+            doHandleNode_attach_throwReservedId(JacksonUtils.nullNode());
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void handleNode_success_throwIllegalInvocation() {
-        assertHandleNode(1, JacksonUtils.createNode("id"));
+        assertThrows(IllegalArgumentException.class, () -> {
+            assertHandleNode(1, JacksonUtils.createNode("id"));
+        });
     }
 
     private void doHandleNode_attach_elementNotFound(JsonNode id) {
