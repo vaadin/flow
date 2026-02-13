@@ -45,7 +45,6 @@ import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PAR
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class AnnotationValidatorTest {
 
@@ -100,33 +99,32 @@ class AnnotationValidatorTest {
     @Test
     public void onStartUp_all_failing_anotations_are_reported()
             throws ServletException {
-        try {
-            annotationValidator.process(Stream
-                    .of(InlineViewportWithParent.class,
-                            BodySizeViewportWithParent.class,
-                            ViewPortViewportWithParent.class)
-                    .collect(Collectors.toSet()), servletContext);
-            fail("No exception was thrown for faulty setup.");
-        } catch (InvalidApplicationConfigurationException iace) {
-            String errorMessage = iace.getMessage();
-            assertTrue(errorMessage.startsWith(ERROR_MESSAGE_BEGINNING),
-                    "Exception has wrong beginning.");
-            assertTrue(
-                    errorMessage.contains(String.format(NON_PARENT,
-                            InlineViewportWithParent.class.getName(),
-                            "@" + Inline.class.getSimpleName())),
-                    "Exception was missing Inline exception");
-            assertTrue(
-                    errorMessage.contains(String.format(NON_PARENT,
-                            ViewPortViewportWithParent.class.getName(),
-                            "@" + Viewport.class.getSimpleName())),
-                    "Exception was missing Viewport exception");
-            assertTrue(
-                    errorMessage.contains(String.format(NON_PARENT,
-                            BodySizeViewportWithParent.class.getName(),
-                            "@" + BodySize.class.getSimpleName())),
-                    "Exception was missing BodySize exception");
-        }
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> annotationValidator.process(Stream
+                        .of(InlineViewportWithParent.class,
+                                BodySizeViewportWithParent.class,
+                                ViewPortViewportWithParent.class)
+                        .collect(Collectors.toSet()), servletContext),
+                "No exception was thrown for faulty setup.");
+        String errorMessage = thrown.getMessage();
+        assertTrue(errorMessage.startsWith(ERROR_MESSAGE_BEGINNING),
+                "Exception has wrong beginning.");
+        assertTrue(
+                errorMessage.contains(String.format(NON_PARENT,
+                        InlineViewportWithParent.class.getName(),
+                        "@" + Inline.class.getSimpleName())),
+                "Exception was missing Inline exception");
+        assertTrue(
+                errorMessage.contains(String.format(NON_PARENT,
+                        ViewPortViewportWithParent.class.getName(),
+                        "@" + Viewport.class.getSimpleName())),
+                "Exception was missing Viewport exception");
+        assertTrue(
+                errorMessage.contains(String.format(NON_PARENT,
+                        BodySizeViewportWithParent.class.getName(),
+                        "@" + BodySize.class.getSimpleName())),
+                "Exception was missing BodySize exception");
     }
 
     @Test
@@ -134,10 +132,9 @@ class AnnotationValidatorTest {
             throws ServletException {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class,
-                () -> annotationValidator.process(
-                        Stream.of(FailingMultiAnnotation.class)
-                                .collect(Collectors.toSet()),
-                        servletContext),
+                () -> annotationValidator
+                        .process(Stream.of(FailingMultiAnnotation.class)
+                                .collect(Collectors.toSet()), servletContext),
                 "No exception was thrown for faulty setup.");
         assertTrue(thrown.getMessage()
                 .contains(ERROR_MESSAGE_BEGINNING + String.format(NON_PARENT,
