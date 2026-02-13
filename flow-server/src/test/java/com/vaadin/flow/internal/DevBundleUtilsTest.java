@@ -22,9 +22,12 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DevBundleUtilsTest {
     @TempDir
@@ -51,24 +54,23 @@ class DevBundleUtilsTest {
 
         DevBundleUtils.compressBundle(projectBase, devFolder);
 
-        Assertions.assertTrue(
+        assertTrue(
                 new File(projectBase, "src/main/bundles/dev.bundle").exists(),
                 "Compressed bundle should have been created");
         FileUtils.deleteDirectory(devFolder);
 
-        Assertions.assertFalse(devFolder.exists(), "Dev folder not deleted!");
+        assertFalse(devFolder.exists(), "Dev folder not deleted!");
 
         DevBundleUtils.unpackBundle(projectBase, devFolder);
 
-        Assertions.assertTrue(devFolder.exists(), "Dev folder not created!");
-        Assertions.assertTrue(configFolder.exists(),
-                "Config folder not created!");
-        Assertions.assertTrue(stats.exists(), "stats file not created!");
-        Assertions.assertTrue(packages.exists(), "packages file not created!");
+        assertTrue(devFolder.exists(), "Dev folder not created!");
+        assertTrue(configFolder.exists(), "Config folder not created!");
+        assertTrue(stats.exists(), "stats file not created!");
+        assertTrue(packages.exists(), "packages file not created!");
 
-        Assertions.assertEquals(statsHash,
+        assertEquals(statsHash,
                 StringUtil.getHash(Files.readString(stats.toPath())));
-        Assertions.assertEquals(packagesHash,
+        assertEquals(packagesHash,
                 StringUtil.getHash(Files.readString(packages.toPath())));
     }
 }

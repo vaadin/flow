@@ -19,7 +19,6 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -371,24 +370,24 @@ class BeanUtilTest {
                 .stream()
                 .filter(desc -> desc.getName().equals("existsInAllPlaces"))
                 .toList();
-        Assertions.assertEquals(1, existsInAllPlacesProperties.size(),
+        assertEquals(1, existsInAllPlacesProperties.size(),
                 "There should be only one 'existsInAllPlaces' property descriptor");
 
         // The property from the class should be retained
         // but we cannot test this as some introspector implementations
         // return the read method from the interface when introspecting the
         // class
-        // Assertions.assertEquals(TestSomething.class,
+        // assertEquals(TestSomething.class,
         // existsInAllPlacesProperties.get(0).getReadMethod().getDeclaringClass());
 
         List<PropertyDescriptor> oneInterfaceProperties = descriptors.stream()
                 .filter(desc -> desc.getName().equals("oneInterface")).toList();
-        Assertions.assertEquals(1, oneInterfaceProperties.size(),
+        assertEquals(1, oneInterfaceProperties.size(),
                 "There should be only one 'oneInterface' property descriptor");
 
         PropertyDescriptor oneInterfaceProperty = oneInterfaceProperties.get(0);
         // The property from thedefault method
-        Assertions.assertEquals(FirstInterface.class,
+        assertEquals(FirstInterface.class,
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
 
     }

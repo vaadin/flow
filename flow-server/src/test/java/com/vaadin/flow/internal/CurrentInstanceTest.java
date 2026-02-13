@@ -25,7 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +35,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 class CurrentInstanceTest {
@@ -55,8 +57,7 @@ class CurrentInstanceTest {
     @Test
     public void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assertions.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
@@ -65,8 +66,7 @@ class CurrentInstanceTest {
     @Test
     public void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assertions.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
 
         assertCleared();
@@ -74,7 +74,7 @@ class CurrentInstanceTest {
 
     private void assertCleared() throws SecurityException, NoSuchFieldException,
             IllegalAccessException {
-        Assertions.assertNull(getInternalCurrentInstanceVariable().get());
+        assertNull(getInternalCurrentInstanceVariable().get());
     }
 
     @SuppressWarnings("unchecked")
@@ -158,11 +158,11 @@ class CurrentInstanceTest {
         WeakReference<VaadinSession> ref = new WeakReference<>(session1);
 
         session1 = null;
-        Assertions.assertTrue(TestUtil.isGarbageCollected(ref));
+        assertTrue(TestUtil.isGarbageCollected(ref));
 
         CurrentInstance.restoreInstances(previous);
 
-        Assertions.assertNull(VaadinSession.getCurrent());
+        assertNull(VaadinSession.getCurrent());
     }
 
     @Test
@@ -171,12 +171,10 @@ class CurrentInstanceTest {
         CurrentInstance.clearAll();
         CurrentInstance.set(CurrentInstanceTest.class, this);
 
-        Assertions
-                .assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
+        assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
 
         Callable<Void> runnable = () -> {
-            Assertions
-                    .assertNull(CurrentInstance.get(CurrentInstanceTest.class));
+            assertNull(CurrentInstance.get(CurrentInstanceTest.class));
             return null;
         };
         ExecutorService service = Executors.newSingleThreadExecutor();

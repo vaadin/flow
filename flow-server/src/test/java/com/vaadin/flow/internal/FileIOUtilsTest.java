@@ -18,41 +18,42 @@ package com.vaadin.flow.internal;
 import java.io.File;
 import java.net.URL;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.open.OSUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class FileIOUtilsTest {
 
     @Test
     public void projectFolderOnWindows() throws Exception {
-        Assumptions.assumeTrue(OSUtils.isWindows());
+        assumeTrue(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/C:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assertions.assertEquals(
+        assertEquals(
                 new File("C:\\Users\\John Doe\\Downloads\\my-app (21)\\my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
     public void projectFolderOnMacOrLinux() throws Exception {
-        Assumptions.assumeFalse(OSUtils.isWindows());
+        assumeFalse(OSUtils.isWindows());
 
         URL url = new URL(
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
-        Assertions.assertEquals(
-                new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
+        assertEquals(new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
     @Test
     public void tempFilesAreTempFiles() {
-        Assertions.assertTrue(
-                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
-        Assertions.assertFalse(
-                FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
+        assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
+        assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
     }
 }

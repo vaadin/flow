@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Vector;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -28,6 +27,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.server.VaadinRequest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Test class for the locale util methods.
@@ -55,7 +57,7 @@ class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getExactLocaleMatch(
                 request, Arrays.asList(Locale.ENGLISH, LOCALE_EN));
 
-        Assertions.assertEquals(LOCALE_EN, exactLocaleMatch.get(),
+        assertEquals(LOCALE_EN, exactLocaleMatch.get(),
                 "Found wrong locale event though an exact match should have been available.");
     }
 
@@ -64,7 +66,7 @@ class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil
                 .getExactLocaleMatch(request, Arrays.asList(Locale.ENGLISH));
 
-        Assertions.assertFalse(exactLocaleMatch.isPresent(),
+        assertFalse(exactLocaleMatch.isPresent(),
                 "Found locale event though none should have been available.");
     }
 
@@ -73,7 +75,7 @@ class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
                 request, Arrays.asList(Locale.US, LOCALE_FI));
 
-        Assertions.assertEquals(LOCALE_FI, exactLocaleMatch.get(),
+        assertEquals(LOCALE_FI, exactLocaleMatch.get(),
                 "Found wrong locale event though an language match should have been available.");
     }
 
@@ -82,7 +84,7 @@ class LocaleUtilTest {
         Optional<Locale> exactLocaleMatch = LocaleUtil.getLocaleMatchByLanguage(
                 request, Arrays.asList(Locale.FRENCH, Locale.KOREA));
 
-        Assertions.assertFalse(exactLocaleMatch.isPresent(),
+        assertFalse(exactLocaleMatch.isPresent(),
                 "Found locale event though none should have been available.");
     }
 

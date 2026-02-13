@@ -17,8 +17,10 @@ package com.vaadin.flow.internal;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test CustomElementNameValidator that it validates correctly.
@@ -30,7 +32,7 @@ class CustomElementNameValidatorTest {
         Stream.of("", "foo", "annotation-xml", "0-foo", "-foo", "foo-$",
                 "foo-/", "FOO-BAR", "foo/", "øl-unicorn", "foo-💩",
                 "5th-element")
-                .forEach(name -> Assertions.assertFalse(
+                .forEach(name -> assertFalse(
                         CustomElementNameValidator.isCustomElementName(name),
                         String.format(
                                 "Name %s is valid even though it should not be",
@@ -41,7 +43,7 @@ class CustomElementNameValidatorTest {
     public void testValidNamesWithoutErrorOrWarning() {
         Stream.of("foo-bar", "custom-element", "date-field", "dos-box",
                 "home-4-good")
-                .forEach(name -> Assertions.assertTrue(
+                .forEach(name -> assertTrue(
                         CustomElementNameValidator.isCustomElementName(name),
                         String.format(
                                 "Name %s is not valid even though it should be",
@@ -53,7 +55,7 @@ class CustomElementNameValidatorTest {
         Stream.of("polymer-", "x-", "ng-", "unicorn-", "unicorn-ø", "uni--corn",
                 "uni-----corn", "uni-co___rn", "uni-co.rn", "uni-corné",
                 "xml-unicorn", "não-tém", "foo-bår")
-                .forEach(name -> Assertions.assertTrue(
+                .forEach(name -> assertTrue(
                         CustomElementNameValidator.isCustomElementName(name),
                         String.format(
                                 "Name %s is not valid even though it should be",
