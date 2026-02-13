@@ -23,15 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test VaadinServletConfig property handling and function with VaadinContext.
  */
-public class VaadinServletConfigTest {
+class VaadinServletConfigTest {
 
     private VaadinServletConfig config;
 
@@ -39,7 +40,7 @@ public class VaadinServletConfigTest {
     private final Map<String, Object> attributeMap = new HashMap<>();
     private Map<String, String> properties;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
         servletContext = Mockito.mock(ServletContext.class);
@@ -70,13 +71,13 @@ public class VaadinServletConfigTest {
     @Test
     public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(config.getConfigParameterNames());
-        Assert.assertEquals(
-                "Context should return only keys defined in ServletContext",
-                properties.size(), list.size());
+        assertEquals(properties.size(), list.size(),
+                "Context should return only keys defined in ServletContext");
         for (String key : properties.keySet()) {
-            Assert.assertEquals(String.format(
-                    "Value should be same from context for key '%s'", key),
-                    properties.get(key), config.getConfigParameter(key));
+            assertEquals(properties.get(key), config.getConfigParameter(key),
+                    String.format(
+                            "Value should be same from context for key '%s'",
+                            key));
         }
     }
 
@@ -85,16 +86,16 @@ public class VaadinServletConfigTest {
         String value = "my-attribute";
         config.getVaadinContext().setAttribute(value);
         String result = config.getVaadinContext().getAttribute(String.class);
-        Assert.assertEquals(value, result);
+        assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
         config.getVaadinContext().setAttribute(newValue);
         result = config.getVaadinContext().getAttribute(String.class);
-        Assert.assertEquals(newValue, result);
+        assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
         result = config.getVaadinContext().getAttribute(String.class, () -> {
             throw new AssertionError("Should not be called");
         });
-        Assert.assertEquals(newValue, result);
+        assertEquals(newValue, result);
     }
 }
