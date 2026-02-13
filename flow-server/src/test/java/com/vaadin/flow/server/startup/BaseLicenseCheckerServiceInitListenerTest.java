@@ -35,15 +35,15 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 
 @SuppressWarnings("unchecked")
@@ -102,8 +102,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
                             isNull(BuildType.class)))
                     .thenThrow(checkerException);
 
-            LicenseException exception = assertThrows(
-                    LicenseException.class, () -> listener.serviceInit(event));
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> listener.serviceInit(event));
             assertSame(checkerException, exception);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
@@ -226,8 +226,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
                             any(Capabilities.class)))
                     .thenThrow(checkerException);
 
-            LicenseException exception = assertThrows(
-                    LicenseException.class, () -> listener.serviceInit(event));
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> listener.serviceInit(event));
             assertSame(checkerException, exception);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),

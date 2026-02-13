@@ -113,10 +113,9 @@ class RouteRegistryMenuAccessTest {
                 ApplicationConfiguration.class, Mockito.CALLS_REAL_METHODS)) {
             config.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(mock(ApplicationConfiguration.class));
-            assertEquals(1,
-                    registry.getRegisteredAccessibleMenuRoutes(
-                            vaadinRequest, null).size(),
-                    "One route should be registered.");
+            assertEquals(1, registry
+                    .getRegisteredAccessibleMenuRoutes(vaadinRequest, null)
+                    .size(), "One route should be registered.");
         }
     }
 

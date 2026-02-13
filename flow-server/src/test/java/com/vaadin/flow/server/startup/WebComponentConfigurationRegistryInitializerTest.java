@@ -39,7 +39,6 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -118,8 +117,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         try {
             initializer.process(null, servletContext);
         } catch (Exception e) {
-            fail(
-                    "WebComponentRegistryInitializer.process should not throw with null argument");
+            fail("WebComponentRegistryInitializer.process should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
@@ -144,8 +142,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         try {
             initializer.process(Collections.emptySet(), servletContext);
         } catch (Exception e) {
-            fail(
-                    "WebComponentRegistryInitializer.process should not throw with empty set");
+            fail("WebComponentRegistryInitializer.process should not throw with empty set");
         }
         Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
@@ -173,13 +170,11 @@ class WebComponentConfigurationRegistryInitializerTest {
                     servletContext);
         });
         Throwable cause = thrown.getCause().getCause();
-        assertInstanceOf(
-                InvalidCustomElementNameException.class, cause);
+        assertInstanceOf(InvalidCustomElementNameException.class, cause);
         assertEquals(String.format(
                 "Tag name '%s' given by '%s' is not a valid custom element "
                         + "name.",
-                "invalid",
-                InvalidNameExporter.class.getCanonicalName()),
+                "invalid", InvalidNameExporter.class.getCanonicalName()),
                 cause.getMessage());
     }
 

@@ -122,8 +122,7 @@ class LookupServletContainerInitializerTest {
 
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
         assertNotNull(provider);
-        assertEquals(TestResourceProvider.class,
-                provider.getClass());
+        assertEquals(TestResourceProvider.class, provider.getClass());
 
         Collection<ResourceProvider> allProviders = lookup
                 .lookupAll(ResourceProvider.class);
@@ -159,8 +158,7 @@ class LookupServletContainerInitializerTest {
 
         RoutePathProvider handler = lookup.lookup(RoutePathProvider.class);
         assertNotNull(handler);
-        assertEquals(TestRoutePathProvider.class,
-                handler.getClass());
+        assertEquals(TestRoutePathProvider.class, handler.getClass());
 
         Collection<RoutePathProvider> allHandlers = lookup
                 .lookupAll(RoutePathProvider.class);
@@ -195,8 +193,7 @@ class LookupServletContainerInitializerTest {
         ApplicationConfigurationFactory config = lookup
                 .lookup(ApplicationConfigurationFactory.class);
         assertNotNull(config);
-        assertTrue(
-                config instanceof TestApplicationConfigurationFactory);
+        assertTrue(config instanceof TestApplicationConfigurationFactory);
     }
 
     @Test
@@ -216,9 +213,8 @@ class LookupServletContainerInitializerTest {
                         .iterator().next());
         assertEquals(TestResourceProvider.class,
                 services.get(ResourceProvider.class).iterator().next());
-        assertEquals(TestApplicationConfigurationFactory.class,
-                services.get(ApplicationConfigurationFactory.class).iterator()
-                        .next());
+        assertEquals(TestApplicationConfigurationFactory.class, services
+                .get(ApplicationConfigurationFactory.class).iterator().next());
     }
 
     @Test

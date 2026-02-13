@@ -140,8 +140,8 @@ class AbstractRouteRegistryInitializerTest {
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
                         Stream.of(NonComponent.class)));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), Route.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
         assertTrue(exception.getMessage()
                 .contains("not extend '" + Component.class.getCanonicalName()));
     }
@@ -152,10 +152,10 @@ class AbstractRouteRegistryInitializerTest {
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
                         Stream.of(RouteAndAliasWithSamePath.class)));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), Route.class));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), RouteAlias.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
         assertTrue(exception.getMessage().contains("same path"));
         assertTrue(exception.getMessage().contains("foo"));
     }
@@ -166,10 +166,10 @@ class AbstractRouteRegistryInitializerTest {
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
                         Stream.of(AliasesWithSamePath.class)));
-        assertFalse(containsQuotedAnnotationName(
-                exception.getMessage(), Route.class));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), RouteAlias.class));
+        assertFalse(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
         assertTrue(exception.getMessage().contains("same paths"));
         assertTrue(exception.getMessage().contains("bar"));
         assertTrue(exception.getMessage().contains("baz"));
@@ -183,10 +183,10 @@ class AbstractRouteRegistryInitializerTest {
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context, Stream
                         .of(RouteAndAliasWithSamePathSameLayoutPrefix.class)));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), Route.class));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), RouteAlias.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
         assertTrue(exception.getMessage().contains("same path"));
         assertTrue(exception.getMessage().contains("foo"));
     }
@@ -197,10 +197,10 @@ class AbstractRouteRegistryInitializerTest {
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context, Stream.of(
                         RouteAndAliasWithSamePathSameNestedLayoutPrefix.class)));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), Route.class));
-        assertTrue(containsQuotedAnnotationName(
-                exception.getMessage(), RouteAlias.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
         assertTrue(exception.getMessage().contains("same path"));
         assertTrue(exception.getMessage().contains("foo"));
     }
@@ -211,8 +211,7 @@ class AbstractRouteRegistryInitializerTest {
                 .validateRouteClasses(context, Stream.of(
                         RouteAndAliasWithSamePathDifferentLayoutPrefix.class));
         assertEquals(1, classes.size());
-        assertEquals(
-                RouteAndAliasWithSamePathDifferentLayoutPrefix.class,
+        assertEquals(RouteAndAliasWithSamePathDifferentLayoutPrefix.class,
                 classes.iterator().next());
     }
 

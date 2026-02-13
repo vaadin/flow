@@ -109,8 +109,7 @@ class AnnotationValidatorTest {
             fail("No exception was thrown for faulty setup.");
         } catch (InvalidApplicationConfigurationException iace) {
             String errorMessage = iace.getMessage();
-            assertTrue(
-                    errorMessage.startsWith(ERROR_MESSAGE_BEGINNING),
+            assertTrue(errorMessage.startsWith(ERROR_MESSAGE_BEGINNING),
                     "Exception has wrong beginning.");
             assertTrue(
                     errorMessage.contains(String.format(NON_PARENT,

@@ -52,8 +52,7 @@ abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("info", MyInfo.class,
                 Collections.emptyList());
 
-        assertEquals(2,
-                getTestedRegistry().getRegisteredRoutes().size(),
+        assertEquals(2, getTestedRegistry().getRegisteredRoutes().size(),
                 "Initial registration of routes should have succeeded.");
 
         getTestedRegistry().setRoute("palace", MyPalace.class,
@@ -61,8 +60,7 @@ abstract class RouteRegistryTestBase {
         getTestedRegistry().setRoute("modular", MyModular.class,
                 Collections.emptyList());
 
-        assertEquals(4,
-                getTestedRegistry().getRegisteredRoutes().size(),
+        assertEquals(4, getTestedRegistry().getRegisteredRoutes().size(),
                 "All new routes should have been registered");
 
         getTestedRegistry().setRoute("withAliases", MyRouteWithAliases.class,
@@ -72,8 +70,7 @@ abstract class RouteRegistryTestBase {
         getTestedRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        assertEquals(5,
-                getTestedRegistry().getRegisteredRoutes().size(),
+        assertEquals(5, getTestedRegistry().getRegisteredRoutes().size(),
                 "The new route should have registered");
     }
 
@@ -115,8 +112,7 @@ abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        assertTrue(
-                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+        assertTrue(!getTestedRegistry().getRegisteredRoutes().isEmpty(),
                 "Registry didn't contain routes even though 3 should have been registered");
 
         assertTrue(
@@ -132,8 +128,7 @@ abstract class RouteRegistryTestBase {
 
         getTestedRegistry().removeRoute(MyRouteWithAliases.class);
 
-        assertFalse(
-                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+        assertFalse(!getTestedRegistry().getRegisteredRoutes().isEmpty(),
                 "Registry should be empty after removing the only registered Class.");
     }
 
@@ -148,8 +143,7 @@ abstract class RouteRegistryTestBase {
         getInitializationRegistry().setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
-        assertTrue(
-                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+        assertTrue(!getTestedRegistry().getRegisteredRoutes().isEmpty(),
                 "Registry didn't contain routes even though 3 should have been registered");
 
         assertTrue(
@@ -165,8 +159,7 @@ abstract class RouteRegistryTestBase {
 
         getTestedRegistry().removeRoute("withAliases");
 
-        assertTrue(
-                !getTestedRegistry().getRegisteredRoutes().isEmpty(),
+        assertTrue(!getTestedRegistry().getRegisteredRoutes().isEmpty(),
                 "Registry should contain alias routes");
 
         assertEquals(1,

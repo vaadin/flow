@@ -73,8 +73,7 @@ class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        assertTrue(
-                propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
+        assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
         assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         assertFalse(configuration.isProductionMode());
@@ -91,8 +90,7 @@ class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        assertTrue(
-                propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
+        assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_FILE));
         assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         assertFalse(configuration.isProductionMode());
@@ -109,13 +107,11 @@ class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        assertTrue(
-                propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
         assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        assertEquals("http://my.server/static/stats.json",
-                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
-                        null));
+        assertEquals("http://my.server/static/stats.json", configuration
+                .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         assertFalse(configuration.isProductionMode());
     }
 
@@ -136,13 +132,11 @@ class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        assertTrue(
-                propertyNames.contains(Constants.EXTERNAL_STATS_URL));
+        assertTrue(propertyNames.contains(Constants.EXTERNAL_STATS_URL));
         assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
-        assertEquals("http://my.server/static/stats.json",
-                configuration.getStringProperty(Constants.EXTERNAL_STATS_URL,
-                        null));
+        assertEquals("http://my.server/static/stats.json", configuration
+                .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         assertFalse(configuration.isProductionMode());
     }
 
@@ -166,8 +160,7 @@ class DefaultApplicationConfigurationFactoryTest {
                 .list(configuration.getPropertyNames());
         assertEquals(1, propertyNames.size());
         assertEquals("foo", propertyNames.get(0));
-        assertEquals("bar",
-                configuration.getStringProperty("foo", null));
+        assertEquals("bar", configuration.getStringProperty("foo", null));
     }
 
     @Test
@@ -201,8 +194,7 @@ class DefaultApplicationConfigurationFactoryTest {
             flags.when(() -> FeatureFlags.get(context))
                     .thenReturn(featureFlags);
 
-            assertEquals(Mode.DEVELOPMENT_BUNDLE,
-                    configuration.getMode(),
+            assertEquals(Mode.DEVELOPMENT_BUNDLE, configuration.getMode(),
                     "Should have bundle mode by default");
 
             Mockito.when(featureFlags
@@ -234,11 +226,9 @@ class DefaultApplicationConfigurationFactoryTest {
                 .list(configuration.getPropertyNames());
         assertTrue(propertyNames.contains(attributeName));
         if (value instanceof Boolean) {
-            assertTrue(
-                    configuration.getBooleanProperty(attributeName, false));
+            assertTrue(configuration.getBooleanProperty(attributeName, false));
         } else {
-            assertEquals(
-                    configuration.getStringProperty(attributeName, null),
+            assertEquals(configuration.getStringProperty(attributeName, null),
                     value.toString());
         }
     }
