@@ -152,8 +152,7 @@ class AccessAnnotationCheckerTest {
                 accessAnnotationChecker.hasAccess(ClientViewPlaceholder.class));
         assertTrue(
                 accessAnnotationChecker.hasAccess(InternalServerError.class));
-        assertTrue(
-                accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
+        assertTrue(accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
     }
 
     @Test
@@ -351,8 +350,7 @@ class AccessAnnotationCheckerTest {
         try {
             CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
                     createRequest(USER_PRINCIPAL), null));
-            assertTrue(
-                    accessAnnotationChecker.hasAccess(PermitAllClass.class));
+            assertTrue(accessAnnotationChecker.hasAccess(PermitAllClass.class));
         } finally {
             CurrentInstance.clearAll();
         }

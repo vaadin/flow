@@ -246,8 +246,7 @@ class MenuConfigurationTest {
             header = MenuConfiguration.getPageHeader(new NormalRoute());
             assertTrue(header.isPresent());
             // from HasDynamicTitle
-            assertEquals("My Route with dynamic title",
-                    header.get());
+            assertEquals("My Route with dynamic title", header.get());
             Mockito.when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(Collections.emptyList());
 
@@ -257,8 +256,7 @@ class MenuConfigurationTest {
                     .getPageHeader(new MandatoryParameterRouteWithPageTitle());
             assertTrue(header.isPresent());
             // directly from class name
-            assertEquals("MandatoryParameterRouteWithPageTitle",
-                    header.get());
+            assertEquals("MandatoryParameterRouteWithPageTitle", header.get());
 
         } finally {
             UI.setCurrent(currentUi);
@@ -309,8 +307,7 @@ class MenuConfigurationTest {
             header = MenuConfiguration.getPageHeader();
             // optional route parameter -> menu is eligible
             assertTrue(header.isPresent());
-            assertEquals("OptionalParameterRouteWithPageTitle",
-                    header.get());
+            assertEquals("OptionalParameterRouteWithPageTitle", header.get());
 
         } finally {
             UI.setCurrent(currentUi);
@@ -377,8 +374,7 @@ class MenuConfigurationTest {
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from HasDynamicTitle
-            assertEquals("My Route with dynamic title",
-                    header.get());
+            assertEquals("My Route with dynamic title", header.get());
             Mockito.when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(Collections.emptyList());
 
@@ -390,15 +386,13 @@ class MenuConfigurationTest {
     private void assertOrder(List<MenuEntry> menuEntries,
             String[] expectedOrder) {
         for (int i = 0; i < menuEntries.size(); i++) {
-            assertEquals(expectedOrder[i],
-                    menuEntries.get(i).path());
+            assertEquals(expectedOrder[i], menuEntries.get(i).path());
         }
     }
 
     private void assertClientRoutes(Map<String, MenuEntry> menuOptions,
             boolean authenticated, boolean hasRole) {
-        assertTrue(menuOptions.containsKey("/"),
-                "Client route '' missing");
+        assertTrue(menuOptions.containsKey("/"), "Client route '' missing");
         assertEquals("Public", menuOptions.get("/").title());
 
         if (authenticated) {
@@ -409,8 +403,7 @@ class MenuConfigurationTest {
             if (hasRole) {
                 assertTrue(menuOptions.containsKey("/hilla"),
                         "Client route 'hilla' missing");
-                assertEquals("Hilla",
-                        menuOptions.get("/hilla").title());
+                assertEquals("Hilla", menuOptions.get("/hilla").title());
 
                 assertTrue(menuOptions.containsKey("/hilla/sub"),
                         "Client child route 'hilla/sub' missing");

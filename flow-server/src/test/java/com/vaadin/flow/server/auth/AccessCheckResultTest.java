@@ -46,9 +46,8 @@ class AccessCheckResultTest {
 
     @Test
     public void create_rejectWithoutReason_throws() {
-        assertThrows(IllegalArgumentException.class,
-                () -> AccessCheckResult.create(AccessCheckDecision.REJECT,
-                        null));
+        assertThrows(IllegalArgumentException.class, () -> AccessCheckResult
+                .create(AccessCheckDecision.REJECT, null));
     }
 
     @Test

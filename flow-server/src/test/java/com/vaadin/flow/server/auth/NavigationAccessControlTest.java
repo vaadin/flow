@@ -133,8 +133,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, false);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals(String.join(System.lineSeparator(),
                 accessDeniedReason(checker1), accessDeniedReason(checker2),
                 accessDeniedReason(checker3)), result.getRerouteErrorMessage());
@@ -147,8 +146,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, false);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals(
                 String.join(System.lineSeparator(),
                         accessDeniedReason(checker1)),
@@ -162,8 +160,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, false);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals(
                 "Access denied because navigation checkers did not take any decision.",
                 result.getRerouteErrorMessage());
@@ -182,8 +179,7 @@ class NavigationAccessControlTest {
                         .startsWith("Mixed consensus from navigation checkers"),
                 "Expected exception because of mixed consensus, but reason was "
                         + failure.getMessage());
-        assertTrue(
-                failure.getMessage().contains(accessDeniedReason(checker3)),
+        assertTrue(failure.getMessage().contains(accessDeniedReason(checker3)),
                 "Expected exception message to contain deny reasons"
                         + failure.getMessage());
 
@@ -199,8 +195,7 @@ class NavigationAccessControlTest {
                         .startsWith("Mixed consensus from navigation checkers"),
                 "Expected exception because of mixed consensus, but reason was "
                         + failure.getMessage());
-        assertTrue(
-                failure.getMessage().contains(accessDeniedReason(checker1)),
+        assertTrue(failure.getMessage().contains(accessDeniedReason(checker1)),
                 "Expected exception message to contain deny reasons"
                         + failure.getMessage());
     }
@@ -212,8 +207,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, true);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals("", result.getRerouteErrorMessage());
 
         // Result order does not matter
@@ -223,8 +217,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         result = checkAccess(false, true);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals("", result.getRerouteErrorMessage());
     }
 
@@ -235,8 +228,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
         TestNavigationResult result = checkAccess(false, true);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals("", result.getRerouteErrorMessage());
     }
 
@@ -247,8 +239,7 @@ class NavigationAccessControlTest {
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
         TestNavigationResult result = checkAccess(false, true);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(NotFoundException.class,
-                result.getRerouteError());
+        assertEquals(NotFoundException.class, result.getRerouteError());
         assertEquals("", result.getRerouteErrorMessage());
     }
 
@@ -367,8 +358,7 @@ class NavigationAccessControlTest {
         accessControl.setLoginView(TestLoginView.class);
         TestNavigationResult result = checkAccess(true, false);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(AccessDeniedException.class,
-                result.getRerouteError());
+        assertEquals(AccessDeniedException.class, result.getRerouteError());
     }
 
     @Test
@@ -379,8 +369,7 @@ class NavigationAccessControlTest {
         accessControl.setLoginView("/log-in");
         TestNavigationResult result = checkAccess(true, false);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(AccessDeniedException.class,
-                result.getRerouteError());
+        assertEquals(AccessDeniedException.class, result.getRerouteError());
     }
 
     @Test
@@ -396,8 +385,7 @@ class NavigationAccessControlTest {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 PermitAllView.class);
         assertFalse(result.wasTargetViewRendered());
-        assertEquals(
-                AccessAnnotationCheckerTest.REQUEST_URL + routePath,
+        assertEquals(AccessAnnotationCheckerTest.REQUEST_URL + routePath,
                 result.sessionAttributes.get(
                         NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE));
         assertEquals(routePath, result.sessionAttributes

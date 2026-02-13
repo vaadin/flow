@@ -485,8 +485,7 @@ class MenuRegistryTest {
             String expectedRootPath) {
         assertTrue(menuItems.containsKey(expectedRootPath),
                 "Client route '" + expectedRootPath + "' missing");
-        assertEquals("Public",
-                menuItems.get(expectedRootPath).title());
+        assertEquals("Public", menuItems.get(expectedRootPath).title());
         assertNotNull(menuItems.get(expectedRootPath).menu(),
                 "Public should contain default menu data");
 
@@ -502,8 +501,7 @@ class MenuRegistryTest {
             if (hasRole) {
                 assertTrue(menuItems.containsKey("/hilla"),
                         "Client route 'hilla' missing");
-                assertEquals("Hilla",
-                        menuItems.get("/hilla").title());
+                assertEquals("Hilla", menuItems.get("/hilla").title());
                 assertTrue(menuItems.get("/hilla").loginRequired(),
                         "Login should be required");
                 assertArrayEquals(new String[] { "ROLE_USER" },
@@ -514,8 +512,7 @@ class MenuRegistryTest {
 
                 assertTrue(menuItems.containsKey("/hilla/sub"),
                         "Client child route 'hilla/sub' missing");
-                assertEquals("Hilla Sub",
-                        menuItems.get("/hilla/sub").title());
+                assertEquals("Hilla Sub", menuItems.get("/hilla/sub").title());
             } else {
                 assertFalse(menuItems.containsKey("/hilla"),
                         "Roles do not match no hilla should be available");
@@ -549,8 +546,7 @@ class MenuRegistryTest {
         assertTrue(menuItems.containsKey("/info"),
                 "Server route 'info' missing");
         assertEquals("MyInfo", menuItems.get("/info").title());
-        assertEquals("MyInfo",
-                menuItems.get("/info").menu().title());
+        assertEquals("MyInfo", menuItems.get("/info").menu().title());
     }
 
     private void assertServerRoutesWithParameters(
@@ -568,14 +564,12 @@ class MenuRegistryTest {
         } else {
             assertTrue(menuItems.containsKey("/param/:param"),
                     "Server route '/param/:param' missing");
-            assertTrue(
-                    menuItems.get("/param/:param").menu().exclude(),
+            assertTrue(menuItems.get("/param/:param").menu().exclude(),
                     "Server route '/param/:param' should be excluded from menu");
 
             assertTrue(menuItems.containsKey("/param/:param1"),
                     "Server route '/param/:param1' missing");
-            assertTrue(
-                    menuItems.get("/param/:param1").menu().exclude(),
+            assertTrue(menuItems.get("/param/:param1").menu().exclude(),
                     "Server route '/param/:param1' should be excluded from menu");
         }
 

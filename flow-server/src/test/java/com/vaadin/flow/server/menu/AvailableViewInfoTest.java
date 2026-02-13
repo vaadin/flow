@@ -82,8 +82,7 @@ class AvailableViewInfoTest {
     public void testJsonSerialization() throws JacksonException {
         var info = createInfo(true, true);
         var json = mapper.writeValueAsString(info);
-        assertEquals(info,
-                mapper.readValue(json, AvailableViewInfo.class),
+        assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),
                 "JSON conversion doesn't give the same object");
     }
 
@@ -91,8 +90,7 @@ class AvailableViewInfoTest {
     public void testJsonSerializationNull() throws JacksonException {
         var info = createInfo(true, false);
         var json = mapper.writeValueAsString(info);
-        assertEquals(info,
-                mapper.readValue(json, AvailableViewInfo.class),
+        assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),
                 "JSON conversion doesn't give the same object");
     }
 

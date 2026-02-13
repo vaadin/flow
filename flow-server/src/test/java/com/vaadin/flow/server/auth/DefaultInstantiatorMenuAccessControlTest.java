@@ -70,8 +70,7 @@ class DefaultInstantiatorMenuAccessControlTest {
         MenuAccessControl menuAccessControl = defaultInstantiator
                 .getMenuAccessControl();
         assertNotNull(menuAccessControl);
-        assertTrue(
-                menuAccessControl instanceof DefaultMenuAccessControl);
+        assertTrue(menuAccessControl instanceof DefaultMenuAccessControl);
         assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.AUTOMATIC);
     }
@@ -93,8 +92,7 @@ class DefaultInstantiatorMenuAccessControlTest {
         MenuAccessControl menuAccessControl = defaultInstantiator
                 .getMenuAccessControl();
         assertNotNull(menuAccessControl);
-        assertTrue(
-                menuAccessControl instanceof CustomMenuAccessControl);
+        assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
         assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.ALWAYS);
 
@@ -115,12 +113,10 @@ class DefaultInstantiatorMenuAccessControlTest {
         String errorMessage = assertThrows(
                 InvalidMenuAccessControlException.class,
                 () -> defaultInstantiator.getMenuAccessControl()).getMessage();
-        assertEquals(
-                "Menu access control implementation class property '"
-                        + InitParameters.MENU_ACCESS_CONTROL
-                        + "' is set to 'com.vaadin.flow.server.auth.InvalidMenuAccessControl' but it's not "
-                        + MenuAccessControl.class.getSimpleName()
-                        + " implementation",
+        assertEquals("Menu access control implementation class property '"
+                + InitParameters.MENU_ACCESS_CONTROL
+                + "' is set to 'com.vaadin.flow.server.auth.InvalidMenuAccessControl' but it's not "
+                + MenuAccessControl.class.getSimpleName() + " implementation",
                 errorMessage);
     }
 
