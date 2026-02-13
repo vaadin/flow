@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -49,6 +48,11 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @NotThreadSafe
 class RouteConfigurationTest {
@@ -116,14 +120,12 @@ class RouteConfigurationTest {
             public void run() {
                 awaitCountDown(waitUpdaterThread);
 
-                Assertions.assertTrue(
-                        routeConfiguration.getAvailableRoutes().isEmpty(),
+                assertTrue(routeConfiguration.getAvailableRoutes().isEmpty(),
                         "Registry should still remain empty");
 
                 awaitCountDown(waitUpdaterThread);
 
-                Assertions.assertTrue(
-                        routeConfiguration.getAvailableRoutes().isEmpty(),
+                assertTrue(routeConfiguration.getAvailableRoutes().isEmpty(),
                         "Registry should still remain empty");
 
                 waitReaderThread.countDown();
@@ -145,12 +147,11 @@ class RouteConfigurationTest {
             try {
                 waitReaderThread.await();
             } catch (InterruptedException e) {
-                Assertions.fail();
+                fail();
             }
         });
 
-        Assertions.assertEquals(2,
-                routeConfiguration.getAvailableRoutes().size(),
+        assertEquals(2, routeConfiguration.getAvailableRoutes().size(),
                 "After unlock registry should be updated for others to configure with new data");
     }
 
@@ -166,13 +167,11 @@ class RouteConfigurationTest {
                     Collections.emptyList());
         });
 
-        Assertions.assertTrue(
-                routeConfiguration.isRouteRegistered(MyRoute.class),
+        assertTrue(routeConfiguration.isRouteRegistered(MyRoute.class),
                 "Registered 'MyRoute.class' should return true");
-        Assertions.assertTrue(
-                routeConfiguration.isRouteRegistered(Secondary.class),
+        assertTrue(routeConfiguration.isRouteRegistered(Secondary.class),
                 "Registered 'Secondary.class' should return true");
-        Assertions.assertFalse(routeConfiguration.isRouteRegistered(Url.class),
+        assertFalse(routeConfiguration.isRouteRegistered(Url.class),
                 "Unregistered 'Url.class' should return false");
     }
 
@@ -189,50 +188,47 @@ class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(ParameterView.class);
         });
 
-        Assertions.assertEquals(4,
-                routeConfiguration.getAvailableRoutes().size(),
+        assertEquals(4, routeConfiguration.getAvailableRoutes().size(),
                 "After unlock registry should be updated for others to configure with new data");
-        Assertions.assertTrue(routeConfiguration.isPathAvailable(""),
+        assertTrue(routeConfiguration.isPathAvailable(""),
                 "Expected path '' to be registered");
-        Assertions.assertTrue(routeConfiguration.isPathAvailable("path"),
+        assertTrue(routeConfiguration.isPathAvailable("path"),
                 "Expected path 'path' to be registered");
-        Assertions.assertTrue(routeConfiguration.isPathAvailable("parents"),
+        assertTrue(routeConfiguration.isPathAvailable("parents"),
                 "Expected path 'parents' to be registered");
 
-        Assertions.assertEquals("parents",
-                routeConfiguration.getUrl(MiddleLayout.class),
+        assertEquals("parents", routeConfiguration.getUrl(MiddleLayout.class),
                 "Url should have only been 'parents'");
 
         Optional<String> template;
 
         template = routeConfiguration.getTemplate(MiddleLayout.class);
-        Assertions.assertTrue(template.isPresent(), "Missing template");
-        Assertions.assertEquals("parents", template.get(),
+        assertTrue(template.isPresent(), "Missing template");
+        assertEquals("parents", template.get(),
                 "Url should have only been 'parents'");
 
         Optional<Class<? extends Component>> pathRoute = routeConfiguration
                 .getRoute("path");
-        Assertions.assertTrue(pathRoute.isPresent(),
+        assertTrue(pathRoute.isPresent(),
                 "'path' should have returned target class");
-        Assertions.assertEquals(Secondary.class, pathRoute.get(),
+        assertEquals(Secondary.class, pathRoute.get(),
                 "'path' registration should be Secondary");
 
         template = routeConfiguration.getTemplate(ParameterView.class);
-        Assertions.assertTrue(template.isPresent(),
-                "Missing template for ParameterView");
-        Assertions.assertEquals(
+        assertTrue(template.isPresent(), "Missing template for ParameterView");
+        assertEquals(
                 "category/:int(" + RouteParameterRegex.INTEGER + ")/item/:long("
                         + RouteParameterRegex.LONG + ")",
                 template.get(),
                 "ParameterView template is not correctly generated from Route and RoutePrefix");
 
-        Assertions.assertTrue(
+        assertTrue(
                 routeConfiguration.isPathAvailable("category/:int("
                         + RouteParameterRegex.INTEGER + ")/item/:long("
                         + RouteParameterRegex.LONG + ")"),
                 "ParameterView template not registered.");
 
-        Assertions.assertEquals("category/1234567890/item/12345678900",
+        assertEquals("category/1234567890/item/12345678900",
                 routeConfiguration.getUrl(ParameterView.class,
                         new RouteParameters(new RouteParam("int", "1234567890"),
                                 new RouteParam("long", "12345678900"))),
@@ -243,10 +239,10 @@ class RouteConfigurationTest {
             routeConfiguration.setRoute("url", Url.class);
         });
 
-        Assertions.assertFalse(routeConfiguration.isPathAvailable("path"),
+        assertFalse(routeConfiguration.isPathAvailable("path"),
                 "Removing the path 'path' should have cleared it from the registry");
 
-        Assertions.assertTrue(
+        assertTrue(
                 routeConfiguration.isPathAvailable(
                         HasUrlParameterFormat.getTemplate("url", Url.class)),
                 "Expected path 'url' to be registered");
@@ -254,14 +250,14 @@ class RouteConfigurationTest {
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
 
-        Assertions.assertFalse(urlRoute.isPresent(),
+        assertFalse(urlRoute.isPresent(),
                 "'url' with no parameters should not have returned a class");
 
         urlRoute = routeConfiguration.getRoute("url",
                 Collections.singletonList("param"));
-        Assertions.assertTrue(urlRoute.isPresent(),
+        assertTrue(urlRoute.isPresent(),
                 "'url' with parameters should have returned a class");
-        Assertions.assertEquals(Url.class, urlRoute.get(),
+        assertEquals(Url.class, urlRoute.get(),
                 "'url' registration should be Url");
     }
 
@@ -277,11 +273,11 @@ class RouteConfigurationTest {
         // Main template for target.
         final Optional<String> template = routeConfiguration
                 .getTemplate(ComponentView.class);
-        Assertions.assertTrue(template.isPresent(), "Missing template");
-        Assertions.assertEquals("component/:identifier/:path*", template.get());
+        assertTrue(template.isPresent(), "Missing template");
+        assertEquals("component/:identifier/:path*", template.get());
 
         // url produced by @RouteAlias(value = ":tab(api)/:path*")
-        Assertions.assertEquals("component/button/api/com/vaadin/flow/button",
+        assertEquals("component/button/api/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
@@ -289,7 +285,7 @@ class RouteConfigurationTest {
                                         "path", "com/vaadin/flow/button"))));
 
         // url produced by @Route(value = ":path*")
-        Assertions.assertEquals("component/button/com/vaadin/flow/button",
+        assertEquals("component/button/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
@@ -298,7 +294,7 @@ class RouteConfigurationTest {
 
         // url produced by @RouteAlias(value =
         // ":tab(overview|samples|links|reviews|discussions)")
-        Assertions.assertEquals("component/button/reviews",
+        assertEquals("component/button/reviews",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
@@ -306,7 +302,7 @@ class RouteConfigurationTest {
 
         // url produced by @RouteAlias(value =
         // ":tab(overview|samples|links|reviews|discussions)")
-        Assertions.assertEquals("component/button/overview",
+        assertEquals("component/button/overview",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
@@ -317,8 +313,7 @@ class RouteConfigurationTest {
             routeConfiguration.getUrl(ComponentView.class,
                     new RouteParameters(new RouteParam("identifier", "button"),
                             new RouteParam("tab", "examples")));
-            Assertions.fail(
-                    "`tab` parameter doesn't accept `examples` as value.");
+            fail("`tab` parameter doesn't accept `examples` as value.");
         } catch (NotFoundException e) {
         }
     }
@@ -348,8 +343,8 @@ class RouteConfigurationTest {
 
             routeConfiguration.setRoute("old", MyRoute.class);
 
-            Assertions.assertEquals(1, added.size());
-            Assertions.assertEquals(0, removed.size());
+            assertEquals(1, added.size());
+            assertEquals(0, removed.size());
 
             added.clear();
             removed.clear();
@@ -358,8 +353,8 @@ class RouteConfigurationTest {
 
             routeConfiguration.setRoute("new", MyRoute.class);
 
-            Assertions.assertEquals(0, added.size());
-            Assertions.assertEquals(0, removed.size());
+            assertEquals(0, added.size());
+            assertEquals(0, removed.size());
         } finally {
             session.unlock();
             CurrentInstance.clearAll();
@@ -392,8 +387,8 @@ class RouteConfigurationTest {
 
             routeConfiguration.setRoute("old", MyRoute.class);
 
-            Assertions.assertEquals(1, added.size());
-            Assertions.assertEquals(0, removed.size());
+            assertEquals(1, added.size());
+            assertEquals(0, removed.size());
 
             added.clear();
             removed.clear();
@@ -402,8 +397,8 @@ class RouteConfigurationTest {
 
             routeConfiguration.setRoute("new", MyRoute.class);
 
-            Assertions.assertEquals(1, added.size());
-            Assertions.assertEquals(0, removed.size());
+            assertEquals(1, added.size());
+            assertEquals(0, removed.size());
         } finally {
             session.unlock();
             CurrentInstance.clearAll();
@@ -424,8 +419,7 @@ class RouteConfigurationTest {
             RouteConfiguration routeConfiguration = RouteConfiguration
                     .forSessionScope();
 
-            Assertions.assertEquals(2,
-                    routeConfiguration.getAvailableRoutes().size(),
+            assertEquals(2, routeConfiguration.getAvailableRoutes().size(),
                     "After unlock registry should be updated for others to configure with new data");
         } finally {
             session.unlock();
@@ -450,8 +444,7 @@ class RouteConfigurationTest {
             RouteConfiguration routeConfiguration = RouteConfiguration
                     .forApplicationScope();
 
-            Assertions.assertEquals(2,
-                    routeConfiguration.getAvailableRoutes().size(),
+            assertEquals(2, routeConfiguration.getAvailableRoutes().size(),
                     "After unlock registry should be updated for others to configure with new data");
         } finally {
             session.unlock();
@@ -544,7 +537,7 @@ class RouteConfigurationTest {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
-            Assertions.fail();
+            fail();
         }
     }
 

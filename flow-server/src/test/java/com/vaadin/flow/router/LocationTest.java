@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocationTest {
     @Test
@@ -113,37 +114,34 @@ class LocationTest {
     public void queryValue_decodedCorrectly() {
         QueryParameters queryParameters = new Location("home?value+part")
                 .getQueryParameters();
-        Assertions.assertEquals("value part",
+        assertEquals("value part",
                 queryParameters.getParameters().keySet().iterator().next(),
                 "'+' should be decoded in map");
-        Assertions.assertEquals("value%20part",
-                queryParameters.getQueryString(),
+        assertEquals("value%20part", queryParameters.getQueryString(),
                 "'+' should not be decoded in query param string");
 
         queryParameters = new Location("home?someValue1%2BsomeValue2")
                 .getQueryParameters();
-        Assertions.assertEquals("someValue1+someValue2",
+        assertEquals("someValue1+someValue2",
                 queryParameters.getParameters().keySet().iterator().next(),
                 "'%2B' should be decoded in map");
-        Assertions.assertEquals("someValue1%2BsomeValue2",
+        assertEquals("someValue1%2BsomeValue2",
                 queryParameters.getQueryString(),
                 "'%2B' should not be decoded in query param string");
 
         queryParameters = new Location("home?%25HF").getQueryParameters();
-        Assertions.assertEquals("%HF",
+        assertEquals("%HF",
                 queryParameters.getParameters().keySet().iterator().next(),
                 "'%25' should be decoded in map");
-        Assertions.assertEquals("%25HF", queryParameters.getQueryString(),
+        assertEquals("%25HF", queryParameters.getQueryString(),
                 "'%25' should not be decoded in query param string");
 
         queryParameters = new Location("home?p=%26&q=%20").getQueryParameters();
-        Assertions.assertEquals("&",
-                queryParameters.getParameters().get("p").get(0),
+        assertEquals("&", queryParameters.getParameters().get("p").get(0),
                 "'%26' should be decoded in map");
-        Assertions.assertEquals(" ",
-                queryParameters.getParameters().get("q").get(0),
+        assertEquals(" ", queryParameters.getParameters().get("q").get(0),
                 "'%20' should be decoded in map");
-        Assertions.assertEquals("p=%26&q=%20", queryParameters.getQueryString(),
+        assertEquals("p=%26&q=%20", queryParameters.getQueryString(),
                 "'%26' and '%20' should not be decoded in query param string");
     }
 
@@ -172,7 +170,7 @@ class LocationTest {
         Location location = new Location("foo");
         Optional<Location> maybeSubLocation = location.getSubLocation();
 
-        Assertions.assertFalse(maybeSubLocation.isPresent());
+        assertFalse(maybeSubLocation.isPresent());
     }
 
     @Test
@@ -267,7 +265,7 @@ class LocationTest {
                 getQueryParameters());
         assertEquals(Arrays.asList("foo", "bar", "?one&two=222"),
                 location.getSegments());
-        Assertions.assertEquals("one=1&one=11&two=2&two=22&three=3",
+        assertEquals("one=1&one=11&two=2&two=22&three=3",
                 location.getQueryParameters().getQueryString(),
                 "Query parameters should be taken from the constructor parameter, not from path");
     }
@@ -275,11 +273,11 @@ class LocationTest {
     @Test
     public void locationWithParamWithAndWithoutValue() {
         Location location = new Location("foo?param&param=bar");
-        Assertions.assertEquals("param&param=bar",
+        assertEquals("param&param=bar",
                 location.getQueryParameters().getQueryString());
 
         location = new Location("foo?param=bar&param");
-        Assertions.assertEquals("param=bar&param",
+        assertEquals("param=bar&param",
                 location.getQueryParameters().getQueryString());
     }
 
@@ -287,7 +285,7 @@ class LocationTest {
     public void locationWithParamAndEmptyValue() {
         Location location = new Location("foo?param=&param=bar");
 
-        Assertions.assertEquals("param&param=bar",
+        assertEquals("param&param=bar",
                 location.getQueryParameters().getQueryString());
     }
 
@@ -302,34 +300,34 @@ class LocationTest {
 
     @Test
     public void locationShouldBeRelative() {
-        InvalidLocationException ex = Assertions
-                .assertThrows(InvalidLocationException.class, () -> {
+        InvalidLocationException ex = assertThrows(
+                InvalidLocationException.class, () -> {
 
                     new Location("../element");
                 });
-        Assertions.assertTrue(ex.getMessage()
+        assertTrue(ex.getMessage()
                 .contains("Relative path cannot contain .. segments"));
     }
 
     @Test
     public void locationShouldNotEndWithDotDotSegment() {
-        InvalidLocationException ex = Assertions
-                .assertThrows(InvalidLocationException.class, () -> {
+        InvalidLocationException ex = assertThrows(
+                InvalidLocationException.class, () -> {
 
                     new Location("element/..");
                 });
-        Assertions.assertTrue(ex.getMessage()
+        assertTrue(ex.getMessage()
                 .contains("Relative path cannot contain .. segments"));
     }
 
     @Test
     public void dotDotLocationShouldNotWork() {
-        InvalidLocationException ex = Assertions
-                .assertThrows(InvalidLocationException.class, () -> {
+        InvalidLocationException ex = assertThrows(
+                InvalidLocationException.class, () -> {
 
                     new Location("..");
                 });
-        Assertions.assertTrue(ex.getMessage()
+        assertTrue(ex.getMessage()
                 .contains("Relative path cannot contain .. segments"));
     }
 
@@ -342,52 +340,45 @@ class LocationTest {
     public void locationWithUrlEncodedCharacters() {
         Location location = new Location(
                 "foo?bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz");
-        Assertions.assertEquals(Arrays.asList("a b ñ & ?"),
+        assertEquals(Arrays.asList("a b ñ & ?"),
                 location.getQueryParameters().getParameters().get("bar"));
-        Assertions.assertEquals(Arrays.asList("xyz"),
+        assertEquals(Arrays.asList("xyz"),
                 location.getQueryParameters().getParameters().get("baz"));
-        Assertions.assertEquals("bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz",
+        assertEquals("bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz",
                 location.getQueryParameters().getQueryString());
     }
 
     @Test
     public void colonInLocationPath_locationIsParsed() {
         Location location = new Location("abc:foo/bar?baz");
-        Assertions.assertEquals("abc:foo/bar", location.getPath());
-        Assertions.assertEquals("baz",
-                location.getQueryParameters().getQueryString());
+        assertEquals("abc:foo/bar", location.getPath());
+        assertEquals("baz", location.getQueryParameters().getQueryString());
     }
 
     @Test
     public void locationWithFragment_fragmentRetainedForPathWithQueryParameters() {
         String locationString = "foo#fragment";
         Location location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
 
         locationString = "foo/#fragment";
         location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
 
         locationString = "foo?bar#fragment";
         location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
 
         locationString = "foo/?bar=baz#fragment";
         location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
 
         locationString = "foo#";
         location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
 
         locationString = "foo/?bar=baz#";
         location = new Location(locationString);
-        Assertions.assertEquals(locationString,
-                location.getPathWithQueryParameters());
+        assertEquals(locationString, location.getPathWithQueryParameters());
     }
 }

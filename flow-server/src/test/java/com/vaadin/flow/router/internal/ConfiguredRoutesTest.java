@@ -18,7 +18,6 @@ package com.vaadin.flow.router.internal;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -30,29 +29,34 @@ import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class ConfiguredRoutesTest {
 
     @Test
     public void emptyConfiguration_allGetMethodsWork() {
         ConfiguredRoutes configuration = new ConfiguredRoutes();
 
-        Assertions.assertFalse(configuration.hasTemplate(""),
+        assertFalse(configuration.hasTemplate(""),
                 "No routes should be configured");
-        Assertions.assertFalse(configuration.getTarget("").isPresent(),
+        assertFalse(configuration.getTarget("").isPresent(),
                 "No routes should be configured");
-        Assertions.assertTrue(configuration.getRoutes().isEmpty(),
+        assertTrue(configuration.getRoutes().isEmpty(),
                 "Configuration should be empty");
-        Assertions.assertTrue(configuration.getTargetRoutes().isEmpty(),
+        assertTrue(configuration.getTargetRoutes().isEmpty(),
                 "Configuration should be empty");
-        Assertions.assertNull(
+        assertNull(
                 configuration
                         .getExceptionHandlerByClass(RuntimeException.class),
                 "No exception handler should be found.");
-        Assertions.assertNull(configuration.getTemplate(BaseTarget.class),
+        assertNull(configuration.getTemplate(BaseTarget.class),
                 "No target route should be found");
-        Assertions.assertTrue(configuration.getExceptionHandlers().isEmpty(),
+        assertTrue(configuration.getExceptionHandlers().isEmpty(),
                 "Configuration should be empty");
-        Assertions.assertFalse(configuration.hasRouteTarget(BaseTarget.class),
+        assertFalse(configuration.hasRouteTarget(BaseTarget.class),
                 "No route should be found");
     }
 
@@ -65,17 +69,17 @@ class ConfiguredRoutesTest {
 
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
-        Assertions.assertTrue(immutable.hasTemplate(""),
+        assertTrue(immutable.hasTemplate(""),
                 "Configuration should have \"\" route registered");
-        Assertions.assertEquals(BaseTarget.class, immutable.getTarget("").get(),
+        assertEquals(BaseTarget.class, immutable.getTarget("").get(),
                 "Configuration should have registered base target.");
 
-        Assertions.assertTrue(immutable.hasRouteTarget(BaseTarget.class),
+        assertTrue(immutable.hasRouteTarget(BaseTarget.class),
                 "BaseTarget registration should have been copied over");
-        Assertions.assertEquals("", immutable.getTemplate(BaseTarget.class),
+        assertEquals("", immutable.getTemplate(BaseTarget.class),
                 "Configuration should have registered base target.");
 
-        Assertions.assertEquals(
+        assertEquals(
                 Arrays.asList(SecondParentTarget.class, ParentTarget.class),
                 immutable.getNavigationRouteTarget("").getRouteTarget()
                         .getParentLayouts(),
@@ -105,8 +109,8 @@ class ConfiguredRoutesTest {
 
         ConfiguredRoutes config = new ConfiguredRoutes(edit);
 
-        Assertions.assertNull(config.getTargetUrl(FooTarget.class));
-        Assertions.assertEquals("bar", config.getTargetUrl(BarTarget.class));
+        assertNull(config.getTargetUrl(FooTarget.class));
+        assertEquals("bar", config.getTargetUrl(BarTarget.class));
 
         // Make sure all routes are passed.
         config.getRouteModel().getRoutes().entrySet()
@@ -115,7 +119,7 @@ class ConfiguredRoutesTest {
                             .hasRequiredParameter(
                                     stringRouteTargetEntry.getKey());
 
-                    Assertions.assertEquals(
+                    assertEquals(
                             stringRouteTargetEntry.getValue().getTarget()
                                     .equals(FooTarget.class),
                             requiredParameter);
@@ -132,14 +136,13 @@ class ConfiguredRoutesTest {
                 + "/:stringType?/:varargs*(thinking|of|U|and|I)";
         config.setRoute(template, BaseTarget.class);
 
-        Assertions.assertFalse(
-                template.equals(config.getTemplate(BaseTarget.class)),
+        assertFalse(template.equals(config.getTemplate(BaseTarget.class)),
                 "Template should not contain prefixed forward slash '/'");
 
-        Assertions.assertEquals(template.substring(1),
+        assertEquals(template.substring(1),
                 config.getTemplate(BaseTarget.class), "Invalid template");
 
-        Assertions.assertEquals(
+        assertEquals(
                 "path/to/:intType(integer)/:longType?(long)/:stringType?(string)/:varargs*(string)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
@@ -147,46 +150,41 @@ class ConfiguredRoutesTest {
                                 RouteParameterFormatOption.REGEX_NAME)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals(
-                "path/to/:intType/:longType?/:stringType?/:varargs*",
+        assertEquals("path/to/:intType/:longType?/:stringType?/:varargs*",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals(
-                "path/to/:intType/:longType/:stringType/:varargs",
+        assertEquals("path/to/:intType/:longType/:stringType/:varargs",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals(
-                "path/to/:(integer)/:?(long)/:?(string)/:*(string)",
+        assertEquals("path/to/:(integer)/:?(long)/:?(string)/:*(string)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX_NAME)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals(
-                "path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
-                        + RouteParameterRegex.LONG
-                        + ")/:?/:*(thinking|of|U|and|I)",
+        assertEquals("path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
+                + RouteParameterRegex.LONG + ")/:?/:*(thinking|of|U|and|I)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals("path/to/:integer/:long/:string/:string",
+        assertEquals("path/to/:integer/:long/:string/:string",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX_NAME)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals("path/to/:/:?/:?/:*",
+        assertEquals("path/to/:/:?/:?/:*",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER)),
                 "Invalid formatted template");
 
-        Assertions.assertEquals(
+        assertEquals(
                 "path/to/:" + RouteParameterRegex.INTEGER + "/:"
                         + RouteParameterRegex.LONG + "/:/:thinking|of|U|and|I",
                 config.getTemplate(BaseTarget.class,
@@ -205,7 +203,7 @@ class ConfiguredRoutesTest {
         String targetUrl = config.getTargetUrl(RouteTarget.class,
                 new RouteParameters(new RouteParam("message", "hello")));
 
-        Assertions.assertEquals("home/hello", targetUrl,
+        assertEquals("home/hello", targetUrl,
                 "Route should be matched and not RouteAlias");
     }
 

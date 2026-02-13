@@ -18,7 +18,6 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -50,6 +49,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ErrorStateRendererTest {
@@ -213,13 +213,12 @@ class ErrorStateRendererTest {
         ErrorNavigationEvent event = new ErrorNavigationEvent(
                 ui.getInternals().getRouter(), new Location("error"), ui,
                 NavigationTrigger.CLIENT_SIDE, parameter);
-        Assertions.assertEquals(200, renderer.handle(event));
+        assertEquals(200, renderer.handle(event));
 
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
-        Assertions.assertEquals(1, chain.size());
-        Assertions.assertEquals(HappyPathViewView.class,
-                chain.get(0).getClass());
+        assertEquals(1, chain.size());
+        assertEquals(HappyPathViewView.class, chain.get(0).getClass());
     }
 
     private UI configureMocks() {

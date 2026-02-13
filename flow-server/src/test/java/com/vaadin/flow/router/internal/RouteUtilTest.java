@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -53,6 +52,14 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test that {@link RouteUtil} route resolving works as intended for both simple
@@ -156,7 +163,7 @@ class RouteUtilTest {
     public void route_path_should_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class);
-        Assertions.assertEquals("parent", routePath,
+        assertEquals("parent", routePath,
                 "Expected path should only have been parent RoutePrefix");
     }
 
@@ -164,7 +171,7 @@ class RouteUtilTest {
     public void absolute_route_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 AbsoluteRoute.class);
-        Assertions.assertEquals("single", routePath,
+        assertEquals("single", routePath,
                 "No parent prefix should have been added.");
     }
 
@@ -172,7 +179,7 @@ class RouteUtilTest {
     public void absolute_middle_parent_route_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 AbsoluteCenterRoute.class);
-        Assertions.assertEquals("absolute/child", routePath,
+        assertEquals("absolute/child", routePath,
                 "No parent prefix should have been added.");
     }
 
@@ -180,7 +187,7 @@ class RouteUtilTest {
     public void absolute_route_alias_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteRoute.class.getAnnotation(RouteAlias.class));
-        Assertions.assertEquals("alias", routePath,
+        assertEquals("alias", routePath,
                 "No parent prefix should have been added.");
     }
 
@@ -188,7 +195,7 @@ class RouteUtilTest {
     public void absolute_middle_parent_for_route_alias_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteCenterRoute.class.getAnnotation(RouteAlias.class));
-        Assertions.assertEquals("absolute/alias", routePath,
+        assertEquals("absolute/alias", routePath,
                 "No parent prefix should have been added.");
     }
 
@@ -196,7 +203,7 @@ class RouteUtilTest {
     public void route_path_should_contain_route_and_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 RouteWithParentPrefixAndRouteAlias.class);
-        Assertions.assertEquals("parent/flow", routePath,
+        assertEquals("parent/flow", routePath,
                 "Expected path should only have been parent RoutePrefix");
     }
 
@@ -206,13 +213,13 @@ class RouteUtilTest {
                 BaseRouteWithParentPrefixAndRouteAlias.class,
                 BaseRouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(RouteAlias.class));
-        Assertions.assertEquals("alias", routePath,
+        assertEquals("alias", routePath,
                 "Expected path should only have been parent RoutePrefix");
         routePath = RouteUtil.getRouteAliasPath(
                 RouteWithParentPrefixAndRouteAlias.class,
                 RouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(RouteAlias.class));
-        Assertions.assertEquals("alias", routePath,
+        assertEquals("alias", routePath,
                 "Expected path should only have been parent RoutePrefix");
     }
 
@@ -222,7 +229,7 @@ class RouteUtilTest {
                 RouteAliasWithParentPrefix.class,
                 RouteAliasWithParentPrefix.class
                         .getAnnotation(RouteAlias.class));
-        Assertions.assertEquals("aliasparent/alias", routePath,
+        assertEquals("aliasparent/alias", routePath,
                 "Expected path should only have been parent RoutePrefix");
     }
 
@@ -232,8 +239,8 @@ class RouteUtilTest {
                 new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -243,8 +250,8 @@ class RouteUtilTest {
                 new MockVaadinContext(),
                 RouteWithParentPrefixAndRouteAlias.class, "parent/flow");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -254,8 +261,7 @@ class RouteUtilTest {
                 new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class, "alias");
 
-        Assertions.assertNull(parent,
-                "Found parent for RouteAlias without parent.");
+        assertNull(parent, "Found parent for RouteAlias without parent.");
     }
 
     @Test
@@ -264,8 +270,8 @@ class RouteUtilTest {
                 new MockVaadinContext(), RouteAliasWithParentPrefix.class,
                 "aliasparent/alias");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RouteAliasPrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RouteAliasPrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -274,8 +280,8 @@ class RouteUtilTest {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteRoute.class, "single");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -285,8 +291,8 @@ class RouteUtilTest {
                 new MockVaadinContext(), AbsoluteCenterRoute.class,
                 "absolute/child");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -295,8 +301,8 @@ class RouteUtilTest {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteRoute.class, "alias");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -306,8 +312,8 @@ class RouteUtilTest {
                 new MockVaadinContext(), AbsoluteCenterRoute.class,
                 "absolute/alias");
 
-        Assertions.assertNotNull(parent, "Didn't find any parent for route");
-        Assertions.assertEquals(RoutePrefixParent.class, parent,
+        assertNotNull(parent, "Didn't find any parent for route");
+        assertEquals(RoutePrefixParent.class, parent,
                 "Received wrong parent class.");
     }
 
@@ -327,10 +333,9 @@ class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(registry, AutoLayoutView.class, "auto");
 
-        Assertions.assertEquals(0, parentLayouts.size(),
+        assertEquals(0, parentLayouts.size(),
                 "Route with no layout should not get automatic layout");
-        Assertions.assertTrue(
-                RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
+        assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
     }
 
     @Test
@@ -346,18 +351,14 @@ class RouteUtilTest {
                 .getInstance(service.getContext());
         registry.setLayout(AutoLayout.class);
 
-        Assertions.assertTrue(
-                RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
-        Assertions.assertFalse(
+        assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
+        assertFalse(
                 RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "alias"),
                 "'alias' route has autolayout false");
-        Assertions
-                .assertFalse(
-                        RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
-                                "mainLayout"),
-                        "'mainLayout' has a defined layout");
-        Assertions.assertTrue(RouteUtil
-                .isAutolayoutEnabled(AutoLayoutView.class, "autoAlias"));
+        assertFalse(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
+                "mainLayout"), "'mainLayout' has a defined layout");
+        assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
+                "autoAlias"));
     }
 
     @Test
@@ -386,8 +387,7 @@ class RouteUtilTest {
                 .getParentLayoutsForNonRouteTarget(
                         NonRouteTargetWithParents.class);
 
-        Assertions.assertEquals(1, parentLayouts.size(),
-                "Expected one parent layout");
+        assertEquals(1, parentLayouts.size(), "Expected one parent layout");
 
         MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
@@ -455,7 +455,7 @@ class RouteUtilTest {
         Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(new MockVaadinContext(), MiddleParent.class,
                         null);
-        Assertions.assertEquals(Parent.class, topParentLayout,
+        assertEquals(Parent.class, topParentLayout,
                 "Middle parent should have gotten Parent as top parent layout");
     }
 
@@ -464,17 +464,17 @@ class RouteUtilTest {
         Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(new MockVaadinContext(), MultiTarget.class,
                         "");
-        Assertions.assertEquals(Parent.class, topParentLayout,
+        assertEquals(Parent.class, topParentLayout,
                 "@Route path should have gotten Parent as top parent layout");
 
         topParentLayout = RouteUtil.getTopParentLayout(new MockVaadinContext(),
                 MultiTarget.class, "alias");
-        Assertions.assertEquals(Parent.class, topParentLayout,
+        assertEquals(Parent.class, topParentLayout,
                 "@RouteAlias path should have gotten Parent as top parent layout");
 
         topParentLayout = RouteUtil.getTopParentLayout(new MockVaadinContext(),
                 SubLayout.class, "parent/sub");
-        Assertions.assertEquals(RoutePrefixParent.class, topParentLayout,
+        assertEquals(RoutePrefixParent.class, topParentLayout,
                 "SubLayout using MultiTarget as parent should have gotten RoutePrefixParent as top parent layout");
 
     }
@@ -528,7 +528,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -551,7 +551,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -573,7 +573,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -596,7 +596,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -619,7 +619,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -641,7 +641,7 @@ class RouteUtilTest {
                 Collections.emptySet(), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -656,14 +656,14 @@ class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.emptySet(), Collections.singleton(A.class));
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -677,14 +677,14 @@ class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.emptySet(), Collections.singleton(A.class));
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -698,14 +698,14 @@ class RouteUtilTest {
         SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
                 .getSessionRegistry(new AlwaysLockedVaadinSession(service));
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.emptySet(), Collections.singleton(A.class));
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -718,14 +718,14 @@ class RouteUtilTest {
         SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
                 .getSessionRegistry(new AlwaysLockedVaadinSession(service));
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.emptySet(), Collections.singleton(A.class));
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -743,15 +743,15 @@ class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("aa"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("aa"));
     }
 
     @Test
@@ -770,19 +770,18 @@ class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
         registry.setRoute("alias", A.class, Collections.emptyList());
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("alias"));
+        assertTrue(registry.getConfiguration().hasRoute("alias"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
-        Assertions
-                .assertTrue(registry.getConfiguration().hasRoute("alias-new"));
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("alias"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("alias-new"));
+        assertFalse(registry.getConfiguration().hasRoute("alias"));
     }
 
     @Test
@@ -804,14 +803,14 @@ class RouteUtilTest {
         mutableRoutesMap(registry);
         registry.getConfiguration().getRoutesMap().computeIfPresent("a",
                 (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -833,14 +832,14 @@ class RouteUtilTest {
         mutableRoutesMap(registry);
         registry.getConfiguration().getRoutesMap().computeIfPresent("a",
                 (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -864,14 +863,14 @@ class RouteUtilTest {
         registry.getConfiguration().getRoutesMap().computeIfPresent("a",
                 (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
 
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -888,14 +887,14 @@ class RouteUtilTest {
         mutableRoutesMap(registry);
         registry.getConfiguration().getRoutesMap().computeIfPresent("a",
                 (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
         RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
                 Collections.singleton(A.class), Collections.emptySet());
 
         // then
-        Assertions.assertFalse(registry.getConfiguration().hasRoute("a"));
+        assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
     // Hotswap agent may fire CREATE, MODIFY and REMOVE events for a class
@@ -921,7 +920,7 @@ class RouteUtilTest {
                 Collections.singleton(A.class), Collections.singleton(A.class));
 
         // then
-        Assertions.assertTrue(registry.getConfiguration().hasRoute("a"));
+        assertTrue(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -939,14 +938,14 @@ class RouteUtilTest {
                     .forRegistry(registry);
             routeConfiguration.setAnnotatedRoute(AutoLayoutView.class);
         });
-        Assertions.assertFalse(registry.hasLayout("auto"),
+        assertFalse(registry.hasLayout("auto"),
                 "AutoLayout should not be available");
 
         RouteUtil.updateRouteRegistry(registry,
                 Collections.singleton(AutoLayout.class), Collections.emptySet(),
                 Collections.emptySet());
 
-        Assertions.assertTrue(registry.hasLayout("auto"),
+        assertTrue(registry.hasLayout("auto"),
                 "AutoLayout should be available");
     }
 
@@ -970,13 +969,13 @@ class RouteUtilTest {
             RouteConfiguration.forRegistry(registry)
                     .setAnnotatedRoute(AutoLayoutView.class);
         });
-        Assertions.assertTrue(registry.hasLayout("auto"),
+        assertTrue(registry.hasLayout("auto"),
                 "AutoLayout should be available");
 
         RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
                 Collections.emptySet(), Collections.emptySet());
 
-        Assertions.assertFalse(registry.hasLayout("auto"),
+        assertFalse(registry.hasLayout("auto"),
                 "AutoLayout should not be available anymore");
     }
 
@@ -1006,18 +1005,18 @@ class RouteUtilTest {
             routeConfiguration.setAnnotatedRoute(View.class);
         });
 
-        Assertions.assertTrue(registry.hasLayout("hey/view"),
+        assertTrue(registry.hasLayout("hey/view"),
                 "AutoLayout should be available for /hey/view path");
-        Assertions.assertFalse(registry.hasLayout("auto"),
+        assertFalse(registry.hasLayout("auto"),
                 "AutoLayout should not be available for /auto path");
 
         RouteUtil.updateRouteRegistry(registry,
                 Collections.singleton(AutoLayout.class), Collections.emptySet(),
                 Collections.emptySet());
 
-        Assertions.assertTrue(registry.hasLayout("hey/view"),
+        assertTrue(registry.hasLayout("hey/view"),
                 "AutoLayout should still be available anymore for /hey/view path because path matches");
-        Assertions.assertTrue(registry.hasLayout("auto"),
+        assertTrue(registry.hasLayout("auto"),
                 "AutoLayout should now be available for /auto path");
     }
 
@@ -1062,8 +1061,8 @@ class RouteUtilTest {
 
     @Test
     public void clientHasOverlappingTarget_validateClientRouteCollision() {
-        InvalidRouteConfigurationException ex = Assertions
-                .assertThrows(InvalidRouteConfigurationException.class, () -> {
+        InvalidRouteConfigurationException ex = assertThrows(
+                InvalidRouteConfigurationException.class, () -> {
                     Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
                     clientRoutes.put("",
@@ -1110,7 +1109,7 @@ class RouteUtilTest {
                                 "flow/hello-world", "hilla/flow");
                     }
                 });
-        Assertions.assertTrue(ex.getMessage().contains(
+        assertTrue(ex.getMessage().contains(
                 "Invalid route configuration. The following Hilla route(s) conflict with configured Flow routes: 'flow'"));
     }
 
@@ -1124,7 +1123,7 @@ class RouteUtilTest {
                     .getJavaFieldValue(registry, layoutsField);
             consumer.accept(layouts);
         } catch (Exception ex) {
-            Assertions.fail(ex.getMessage());
+            fail(ex.getMessage());
         }
     }
 

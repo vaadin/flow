@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,6 +40,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 /**
@@ -131,7 +131,7 @@ class EventUtilTest {
         List<BeforeLeaveObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeLeaveObservers(ui);
 
-        Assertions.assertEquals(1, beforeNavigationObservers.size(),
+        assertEquals(1, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -156,7 +156,7 @@ class EventUtilTest {
         List<BeforeLeaveObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeLeaveObservers(ui);
 
-        Assertions.assertEquals(1, beforeNavigationObservers.size(),
+        assertEquals(1, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -183,7 +183,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> beforeNavigationObservers = EventUtil
                 .collectBeforeEnterObservers(oldChain, newChain);
 
-        Assertions.assertEquals(2, beforeNavigationObservers.size(),
+        assertEquals(2, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -206,7 +206,7 @@ class EventUtilTest {
         List<AfterNavigationObserver> beforeNavigationObservers = EventUtil
                 .collectAfterNavigationObservers(ui);
 
-        Assertions.assertEquals(2, beforeNavigationObservers.size(),
+        assertEquals(2, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -224,8 +224,7 @@ class EventUtilTest {
 
         EventUtil.inspectHierarchy(node, elements, element -> true);
 
-        Assertions.assertEquals(6, elements.size(),
-                "Missing elements from list.");
+        assertEquals(6, elements.size(), "Missing elements from list.");
     }
 
     @Test
@@ -243,8 +242,7 @@ class EventUtilTest {
         EventUtil.inspectHierarchy(node, elements,
                 element -> !nested.equals(element));
 
-        Assertions.assertEquals(3, elements.size(),
-                "Missing elements from list.");
+        assertEquals(3, elements.size(), "Missing elements from list.");
     }
 
     @Test
@@ -270,8 +268,7 @@ class EventUtilTest {
 
         EventUtil.inspectHierarchy(node, elements, element -> true);
 
-        Assertions.assertEquals(10, elements.size(),
-                "Missing elements from list.");
+        assertEquals(10, elements.size(), "Missing elements from list.");
     }
 
     @Test
@@ -294,7 +291,7 @@ class EventUtilTest {
                         BeforeEnterObserver.class)
                 .collect(Collectors.toList());
 
-        Assertions.assertEquals(1, listenerComponents.size(),
+        assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -320,7 +317,7 @@ class EventUtilTest {
                         BeforeEnterObserver.class)
                 .collect(Collectors.toList());
 
-        Assertions.assertEquals(1, listenerComponents.size(),
+        assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -338,7 +335,7 @@ class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(node);
 
-        Assertions.assertEquals(1, beforeNavigationObservers.size(),
+        assertEquals(1, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -359,7 +356,7 @@ class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(node);
 
-        Assertions.assertEquals(1, beforeNavigationObservers.size(),
+        assertEquals(1, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -379,7 +376,7 @@ class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));
 
-        Assertions.assertEquals(2, beforeNavigationObservers.size(),
+        assertEquals(2, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -399,7 +396,7 @@ class EventUtilTest {
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));
 
-        Assertions.assertEquals(2, beforeNavigationObservers.size(),
+        assertEquals(2, beforeNavigationObservers.size(),
                 "Wrong amount of listener instances found");
     }
 
@@ -410,9 +407,8 @@ class EventUtilTest {
                 .getImplementingComponents(Stream.of(wrapper.getElement()),
                         BeforeEnterObserver.class)
                 .distinct().collect(Collectors.toList());
-        Assertions.assertEquals(1, components.size());
-        Assertions.assertEquals(EnterObserver.class,
-                components.get(0).getClass());
+        assertEquals(1, components.size());
+        assertEquals(EnterObserver.class, components.get(0).getClass());
 
     }
 }

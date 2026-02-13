@@ -20,7 +20,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -29,6 +28,10 @@ import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RouteModelTest {
 
@@ -106,8 +109,7 @@ public class RouteModelTest {
         try {
             root.addRoute("trunk/:vararg*/edit", routeTarget(Root.class));
 
-            Assertions.fail(
-                    "Varargs url parameter accepted in the middle of the path.");
+            fail("Varargs url parameter accepted in the middle of the path.");
         } catch (IllegalArgumentException e) {
         }
 
@@ -152,7 +154,7 @@ public class RouteModelTest {
 
         try {
             assertUrl(root, expectedUrl, template, parameters);
-            Assertions.fail("Route was just removed.");
+            fail("Route was just removed.");
         } catch (IllegalArgumentException e) {
         }
     }
@@ -171,7 +173,7 @@ public class RouteModelTest {
 
         try {
             root.getRouteTarget(template, parameters);
-            Assertions.fail("Route was just removed.");
+            fail("Route was just removed.");
         } catch (IllegalArgumentException e) {
         }
     }
@@ -184,31 +186,30 @@ public class RouteModelTest {
                 + RouteParameterRegex.INTEGER + ")/:list*("
                 + RouteParameterRegex.LONG + ")";
 
-        Assertions.assertEquals(template,
+        assertEquals(template,
                 root.formatTemplate(template,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.REGEX,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assertions.assertEquals("trunk/branch/:id(integer)/:list*(long)",
+        assertEquals("trunk/branch/:id(integer)/:list*(long)",
                 root.formatTemplate(template,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.REGEX_NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assertions.assertEquals("trunk/branch/:id(integer)/:list(long)",
+        assertEquals("trunk/branch/:id(integer)/:list(long)",
                 root.formatTemplate(template,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.REGEX_NAME)));
 
-        Assertions.assertEquals("trunk/branch/:id/:list*",
+        assertEquals("trunk/branch/:id/:list*",
                 root.formatTemplate(template,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assertions.assertEquals("trunk/branch/:integer/:long",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
+        assertEquals("trunk/branch/:integer/:long", root.formatTemplate(
+                template, EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
     }
 
     @Test
@@ -222,17 +223,14 @@ public class RouteModelTest {
         final Map<String, RouteParameterData> parameters = root
                 .getParameters(template);
 
-        Assertions.assertEquals(2, parameters.size(),
-                "Incorrect parameters size");
+        assertEquals(2, parameters.size(), "Incorrect parameters size");
 
-        Assertions.assertTrue(parameters.containsKey("id"),
-                "Missing parameter");
-        Assertions.assertTrue(parameters.containsKey("list"),
-                "Missing parameter");
+        assertTrue(parameters.containsKey("id"), "Missing parameter");
+        assertTrue(parameters.containsKey("list"), "Missing parameter");
 
-        Assertions.assertEquals(":id(" + RouteParameterRegex.INTEGER + ")",
+        assertEquals(":id(" + RouteParameterRegex.INTEGER + ")",
                 parameters.get("id").getTemplate(), "Wrong parameter data");
-        Assertions.assertEquals(":list*(" + RouteParameterRegex.LONG + ")",
+        assertEquals(":list*(" + RouteParameterRegex.LONG + ")",
                 parameters.get("list").getTemplate(), "Wrong parameter data");
     }
 
@@ -242,14 +240,14 @@ public class RouteModelTest {
 
         final Map<String, RouteTarget> routes = root.getRoutes();
 
-        Assertions.assertEquals(8, routes.size(), "Incorrect routes size");
+        assertEquals(8, routes.size(), "Incorrect routes size");
 
         final String template = "trunk/branch/:id("
                 + RouteParameterRegex.INTEGER + ")/:list*("
                 + RouteParameterRegex.LONG + ")";
 
-        Assertions.assertEquals(BranchChildren.class,
-                routes.get(template).getTarget(), "Wrong route mapping");
+        assertEquals(BranchChildren.class, routes.get(template).getTarget(),
+                "Wrong route mapping");
     }
 
     @Test
@@ -258,7 +256,7 @@ public class RouteModelTest {
         try {
             immutable.addRoute("foo/:foo", routeTarget(Root.class));
 
-            Assertions.fail("Immutable model should not be mutable.");
+            fail("Immutable model should not be mutable.");
         } catch (IllegalStateException e) {
         }
 
@@ -270,7 +268,7 @@ public class RouteModelTest {
         try {
             immutableCopy.removeRoute("foo/:foo");
 
-            Assertions.fail("Immutable model should not be mutable.");
+            fail("Immutable model should not be mutable.");
         } catch (IllegalStateException e) {
         }
     }
@@ -278,7 +276,7 @@ public class RouteModelTest {
     private void assertUrl(RouteModel root, String expectedUrl, String template,
             RouteParameters parameters) {
         final String modelUrl = root.getUrl(template, parameters);
-        Assertions.assertEquals(expectedUrl, modelUrl);
+        assertEquals(expectedUrl, modelUrl);
     }
 
     private void assertNavigation(RouteModel model, String url,
@@ -286,13 +284,13 @@ public class RouteModelTest {
 
         NavigationRouteTarget result = model.getNavigationRouteTarget(url);
 
-        Assertions.assertEquals(url, result.getPath(), "Invalid url");
+        assertEquals(url, result.getPath(), "Invalid url");
 
         final RouteTarget routeTarget = result.getRouteTarget();
         assertTarget(target, routeTarget);
 
         if (target != null) {
-            Assertions.assertEquals(parameters, result.getRouteParameters(),
+            assertEquals(parameters, result.getRouteParameters(),
                     "Invalid url");
         }
     }
@@ -305,12 +303,12 @@ public class RouteModelTest {
 
     private void assertTarget(Class<? extends Component> target,
             RouteTarget routeTarget) {
-        Assertions.assertTrue((target == null) == (routeTarget == null),
+        assertTrue((target == null) == (routeTarget == null),
                 "Weird expected target [" + target + "], actual [" + routeTarget
                         + "]");
 
         if (target != null) {
-            Assertions.assertTrue(routeTarget.getTarget().equals(target),
+            assertTrue(routeTarget.getTarget().equals(target),
                     "Invalid expected target [" + target + "], actual "
                             + routeTarget.getTarget());
         }

@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ErrorParameterTest {
     @Test
@@ -26,8 +27,8 @@ class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assertions.assertSame(exception, errorParameter.getException());
-        Assertions.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(exception, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -37,8 +38,8 @@ class ErrorParameterTest {
         ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(
                 RuntimeException.class, exception);
 
-        Assertions.assertSame(exception, errorParameter.getException());
-        Assertions.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(exception, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -49,8 +50,8 @@ class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assertions.assertSame(cause, errorParameter.getException());
-        Assertions.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(cause, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
     @Test
@@ -63,8 +64,8 @@ class ErrorParameterTest {
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
                 NullPointerException.class, exception);
 
-        Assertions.assertSame(cause, errorParameter.getException());
-        Assertions.assertSame(exception, errorParameter.getCaughtException());
+        assertSame(cause, errorParameter.getException());
+        assertSame(exception, errorParameter.getCaughtException());
     }
 
 }

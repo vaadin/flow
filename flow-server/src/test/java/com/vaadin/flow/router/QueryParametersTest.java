@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -210,35 +210,35 @@ class QueryParametersTest {
     public void parameterWithoutValue() {
         QueryParameters params = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
-        Assertions.assertEquals("foo", params.getQueryString());
+        assertEquals("foo", params.getQueryString());
 
         params = new QueryParameters(
                 Collections.singletonMap("foo", Arrays.asList("", "bar")));
-        Assertions.assertEquals("foo&foo=bar", params.getQueryString());
+        assertEquals("foo&foo=bar", params.getQueryString());
 
         params = new QueryParameters(
                 Collections.singletonMap("foo", Arrays.asList("bar", "")));
-        Assertions.assertEquals("foo=bar&foo", params.getQueryString());
+        assertEquals("foo=bar&foo", params.getQueryString());
     }
 
     @Test
     public void parameterWithEmptyValue() {
         QueryParameters fullParams = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
-        Assertions.assertEquals("foo", fullParams.getQueryString());
+        assertEquals("foo", fullParams.getQueryString());
     }
 
     @Test
     public void shortHands() {
         QueryParameters qp1 = QueryParameters.of("foo", "bar");
         Optional<String> singleParameter = qp1.getSingleParameter("foo");
-        Assertions.assertEquals("bar", singleParameter.get());
-        Assertions.assertTrue(qp1.getSingleParameter("bar").isEmpty());
+        assertEquals("bar", singleParameter.get());
+        assertTrue(qp1.getSingleParameter("bar").isEmpty());
 
         List<String> parameters = qp1.getParameters("foo");
-        Assertions.assertEquals("bar", parameters.get(0));
-        Assertions.assertEquals(1, parameters.size());
-        Assertions.assertTrue(qp1.getParameters("bar").isEmpty());
+        assertEquals("bar", parameters.get(0));
+        assertEquals(1, parameters.size());
+        assertTrue(qp1.getParameters("bar").isEmpty());
     }
 
     @Test
@@ -251,12 +251,11 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.excluding("two");
 
-        Assertions.assertEquals(2, newParams.getParameters().size());
-        Assertions.assertEquals(Collections.singletonList("1"),
+        assertEquals(2, newParams.getParameters().size());
+        assertEquals(Collections.singletonList("1"),
                 newParams.getParameters("one"));
-        Assertions.assertEquals(Collections.emptyList(),
-                newParams.getParameters("two"));
-        Assertions.assertEquals(Collections.singletonList("3"),
+        assertEquals(Collections.emptyList(), newParams.getParameters("two"));
+        assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
     }
 
@@ -270,7 +269,7 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.excluding();
 
-        Assertions.assertEquals(params, newParams);
+        assertEquals(params, newParams);
     }
 
     @Test
@@ -283,10 +282,10 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.including("three", "two");
 
-        Assertions.assertEquals(2, newParams.getParameters().size());
-        Assertions.assertEquals(Collections.singletonList("3"),
+        assertEquals(2, newParams.getParameters().size());
+        assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
-        Assertions.assertEquals(Collections.singletonList("2"),
+        assertEquals(Collections.singletonList("2"),
                 newParams.getParameters("two"));
     }
 
@@ -300,7 +299,7 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.including();
 
-        Assertions.assertEquals(0, newParams.getParameters().size());
+        assertEquals(0, newParams.getParameters().size());
     }
 
     @Test
@@ -313,7 +312,7 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.including("four");
 
-        Assertions.assertEquals(0, newParams.getParameters().size());
+        assertEquals(0, newParams.getParameters().size());
     }
 
     @Test
@@ -326,12 +325,12 @@ class QueryParametersTest {
         QueryParameters newParams = params.merging("three", "3").merging("one",
                 "one");
 
-        Assertions.assertEquals(3, newParams.getParameters().size());
-        Assertions.assertEquals(Collections.singletonList("one"),
+        assertEquals(3, newParams.getParameters().size());
+        assertEquals(Collections.singletonList("one"),
                 newParams.getParameters("one"));
-        Assertions.assertEquals(Collections.singletonList("2"),
+        assertEquals(Collections.singletonList("2"),
                 newParams.getParameters("two"));
-        Assertions.assertEquals(Collections.singletonList("3"),
+        assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
     }
 
@@ -344,13 +343,12 @@ class QueryParametersTest {
         QueryParameters params = new QueryParameters(paramMap);
         QueryParameters newParams = params.merging("three", "3", "3");
 
-        Assertions.assertEquals(3, newParams.getParameters().size());
-        Assertions.assertEquals(Collections.singletonList("1"),
+        assertEquals(3, newParams.getParameters().size());
+        assertEquals(Collections.singletonList("1"),
                 newParams.getParameters("one"));
-        Assertions.assertEquals(Collections.singletonList("2"),
+        assertEquals(Collections.singletonList("2"),
                 newParams.getParameters("two"));
-        Assertions.assertEquals(Arrays.asList("3", "3"),
-                newParams.getParameters("three"));
+        assertEquals(Arrays.asList("3", "3"), newParams.getParameters("three"));
     }
 
     @Test
@@ -364,19 +362,19 @@ class QueryParametersTest {
                 .mergingAll(Map.of("three", Collections.singletonList("3")))
                 .mergingAll(Map.of("one", Collections.singletonList("one")));
 
-        Assertions.assertEquals(3, newParams.getParameters().size());
-        Assertions.assertEquals(Collections.singletonList("one"),
+        assertEquals(3, newParams.getParameters().size());
+        assertEquals(Collections.singletonList("one"),
                 newParams.getParameters("one"));
-        Assertions.assertEquals(Collections.singletonList("3"),
+        assertEquals(Collections.singletonList("3"),
                 newParams.getParameters("three"));
-        Assertions.assertEquals(Collections.singletonList("2"),
+        assertEquals(Collections.singletonList("2"),
                 newParams.getParameters("two"));
     }
 
     @Test
     public void toStringValidation() {
         String toString = QueryParameters.of("foo", "bar").toString();
-        Assertions.assertEquals("QueryParameters(foo=bar)", toString);
+        assertEquals("QueryParameters(foo=bar)", toString);
     }
 
     @Test
@@ -384,9 +382,9 @@ class QueryParametersTest {
         QueryParameters qp1 = QueryParameters.of("foo", "bar");
         QueryParameters qp2 = QueryParameters.fromString("foo=bar");
         QueryParameters qp3 = QueryParameters.fromString("bar=foo");
-        Assertions.assertEquals(qp1, qp2);
-        Assertions.assertNotEquals(qp3, qp2);
-        Assertions.assertEquals(qp1.hashCode(), qp2.hashCode());
+        assertEquals(qp1, qp2);
+        assertNotEquals(qp3, qp2);
+        assertEquals(qp1.hashCode(), qp2.hashCode());
     }
 
     @Test

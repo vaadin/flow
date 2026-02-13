@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PathUtilTest {
 
@@ -30,41 +32,35 @@ class PathUtilTest {
         final List<String> segments = Arrays.asList("path", "to", "foo");
         final String path = "path/to/foo";
 
-        Assertions.assertEquals(path, PathUtil.getPath(segments),
-                "Unexpected result");
-        Assertions.assertEquals("", PathUtil.getPath(null),
-                "Unexpected result");
-        Assertions.assertEquals("", PathUtil.getPath(Collections.emptyList()),
+        assertEquals(path, PathUtil.getPath(segments), "Unexpected result");
+        assertEquals("", PathUtil.getPath(null), "Unexpected result");
+        assertEquals("", PathUtil.getPath(Collections.emptyList()),
                 "Unexpected result");
 
-        Assertions.assertEquals("prefix/" + path,
-                PathUtil.getPath("prefix", segments), "Unexpected result");
-        Assertions.assertEquals(path, PathUtil.getPath("", segments),
+        assertEquals("prefix/" + path, PathUtil.getPath("prefix", segments),
                 "Unexpected result");
-        Assertions.assertEquals(path, PathUtil.getPath(null, segments),
+        assertEquals(path, PathUtil.getPath("", segments), "Unexpected result");
+        assertEquals(path, PathUtil.getPath(null, segments),
                 "Unexpected result");
 
-        Assertions.assertEquals(segments, PathUtil.getSegmentsList(path),
+        assertEquals(segments, PathUtil.getSegmentsList(path),
                 "Unexpected result");
-        Assertions.assertEquals(segments, PathUtil.getSegmentsList(path + "/"),
+        assertEquals(segments, PathUtil.getSegmentsList(path + "/"),
                 "Unexpected result");
 
         List<String> emptyStartSegment = new ArrayList<>();
         emptyStartSegment.add("");
         emptyStartSegment.addAll(segments);
-        Assertions.assertEquals(emptyStartSegment,
-                PathUtil.getSegmentsList("/" + path), "Unexpected result");
-        Assertions.assertEquals(emptyStartSegment,
+        assertEquals(emptyStartSegment, PathUtil.getSegmentsList("/" + path),
+                "Unexpected result");
+        assertEquals(emptyStartSegment,
                 PathUtil.getSegmentsList("/" + path + "/"),
                 "Unexpected result");
 
-        Assertions.assertEquals(path, PathUtil.trimPath(path),
-                "Unexpected result");
-        Assertions.assertEquals(path, PathUtil.trimPath("/" + path),
-                "Unexpected result");
-        Assertions.assertEquals(path, PathUtil.trimPath(path + "/"),
-                "Unexpected result");
-        Assertions.assertEquals(path, PathUtil.trimPath("/" + path + "/"),
+        assertEquals(path, PathUtil.trimPath(path), "Unexpected result");
+        assertEquals(path, PathUtil.trimPath("/" + path), "Unexpected result");
+        assertEquals(path, PathUtil.trimPath(path + "/"), "Unexpected result");
+        assertEquals(path, PathUtil.trimPath("/" + path + "/"),
                 "Unexpected result");
 
     }
@@ -75,8 +71,8 @@ class PathUtilTest {
         // segment
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("path%2Fwith%2Fslashes");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("path/with/slashes", segments.get(0),
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("path/with/slashes", segments.get(0),
                 "Should decode %2F to /");
     }
 
@@ -84,8 +80,8 @@ class PathUtilTest {
     public void getSegmentsListWithDecoding_decodesSpaces() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("hello%20world");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("hello world", segments.get(0),
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("hello world", segments.get(0),
                 "Should decode %20 to space");
     }
 
@@ -94,68 +90,60 @@ class PathUtilTest {
         // Test various special characters
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("test%3Fquestion/value%26data");
-        Assertions.assertEquals(2, segments.size(), "Should have two segments");
-        Assertions.assertEquals("test?question", segments.get(0),
+        assertEquals(2, segments.size(), "Should have two segments");
+        assertEquals("test?question", segments.get(0),
                 "Should decode %3F to ?");
-        Assertions.assertEquals("value&data", segments.get(1),
-                "Should decode %26 to &");
+        assertEquals("value&data", segments.get(1), "Should decode %26 to &");
     }
 
     @Test
     public void getSegmentsListWithDecoding_decodesPlus() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("a%2Bb/c%2Bd");
-        Assertions.assertEquals(2, segments.size(), "Should have two segments");
-        Assertions.assertEquals("a+b", segments.get(0),
-                "Should decode %2B to +");
-        Assertions.assertEquals("c+d", segments.get(1),
-                "Should decode %2B to +");
+        assertEquals(2, segments.size(), "Should have two segments");
+        assertEquals("a+b", segments.get(0), "Should decode %2B to +");
+        assertEquals("c+d", segments.get(1), "Should decode %2B to +");
     }
 
     @Test
     public void getSegmentsListWithDecoding_decodesHash() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("item%23123");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("item#123", segments.get(0),
-                "Should decode %23 to #");
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("item#123", segments.get(0), "Should decode %23 to #");
     }
 
     @Test
     public void getSegmentsListWithDecoding_decodesPercent() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("50%25off");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("50%off", segments.get(0),
-                "Should decode %25 to %");
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("50%off", segments.get(0), "Should decode %25 to %");
     }
 
     @Test
     public void getSegmentsListWithDecoding_handlesMultipleEncodedSegments() {
         List<String> segments = PathUtil.getSegmentsListWithDecoding(
                 "path%2Fwith%2Fslashes/normal/another%2Fencoded");
-        Assertions.assertEquals(3, segments.size(),
-                "Should have three segments");
-        Assertions.assertEquals("path/with/slashes", segments.get(0),
+        assertEquals(3, segments.size(), "Should have three segments");
+        assertEquals("path/with/slashes", segments.get(0),
                 "First segment should be decoded");
-        Assertions.assertEquals("normal", segments.get(1),
+        assertEquals("normal", segments.get(1),
                 "Second segment should be normal");
-        Assertions.assertEquals("another/encoded", segments.get(2),
+        assertEquals("another/encoded", segments.get(2),
                 "Third segment should be decoded");
     }
 
     @Test
     public void getSegmentsListWithDecoding_handlesEmptyPath() {
         List<String> segments = PathUtil.getSegmentsListWithDecoding("");
-        Assertions.assertTrue(segments.isEmpty(),
-                "Empty path should return empty list");
+        assertTrue(segments.isEmpty(), "Empty path should return empty list");
     }
 
     @Test
     public void getSegmentsListWithDecoding_handlesNullPath() {
         List<String> segments = PathUtil.getSegmentsListWithDecoding(null);
-        Assertions.assertTrue(segments.isEmpty(),
-                "Null path should return empty list");
+        assertTrue(segments.isEmpty(), "Null path should return empty list");
     }
 
     @Test
@@ -163,13 +151,11 @@ class PathUtilTest {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("/path%2Fencoded/normal");
         // Leading slash creates empty first segment
-        Assertions.assertEquals(3, segments.size(),
-                "Should have three segments");
-        Assertions.assertEquals("", segments.get(0),
-                "First segment should be empty");
-        Assertions.assertEquals("path/encoded", segments.get(1),
+        assertEquals(3, segments.size(), "Should have three segments");
+        assertEquals("", segments.get(0), "First segment should be empty");
+        assertEquals("path/encoded", segments.get(1),
                 "Second segment should be decoded");
-        Assertions.assertEquals("normal", segments.get(2),
+        assertEquals("normal", segments.get(2),
                 "Third segment should be normal");
     }
 
@@ -177,8 +163,8 @@ class PathUtilTest {
     public void getSegmentsListWithDecoding_handlesTrailingSlash() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("path%2Fencoded/");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("path/encoded", segments.get(0),
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("path/encoded", segments.get(0),
                 "Segment should be decoded");
     }
 
@@ -186,8 +172,8 @@ class PathUtilTest {
     public void getSegmentsListWithDecoding_handlesUtf8Characters() {
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("hello%C3%A4%C3%B6%C3%BC");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("helloäöü", segments.get(0),
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("helloäöü", segments.get(0),
                 "Should decode UTF-8 characters");
     }
 
@@ -196,8 +182,8 @@ class PathUtilTest {
         // Verify existing behavior: getSegmentsList does NOT decode
         List<String> segments = PathUtil
                 .getSegmentsList("path%2Fwith%2Fslashes");
-        Assertions.assertEquals(1, segments.size(), "Should have one segment");
-        Assertions.assertEquals("path%2Fwith%2Fslashes", segments.get(0),
+        assertEquals(1, segments.size(), "Should have one segment");
+        assertEquals("path%2Fwith%2Fslashes", segments.get(0),
                 "Should NOT decode %2F");
     }
 
