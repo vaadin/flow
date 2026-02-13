@@ -48,8 +48,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * <p>
  * This signal may be synchronized across a cluster. In that case, changes to
  * the signal value are only confirmed asynchronously. The regular signal
- * {@link #get()} returns the assumed value based on local modifications
- * whereas {@link #peekConfirmed()} gives access to the confirmed value.
+ * {@link #get()} returns the assumed value based on local modifications whereas
+ * {@link #peekConfirmed()} gives access to the confirmed value.
  *
  * @param <T>
  *            the signal value type

@@ -427,7 +427,7 @@ public class Binder<BEAN> implements Serializable {
          *                 "Both fields must match")
          *         .bind("confirmPassword");
          * passwordSignal.set("secret"); // confirmField shows validation
-         *                                 // error
+         *                               // error
          * }
          * </pre>
          *

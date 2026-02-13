@@ -98,8 +98,8 @@ public class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        Assert.assertEquals("Test", signal.get().mapChildren().get("key")
-                .get().value(String.class));
+        Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
+                .value(String.class));
     }
 
     @Test

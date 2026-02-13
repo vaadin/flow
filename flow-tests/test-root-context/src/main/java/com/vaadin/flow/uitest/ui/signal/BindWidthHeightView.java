@@ -62,8 +62,7 @@ public class BindWidthHeightView extends Div {
         setWidthNullButton.setId("width-null");
 
         NativeButton setHeight100Button = new NativeButton(
-                "heightSignal.set(\"100%\")",
-                e -> heightSignal.set("100%"));
+                "heightSignal.set(\"100%\")", e -> heightSignal.set("100%"));
         setHeight100Button.setId("height-100-pct");
 
         NativeButton setHeightNullButton = new NativeButton(

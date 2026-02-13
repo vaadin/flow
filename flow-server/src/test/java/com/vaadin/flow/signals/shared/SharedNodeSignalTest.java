@@ -143,12 +143,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         asMap.put("key", "value");
 
-        Map<String, SharedNodeSignal> mapChildren = signal.get()
-                .mapChildren();
+        Map<String, SharedNodeSignal> mapChildren = signal.get().mapChildren();
         assertEquals(Set.of("key"), mapChildren.keySet());
 
-        assertEquals("value",
-                mapChildren.get("key").get().value(String.class));
+        assertEquals("value", mapChildren.get("key").get().value(String.class));
     }
 
     @Test

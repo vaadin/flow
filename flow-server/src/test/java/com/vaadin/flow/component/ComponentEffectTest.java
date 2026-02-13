@@ -858,9 +858,8 @@ public class ComponentEffectTest {
             taskList.insertLast("last");
 
             taskList.insertLast("middle");
-            taskList.moveTo(taskList.get().get(2),
-                    SharedListSignal.ListPosition.between(
-                            taskList.get().get(0), taskList.get().get(1)));
+            taskList.moveTo(taskList.get().get(2), SharedListSignal.ListPosition
+                    .between(taskList.get().get(0), taskList.get().get(1)));
 
             taskList.remove(taskList.get().get(0));
         });

@@ -100,8 +100,7 @@ public class ComputedSignalTest extends SignalTestBase {
     void map_mapComputedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<Integer> computed = Signal
-                .computed(() -> source.get().length());
+        Signal<Integer> computed = Signal.computed(() -> source.get().length());
 
         Signal<Integer> doubled = computed.map(l -> l * 2);
 

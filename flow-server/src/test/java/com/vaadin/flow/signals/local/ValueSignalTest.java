@@ -401,8 +401,7 @@ public class ValueSignalTest extends SignalTestBase {
         // Wait until other thread is inside the modify method
         modifyStarted.acquireUninterruptibly();
 
-        assertThrows(ConcurrentModificationException.class,
-                () -> signal.get());
+        assertThrows(ConcurrentModificationException.class, () -> signal.get());
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.peek());
         assertThrows(ConcurrentModificationException.class,

@@ -292,8 +292,7 @@ public class SharedListSignalTest extends SignalTestBase {
 
         signal.insertLast("last");
 
-        List<String> list = value.stream().map(SharedValueSignal::get)
-                .toList();
+        List<String> list = value.stream().map(SharedValueSignal::get).toList();
         assertEquals(List.of("first"), list);
     }
 
@@ -400,8 +399,8 @@ public class SharedListSignalTest extends SignalTestBase {
 
     static void assertChildren(SharedListSignal<String> signal,
             String... expectedValue) {
-        List<String> value = signal.get().stream()
-                .map(SharedValueSignal::get).toList();
+        List<String> value = signal.get().stream().map(SharedValueSignal::get)
+                .toList();
 
         assertEquals(List.of(expectedValue), value);
     }

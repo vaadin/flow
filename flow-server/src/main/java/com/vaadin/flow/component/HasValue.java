@@ -249,8 +249,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * the value back. After the callback, the signal is re-consulted via
      * {@link Signal#peek()} and if its value differs from what was being set,
      * the new value is ignored and the signal's updated value is used instead,
-     * i.e. in cases where write callback has `signal.set("different")`,
-     * whereas a value being set is "a new value", the "different" value wins.
+     * i.e. in cases where write callback has `signal.set("different")`, whereas
+     * a value being set is "a new value", the "different" value wins.
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only and
      * any attempt to set the value while the element is attached will throw an
