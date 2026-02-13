@@ -51,7 +51,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
             signalValue.setText("Signal value: " + signal.get());
         });
         target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
-                signal::value);
+                signal::set);
 
         target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
                 "change", event -> {
