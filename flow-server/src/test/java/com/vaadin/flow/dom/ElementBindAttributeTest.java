@@ -19,7 +19,6 @@ import java.util.LinkedList;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,8 +37,10 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ElementBindAttributeTest {
 
@@ -93,7 +94,7 @@ class ElementBindAttributeTest {
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         element.bindAttribute("foobar", signal);
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -120,7 +121,7 @@ class ElementBindAttributeTest {
 
         signal.set("baz");
 
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
         assertEquals("bar", component.getElement().getAttribute("foo"));
     }
 
@@ -134,7 +135,7 @@ class ElementBindAttributeTest {
         component.getElement().bindAttribute("foo", signal);
 
         assertEquals("bar", component.getElement().getAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -156,7 +157,7 @@ class ElementBindAttributeTest {
         UI.getCurrent().add(component);
         assertEquals("baz", component.getElement().getAttribute("foo"));
 
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -170,7 +171,7 @@ class ElementBindAttributeTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setAttribute("foo", "baz"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -184,7 +185,7 @@ class ElementBindAttributeTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -198,7 +199,7 @@ class ElementBindAttributeTest {
         signal.set("baz");
 
         assertEquals("baz", component.getElement().getAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -206,7 +207,7 @@ class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Assertions.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
                 () -> component.getElement().bindAttribute("foo", null));
     }
 
@@ -227,7 +228,7 @@ class ElementBindAttributeTest {
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("foobar", component.getElement().getAttribute("attr2"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -249,7 +250,7 @@ class ElementBindAttributeTest {
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("barfoo", component.getElement().getAttribute("attr2"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -263,7 +264,7 @@ class ElementBindAttributeTest {
                 signal.map(v -> "mapped-" + v));
 
         assertEquals("mapped-bar", component.getElement().getAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -279,7 +280,7 @@ class ElementBindAttributeTest {
 
         assertEquals("computed-bar",
                 component.getElement().getAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -298,8 +299,8 @@ class ElementBindAttributeTest {
 
         assertNull(component.getElement().getAttribute("foo"));
         // expecting whole attribute to be removed
-        Assertions.assertFalse(component.getElement().hasAttribute("foo"));
-        Assertions.assertTrue(events.isEmpty());
+        assertFalse(component.getElement().hasAttribute("foo"));
+        assertTrue(events.isEmpty());
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {

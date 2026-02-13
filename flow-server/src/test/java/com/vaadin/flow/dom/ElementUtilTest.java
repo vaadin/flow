@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -31,7 +30,10 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ElementUtilTest {
 
@@ -42,12 +44,12 @@ class ElementUtilTest {
 
     @Test
     public void isNullValidAttribute() {
-        Assertions.assertFalse(ElementUtil.isValidAttributeName(null));
+        assertFalse(ElementUtil.isValidAttributeName(null));
     }
 
     @Test
     public void isEmptyValidAttribute() {
-        Assertions.assertFalse(ElementUtil.isValidAttributeName(""));
+        assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
     @Test
@@ -62,7 +64,7 @@ class ElementUtilTest {
     @Test
     public void componentNotInitiallyAttached() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.getComponent().isPresent());
+        assertFalse(e.getComponent().isPresent());
     }
 
     @Test
@@ -70,7 +72,7 @@ class ElementUtilTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assertions.assertEquals(c, e.getComponent().get());
+        assertEquals(c, e.getComponent().get());
     }
 
     @Test
@@ -78,7 +80,7 @@ class ElementUtilTest {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
-        Assertions.assertEquals(c, e.getComponent().get());
+        assertEquals(c, e.getComponent().get());
     }
 
     @Test
@@ -126,96 +128,93 @@ class ElementUtilTest {
 
         Optional<Element> optionalElement = ElementUtil.fromJsoup(jNode);
 
-        Assertions.assertTrue(optionalElement.isPresent(),
+        assertTrue(optionalElement.isPresent(),
                 "Element should have been created from jNode");
 
         Element recreatedElement = optionalElement.get();
 
         // root
-        Assertions.assertEquals("div", recreatedElement.getTag(),
+        assertEquals("div", recreatedElement.getTag(),
                 "Root element should be div");
         // child
-        Assertions.assertEquals("p", recreatedElement.getChild(0).getTag(),
+        assertEquals("p", recreatedElement.getChild(0).getTag(),
                 "Child element should be a paragraph");
-        Assertions.assertEquals(EXPECTED_TEXT_1,
-                recreatedElement.getChild(0).getText(),
+        assertEquals(EXPECTED_TEXT_1, recreatedElement.getChild(0).getText(),
                 "Child element should have text");
         // grand-child (#1, since #0 is the text node)
-        Assertions.assertEquals("div",
-                recreatedElement.getChild(0).getChild(1).getTag(),
+        assertEquals("div", recreatedElement.getChild(0).getChild(1).getTag(),
                 "Grand-child element should be a div");
-        Assertions.assertEquals(EXPECTED_TEXT_2,
+        assertEquals(EXPECTED_TEXT_2,
                 recreatedElement.getChild(0).getChild(1).getText(),
                 "Grand-child element should have text");
     }
 
     @Test
     public void isValidTagName_validTagNames() {
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo-bar"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo_bar"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo_bar-baz"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo12.bar3"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("foo-._"));
-        Assertions.assertTrue(ElementUtil.isValidTagName("x"));
+        assertTrue(ElementUtil.isValidTagName("foo"));
+        assertTrue(ElementUtil.isValidTagName("foo-bar"));
+        assertTrue(ElementUtil.isValidTagName("foo_bar"));
+        assertTrue(ElementUtil.isValidTagName("foo_bar-baz"));
+        assertTrue(ElementUtil.isValidTagName("foo12.bar3"));
+        assertTrue(ElementUtil.isValidTagName("foo-._"));
+        assertTrue(ElementUtil.isValidTagName("x"));
     }
 
     @Test
     public void isValidTagName_invalidTagNames() {
-        Assertions.assertFalse(ElementUtil.isValidTagName("1foo"));
-        Assertions.assertFalse(ElementUtil.isValidTagName("-foo"));
-        Assertions.assertFalse(ElementUtil.isValidTagName("_foo"));
-        Assertions.assertFalse(ElementUtil.isValidTagName(".foo"));
-        Assertions.assertFalse(ElementUtil.isValidTagName("foo>"));
-        Assertions.assertFalse(ElementUtil.isValidTagName("foo$bar"));
+        assertFalse(ElementUtil.isValidTagName("1foo"));
+        assertFalse(ElementUtil.isValidTagName("-foo"));
+        assertFalse(ElementUtil.isValidTagName("_foo"));
+        assertFalse(ElementUtil.isValidTagName(".foo"));
+        assertFalse(ElementUtil.isValidTagName("foo>"));
+        assertFalse(ElementUtil.isValidTagName("foo$bar"));
     }
 
     @Test
     public void parentIsInert_childIgnoresParentInert_allThePermutations() {
         setupElementHierarchy();
 
-        Assertions.assertFalse(isIgnoreParentInert(child),
+        assertFalse(isIgnoreParentInert(child),
                 "by default parent inert state is not ignored");
-        Assertions.assertFalse(isInert(child),
-                "by default element should not be inert");
+        assertFalse(isInert(child), "by default element should not be inert");
 
         ElementUtil.setIgnoreParentInert(child, true);
-        Assertions.assertFalse(isInert(child));
+        assertFalse(isInert(child));
 
         ElementUtil.setInert(parent, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertFalse(isInert(child));
-        Assertions.assertFalse(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertFalse(isInert(child));
+        assertFalse(isInert(grandchild));
 
         ElementUtil.setIgnoreParentInert(child, false);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertTrue(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertTrue(isInert(grandchild));
 
         ElementUtil.setIgnoreParentInert(child, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertFalse(isInert(child));
-        Assertions.assertFalse(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertFalse(isInert(child));
+        assertFalse(isInert(grandchild));
 
         ElementUtil.setInert(child, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertTrue(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertTrue(isInert(grandchild));
 
         ElementUtil.setInert(parent, false);
         simulateWritingChangesToClient();
 
-        Assertions.assertFalse(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertTrue(isInert(grandchild));
+        assertFalse(isInert(parent));
+        assertTrue(isInert(child));
+        assertTrue(isInert(grandchild));
     }
 
     @Test
@@ -225,23 +224,23 @@ class ElementUtilTest {
         ElementUtil.setInert(parent, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertTrue(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertTrue(isInert(grandchild));
 
         ElementUtil.setIgnoreParentInert(grandchild, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertFalse(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertFalse(isInert(grandchild));
 
         ElementUtil.setIgnoreParentInert(grandchild, false);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertTrue(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertTrue(isInert(grandchild));
     }
 
     @Test
@@ -252,9 +251,9 @@ class ElementUtilTest {
         ElementUtil.setIgnoreParentInert(grandchild, true);
         simulateWritingChangesToClient();
 
-        Assertions.assertTrue(isInert(parent));
-        Assertions.assertTrue(isInert(child));
-        Assertions.assertFalse(isInert(grandchild));
+        assertTrue(isInert(parent));
+        assertTrue(isInert(child));
+        assertFalse(isInert(grandchild));
     }
 
     @Test
@@ -268,13 +267,13 @@ class ElementUtilTest {
         Element e = ElementUtil.from(te.getNode()).orElse(null);
 
         // Elements must be equal but not necessarily the same
-        Assertions.assertEquals(te, e);
+        assertEquals(te, e);
     }
 
     @Test
     public void getElementFromInvalidNode() {
         StateNode node = new StateNode(ElementPropertyMap.class);
-        Assertions.assertFalse(ElementUtil.from(node).isPresent());
+        assertFalse(ElementUtil.from(node).isPresent());
     }
 
     private void setupElementHierarchy() {

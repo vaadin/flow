@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShadowRootStateProviderTest {
 
@@ -29,13 +32,13 @@ class ShadowRootStateProviderTest {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assertions.assertTrue(provider.supports(shadowRoot));
+        assertTrue(provider.supports(shadowRoot));
     }
 
     @Test
     public void doesNotSupportEmptyNode() {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
-        Assertions.assertFalse(provider.supports(new StateNode()));
+        assertFalse(provider.supports(new StateNode()));
     }
 
     @Test
@@ -43,7 +46,7 @@ class ShadowRootStateProviderTest {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assertions.assertEquals(shadowRoot,
+        assertEquals(shadowRoot,
                 node.getFeature(ShadowRootData.class).getShadowRoot());
     }
 
@@ -52,7 +55,7 @@ class ShadowRootStateProviderTest {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assertions.assertEquals(node, shadowRoot.getParent());
+        assertEquals(node, shadowRoot.getParent());
     }
 
 }

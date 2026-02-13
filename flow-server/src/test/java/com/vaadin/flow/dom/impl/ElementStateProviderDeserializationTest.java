@@ -21,13 +21,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Muammer Yucel
@@ -48,7 +49,7 @@ class ElementStateProviderDeserializationTest {
 
         parent.remove(child);
 
-        Assertions.assertEquals(0, parent.getChildren().count(),
+        assertEquals(0, parent.getChildren().count(),
                 "Child component should have been removed.");
     }
 

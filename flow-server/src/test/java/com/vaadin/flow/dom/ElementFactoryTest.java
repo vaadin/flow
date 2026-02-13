@@ -22,8 +22,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ElementFactoryTest {
 
@@ -72,7 +74,7 @@ class ElementFactoryTest {
 
     private void assertElement(String expectedOuterHtml, Element createAnchor) {
         String actualHtml = getOuterHtml(createAnchor);
-        Assertions.assertEquals(expectedOuterHtml, actualHtml);
+        assertEquals(expectedOuterHtml, actualHtml);
     }
 
     private String getOuterHtml(Element e) {
@@ -119,7 +121,7 @@ class ElementFactoryTest {
                     "<" + expectedTag + ">textContent</" + expectedTag + ">",
                     element);
         } else {
-            Assertions.fail("Untested method: " + method.getName() + "("
+            fail("Untested method: " + method.getName() + "("
                     + Stream.of(method.getParameterTypes())
                             .map(Class::getSimpleName)
                             .collect(Collectors.joining(","))

@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -31,6 +30,14 @@ import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.Registration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ShadowRootTest extends AbstractNodeTest {
 
@@ -56,21 +63,20 @@ class ShadowRootTest extends AbstractNodeTest {
 
         parent.appendChild(child);
 
-        child.addDetachListener(
-                e -> Assertions.fail("Child should not be detached"));
+        child.addDetachListener(e -> fail("Child should not be detached"));
         parent.insertChild(0, child);
     }
 
     @Test
     public void equalsSelf() {
         ShadowRoot root = createParentNode();
-        Assertions.assertTrue(root.equals(root));
+        assertTrue(root.equals(root));
     }
 
     @Test
     public void notEqualsNull() {
         ShadowRoot root = createParentNode();
-        Assertions.assertFalse(root.equals(null));
+        assertFalse(root.equals(null));
     }
 
     @Test
@@ -87,25 +93,25 @@ class ShadowRootTest extends AbstractNodeTest {
             childTriggered.addAndGet(1);
         });
         child.addAttachListener(event -> {
-            Assertions.assertEquals(child, event.getSource());
+            assertEquals(child, event.getSource());
         });
         grandChild.addAttachListener(event -> {
             grandChildTriggered.addAndGet(1);
         });
         grandChild.addAttachListener(event -> {
-            Assertions.assertEquals(grandChild, event.getSource());
+            assertEquals(grandChild, event.getSource());
         });
 
         parent.attachShadow().appendChild(child);
         child.appendChild(grandChild);
 
-        Assertions.assertEquals(childTriggered.get(), 0);
-        Assertions.assertEquals(grandChildTriggered.get(), 0);
+        assertEquals(childTriggered.get(), 0);
+        assertEquals(grandChildTriggered.get(), 0);
 
         body.appendChild(parent);
 
-        Assertions.assertEquals(childTriggered.get(), 1);
-        Assertions.assertEquals(grandChildTriggered.get(), 1);
+        assertEquals(childTriggered.get(), 1);
+        assertEquals(grandChildTriggered.get(), 1);
 
         body.removeAllChildren();
         parent.getShadowRoot().get().removeAllChildren();
@@ -113,16 +119,16 @@ class ShadowRootTest extends AbstractNodeTest {
         body.appendChild(parent);
         parent.getShadowRoot().get().appendChild(child);
 
-        Assertions.assertEquals(childTriggered.get(), 2);
-        Assertions.assertEquals(grandChildTriggered.get(), 2);
+        assertEquals(childTriggered.get(), 2);
+        assertEquals(grandChildTriggered.get(), 2);
 
         registrationHandle.remove();
 
         body.removeAllChildren();
         body.appendChild(child);
 
-        Assertions.assertEquals(childTriggered.get(), 2);
-        Assertions.assertEquals(grandChildTriggered.get(), 3);
+        assertEquals(childTriggered.get(), 2);
+        assertEquals(grandChildTriggered.get(), 3);
     }
 
     @Test
@@ -136,34 +142,34 @@ class ShadowRootTest extends AbstractNodeTest {
 
         Registration registrationHandle = child.addDetachListener(event -> {
             triggered.addAndGet(1);
-            Assertions.assertEquals(child, event.getSource());
+            assertEquals(child, event.getSource());
         });
 
         grandChild.addDetachListener(event -> {
             triggered.addAndGet(1);
-            Assertions.assertEquals(grandChild, event.getSource());
+            assertEquals(grandChild, event.getSource());
         });
 
         child.appendChild(grandChild);
         parent.attachShadow().appendChild(child);
         body.appendChild(parent);
 
-        Assertions.assertEquals(triggered.get(), 0);
+        assertEquals(triggered.get(), 0);
 
         body.removeAllChildren();
-        Assertions.assertEquals(triggered.get(), 2);
+        assertEquals(triggered.get(), 2);
 
         body.appendChild(parent);
         body.removeAllChildren();
 
-        Assertions.assertEquals(triggered.get(), 4);
+        assertEquals(triggered.get(), 4);
 
         body.appendChild(parent);
         registrationHandle.remove();
 
         body.removeAllChildren();
 
-        Assertions.assertEquals(triggered.get(), 5);
+        assertEquals(triggered.get(), 5);
     }
 
     @Test
@@ -178,17 +184,17 @@ class ShadowRootTest extends AbstractNodeTest {
 
         child.addAttachListener(event -> {
             childAttached.set(true);
-            Assertions.assertFalse(parentAttached.get());
+            assertFalse(parentAttached.get());
         });
         parent.addAttachListener(event -> {
             parentAttached.set(true);
-            Assertions.assertTrue(childAttached.get());
+            assertTrue(childAttached.get());
         });
 
         body.appendChild(parent);
 
-        Assertions.assertTrue(parentAttached.get());
-        Assertions.assertTrue(childAttached.get());
+        assertTrue(parentAttached.get());
+        assertTrue(childAttached.get());
     }
 
     @Test
@@ -204,17 +210,17 @@ class ShadowRootTest extends AbstractNodeTest {
 
         child.addDetachListener(event -> {
             childDetached.set(true);
-            Assertions.assertFalse(parentDetached.get());
+            assertFalse(parentDetached.get());
         });
         parent.addDetachListener(event -> {
             parentDetached.set(true);
-            Assertions.assertTrue(childDetached.get());
+            assertTrue(childDetached.get());
         });
 
         body.removeAllChildren();
 
-        Assertions.assertTrue(parentDetached.get());
-        Assertions.assertTrue(childDetached.get());
+        assertTrue(parentDetached.get());
+        assertTrue(childDetached.get());
     }
 
     @Test
@@ -231,17 +237,17 @@ class ShadowRootTest extends AbstractNodeTest {
 
         child.addAttachListener(event -> {
             attached.set(true);
-            Assertions.assertTrue(detached.get());
+            assertTrue(detached.get());
         });
         child.addDetachListener(event -> {
             detached.set(true);
-            Assertions.assertFalse(attached.get());
+            assertFalse(attached.get());
         });
 
         bodyShadow.appendChild(child);
 
-        Assertions.assertTrue(attached.get());
-        Assertions.assertTrue(detached.get());
+        assertTrue(attached.get());
+        assertTrue(detached.get());
     }
 
     @Test
@@ -252,14 +258,14 @@ class ShadowRootTest extends AbstractNodeTest {
         AtomicInteger attached = new AtomicInteger();
 
         child.addAttachListener(event -> {
-            Assertions.assertNotNull(event.getSource().getNode().getOwner());
-            Assertions.assertNotEquals(NullOwner.get(),
+            assertNotNull(event.getSource().getNode().getOwner());
+            assertNotEquals(NullOwner.get(),
                     event.getSource().getNode().getOwner());
         });
         child.addAttachListener(event -> attached.incrementAndGet());
 
         bodyShadow.appendChild(child);
-        Assertions.assertEquals(1, attached.get());
+        assertEquals(1, attached.get());
     }
 
     @Test
@@ -271,21 +277,21 @@ class ShadowRootTest extends AbstractNodeTest {
         AtomicInteger detached = new AtomicInteger();
 
         child.addDetachListener(event -> {
-            Assertions.assertNotNull(event.getSource().getNode().getOwner());
-            Assertions.assertNotEquals(NullOwner.get(),
+            assertNotNull(event.getSource().getNode().getOwner());
+            assertNotEquals(NullOwner.get(),
                     event.getSource().getNode().getOwner());
         });
         child.addDetachListener(event -> detached.incrementAndGet());
 
         bodyShadow.removeAllChildren();
 
-        Assertions.assertEquals(1, detached.get());
+        assertEquals(1, detached.get());
     }
 
     @Test
     public void getParentNode_parentNodeIsNull() {
         ShadowRoot root = createParentNode();
-        Assertions.assertNull(root.getParentNode());
+        assertNull(root.getParentNode());
     }
 
     @Test
@@ -298,11 +304,9 @@ class ShadowRootTest extends AbstractNodeTest {
 
         ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
-        Assertions.assertEquals(1, visitor.getVisited().size());
-        Assertions.assertEquals(subject,
-                visitor.getVisited().keySet().iterator().next());
-        Assertions.assertEquals(null,
-                visitor.getVisited().values().iterator().next());
+        assertEquals(1, visitor.getVisited().size());
+        assertEquals(subject, visitor.getVisited().keySet().iterator().next());
+        assertEquals(null, visitor.getVisited().values().iterator().next());
     }
 
     @Test
@@ -315,9 +319,9 @@ class ShadowRootTest extends AbstractNodeTest {
 
         ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
-        Assertions.assertTrue(map.size() > 1);
+        assertTrue(map.size() > 1);
 
-        Assertions.assertEquals(map, visitor.getVisited(),
+        assertEquals(map, visitor.getVisited(),
                 "The collected descendants doesn't match expected descendatns");
     }
 

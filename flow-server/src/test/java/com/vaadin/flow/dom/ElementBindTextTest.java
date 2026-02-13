@@ -19,7 +19,6 @@ import java.util.LinkedList;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +40,8 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ElementBindTextTest {
 
@@ -153,7 +154,7 @@ class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>();
         element.bindText(signal);
         assertEquals("", element.getText());
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -163,7 +164,7 @@ class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
         signal.set(null);
-        Assertions.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
         assertEquals("", element.getText());
     }
 
@@ -218,8 +219,7 @@ class ElementBindTextTest {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
-        Assertions.assertThrows(NullPointerException.class,
-                () -> element.bindText(null));
+        assertThrows(NullPointerException.class, () -> element.bindText(null));
     }
 
     @Test
@@ -252,7 +252,7 @@ class ElementBindTextTest {
         element.getText();
 
         element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
-                .ifPresent(feature -> Assertions.fail(
+                .ifPresent(feature -> fail(
                         "TextBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -288,8 +288,7 @@ class ElementBindTextTest {
         assertEquals("", span.getText());
 
         // verify setText throws with active binding
-        Assertions.assertThrows(BindingActiveException.class,
-                () -> span.setText(""));
+        assertThrows(BindingActiveException.class, () -> span.setText(""));
 
         // detach
         UI.getCurrent().remove(span);
@@ -309,7 +308,6 @@ class ElementBindTextTest {
         SpanWithHasText span = new SpanWithHasText();
         UI.getCurrent().add(span);
 
-        Assertions.assertThrows(NullPointerException.class,
-                () -> span.bindText(null));
+        assertThrows(NullPointerException.class, () -> span.bindText(null));
     }
 }

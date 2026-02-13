@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -79,7 +78,15 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @NotThreadSafe
 class ElementJacksonTest extends AbstractNodeTest {
@@ -87,9 +94,9 @@ class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void createElementWithTag() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertEquals(Tag.DIV, e.getTag());
-        Assertions.assertFalse(e.hasAttribute("is"));
-        Assertions.assertFalse(e.isTextNode());
+        assertEquals(Tag.DIV, e.getTag());
+        assertFalse(e.hasAttribute("is"));
+        assertFalse(e.isTextNode());
     }
 
     @Test
@@ -119,13 +126,13 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = Element.get(te.getNode());
 
         // Elements must be equal but not necessarily the same
-        Assertions.assertEquals(te, e);
+        assertEquals(te, e);
 
         te.setAttribute("foo", "bar");
-        Assertions.assertEquals("bar", e.getAttribute("foo"));
+        assertEquals("bar", e.getAttribute("foo"));
 
         e.setAttribute("baz", "123");
-        Assertions.assertEquals("123", te.getAttribute("baz"));
+        assertEquals("123", te.getAttribute("baz"));
     }
 
     @Test
@@ -195,7 +202,7 @@ class ElementJacksonTest extends AbstractNodeTest {
             } else {
                 // Setters and such
                 Class<?> returnType = m.getReturnType();
-                Assertions.assertEquals(Style.class, returnType,
+                assertEquals(Style.class, returnType,
                         "Method " + m.getName() + " has invalid return type");
             }
         }
@@ -206,14 +213,14 @@ class ElementJacksonTest extends AbstractNodeTest {
     public void stringAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
-        Assertions.assertEquals("bar", e.getAttribute("foo"));
+        assertEquals("bar", e.getAttribute("foo"));
     }
 
     @Test
     public void setEmptyAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "");
-        Assertions.assertEquals("", e.getAttribute("foo"));
+        assertEquals("", e.getAttribute("foo"));
     }
 
     @Test
@@ -221,12 +228,12 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
 
         e.setAttribute("foo", true);
-        Assertions.assertEquals("", e.getAttribute("foo"));
-        Assertions.assertTrue(e.hasAttribute("foo"));
+        assertEquals("", e.getAttribute("foo"));
+        assertTrue(e.hasAttribute("foo"));
 
         e.setAttribute("foo", false);
-        Assertions.assertEquals(null, e.getAttribute("foo"));
-        Assertions.assertFalse(e.hasAttribute("foo"));
+        assertEquals(null, e.getAttribute("foo"));
+        assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
@@ -273,13 +280,13 @@ class ElementJacksonTest extends AbstractNodeTest {
     public void hasDefinedAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
-        Assertions.assertTrue(e.hasAttribute("foo"));
+        assertTrue(e.hasAttribute("foo"));
     }
 
     @Test
     public void doesNotHaveUndefinedAttribute() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
@@ -287,28 +294,28 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         e.removeAttribute("foo");
-        Assertions.assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
     public void removeNonExistingAttributeIsNoOp() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("foo"));
         e.removeAttribute("foo");
-        Assertions.assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
     public void attributesWhenNoneDefined() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertEquals(0, e.getAttributeNames().count());
+        assertEquals(0, e.getAttributeNames().count());
     }
 
     @Test
     public void attributesNames() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
-        Assertions.assertArrayEquals(new String[] { "foo" },
+        assertArrayEquals(new String[] { "foo" },
                 e.getAttributeNames().toArray());
     }
 
@@ -318,7 +325,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         e.setAttribute("foo", "bar");
         e.setAttribute("bar", "baz");
         e.removeAttribute("foo");
-        Assertions.assertArrayEquals(new String[] { "bar" },
+        assertArrayEquals(new String[] { "bar" },
                 e.getAttributeNames().toArray());
     }
 
@@ -326,9 +333,9 @@ class ElementJacksonTest extends AbstractNodeTest {
     public void setGetAttributeValueCaseSensitive() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("foo", "bAr");
-        Assertions.assertEquals("bAr", e.getAttribute("foo"));
+        assertEquals("bAr", e.getAttribute("foo"));
         e.setAttribute("foo", "BAR");
-        Assertions.assertEquals("BAR", e.getAttribute("foo"));
+        assertEquals("BAR", e.getAttribute("foo"));
     }
 
     @Test
@@ -337,15 +344,15 @@ class ElementJacksonTest extends AbstractNodeTest {
         e.setAttribute("foo", "bar");
         e.setAttribute("FOO", "baz");
 
-        Assertions.assertEquals("baz", e.getAttribute("foo"));
-        Assertions.assertEquals("baz", e.getAttribute("FOO"));
+        assertEquals("baz", e.getAttribute("foo"));
+        assertEquals("baz", e.getAttribute("FOO"));
     }
 
     @Test
     public void hasAttributeNamesCaseInsensitive() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("fooo", "bar");
-        Assertions.assertTrue(e.hasAttribute("fOoO"));
+        assertTrue(e.hasAttribute("fOoO"));
     }
 
     @Test
@@ -356,25 +363,25 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         Set<String> attributeNames = e.getAttributeNames()
                 .collect(Collectors.toSet());
-        Assertions.assertTrue(attributeNames.contains("foo"));
-        Assertions.assertFalse(attributeNames.contains("FOO"));
-        Assertions.assertTrue(attributeNames.contains("baz"));
-        Assertions.assertFalse(attributeNames.contains("Baz"));
+        assertTrue(attributeNames.contains("foo"));
+        assertFalse(attributeNames.contains("FOO"));
+        assertTrue(attributeNames.contains("baz"));
+        assertFalse(attributeNames.contains("Baz"));
     }
 
     @Test
     public void removeDetachedFromParent() {
         Element otherElement = new Element("other");
-        Assertions.assertNull(otherElement.getParent());
+        assertNull(otherElement.getParent());
         otherElement.removeFromParent(); // No op
-        Assertions.assertNull(otherElement.getParent());
+        assertNull(otherElement.getParent());
     }
 
     @Test
     public void getDetachedParent() {
         Element otherElement = new Element("other");
-        Assertions.assertNull(otherElement.getParent());
-        Assertions.assertNull(otherElement.getParentNode());
+        assertNull(otherElement.getParent());
+        assertNull(otherElement.getParentNode());
     }
 
     @Test
@@ -397,19 +404,19 @@ class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void equalsSelf() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertTrue(e.equals(e));
+        assertTrue(e.equals(e));
     }
 
     @Test
     public void notEqualsNull() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.equals(null));
+        assertFalse(e.equals(null));
     }
 
     @Test
     public void notEqualsString() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.equals(Tag.DIV));
+        assertFalse(e.equals(Tag.DIV));
     }
 
     // @Test
@@ -419,10 +426,10 @@ class ElementJacksonTest extends AbstractNodeTest {
     // DomEventListener myListener = event -> listenerCalls.incrementAndGet();
     //
     // e.addEventListener("click", myListener);
-    // Assertions.assertEquals(0, listenerCalls.get());
+    // assertEquals(0, listenerCalls.get());
     // e.getNode().getFeature(ElementListenerMap.class)
     // .fireEvent(new DomEvent(e, "click", JacksonUtils.createObjectNode()));
-    // Assertions.assertEquals(1, listenerCalls.get());
+    // assertEquals(1, listenerCalls.get());
     // }
     //
     // @Test
@@ -438,17 +445,17 @@ class ElementJacksonTest extends AbstractNodeTest {
     //
     // DomListenerRegistration domListenerRegistration = e
     // .addEventListener("click", myListener);
-    // Assertions.assertEquals(0, listenerCalls.get());
+    // assertEquals(0, listenerCalls.get());
     // e.getNode().getFeature(ElementListenerMap.class)
     // .fireEvent(new DomEvent(e, "click", JacksonUtils.createObjectNode()));
     // // Event should not go through
-    // Assertions.assertEquals(0, listenerCalls.get());
+    // assertEquals(0, listenerCalls.get());
     //
     // // Now should pass inert check and get notified
     // domListenerRegistration.allowInert();
     // e.getNode().getFeature(ElementListenerMap.class)
     // .fireEvent(new DomEvent(e, "click", JacksonUtils.createObjectNode()));
-    // Assertions.assertEquals(1, listenerCalls.get());
+    // assertEquals(1, listenerCalls.get());
     //
     // }
 
@@ -459,24 +466,24 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.setProperty("null", null);
         element.setProperty("empty", "");
 
-        Assertions.assertEquals("d", element.getProperty("null", "d"));
-        Assertions.assertEquals("d", element.getProperty("notThere", "d"));
-        Assertions.assertNotEquals("d", element.getProperty("empty", "d"));
+        assertEquals("d", element.getProperty("null", "d"));
+        assertEquals("d", element.getProperty("notThere", "d"));
+        assertNotEquals("d", element.getProperty("empty", "d"));
 
-        Assertions.assertTrue(element.getProperty("null", true));
-        Assertions.assertFalse(element.getProperty("null", false));
-        Assertions.assertTrue(element.getProperty("notThere", true));
-        Assertions.assertFalse(element.getProperty("notThere", false));
-        Assertions.assertFalse(element.getProperty("empty", true));
-        Assertions.assertFalse(element.getProperty("empty", false));
+        assertTrue(element.getProperty("null", true));
+        assertFalse(element.getProperty("null", false));
+        assertTrue(element.getProperty("notThere", true));
+        assertFalse(element.getProperty("notThere", false));
+        assertFalse(element.getProperty("empty", true));
+        assertFalse(element.getProperty("empty", false));
 
-        Assertions.assertEquals(0.1, element.getProperty("null", 0.1), 0);
-        Assertions.assertEquals(0.1, element.getProperty("notThere", 0.1), 0);
-        Assertions.assertNotEquals(0.1, element.getProperty("empty", 0.1), 0);
+        assertEquals(0.1, element.getProperty("null", 0.1), 0);
+        assertEquals(0.1, element.getProperty("notThere", 0.1), 0);
+        assertNotEquals(0.1, element.getProperty("empty", 0.1), 0);
 
-        Assertions.assertEquals(42, element.getProperty("null", 42));
-        Assertions.assertEquals(42, element.getProperty("notThere", 42));
-        Assertions.assertNotEquals(42, element.getProperty("empty", 42));
+        assertEquals(42, element.getProperty("null", 42));
+        assertEquals(42, element.getProperty("notThere", 42));
+        assertNotEquals(42, element.getProperty("empty", 42));
     }
 
     @Test
@@ -498,7 +505,7 @@ class ElementJacksonTest extends AbstractNodeTest {
     private static void assertPropertyString(String expected, Object value) {
         Element element = createPropertyAssertElement(value);
 
-        Assertions.assertEquals(expected, element.getProperty("property"));
+        assertEquals(expected, element.getProperty("property"));
     }
 
     @Test
@@ -528,9 +535,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         boolean actual = element.getProperty("property", !expected);
 
         if (expected) {
-            Assertions.assertTrue(actual);
+            assertTrue(actual);
         } else {
-            Assertions.assertFalse(actual);
+            assertFalse(actual);
         }
     }
 
@@ -567,8 +574,8 @@ class ElementJacksonTest extends AbstractNodeTest {
                     "Expecting the default value might cause unintended results");
         }
 
-        Assertions.assertEquals(expected,
-                element.getProperty("property", defaultValue), delta);
+        assertEquals(expected, element.getProperty("property", defaultValue),
+                delta);
     }
 
     @Test
@@ -605,8 +612,7 @@ class ElementJacksonTest extends AbstractNodeTest {
                     "Expecting the default value might cause unintended results");
         }
 
-        Assertions.assertEquals(expected,
-                element.getProperty("property", defaultValue));
+        assertEquals(expected, element.getProperty("property", defaultValue));
     }
 
     public static class SimpleBean {
@@ -655,26 +661,24 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
 
         element.setProperty("p", "v");
-        Assertions.assertEquals("v", element.getPropertyRaw("p"));
+        assertEquals("v", element.getPropertyRaw("p"));
 
         element.setProperty("p", true);
-        Assertions.assertEquals(Boolean.TRUE, element.getPropertyRaw("p"));
+        assertEquals(Boolean.TRUE, element.getPropertyRaw("p"));
 
         element.setProperty("p", 3.14);
-        Assertions.assertEquals(Double.valueOf(3.14),
-                element.getPropertyRaw("p"));
+        assertEquals(Double.valueOf(3.14), element.getPropertyRaw("p"));
 
         element.setPropertyJson("p", JacksonUtils.createObjectNode());
-        Assertions.assertEquals(ObjectNode.class,
-                element.getPropertyRaw("p").getClass());
+        assertEquals(ObjectNode.class, element.getPropertyRaw("p").getClass());
 
         // TODO: Use setPropertyBean when updated to jackson
         element.setPropertyJson("p", JacksonUtils.beanToJson(new SimpleBean()));
         JsonNode json = (JsonNode) element.getPropertyRaw("p");
-        Assertions.assertEquals("value", json.get("string").textValue());
-        Assertions.assertEquals(1.0, json.get("number").doubleValue(), 0.0);
-        Assertions.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
-        Assertions.assertEquals(4.56, json.get("dbl").doubleValue(), 0.0);
+        assertEquals("value", json.get("string").textValue());
+        assertEquals(1.0, json.get("number").doubleValue(), 0.0);
+        assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
+        assertEquals(4.56, json.get("dbl").doubleValue(), 0.0);
 
         List<SimpleBean> list = new ArrayList<>();
         SimpleBean bean1 = new SimpleBean();
@@ -687,10 +691,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         // TODO: Use setPropertyList when updated to jackson
         element.setPropertyJson("p", JacksonUtils.listToJson(list));
         ArrayNode jsonArray = (ArrayNode) element.getPropertyRaw("p");
-        Assertions.assertEquals("bean1",
-                jsonArray.get(0).get("string").textValue());
-        Assertions.assertEquals("bean2",
-                jsonArray.get(1).get("string").textValue());
+        assertEquals("bean1", jsonArray.get(0).get("string").textValue());
+        assertEquals("bean2", jsonArray.get(1).get("string").textValue());
 
         Map<String, SimpleBean> map = new HashMap<>();
         map.put("one", bean1);
@@ -698,41 +700,39 @@ class ElementJacksonTest extends AbstractNodeTest {
         // TODO: Use setPropertyMap when updated to jackson
         element.setPropertyJson("p", JacksonUtils.mapToJson(map));
         JsonNode jsonObject = (JsonNode) element.getPropertyRaw("p");
-        Assertions.assertEquals("bean1",
-                jsonObject.get("one").get("string").textValue());
-        Assertions.assertEquals("bean2",
-                jsonObject.get("two").get("string").textValue());
+        assertEquals("bean1", jsonObject.get("one").get("string").textValue());
+        assertEquals("bean2", jsonObject.get("two").get("string").textValue());
     }
 
     @Test
     public void addAndRemoveProperty() {
         Element element = ElementFactory.createDiv();
 
-        Assertions.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasProperty("foo"));
         element.removeProperty("foo");
-        Assertions.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasProperty("foo"));
 
         element.setProperty("foo", "bar");
-        Assertions.assertTrue(element.hasProperty("foo"));
+        assertTrue(element.hasProperty("foo"));
         element.setProperty("foo", null);
-        Assertions.assertTrue(element.hasProperty("foo"));
+        assertTrue(element.hasProperty("foo"));
 
         element.removeProperty("foo");
-        Assertions.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasProperty("foo"));
     }
 
     @Test
     public void propertyNames() {
         Element element = ElementFactory.createDiv();
 
-        Assertions.assertEquals(0, element.getPropertyNames().count());
+        assertEquals(0, element.getPropertyNames().count());
 
         element.setProperty("foo", "bar");
-        Assertions.assertEquals(Collections.singleton("foo"),
+        assertEquals(Collections.singleton("foo"),
                 element.getPropertyNames().collect(Collectors.toSet()));
 
         element.removeProperty("foo");
-        Assertions.assertEquals(0, element.getPropertyNames().count());
+        assertEquals(0, element.getPropertyNames().count());
     }
 
     @Test
@@ -744,32 +744,32 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.setPropertyBean("bean", bean);
         ObjectNode json = (ObjectNode) element.getPropertyRaw("bean");
 
-        Assertions.assertTrue(
+        assertTrue(
                 JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")),
                 "LocalTime not serialized as expected");
-        Assertions.assertTrue(
+        assertTrue(
                 JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")),
                 "LocalDate not serialized as expected");
-        Assertions.assertTrue(
+        assertTrue(
                 JacksonUtils.jsonEquals(
                         JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")),
                 "LocalDateTime not serialized as expected");
-        Assertions.assertEquals(bean.zonedDateTime.toEpochSecond(),
+        assertEquals(bean.zonedDateTime.toEpochSecond(),
                 ZonedDateTime.parse(json.get("zonedDateTime").asString())
                         .toEpochSecond(),
                 0, "ZonedDateTime not serialized as expected");
-        Assertions.assertEquals(bean.sqlDate.getTime(),
+        assertEquals(bean.sqlDate.getTime(),
                 ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
                         .toEpochMilli(),
                 0, "ZonedDateTime not serialized as expected");
-        Assertions.assertEquals(bean.date.getTime(),
+        assertEquals(bean.date.getTime(),
                 ZonedDateTime.parse(json.get("date").asString()).toInstant()
                         .toEpochMilli(),
                 0, "ZonedDateTime not serialized as expected");
-        Assertions.assertEquals(10.0,
+        assertEquals(10.0,
                 Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
@@ -806,7 +806,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.appendChild(Element.createText("foo"));
         element.appendChild(child);
 
-        Assertions.assertEquals("foobar", element.getTextRecursively());
+        assertEquals("foobar", element.getTextRecursively());
     }
 
     @Test
@@ -814,9 +814,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
-        Assertions.assertEquals("foo", element.getTextRecursively());
-        Assertions.assertEquals(1, element.getChildCount());
-        Assertions.assertTrue(element.getChild(0).isTextNode());
+        assertEquals("foo", element.getTextRecursively());
+        assertEquals(1, element.getChildCount());
+        assertTrue(element.getChild(0).isTextNode());
     }
 
     @Test
@@ -827,8 +827,8 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.setText("foo");
 
-        Assertions.assertNull(child.getParent());
-        Assertions.assertEquals("foo", element.getTextRecursively());
+        assertNull(child.getParent());
+        assertEquals("foo", element.getTextRecursively());
     }
 
     @Test
@@ -839,8 +839,8 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.setText("bar");
 
-        Assertions.assertEquals(element, text.getParent());
-        Assertions.assertEquals("bar", text.getTextRecursively());
+        assertEquals(element, text.getParent());
+        assertEquals("bar", text.getTextRecursively());
     }
 
     @Test
@@ -866,8 +866,8 @@ class ElementJacksonTest extends AbstractNodeTest {
                 ElementFactory.createDiv());
         element.setProperty("innerHTML", "<br>");
 
-        Assertions.assertEquals(0, element.getChildCount());
-        Assertions.assertEquals("<br>", element.getProperty("innerHTML"));
+        assertEquals(0, element.getChildCount());
+        assertEquals("<br>", element.getProperty("innerHTML"));
     }
 
     @Test
@@ -875,8 +875,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
-        Assertions.assertFalse(element.hasProperty("textContent"));
-        Assertions.assertNull(element.getProperty("textContent"));
+        assertFalse(element.hasProperty("textContent"));
+        assertNull(element.getProperty("textContent"));
     }
 
     @Test
@@ -885,19 +885,19 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
-        Assertions.assertEquals(1, element.getChildCount());
+        assertEquals(1, element.getChildCount());
 
         element.setText("");
 
-        Assertions.assertEquals(0, element.getChildCount());
+        assertEquals(0, element.getChildCount());
     }
 
     @Test
     public void newElementClasses() {
         Element element = ElementFactory.createDiv();
 
-        Assertions.assertFalse(element.hasAttribute("class"));
-        Assertions.assertEquals(Collections.emptySet(), element.getClassList());
+        assertFalse(element.hasAttribute("class"));
+        assertEquals(Collections.emptySet(), element.getClassList());
     }
 
     @Test
@@ -906,18 +906,17 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.getClassList().add("foo");
 
-        Assertions.assertEquals(Collections.singleton("foo"),
-                element.getClassList());
-        Assertions.assertTrue(element.hasAttribute("class"));
+        assertEquals(Collections.singleton("foo"), element.getClassList());
+        assertTrue(element.hasAttribute("class"));
 
-        Assertions.assertEquals(Collections.singleton("class"),
+        assertEquals(Collections.singleton("class"),
                 element.getAttributeNames().collect(Collectors.toSet()));
-        Assertions.assertTrue(element.hasAttribute("class"));
-        Assertions.assertEquals("foo", element.getAttribute("class"));
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo", element.getAttribute("class"));
 
         element.getClassList().add("bar");
 
-        Assertions.assertEquals("foo bar", element.getAttribute("class"));
+        assertEquals("foo bar", element.getAttribute("class"));
     }
 
     @Test
@@ -929,11 +928,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.setAttribute("class", "       foo bar ");
 
-        Assertions.assertEquals(2, classList.size());
-        Assertions.assertTrue(classList.contains("foo"));
-        Assertions.assertTrue(classList.contains("bar"));
+        assertEquals(2, classList.size());
+        assertTrue(classList.contains("foo"));
+        assertTrue(classList.contains("bar"));
 
-        Assertions.assertNull(
+        assertNull(
                 element.getNode().getFeature(ElementAttributeMap.class)
                         .get("class"),
                 "class should not be stored as a regular attribute");
@@ -948,7 +947,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.setAttribute("class", "");
 
-        Assertions.assertEquals(0, classList.size());
+        assertEquals(0, classList.size());
     }
 
     @Test
@@ -971,14 +970,14 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.getClassList().remove("foo");
 
-        Assertions.assertEquals("bar", element.getAttribute("class"));
+        assertEquals("bar", element.getAttribute("class"));
 
         element.getClassList().remove("bar");
 
-        Assertions.assertNull(element.getAttribute("class"));
-        Assertions.assertFalse(element.hasAttribute("class"));
+        assertNull(element.getAttribute("class"));
+        assertFalse(element.hasAttribute("class"));
 
-        Assertions.assertEquals(0, element.getAttributeNames().count());
+        assertEquals(0, element.getAttributeNames().count());
     }
 
     @Test
@@ -991,7 +990,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.removeAttribute("class");
 
-        Assertions.assertEquals(Collections.emptySet(), classList);
+        assertEquals(Collections.emptySet(), classList);
     }
 
     @Test
@@ -1002,8 +1001,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.getClassList().add("foo");
 
-        Assertions.assertEquals(Collections.singleton("foo"),
-                element.getClassList());
+        assertEquals(Collections.singleton("foo"), element.getClassList());
     }
 
     @Test
@@ -1019,7 +1017,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         cl.add("foo");
         cl.add("bar");
         cl.remove("foo bar");
-        Assertions.assertEquals(2, cl.size());
+        assertEquals(2, cl.size());
     }
 
     @Test
@@ -1028,26 +1026,26 @@ class ElementJacksonTest extends AbstractNodeTest {
         cl.add("foo");
         cl.add("bar");
 
-        Assertions.assertFalse(cl.contains("foo bar"));
+        assertFalse(cl.contains("foo bar"));
     }
 
     @Test
     public void classListSetAdd() {
         Element e = new Element(Tag.DIV);
-        Assertions.assertTrue(e.getClassList().set("foo", true));
-        Assertions.assertEquals("foo", e.getAttribute("class"));
-        Assertions.assertFalse(e.getClassList().set("foo", true));
-        Assertions.assertEquals("foo", e.getAttribute("class"));
+        assertTrue(e.getClassList().set("foo", true));
+        assertEquals("foo", e.getAttribute("class"));
+        assertFalse(e.getClassList().set("foo", true));
+        assertEquals("foo", e.getAttribute("class"));
     }
 
     @Test
     public void classListSetRemove() {
         Element e = new Element(Tag.DIV);
         e.setAttribute("class", "foo bar");
-        Assertions.assertTrue(e.getClassList().set("foo", false));
-        Assertions.assertEquals("bar", e.getAttribute("class"));
-        Assertions.assertFalse(e.getClassList().set("foo", false));
-        Assertions.assertEquals("bar", e.getAttribute("class"));
+        assertTrue(e.getClassList().set("foo", false));
+        assertEquals("bar", e.getAttribute("class"));
+        assertFalse(e.getClassList().set("foo", false));
+        assertEquals("bar", e.getAttribute("class"));
     }
 
     @Test
@@ -1069,17 +1067,16 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
-        Assertions.assertEquals("bar", s.get("foo"));
+        assertEquals("bar", s.get("foo"));
         s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
-        Assertions.assertEquals("hsl(12, 12%, 12%)",
-                s.get("--lumo-primary-text-color"));
+        assertEquals("hsl(12, 12%, 12%)", s.get("--lumo-primary-text-color"));
     }
 
     @Test
     public void getUnsetStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
-        Assertions.assertNull(s.get("foo"));
+        assertNull(s.get("foo"));
     }
 
     @Test
@@ -1097,7 +1094,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Style s = e.getStyle();
         s.set("foo", "bar");
         s.set("foo", "baz");
-        Assertions.assertEquals("baz", s.get("foo"));
+        assertEquals("baz", s.get("foo"));
     }
 
     @Test
@@ -1106,14 +1103,14 @@ class ElementJacksonTest extends AbstractNodeTest {
         Style s = e.getStyle();
         s.set("foo", "bar");
         s.remove("foo");
-        Assertions.assertEquals(null, s.get("foo"));
+        assertEquals(null, s.get("foo"));
     }
 
     @Test
     public void emptyStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
-        Assertions.assertFalse(e.hasAttribute("style"));
-        Assertions.assertNull(e.getAttribute("style"));
+        assertFalse(e.hasAttribute("style"));
+        assertNull(e.getAttribute("style"));
     }
 
     @Test
@@ -1130,9 +1127,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.setBorder("1px solid black");
-        Assertions.assertTrue(e.hasAttribute("style"));
-        Assertions.assertEquals("border:1px solid black",
-                e.getAttribute("style"));
+        assertTrue(e.hasAttribute("style"));
+        assertEquals("border:1px solid black", e.getAttribute("style"));
     }
 
     @Test
@@ -1141,7 +1137,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Style s = e.getStyle();
         s.set("border", "1px solid black");
         s.setMargin("1em");
-        Assertions.assertTrue(e.hasAttribute("style"));
+        assertTrue(e.hasAttribute("style"));
         assertEqualsOne(
                 new String[] { "border:1px solid black;margin:1em",
                         "margin:1em;border:1px solid black" },
@@ -1153,7 +1149,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         String style = "width:12em";
         e.setAttribute("style", style);
-        Assertions.assertEquals(style, e.getAttribute("style"));
+        assertEquals(style, e.getAttribute("style"));
 
     }
 
@@ -1162,7 +1158,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", "width:12em");
         e.setAttribute("style", "height:12em");
-        Assertions.assertEquals("height:12em", e.getAttribute("style"));
+        assertEquals("height:12em", e.getAttribute("style"));
 
     }
 
@@ -1171,8 +1167,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
-        Assertions.assertEquals(style, e.getAttribute("style"));
-        Assertions.assertEquals("2em", e.getStyle().get("height"));
+        assertEquals(style, e.getAttribute("style"));
+        assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1190,16 +1186,16 @@ class ElementJacksonTest extends AbstractNodeTest {
                 "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
         var style = testStyleAttribute(
                 "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
-        Assertions.assertEquals(
+        assertEquals(
                 "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
                 style.get("background-image"));
         testStyleAttribute(
                 "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
         style = testStyleAttribute(
                 "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
-        Assertions.assertEquals("var(--widthB)", style.get("width"));
-        Assertions.assertEquals("var(--mainColor)", style.get("color"));
-        Assertions.assertEquals(
+        assertEquals("var(--widthB)", style.get("width"));
+        assertEquals("var(--mainColor)", style.get("color"));
+        assertEquals(
                 "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
                 style.get("background-image"));
     }
@@ -1207,7 +1203,7 @@ class ElementJacksonTest extends AbstractNodeTest {
     private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
-        Assertions.assertEquals(style, e.getAttribute("style"));
+        assertEquals(style, e.getAttribute("style"));
         return e.getStyle();
     }
 
@@ -1232,8 +1228,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         String style = "-moz-user-input:inherit";
         e.setAttribute("style", style);
-        Assertions.assertEquals("inherit", e.getStyle().get("mozUserInput"));
-        Assertions.assertEquals(style, e.getAttribute("style"));
+        assertEquals("inherit", e.getStyle().get("mozUserInput"));
+        assertEquals(style, e.getAttribute("style"));
     }
 
     @Test
@@ -1241,8 +1237,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         String style = "display:-moz-box";
         e.setAttribute("style", style);
-        Assertions.assertEquals("-moz-box", e.getStyle().get("display"));
-        Assertions.assertEquals(style, e.getAttribute("style"));
+        assertEquals("-moz-box", e.getStyle().get("display"));
+        assertEquals(style, e.getAttribute("style"));
 
     }
 
@@ -1251,7 +1247,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element e = ElementFactory.createDiv();
         String style = "width:12em";
         e.setAttribute("style", style + ";");
-        Assertions.assertEquals(style, e.getAttribute("style"));
+        assertEquals(style, e.getAttribute("style"));
     }
 
     private void assertEqualsOne(String[] expected, String actual) {
@@ -1262,8 +1258,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         }
         String expectedString = Arrays.stream(expected)
                 .collect(Collectors.joining("> or <"));
-        Assertions.fail(
-                "expected: <" + expectedString + "> but was <" + actual + ">");
+        fail("expected: <" + expectedString + "> but was <" + actual + ">");
 
     }
 
@@ -1295,8 +1290,8 @@ class ElementJacksonTest extends AbstractNodeTest {
     public void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
         e.getStyle().setColor("red   ");
-        Assertions.assertEquals("color:red", e.getAttribute("style"));
-        Assertions.assertEquals("red", e.getStyle().get("color"));
+        assertEquals("color:red", e.getAttribute("style"));
+        assertEquals("red", e.getStyle().get("color"));
     }
 
     @Test
@@ -1308,14 +1303,14 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.getStyle().remove("background");
 
-        Assertions.assertEquals("z-index:12", element.getAttribute("style"));
+        assertEquals("z-index:12", element.getAttribute("style"));
 
         element.getStyle().setZIndex(null);
 
-        Assertions.assertNull(element.getAttribute("style"));
-        Assertions.assertFalse(element.hasAttribute("style"));
+        assertNull(element.getAttribute("style"));
+        assertFalse(element.hasAttribute("style"));
 
-        Assertions.assertEquals(0, element.getStyle().getNames().count());
+        assertEquals(0, element.getStyle().getNames().count());
     }
 
     @Test
@@ -1328,7 +1323,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.removeAttribute("style");
 
-        Assertions.assertEquals(0, style.getNames().count());
+        assertEquals(0, style.getNames().count());
     }
 
     @Test
@@ -1337,7 +1332,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         String validStyle = "background: url('foo;bar')";
         Style style = element.getStyle();
         style.setBackground(validStyle);
-        Assertions.assertEquals(validStyle, style.get("background"));
+        assertEquals(validStyle, style.get("background"));
     }
 
     @Test
@@ -1346,7 +1341,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         Style style = element.getStyle();
         style.set("border-color", "blue");
-        Assertions.assertEquals("blue", style.get("border-color"));
+        assertEquals("blue", style.get("border-color"));
     }
 
     @Test
@@ -1356,8 +1351,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Style style = element.getStyle();
         style.set("borderColor", "blue");
         style.set("border-foo", "bar");
-        Assertions.assertEquals("blue", style.get("border-color"));
-        Assertions.assertEquals("bar", style.get("border-foo"));
+        assertEquals("blue", style.get("border-color"));
+        assertEquals("bar", style.get("border-foo"));
     }
 
     @Test
@@ -1367,8 +1362,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         Style style = element.getStyle();
         style.set("borderColor", "blue");
         style.set("border-foo", "bar");
-        Assertions.assertTrue(style.has("border-color"));
-        Assertions.assertTrue(style.has("border-foo"));
+        assertTrue(style.has("border-color"));
+        assertTrue(style.has("border-foo"));
     }
 
     @Test
@@ -1381,8 +1376,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         style.remove("border-color");
         style.remove("border-foo");
 
-        Assertions.assertFalse(style.has("border-color"));
-        Assertions.assertFalse(style.has("border-foo"));
+        assertFalse(style.has("border-color"));
+        assertFalse(style.has("border-foo"));
     }
 
     @Test
@@ -1394,9 +1389,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         style.set("border-foo", "bar");
 
         List<String> styles = style.getNames().collect(Collectors.toList());
-        Assertions.assertEquals(2, styles.size());
-        Assertions.assertTrue(styles.contains("border-color"));
-        Assertions.assertTrue(styles.contains("border-foo"));
+        assertEquals(2, styles.size());
+        assertTrue(styles.contains("border-color"));
+        assertTrue(styles.contains("border-foo"));
     }
 
     @Test
@@ -1407,7 +1402,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         style.set("borderColor", "blue");
         style.set("borderColor", null);
         List<String> styles = style.getNames().collect(Collectors.toList());
-        Assertions.assertFalse(styles.contains("borderColor"));
+        assertFalse(styles.contains("borderColor"));
     }
 
     @Test
@@ -1430,10 +1425,9 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         Style style = element.getStyle();
         style.set(setUsingStyleApi, "foo");
-        Assertions.assertEquals("foo", style.get(setUsingStyleApi));
-        Assertions.assertEquals(sentToClient,
-                map.getPropertyNames().toArray()[0]);
-        Assertions.assertEquals("foo", map.getProperty(sentToClient));
+        assertEquals("foo", style.get(setUsingStyleApi));
+        assertEquals(sentToClient, map.getPropertyNames().toArray()[0]);
+        assertEquals("foo", map.getProperty(sentToClient));
 
     }
 
@@ -1442,7 +1436,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         Style style = element.getStyle();
         style.set("--some-variable", "foo");
-        Assertions.assertEquals("foo", style.get("--some-variable"));
+        assertEquals("foo", style.get("--some-variable"));
     }
 
     @Test
@@ -1451,7 +1445,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         Style style = element.getStyle();
         style.setColor("var(--some-var)");
-        Assertions.assertEquals("var(--some-var)", style.get("color"));
+        assertEquals("var(--some-var)", style.get("color"));
     }
 
     // TODO: enable when DomEvent uses jackson
@@ -1467,7 +1461,7 @@ class ElementJacksonTest extends AbstractNodeTest {
     // });
     // }
     // fireEvent(element, "click");
-    // Assertions.assertArrayEquals(new Object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    // assertArrayEquals(new Object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
     // },
     // eventOrder.toArray());
     // }
@@ -1491,7 +1485,7 @@ class ElementJacksonTest extends AbstractNodeTest {
     //
     // fireEvent(element, "click");
     //
-    // Assertions.assertEquals(2, invocations.get());
+    // assertEquals(2, invocations.get());
     // }
 
     @Test
@@ -1515,7 +1509,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
     @Override
     protected void checkIsNotChild(Node<?> parent, Element child) {
-        Assertions.assertNotEquals(child.getParent(), parent);
+        assertNotEquals(child.getParent(), parent);
 
         super.checkIsNotChild(parent, child);
     }
@@ -1529,9 +1523,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.appendChild(ElementFactory.createStrong("strong contents"));
         element.appendChild(Element.createText("Another text node"));
 
-        Assertions.assertEquals("fooAnother text node", element.getText());
-        Assertions.assertEquals(
-                "foospan contentsstrong contentsAnother text node",
+        assertEquals("fooAnother text node", element.getText());
+        assertEquals("foospan contentsstrong contentsAnother text node",
                 element.getTextRecursively());
     }
 
@@ -1543,9 +1536,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
-        Assertions.assertTrue(element.getAttribute("foo").endsWith(resName));
+        assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
     @Test
@@ -1558,9 +1551,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
-        Assertions.assertTrue(element.getAttribute("foo").endsWith(resName));
+        assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
     @Test
@@ -1571,15 +1564,15 @@ class ElementJacksonTest extends AbstractNodeTest {
         StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
         resName = "resource1";
         resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
-        Assertions.assertTrue(element.getAttribute("foo").endsWith(resName));
+        assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
     @Test
@@ -1614,9 +1607,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         StreamResource resource = createEmptyResource(resName);
         ui.getElement().setAttribute("foo", resource);
 
-        Assertions.assertTrue(ui.getElement().hasAttribute("foo"));
-        Assertions.assertTrue(
-                ui.getElement().getAttribute("foo").endsWith(resName));
+        assertTrue(ui.getElement().hasAttribute("foo"));
+        assertTrue(ui.getElement().getAttribute("foo").endsWith(resName));
     }
 
     @Test
@@ -1630,17 +1622,16 @@ class ElementJacksonTest extends AbstractNodeTest {
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
 
         String resName = "resource2";
         ui.getElement().setAttribute("foo", createEmptyResource(resName));
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertFalse(res.isPresent());
+        assertFalse(res.isPresent());
 
-        Assertions.assertTrue(ui.getElement().hasAttribute("foo"));
-        Assertions.assertTrue(
-                ui.getElement().getAttribute("foo").endsWith(resName));
+        assertTrue(ui.getElement().hasAttribute("foo"));
+        assertTrue(ui.getElement().getAttribute("foo").endsWith(resName));
     }
 
     @Test
@@ -1654,7 +1645,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
         res = null;
 
         WeakReference<StreamResource> ref = new WeakReference<>(resource);
@@ -1666,10 +1657,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
 
-        Assertions.assertFalse(res.isPresent());
-        Assertions.assertTrue(ui.getElement().hasAttribute("foo"));
-        Assertions
-                .assertTrue(ui.getElement().getAttribute("foo").equals("bar"));
+        assertFalse(res.isPresent());
+        assertTrue(ui.getElement().hasAttribute("foo"));
+        assertTrue(ui.getElement().getAttribute("foo").equals("bar"));
     }
 
     @Test
@@ -1683,7 +1673,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         String uri = ui.getElement().getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
         res = null;
 
         WeakReference<StreamResource> ref = new WeakReference<>(resource);
@@ -1694,9 +1684,9 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertFalse(res.isPresent());
-        Assertions.assertFalse(ui.getElement().hasAttribute("foo"));
-        Assertions.assertNull(ui.getElement().getAttribute("foo"));
+        assertFalse(res.isPresent());
+        assertFalse(ui.getElement().hasAttribute("foo"));
+        assertNull(ui.getElement().getAttribute("foo"));
     }
 
     @Test
@@ -1711,12 +1701,12 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         ui.getElement().appendChild(element);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
     }
 
     @Test
@@ -1737,13 +1727,13 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         ui.getElement().appendChild(element);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
-        Assertions.assertTrue(uri.endsWith(resName));
+        assertTrue(res.isPresent());
+        assertTrue(uri.endsWith(resName));
 
         // allow GC to collect element and all its (detach) listeners
         element = null;
@@ -1770,8 +1760,8 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         ui.getElement().appendChild(element);
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
-        Assertions.assertEquals("bar", element.getAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
+        assertEquals("bar", element.getAttribute("foo"));
     }
 
     @Test
@@ -1793,9 +1783,9 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         TestUtil.isGarbageCollected(ref);
 
-        Assertions.assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasAttribute("foo"));
 
-        Assertions.assertNull(element.getAttribute("foo"));
+        assertNull(element.getAttribute("foo"));
     }
 
     @Test
@@ -1816,17 +1806,17 @@ class ElementJacksonTest extends AbstractNodeTest {
         String resName = "resource2";
         element.setAttribute("foo", createEmptyResource(resName));
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
         TestUtil.isGarbageCollected(ref);
 
-        Assertions.assertNull(ref.get());
+        assertNull(ref.get());
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, new URI(uri));
-        Assertions.assertTrue(res.isPresent());
-        Assertions.assertTrue(uri.endsWith(resName));
+        assertTrue(res.isPresent());
+        assertTrue(uri.endsWith(resName));
     }
 
     @Test
@@ -1848,11 +1838,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         TestUtil.isGarbageCollected(ref);
 
-        Assertions.assertNull(ref.get());
+        assertNull(ref.get());
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
 
-        Assertions.assertEquals("bar", element.getAttribute("foo"));
+        assertEquals("bar", element.getAttribute("foo"));
     }
 
     @Test
@@ -1874,11 +1864,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         TestUtil.isGarbageCollected(ref);
 
-        Assertions.assertNull(ref.get());
+        assertNull(ref.get());
 
-        Assertions.assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasAttribute("foo"));
 
-        Assertions.assertNull(element.getAttribute("foo"));
+        assertNull(element.getAttribute("foo"));
     }
 
     @Test
@@ -1900,21 +1890,21 @@ class ElementJacksonTest extends AbstractNodeTest {
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertFalse(res.isPresent());
+        assertFalse(res.isPresent());
 
-        Assertions.assertTrue(element.hasAttribute("foo"));
-        Assertions.assertNotNull(element.getAttribute("foo"));
-        Assertions.assertTrue(element.getAttribute("foo").endsWith(resName));
+        assertTrue(element.hasAttribute("foo"));
+        assertNotNull(element.getAttribute("foo"));
+        assertTrue(element.getAttribute("foo").endsWith(resName));
 
         element.setAttribute("foo", "bar");
-        Assertions.assertTrue(element.hasAttribute("foo"));
-        Assertions.assertEquals("bar", element.getAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
+        assertEquals("bar", element.getAttribute("foo"));
 
         TestUtil.isGarbageCollected(ref);
     }
@@ -1935,19 +1925,19 @@ class ElementJacksonTest extends AbstractNodeTest {
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertFalse(res.isPresent());
+        assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
     }
 
     @Test
@@ -1967,19 +1957,19 @@ class ElementJacksonTest extends AbstractNodeTest {
         URI uri = new URI(attribute);
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
 
         ui.getElement().removeAllChildren();
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertFalse(res.isPresent());
+        assertFalse(res.isPresent());
 
         ui.getElement().appendChild(element);
 
         res = ui.getSession().getResourceRegistry()
                 .getResource(StreamResource.class, uri);
-        Assertions.assertTrue(res.isPresent());
+        assertTrue(res.isPresent());
     }
 
     @Test
@@ -2004,25 +1994,25 @@ class ElementJacksonTest extends AbstractNodeTest {
             childTriggered.addAndGet(1);
         });
         child.addAttachListener(event -> {
-            Assertions.assertEquals(child, event.getSource());
+            assertEquals(child, event.getSource());
         });
         grandChild.addAttachListener(event -> {
             grandChildTriggered.addAndGet(1);
         });
         grandChild.addAttachListener(event -> {
-            Assertions.assertEquals(grandChild, event.getSource());
+            assertEquals(grandChild, event.getSource());
         });
 
         parent.appendChild(child);
         child.appendChild(grandChild);
 
-        Assertions.assertEquals(childTriggered.get(), 0);
-        Assertions.assertEquals(grandChildTriggered.get(), 0);
+        assertEquals(childTriggered.get(), 0);
+        assertEquals(grandChildTriggered.get(), 0);
 
         body.appendChild(parent);
 
-        Assertions.assertEquals(childTriggered.get(), 1);
-        Assertions.assertEquals(grandChildTriggered.get(), 1);
+        assertEquals(childTriggered.get(), 1);
+        assertEquals(grandChildTriggered.get(), 1);
 
         body.removeAllChildren();
         parent.removeAllChildren();
@@ -2030,16 +2020,16 @@ class ElementJacksonTest extends AbstractNodeTest {
         body.appendChild(parent);
         parent.appendChild(child);
 
-        Assertions.assertEquals(childTriggered.get(), 2);
-        Assertions.assertEquals(grandChildTriggered.get(), 2);
+        assertEquals(childTriggered.get(), 2);
+        assertEquals(grandChildTriggered.get(), 2);
 
         registrationHandle.remove();
 
         body.removeAllChildren();
         body.appendChild(child);
 
-        Assertions.assertEquals(childTriggered.get(), 2);
-        Assertions.assertEquals(grandChildTriggered.get(), 3);
+        assertEquals(childTriggered.get(), 2);
+        assertEquals(grandChildTriggered.get(), 3);
     }
 
     @Test
@@ -2053,34 +2043,34 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         Registration registrationHandle = child.addDetachListener(event -> {
             triggered.addAndGet(1);
-            Assertions.assertEquals(child, event.getSource());
+            assertEquals(child, event.getSource());
         });
 
         grandChild.addDetachListener(event -> {
             triggered.addAndGet(1);
-            Assertions.assertEquals(grandChild, event.getSource());
+            assertEquals(grandChild, event.getSource());
         });
 
         child.appendChild(grandChild);
         parent.appendChild(child);
         body.appendChild(parent);
 
-        Assertions.assertEquals(triggered.get(), 0);
+        assertEquals(triggered.get(), 0);
 
         body.removeAllChildren();
-        Assertions.assertEquals(triggered.get(), 2);
+        assertEquals(triggered.get(), 2);
 
         body.appendChild(parent);
         body.removeAllChildren();
 
-        Assertions.assertEquals(triggered.get(), 4);
+        assertEquals(triggered.get(), 4);
 
         body.appendChild(parent);
         registrationHandle.remove();
 
         body.removeAllChildren();
 
-        Assertions.assertEquals(triggered.get(), 5);
+        assertEquals(triggered.get(), 5);
     }
 
     @Test
@@ -2095,17 +2085,17 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         child.addAttachListener(event -> {
             childAttached.set(true);
-            Assertions.assertFalse(parentAttached.get());
+            assertFalse(parentAttached.get());
         });
         parent.addAttachListener(event -> {
             parentAttached.set(true);
-            Assertions.assertTrue(childAttached.get());
+            assertTrue(childAttached.get());
         });
 
         body.appendChild(parent);
 
-        Assertions.assertTrue(parentAttached.get());
-        Assertions.assertTrue(childAttached.get());
+        assertTrue(parentAttached.get());
+        assertTrue(childAttached.get());
     }
 
     @Test
@@ -2121,17 +2111,17 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         child.addDetachListener(event -> {
             childDetached.set(true);
-            Assertions.assertFalse(parentDetached.get());
+            assertFalse(parentDetached.get());
         });
         parent.addDetachListener(event -> {
             parentDetached.set(true);
-            Assertions.assertTrue(childDetached.get());
+            assertTrue(childDetached.get());
         });
 
         body.removeAllChildren();
 
-        Assertions.assertTrue(parentDetached.get());
-        Assertions.assertTrue(childDetached.get());
+        assertTrue(parentDetached.get());
+        assertTrue(childDetached.get());
     }
 
     @Test
@@ -2148,17 +2138,17 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         child.addAttachListener(event -> {
             attached.set(true);
-            Assertions.assertTrue(detached.get());
+            assertTrue(detached.get());
         });
         child.addDetachListener(event -> {
             detached.set(true);
-            Assertions.assertFalse(attached.get());
+            assertFalse(attached.get());
         });
 
         body.appendChild(child);
 
-        Assertions.assertTrue(attached.get());
-        Assertions.assertTrue(detached.get());
+        assertTrue(attached.get());
+        assertTrue(detached.get());
     }
 
     @Test
@@ -2169,14 +2159,14 @@ class ElementJacksonTest extends AbstractNodeTest {
         AtomicInteger attached = new AtomicInteger();
 
         child.addAttachListener(event -> {
-            Assertions.assertNotNull(event.getSource().getNode().getOwner());
-            Assertions.assertNotEquals(NullOwner.get(),
+            assertNotNull(event.getSource().getNode().getOwner());
+            assertNotEquals(NullOwner.get(),
                     event.getSource().getNode().getOwner());
         });
         child.addAttachListener(event -> attached.incrementAndGet());
 
         body.appendChild(child);
-        Assertions.assertEquals(1, attached.get());
+        assertEquals(1, attached.get());
     }
 
     @Test
@@ -2188,15 +2178,15 @@ class ElementJacksonTest extends AbstractNodeTest {
         AtomicInteger detached = new AtomicInteger();
 
         child.addDetachListener(event -> {
-            Assertions.assertNotNull(event.getSource().getNode().getOwner());
-            Assertions.assertNotEquals(NullOwner.get(),
+            assertNotNull(event.getSource().getNode().getOwner());
+            assertNotEquals(NullOwner.get(),
                     event.getSource().getNode().getOwner());
         });
         child.addDetachListener(event -> detached.incrementAndGet());
 
         body.removeAllChildren();
 
-        Assertions.assertEquals(1, detached.get());
+        assertEquals(1, detached.get());
     }
 
     @Test
@@ -2209,7 +2199,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         body = new UI().getElement();
         body.appendChild(child);
-        Assertions.assertEquals(body, child.getParent());
+        assertEquals(body, child.getParent());
     }
 
     @Test
@@ -2222,7 +2212,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         body.removeAllChildren();
 
-        Assertions.assertEquals(null, child.getParent());
+        assertEquals(null, child.getParent());
     }
 
     @Test
@@ -2233,12 +2223,12 @@ class ElementJacksonTest extends AbstractNodeTest {
         body.getNode().getFeature(VirtualChildrenList.class)
                 .append(child.getNode(), "");
 
-        Assertions.assertTrue(child.isVirtualChild());
+        assertTrue(child.isVirtualChild());
 
         child.removeFromTree();
 
-        Assertions.assertFalse(child.isVirtualChild());
-        Assertions.assertEquals(0,
+        assertFalse(child.isVirtualChild());
+        assertEquals(0,
                 body.getNode().getFeature(VirtualChildrenList.class).size());
     }
 
@@ -2269,27 +2259,26 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         parent.appendChild(child);
 
-        child.addDetachListener(
-                e -> Assertions.fail("Child should not be detached"));
+        child.addDetachListener(e -> fail("Child should not be detached"));
         parent.insertChild(0, child);
     }
 
     @Test
     public void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
         Element e = Element.createText(null);
-        Assertions.assertEquals("", e.getText());
+        assertEquals("", e.getText());
     }
 
     @Test
     public void textNodeOuterHtml() {
         Element e = Element.createText("foobar");
-        Assertions.assertEquals("foobar", e.getOuterHTML());
+        assertEquals("foobar", e.getOuterHTML());
     }
 
     @Test
     public void singleElementOuterHtml() {
         Element e = ElementFactory.createAnchor();
-        Assertions.assertEquals("<a></a>", e.getOuterHTML());
+        assertEquals("<a></a>", e.getOuterHTML());
     }
 
     @Test
@@ -2301,9 +2290,8 @@ class ElementJacksonTest extends AbstractNodeTest {
         div.appendChild(span);
         span.appendChild(button);
 
-        Assertions.assertEquals("<div>\n"
-                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
-                div.getOuterHTML());
+        assertEquals("<div>\n" + " <span>\n  <button>hello</button>\n </span>\n"
+                + "</div>", div.getOuterHTML());
     }
 
     @Test
@@ -2314,7 +2302,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         div.getClassList().add("cls");
         div.setAttribute("pin", "");
 
-        Assertions.assertEquals(
+        assertEquals(
                 "<div pin foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
                 div.getOuterHTML());
     }
@@ -2324,7 +2312,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         Element div = ElementFactory.createDiv();
         div.setAttribute("foo", "bar\"'&quot;");
 
-        Assertions.assertEquals("<div foo=\"bar&quot;'&amp;quot;\"></div>",
+        assertEquals("<div foo=\"bar&quot;'&amp;quot;\"></div>",
                 div.getOuterHTML());
     }
 
@@ -2332,7 +2320,7 @@ class ElementJacksonTest extends AbstractNodeTest {
     public void htmlComponentOuterHtml() {
         Html html = new Html(
                 "<div style='background:green'><span><button>hello</button></span></div>");
-        Assertions.assertEquals("<div style=\"background:green\">\n"
+        assertEquals("<div style=\"background:green\">\n"
                 + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
                 html.getElement().getOuterHTML());
     }
@@ -2370,7 +2358,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         List<PendingJavaScriptInvocation> invocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
-        Assertions.assertTrue(invocations.isEmpty());
+        assertTrue(invocations.isEmpty());
     }
 
     @Test
@@ -2454,19 +2442,19 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.appendChild(button, emphasis);
 
         ShadowRoot shadow = element.attachShadow();
-        Assertions.assertNotNull(shadow);
-        Assertions.assertEquals(element, shadow.getHost());
-        Assertions.assertEquals(shadow, element.getShadowRoot().get());
-        Assertions.assertEquals(2, element.getChildCount());
-        Assertions.assertEquals(2, element.getChildren().count());
-        Assertions.assertEquals(button, element.getChild(0));
-        Assertions.assertEquals(emphasis, element.getChild(1));
+        assertNotNull(shadow);
+        assertEquals(element, shadow.getHost());
+        assertEquals(shadow, element.getShadowRoot().get());
+        assertEquals(2, element.getChildCount());
+        assertEquals(2, element.getChildren().count());
+        assertEquals(button, element.getChild(0));
+        assertEquals(emphasis, element.getChild(1));
     }
 
     @Test
     public void getShadowRoot_shadowRootIsEmpty() {
         Element element = ElementFactory.createDiv();
-        Assertions.assertFalse(element.getShadowRoot().isPresent());
+        assertFalse(element.getShadowRoot().isPresent());
     }
 
     @Test
@@ -2476,7 +2464,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.appendChild(child);
 
-        Assertions.assertEquals(child.getParent(), child.getParentNode());
+        assertEquals(child.getParent(), child.getParentNode());
     }
 
     @Test
@@ -2486,8 +2474,8 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.appendChild(child);
 
-        Assertions.assertNull(child.getParent());
-        Assertions.assertEquals(element, child.getParentNode());
+        assertNull(child.getParent());
+        assertEquals(element, child.getParentNode());
     }
 
     @Test
@@ -2497,17 +2485,17 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         parent.appendChild(child);
 
-        Assertions.assertTrue(parent.isEnabled(), "Parent should be enabled");
-        Assertions.assertTrue(child.isEnabled(), "Child should be enabled");
+        assertTrue(parent.isEnabled(), "Parent should be enabled");
+        assertTrue(child.isEnabled(), "Child should be enabled");
 
         parent.setEnabled(false);
 
-        Assertions.assertFalse(parent.isEnabled(), "Parent should be disabled");
-        Assertions.assertFalse(child.isEnabled(), "Child should be disabled");
+        assertFalse(parent.isEnabled(), "Parent should be disabled");
+        assertFalse(child.isEnabled(), "Child should be disabled");
 
         child.removeFromParent();
 
-        Assertions.assertTrue(child.isEnabled(), "Child should be enabled");
+        assertTrue(child.isEnabled(), "Child should be enabled");
     }
 
     @Test
@@ -2535,7 +2523,7 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.getComponent();
 
-        Assertions.assertFalse(element.getNode()
+        assertFalse(element.getNode()
                 .getFeatureIfInitialized(ComponentMapping.class).isPresent(),
                 "getComponent() shouldn't initialize a component mapping feature");
     }
@@ -2549,7 +2537,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.removeProperty("foo");
         element.getPropertyNames().collect(Collectors.toList());
 
-        Assertions.assertFalse(element.getNode()
+        assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementPropertyMap.class).isPresent(),
                 "reading a property value shouldn't initialize a property map feature");
     }
@@ -2563,7 +2551,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         element.removeAttribute("foo");
         element.getAttributeNames().collect(Collectors.toList());
 
-        Assertions.assertFalse(element.getNode()
+        assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementAttributeMap.class).isPresent(),
                 "reading an attribute value shouldn't initialize an attribute map feature");
     }
@@ -2579,10 +2567,10 @@ class ElementJacksonTest extends AbstractNodeTest {
         parent.appendVirtualChild(virtualChild);
         virtualChild.appendChild(grandVirtualChild);
 
-        Assertions.assertFalse(parent.isVirtualChild());
-        Assertions.assertFalse(child.isVirtualChild());
-        Assertions.assertTrue(virtualChild.isVirtualChild());
-        Assertions.assertFalse(grandVirtualChild.isVirtualChild());
+        assertFalse(parent.isVirtualChild());
+        assertFalse(child.isVirtualChild());
+        assertTrue(virtualChild.isVirtualChild());
+        assertFalse(grandVirtualChild.isVirtualChild());
     }
 
     @Test
@@ -2593,11 +2581,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.addPropertyChangeListener("property", "event", event -> {
             if (listenerValue.getAndSet(event.getValue()) != null) {
-                Assertions.fail("Unexpected event");
+                fail("Unexpected event");
             }
         });
 
-        Assertions.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+        assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 element.getNode().getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode("property"),
                 "The property should be synchronized");
@@ -2605,14 +2593,14 @@ class ElementJacksonTest extends AbstractNodeTest {
         ElementListenerMap listenerMap = element.getNode()
                 .getFeature(ElementListenerMap.class);
 
-        Assertions.assertEquals(
+        assertEquals(
                 Collections.singleton(
                         JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "property"),
                 ElementListenersTest.getExpressions(listenerMap, "event"),
                 "A DOM event synchronization should be defined");
 
         element.setProperty("property", "value");
-        Assertions.assertEquals(listenerValue.get(), "value",
+        assertEquals(listenerValue.get(), "value",
                 "Listener shold be registered");
     }
 
@@ -2622,11 +2610,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         DomListenerRegistration registration = element
                 .addPropertyChangeListener("property", "event", event -> {
-                    Assertions.fail("Unexpected event");
+                    fail("Unexpected event");
                 });
         registration.remove();
 
-        Assertions.assertNull(
+        assertNull(
                 element.getNode().getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode("property"),
                 "The property should not be synchronized");
@@ -2634,7 +2622,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         ElementListenerMap listenerMap = element.getNode()
                 .getFeature(ElementListenerMap.class);
 
-        Assertions.assertEquals(Collections.emptySet(),
+        assertEquals(Collections.emptySet(),
                 ElementListenersTest.getExpressions(listenerMap, "event"),
                 "There should be no DOM listener");
 
@@ -2652,11 +2640,11 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         parent.removeVirtualChild(child2, child1);
 
-        Assertions.assertNull(child1.getParent());
-        Assertions.assertFalse(child1.isVirtualChild());
+        assertNull(child1.getParent());
+        assertFalse(child1.isVirtualChild());
 
-        Assertions.assertNull(child2.getParent());
-        Assertions.assertFalse(child2.isVirtualChild());
+        assertNull(child2.getParent());
+        assertFalse(child2.isVirtualChild());
     }
 
     @Test
@@ -2693,12 +2681,10 @@ class ElementJacksonTest extends AbstractNodeTest {
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
-                Assertions.assertNull(oldExpression,
-                        "There should be no old expression");
+                assertNull(oldExpression, "There should be no old expression");
 
                 Object[] oldParams = invokedParams.getAndSet(parameters);
-                Assertions.assertNull(oldParams,
-                        "There should be no old params");
+                assertNull(oldParams, "There should be no old params");
 
                 return null;
             }
@@ -2706,9 +2692,9 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.executeJs("foo", 1, true);
 
-        Assertions.assertEquals("foo", invokedExpression.get());
-        Assertions.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
-        Assertions.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+        assertEquals("foo", invokedExpression.get());
+        assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Test
@@ -2721,12 +2707,11 @@ class ElementJacksonTest extends AbstractNodeTest {
             public PendingJavaScriptResult callJsFunction(String functionName,
                     Object... arguments) {
                 String oldExpression = invokedFuction.getAndSet(functionName);
-                Assertions.assertNull(oldExpression,
+                assertNull(oldExpression,
                         "There should be no old function name");
 
                 Object[] oldParams = invokedParams.getAndSet(arguments);
-                Assertions.assertNull(oldParams,
-                        "There should be no old params");
+                assertNull(oldParams, "There should be no old params");
 
                 return null;
             }
@@ -2734,9 +2719,9 @@ class ElementJacksonTest extends AbstractNodeTest {
 
         element.callJsFunction("foo", 1, true);
 
-        Assertions.assertEquals("foo", invokedFuction.get());
-        Assertions.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
-        Assertions.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+        assertEquals("foo", invokedFuction.get());
+        assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Override
@@ -2746,24 +2731,23 @@ class ElementJacksonTest extends AbstractNodeTest {
 
     @Override
     protected void assertChild(Node<?> parent, int index, Element child) {
-        Assertions.assertEquals(parent, child.getParent());
-        Assertions.assertEquals(child, parent.getChild(index));
+        assertEquals(parent, child.getParent());
+        assertEquals(child, parent.getChild(index));
     }
 
     private void assertPendingJs(UI ui, String js, Object... arguments) {
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
-        Assertions.assertEquals(1, pendingJs.size());
+        assertEquals(1, pendingJs.size());
         assertEquals(expected, pendingJs.get(0).getInvocation());
 
     }
 
     private void assertEquals(JavaScriptInvocation expected,
             JavaScriptInvocation actual) {
-        Assertions.assertEquals(expected.getExpression(),
-                actual.getExpression());
-        Assertions.assertArrayEquals(expected.getParameters().toArray(),
+        assertEquals(expected.getExpression(), actual.getExpression());
+        assertArrayEquals(expected.getParameters().toArray(),
                 actual.getParameters().toArray());
 
     }

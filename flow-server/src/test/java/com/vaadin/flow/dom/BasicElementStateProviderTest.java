@@ -18,7 +18,6 @@ package com.vaadin.flow.dom;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -33,19 +32,24 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinRequest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class BasicElementStateProviderTest {
 
     @Test
     public void supportsSelfCreatedNode() {
         BasicElementStateProvider provider = BasicElementStateProvider.get();
         StateNode node = BasicElementStateProvider.createStateNode("foo");
-        Assertions.assertTrue(provider.supports(node));
+        assertTrue(provider.supports(node));
     }
 
     @Test
     public void doesNotSupportEmptyNode() {
         BasicElementStateProvider provider = BasicElementStateProvider.get();
-        Assertions.assertFalse(provider.supports(new StateNode()));
+        assertFalse(provider.supports(new StateNode()));
     }
 
     @Test
@@ -59,15 +63,14 @@ class BasicElementStateProviderTest {
             }
         };
         StateNode rootNode = ui.getInternals().getStateTree().getRootNode();
-        Assertions.assertTrue(provider.supports(rootNode));
+        assertTrue(provider.supports(rootNode));
 
     }
 
     @Test
     public void getParent_parentNodeIsNull_parentIsNull() {
         Element div = ElementFactory.createDiv();
-        Assertions.assertNull(
-                BasicElementStateProvider.get().getParent(div.getNode()));
+        assertNull(BasicElementStateProvider.get().getParent(div.getNode()));
     }
 
     @Test
@@ -75,7 +78,7 @@ class BasicElementStateProviderTest {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assertions.assertEquals(parent,
+        assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
@@ -84,14 +87,14 @@ class BasicElementStateProviderTest {
         ShadowRoot parent = ElementFactory.createDiv().attachShadow();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assertions.assertEquals(parent,
+        assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
     @Test
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicElementStateProvider.createStateNode("div");
-        Assertions.assertTrue(stateNode.isReportedFeature(ElementData.class));
+        assertTrue(stateNode.isReportedFeature(ElementData.class));
     }
 
     @Test
@@ -104,10 +107,9 @@ class BasicElementStateProviderTest {
 
         BasicElementStateProvider.get().visit(subject.getNode(), visitor);
 
-        Assertions.assertEquals(1, visitor.getVisited().size());
-        Assertions.assertEquals(subject,
-                visitor.getVisited().keySet().iterator().next());
-        Assertions.assertEquals(ElementType.REGULAR,
+        assertEquals(1, visitor.getVisited().size());
+        assertEquals(subject, visitor.getVisited().keySet().iterator().next());
+        assertEquals(ElementType.REGULAR,
                 visitor.getVisited().values().iterator().next());
     }
 
@@ -121,9 +123,9 @@ class BasicElementStateProviderTest {
 
         BasicElementStateProvider.get().visit(subject.getNode(), visitor);
 
-        Assertions.assertTrue(map.size() > 1);
+        assertTrue(map.size() > 1);
 
-        Assertions.assertEquals(map, visitor.getVisited(),
+        assertEquals(map, visitor.getVisited(),
                 "The collected descendants doesn't match expected descendatns");
     }
 
@@ -139,14 +141,11 @@ class BasicElementStateProviderTest {
     }
 
     public static void assertNoChildFeatures(Element element) {
-        Assertions.assertFalse(
-                isFeatureInitialized(element, ElementChildrenList.class),
+        assertFalse(isFeatureInitialized(element, ElementChildrenList.class),
                 "Node should not have a children list feature");
-        Assertions.assertFalse(
-                isFeatureInitialized(element, VirtualChildrenList.class),
+        assertFalse(isFeatureInitialized(element, VirtualChildrenList.class),
                 "Node should not have a virtual children list feature");
-        Assertions.assertFalse(
-                isFeatureInitialized(element, ShadowRootData.class),
+        assertFalse(isFeatureInitialized(element, ShadowRootData.class),
                 "Node should not have a shadow root feature");
     }
 
@@ -154,17 +153,15 @@ class BasicElementStateProviderTest {
     public void setVisible() {
         Element element = ElementFactory.createDiv();
 
-        Assertions.assertTrue(
-                element.getNode().getFeature(ElementData.class).isVisible());
+        assertTrue(element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), true);
 
-        Assertions.assertTrue(
-                element.getNode().getFeature(ElementData.class).isVisible());
+        assertTrue(element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), false);
 
-        Assertions.assertFalse(
+        assertFalse(
                 element.getNode().getFeature(ElementData.class).isVisible());
 
     }

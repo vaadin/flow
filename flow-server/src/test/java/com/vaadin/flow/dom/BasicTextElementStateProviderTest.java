@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BasicTextElementStateProviderTest {
 
@@ -28,6 +29,6 @@ class BasicTextElementStateProviderTest {
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
         StateNode stateNode = BasicTextElementStateProvider
                 .createStateNode("foo");
-        Assertions.assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
+        assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
     }
 }
