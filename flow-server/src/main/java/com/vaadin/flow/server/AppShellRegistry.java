@@ -42,6 +42,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.StylesheetContentHashUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
@@ -407,8 +408,8 @@ public class AppShellRegistry implements Serializable {
 
     private static void addStyleSheets(VaadinRequest request,
             Map<String, String> stylesheets, AppShellSettings settings) {
-        DeploymentConfiguration config = request.getService()
-                .getDeploymentConfiguration();
+        VaadinService service = request.getService();
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode()) {
             stylesheets.replaceAll((resolved, source) -> {
                 if (source.startsWith("/")) {
@@ -427,11 +428,21 @@ public class AppShellRegistry implements Serializable {
             });
         }
 
+        StylesheetContentHashUtil hashUtil = config.isProductionMode()
+                ? new StylesheetContentHashUtil()
+                : null;
+
         stylesheets.forEach((href, sourcePath) -> {
+            String linkHref = href;
+            if (hashUtil != null) {
+                String hash = hashUtil.getContentHash(service, sourcePath);
+                linkHref = StylesheetContentHashUtil.appendHashToUrl(href,
+                        hash);
+            }
             Map<String, String> attributes = Map.of("rel", "stylesheet",
                     "data-file-path", sourcePath, "data-id",
                     "appShell-" + sourcePath);
-            settings.addLink(Position.APPEND, href, attributes);
+            settings.addLink(Position.APPEND, linkHref, attributes);
         });
     }
 }

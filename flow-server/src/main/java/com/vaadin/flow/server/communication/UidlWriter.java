@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.StylesheetContentHashUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -245,6 +246,15 @@ public class UidlWriter implements Serializable {
             dependencyJson.put(Dependency.KEY_CONTENTS,
                     getDependencyContents(dependency.getUrl(), context));
             dependencyJson.remove(Dependency.KEY_URL);
+        } else if (dependency.getType() == Dependency.Type.STYLESHEET && context
+                .getService().getDeploymentConfiguration().isProductionMode()) {
+            VaadinService service = context.getService();
+            StylesheetContentHashUtil hashUtil = new StylesheetContentHashUtil();
+            String hash = hashUtil.getContentHash(service, dependency.getUrl());
+            if (hash != null) {
+                dependencyJson.put(Dependency.KEY_URL, StylesheetContentHashUtil
+                        .appendHashToUrl(dependency.getUrl(), hash));
+            }
         }
         return dependencyJson;
     }
