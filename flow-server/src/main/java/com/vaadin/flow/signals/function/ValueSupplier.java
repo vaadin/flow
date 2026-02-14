@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -40,5 +42,5 @@ public interface ValueSupplier<T> extends Serializable {
      *
      * @return the supplied value, may be <code>null</code>
      */
-    T supply();
+    @Nullable T supply();
 }

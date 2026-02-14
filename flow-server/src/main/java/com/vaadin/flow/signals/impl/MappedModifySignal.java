@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.impl;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.SignalModifier;
@@ -65,18 +67,18 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public C get() {
+    public @Nullable C get() {
         return getter.map(parent.get());
     }
 
     @Override
-    public C peek() {
+    public @Nullable C peek() {
         return getter.map(parent.peek());
     }
 
     @Override
-    public SignalOperation<C> set(C newChildValue) {
-        C oldChildValue = getter.map(parent.peek());
+    public SignalOperation<C> set(@Nullable C newChildValue) {
+        @Nullable C oldChildValue = getter.map(parent.peek());
         parent.modify(
                 parentValue -> modifier.modify(parentValue, newChildValue));
         return new SignalOperation<>(
@@ -84,8 +86,9 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public SignalOperation<Void> replace(C expectedValue, C newValue) {
-        C currentChildValue = getter.map(parent.peek());
+    public SignalOperation<Void> replace(@Nullable C expectedValue,
+            @Nullable C newValue) {
+        @Nullable C currentChildValue = getter.map(parent.peek());
         if (Objects.equals(expectedValue, currentChildValue)) {
             parent.modify(
                     parentValue -> modifier.modify(parentValue, newValue));
@@ -99,8 +102,8 @@ public class MappedModifySignal<P, C> implements WritableSignal<C> {
     @Override
     public CancelableOperation<C> update(SignalUpdater<C> childUpdater) {
         Objects.requireNonNull(childUpdater);
-        C currentChildValue = getter.map(parent.peek());
-        C newChildValue = childUpdater.update(currentChildValue);
+        @Nullable C currentChildValue = getter.map(parent.peek());
+        @Nullable C newChildValue = childUpdater.update(currentChildValue);
         parent.modify(
                 parentValue -> modifier.modify(parentValue, newChildValue));
 

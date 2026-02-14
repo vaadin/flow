@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.signals.Id;
@@ -88,7 +89,9 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     public SignalOperation<Double> incrementBy(double delta) {
         return submit(
                 new SignalCommand.IncrementCommand(Id.random(), id(), delta),
-                success -> nodeValue(success.onlyUpdate().newNode(),
+                success -> nodeValue(
+                        Objects.requireNonNull(
+                                success.onlyUpdate().newNode()),
                         Double.class));
     }
 
@@ -176,7 +179,12 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      * @return the computed signal, not <code>null</code>
      */
     public <C> Signal<C> mapIntValue(IntMapper<C> mapper) {
-        return map(doubleValue -> mapper.apply(doubleValue.intValue()));
+        return map(doubleValue -> {
+            if (doubleValue == null) {
+                return null;
+            }
+            return mapper.apply(doubleValue.intValue());
+        });
     }
 
     @Override

@@ -17,6 +17,8 @@ package com.vaadin.flow.signals;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.function.ValueMerger;
@@ -40,7 +42,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    SignalOperation<T> set(T value);
+    SignalOperation<T> set(@Nullable T value);
 
     /**
      * Sets the value of this signal if and only if the signal has the expected
@@ -56,7 +58,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    SignalOperation<Void> replace(T expectedValue, T newValue);
+    SignalOperation<Void> replace(@Nullable T expectedValue, @Nullable T newValue);
 
     /**
      * Updates the signal value based on the given callback. The callback

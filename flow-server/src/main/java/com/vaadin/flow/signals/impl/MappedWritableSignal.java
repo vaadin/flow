@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.impl;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.SignalUpdater;
@@ -64,17 +66,18 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public C get() {
+    public @Nullable C get() {
         return getter.map(parent.get());
     }
 
     @Override
-    public C peek() {
+    public @Nullable C peek() {
         return getter.map(parent.peek());
     }
 
+    @SuppressWarnings("NullAway") // Mapper handles @Nullable signal values
     @Override
-    public SignalOperation<C> set(C newChildValue) {
+    public SignalOperation<C> set(@Nullable C newChildValue) {
         // Using update() ensures the change is applied atomically to the
         // current parent value. If the parent value changes concurrently, the
         // new child value is applied to the updated parent. This gives the user
@@ -87,9 +90,10 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     }
 
     @Override
-    public SignalOperation<Void> replace(C expectedValue, C newValue) {
-        P originalParentValue = parent.peek();
-        C oldChildValue = getter.map(originalParentValue);
+    public SignalOperation<Void> replace(@Nullable C expectedValue,
+            @Nullable C newValue) {
+        @Nullable P originalParentValue = parent.peek();
+        @Nullable C oldChildValue = getter.map(originalParentValue);
         if (!Objects.equals(oldChildValue, expectedValue)) {
             return new SignalOperation<>(
                     new SignalOperation.Error<>("Unexpected child value"));
@@ -98,12 +102,13 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
                 merger.merge(originalParentValue, newValue));
     }
 
+    @SuppressWarnings("NullAway") // Mapper handles @Nullable signal values
     @Override
     public CancelableOperation<C> update(SignalUpdater<C> childUpdater) {
         Objects.requireNonNull(childUpdater);
         return parent.update(parentValue -> {
-            C currentChildValue = getter.map(parentValue);
-            C newChildValue = childUpdater.update(currentChildValue);
+            @Nullable C currentChildValue = getter.map(parentValue);
+            @Nullable C newChildValue = childUpdater.update(currentChildValue);
             return merger.merge(parentValue, newChildValue);
         }).map(oldParent -> getter.map(oldParent));
     }

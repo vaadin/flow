@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.signals.Id;
@@ -98,17 +99,19 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    public SignalOperation<T> set(T value) {
+    public SignalOperation<T> set(@Nullable T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
                 new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
-                success -> nodeValue(success.onlyUpdate().oldNode(),
+                success -> nodeValue(
+                        Objects.requireNonNull(
+                                success.onlyUpdate().oldNode()),
                         valueType));
     }
 
     @Override
-    protected T extractValue(Data data) {
+    protected @Nullable T extractValue(@Nullable Data data) {
         if (data == null) {
             return null;
         } else {
@@ -117,12 +120,13 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    protected Object usageChangeValue(Data data) {
+    protected @Nullable Object usageChangeValue(Data data) {
         return data.value();
     }
 
     @Override
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
@@ -152,13 +156,14 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
          * Cannot easily optimize this to directly submit a transaction command
          * since we need the previous value from the set command result
          */
-        SignalOperation<T> setOperation = Transaction.runInTransaction(() -> {
-            T value = peek();
-            verifyValue(value);
+        SignalOperation<T> setOperation = Objects.requireNonNull(
+                Transaction.runInTransaction(() -> {
+                    T value = peek();
+                    verifyValue(value);
 
-            T newValue = updater.update(value);
-            return set(newValue);
-        }).returnValue();
+                    T newValue = updater.update(value);
+                    return set(newValue);
+                }).returnValue());
 
         setOperation.result().whenComplete((result, error) -> {
             if (error != null) {
@@ -183,7 +188,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
      *            the expected value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyValue(T expectedValue) {
+    public SignalOperation<Void> verifyValue(@Nullable T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue)));
     }

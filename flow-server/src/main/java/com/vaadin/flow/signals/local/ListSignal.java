@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.local;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -65,7 +66,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertLast(T value) {
         lock();
         try {
-            return insertAtInternal(getSignalValue().size(), value);
+            return insertAtInternal(
+                    Objects.requireNonNull(getSignalValue()).size(), value);
         } finally {
             unlock();
         }
@@ -92,7 +94,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertAt(int index, T value) {
         lock();
         try {
-            List<ValueSignal<T>> entries = getSignalValue();
+            List<ValueSignal<T>> entries =
+                    Objects.requireNonNull(getSignalValue());
             if (index < 0 || index > entries.size()) {
                 throw new IndexOutOfBoundsException(
                         "Index: " + index + ", Size: " + entries.size());
@@ -106,7 +109,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     private ValueSignal<T> insertAtInternal(int index, T value) {
         assertLockHeld();
         ValueSignal<T> entry = new ValueSignal<>(value);
-        List<ValueSignal<T>> newEntries = new ArrayList<>(getSignalValue());
+        List<ValueSignal<T>> newEntries = new ArrayList<>(
+                Objects.requireNonNull(getSignalValue()));
         newEntries.add(index, entry);
         setSignalValue(Collections.unmodifiableList(newEntries));
         return entry;
@@ -122,7 +126,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void remove(ValueSignal<T> entry) {
         lock();
         try {
-            List<ValueSignal<T>> entries = getSignalValue();
+            List<ValueSignal<T>> entries =
+                    Objects.requireNonNull(getSignalValue());
             List<ValueSignal<T>> newEntries = entries.stream()
                     .filter(e -> e != entry).toList();
             if (newEntries.size() < entries.size()) {
@@ -139,7 +144,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void clear() {
         lock();
         try {
-            if (!getSignalValue().isEmpty()) {
+            if (!Objects.requireNonNull(getSignalValue()).isEmpty()) {
                 setSignalValue(List.of());
             }
         } finally {

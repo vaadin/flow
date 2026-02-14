@@ -18,6 +18,8 @@ package com.vaadin.flow.signals;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
@@ -68,7 +70,7 @@ public interface Signal<T> extends Serializable {
      *
      * @return the signal value
      */
-    T get();
+    @Nullable T get();
 
     /**
      * Reads the value without setting up any dependencies. This method returns
@@ -77,7 +79,7 @@ public interface Signal<T> extends Serializable {
      *
      * @return the signal value
      */
-    default T peek() {
+    default @Nullable T peek() {
         /*
          * Subclasses are encouraged to use an approach with less overhead than
          * what this very generic implementation can do.
@@ -227,7 +229,7 @@ public interface Signal<T> extends Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T runWithoutTransaction(ValueSupplier<T> task) {
+    static <T> @Nullable T runWithoutTransaction(ValueSupplier<T> task) {
         return Transaction.runWithoutTransaction(task);
     }
 
@@ -254,7 +256,7 @@ public interface Signal<T> extends Serializable {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T untracked(ValueSupplier<T> task) {
+    static <T> @Nullable T untracked(ValueSupplier<T> task) {
         /*
          * Note that there's no Runnable overload since the whole point of
          * untracked is to read values.

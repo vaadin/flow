@@ -18,6 +18,8 @@ package com.vaadin.flow.signals.operations;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
@@ -54,7 +56,7 @@ public class SignalOperation<T> implements Serializable {
      * @param value
      *            the result value
      */
-    public static record Result<T>(T value) implements ResultOrError<T> {
+    public record Result<T>(@Nullable T value) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return true;
@@ -69,7 +71,7 @@ public class SignalOperation<T> implements Serializable {
      * @param reason
      *            the error reason message
      */
-    public static record Error<T>(String reason) implements ResultOrError<T> {
+    public record Error<T>(String reason) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return false;
@@ -141,8 +143,10 @@ public class SignalOperation<T> implements Serializable {
             SerializableFunction<T, R> mapper) {
         result.thenAccept(resultOrError -> {
             if (resultOrError.successful()) {
-                T value = ((Result<T>) resultOrError).value();
-                target.result().complete(new Result<>(mapper.apply(value)));
+                @Nullable T value = ((Result<T>) resultOrError).value();
+                @SuppressWarnings("NullAway")
+                R mapped = mapper.apply(value);
+                target.result().complete(new Result<>(mapped));
             } else {
                 target.result().complete(
                         new Error<>(((Error<?>) resultOrError).reason()));

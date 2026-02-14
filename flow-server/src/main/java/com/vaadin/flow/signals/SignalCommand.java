@@ -22,6 +22,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
@@ -66,7 +67,7 @@ public sealed interface SignalCommand extends Serializable {
          *
          * @return the JSON value, or <code>null</code>
          */
-        JsonNode value();
+        @Nullable JsonNode value();
     }
 
     /**
@@ -100,7 +101,7 @@ public sealed interface SignalCommand extends Serializable {
          * @return the owner id, or <code>null</code> if the created signal has
          *         no scope owner
          */
-        Id scopeOwner();
+        @Nullable Id scopeOwner();
     }
 
     /**
@@ -126,7 +127,7 @@ public sealed interface SignalCommand extends Serializable {
      *            the expected value
      */
     public record ValueCondition(Id commandId, Id targetNodeId,
-            JsonNode expectedValue) implements ConditionCommand {
+            @Nullable JsonNode expectedValue) implements ConditionCommand {
     }
 
     /**
@@ -164,7 +165,7 @@ public sealed interface SignalCommand extends Serializable {
      *            child is present
      */
     public record KeyCondition(Id commandId, Id targetNodeId, String key,
-            Id expectedChild) implements ConditionCommand {
+            @Nullable Id expectedChild) implements ConditionCommand {
     }
 
     /**
@@ -286,7 +287,7 @@ public sealed interface SignalCommand extends Serializable {
      *            the value to set
      */
     public record PutCommand(Id commandId, Id targetNodeId, String key,
-            JsonNode value) implements ValueCommand, KeyCommand {
+            @Nullable JsonNode value) implements ValueCommand, KeyCommand {
     }
 
     /**
@@ -309,7 +310,7 @@ public sealed interface SignalCommand extends Serializable {
      *            the value to set if a mapping didn't already exist
      */
     public record PutIfAbsentCommand(Id commandId, Id targetNodeId,
-            Id scopeOwner, String key, JsonNode value)
+            @Nullable Id scopeOwner, String key, @Nullable JsonNode value)
             implements
                 ValueCommand,
                 KeyCommand,
@@ -334,8 +335,8 @@ public sealed interface SignalCommand extends Serializable {
      * @param position
      *            the list insert position, not <code>null</code>
      */
-    record InsertCommand(Id commandId, Id targetNodeId, Id scopeOwner,
-            JsonNode value,
+    record InsertCommand(Id commandId, Id targetNodeId,
+            @Nullable Id scopeOwner, @Nullable JsonNode value,
             ListPosition position) implements ValueCommand, ScopeOwnerCommand {
     }
 
@@ -351,7 +352,7 @@ public sealed interface SignalCommand extends Serializable {
      *            the value to set
      */
     record SetCommand(Id commandId, Id targetNodeId,
-            JsonNode value) implements ValueCommand {
+            @Nullable JsonNode value) implements ValueCommand {
     }
 
     /**
@@ -368,7 +369,7 @@ public sealed interface SignalCommand extends Serializable {
      *            verify the parent
      */
     record RemoveCommand(Id commandId, Id targetNodeId,
-            Id expectedParentId) implements SignalCommand {
+            @Nullable Id expectedParentId) implements SignalCommand {
     }
 
     /**
