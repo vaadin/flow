@@ -22,8 +22,7 @@ import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateTree;
@@ -34,8 +33,11 @@ import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class NodeListAddRemoveTest
-        extends AbstractNodeFeatureTest<ElementClassList> {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     protected ElementClassList nodeList = createFeature();
 
     private List<String> resetToRemoveAfterAddCase() {
@@ -50,9 +52,9 @@ public class NodeListAddRemoveTest
 
         nodeList.clear();
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         verifyCleared(changes);
-        Assert.assertEquals(0, nodeList.size());
+        assertEquals(0, nodeList.size());
     }
 
     @Test
@@ -69,18 +71,18 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         // normal behavior: one remove and one add change in order
-        Assert.assertEquals(2, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
-        Assert.assertTrue(changes.get(1) instanceof ListAddChange<?>);
+        assertEquals(2, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertTrue(changes.get(1) instanceof ListAddChange<?>);
 
         ListRemoveChange<?> remove = (ListRemoveChange<?>) changes.get(0);
-        Assert.assertEquals(items.size() - 2, remove.getIndex());
-        Assert.assertEquals(removed, remove.getRemovedItem());
+        assertEquals(items.size() - 2, remove.getIndex());
+        assertEquals(removed, remove.getRemovedItem());
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(1);
-        Assert.assertEquals(items.size() - 1, add.getIndex());
-        Assert.assertEquals(1, add.getNewItems().size());
-        Assert.assertEquals(removed, add.getNewItems().get(0));
+        assertEquals(items.size() - 1, add.getIndex());
+        assertEquals(1, add.getNewItems().size());
+        assertEquals(removed, add.getNewItems().get(0));
     }
 
     @Test
@@ -95,7 +97,7 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         // changes are discarded
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -111,14 +113,14 @@ public class NodeListAddRemoveTest
 
         // As a result: "remove" change is discarded and the "add" is adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(0);
-        Assert.assertEquals(nodeList.size() - 2, add.getIndex());
-        Assert.assertEquals(2, add.getNewItems().size());
+        assertEquals(nodeList.size() - 2, add.getIndex());
+        assertEquals(2, add.getNewItems().size());
         items.remove(1);
-        Assert.assertEquals(items, add.getNewItems());
+        assertEquals(items, add.getNewItems());
     }
 
     @Test
@@ -140,13 +142,13 @@ public class NodeListAddRemoveTest
                     ListAddChange<String> addChange = (ListAddChange<String>) change;
                     return addChange.getNewItems().contains(item);
                 }).findFirst();
-        Assert.assertFalse(optionalChange.isPresent());
-        Assert.assertEquals(2, nodeList.getChangeTracker().size());
+        assertFalse(optionalChange.isPresent());
+        assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
 
         // remove is discarded, the fist add is discarded, others are adjusted
-        Assert.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
         verifyAdded(changes, Arrays.asList("bar", "bar1"), index, index + 1);
     }
 
@@ -164,7 +166,7 @@ public class NodeListAddRemoveTest
         nodeList.remove(nodeList.size() - 1);
 
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         verifyAdded(changes, Arrays.asList("bar"), index);
     }
 
@@ -185,21 +187,21 @@ public class NodeListAddRemoveTest
 
         // As a result: "remove" change is discarded and the "add" are adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
 
-        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
-        Assert.assertTrue(changes.get(1) instanceof ListAddChange<?>);
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertTrue(changes.get(1) instanceof ListAddChange<?>);
 
         ListAddChange<?> add = (ListAddChange<?>) changes.get(0);
-        Assert.assertEquals(index - 2, add.getIndex());
-        Assert.assertEquals(2, add.getNewItems().size());
+        assertEquals(index - 2, add.getIndex());
+        assertEquals(2, add.getNewItems().size());
         items.remove(0);
-        Assert.assertEquals(items, add.getNewItems());
+        assertEquals(items, add.getNewItems());
 
         add = (ListAddChange<?>) changes.get(1);
-        Assert.assertEquals(index - 1, add.getIndex());
-        Assert.assertEquals(1, add.getNewItems().size());
-        Assert.assertEquals("bar", add.getNewItems().get(0));
+        assertEquals(index - 1, add.getIndex());
+        assertEquals(1, add.getNewItems().size());
+        assertEquals("bar", add.getNewItems().get(0));
     }
 
     @Test
@@ -216,8 +218,8 @@ public class NodeListAddRemoveTest
         // As a result: "remove" and "add" before it are discarded and the "add"
         // operation is not affected
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
 
         verifyAdded(changes, Arrays.asList(newItem), index);
     }
@@ -234,8 +236,8 @@ public class NodeListAddRemoveTest
         // As a result: "remove" and "add" before it are discarded and the last
         // "remove" operation is not affected
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
     }
@@ -256,8 +258,8 @@ public class NodeListAddRemoveTest
         // As a result: "remove" and its corresponding "add" are discarded and
         // the "remove" in between operation is adjusted
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
     }
@@ -279,8 +281,8 @@ public class NodeListAddRemoveTest
 
         List<NodeChange> changes = collectChanges(nodeList);
         // only one clear changes: add is compensated by remove
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(ListClearChange.class, changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(ListClearChange.class, changes.get(0).getClass());
         // what's important: no any exception causes by incorrect index
         // (IndexOutOfBoundsException)
     }
@@ -301,14 +303,14 @@ public class NodeListAddRemoveTest
 
         List<NodeChange> changes = collectChanges(nodeList);
 
-        Assert.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(ListClearChange.class));
         MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
-        Assert.assertEquals(1, nodeList.size());
-        Assert.assertEquals("baz", nodeList.get(0));
+        assertEquals(1, nodeList.size());
+        assertEquals("baz", nodeList.get(0));
     }
 
     @Test
@@ -332,7 +334,7 @@ public class NodeListAddRemoveTest
         // attach, but it should still be collected
         nodeList.getNode().collectChanges(changes::add);
 
-        Assert.assertEquals(3, changes.size());
+        assertEquals(3, changes.size());
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         MatcherAssert.assertThat(changes.get(1),
@@ -346,8 +348,8 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
         // Now there is no anymore clear change (so the previous one is not
         // preserved)
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
     }
 
     @Test
@@ -383,10 +385,10 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assert.assertEquals(3, changes.size());
-        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
-        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
-        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
+        assertEquals(3, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(ListAddChange.class, changes.get(2).getClass());
 
         changes.clear();
 
@@ -395,8 +397,8 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
         // Now there is no anymore clear change (so the previous one is not
         // preserved)
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof ListAddChange<?>);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof ListAddChange<?>);
     }
 
     @Test
@@ -413,9 +415,9 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assert.assertEquals(2, changes.size());
-        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
-        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(2, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
     }
 
     @Test
@@ -449,9 +451,9 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assert.assertEquals(2, changes.size());
-        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
-        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(2, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
     }
 
     @Test
@@ -473,8 +475,8 @@ public class NodeListAddRemoveTest
         nodeList.add("foo");
 
         nodeList.getNode().collectChanges(changes::add);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(ListAddChange.class, changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(ListAddChange.class, changes.get(0).getClass());
     }
 
     @Test
@@ -491,10 +493,10 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
 
-        Assert.assertEquals(3, changes.size());
-        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
-        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
-        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
+        assertEquals(3, changes.size());
+        assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        assertEquals(ListClearChange.class, changes.get(1).getClass());
+        assertEquals(ListAddChange.class, changes.get(2).getClass());
     }
 
     private List<String> addOriginalItems(int numberOfOriginalItems) {
@@ -524,12 +526,12 @@ public class NodeListAddRemoveTest
 
     private void verifyNodeListContent(Object... items) {
         for (int i = 0; i < items.length; i++) {
-            Assert.assertEquals(items[i], nodeList.get(i));
+            assertEquals(items[i], nodeList.get(i));
         }
     }
 
     private void verifyCleared(List<NodeChange> changes) {
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
         MatcherAssert.assertThat(nodeChange,
                 CoreMatchers.instanceOf(ListClearChange.class));
@@ -537,14 +539,14 @@ public class NodeListAddRemoveTest
 
     private void verifyRemoved(List<NodeChange> changes, List<String> items,
             Integer... indexes) {
-        Assert.assertTrue(changes.size() > 0);
+        assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
             MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
-            Assert.assertEquals(indexes[i].intValue(), change.getIndex());
-            Assert.assertEquals(items.get(i), change.getRemovedItem());
+            assertEquals(indexes[i].intValue(), change.getIndex());
+            assertEquals(items.get(i), change.getRemovedItem());
         }
     }
 
@@ -555,9 +557,9 @@ public class NodeListAddRemoveTest
             MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
-            Assert.assertEquals(indexes[i].intValue(), change.getIndex());
-            Assert.assertEquals(1, change.getNewItems().size());
-            Assert.assertEquals(items.get(i), change.getNewItems().get(0));
+            assertEquals(indexes[i].intValue(), change.getIndex());
+            assertEquals(1, change.getNewItems().size());
+            assertEquals(items.get(i), change.getNewItems().get(0));
         }
     }
 

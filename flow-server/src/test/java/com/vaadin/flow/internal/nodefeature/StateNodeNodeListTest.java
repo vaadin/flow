@@ -20,8 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
@@ -29,7 +28,13 @@ import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class StateNodeNodeListTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class StateNodeNodeListTest
         extends AbstractNodeFeatureTest<ElementChildrenList> {
     private NodeList<StateNode> nodeList = createFeature();
 
@@ -40,41 +45,39 @@ public class StateNodeNodeListTest
 
         nodeList.add(value1);
 
-        Assert.assertEquals(1, nodeList.size());
-        Assert.assertSame(value1, nodeList.get(0));
+        assertEquals(1, nodeList.size());
+        assertSame(value1, nodeList.get(0));
 
         List<NodeChange> firstAddChanges = collectChanges(nodeList);
-        Assert.assertEquals(1, firstAddChanges.size());
+        assertEquals(1, firstAddChanges.size());
         ListAddChange<?> firstAddChange = (ListAddChange<?>) firstAddChanges
                 .get(0);
-        Assert.assertEquals(0, firstAddChange.getIndex());
-        Assert.assertEquals(Arrays.asList(value1),
-                firstAddChange.getNewItems());
+        assertEquals(0, firstAddChange.getIndex());
+        assertEquals(Arrays.asList(value1), firstAddChange.getNewItems());
 
         nodeList.add(0, value2);
-        Assert.assertEquals(2, nodeList.size());
-        Assert.assertSame(value2, nodeList.get(0));
-        Assert.assertSame(value1, nodeList.get(1));
+        assertEquals(2, nodeList.size());
+        assertSame(value2, nodeList.get(0));
+        assertSame(value1, nodeList.get(1));
 
         List<NodeChange> secondAddChanges = collectChanges(nodeList);
-        Assert.assertEquals(1, secondAddChanges.size());
+        assertEquals(1, secondAddChanges.size());
         ListAddChange<?> secondAddChange = (ListAddChange<?>) secondAddChanges
                 .get(0);
-        Assert.assertEquals(0, secondAddChange.getIndex());
-        Assert.assertEquals(Arrays.asList(value2),
-                secondAddChange.getNewItems());
+        assertEquals(0, secondAddChange.getIndex());
+        assertEquals(Arrays.asList(value2), secondAddChange.getNewItems());
 
         StateNode removedItem = nodeList.remove(0);
 
-        Assert.assertEquals(1, nodeList.size());
-        Assert.assertSame(value1, nodeList.get(0));
-        Assert.assertSame(value2, removedItem);
+        assertEquals(1, nodeList.size());
+        assertSame(value1, nodeList.get(0));
+        assertSame(value2, removedItem);
 
         List<NodeChange> removeChanges = collectChanges(nodeList);
-        Assert.assertEquals(1, removeChanges.size());
+        assertEquals(1, removeChanges.size());
         ListRemoveChange<?> removeChange = (ListRemoveChange<?>) removeChanges
                 .get(0);
-        Assert.assertEquals(0, removeChange.getIndex());
+        assertEquals(0, removeChange.getIndex());
     }
 
     @Test
@@ -91,26 +94,25 @@ public class StateNodeNodeListTest
 
         List<NodeChange> changes = collectChanges(nodeList);
 
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         ListAddChange<?> change = (ListAddChange<?>) changes.get(0);
-        Assert.assertEquals(0, change.getIndex());
-        Assert.assertEquals(Arrays.asList(value1, value2),
-                change.getNewItems());
+        assertEquals(0, change.getIndex());
+        assertEquals(Arrays.asList(value1, value2), change.getNewItems());
     }
 
     @Test
     public void testAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
 
         nodeList.add(child);
 
-        Assert.assertSame(nodeList.getNode(), child.getParent());
+        assertSame(nodeList.getNode(), child.getParent());
 
         nodeList.remove(0);
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -121,9 +123,9 @@ public class StateNodeNodeListTest
 
         nodeList.add(one);
         nodeList.add(two);
-        Assert.assertEquals(0, nodeList.indexOf(one));
-        Assert.assertEquals(1, nodeList.indexOf(two));
-        Assert.assertEquals(-1, nodeList.indexOf(three));
+        assertEquals(0, nodeList.indexOf(one));
+        assertEquals(1, nodeList.indexOf(two));
+        assertEquals(-1, nodeList.indexOf(three));
     }
 
     @Test
@@ -133,14 +135,16 @@ public class StateNodeNodeListTest
 
         nodeList.add(one);
         nodeList.add(two);
-        Assert.assertEquals(2, nodeList.size());
+        assertEquals(2, nodeList.size());
         nodeList.clear();
-        Assert.assertEquals(0, nodeList.size());
+        assertEquals(0, nodeList.size());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void nullNotAllowed() {
-        nodeList.add(null);
+        assertThrows(AssertionError.class, () -> {
+            nodeList.add(null);
+        });
     }
 
     @Test
@@ -164,14 +168,14 @@ public class StateNodeNodeListTest
         NodeList<StateNode> copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeList));
 
-        Assert.assertNotSame(nodeList, copy);
+        assertNotSame(nodeList, copy);
 
-        Assert.assertEquals(values.size(), copy.size());
+        assertEquals(values.size(), copy.size());
         for (int i = 0; i < size; i++) {
             assertNodeEquals(values.get(i), copy.get(i));
         }
         // Also verify that original value wasn't changed by the serialization
-        Assert.assertEquals(values.size(), nodeList.size());
+        assertEquals(values.size(), nodeList.size());
         for (int i = 0; i < size; i++) {
             assertNodeEquals(values.get(i), nodeList.get(i));
         }

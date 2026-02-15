@@ -19,16 +19,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
 import com.vaadin.flow.internal.nodefeature.NodeList.SetView;
 
-public class ListFeatureSetViewTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ListFeatureSetViewTest {
 
     private TestFeature feature;
     private SetView<String> set;
@@ -61,7 +66,7 @@ public class ListFeatureSetViewTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         feature = new TestFeature();
         set = new TestSetView(feature);
@@ -80,15 +85,15 @@ public class ListFeatureSetViewTest {
     @Test
     public void testSetViewSize() {
         set.add("0");
-        Assert.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.add("1");
-        Assert.assertEquals(2, set.size());
+        assertEquals(2, set.size());
         set.remove("1");
-        Assert.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.remove("1"); // Not in the list
-        Assert.assertEquals(1, set.size());
+        assertEquals(1, set.size());
         set.remove("0");
-        Assert.assertEquals(0, set.size());
+        assertEquals(0, set.size());
     }
 
     @Test
@@ -101,9 +106,11 @@ public class ListFeatureSetViewTest {
         assertContents();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetViewValidateAdd() {
-        set.add("as89w4573");
+        assertThrows(IllegalArgumentException.class, () -> {
+            set.add("as89w4573");
+        });
     }
 
     @Test
@@ -123,10 +130,10 @@ public class ListFeatureSetViewTest {
         set.add("c");
 
         Iterator<String> i = set.iterator();
-        Assert.assertEquals("a", i.next());
-        Assert.assertEquals("b", i.next());
-        Assert.assertEquals("c", i.next());
-        Assert.assertFalse(i.hasNext());
+        assertEquals("a", i.next());
+        assertEquals("b", i.next());
+        assertEquals("c", i.next());
+        assertFalse(i.hasNext());
     }
 
     @Test
@@ -149,10 +156,10 @@ public class ListFeatureSetViewTest {
         set.add("b");
         set.add("c");
 
-        Assert.assertTrue(set.contains("a"));
-        Assert.assertTrue(set.contains("b"));
-        Assert.assertTrue(set.contains("c"));
-        Assert.assertFalse(set.contains("d"));
+        assertTrue(set.contains("a"));
+        assertTrue(set.contains("b"));
+        assertTrue(set.contains("c"));
+        assertFalse(set.contains("d"));
     }
 
     @Test
@@ -161,8 +168,8 @@ public class ListFeatureSetViewTest {
 
         TestSetView otherSet = new TestSetView(feature);
 
-        Assert.assertEquals(set, otherSet);
-        Assert.assertEquals(set.hashCode(), otherSet.hashCode());
+        assertEquals(set, otherSet);
+        assertEquals(set.hashCode(), otherSet.hashCode());
     }
 
     @Test
@@ -172,8 +179,8 @@ public class ListFeatureSetViewTest {
         TestSetView otherSet = new TestSetView(otherFeature);
         otherSet.add("a");
 
-        Assert.assertEquals(set, otherSet);
-        Assert.assertEquals(set.hashCode(), otherSet.hashCode());
+        assertEquals(set, otherSet);
+        assertEquals(set.hashCode(), otherSet.hashCode());
 
     }
 
@@ -182,7 +189,7 @@ public class ListFeatureSetViewTest {
         for (int i = 0; i < feature.size(); i++) {
             actual[i] = feature.get(i);
         }
-        Assert.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
 
     }
 }

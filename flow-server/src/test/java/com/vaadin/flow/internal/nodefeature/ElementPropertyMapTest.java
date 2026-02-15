@@ -23,8 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -34,7 +33,15 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 
-public class ElementPropertyMapTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ElementPropertyMapTest {
 
     @Test
     public void addPropertyChangeListener_fireServerEvent_listenerIsNotified() {
@@ -54,25 +61,24 @@ public class ElementPropertyMapTest {
 
         AtomicReference<PropertyChangeEvent> event = new AtomicReference<>();
         PropertyChangeListener listener = ev -> {
-            Assert.assertNull(event.get());
+            assertNull(event.get());
             event.set(ev);
         };
         map.addPropertyChangeListener("foo", listener);
 
         map.remove("foo");
-        Assert.assertNull(event.get().getValue());
-        Assert.assertEquals("bar", event.get().getOldValue());
-        Assert.assertEquals("foo", event.get().getPropertyName());
-        Assert.assertEquals(Element.get(map.getNode()),
-                event.get().getSource());
-        Assert.assertTrue(event.get().isUserOriginated());
+        assertNull(event.get().getValue());
+        assertEquals("bar", event.get().getOldValue());
+        assertEquals("foo", event.get().getPropertyName());
+        assertEquals(Element.get(map.getNode()), event.get().getSource());
+        assertTrue(event.get().isUserOriginated());
     }
 
     @Test
     public void removePropertyChangeListener_fireEvent_listenerIsNotNotified() {
         ElementPropertyMap map = createSimplePropertyMap();
         PropertyChangeListener listener = ev -> {
-            Assert.fail();
+            fail();
         };
         Registration registration = map.addPropertyChangeListener("foo",
                 listener);
@@ -94,8 +100,8 @@ public class ElementPropertyMapTest {
 
         map.setProperty("foo", "bar", true);
 
-        Assert.assertTrue(first.get());
-        Assert.assertTrue(second.get());
+        assertTrue(first.get());
+        assertTrue(second.get());
     }
 
     @Test
@@ -104,7 +110,7 @@ public class ElementPropertyMapTest {
         map.resolveModelList("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
-        Assert.assertTrue(stateNode.isReportedFeature(ModelList.class));
+        assertTrue(stateNode.isReportedFeature(ModelList.class));
     }
 
     @Test
@@ -113,8 +119,7 @@ public class ElementPropertyMapTest {
         map.resolveModelMap("foo");
 
         StateNode stateNode = (StateNode) map.get("foo");
-        Assert.assertTrue(
-                stateNode.isReportedFeature(ElementPropertyMap.class));
+        assertTrue(stateNode.isReportedFeature(ElementPropertyMap.class));
     }
 
     @Test
@@ -123,12 +128,12 @@ public class ElementPropertyMapTest {
 
         AtomicReference<Serializable> value = new AtomicReference<>();
         map.addPropertyChangeListener("foo", event -> {
-            Assert.assertNull(value.get());
+            assertNull(value.get());
             value.set(event.getValue());
         });
         map.setProperty("foo", "bar");
 
-        Assert.assertEquals("bar", value.get());
+        assertEquals("bar", value.get());
 
         // Doesn't throw assertion error because listener is not called
         map.setProperty("foo", "bar");
@@ -142,8 +147,8 @@ public class ElementPropertyMapTest {
         // Allow updating the same property only once
         map.setUpdateFromClientFilter(name -> clientFilterQueries.add(name));
 
-        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
-        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+        assertTrue(map.mayUpdateFromClient("foo", "bar"));
+        assertFalse(map.mayUpdateFromClient("foo", "bar"));
     }
 
     @Test
@@ -151,24 +156,24 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setUpdateFromClientFilter(name -> false);
-        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+        assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
         DomListenerRegistration domListenerRegistration = Element
                 .get(map.getNode())
                 .addPropertyChangeListener("foo", "event", event -> {
                 });
-        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
+        assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
         domListenerRegistration.remove();
-        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+        assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
         DomListenerRegistration registration = Element.get(map.getNode())
                 .addEventListener("dummy", event -> {
                 }).synchronizeProperty("foo");
-        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
+        assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
         registration.remove();
-        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+        assertFalse(map.mayUpdateFromClient("foo", "bar"));
     }
 
     @Test
@@ -177,13 +182,13 @@ public class ElementPropertyMapTest {
 
         map.setUpdateFromClientFilter("foo"::equals);
 
-        Assert.assertTrue(map.mayUpdateFromClient("foo", "a"));
-        Assert.assertFalse(map.mayUpdateFromClient("bar", "a"));
+        assertTrue(map.mayUpdateFromClient("foo", "a"));
+        assertFalse(map.mayUpdateFromClient("bar", "a"));
 
         map.setUpdateFromClientFilter("bar"::equals);
 
-        Assert.assertFalse(map.mayUpdateFromClient("foo", "a"));
-        Assert.assertTrue(map.mayUpdateFromClient("bar", "a"));
+        assertFalse(map.mayUpdateFromClient("foo", "a"));
+        assertTrue(map.mayUpdateFromClient("bar", "a"));
     }
 
     @Test
@@ -195,8 +200,8 @@ public class ElementPropertyMapTest {
         map.setUpdateFromClientFilter("foo.bar"::equals);
         map.put("foo", child);
 
-        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
-        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+        assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        assertFalse(childModel.mayUpdateFromClient("baz", "a"));
     }
 
     @Test
@@ -212,15 +217,17 @@ public class ElementPropertyMapTest {
         assertDeferredUpdate_putResult(childModel, "bar");
     }
 
-    @Test(expected = PropertyChangeDeniedException.class)
+    @Test
     public void deferredUpdateFromClient_noFilter_throws()
             throws PropertyChangeDeniedException {
-        ElementPropertyMap map = createSimplePropertyMap();
-        StateNode child = new StateNode(ElementPropertyMap.class);
-        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+        assertThrows(PropertyChangeDeniedException.class, () -> {
+            ElementPropertyMap map = createSimplePropertyMap();
+            StateNode child = new StateNode(ElementPropertyMap.class);
+            ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
-        map.put("foo", child);
-        childModel.deferredUpdateFromClient("bar", "a");
+            map.put("foo", child);
+            childModel.deferredUpdateFromClient("bar", "a");
+        });
     }
 
     @Test
@@ -247,8 +254,8 @@ public class ElementPropertyMapTest {
 
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
-        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
-        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+        assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        assertFalse(childModel.mayUpdateFromClient("baz", "a"));
     }
 
     @Test
@@ -266,18 +273,20 @@ public class ElementPropertyMapTest {
         assertDeferredUpdate_putResult(childModel, "bar");
     }
 
-    @Test(expected = PropertyChangeDeniedException.class)
+    @Test
     public void deferredUpdateFromClient_listItem_noFilter_throws()
             throws PropertyChangeDeniedException {
-        ElementPropertyMap map = createSimplePropertyMap();
-        ModelList list = map.resolveModelList("foo");
-        StateNode child = new StateNode(ElementPropertyMap.class);
+        assertThrows(PropertyChangeDeniedException.class, () -> {
+            ElementPropertyMap map = createSimplePropertyMap();
+            ModelList list = map.resolveModelList("foo");
+            StateNode child = new StateNode(ElementPropertyMap.class);
 
-        list.add(child);
+            list.add(child);
 
-        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+            ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
-        childModel.deferredUpdateFromClient("bar", "a");
+            childModel.deferredUpdateFromClient("bar", "a");
+        });
     }
 
     @Test
@@ -304,8 +313,8 @@ public class ElementPropertyMapTest {
         map.put("foo", child);
         map.setUpdateFromClientFilter("foo.bar"::equals);
 
-        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
-        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+        assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        assertFalse(childModel.mayUpdateFromClient("baz", "a"));
     }
 
     @Test
@@ -317,13 +326,13 @@ public class ElementPropertyMapTest {
         map.put("foo", child);
         map.setUpdateFromClientFilter("foo.bar"::equals);
 
-        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        assertTrue(childModel.mayUpdateFromClient("bar", "a"));
 
         map.remove("foo");
-        Assert.assertFalse(childModel.mayUpdateFromClient("bar", "a"));
+        assertFalse(childModel.mayUpdateFromClient("bar", "a"));
 
         map.put("bar", child);
-        Assert.assertFalse(childModel.mayUpdateFromClient("bar", "a"));
+        assertFalse(childModel.mayUpdateFromClient("bar", "a"));
     }
 
     @Test
@@ -339,15 +348,17 @@ public class ElementPropertyMapTest {
             map = ElementPropertyMap.getModel(child);
         }
 
-        Assert.assertTrue(map.mayUpdateFromClient("property", "foo"));
+        assertTrue(map.mayUpdateFromClient("property", "foo"));
     }
 
-    @Test(expected = PropertyChangeDeniedException.class)
+    @Test
     public void deferredUpdateFromClient_updateNotAllowed_throw()
             throws PropertyChangeDeniedException {
-        ElementPropertyMap map = createSimplePropertyMap();
+        assertThrows(PropertyChangeDeniedException.class, () -> {
+            ElementPropertyMap map = createSimplePropertyMap();
 
-        map.deferredUpdateFromClient("foo", "value");
+            map.deferredUpdateFromClient("foo", "value");
+        });
     }
 
     @Test
@@ -363,15 +374,17 @@ public class ElementPropertyMapTest {
         assertDeferredUpdate_putResult(map, "foo");
     }
 
-    @Test(expected = PropertyChangeDeniedException.class)
+    @Test
     public void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw()
             throws PropertyChangeDeniedException {
-        ElementPropertyMap map = createSimplePropertyMap();
-        map.put("classList", "a");
+        assertThrows(PropertyChangeDeniedException.class, () -> {
+            ElementPropertyMap map = createSimplePropertyMap();
+            map.put("classList", "a");
 
-        map.setUpdateFromClientFilter(key -> true);
+            map.setUpdateFromClientFilter(key -> true);
 
-        map.deferredUpdateFromClient("classList", "value");
+            map.deferredUpdateFromClient("classList", "value");
+        });
     }
 
     @Test
@@ -388,7 +401,7 @@ public class ElementPropertyMapTest {
                 CoreMatchers.not(CoreMatchers.equalTo(
                         ElementPropertyMap.class.getName() + "$PutResult")));
         runnable.run();
-        Assert.assertNull(eventCapture.get());
+        assertNull(eventCapture.get());
     }
 
     @Test
@@ -402,7 +415,7 @@ public class ElementPropertyMapTest {
 
         Runnable runnable = assertDeferredUpdate_putResult(map, "foo");
         runnable.run();
-        Assert.assertNotNull(eventCapture.get());
+        assertNotNull(eventCapture.get());
     }
 
     @Test
@@ -410,8 +423,8 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setProperty("innerHTML", "foo");
 
-        Assert.assertTrue(map.producePutChange("innerHTML", true, "foo"));
-        Assert.assertTrue(map.producePutChange("innerHTML", false, "foo"));
+        assertTrue(map.producePutChange("innerHTML", true, "foo"));
+        assertTrue(map.producePutChange("innerHTML", false, "foo"));
     }
 
     @Test
@@ -419,7 +432,7 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setProperty("foo", "bar");
 
-        Assert.assertFalse(map.producePutChange("foo", true, "bar"));
+        assertFalse(map.producePutChange("foo", true, "bar"));
     }
 
     private void listenerIsNotified(boolean clientEvent) {
@@ -428,17 +441,17 @@ public class ElementPropertyMapTest {
 
         AtomicReference<PropertyChangeEvent> event = new AtomicReference<>();
         PropertyChangeListener listener = ev -> {
-            Assert.assertNull(event.get());
+            assertNull(event.get());
             event.set(ev);
         };
         map.addPropertyChangeListener("foo", listener);
         map.setProperty("foo", "bar", !clientEvent);
 
-        Assert.assertNull(event.get().getOldValue());
-        Assert.assertEquals("bar", event.get().getValue());
-        Assert.assertEquals("foo", event.get().getPropertyName());
-        Assert.assertEquals(Element.get(node), event.get().getSource());
-        Assert.assertEquals(clientEvent, event.get().isUserOriginated());
+        assertNull(event.get().getOldValue());
+        assertEquals("bar", event.get().getValue());
+        assertEquals("foo", event.get().getPropertyName());
+        assertEquals(Element.get(node), event.get().getSource());
+        assertEquals(clientEvent, event.get().isUserOriginated());
 
         // listener is not called. Otherwise its assertion fails.
         map.setProperty("bar", "foo");

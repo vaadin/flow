@@ -24,8 +24,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
@@ -38,9 +37,16 @@ import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.Command;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 // Using ElementStylePropertyMap since it closely maps to the underlying map
-public class NodeMapTest
-        extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
+class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     private static final String KEY = "key";
     private ElementStylePropertyMap nodeMap = createFeature();
 
@@ -74,46 +80,46 @@ public class NodeMapTest
 
     @Test
     public void testBasicFunctionality() {
-        Assert.assertFalse(nodeMap.contains(KEY));
-        Assert.assertNull(nodeMap.get(KEY));
+        assertFalse(nodeMap.contains(KEY));
+        assertNull(nodeMap.get(KEY));
 
         nodeMap.put(KEY, "value");
-        Assert.assertTrue(nodeMap.contains(KEY));
-        Assert.assertEquals("value", nodeMap.get(KEY));
+        assertTrue(nodeMap.contains(KEY));
+        assertEquals("value", nodeMap.get(KEY));
 
         nodeMap.remove(KEY);
-        Assert.assertFalse(nodeMap.contains(KEY));
-        Assert.assertNull(nodeMap.get(KEY));
+        assertFalse(nodeMap.contains(KEY));
+        assertNull(nodeMap.get(KEY));
     }
 
     @Test
     public void testCollectChange() {
         List<NodeChange> initialChanges = collectChanges(nodeMap);
-        Assert.assertEquals(0, initialChanges.size());
+        assertEquals(0, initialChanges.size());
 
         nodeMap.put(KEY, "value");
         List<NodeChange> putChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, putChanges.size());
+        assertEquals(1, putChanges.size());
 
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assert.assertEquals(KEY, putChange.getKey());
-        Assert.assertEquals("value", putChange.getValue());
+        assertEquals(KEY, putChange.getKey());
+        assertEquals("value", putChange.getValue());
 
         nodeMap.put(KEY, null);
         List<NodeChange> putNullChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, putNullChanges.size());
+        assertEquals(1, putNullChanges.size());
 
         MapPutChange putNullChange = (MapPutChange) putNullChanges.get(0);
-        Assert.assertEquals(KEY, putNullChange.getKey());
-        Assert.assertEquals(null, putNullChange.getValue());
+        assertEquals(KEY, putNullChange.getKey());
+        assertEquals(null, putNullChange.getValue());
 
         nodeMap.remove(KEY);
 
         List<NodeChange> removeChanges = collectChanges(nodeMap);
-        Assert.assertEquals(1, removeChanges.size());
+        assertEquals(1, removeChanges.size());
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
-        Assert.assertEquals(KEY, removeChange.getKey());
+        assertEquals(KEY, removeChange.getKey());
     }
 
     @Test
@@ -122,23 +128,23 @@ public class NodeMapTest
         nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value", null));
         List<NodeChange> putChanges = collectChanges(nodeMap);
 
-        Assert.assertEquals(1, putChanges.size());
+        assertEquals(1, putChanges.size());
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
-        Assert.assertEquals(KEY, putChange.getKey());
-        Assert.assertEquals("value", putChange.getValue());
+        assertEquals(KEY, putChange.getKey());
+        assertEquals("value", putChange.getValue());
     }
 
     @Test
     public void testNoChangeEvent() {
         nodeMap.put(KEY, "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put(KEY, "value", true);
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
         nodeMap.put(KEY, "bar", true);
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
     }
 
     @Test
@@ -146,12 +152,12 @@ public class NodeMapTest
         nodeMap.put(KEY, "value", true);
         nodeMap.put(KEY, "foobar", false);
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
 
         nodeMap.put(KEY, "urk");
         changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("urk", ((MapPutChange) changes.get(0)).getValue());
 
     }
 
@@ -161,7 +167,7 @@ public class NodeMapTest
         nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -170,9 +176,8 @@ public class NodeMapTest
         nodeMap.put(KEY, "value2");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value2",
-                ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("value2", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -183,7 +188,7 @@ public class NodeMapTest
         nodeMap.put(KEY, "otherValue");
         nodeMap.put(KEY, "value");
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -195,7 +200,7 @@ public class NodeMapTest
         nodeMap.put(KEY, "value");
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -206,9 +211,8 @@ public class NodeMapTest
         nodeMap.generateChangesFromEmpty();
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value",
-                ((MapPutChange) changes.get(0)).getValue());
+        assertEquals(1, changes.size());
+        assertEquals("value", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -220,7 +224,7 @@ public class NodeMapTest
         nodeMap.remove(KEY);
 
         List<NodeChange> changes = collectChanges(nodeMap);
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     @Test
@@ -238,22 +242,22 @@ public class NodeMapTest
         } catch (AssertionError expected) {
             threw = true;
         }
-        Assert.assertTrue(name + " should throw AssertionError", threw);
+        assertTrue(threw, name + " should throw AssertionError");
     }
 
     @Test
     public void testPutAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
 
         nodeMap.put(KEY, child);
 
-        Assert.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.put(KEY, "foo");
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -262,11 +266,11 @@ public class NodeMapTest
 
         nodeMap.put(KEY, child);
 
-        Assert.assertSame(nodeMap.getNode(), child.getParent());
+        assertSame(nodeMap.getNode(), child.getParent());
 
         nodeMap.remove(KEY);
 
-        Assert.assertNull(child.getParent());
+        assertNull(child.getParent());
     }
 
     @Test
@@ -289,11 +293,11 @@ public class NodeMapTest
         NodeMap copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeMap));
 
-        Assert.assertNotSame(nodeMap, copy);
+        assertNotSame(nodeMap, copy);
 
-        Assert.assertEquals(values.keySet(), copy.keySet());
+        assertEquals(values.keySet(), copy.keySet());
         // Also verify that original value wasn't changed by the serialization
-        Assert.assertEquals(values.keySet(), nodeMap.keySet());
+        assertEquals(values.keySet(), nodeMap.keySet());
 
         values.keySet().forEach(key -> {
             if (key.startsWith("json")) {
@@ -301,60 +305,59 @@ public class NodeMapTest
                 BaseJsonNode originalValue = (BaseJsonNode) nodeMap.get(key);
                 BaseJsonNode copyValue = (BaseJsonNode) copy.get(key);
 
-                Assert.assertEquals(originalValue.toString(),
-                        copyValue.toString());
+                assertEquals(originalValue.toString(), copyValue.toString());
             } else {
-                Assert.assertEquals(nodeMap.get(key), copy.get(key));
+                assertEquals(nodeMap.get(key), copy.get(key));
             }
 
             // Verify original was not touched
-            Assert.assertSame(values.get(key), nodeMap.get(key));
+            assertSame(values.get(key), nodeMap.get(key));
         });
     }
 
     @Test
     public void testGetIntDefaultValue() {
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, 24);
-        Assert.assertEquals(24, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(24, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, null);
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.remove(KEY);
-        Assert.assertEquals(12, nodeMap.getOrDefault(KEY, 12));
+        assertEquals(12, nodeMap.getOrDefault(KEY, 12));
     }
 
     @Test
     public void testGetBooleanDefaultValue() {
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, true);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.put(KEY, null);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
 
         nodeMap.remove(KEY);
-        Assert.assertTrue(nodeMap.getOrDefault(KEY, true));
-        Assert.assertFalse(nodeMap.getOrDefault(KEY, false));
+        assertTrue(nodeMap.getOrDefault(KEY, true));
+        assertFalse(nodeMap.getOrDefault(KEY, false));
     }
 
     @Test
     public void testGetStringDefaultValue() {
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, "assigned");
-        Assert.assertEquals("assigned", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("assigned", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, null);
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.remove(KEY);
-        Assert.assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
+        assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
     }
 
     @Test
@@ -363,10 +366,10 @@ public class NodeMapTest
         nodeMap.put("bar", 1);
         nodeMap.put("baz", 1);
         nodeMap.clear();
-        Assert.assertEquals(0, nodeMap.getPropertyNames().count());
-        Assert.assertFalse(nodeMap.hasProperty("foo"));
-        Assert.assertFalse(nodeMap.hasProperty("bar"));
-        Assert.assertFalse(nodeMap.hasProperty("baz"));
+        assertEquals(0, nodeMap.getPropertyNames().count());
+        assertFalse(nodeMap.hasProperty("foo"));
+        assertFalse(nodeMap.hasProperty("bar"));
+        assertFalse(nodeMap.hasProperty("baz"));
     }
 
     @Test
@@ -377,7 +380,7 @@ public class NodeMapTest
 
         AtomicBoolean listenerIsCalled = new AtomicBoolean();
         child.addAttachListener(() -> {
-            Assert.assertFalse(listenerIsCalled.get());
+            assertFalse(listenerIsCalled.get());
             listenerIsCalled.set(true);
         });
 
@@ -386,7 +389,7 @@ public class NodeMapTest
         tree.getRootNode().getFeature(ElementChildrenList.class)
                 .add(child.getParent());
 
-        Assert.assertTrue(listenerIsCalled.get());
+        assertTrue(listenerIsCalled.get());
 
         // The attach listener is not called one more time
         nodeMap.put("foo", child);
@@ -396,22 +399,21 @@ public class NodeMapTest
     public void put_replaceSingleValue_stillUseSingleValue() {
         nodeMap.put("foo", "bar");
 
-        Assert.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
 
         nodeMap.put("foo", "baz");
 
-        Assert.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
     }
 
     @Test
     public void streamSingleNullValue() {
         nodeMap.put("foo", null);
 
-        Assert.assertTrue(nodeMap.usesSingleMap());
+        assertTrue(nodeMap.usesSingleMap());
 
         nodeMap.forEachChild(child -> {
-            Assert.fail(
-                    "Should not happen, but forEachChild shouldn't explode either");
+            fail("Should not happen, but forEachChild shouldn't explode either");
         });
     }
 
@@ -440,19 +442,19 @@ public class NodeMapTest
         map.put("foo", "bar");
 
         Set<StateNode> nodes = tree.collectDirtyNodes();
-        Assert.assertTrue(nodes.contains(node));
+        assertTrue(nodes.contains(node));
 
         // clear dirty nodes
         tree.collectChanges(change -> {
         });
 
-        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+        assertTrue(tree.collectDirtyNodes().isEmpty());
 
         // set once again the same value
         map.put("foo", "bar");
 
         nodes = tree.collectDirtyNodes();
-        Assert.assertTrue(nodes.contains(node));
+        assertTrue(nodes.contains(node));
     }
 
     @Test
@@ -470,19 +472,19 @@ public class NodeMapTest
         map.put("foo", "bar");
 
         Set<StateNode> nodes = tree.collectDirtyNodes();
-        Assert.assertFalse(nodes.contains(node));
+        assertFalse(nodes.contains(node));
 
         // clear dirty nodes
         tree.collectChanges(change -> {
         });
 
-        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+        assertTrue(tree.collectDirtyNodes().isEmpty());
 
         // set another value
         map.put("foo", "baz");
 
         nodes = tree.collectDirtyNodes();
-        Assert.assertFalse(nodes.contains(node));
+        assertFalse(nodes.contains(node));
     }
 
     @Test
@@ -503,7 +505,7 @@ public class NodeMapTest
         List<NodeChange> changes = new ArrayList<>();
         map.collectChanges(changes::add);
 
-        Assert.assertTrue(changes.isEmpty());
+        assertTrue(changes.isEmpty());
     }
 
     private void assertChangeCollected(AlwaysProduceChangeMap map) {
@@ -512,7 +514,7 @@ public class NodeMapTest
         List<NodeChange> changes = new ArrayList<>();
         map.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(MapPutChange.class, changes.get(0).getClass());
+        assertEquals(1, changes.size());
+        assertEquals(MapPutChange.class, changes.get(0).getClass());
     }
 }
