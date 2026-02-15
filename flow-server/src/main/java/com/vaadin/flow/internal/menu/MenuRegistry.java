@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
@@ -76,14 +77,14 @@ public class MenuRegistry {
     private enum FileRoutesCache {
         INSTANCE;
 
-        private List<AvailableViewInfo> cachedResource;
+        private @Nullable List<AvailableViewInfo> cachedResource;
 
         private List<AvailableViewInfo> get(
                 AbstractConfiguration configuration) {
             if (cachedResource == null) {
                 cachedResource = loadClientMenuItems(configuration);
             }
-            return cachedResource;
+            return Objects.requireNonNull(cachedResource);
         }
 
         private void clear() {
@@ -513,6 +514,9 @@ public class MenuRegistry {
     private static void removeChildren(
             Map<String, AvailableViewInfo> configurations,
             AvailableViewInfo viewInfo, String parentPath) {
+        if (viewInfo.children() == null) {
+            return;
+        }
         for (AvailableViewInfo child : viewInfo.children()) {
             configurations.remove(parentPath + "/" + child.route());
             if (child.children() != null) {
@@ -643,6 +647,9 @@ public class MenuRegistry {
                 continue;
             }
             var viewInfo = menuRoutes.get(path);
+            if (viewInfo == null || viewInfo.menu() == null) {
+                continue;
+            }
             // Remove following, including nested ones:
             // - routes with required parameters
             // - routes with exclude=true
