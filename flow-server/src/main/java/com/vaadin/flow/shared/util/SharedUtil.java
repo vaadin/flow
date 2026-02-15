@@ -17,6 +17,9 @@ package com.vaadin.flow.shared.util;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Misc internal utility methods used by both the server and the client package.
@@ -92,7 +95,7 @@ public class SharedUtil implements Serializable {
     public static String camelCaseToHumanFriendly(String camelCaseString) {
         String[] parts = splitCamelCase(camelCaseString);
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = capitalize(parts[i]);
+            parts[i] = Objects.requireNonNull(capitalize(parts[i]));
         }
         return join(parts, " ");
     }
@@ -124,7 +127,7 @@ public class SharedUtil implements Serializable {
      *            The string to capitalize
      * @return The capitalized string
      */
-    public static String capitalize(String string) {
+    public static @Nullable String capitalize(@Nullable String string) {
         if (string == null) {
             return null;
         }
@@ -145,7 +148,7 @@ public class SharedUtil implements Serializable {
      *            The string to change
      * @return The string with initial character turned into lower case
      */
-    public static String firstToLower(String string) {
+    public static @Nullable String firstToLower(@Nullable String string) {
         if (string == null) {
             return null;
         }
@@ -267,13 +270,14 @@ public class SharedUtil implements Serializable {
      *            The dash separated string to convert
      * @return a camelCase version of the input string
      */
-    public static String dashSeparatedToCamelCase(String dashSeparated) {
+    public static @Nullable String dashSeparatedToCamelCase(
+            @Nullable String dashSeparated) {
         if (dashSeparated == null) {
             return null;
         }
         String[] parts = dashSeparated.split("-");
         for (int i = 1; i < parts.length; i++) {
-            parts[i] = capitalize(parts[i]);
+            parts[i] = Objects.requireNonNull(capitalize(parts[i]));
         }
 
         return join(parts, "");
@@ -294,7 +298,8 @@ public class SharedUtil implements Serializable {
      *            The input string in camelCase format
      * @return A dash separated version of the input
      */
-    public static String camelCaseToDashSeparated(String camelCaseString) {
+    public static @Nullable String camelCaseToDashSeparated(
+            @Nullable String camelCaseString) {
         if (camelCaseString == null) {
             return null;
         }
@@ -302,10 +307,10 @@ public class SharedUtil implements Serializable {
         if (parts[0].length() >= 1
                 && Character.isUpperCase(parts[0].charAt(0))) {
             // starts with upper case
-            parts[0] = "-" + firstToLower(parts[0]);
+            parts[0] = "-" + Objects.requireNonNull(firstToLower(parts[0]));
         }
         for (int i = 1; i < parts.length; i++) {
-            parts[i] = firstToLower(parts[i]);
+            parts[i] = Objects.requireNonNull(firstToLower(parts[i]));
         }
         return join(parts, "-");
     }
@@ -325,12 +330,13 @@ public class SharedUtil implements Serializable {
      *            The input string in UpperCamelCase format
      * @return A dash separated lowercase version of the input
      */
-    public static String upperCamelCaseToDashSeparatedLowerCase(
-            String upperCamelCaseString) {
+    public static @Nullable String upperCamelCaseToDashSeparatedLowerCase(
+            @Nullable String upperCamelCaseString) {
         if (upperCamelCaseString == null) {
             return null;
         }
-        return camelCaseToDashSeparated(firstToLower(upperCamelCaseString))
+        return Objects.requireNonNull(
+                camelCaseToDashSeparated(firstToLower(upperCamelCaseString)))
                 .toLowerCase();
     }
 
