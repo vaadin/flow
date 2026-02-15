@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.shared.ui;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Transport modes for Push
  *
@@ -61,7 +63,7 @@ public enum Transport {
      * @return the transport identified by the identifier or {@code null} if no
      *         matching transport was found
      */
-    public static Transport getByIdentifier(String identifier) {
+    public static @Nullable Transport getByIdentifier(String identifier) {
         for (Transport t : values()) {
             if (t.getIdentifier().equals(identifier)) {
                 return t;

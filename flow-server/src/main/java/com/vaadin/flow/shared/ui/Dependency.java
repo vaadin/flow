@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
@@ -55,7 +57,7 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
-    private String id;
+    private @Nullable String id;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -97,7 +99,8 @@ public class Dependency implements Serializable {
      * @param id
      *            optional ID for tracking the dependency
      */
-    public Dependency(Type type, String url, LoadMode loadMode, String id) {
+    public Dependency(Type type, String url, LoadMode loadMode,
+            @Nullable String id) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
@@ -162,7 +165,7 @@ public class Dependency implements Serializable {
      *
      * @return the dependency ID or null if not set
      */
-    public String getId() {
+    public @Nullable String getId() {
         return id;
     }
 
