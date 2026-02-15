@@ -22,9 +22,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
@@ -41,16 +41,16 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class ComponentEffectTest {
+class ComponentEffectTest {
 
     private static TestService service;
 
@@ -113,12 +113,12 @@ public class ComponentEffectTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new TestService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
@@ -163,8 +163,8 @@ public class ComponentEffectTest {
         // synchronously
         service.flushExecutorAndAccessTasks(session);
 
-        assertSame("Effect should run with correct UI context", ui,
-                currentUI.get());
+        assertSame(ui, currentUI.get(),
+                "Effect should run with correct UI context");
     }
 
     @Test
@@ -198,8 +198,8 @@ public class ComponentEffectTest {
         // synchronously
         service.flushExecutorAndAccessTasks(session);
 
-        assertSame("Effect should run with correct UI context", ui,
-                currentUI.get());
+        assertSame(ui, currentUI.get(),
+                "Effect should run with correct UI context");
     }
 
     @Test
@@ -247,7 +247,7 @@ public class ComponentEffectTest {
         // synchronously
         service.flushExecutorAndAccessTasks(session);
 
-        assertEquals("Error handler should have been called", 1, events.size());
+        assertEquals(1, events.size(), "Error handler should have been called");
 
         Throwable throwable = events.get(0).getThrowable();
         assertEquals(RuntimeException.class, throwable.getClass());
@@ -264,35 +264,34 @@ public class ComponentEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals("Effect should not be run until component is attached", 0,
-                count.get());
+        assertEquals(0, count.get(),
+                "Effect should not be run until component is attached");
 
         signal.set("test");
-        assertEquals(
-                "Effect should not be run until component is attached even after signal value change",
-                0, count.get());
+        assertEquals(0, count.get(),
+                "Effect should not be run until component is attached even after signal value change");
 
         MockUI ui = new MockUI();
         ui.add(component);
 
-        assertEquals("Effect should be run once component is attached", 1,
-                count.get());
+        assertEquals(1, count.get(),
+                "Effect should be run once component is attached");
 
         signal.set("test2");
-        assertEquals("Effect should be run when signal value is chaged", 2,
-                count.get());
+        assertEquals(2, count.get(),
+                "Effect should be run when signal value is chaged");
 
         ui.remove(component);
 
         signal.set("test3");
-        assertEquals("Effect should not be run after detach", 2, count.get());
+        assertEquals(2, count.get(), "Effect should not be run after detach");
 
         ui.add(component);
-        assertEquals("Effect should be run after attach", 3, count.get());
+        assertEquals(3, count.get(), "Effect should be run after attach");
 
         registration.remove();
         signal.set("test4");
-        assertEquals("Effect should not be run after remove", 3, count.get());
+        assertEquals(3, count.get(), "Effect should not be run after remove");
     }
 
     @Test
@@ -307,29 +306,28 @@ public class ComponentEffectTest {
         Registration registration = ComponentEffect.bind(component, signal,
                 TestComponent::setValue);
 
-        assertEquals("Initial value should be set", "initial",
-                component.getValue());
+        assertEquals("initial", component.getValue(),
+                "Initial value should be set");
 
         // Change signal value
         signal.set("new value");
 
-        assertEquals("Component should be updated with new value", "new value",
-                component.getValue());
+        assertEquals("new value", component.getValue(),
+                "Component should be updated with new value");
 
         // Change signal value again
         signal.set("another value");
 
-        assertEquals("Component should be updated with another value",
-                "another value", component.getValue());
+        assertEquals("another value", component.getValue(),
+                "Component should be updated with another value");
 
         registration.remove();
 
         // Change signal value after registration is removed
         signal.set("final value");
 
-        assertEquals(
-                "Component should not be updated after registration is removed",
-                "another value", component.getValue());
+        assertEquals("another value", component.getValue(),
+                "Component should not be updated after registration is removed");
     }
 
     @Test
@@ -417,8 +415,8 @@ public class ComponentEffectTest {
         ComponentEffect.bindChildren(parentComponent, taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
-        assertEquals("Parent component children count is wrong", 1,
-                parentComponent.getComponentCount());
+        assertEquals(1, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("first",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -428,8 +426,8 @@ public class ComponentEffectTest {
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
 
-        assertEquals("Parent component children count is wrong", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("last", children.get(1).getValue());
 
         assertEquals(1, children.get(0).attachCounter);
@@ -452,16 +450,16 @@ public class ComponentEffectTest {
         ComponentEffect.bindChildren(parentComponent, taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
 
         taskList.remove(taskList.get().get(0));
 
-        assertEquals("Parent component children count is wrong", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("middle",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -491,15 +489,15 @@ public class ComponentEffectTest {
         ComponentEffect.bindChildren(parentComponent, taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
 
         // move last to first
         taskList.moveTo(taskList.get().get(2),
                 SharedListSignal.ListPosition.first());
 
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -628,8 +626,8 @@ public class ComponentEffectTest {
         assertEquals(IllegalStateException.class,
                 event.getThrowable().getClass());
         // no changes in the element
-        assertEquals("Parent component children count is wrong", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("first",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -680,8 +678,8 @@ public class ComponentEffectTest {
         // Changes are still applied as exception is thrown in the end of
         // the effect. Algorithm moves wrongly added elements after signal
         // list.
-        assertEquals("Parent component children count is wrong", 5,
-                parentComponent.getComponentCount());
+        assertEquals(5, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("first", children.get(0).getValue());
         assertEquals("middle", children.get(1).getValue());
         assertEquals("last", children.get(2).getValue());
@@ -730,8 +728,8 @@ public class ComponentEffectTest {
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
         // Exception is thrown only in final validation in the end
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("first", children.get(0).getValue());
         assertEquals("middle", children.get(1).getValue());
         assertEquals("added directly", children.get(2).getValue());
@@ -778,8 +776,8 @@ public class ComponentEffectTest {
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
         // Exception is thrown only in final validation in the end
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("first", children.get(0).getValue());
         assertEquals("middle", children.get(1).getValue());
         assertEquals("added directly", children.get(2).getValue());
@@ -827,8 +825,8 @@ public class ComponentEffectTest {
         assertEquals(
                 "Parent element must have children matching the list signal. Unexpected child at index 0: <div>middle</div>, expected: <div>first</div>",
                 event.getThrowable().getMessage());
-        assertEquals("Parent component children count is wrong", 3,
-                parentComponent.getComponentCount());
+        assertEquals(3, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("middle", children.get(0).getValue());
         assertEquals("first", children.get(1).getValue());
         assertEquals("last", children.get(2).getValue());
@@ -867,8 +865,8 @@ public class ComponentEffectTest {
         // getChildren() should be called twice per bindChildren effect call
         verify(parentComponent.getElement(), times(2)).getChildren();
 
-        assertEquals("Parent component children count is wrong", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent component children count is wrong");
         assertEquals("middle",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -918,8 +916,8 @@ public class ComponentEffectTest {
                 parentComponent, taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
-        assertEquals("Parent should have initial children", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent should have initial children");
         assertEquals("first",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
@@ -934,8 +932,8 @@ public class ComponentEffectTest {
         taskList.insertLast("third");
 
         // Parent should not be updated after registration is removed
-        assertEquals("Parent should still have only 2 children", 2,
-                parentComponent.getComponentCount());
+        assertEquals(2, parentComponent.getComponentCount(),
+                "Parent should still have only 2 children");
         assertEquals("first",
                 ((TestComponent) parentComponent.getChildren().toList().get(0))
                         .getValue());
