@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,8 +101,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
 
     private final AccessCheckDecisionResolver decisionResolver;
 
-    private Class<? extends Component> loginView;
-    private String loginUrl;
+    private @Nullable Class<? extends Component> loginView;
+    private @Nullable String loginUrl;
 
     private boolean enabled = true;
 
@@ -193,7 +194,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *
      * @return the Flow login view, or {@literal null} if not set
      */
-    protected Class<? extends Component> getLoginView() {
+    protected @Nullable Class<? extends Component> getLoginView() {
         return loginView;
     }
 
@@ -220,7 +221,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *
      * @return the frontend login view, or {@literal null} if not set
      */
-    protected String getLoginUrl() {
+    protected @Nullable String getLoginUrl() {
         return loginUrl;
     }
 
@@ -322,7 +323,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @return a representation of the currently logged in user or {@code null}
      *         if no user is currently logged in
      */
-    protected Principal getPrincipal(VaadinRequest request) {
+    protected @Nullable Principal getPrincipal(
+            @Nullable VaadinRequest request) {
         if (request == null) {
             return null;
         }
@@ -338,7 +340,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @return a function which takes a role name and returns {@code true} if
      *         the user is included in that role
      */
-    protected Predicate<String> getRolesChecker(VaadinRequest request) {
+    protected Predicate<String> getRolesChecker(
+            @Nullable VaadinRequest request) {
         if (request == null) {
             return role -> false;
         }
@@ -373,12 +376,15 @@ public class NavigationAccessControl implements BeforeEnterListener {
     }
 
     private void storeRedirectURL(BeforeEnterEvent event,
-            VaadinRequest request) {
+            @Nullable VaadinRequest request) {
         WrappedSession session = request != null ? request.getWrappedSession()
                 : null;
 
         if (session != null) {
-            String servletHostAndPath = getRequestURL(request);
+            // request is known non-null here since session came from
+            // request.getWrappedSession()
+            String servletHostAndPath = getRequestURL(
+                    Objects.requireNonNull(request));
             String viewPathAndParameters = event.getLocation()
                     .getPathWithQueryParameters();
             session.setAttribute(SESSION_STORED_REDIRECT,

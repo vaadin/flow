@@ -18,6 +18,8 @@ package com.vaadin.flow.server.auth;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A representation of the access check result, potentially providing deny
  * reason.
@@ -36,7 +38,7 @@ public class AccessCheckResult implements Serializable {
      */
     private static final AccessCheckResult NEUTRAL = new AccessCheckResult(
             AccessCheckDecision.NEUTRAL, null);
-    private final String reason;
+    private final @Nullable String reason;
 
     private final AccessCheckDecision decision;
 
@@ -48,7 +50,8 @@ public class AccessCheckResult implements Serializable {
      * @param reason
      *            a message explaining the reason for that decision.
      */
-    public AccessCheckResult(AccessCheckDecision decision, String reason) {
+    public AccessCheckResult(AccessCheckDecision decision,
+            @Nullable String reason) {
         if (decision == null) {
             throw new IllegalArgumentException("Decision must not be null");
         }
@@ -77,7 +80,7 @@ public class AccessCheckResult implements Serializable {
      *
      * @return the reason for the navigation access checker decision.
      */
-    public String reason() {
+    public @Nullable String reason() {
         return reason;
     }
 
@@ -121,7 +124,7 @@ public class AccessCheckResult implements Serializable {
      * @return a result instance for given decision and reason.
      */
     public static AccessCheckResult create(AccessCheckDecision decision,
-            String reason) {
+            @Nullable String reason) {
         return new AccessCheckResult(decision, reason);
     }
 

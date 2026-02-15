@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Checks if a user has access to a given route path.
  * <p>
@@ -54,7 +56,7 @@ public interface AccessPathChecker extends Serializable {
      * @return {@code true} if the user has access to the given path,
      *         {@code false} otherwise.
      */
-    boolean hasAccess(String path, Principal principal,
+    boolean hasAccess(String path, @Nullable Principal principal,
             Predicate<String> roleChecker);
 
 }

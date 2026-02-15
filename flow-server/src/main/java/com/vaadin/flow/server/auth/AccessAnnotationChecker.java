@@ -28,6 +28,8 @@ import java.security.Principal;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.VaadinServletRequest;
 
 /**
@@ -152,7 +154,7 @@ public class AccessAnnotationChecker implements Serializable {
      * @return {@code true} if the user has access to the given method,
      *         {@code false} otherwise
      */
-    public boolean hasAccess(Method method, Principal principal,
+    public boolean hasAccess(Method method, @Nullable Principal principal,
             Function<String, Boolean> roleChecker) {
         return hasAccess(getSecurityTarget(method), principal, roleChecker);
     }
@@ -170,7 +172,7 @@ public class AccessAnnotationChecker implements Serializable {
      * @return {@code true} if the user has access to the given method,
      *         {@code false} otherwise
      */
-    public boolean hasAccess(Class<?> cls, Principal principal,
+    public boolean hasAccess(Class<?> cls, @Nullable Principal principal,
             Function<String, Boolean> roleChecker) {
         return hasAccess(getSecurityTarget(cls), principal, roleChecker);
     }
@@ -239,7 +241,8 @@ public class AccessAnnotationChecker implements Serializable {
     }
 
     private boolean hasAccess(AnnotatedElement annotatedClassOrMethod,
-            Principal principal, Function<String, Boolean> roleChecker) {
+            @Nullable Principal principal,
+            Function<String, Boolean> roleChecker) {
         if (annotatedClassOrMethod.isAnnotationPresent(DenyAll.class)) {
             return false;
         }

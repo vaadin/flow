@@ -19,6 +19,8 @@ import java.security.Principal;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteParameters;
@@ -56,7 +58,7 @@ public final class NavigationContext {
     private final Class<?> navigationTarget;
     private final Location location;
     private final RouteParameters parameters;
-    private final Principal principal;
+    private final @Nullable Principal principal;
     private final Predicate<String> roleChecker;
 
     private final boolean errorHandling;
@@ -86,9 +88,9 @@ public final class NavigationContext {
      *            if not (e.g. during access checks outside of navigation)
      */
     public NavigationContext(Router router, Class<?> navigationTarget,
-            Location location, RouteParameters parameters, Principal principal,
-            Predicate<String> roleChecker, boolean errorHandling,
-            boolean navigating) {
+            Location location, RouteParameters parameters,
+            @Nullable Principal principal, Predicate<String> roleChecker,
+            boolean errorHandling, boolean navigating) {
         this.router = Objects.requireNonNull(router, "router must no be null");
         this.navigationTarget = Objects.requireNonNull(navigationTarget,
                 "navigationTarget must no be null");
@@ -124,8 +126,9 @@ public final class NavigationContext {
      *            navigation to a target view
      */
     public NavigationContext(Router router, Class<?> navigationTarget,
-            Location location, RouteParameters parameters, Principal principal,
-            Predicate<String> roleChecker, boolean errorHandling) {
+            Location location, RouteParameters parameters,
+            @Nullable Principal principal, Predicate<String> roleChecker,
+            boolean errorHandling) {
         this(router, navigationTarget, location, parameters, principal,
                 roleChecker, errorHandling, true);
     }
@@ -141,8 +144,8 @@ public final class NavigationContext {
      * @param roleChecker
      *            a function that can answer if a user has a given role
      */
-    public NavigationContext(BeforeEnterEvent event, Principal principal,
-            Predicate<String> roleChecker) {
+    public NavigationContext(BeforeEnterEvent event,
+            @Nullable Principal principal, Predicate<String> roleChecker) {
         this(event.getSource(), event.getNavigationTarget(),
                 event.getLocation(), event.getRouteParameters(), principal,
                 roleChecker, event.isErrorEvent());
@@ -200,7 +203,7 @@ public final class NavigationContext {
      * @return a representation of the currently logged in user or {@code null}
      *         if no user is currently logged in
      */
-    public Principal getPrincipal() {
+    public @Nullable Principal getPrincipal() {
         return principal;
     }
 

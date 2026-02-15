@@ -82,7 +82,8 @@ public class DefaultAccessCheckDecisionResolver
             // Unanimous consensus
             AccessCheckDecision decision = resultsByDecision.keySet().iterator()
                     .next();
-            int votes = resultsByDecision.get(decision).size();
+            int votes = Objects.requireNonNull(resultsByDecision.get(decision))
+                    .size();
             if (decision == AccessCheckDecision.ALLOW) {
                 LOGGER.debug("Access to view '{}' with path '{}' allowed by "
                         + "{} out of {} navigation checkers  ({} neutral).",
