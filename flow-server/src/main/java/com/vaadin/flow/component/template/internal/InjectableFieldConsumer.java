@@ -17,6 +17,8 @@ package com.vaadin.flow.component.template.internal;
 
 import java.lang.reflect.Field;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Three argument consumer.
  * <p>
@@ -39,7 +41,7 @@ public interface InjectableFieldConsumer {
      * @param id
      *            the element id
      * @param tag
-     *            the element tag
+     *            the element tag, or {@code null} if not found
      */
-    void apply(Field field, String id, String tag);
+    void apply(Field field, String id, @Nullable String tag);
 }
