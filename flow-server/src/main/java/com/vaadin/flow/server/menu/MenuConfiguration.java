@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -92,8 +94,8 @@ public final class MenuConfiguration {
      *            layout, can be {@code null}, if unavailable.
      * @return optional page header for layout
      */
-    public static Optional<String> getPageHeader(Component content) {
-        if (isServerSideContent(content)) {
+    public static Optional<String> getPageHeader(@Nullable Component content) {
+        if (content != null && isServerSideContent(content)) {
             UI ui = UI.getCurrent();
             if (ui != null) {
                 Optional<String> maybeTitle = RouteUtil.getDynamicTitle(ui);

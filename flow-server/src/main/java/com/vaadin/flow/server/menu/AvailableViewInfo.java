@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -63,12 +64,12 @@ import com.vaadin.flow.router.MenuData;
  *            additional information to be used in the menu, encoded in JSON
  *            format
  */
-public record AvailableViewInfo(String title, String[] rolesAllowed,
+public record AvailableViewInfo(String title, String @Nullable [] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
-        MenuData menu, List<AvailableViewInfo> children,
-        @JsonProperty("params") Map<String, RouteParamType> routeParameters,
+        @Nullable MenuData menu, @Nullable List<AvailableViewInfo> children,
+        @JsonProperty("params") @Nullable Map<String, RouteParamType> routeParameters,
         boolean flowLayout,
-        @JsonDeserialize(using = DetailDeserializer.class) @JsonSerialize(using = DetailSerializer.class) String detail)
+        @JsonDeserialize(using = DetailDeserializer.class) @JsonSerialize(using = DetailSerializer.class) @Nullable String detail)
         implements
             Serializable {
 
@@ -110,9 +111,11 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + routeParameters + ", detail=" + detail + '}';
     }
 
-    public static class DetailDeserializer extends ValueDeserializer<String> {
+    public static class DetailDeserializer
+            extends ValueDeserializer<@Nullable String> {
         @Override
-        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+        public @Nullable String deserialize(JsonParser p,
+                DeserializationContext ctxt) {
             if (p.currentToken() == JsonToken.VALUE_NULL) {
                 return null;
             }
