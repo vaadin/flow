@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -41,5 +43,6 @@ public interface SignalMapper<T, R> extends Serializable {
      *            the input value, may be <code>null</code>
      * @return the transformed value, may be <code>null</code>
      */
-    R map(T value);
+    @Nullable
+    R map(@Nullable T value);
 }

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -250,7 +252,7 @@ public class UsageTracker {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T untracked(ValueSupplier<T> task) {
+    public static <T> @Nullable T untracked(ValueSupplier<T> task) {
         var previousTracker = currentTracker.get();
         if (previousTracker == null) {
             return task.supply();

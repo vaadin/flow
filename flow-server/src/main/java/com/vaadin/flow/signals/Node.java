@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.NullNode;
 
@@ -89,7 +90,8 @@ public sealed interface Node extends Serializable {
      *            a sequenced map from key to child id, or an empty map if the
      *            node has no map children
      */
-    public record Data(Id parent, Id lastUpdate, Id scopeOwner, JsonNode value,
+    public record Data(@Nullable Id parent, Id lastUpdate,
+            @Nullable Id scopeOwner, @Nullable JsonNode value,
             List<Id> listChildren,
             Map<String, Id> mapChildren) implements Node {
         /**

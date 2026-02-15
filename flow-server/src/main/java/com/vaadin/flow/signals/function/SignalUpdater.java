@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Computes a new signal value based on the current value, enabling atomic
  * compare-and-swap updates with automatic retry on conflicts.
@@ -36,5 +38,6 @@ public interface SignalUpdater<T> extends Serializable {
      *            the current signal value, may be <code>null</code>
      * @return the new value to set, may be <code>null</code>
      */
-    T update(T currentValue);
+    @Nullable
+    T update(@Nullable T currentValue);
 }

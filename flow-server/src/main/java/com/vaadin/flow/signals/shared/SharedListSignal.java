@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
@@ -64,7 +65,7 @@ public class SharedListSignal<T>
      *            id of the node to insert immediately before, or
      *            <code>null</code> to not define a constraint
      */
-    public record ListPosition(Id after, Id before) {
+    public record ListPosition(@Nullable Id after, @Nullable Id before) {
         /**
          * Gets the insertion position that corresponds to the beginning of the
          * list.
@@ -98,7 +99,7 @@ public class SharedListSignal<T>
          *            first
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition after(AbstractSignal<?> after) {
+        public static ListPosition after(@Nullable AbstractSignal<?> after) {
             return new ListPosition(idOf(after), null);
         }
 
@@ -112,7 +113,7 @@ public class SharedListSignal<T>
          *            insert last
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition before(AbstractSignal<?> before) {
+        public static ListPosition before(@Nullable AbstractSignal<?> before) {
             return new ListPosition(null, idOf(before));
         }
 
@@ -132,12 +133,12 @@ public class SharedListSignal<T>
          * @return a list position between the given signals, not
          *         <code>null</code>
          */
-        public static ListPosition between(AbstractSignal<?> after,
-                AbstractSignal<?> before) {
+        public static ListPosition between(@Nullable AbstractSignal<?> after,
+                @Nullable AbstractSignal<?> before) {
             return new ListPosition(idOf(after), idOf(before));
         }
 
-        private static Id idOf(AbstractSignal<?> signal) {
+        private static Id idOf(@Nullable AbstractSignal<?> signal) {
             if (signal == null) {
                 return Id.EDGE;
             } else {
@@ -188,7 +189,7 @@ public class SharedListSignal<T>
     }
 
     @Override
-    protected List<SharedValueSignal<T>> extractValue(Data data) {
+    protected List<SharedValueSignal<T>> extractValue(@Nullable Data data) {
         if (data == null) {
             return List.of();
         } else {
@@ -399,7 +400,11 @@ public class SharedListSignal<T>
 
     @Override
     public String toString() {
-        return peek().stream().map(SharedValueSignal::peek)
+        var value = peek();
+        if (value == null) {
+            return "SharedListSignal[null]";
+        }
+        return value.stream().map(SharedValueSignal::peek)
                 .map(Objects::toString)
                 .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
     }

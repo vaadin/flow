@@ -16,6 +16,7 @@
 package com.vaadin.flow.signals.shared.impl;
 
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
@@ -43,7 +44,7 @@ public class SynchronousSignalTree extends SignalTree {
 
     @Override
     public Snapshot confirmed() {
-        return getWithLock(() -> snapshot);
+        return Objects.requireNonNull(getWithLock(() -> snapshot));
     }
 
     @Override

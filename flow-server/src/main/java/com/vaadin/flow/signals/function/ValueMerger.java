@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.WritableSignal;
 
 /**
@@ -62,5 +64,6 @@ public interface ValueMerger<O, I> extends Serializable {
      *            the new inner value to merge, may be <code>null</code>
      * @return the new outer value, may be <code>null</code>
      */
-    O merge(O outerValue, I newInnerValue);
+    @Nullable
+    O merge(@Nullable O outerValue, @Nullable I newInnerValue);
 }

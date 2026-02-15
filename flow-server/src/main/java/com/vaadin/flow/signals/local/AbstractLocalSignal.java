@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.TransientListener;
@@ -37,7 +39,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private int version;
-    private T signalValue;
+    private @Nullable T signalValue;
 
     /**
      * Creates a new signal with the given initial value.
@@ -45,7 +47,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      * @param initialValue
      *            the initial value
      */
-    protected AbstractLocalSignal(T initialValue) {
+    protected AbstractLocalSignal(@Nullable T initialValue) {
         this.signalValue = initialValue;
     }
 
@@ -58,7 +60,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public T get() {
+    public @Nullable T get() {
         lock.lock();
         try {
             checkPreconditions();
@@ -72,7 +74,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public T peek() {
+    public @Nullable T peek() {
         lock.lock();
         try {
             checkPreconditions();
@@ -118,7 +120,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected T getSignalValue() {
+    protected @Nullable T getSignalValue() {
         assertLockHeld();
         return signalValue;
     }
@@ -129,7 +131,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected T getSignalValueUnsafe() {
+    protected @Nullable T getSignalValueUnsafe() {
         return signalValue;
     }
 
@@ -140,7 +142,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      * @param value
      *            the new value
      */
-    protected void setSignalValue(T value) {
+    protected void setSignalValue(@Nullable T value) {
         assertLockHeld();
         this.signalValue = value;
         version++;

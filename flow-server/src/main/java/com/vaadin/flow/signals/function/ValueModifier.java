@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Receives the current value of a signal for in-place modification. Used with
  * reference signals to apply changes to mutable values while ensuring
@@ -36,5 +38,5 @@ public interface ValueModifier<T> extends Serializable {
      * @param value
      *            the value to modify, may be <code>null</code>
      */
-    void modify(T value);
+    void modify(@Nullable T value);
 }

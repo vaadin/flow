@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
@@ -53,14 +54,15 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
      * This state is never supposed to be synchronized across a cluster or to
      * Hilla clients.
      */
-    private record ComputedState(Object value, RuntimeException exception,
+    private record ComputedState(@Nullable Object value,
+            @Nullable RuntimeException exception,
             Usage dependencies) implements Serializable {
     }
 
     private final SignalComputation<T> computation;
 
     private int dependentCount = 0;
-    private CleanupCallback dependencyRegistration;
+    private @Nullable CleanupCallback dependencyRegistration;
 
     /**
      * Creates a new computed signal with the provided compute callback.
@@ -134,8 +136,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                      * external listeners.
                      */
                     if (--dependentCount == 0) {
-                        dependencyRegistration.cleanup();
-                        dependencyRegistration = null;
+                        if (dependencyRegistration != null) {
+                            dependencyRegistration.cleanup();
+                            dependencyRegistration = null;
+                        }
                     }
                 }
             }
@@ -188,11 +192,12 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         };
     }
 
-    private ComputedState getValidState(Data data) {
+    private ComputedState getValidState(@Nullable Data data) {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
-            Object[] holder = new Object[2];
+            @Nullable
+            Object[] holder = new @Nullable Object[2];
             Usage dependencies = UsageTracker.track(() -> {
                 try {
                     holder[0] = computation.compute();
@@ -200,7 +205,9 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                     holder[1] = e;
                 }
             });
+            @Nullable
             Object value = holder[0];
+            @Nullable
             RuntimeException exception = (RuntimeException) holder[1];
 
             state = new ComputedState(value, exception, dependencies);
@@ -212,7 +219,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         return state;
     }
 
-    private static ComputedState readState(Data data) {
+    private static @Nullable ComputedState readState(@Nullable Data data) {
         if (data == null) {
             return null;
         }
@@ -239,7 +246,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected T extractValue(Data data) {
+    protected @Nullable T extractValue(@Nullable Data data) {
         ComputedState state = getValidState(data);
 
         if (state.exception != null) {
@@ -252,8 +259,12 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected Object usageChangeValue(Data data) {
-        return extractState(data.value()).value;
+    protected @Nullable Object usageChangeValue(Data data) {
+        JsonNode value = data.value();
+        if (value == null) {
+            return null;
+        }
+        return extractState(value).value;
     }
 
     @Override
