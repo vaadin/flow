@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -43,7 +44,7 @@ public class WebComponentWrapper extends Component {
     private WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
-    private Registration disconnectRegistration;
+    private @Nullable Registration disconnectRegistration;
     private long disconnect;
 
     /**
@@ -148,7 +149,10 @@ public class WebComponentWrapper extends Component {
                                 - disconnect > timeout) {
                             Element element = getElement();
                             element.getParent().removeVirtualChild(element);
-                            disconnectRegistration.remove();
+                            var reg = disconnectRegistration;
+                            if (reg != null) {
+                                reg.remove();
+                            }
                         }
                     });
         }

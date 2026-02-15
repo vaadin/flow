@@ -18,6 +18,7 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.IntNode;
@@ -53,8 +54,8 @@ public final class WebComponent<C extends Component> implements Serializable {
 
     private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
-    private Element componentHost;
-    private WebComponentBinding binding;
+    private @Nullable Element componentHost;
+    private @Nullable WebComponentBinding binding;
 
     private WebComponent() {
     }
@@ -141,7 +142,8 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.set("detail",
                 objectData == null ? JacksonUtils.nullNode() : objectData);
 
-        componentHost.executeJs(String.format(CUSTOM_EVENT, object), eventName);
+        Objects.requireNonNull(componentHost)
+                .executeJs(String.format(CUSTOM_EVENT, object), eventName);
     }
 
     /**
@@ -187,6 +189,7 @@ public final class WebComponent<C extends Component> implements Serializable {
                 .getName();
 
         // does the binding actually have the property
+        var binding = Objects.requireNonNull(this.binding);
         if (!binding.hasProperty(propertyName)) {
             throw new IllegalArgumentException(String.format(
                     "%s does not " + "have a property identified by '%s'!",
@@ -194,12 +197,13 @@ public final class WebComponent<C extends Component> implements Serializable {
         }
 
         // is the property's value type correct
-        if (value != null && !binding.getPropertyType(propertyName)
-                .isAssignableFrom(value.getClass())) {
+        // getPropertyType is non-null here since hasProperty was checked above
+        Class<? extends Serializable> propertyType = Objects
+                .requireNonNull(binding.getPropertyType(propertyName));
+        if (value != null && !propertyType.isAssignableFrom(value.getClass())) {
             throw new IllegalArgumentException(String.format("Property '%s' "
                     + "of type '%s' cannot be assigned value of type '%s'!",
-                    propertyName,
-                    binding.getPropertyType(propertyName).getName(),
+                    propertyName, propertyType.getName(),
                     value.getClass().getCanonicalName()));
         }
 
@@ -207,6 +211,7 @@ public final class WebComponent<C extends Component> implements Serializable {
     }
 
     private void setProperty(String propertyName, Object value) {
+        var componentHost = Objects.requireNonNull(this.componentHost);
 
         if (value == null) {
             componentHost.executeJs(UPDATE_PROPERTY_NULL, propertyName);
