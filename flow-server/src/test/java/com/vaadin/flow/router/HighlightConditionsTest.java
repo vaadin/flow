@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.router;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class HighlightConditionsTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HighlightConditionsTest {
 
     @Test
     public void locationPrefix_defaultRoute_emptyLocationMatches() {
@@ -31,7 +33,7 @@ public class HighlightConditionsTest {
         Mockito.when(link.getHref()).thenReturn("");
         Location location = new Location("");
         Mockito.when(event.getLocation()).thenReturn(location);
-        Assert.assertTrue(condition.shouldHighlight(link, event));
+        assertTrue(condition.shouldHighlight(link, event));
     }
 
     @Test
@@ -44,7 +46,7 @@ public class HighlightConditionsTest {
         Mockito.when(link.getHref()).thenReturn("");
         Location location = new Location("foo");
         Mockito.when(event.getLocation()).thenReturn(location);
-        Assert.assertFalse(condition.shouldHighlight(link, event));
+        assertFalse(condition.shouldHighlight(link, event));
     }
 
     @Test
@@ -57,7 +59,7 @@ public class HighlightConditionsTest {
         Mockito.when(link.getHref()).thenReturn("foo");
         Location location = new Location("foobar");
         Mockito.when(event.getLocation()).thenReturn(location);
-        Assert.assertTrue(condition.shouldHighlight(link, event));
+        assertTrue(condition.shouldHighlight(link, event));
     }
 
     @Test
@@ -70,6 +72,6 @@ public class HighlightConditionsTest {
         Mockito.when(link.getHref()).thenReturn("foo");
         Location location = new Location("bar");
         Mockito.when(event.getLocation()).thenReturn(location);
-        Assert.assertFalse(condition.shouldHighlight(link, event));
+        assertFalse(condition.shouldHighlight(link, event));
     }
 }
