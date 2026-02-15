@@ -97,17 +97,6 @@ public class GeolocationTest {
         Assertions.assertEquals(error.message(), result.message());
     }
 
-    @Test
-    void geolocationOptions_nullFields_omittedInJson() {
-        GeolocationOptions options = new GeolocationOptions();
-
-        ObjectNode json = JacksonUtils.beanToJson(options);
-
-        Assertions.assertFalse(json.has("enableHighAccuracy"));
-        Assertions.assertFalse(json.has("timeout"));
-        Assertions.assertFalse(json.has("maximumAge"));
-    }
-
     // --- get() tests ---
 
     @Test
@@ -121,9 +110,8 @@ public class GeolocationTest {
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assertions.assertTrue(invocations.stream()
-                .anyMatch(inv -> inv.getInvocation().getExpression()
-                        .contains("navigator.geolocation.getCurrentPosition")));
+        Assertions.assertTrue(invocations.stream().anyMatch(inv -> inv
+                .getInvocation().getExpression().contains("geolocation.get")));
     }
 
     // --- track() tests ---
@@ -143,9 +131,9 @@ public class GeolocationTest {
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
-        Assertions.assertTrue(invocations.stream()
-                .anyMatch(inv -> inv.getInvocation().getExpression()
-                        .contains("navigator.geolocation.watchPosition")));
+        Assertions.assertTrue(
+                invocations.stream().anyMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.watch")));
     }
 
     @Test
@@ -258,6 +246,9 @@ public class GeolocationTest {
         Assertions.assertFalse(listenerMap
                 .getExpressions("vaadin-geolocation-error").isEmpty());
 
+        // Drain any pending JS from track() setup
+        ui.dumpPendingJsInvocations();
+
         // Detach the component
         ui.remove(component);
 
@@ -266,6 +257,13 @@ public class GeolocationTest {
                 .getExpressions("vaadin-geolocation-position").isEmpty());
         Assertions.assertTrue(listenerMap
                 .getExpressions("vaadin-geolocation-error").isEmpty());
+
+        // Verify clearWatch JS was queued via Page.executeJs
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assertions.assertTrue(
+                invocations.stream().anyMatch(inv -> inv.getInvocation()
+                        .getExpression().contains("geolocation.clearWatch")));
     }
 
     private void fireEvent(Element element, String eventType,

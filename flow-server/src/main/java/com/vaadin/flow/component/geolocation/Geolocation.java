@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.geolocation;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.Component;
@@ -58,65 +59,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public class Geolocation {
 
-    private static final String GET_POSITION_PROMISE_JS = """
-            return new Promise(function(resolve, reject) {
-                navigator.geolocation.getCurrentPosition(
-                    function(p) {
-                        var ts = p.timestamp;
-                        if ((Date.now() - ts) > 86400000000) { ts += 978307200000; }
-                        resolve({
-                            coords: {
-                                latitude: p.coords.latitude,
-                                longitude: p.coords.longitude,
-                                accuracy: p.coords.accuracy,
-                                altitude: p.coords.altitude,
-                                altitudeAccuracy: p.coords.altitudeAccuracy,
-                                heading: p.coords.heading,
-                                speed: p.coords.speed
-                            },
-                            timestamp: ts
-                        });
-                    },
-                    function(e) { reject(e.message); },
-                    $0 || undefined
-                );
-            })""";
-
-    private static final String WATCH_POSITION_JS = """
-            if (this.__vaadinGeoWatchId != null) {
-                navigator.geolocation.clearWatch(this.__vaadinGeoWatchId);
-            }
-            var el = this;
-            this.__vaadinGeoWatchId = navigator.geolocation.watchPosition(
-                function(p) {
-                    var ts = p.timestamp;
-                    if ((Date.now() - ts) > 86400000000) { ts += 978307200000; }
-                    el.dispatchEvent(new CustomEvent('vaadin-geolocation-position', {
-                        detail: {
-                            coords: {
-                                latitude: p.coords.latitude, longitude: p.coords.longitude,
-                                accuracy: p.coords.accuracy, altitude: p.coords.altitude,
-                                altitudeAccuracy: p.coords.altitudeAccuracy,
-                                heading: p.coords.heading, speed: p.coords.speed
-                            },
-                            timestamp: ts
-                        }
-                    }));
-                },
-                function(e) {
-                    el.dispatchEvent(new CustomEvent('vaadin-geolocation-error', {
-                        detail: { code: e.code, message: e.message }
-                    }));
-                },
-                $0 || undefined
-            )""";
-
-    private static final String CLEAR_WATCH_JS = """
-            if (this.__vaadinGeoWatchId != null) {
-                navigator.geolocation.clearWatch(this.__vaadinGeoWatchId);
-                this.__vaadinGeoWatchId = null;
-            }""";
-
     private final ValueSignal<GeolocationPosition> positionSignal = new ValueSignal<>();
     private final ValueSignal<GeolocationError> errorSignal = new ValueSignal<>();
 
@@ -151,7 +93,9 @@ public class Geolocation {
     public static CompletableFuture<GeolocationPosition> get(
             GeolocationOptions options) {
         UI ui = UI.getCurrent();
-        return ui.getElement().executeJs(GET_POSITION_PROMISE_JS, options)
+        return ui.getElement()
+                .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
+                        options)
                 .toCompletableFuture(GeolocationPosition.class);
     }
 
@@ -205,10 +149,13 @@ public class Geolocation {
                             .set(e.getEventDetail(GeolocationError.class));
                 }).addEventDetail().allowInert();
 
-        el.executeJs(WATCH_POSITION_JS, options);
+        String watchKey = UUID.randomUUID().toString();
+        el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
+                options, watchKey);
 
         owner.addDetachListener(e -> {
-            el.executeJs(CLEAR_WATCH_JS);
+            e.getUI().getPage().executeJs(
+                    "window.Vaadin.Flow.geolocation.clearWatch($0)", watchKey);
             posReg.remove();
             errReg.remove();
         });
