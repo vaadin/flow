@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
@@ -62,8 +64,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private boolean configurationsSet = false;
     private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap = new HashMap<>();
 
-    private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
-    private ArrayList<Element> bootstrapElements;
+    private @Nullable HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
+    private @Nullable ArrayList<Element> bootstrapElements;
 
     /**
      * Protected constructor for internal OSGi extensions.

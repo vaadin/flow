@@ -18,6 +18,8 @@ package com.vaadin.flow.server.webcomponent;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -37,7 +39,7 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
         implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private PropertyData<P> data;
-    private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
+    private @Nullable SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     /**
      * Constructs a new {@code PropertyConfigurationImpl} tied to the exported
@@ -104,7 +106,7 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
      *
      * @return handler or {@code null}
      */
-    public SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
+    public @Nullable SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
         return onChangeHandler;
     }
 

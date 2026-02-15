@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -84,7 +85,8 @@ public final class WebComponentBinding<C extends Component>
      * @throws IllegalArgumentException
      *             if no bound property can be found for {@code propertyName}
      */
-    public void updateProperty(String propertyName, Serializable value) {
+    public void updateProperty(String propertyName,
+            @Nullable Serializable value) {
         Objects.requireNonNull(propertyName,
                 "Parameter 'propertyName' must not be null!");
 
@@ -120,9 +122,11 @@ public final class WebComponentBinding<C extends Component>
         Objects.requireNonNull(propertyName,
                 "Parameter 'propertyName' must not be null!");
 
-        Class<? extends Serializable> propertyType = getPropertyType(
-                propertyName);
+        Class<? extends Serializable> propertyType = Objects.requireNonNull(
+                getPropertyType(propertyName),
+                "No property type found for '" + propertyName + "'");
 
+        @Nullable
         Serializable value = jsonValueToConcreteType(jsonValue, propertyType);
         updateProperty(propertyName, value);
     }
@@ -143,9 +147,14 @@ public final class WebComponentBinding<C extends Component>
      *            name of the property
      * @return property type
      */
-    public Class<? extends Serializable> getPropertyType(String propertyName) {
+    public @Nullable Class<? extends Serializable> getPropertyType(
+            String propertyName) {
         if (hasProperty(propertyName)) {
-            return properties.get(propertyName).getType();
+            PropertyBinding<? extends Serializable> binding = properties
+                    .get(propertyName);
+            if (binding != null) {
+                return binding.getType();
+            }
         }
         return null;
     }
@@ -211,14 +220,14 @@ public final class WebComponentBinding<C extends Component>
      */
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
-            boolean overrideDefault, JsonNode startingValue) {
+            boolean overrideDefault, @Nullable JsonNode startingValue) {
         Objects.requireNonNull(propertyConfiguration,
                 "Parameter 'propertyConfiguration' cannot be null!");
 
-        final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
+        final @Nullable SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
 
-        final Serializable selectedStartingValue = !overrideDefault
+        final @Nullable Serializable selectedStartingValue = !overrideDefault
                 ? propertyConfiguration.getPropertyData().getDefaultValue()
                 : jsonValueToConcreteType(startingValue,
                         propertyConfiguration.getPropertyData().getType());
@@ -233,8 +242,8 @@ public final class WebComponentBinding<C extends Component>
                 binding);
     }
 
-    private Serializable jsonValueToConcreteType(JsonNode jsonValue,
-            Class<? extends Serializable> type) {
+    private @Nullable Serializable jsonValueToConcreteType(
+            @Nullable JsonNode jsonValue, Class<? extends Serializable> type) {
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
 
         if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
@@ -244,20 +253,24 @@ public final class WebComponentBinding<C extends Component>
             }
             return value;
         } else {
+            String jsonValueType = jsonValue != null
+                    ? jsonValue.getClass().getName()
+                    : "null";
             throw new IllegalArgumentException(
                     String.format("Received '%s' was not convertible to '%s'",
-                            jsonValue.getClass().getName(), type.getName()));
+                            jsonValueType, type.getName()));
         }
     }
 
     private static class PropertyBinding<P extends Serializable>
             implements Serializable {
         private PropertyData<P> data;
-        private SerializableConsumer<P> listener;
-        private P value;
+        private @Nullable SerializableConsumer<P> listener;
+        private @Nullable P value;
 
-        PropertyBinding(PropertyData<P> data, SerializableConsumer<P> listener,
-                Serializable startingValue) {
+        PropertyBinding(PropertyData<P> data,
+                @Nullable SerializableConsumer<P> listener,
+                @Nullable Serializable startingValue) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
@@ -265,7 +278,7 @@ public final class WebComponentBinding<C extends Component>
         }
 
         @SuppressWarnings("unchecked")
-        void updateValue(Serializable newValue) {
+        void updateValue(@Nullable Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
                         .warn(String.format("An attempt was made to write to "
@@ -313,7 +326,7 @@ public final class WebComponentBinding<C extends Component>
             return data.getName();
         }
 
-        public P getValue() {
+        public @Nullable P getValue() {
             return value;
         }
 

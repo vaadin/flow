@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -74,7 +76,7 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
             Set<Class<?>> exporterClasses, File outputDirectory,
-            String themeName) {
+            @Nullable String themeName) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
@@ -112,7 +114,7 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static File writeWebComponentToDirectory(
             WebComponentExporterFactory<?> factory, File outputDirectory,
-            String themeName) {
+            @Nullable String themeName) {
         String tag = getTag(factory);
 
         String fileName = tag + ".js";
@@ -131,7 +133,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
     private static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            String themeName) {
+            @Nullable String themeName) {
         return WebComponentGenerator.generateModule(factory, "../", themeName);
     }
 
@@ -192,7 +194,7 @@ public final class WebComponentModulesWriter implements Serializable {
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, String themeName) {
+                File outputDirectory, @Nullable String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -248,10 +250,13 @@ public final class WebComponentModulesWriter implements Serializable {
                         + "' via reflection because Java language access control doesn't allow to call it",
                         exception);
             } catch (InvocationTargetException exception) {
+                Throwable cause = exception.getCause();
+                String message = cause != null ? cause.getMessage()
+                        : exception.getMessage();
                 throw new RuntimeException(
                         "Could not write exported web component module because of exception: "
-                                + exception.getCause().getMessage(),
-                        exception.getCause());
+                                + message,
+                        cause);
             }
         }
 

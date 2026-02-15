@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -89,7 +90,7 @@ public class WebComponentGenerator {
      */
     public static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            String frontendURI, String themeName) {
+            String frontendURI, @Nullable String themeName) {
         Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
@@ -113,7 +114,7 @@ public class WebComponentGenerator {
      */
     public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, String themeName) {
+            String frontendURI, @Nullable String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
@@ -123,7 +124,8 @@ public class WebComponentGenerator {
 
     private static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean generateUiImport, String themeName) {
+            String frontendURI, boolean generateUiImport,
+            @Nullable String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
@@ -144,7 +146,8 @@ public class WebComponentGenerator {
 
     static Map<String, String> getReplacementsMap(String tag,
             Set<PropertyData<? extends Serializable>> propertyDataSet,
-            String frontendURI, boolean generateUiImport, String themeName) {
+            String frontendURI, boolean generateUiImport,
+            @Nullable String themeName) {
         Map<String, String> replacements = new HashMap<>();
 
         if (themeName != null && !themeName.isEmpty()) {
@@ -282,7 +285,8 @@ public class WebComponentGenerator {
      * @return the attribute name used for setting the value
      */
     private static String getAttributeName(PropertyData<?> propertyData) {
-        return SharedUtil.camelCaseToDashSeparated(propertyData.getName());
+        return Objects.requireNonNull(
+                SharedUtil.camelCaseToDashSeparated(propertyData.getName()));
     }
 
     /**
