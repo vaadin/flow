@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -342,8 +343,10 @@ public final class DAUUtils {
      * @param endRequestAction
      *            the action to be run at the end of the request
      */
-    public record EnforcementResult(EnforcementNotificationMessages messages,
-            RuntimeException origin, Runnable endRequestAction) {
+    public record EnforcementResult(
+            @Nullable EnforcementNotificationMessages messages,
+            @Nullable RuntimeException origin,
+            @Nullable Runnable endRequestAction) {
 
         public boolean isEnforcementNeeded() {
             return messages != null;

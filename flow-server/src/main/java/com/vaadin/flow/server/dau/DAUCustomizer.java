@@ -17,6 +17,8 @@ package com.vaadin.flow.server.dau;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessagesInfo;
 import com.vaadin.flow.server.VaadinSession;
@@ -73,7 +75,7 @@ public interface DAUCustomizer extends Serializable {
      * @return the function to be used to determine the user identity for the
      *         current request. Can be {@literal null}.
      */
-    default UserIdentitySupplier getUserIdentitySupplier() {
+    default @Nullable UserIdentitySupplier getUserIdentitySupplier() {
         return null;
     }
 

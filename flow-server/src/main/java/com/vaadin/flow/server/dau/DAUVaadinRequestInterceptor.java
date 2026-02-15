@@ -19,6 +19,8 @@ import jakarta.servlet.http.Cookie;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
@@ -40,7 +42,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         VaadinServiceInitListener, ServiceDestroyListener {
 
     private final String applicationName;
-    private final UserIdentitySupplier userIdentitySupplier;
+    private final @Nullable UserIdentitySupplier userIdentitySupplier;
 
     public DAUVaadinRequestInterceptor(
             DeploymentConfiguration deploymentConfiguration,

@@ -18,6 +18,8 @@ package com.vaadin.flow.server.dau;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Contains the system messages used to notify the user about various critical
  * situations that can occur.
@@ -36,7 +38,8 @@ import java.util.Objects;
  * @since 24.5
  */
 public record EnforcementNotificationMessages(String caption, String message,
-        String details, String url) implements Serializable {
+        @Nullable String details,
+        @Nullable String url) implements Serializable {
 
     public EnforcementNotificationMessages {
         Objects.requireNonNull(caption, "Caption cannot be null");

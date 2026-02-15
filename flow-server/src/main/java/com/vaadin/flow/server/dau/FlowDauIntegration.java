@@ -20,6 +20,8 @@ import jakarta.servlet.http.Cookie;
 import java.time.Instant;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
@@ -41,7 +43,8 @@ public final class FlowDauIntegration {
     private FlowDauIntegration() {
     }
 
-    private record TrackingDetails(String trackingHash, String userIdentity) {
+    private record TrackingDetails(String trackingHash,
+            @Nullable String userIdentity) {
     }
 
     /**
@@ -90,7 +93,7 @@ public final class FlowDauIntegration {
      *            user identity, can be {@literal null}.
      */
     static void trackUser(VaadinRequest request, String trackingHash,
-            String userIdentity) {
+            @Nullable String userIdentity) {
         if (HandlerHelper.isRequestType(request,
                 HandlerHelper.RequestType.UIDL)) {
             // postpone tracking for UIDL requests to ServerRpcHandler to
