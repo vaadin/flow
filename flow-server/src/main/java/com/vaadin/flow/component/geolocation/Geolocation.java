@@ -16,12 +16,12 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -30,8 +30,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <p>
  * Two usage modes are available:
  * <ul>
- * <li>{@link #get()} for a one-shot position request that returns a
- * {@link CompletableFuture}</li>
+ * <li>{@link #get(SerializableConsumer)} for a one-shot position request with
+ * callbacks</li>
  * <li>{@link #track(Component)} for continuous position tracking via reactive
  * {@link Signal}s, automatically tied to the owner component's lifecycle</li>
  * </ul>
@@ -40,7 +40,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <b>One-shot example:</b>
  *
  * <pre>
- * Geolocation.get().thenAccept(pos -&gt; map.setCenter(pos.coords().latitude(),
+ * Geolocation.get(pos -&gt; map.setCenter(pos.coords().latitude(),
  *         pos.coords().longitude()));
  * </pre>
  *
@@ -66,16 +66,55 @@ public class Geolocation {
     }
 
     /**
+     * Requests the current position from the browser's Geolocation API. Errors
+     * are silently ignored.
+     * <p>
+     * Must be called from a UI thread (i.e., inside a request handler or event
+     * listener). The callback runs in the UI thread, so there is no need to use
+     * {@code ui.access()}.
+     *
+     * @param onSuccess
+     *            called with the position when it becomes available
+     */
+    public static void get(
+            SerializableConsumer<GeolocationPosition> onSuccess) {
+        get(null, onSuccess);
+    }
+
+    /**
+     * Requests the current position from the browser's Geolocation API with the
+     * given options. Errors are silently ignored.
+     * <p>
+     * Must be called from a UI thread (i.e., inside a request handler or event
+     * listener). The callback runs in the UI thread, so there is no need to use
+     * {@code ui.access()}.
+     *
+     * @param options
+     *            the geolocation options, or {@code null} for browser defaults
+     * @param onSuccess
+     *            called with the position when it becomes available
+     */
+    public static void get(GeolocationOptions options,
+            SerializableConsumer<GeolocationPosition> onSuccess) {
+        get(options, onSuccess, null);
+    }
+
+    /**
      * Requests the current position from the browser's Geolocation API.
      * <p>
      * Must be called from a UI thread (i.e., inside a request handler or event
-     * listener).
+     * listener). Callbacks run in the UI thread, so there is no need to use
+     * {@code ui.access()}.
      *
-     * @return a {@link CompletableFuture} that completes with the position, or
-     *         completes exceptionally if the browser reports an error
+     * @param onSuccess
+     *            called with the position when it becomes available
+     * @param onError
+     *            called with an error message if the browser reports an error,
+     *            or {@code null} to ignore errors
      */
-    public static CompletableFuture<GeolocationPosition> get() {
-        return get(null);
+    public static void get(SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<String> onError) {
+        get(null, onSuccess, onError);
     }
 
     /**
@@ -83,20 +122,25 @@ public class Geolocation {
      * given options.
      * <p>
      * Must be called from a UI thread (i.e., inside a request handler or event
-     * listener).
+     * listener). Callbacks run in the UI thread, so there is no need to use
+     * {@code ui.access()}.
      *
      * @param options
      *            the geolocation options, or {@code null} for browser defaults
-     * @return a {@link CompletableFuture} that completes with the position, or
-     *         completes exceptionally if the browser reports an error
+     * @param onSuccess
+     *            called with the position when it becomes available
+     * @param onError
+     *            called with an error message if the browser reports an error,
+     *            or {@code null} to ignore errors
      */
-    public static CompletableFuture<GeolocationPosition> get(
-            GeolocationOptions options) {
+    public static void get(GeolocationOptions options,
+            SerializableConsumer<GeolocationPosition> onSuccess,
+            SerializableConsumer<String> onError) {
         UI ui = UI.getCurrent();
-        return ui.getElement()
+        ui.getElement()
                 .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
                         options)
-                .toCompletableFuture(GeolocationPosition.class);
+                .then(GeolocationPosition.class, onSuccess, onError);
     }
 
     /**

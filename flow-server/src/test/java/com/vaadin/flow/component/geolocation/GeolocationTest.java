@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.geolocation;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,9 +103,8 @@ public class GeolocationTest {
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        CompletableFuture<GeolocationPosition> future = Geolocation.get();
-
-        Assertions.assertNotNull(future);
+        Geolocation.get(pos -> {
+        });
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
