@@ -325,12 +325,12 @@ public class SharedNodeSignal
                     if (created) {
                         childId = commandId;
                     } else {
-                        var modification = Objects.requireNonNull(
-                                success.updates().get(id()));
-                        var newNode = (Data) Objects.requireNonNull(
-                                modification.newNode());
-                        childId = Objects.requireNonNull(
-                                newNode.mapChildren().get(key));
+                        var modification = Objects
+                                .requireNonNull(success.updates().get(id()));
+                        var newNode = (Data) Objects
+                                .requireNonNull(modification.newNode());
+                        childId = Objects
+                                .requireNonNull(newNode.mapChildren().get(key));
                     }
                     return new PutIfAbsentResult<>(created, child(childId));
                 });

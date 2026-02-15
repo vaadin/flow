@@ -143,7 +143,8 @@ public class SignalOperation<T> implements Serializable {
             SerializableFunction<T, R> mapper) {
         result.thenAccept(resultOrError -> {
             if (resultOrError.successful()) {
-                @Nullable T value = ((Result<T>) resultOrError).value();
+                @Nullable
+                T value = ((Result<T>) resultOrError).value();
                 @SuppressWarnings("NullAway")
                 R mapped = mapper.apply(value);
                 target.result().complete(new Result<>(mapped));

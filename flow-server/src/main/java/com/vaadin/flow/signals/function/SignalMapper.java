@@ -43,5 +43,6 @@ public interface SignalMapper<T, R> extends Serializable {
      *            the input value, may be <code>null</code>
      * @return the transformed value, may be <code>null</code>
      */
-    @Nullable R map(@Nullable T value);
+    @Nullable
+    R map(@Nullable T value);
 }

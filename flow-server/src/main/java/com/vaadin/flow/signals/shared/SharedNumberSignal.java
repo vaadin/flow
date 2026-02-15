@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
-import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.signals.Id;
@@ -90,8 +89,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
         return submit(
                 new SignalCommand.IncrementCommand(Id.random(), id(), delta),
                 success -> nodeValue(
-                        Objects.requireNonNull(
-                                success.onlyUpdate().newNode()),
+                        Objects.requireNonNull(success.onlyUpdate().newNode()),
                         Double.class));
     }
 

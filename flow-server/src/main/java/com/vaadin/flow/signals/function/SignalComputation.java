@@ -42,5 +42,6 @@ public interface SignalComputation<T> extends Serializable {
      *
      * @return the computed value, may be <code>null</code>
      */
-    @Nullable T compute();
+    @Nullable
+    T compute();
 }

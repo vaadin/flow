@@ -57,7 +57,8 @@ public abstract class Transaction implements Serializable {
     private abstract static class ImmediateTransaction extends Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                @Nullable CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -99,7 +100,8 @@ public abstract class Transaction implements Serializable {
 
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                @Nullable CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             // Update the read revision first so that change observers can read
             // the updated value
             getOrCreateReadRevision(tree).apply(command, null);

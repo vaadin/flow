@@ -133,8 +133,10 @@ public class SharedMapSignal<T>
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
                     if (success.updates().size() == 1) {
-                        return nodeValue(Objects.requireNonNull(
-                                success.onlyUpdate().oldNode()), elementType);
+                        return nodeValue(
+                                Objects.requireNonNull(
+                                        success.onlyUpdate().oldNode()),
+                                elementType);
                     } else {
                         // New node and mapChildren update -> no previous value
                         assert success.updates().size() == 2;
@@ -169,12 +171,12 @@ public class SharedMapSignal<T>
                     if (created) {
                         childId = commandId;
                     } else {
-                        var modification = Objects.requireNonNull(
-                                success.updates().get(id()));
-                        var newNode = (Data) Objects.requireNonNull(
-                                modification.newNode());
-                        childId = Objects.requireNonNull(
-                                newNode.mapChildren().get(key));
+                        var modification = Objects
+                                .requireNonNull(success.updates().get(id()));
+                        var newNode = (Data) Objects
+                                .requireNonNull(modification.newNode());
+                        childId = Objects
+                                .requireNonNull(newNode.mapChildren().get(key));
                     }
                     return new PutIfAbsentResult<>(created, child(childId));
                 });
@@ -196,8 +198,8 @@ public class SharedMapSignal<T>
                     NodeModification removal = success.updates().values()
                             .stream().filter(update -> update.newNode() == null)
                             .findAny().get();
-                    return nodeValue(Objects.requireNonNull(
-                            removal.oldNode()), elementType);
+                    return nodeValue(Objects.requireNonNull(removal.oldNode()),
+                            elementType);
                 });
     }
 

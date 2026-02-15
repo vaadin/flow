@@ -196,7 +196,8 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
-            @Nullable Object[] holder = new @Nullable Object[2];
+            @Nullable
+            Object[] holder = new @Nullable Object[2];
             Usage dependencies = UsageTracker.track(() -> {
                 try {
                     holder[0] = computation.compute();
@@ -204,8 +205,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                     holder[1] = e;
                 }
             });
-            @Nullable Object value = holder[0];
-            @Nullable RuntimeException exception = (RuntimeException) holder[1];
+            @Nullable
+            Object value = holder[0];
+            @Nullable
+            RuntimeException exception = (RuntimeException) holder[1];
 
             state = new ComputedState(value, exception, dependencies);
 

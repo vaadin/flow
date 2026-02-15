@@ -58,7 +58,8 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    SignalOperation<Void> replace(@Nullable T expectedValue, @Nullable T newValue);
+    SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue);
 
     /**
      * Updates the signal value based on the given callback. The callback

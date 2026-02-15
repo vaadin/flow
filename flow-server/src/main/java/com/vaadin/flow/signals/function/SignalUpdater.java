@@ -38,5 +38,6 @@ public interface SignalUpdater<T> extends Serializable {
      *            the current signal value, may be <code>null</code>
      * @return the new value to set, may be <code>null</code>
      */
-    @Nullable T update(@Nullable T currentValue);
+    @Nullable
+    T update(@Nullable T currentValue);
 }

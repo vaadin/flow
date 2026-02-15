@@ -64,5 +64,6 @@ public interface ValueMerger<O, I> extends Serializable {
      *            the new inner value to merge, may be <code>null</code>
      * @return the new outer value, may be <code>null</code>
      */
-    @Nullable O merge(@Nullable O outerValue, @Nullable I newInnerValue);
+    @Nullable
+    O merge(@Nullable O outerValue, @Nullable I newInnerValue);
 }

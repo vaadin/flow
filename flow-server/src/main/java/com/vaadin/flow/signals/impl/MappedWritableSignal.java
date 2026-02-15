@@ -92,8 +92,10 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     @Override
     public SignalOperation<Void> replace(@Nullable C expectedValue,
             @Nullable C newValue) {
-        @Nullable P originalParentValue = parent.peek();
-        @Nullable C oldChildValue = getter.map(originalParentValue);
+        @Nullable
+        P originalParentValue = parent.peek();
+        @Nullable
+        C oldChildValue = getter.map(originalParentValue);
         if (!Objects.equals(oldChildValue, expectedValue)) {
             return new SignalOperation<>(
                     new SignalOperation.Error<>("Unexpected child value"));
@@ -107,8 +109,10 @@ public class MappedWritableSignal<P, C> implements WritableSignal<C> {
     public CancelableOperation<C> update(SignalUpdater<C> childUpdater) {
         Objects.requireNonNull(childUpdater);
         return parent.update(parentValue -> {
-            @Nullable C currentChildValue = getter.map(parentValue);
-            @Nullable C newChildValue = childUpdater.update(currentChildValue);
+            @Nullable
+            C currentChildValue = getter.map(parentValue);
+            @Nullable
+            C newChildValue = childUpdater.update(currentChildValue);
             return merger.merge(parentValue, newChildValue);
         }).map(oldParent -> getter.map(oldParent));
     }

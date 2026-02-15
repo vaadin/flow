@@ -42,5 +42,6 @@ public interface ValueSupplier<T> extends Serializable {
      *
      * @return the supplied value, may be <code>null</code>
      */
-    @Nullable T supply();
+    @Nullable
+    T supply();
 }

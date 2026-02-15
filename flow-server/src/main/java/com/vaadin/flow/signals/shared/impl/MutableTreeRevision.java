@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import org.jspecify.annotations.Nullable;
-
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
@@ -102,10 +101,11 @@ public class MutableTreeRevision extends TreeRevision {
          *            the parent node data, not <code>null</code>
          * @param childId
          *            the child node ID to attach, not <code>null</code>
-         * @return the modified parent node data, or <code>null</code> if
-         *         the attach operation failed
+         * @return the modified parent node data, or <code>null</code> if the
+         *         attach operation failed
          */
-        @Nullable Data attach(Data parentNode, Id childId);
+        @Nullable
+        Data attach(Data parentNode, Id childId);
     }
 
     /**
@@ -297,10 +297,9 @@ public class MutableTreeRevision extends TreeRevision {
                 return;
             }
 
-            Id resolvedParentId = Objects.requireNonNull(
-                    resolveAlias(parentId));
-            Id resolvedChildId = Objects.requireNonNull(
-                    resolveAlias(childId));
+            Id resolvedParentId = Objects
+                    .requireNonNull(resolveAlias(parentId));
+            Id resolvedChildId = Objects.requireNonNull(resolveAlias(childId));
 
             if (!detachedNodes.contains(resolvedChildId)) {
                 fail("Node is not detached");

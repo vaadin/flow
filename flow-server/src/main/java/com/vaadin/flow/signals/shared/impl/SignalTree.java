@@ -414,8 +414,7 @@ public abstract class SignalTree implements Serializable {
             CommandResult result = results.get(command.commandId());
             if (result == null) {
                 throw new IllegalStateException(
-                        "Missing result for command "
-                                + command.commandId());
+                        "Missing result for command " + command.commandId());
             }
             for (var subscriber : subscribers) {
                 subscriber.onCommandProcessed(command, result);

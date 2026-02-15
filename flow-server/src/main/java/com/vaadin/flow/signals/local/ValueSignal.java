@@ -95,7 +95,8 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         try {
             checkPreconditions();
 
-            @Nullable T oldValue = getSignalValue();
+            @Nullable
+            T oldValue = getSignalValue();
 
             setSignalValue(value);
 
@@ -154,8 +155,10 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         try {
             checkPreconditions();
 
-            @Nullable T oldValue = getSignalValue();
-            @Nullable T newValue = updater.update(oldValue);
+            @Nullable
+            T oldValue = getSignalValue();
+            @Nullable
+            T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setSignalValue(newValue);
             }

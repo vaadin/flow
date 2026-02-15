@@ -226,8 +226,7 @@ public class StagedTransaction extends Transaction {
 
         TreeState treeState = openTrees.get(tree);
         if (treeState == null) {
-            throw new IllegalStateException(
-                    "No state for tree " + tree.id());
+            throw new IllegalStateException("No state for tree " + tree.id());
         }
         CommandsAndHandlers change = treeState.staged;
 
@@ -255,8 +254,7 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public void include(SignalTree tree, SignalCommand command,
-            @Nullable CommandResultHandler resultHandler,
-            boolean applyToTree) {
+            @Nullable CommandResultHandler resultHandler, boolean applyToTree) {
         if (committing) {
             outer.include(tree, command, resultHandler, applyToTree);
             return;

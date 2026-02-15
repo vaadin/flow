@@ -94,8 +94,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertAt(int index, T value) {
         lock();
         try {
-            List<ValueSignal<T>> entries =
-                    Objects.requireNonNull(getSignalValue());
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
             if (index < 0 || index > entries.size()) {
                 throw new IndexOutOfBoundsException(
                         "Index: " + index + ", Size: " + entries.size());
@@ -126,8 +126,8 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void remove(ValueSignal<T> entry) {
         lock();
         try {
-            List<ValueSignal<T>> entries =
-                    Objects.requireNonNull(getSignalValue());
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
             List<ValueSignal<T>> newEntries = entries.stream()
                     .filter(e -> e != entry).toList();
             if (newEntries.size() < entries.size()) {

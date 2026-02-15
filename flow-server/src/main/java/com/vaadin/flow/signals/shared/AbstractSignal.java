@@ -71,7 +71,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
          *            the accepted command result, not <code>null</code>
          * @return the converted value, may be <code>null</code>
          */
-        @Nullable T convert(CommandResult.Accept accept);
+        @Nullable
+        T convert(CommandResult.Accept accept);
     }
 
     /**
@@ -573,7 +574,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the target type, not <code>null</code>
      * @return the converted Java instance
      */
-    protected static <T> @Nullable T fromJson(@Nullable JsonNode value, Class<T> targetType) {
+    protected static <T> @Nullable T fromJson(@Nullable JsonNode value,
+            Class<T> targetType) {
         try {
             return OBJECT_MAPPER.treeToValue(value, targetType);
         } catch (JacksonException e) {

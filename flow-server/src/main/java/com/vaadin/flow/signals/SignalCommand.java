@@ -67,7 +67,8 @@ public sealed interface SignalCommand extends Serializable {
          *
          * @return the JSON value, or <code>null</code>
          */
-        @Nullable JsonNode value();
+        @Nullable
+        JsonNode value();
     }
 
     /**
@@ -101,7 +102,8 @@ public sealed interface SignalCommand extends Serializable {
          * @return the owner id, or <code>null</code> if the created signal has
          *         no scope owner
          */
-        @Nullable Id scopeOwner();
+        @Nullable
+        Id scopeOwner();
     }
 
     /**
@@ -335,8 +337,8 @@ public sealed interface SignalCommand extends Serializable {
      * @param position
      *            the list insert position, not <code>null</code>
      */
-    record InsertCommand(Id commandId, Id targetNodeId,
-            @Nullable Id scopeOwner, @Nullable JsonNode value,
+    record InsertCommand(Id commandId, Id targetNodeId, @Nullable Id scopeOwner,
+            @Nullable JsonNode value,
             ListPosition position) implements ValueCommand, ScopeOwnerCommand {
     }
 

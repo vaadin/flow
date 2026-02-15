@@ -105,8 +105,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
         return submit(
                 new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
                 success -> nodeValue(
-                        Objects.requireNonNull(
-                                success.onlyUpdate().oldNode()),
+                        Objects.requireNonNull(success.onlyUpdate().oldNode()),
                         valueType));
     }
 
@@ -156,8 +155,8 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
          * Cannot easily optimize this to directly submit a transaction command
          * since we need the previous value from the set command result
          */
-        SignalOperation<T> setOperation = Objects.requireNonNull(
-                Transaction.runInTransaction(() -> {
+        SignalOperation<T> setOperation = Objects
+                .requireNonNull(Transaction.runInTransaction(() -> {
                     T value = peek();
                     verifyValue(value);
 

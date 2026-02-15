@@ -70,7 +70,8 @@ public interface Signal<T> extends Serializable {
      *
      * @return the signal value
      */
-    @Nullable T get();
+    @Nullable
+    T get();
 
     /**
      * Reads the value without setting up any dependencies. This method returns
