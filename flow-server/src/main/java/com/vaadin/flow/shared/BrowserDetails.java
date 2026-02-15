@@ -16,6 +16,9 @@
 package com.vaadin.flow.shared;
 
 import java.io.Serializable;
+import java.util.Objects;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parses the user agent string from the browser and provides information about
@@ -50,15 +53,15 @@ public class BrowserDetails implements Serializable {
         UNKNOWN, GECKO, WEBKIT, PRESTO, TRIDENT
     }
 
-    private BrowserName browserName;
-    private BrowserEngine browserEngine;
+    private @Nullable BrowserName browserName;
+    private @Nullable BrowserEngine browserEngine;
 
     private boolean isWindowsPhone;
     private boolean isIPad;
     private boolean isIPhone;
     private boolean isChromeOS;
 
-    private OperatingSystem os;
+    private @Nullable OperatingSystem os;
 
     private float browserEngineVersion = -10.0f;
     private int browserMajorVersion = -10;
@@ -130,20 +133,21 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
+        var engine = Objects.requireNonNull(browserEngine);
         try {
-            if (browserEngine.equals(BrowserEngine.GECKO)) {
+            if (engine.equals(BrowserEngine.GECKO)) {
                 int rvPos = userAgent.indexOf("rv:");
                 if (rvPos >= 0) {
                     String tmp = userAgent.substring(rvPos + 3);
                     tmp = tmp.replaceFirst("(\\.[0-9]+).+", "$1");
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
-            } else if (browserEngine.equals(BrowserEngine.WEBKIT)) {
+            } else if (engine.equals(BrowserEngine.WEBKIT)) {
                 String tmp = userAgent
                         .substring(userAgent.indexOf("webkit/") + 7);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
-            } else if (browserEngine.equals(BrowserEngine.TRIDENT)) {
+            } else if (engine.equals(BrowserEngine.TRIDENT)) {
                 String tmp = userAgent
                         .substring(userAgent.indexOf("trident/") + 8);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
@@ -177,9 +181,11 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
+        var name = Objects.requireNonNull(browserName);
+        var engine = Objects.requireNonNull(browserEngine);
         // Browser version
         try {
-            if (browserName.equals(BrowserName.IE)) {
+            if (name.equals(BrowserName.IE)) {
                 if (!userAgent.contains("msie")) {
                     // IE 11+
                     int rvPos = userAgent.indexOf("rv:");
@@ -188,7 +194,7 @@ public class BrowserDetails implements Serializable {
                         tmp = tmp.replaceFirst("(\\.[0-9]+).+", "$1");
                         parseVersionString(tmp, userAgent);
                     }
-                } else if (browserEngine.equals(BrowserEngine.TRIDENT)) {
+                } else if (engine.equals(BrowserEngine.TRIDENT)) {
                     // potentially IE 11 in compatibility mode
                     // See
                     // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537503(v=vs.85)#trident-token
@@ -201,7 +207,7 @@ public class BrowserDetails implements Serializable {
                             ieVersionString.indexOf(';'));
                     parseVersionString(ieVersionString, userAgent);
                 }
-            } else if (browserName.equals(BrowserName.FIREFOX)) {
+            } else if (name.equals(BrowserName.FIREFOX)) {
                 int i = userAgent.indexOf(" fxios/");
                 if (i != -1) {
                     // Version present in Opera 10 and newer
@@ -213,9 +219,9 @@ public class BrowserDetails implements Serializable {
                         safeSubstring(userAgent, i,
                                 i + getVersionStringLength(userAgent, i)),
                         userAgent);
-            } else if (browserName.equals(BrowserName.CHROME)) {
+            } else if (name.equals(BrowserName.CHROME)) {
                 parseChromeVersion(userAgent);
-            } else if (browserName.equals(BrowserName.SAFARI)) {
+            } else if (name.equals(BrowserName.SAFARI)) {
                 int i = userAgent.indexOf(" version/");
                 if (i >= 0) {
                     i += 9;
@@ -254,7 +260,7 @@ public class BrowserDetails implements Serializable {
                         browserMinorVersion = 1;
                     }
                 }
-            } else if (browserName.equals(BrowserName.OPERA)) {
+            } else if (name.equals(BrowserName.OPERA)) {
                 int i = userAgent.indexOf(" version/");
                 if (i != -1) {
                     // Version present in Opera 10 and newer
@@ -268,7 +274,7 @@ public class BrowserDetails implements Serializable {
                         safeSubstring(userAgent, i,
                                 i + getVersionStringLength(userAgent, i)),
                         userAgent);
-            } else if (browserName.equals(BrowserName.EDGE)) {
+            } else if (name.equals(BrowserName.EDGE)) {
                 int i = userAgent.indexOf(" edge/") + 6;
                 if (userAgent.contains(" edg/")) {
                     i = userAgent.indexOf(" edg/") + 5;
@@ -536,7 +542,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.FIREFOX);
+        return Objects.requireNonNull(browserName).equals(BrowserName.FIREFOX);
     }
 
     /**
@@ -548,7 +554,8 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
-        return browserEngine.equals(BrowserEngine.GECKO);
+        return Objects.requireNonNull(browserEngine)
+                .equals(BrowserEngine.GECKO);
     }
 
     /**
@@ -560,7 +567,8 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
-        return browserEngine.equals(BrowserEngine.WEBKIT);
+        return Objects.requireNonNull(browserEngine)
+                .equals(BrowserEngine.WEBKIT);
     }
 
     /**
@@ -572,7 +580,8 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
-        return browserEngine.equals(BrowserEngine.PRESTO);
+        return Objects.requireNonNull(browserEngine)
+                .equals(BrowserEngine.PRESTO);
     }
 
     /**
@@ -584,7 +593,8 @@ public class BrowserDetails implements Serializable {
         if (browserEngine == null) {
             parseBrowserEngine();
         }
-        return browserEngine.equals(BrowserEngine.TRIDENT);
+        return Objects.requireNonNull(browserEngine)
+                .equals(BrowserEngine.TRIDENT);
     }
 
     /**
@@ -596,7 +606,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.SAFARI);
+        return Objects.requireNonNull(browserName).equals(BrowserName.SAFARI);
     }
 
     /**
@@ -608,7 +618,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.CHROME);
+        return Objects.requireNonNull(browserName).equals(BrowserName.CHROME);
     }
 
     /**
@@ -620,7 +630,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.OPERA);
+        return Objects.requireNonNull(browserName).equals(BrowserName.OPERA);
     }
 
     /**
@@ -632,7 +642,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.IE);
+        return Objects.requireNonNull(browserName).equals(BrowserName.IE);
     }
 
     /**
@@ -644,7 +654,7 @@ public class BrowserDetails implements Serializable {
         if (browserName == null) {
             parseBrowserName();
         }
-        return browserName.equals(BrowserName.EDGE);
+        return Objects.requireNonNull(browserName).equals(BrowserName.EDGE);
     }
 
     /**
@@ -694,7 +704,7 @@ public class BrowserDetails implements Serializable {
         if (os == null) {
             parseOperatingSystem();
         }
-        return os;
+        return Objects.requireNonNull(os);
     }
 
     /**

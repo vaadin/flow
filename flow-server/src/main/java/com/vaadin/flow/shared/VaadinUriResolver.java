@@ -17,6 +17,8 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Utility for translating special Vaadin URIs into URLs usable by the browser.
  * This is an abstract class performing the main logic in
@@ -49,7 +51,8 @@ public abstract class VaadinUriResolver implements Serializable {
      *            the client) to the context root
      * @return the resolved URI
      */
-    protected String resolveVaadinUri(String uri, String servletToContextRoot) {
+    protected @Nullable String resolveVaadinUri(@Nullable String uri,
+            String servletToContextRoot) {
         if (uri == null) {
             return null;
         }
