@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -54,9 +56,9 @@ public class Page implements Serializable {
 
     private final UI ui;
     private final History history;
-    private DomListenerRegistration resizeReceiver;
-    private ArrayList<BrowserWindowResizeListener> resizeListeners;
-    private ValueSignal<WindowSize> windowSizeSignal;
+    private @Nullable DomListenerRegistration resizeReceiver;
+    private @Nullable ArrayList<BrowserWindowResizeListener> resizeListeners;
+    private @Nullable ValueSignal<WindowSize> windowSizeSignal;
 
     /**
      * Creates a page instance for the given UI.
@@ -100,7 +102,7 @@ public class Page implements Serializable {
      *            the color scheme to set (e.g., ColorScheme.Value.DARK,
      *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
      */
-    public void setColorScheme(ColorScheme.Value colorScheme) {
+    public void setColorScheme(ColorScheme.@Nullable Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
             executeJs("""
                     document.documentElement.removeAttribute('theme');
@@ -399,8 +401,7 @@ public class Page implements Serializable {
      * @return a read-only signal with the current window size
      */
     public Signal<WindowSize> windowSizeSignal() {
-        ensureWindowSizeSignal();
-        return windowSizeSignal.asReadonly();
+        return getOrCreateWindowSizeSignal().asReadonly();
     }
 
     /**
@@ -413,16 +414,18 @@ public class Page implements Serializable {
      *            the window inner height
      */
     void setWindowSize(int width, int height) {
-        ensureWindowSizeSignal();
-        windowSizeSignal
+        getOrCreateWindowSizeSignal()
                 .set(new WindowSize(Math.max(width, 0), Math.max(height, 0)));
     }
 
-    private void ensureWindowSizeSignal() {
-        if (windowSizeSignal == null) {
-            windowSizeSignal = new ValueSignal<>(new WindowSize(0, 0));
+    private ValueSignal<WindowSize> getOrCreateWindowSizeSignal() {
+        ValueSignal<WindowSize> signal = windowSizeSignal;
+        if (signal == null) {
+            signal = new ValueSignal<>(new WindowSize(0, 0));
+            windowSizeSignal = signal;
         }
         ensureResizeListener();
+        return signal;
     }
 
     /**
@@ -441,11 +444,13 @@ public class Page implements Serializable {
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
         ensureResizeListener();
-        if (resizeListeners == null) {
-            resizeListeners = new ArrayList<>(1);
+        var listeners = resizeListeners;
+        if (listeners == null) {
+            listeners = new ArrayList<>(1);
+            resizeListeners = listeners;
         }
-        resizeListeners.add(resizeListener);
-        return () -> resizeListeners.remove(resizeListener);
+        listeners.add(resizeListener);
+        return () -> listeners.remove(resizeListener);
     }
 
     private void ensureResizeListener() {
@@ -467,9 +472,10 @@ public class Page implements Serializable {
                         if (windowSizeSignal != null) {
                             windowSizeSignal.set(new WindowSize(w, h));
                         }
-                        if (resizeListeners != null) {
+                        var listeners = resizeListeners;
+                        if (listeners != null) {
                             var evt = new BrowserWindowResizeEvent(this, w, h);
-                            new ArrayList<>(resizeListeners)
+                            new ArrayList<>(listeners)
                                     .forEach(l -> l.browserWindowResized(evt));
                         }
                     }).addEventData("event.w").addEventData("event.h")

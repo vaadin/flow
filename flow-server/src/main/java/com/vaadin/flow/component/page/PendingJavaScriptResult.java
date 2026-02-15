@@ -18,6 +18,7 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
@@ -108,7 +109,7 @@ public interface PendingJavaScriptResult extends Serializable {
      */
     default <T> void then(Class<T> targetType,
             SerializableConsumer<T> resultHandler,
-            SerializableConsumer<String> errorHandler) {
+            @Nullable SerializableConsumer<String> errorHandler) {
         if (targetType == null) {
             throw new IllegalArgumentException("Target type cannot be null");
         }
@@ -237,7 +238,7 @@ public interface PendingJavaScriptResult extends Serializable {
      */
     default <T> void then(TypeReference<T> typeReference,
             SerializableConsumer<T> resultHandler,
-            SerializableConsumer<String> errorHandler) {
+            @Nullable SerializableConsumer<String> errorHandler) {
         if (typeReference == null) {
             throw new IllegalArgumentException("Type reference cannot be null");
         }
@@ -339,7 +340,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            or <code>null</code> to ignore errors
      */
     void then(SerializableConsumer<JsonNode> resultHandler,
-            SerializableConsumer<String> errorHandler);
+            @Nullable SerializableConsumer<String> errorHandler);
 
     /**
      * Adds an untyped handler that will be run for a successful execution. The

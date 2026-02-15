@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Defines the color scheme for the application using the CSS color-scheme
  * property.
@@ -148,7 +150,7 @@ public @interface ColorScheme {
          *            the CSS color-scheme value string
          * @return the corresponding enum value, or NORMAL if not recognized
          */
-        public static Value fromString(String value) {
+        public static Value fromString(@Nullable String value) {
             if (value == null || value.isEmpty()) {
                 return NORMAL;
             }

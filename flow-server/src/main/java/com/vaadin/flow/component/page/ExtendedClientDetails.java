@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
@@ -52,14 +53,14 @@ public class ExtendedClientDetails implements Serializable {
     private int rawTimezoneOffset = 0;
     private int dstSavings;
     private boolean dstInEffect;
-    private String timeZoneId;
+    private @Nullable String timeZoneId;
     private long clientServerTimeDelta;
     private boolean touchDevice;
     private double devicePixelRatio = -1.0D;
-    private String windowName;
-    private String navigatorPlatform;
+    private @Nullable String windowName;
+    private @Nullable String navigatorPlatform;
     private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
-    private String themeName;
+    private @Nullable String themeName;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -105,13 +106,16 @@ public class ExtendedClientDetails implements Serializable {
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
      */
-    public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
-            String windowInnerWidth, String windowInnerHeight,
-            String bodyClientWidth, String bodyClientHeight, String tzOffset,
-            String rawTzOffset, String dstShift, String dstInEffect,
-            String tzId, String curDate, String touchDevice,
-            String devicePixelRatio, String windowName,
-            String navigatorPlatform, String colorScheme, String themeName) {
+    public ExtendedClientDetails(UI ui, @Nullable String screenWidth,
+            @Nullable String screenHeight, @Nullable String windowInnerWidth,
+            @Nullable String windowInnerHeight,
+            @Nullable String bodyClientWidth, @Nullable String bodyClientHeight,
+            @Nullable String tzOffset, @Nullable String rawTzOffset,
+            @Nullable String dstShift, @Nullable String dstInEffect,
+            @Nullable String tzId, @Nullable String curDate,
+            @Nullable String touchDevice, @Nullable String devicePixelRatio,
+            @Nullable String windowName, @Nullable String navigatorPlatform,
+            @Nullable String colorScheme, @Nullable String themeName) {
         this.ui = ui;
         if (screenWidth != null) {
             try {
@@ -278,7 +282,7 @@ public class ExtendedClientDetails implements Serializable {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat/resolvedOptions">Intl.DateTimeFormat.prototype.resolvedOptions()</a>
      */
-    public String getTimeZoneId() {
+    public @Nullable String getTimeZoneId() {
         return timeZoneId;
     }
 
@@ -382,7 +386,7 @@ public class ExtendedClientDetails implements Serializable {
      * @return An id which persists if the UI is reloaded in the same browser
      *         window/tab.
      */
-    public String getWindowName() {
+    public @Nullable String getWindowName() {
         return windowName;
     }
 
@@ -425,7 +429,7 @@ public class ExtendedClientDetails implements Serializable {
      * @return the theme name (e.g., "lumo", "aura"), or empty string if not
      *         detected
      */
-    public String getThemeName() {
+    public @Nullable String getThemeName() {
         return themeName;
     }
 
@@ -435,7 +439,7 @@ public class ExtendedClientDetails implements Serializable {
      * @param colorScheme
      *            the new color scheme
      */
-    void setColorScheme(ColorScheme.Value colorScheme) {
+    void setColorScheme(ColorScheme.@Nullable Value colorScheme) {
         this.colorScheme = colorScheme == null ? ColorScheme.Value.NORMAL
                 : colorScheme;
     }
@@ -464,7 +468,7 @@ public class ExtendedClientDetails implements Serializable {
         // Note that JSON returned is a plain string -> string map, the actual
         // parsing of the fields happens in ExtendedClient's constructor. If a
         // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
+        final Function<String, @Nullable String> getStringElseNull = key -> {
             final JsonNode jsValue = jsonObj.get(key);
             if (jsValue != null
                     && JsonNodeType.STRING.equals(jsValue.getNodeType())) {

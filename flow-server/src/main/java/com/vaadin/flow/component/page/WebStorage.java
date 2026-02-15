@@ -18,6 +18,7 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
@@ -64,7 +65,7 @@ public interface WebStorage extends Serializable {
          * @param value
          *            the value or null if the value was not available.
          */
-        void onValueDetected(String value);
+        void onValueDetected(@Nullable String value);
     }
 
     /**

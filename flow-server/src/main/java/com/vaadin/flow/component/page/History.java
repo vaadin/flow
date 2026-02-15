@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
@@ -48,7 +49,7 @@ public class History implements Serializable {
      */
     public static class HistoryStateChangeEvent extends EventObject {
         private final Location location;
-        private final transient BaseJsonNode state;
+        private final transient @Nullable BaseJsonNode state;
         private final NavigationTrigger trigger;
 
         /**
@@ -66,8 +67,9 @@ public class History implements Serializable {
          *            the type of user action that triggered this history
          *            change, not <code>null</code>
          */
-        public HistoryStateChangeEvent(History history, BaseJsonNode state,
-                Location location, NavigationTrigger trigger) {
+        public HistoryStateChangeEvent(History history,
+                @Nullable BaseJsonNode state, Location location,
+                NavigationTrigger trigger) {
             super(history);
 
             assert location != null;
@@ -130,7 +132,7 @@ public class History implements Serializable {
     }
 
     private final UI ui;
-    private HistoryStateChangeHandler historyStateChangeHandler;
+    private @Nullable HistoryStateChangeHandler historyStateChangeHandler;
 
     /**
      * Creates a history API endpoint for the given UI.
@@ -165,7 +167,8 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(BaseJsonNode state, String location) {
+    public void pushState(@Nullable BaseJsonNode state,
+            @Nullable String location) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -186,8 +189,8 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void pushState(BaseJsonNode state, String location,
-            boolean callback) {
+    public void pushState(@Nullable BaseJsonNode state,
+            @Nullable String location, boolean callback) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
                 callback);
@@ -204,7 +207,8 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(BaseJsonNode state, Location location) {
+    public void pushState(@Nullable BaseJsonNode state,
+            @Nullable Location location) {
         pushState(state, location, false);
     }
 
@@ -222,8 +226,11 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void pushState(BaseJsonNode state, Location location,
-            boolean callback) {
+    // executeJs accepts nullable Serializable params but is in
+    // non-@NullMarked code
+    @SuppressWarnings("NullAway")
+    public void pushState(@Nullable BaseJsonNode state,
+            @Nullable Location location, boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
         // Second parameter is title which is currently ignored according to
@@ -253,7 +260,8 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(BaseJsonNode state, String location) {
+    public void replaceState(@Nullable BaseJsonNode state,
+            @Nullable String location) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -274,8 +282,8 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void replaceState(BaseJsonNode state, String location,
-            boolean callback) {
+    public void replaceState(@Nullable BaseJsonNode state,
+            @Nullable String location, boolean callback) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
                 callback);
@@ -292,7 +300,8 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(BaseJsonNode state, Location location) {
+    public void replaceState(@Nullable BaseJsonNode state,
+            @Nullable Location location) {
         replaceState(state, location, false);
     }
 
@@ -310,8 +319,11 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void replaceState(BaseJsonNode state, Location location,
-            boolean callback) {
+    // executeJs accepts nullable Serializable params but is in
+    // non-@NullMarked code
+    @SuppressWarnings("NullAway")
+    public void replaceState(@Nullable BaseJsonNode state,
+            @Nullable Location location, boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
         // Second parameter is title which is currently ignored according to
@@ -341,7 +353,7 @@ public class History implements Serializable {
      * @see History.HistoryStateChangeEvent
      */
     public void setHistoryStateChangeHandler(
-            HistoryStateChangeHandler historyStateChangeHandler) {
+            @Nullable HistoryStateChangeHandler historyStateChangeHandler) {
         this.historyStateChangeHandler = historyStateChangeHandler;
     }
 
@@ -352,7 +364,7 @@ public class History implements Serializable {
      *         set
      * @see History.HistoryStateChangeEvent
      */
-    public HistoryStateChangeHandler getHistoryStateChangeHandler() {
+    public @Nullable HistoryStateChangeHandler getHistoryStateChangeHandler() {
         return historyStateChangeHandler;
     }
 
@@ -396,7 +408,8 @@ public class History implements Serializable {
         ui.getPage().executeJs("history.go($0)", steps);
     }
 
-    private String getPathWithQueryParameters(Location location) {
+    private @Nullable String getPathWithQueryParameters(
+            @Nullable Location location) {
         // In the Location API, getPath() returning "" means document base URL.
         // On FF and Safari, passing '' for the URL parameter does not update
         // URL to the base, so we replace '' with '.' here.
