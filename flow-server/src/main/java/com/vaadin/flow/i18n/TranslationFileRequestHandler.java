@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -85,7 +86,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
 
     private final ClassLoader classLoader;
 
-    private Map<String, String[]> chunkData;
+    private @Nullable Map<String, String[]> chunkData;
 
     public TranslationFileRequestHandler(I18NProvider i18NProvider,
             ClassLoader classLoader) {
@@ -174,8 +175,8 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
         getLogger().debug(errorMessage);
     }
 
-    private ObjectNode collectTranslations(String[] chunks, String[] keys,
-            Locale locale) {
+    private ObjectNode collectTranslations(String @Nullable [] chunks,
+            String @Nullable [] keys, Locale locale) {
         var json = JacksonUtils.createObjectNode();
 
         var chunkStream = Optional.ofNullable(chunks).map(chunkNames -> {
@@ -252,7 +253,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
             }
         }
 
-        return chunkData;
+        return Objects.requireNonNull(chunkData);
     }
 
     private Logger getLogger() {

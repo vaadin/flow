@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +107,7 @@ public class DefaultI18NProvider implements I18NProvider {
                 : getTranslations(bundle.keySet(), locale);
     }
 
+    @Nullable
     ResourceBundle getBundle(Locale locale) {
         try {
             return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);

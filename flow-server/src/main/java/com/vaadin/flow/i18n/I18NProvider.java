@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.server.VaadinService;
@@ -48,7 +50,7 @@ public interface I18NProvider extends Serializable {
      *
      * @return default locale
      */
-    default Locale getDefaultLocale() {
+    default @Nullable Locale getDefaultLocale() {
         List<Locale> providedLocales = getProvidedLocales();
         if (providedLocales.isEmpty()) {
             return null;
