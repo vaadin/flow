@@ -17,6 +17,8 @@ package com.vaadin.flow.server.streams;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.VaadinResponse;
 
 /**
@@ -41,7 +43,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferEvent.getContentLength(), transferEvent.getException());
     }
 
-    protected String getContentType(String fileName, VaadinResponse response) {
+    protected String getContentType(@Nullable String fileName,
+            VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
     }

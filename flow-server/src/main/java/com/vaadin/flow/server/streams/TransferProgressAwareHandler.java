@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -43,7 +45,7 @@ import com.vaadin.flow.shared.Registration;
 public abstract class TransferProgressAwareHandler<T, R extends TransferProgressAwareHandler>
         implements Serializable {
 
-    private List<TransferProgressListener> listeners;
+    private @Nullable List<TransferProgressListener> listeners;
 
     /**
      * This method is used to get the transfer context from the transfer events
@@ -58,7 +60,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     /**
      * UI that the transfer was started with. Set from context if not given.
      */
-    private UI ui;
+    private @Nullable UI ui;
 
     /**
      * Adds a listener to be notified of data transfer progress events, such as:
@@ -113,7 +115,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
                 if (ui == null) {
                     setTransferUI(context.getUI());
                 }
-                ui.access(startHandler::run);
+                Objects.requireNonNull(ui).access(startHandler::run);
             }
         });
         return (R) this;
@@ -397,7 +399,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         return Registration.addAndRemove(listeners, listener);
     }
 
-    protected void setTransferUI(UI ui) {
+    protected void setTransferUI(@Nullable UI ui) {
         this.ui = ui;
         if (listeners != null) {
             listeners.stream()
@@ -411,7 +413,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         if (ui == null) {
             setTransferUI(context.getUI());
         }
-        ui.access(command);
+        Objects.requireNonNull(ui).access(command);
     }
 
     /**
@@ -422,7 +424,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     private static final class TransferProgressListenerWrapper
             implements TransferProgressListener {
         private final TransferProgressListener delegate;
-        private UI ui;
+        private @Nullable UI ui;
 
         public TransferProgressListenerWrapper(
                 TransferProgressListener delegate) {
@@ -457,7 +459,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             return delegate.progressReportInterval();
         }
 
-        protected void setTransferUI(UI ui) {
+        protected void setTransferUI(@Nullable UI ui) {
             this.ui = ui;
         }
 
@@ -466,7 +468,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             if (ui == null) {
                 setTransferUI(context.getUI());
             }
-            ui.access(command);
+            Objects.requireNonNull(ui).access(command);
         }
     }
 }

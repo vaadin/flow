@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -43,17 +44,17 @@ public class UploadEvent {
     private final VaadinResponse response;
     private final VaadinSession session;
 
-    private final String fileName;
-    private final String contentType;
+    private final @Nullable String fileName;
+    private final @Nullable String contentType;
 
     private final long fileSize;
 
     private final Element owningElement;
 
-    private final Part part;
+    private final @Nullable Part part;
 
     private boolean rejected = false;
-    private String rejectionMessage;
+    private @Nullable String rejectionMessage;
 
     /**
      * Create a new download event with required data.
@@ -76,8 +77,9 @@ public class UploadEvent {
      *            multipart part item, {@code null} for xhr upload
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, String fileName, long contentLength,
-            String contentType, Element owningElement, Part part) {
+            VaadinSession session, @Nullable String fileName,
+            long contentLength, @Nullable String contentType,
+            Element owningElement, @Nullable Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
@@ -148,7 +150,7 @@ public class UploadEvent {
      *
      * @return file name
      */
-    public String getFileName() {
+    public @Nullable String getFileName() {
         return fileName;
     }
 
@@ -159,7 +161,7 @@ public class UploadEvent {
      *
      * @return set content type
      */
-    public String getContentType() {
+    public @Nullable String getContentType() {
         return contentType;
     }
 
@@ -177,7 +179,7 @@ public class UploadEvent {
      *
      * @return owning component or null in none defined
      */
-    public Component getOwningComponent() {
+    public @Nullable Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
     }
 
@@ -255,7 +257,7 @@ public class UploadEvent {
      *
      * @return the rejection message, or {@code null} if not rejected
      */
-    public String getRejectionMessage() {
+    public @Nullable String getRejectionMessage() {
         return rejectionMessage;
     }
 }

@@ -17,6 +17,8 @@ package com.vaadin.flow.server.streams;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -50,8 +52,8 @@ import com.vaadin.flow.server.VaadinSession;
  *            <code>null</code>.
  */
 public record TransferContext(VaadinRequest request, VaadinResponse response,
-        VaadinSession session, String fileName, Element owningElement,
-        long contentLength, Exception exception) {
+        VaadinSession session, @Nullable String fileName, Element owningElement,
+        long contentLength, @Nullable Exception exception) {
 
     /**
      * Create a transfer context for data transfer progress listeners.
@@ -74,8 +76,8 @@ public record TransferContext(VaadinRequest request, VaadinResponse response,
      *            an input stream
      */
     public TransferContext(VaadinRequest request, VaadinResponse response,
-            VaadinSession session, String fileName, Element owningElement,
-            long contentLength) {
+            VaadinSession session, @Nullable String fileName,
+            Element owningElement, long contentLength) {
         this(request, response, session, fileName, owningElement, contentLength,
                 null);
     }
@@ -89,7 +91,7 @@ public record TransferContext(VaadinRequest request, VaadinResponse response,
      *
      * @return owning component or null if none is defined
      */
-    public Component getOwningComponent() {
+    public @Nullable Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
     }
 

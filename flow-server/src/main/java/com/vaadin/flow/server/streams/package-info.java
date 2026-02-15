@@ -13,22 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@NullMarked
 package com.vaadin.flow.server.streams;
 
-import org.jspecify.annotations.Nullable;
-
-/**
- * Metadata for successful upload.
- * <p>
- * The fileName and contentType will only be available for multipart uploads.
- *
- * @param fileName
- *            the name of the uploaded file
- * @param contentType
- *            the content type of the uploaded file
- * @param contentLength
- *            the length of the uploaded content in bytes
- */
-public record UploadMetadata(@Nullable String fileName,
-        @Nullable String contentType, long contentLength) {
-}
+import org.jspecify.annotations.NullMarked;

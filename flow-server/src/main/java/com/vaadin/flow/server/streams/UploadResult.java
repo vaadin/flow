@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.VaadinResponse;
 
 /**
@@ -41,7 +43,7 @@ import com.vaadin.flow.server.VaadinResponse;
  *            list of rejected files with their rejection reasons
  */
 public record UploadResult(boolean success, VaadinResponse response,
-        Exception exception, List<String> acceptedFiles,
+        @Nullable Exception exception, List<String> acceptedFiles,
         List<RejectedFile> rejectedFiles) implements Serializable {
 
     /**

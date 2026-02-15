@@ -18,6 +18,8 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
@@ -63,7 +65,7 @@ public interface ElementRequestHandler extends Serializable {
      *
      * @return String optional URL postfix, or {@code null} for "".
      */
-    default String getUrlPostfix() {
+    default @Nullable String getUrlPostfix() {
         return null;
     }
 

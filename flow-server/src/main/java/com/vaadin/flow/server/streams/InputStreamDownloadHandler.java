@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -60,7 +61,7 @@ public class InputStreamDownloadHandler
             if (e instanceof IOException ioe) {
                 cause = ioe;
             } else if (e instanceof UncheckedIOException uioe) {
-                cause = uioe.getCause();
+                cause = Objects.requireNonNull(uioe.getCause());
             } else {
                 cause = new IOException(e.getMessage(), e);
             }

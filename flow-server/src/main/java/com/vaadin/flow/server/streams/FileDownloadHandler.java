@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.TransferUtil;
@@ -34,7 +36,7 @@ public class FileDownloadHandler
         extends AbstractDownloadHandler<FileDownloadHandler> {
 
     private final File file;
-    private final String fileNameOverride;
+    private final @Nullable String fileNameOverride;
 
     /**
      * Create a download handler for given file. Url postfix will be used as
@@ -65,7 +67,7 @@ public class FileDownloadHandler
      *            URL postfix, e.g.
      *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
      */
-    public FileDownloadHandler(File file, String fileNameOverride) {
+    public FileDownloadHandler(File file, @Nullable String fileNameOverride) {
         this.file = file;
         this.fileNameOverride = fileNameOverride;
     }

@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -46,10 +47,10 @@ public class DownloadEvent {
     private VaadinResponse response;
     private VaadinSession session;
     private Element owningElement;
-    private String fileName;
-    private String contentType;
+    private @Nullable String fileName;
+    private @Nullable String contentType;
     private long contentLength = -1;
-    private Exception exception;
+    private @Nullable Exception exception;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -145,7 +146,7 @@ public class DownloadEvent {
      * @param fileName
      *            the name to be assigned to the file
      */
-    public void setFileName(String fileName) {
+    public void setFileName(@Nullable String fileName) {
         if (fileName == null
                 || response.containsHeader("Content-Disposition")) {
             return;
@@ -202,7 +203,7 @@ public class DownloadEvent {
      * @param fileName
      *            the suggested name for the file if saved by the user
      */
-    public void inline(String fileName) {
+    public void inline(@Nullable String fileName) {
         if (response.containsHeader("Content-Disposition")) {
             return;
         }
@@ -268,7 +269,7 @@ public class DownloadEvent {
      *
      * @return owning component or null in none defined
      */
-    public Component getOwningComponent() {
+    public @Nullable Component getOwningComponent() {
         return owningElement.getComponent().orElse(null);
     }
 
@@ -299,10 +300,12 @@ public class DownloadEvent {
                 .orElseGet(UI::getCurrent);
     }
 
+    @Nullable
     String getFileName() {
         return fileName;
     }
 
+    @Nullable
     String getContentType() {
         return contentType;
     }
@@ -311,6 +314,7 @@ public class DownloadEvent {
         return contentLength;
     }
 
+    @Nullable
     Exception getException() {
         return exception;
     }

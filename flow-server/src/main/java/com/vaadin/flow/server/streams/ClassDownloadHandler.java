@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
@@ -38,7 +39,7 @@ public class ClassDownloadHandler
 
     private final Class<?> clazz;
     private final String resourceName;
-    private String fileName;
+    private @Nullable String fileName;
 
     /**
      * Create a class resource download handler with the resource name as the
@@ -73,7 +74,7 @@ public class ClassDownloadHandler
      *            and also used as a download request URL postfix
      */
     public ClassDownloadHandler(Class<?> clazz, String resourceName,
-            String fileName) {
+            @Nullable String fileName) {
         this.clazz = clazz;
         this.resourceName = resourceName;
         this.fileName = fileName;

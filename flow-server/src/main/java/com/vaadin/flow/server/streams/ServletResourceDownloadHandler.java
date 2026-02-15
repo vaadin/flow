@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -37,7 +39,7 @@ public class ServletResourceDownloadHandler
         extends AbstractDownloadHandler<ServletResourceDownloadHandler> {
 
     private final String path;
-    private final String fileNameOverride;
+    private final @Nullable String fileNameOverride;
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
@@ -68,7 +70,7 @@ public class ServletResourceDownloadHandler
      *            postfix
      */
     public ServletResourceDownloadHandler(String path,
-            String fileNameOverride) {
+            @Nullable String fileNameOverride) {
         this.path = path;
         this.fileNameOverride = fileNameOverride;
     }

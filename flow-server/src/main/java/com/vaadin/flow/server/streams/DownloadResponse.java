@@ -18,6 +18,8 @@ package com.vaadin.flow.server.streams;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
@@ -31,15 +33,15 @@ import com.vaadin.flow.server.HttpStatusCode;
  */
 public class DownloadResponse implements Serializable {
 
-    private final InputStream inputStream;
+    private final @Nullable InputStream inputStream;
 
-    private final String fileName;
-    private final String contentType;
+    private final @Nullable String fileName;
+    private final @Nullable String contentType;
     private final long contentLength;
 
-    private Integer error;
-    private String errorMessage;
-    private Exception exception;
+    private @Nullable Integer error;
+    private @Nullable String errorMessage;
+    private @Nullable Exception exception;
 
     /**
      * Create a download response with content stream and content data.
@@ -57,8 +59,9 @@ public class DownloadResponse implements Serializable {
      * @param contentLength
      *            byte size of a stream or <code>-1</code> if unknown
      */
-    public DownloadResponse(InputStream inputStream, String fileName,
-            String contentType, long contentLength) {
+    public DownloadResponse(@Nullable InputStream inputStream,
+            @Nullable String fileName, @Nullable String contentType,
+            long contentLength) {
         this.inputStream = inputStream;
         this.fileName = fileName;
         this.contentLength = contentLength;
@@ -72,7 +75,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return content InputStream
      */
-    public InputStream getInputStream() {
+    public @Nullable InputStream getInputStream() {
         return inputStream;
     }
 
@@ -81,7 +84,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return file name
      */
-    public String getFileName() {
+    public @Nullable String getFileName() {
         return fileName;
     }
 
@@ -94,7 +97,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return content type
      */
-    public String getContentType() {
+    public @Nullable String getContentType() {
         return contentType;
     }
 
@@ -368,7 +371,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return error message or null if not set
      */
-    public String getErrorMessage() {
+    public @Nullable String getErrorMessage() {
         return errorMessage;
     }
 
@@ -378,7 +381,7 @@ public class DownloadResponse implements Serializable {
      * @return the exception or null if no exception occurred
      * @see TransferContext#exception()
      */
-    public Exception getException() {
+    public @Nullable Exception getException() {
         return exception;
     }
 }
