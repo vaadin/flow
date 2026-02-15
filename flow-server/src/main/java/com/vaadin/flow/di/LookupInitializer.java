@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
@@ -97,7 +99,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
         }
 
         @Override
-        public <T> T lookup(Class<T> serviceClass) {
+        public <T> @Nullable T lookup(Class<T> serviceClass) {
             Collection<Object> registered = serviceMap.get(serviceClass);
             if (registered == null || registered.isEmpty()) {
                 ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
@@ -248,10 +250,11 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     private static class CachedStreamData {
 
-        private final byte[] data;
-        private final IOException exception;
+        private final byte @Nullable [] data;
+        private final @Nullable IOException exception;
 
-        private CachedStreamData(byte[] data, IOException exception) {
+        private CachedStreamData(byte @Nullable [] data,
+                @Nullable IOException exception) {
             this.data = data;
             this.exception = exception;
         }

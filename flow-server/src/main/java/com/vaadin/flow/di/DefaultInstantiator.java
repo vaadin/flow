@@ -17,10 +17,13 @@ package com.vaadin.flow.di;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -91,27 +94,37 @@ public class DefaultInstantiator implements Instantiator {
         return StreamSupport.stream(loader.spliterator(), false);
     }
 
+    // SerializableSupplier generic variance with @Nullable T is not
+    // expressible in a way NullAway can verify at call sites
+    @SuppressWarnings("NullAway")
     @Override
-    public I18NProvider getI18NProvider() {
+    public @Nullable I18NProvider getI18NProvider() {
         return getAtomicReferenceInstance(i18nProvider,
                 this::getI18NProviderInstance);
     }
 
+    // SerializableSupplier generic variance with @Nullable T is not
+    // expressible in a way NullAway can verify at call sites
+    @SuppressWarnings("NullAway")
     @Override
     public MenuAccessControl getMenuAccessControl() {
-        return getAtomicReferenceInstance(menuAccessControl,
-                this::getMenuAccessControlInstance);
+        return Objects.requireNonNull(getAtomicReferenceInstance(
+                menuAccessControl, this::getMenuAccessControlInstance));
     }
 
-    private <T> T getAtomicReferenceInstance(AtomicReference<T> reference,
-            SerializableSupplier<T> instance) {
+    // AtomicReference methods accept null for compare-and-set patterns, but
+    // NullAway cannot verify this for unannotated JDK classes
+    @SuppressWarnings("NullAway")
+    private <T> @Nullable T getAtomicReferenceInstance(
+            AtomicReference<T> reference,
+            SerializableSupplier<@Nullable T> instance) {
         if (reference.get() == null) {
             reference.compareAndSet(null, instance.get());
         }
         return reference.get();
     }
 
-    private I18NProvider getI18NProviderInstance() {
+    private @Nullable I18NProvider getI18NProviderInstance() {
         String property = getInitProperty(InitParameters.I18N_PROVIDER);
         if (property == null) {
             // If no i18n provider provided check if the default location has
@@ -187,7 +200,7 @@ public class DefaultInstantiator implements Instantiator {
      *            the name of the property to get
      * @return parameter value or null if not found
      */
-    protected String getInitProperty(String propertyName) {
+    protected @Nullable String getInitProperty(String propertyName) {
         DeploymentConfiguration deploymentConfiguration = service
                 .getDeploymentConfiguration();
         if (deploymentConfiguration == null) {

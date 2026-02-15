@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -85,7 +87,7 @@ public interface Lookup {
      * @return a service which implements the {@code serviceClass}, may be
      *         {@code null} if no services are registered for this SPI
      */
-    <T> T lookup(Class<T> serviceClass);
+    <T> @Nullable T lookup(Class<T> serviceClass);
 
     /**
      * Lookup for all services by the provided {@code serviceClass}.
@@ -140,7 +142,7 @@ public interface Lookup {
             }
 
             @Override
-            public <U> U lookup(Class<U> serviceClass) {
+            public <U> @Nullable U lookup(Class<U> serviceClass) {
                 if (services.contains(serviceClass)) {
                     return serviceClass.cast(service);
                 }
@@ -181,7 +183,7 @@ public interface Lookup {
             }
 
             @Override
-            public <T> T lookup(Class<T> serviceClass) {
+            public <T> @Nullable T lookup(Class<T> serviceClass) {
                 T service = lookup1.lookup(serviceClass);
                 if (service == null) {
                     return lookup2.lookup(serviceClass);

@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -202,9 +204,9 @@ public interface Instantiator extends Serializable {
     /**
      * Get the I18NProvider if one has been defined.
      *
-     * @return I18NProvider instance
+     * @return I18NProvider instance or {@code null} if not configured
      */
-    default I18NProvider getI18NProvider() {
+    default @Nullable I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
     }
 
