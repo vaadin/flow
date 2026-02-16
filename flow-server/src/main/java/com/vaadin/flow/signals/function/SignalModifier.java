@@ -28,28 +28,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * value directly modifies the parent value instance rather than creating a new
  * one.
  * <p>
- * Example usage with a mutable bean:
  *
- * <pre>
- * class Person {
- *     private String name;
- *     private int age;
- *
- *     public String getName() {
- *         return name;
- *     }
- *
- *     public void setName(String name) {
- *         this.name = name;
- *     }
- * }
- *
- * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
- * textField.bindValue(personSignal.map(Person::getName),
- *         personSignal.modifier(Person::setName));
- * </pre>
- *
- * Example with a Todo class:
+ * Usage example with a Todo class:
  *
  * <pre>
  * class Todo {

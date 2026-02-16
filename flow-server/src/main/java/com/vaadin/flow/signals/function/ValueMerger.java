@@ -30,16 +30,22 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * Example usage with a record:
  *
  * <pre>
- * record Person(String name, int age) {
- *     Person withName(String name) {
- *         return new Person(name, this.age);
+ * record Todo(String task, boolean done) {
+ *     Todo withTask(String task) {
+ *         return new Todo(task, this.done);
+ *     }
+ *
+ *     Todo withDone(boolean done) {
+ *         return new Todo(this.task, done);
  *     }
  * }
  *
- * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(
- *         new Person("Alice", 30));
- * textField.bindValue(personSignal.map(Person::name),
- *         personSignal.updater(Person::withName));
+ * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
+ *         new Todo("Buy groceries", false));
+ * textField.bindValue(todoSignal.map(Todo::task),
+ *         todoSignal.updater(Todo::withTask));
+ * checkbox.bindValue(todoSignal.map(Todo::done),
+ *         todoSignal.updater(Todo::withDone));
  * </pre>
  *
  * @param <O>
