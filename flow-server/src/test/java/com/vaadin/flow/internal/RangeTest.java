@@ -250,30 +250,30 @@ class RangeTest {
 
     @Test
     public void combine_notOverlappingFirstSmaller() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range.between(0, 10).combineWith(Range.between(11, 20));
-        });
+        Range r1 = Range.between(0, 10);
+        Range r2 = Range.between(11, 20);
+        assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
     public void combine_notOverlappingSecondLarger() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range.between(11, 20).combineWith(Range.between(0, 10));
-        });
+        Range r1 = Range.between(11, 20);
+        Range r2 = Range.between(0, 10);
+        assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
     public void combine_firstEmptyNotOverlapping() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range.between(15, 15).combineWith(Range.between(0, 10));
-        });
+        Range r1 = Range.between(15, 15);
+        Range r2 = Range.between(0, 10);
+        assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
     public void combine_secondEmptyNotOverlapping() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range.between(0, 10).combineWith(Range.between(15, 15));
-        });
+        Range r1 = Range.between(0, 10);
+        Range r2 = Range.between(15, 15);
+        assertThrows(IllegalArgumentException.class, () -> r1.combineWith(r2));
     }
 
     @Test
@@ -355,22 +355,16 @@ class RangeTest {
 
     @Test
     public void expand_negativeIllegal1() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range r1 = Range.between(5, 10);
-
-            // Should throw because the start would contract beyond the end
-            r1.expand(-3, -3);
-        });
+        Range r1 = Range.between(5, 10);
+        // Should throw because the start would contract beyond the end
+        assertThrows(IllegalArgumentException.class, () -> r1.expand(-3, -3));
     }
 
     @Test
     public void expand_negativeIllegal2() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Range r1 = Range.between(5, 10);
-
-            // Should throw because the end would contract beyond the start
-            r1.expand(3, -9);
-        });
+        Range r1 = Range.between(5, 10);
+        // Should throw because the end would contract beyond the start
+        assertThrows(IllegalArgumentException.class, () -> r1.expand(3, -9));
     }
 
     @Test

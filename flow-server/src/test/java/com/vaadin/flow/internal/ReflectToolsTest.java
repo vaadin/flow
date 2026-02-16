@@ -354,24 +354,17 @@ class ReflectToolsTest {
 
     @Test
     public void findCommonBaseType_interfaceNotSupported() {
-
-        var exception = assertThrows(IllegalArgumentException.class, () -> {
-
-            ReflectTools.findCommonBaseType(Comparable.class, Object.class);
-
-        });
+        var exception = assertThrows(IllegalArgumentException.class,
+                () -> ReflectTools.findCommonBaseType(Comparable.class,
+                        Object.class));
 
         assertTrue(exception.getMessage().contains("a cannot be an interface"));
     }
 
     @Test
     public void findCommonBaseType_primitiveNotSupported() {
-
-        var exception = assertThrows(IllegalArgumentException.class, () -> {
-
-            ReflectTools.findCommonBaseType(int.class, Object.class);
-
-        });
+        var exception = assertThrows(IllegalArgumentException.class,
+                () -> ReflectTools.findCommonBaseType(int.class, Object.class));
 
         assertTrue(exception.getMessage()
                 .contains("a cannot be a primitive type"));

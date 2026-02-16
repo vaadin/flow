@@ -159,18 +159,13 @@ class StateTreeTest {
 
     @Test
     public void moveNodeToOtherRoot_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            StateNode node = StateNodeTest.createEmptyNode();
-
-            StateNodeTest.setParent(node, tree.getRootNode());
-
-            StateNodeTest.setParent(node, null);
-
-            StateTree anotherTree = new StateTree(new UI().getInternals(),
-                    ElementChildrenList.class);
-
-            StateNodeTest.setParent(node, anotherTree.getRootNode());
-        });
+        StateNode node = StateNodeTest.createEmptyNode();
+        StateNodeTest.setParent(node, tree.getRootNode());
+        StateNodeTest.setParent(node, null);
+        StateTree anotherTree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        assertThrows(IllegalStateException.class,
+                () -> StateNodeTest.setParent(node, anotherTree.getRootNode()));
     }
 
     @Test
@@ -582,69 +577,37 @@ class StateTreeTest {
 
     @Test
     public void beforeClientResponse_failingExecutionWithNullErrorHandler_NoNPE() {
-
-        assertThrows(IllegalStateException.class, () -> {
-
-            StateNode rootNode = tree.getRootNode();
-
-            tree.beforeClientResponse(rootNode, context -> {
-
-                throw new IllegalStateException("Throw before client response");
-
-            });
-
-            assertNull(tree.getUI().getSession());
-
-            VaadinSession mockSession = Mockito.mock(VaadinSession.class);
-
-            Mockito.when(mockSession.getErrorHandler()).thenReturn(null);
-
-            try {
-
-                tree.getUI().getInternals().setSession(mockSession);
-
-                tree.beforeClientResponse(rootNode, context -> {
-
-                    throw new IllegalStateException(
-                            "Throw before client response");
-
-                });
-
-                tree.runExecutionsBeforeClientResponse();
-
-            } finally {
-
-                tree.getUI().getInternals().setSession(null);
-
-            }
-
+        StateNode rootNode = tree.getRootNode();
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
         });
+        assertNull(tree.getUI().getSession());
+        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        Mockito.when(mockSession.getErrorHandler()).thenReturn(null);
+        try {
+            tree.getUI().getInternals().setSession(mockSession);
+            tree.beforeClientResponse(rootNode, context -> {
+                throw new IllegalStateException("Throw before client response");
+            });
+            assertThrows(IllegalStateException.class,
+                    () -> tree.runExecutionsBeforeClientResponse());
+        } finally {
+            tree.getUI().getInternals().setSession(null);
+        }
     }
 
     @Test
     public void beforeClientResponse_failingExecutionWithNullSession_NoNPE() {
-
-        assertThrows(IllegalStateException.class, () -> {
-
-            StateNode rootNode = tree.getRootNode();
-
-            tree.beforeClientResponse(rootNode, context -> {
-
-                throw new IllegalStateException("Throw before client response");
-
-            });
-
-            assertNull(tree.getUI().getSession());
-
-            tree.beforeClientResponse(rootNode, context -> {
-
-                throw new IllegalStateException("Throw before client response");
-
-            });
-
-            tree.runExecutionsBeforeClientResponse();
-
+        StateNode rootNode = tree.getRootNode();
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
         });
+        assertNull(tree.getUI().getSession());
+        tree.beforeClientResponse(rootNode, context -> {
+            throw new IllegalStateException("Throw before client response");
+        });
+        assertThrows(IllegalStateException.class,
+                () -> tree.runExecutionsBeforeClientResponse());
     }
 
     @Test

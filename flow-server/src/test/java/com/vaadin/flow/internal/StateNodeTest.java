@@ -133,10 +133,9 @@ public class StateNodeTest {
 
     @Test
     public void getMissingFeatureThrows() {
-        assertThrows(IllegalStateException.class, () -> {
-            StateNode node = new StateNode(ElementData.class);
-            node.getFeature(ElementPropertyMap.class);
-        });
+        StateNode node = new StateNode(ElementData.class);
+        assertThrows(IllegalStateException.class,
+                () -> node.getFeature(ElementPropertyMap.class));
     }
 
     @Test
@@ -209,22 +208,18 @@ public class StateNodeTest {
 
     @Test
     public void setChildAsParent() {
-        assertThrows(IllegalStateException.class, () -> {
-            StateNode parent = createParentNode("parent");
-            StateNode child = createParentNode("child");
-
-            setParent(child, parent);
-            setParent(parent, child);
-        });
+        StateNode parent = createParentNode("parent");
+        StateNode child = createParentNode("child");
+        setParent(child, parent);
+        assertThrows(IllegalStateException.class,
+                () -> setParent(parent, child));
     }
 
     @Test
     public void setAsOwnParent() {
-        assertThrows(IllegalStateException.class, () -> {
-            StateNode parent = createParentNode("parent");
-
-            setParent(parent, parent);
-        });
+        StateNode parent = createParentNode("parent");
+        assertThrows(IllegalStateException.class,
+                () -> setParent(parent, parent));
     }
 
     /**

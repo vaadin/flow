@@ -204,11 +204,10 @@ class JacksonCodecTest {
 
     @Test
     public void decodeAs_jsonValueWrongType_classCastException() {
-        assertThrows(ClassCastException.class, () -> {
-            ObjectNode json = objectMapper.createObjectNode();
-            json.put("foo", "bar");
-            JacksonCodec.decodeAs(json, NumericNode.class);
-        });
+        ObjectNode json = objectMapper.createObjectNode();
+        json.put("foo", "bar");
+        assertThrows(ClassCastException.class,
+                () -> JacksonCodec.decodeAs(json, NumericNode.class));
     }
 
     @Test
