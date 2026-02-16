@@ -21,9 +21,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.ElementEffect;
-import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalEnvironment;
