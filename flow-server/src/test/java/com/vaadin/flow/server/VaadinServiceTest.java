@@ -722,8 +722,7 @@ class VaadinServiceTest {
         Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
                 .thenReturn(Arrays.asList(factory1, factory2));
 
-        assertThrows(ServiceException.class,
-                () -> service.loadInstantiators());
+        assertThrows(ServiceException.class, () -> service.loadInstantiators());
     }
 
     @Test

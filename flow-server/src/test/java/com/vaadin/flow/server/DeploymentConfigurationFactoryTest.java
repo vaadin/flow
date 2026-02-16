@@ -264,14 +264,12 @@ class DeploymentConfigurationFactoryTest {
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
-        java.nio.file.Files
-                .createDirectories(temporaryFolder.resolve("npm"));
-        String tempFolder = temporaryFolder.toFile()
-                .getAbsolutePath().replace("\\", "/");
+        java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"));
+        String tempFolder = temporaryFolder.toFile().getAbsolutePath()
+                .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
-                        "\"npmFolder\": \"" + tempFolder
-                                + "/npm\",",
+                        "\"npmFolder\": \"" + tempFolder + "/npm\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class,

@@ -707,8 +707,7 @@ class SessionRouteRegistryTest {
             session.unlock();
         }
 
-        assertThrows(IllegalStateException.class,
-                () -> getRegistry(session));
+        assertThrows(IllegalStateException.class, () -> getRegistry(session));
     }
 
     private static class Result {
