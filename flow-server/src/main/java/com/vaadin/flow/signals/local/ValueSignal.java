@@ -18,10 +18,14 @@ package com.vaadin.flow.signals.local;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.SignalModifier;
 import com.vaadin.flow.signals.function.SignalUpdater;
+import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.function.ValueModifier;
 import com.vaadin.flow.signals.impl.MappedModifySignal;
 import com.vaadin.flow.signals.impl.Transaction;
@@ -62,7 +66,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * @param initialValue
      *            the initial value, may be <code>null</code>
      */
-    public ValueSignal(T initialValue) {
+    public ValueSignal(@Nullable T initialValue) {
         super(initialValue);
     }
 
@@ -88,11 +92,12 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     }
 
     @Override
-    public SignalOperation<T> set(T value) {
+    public SignalOperation<T> set(@Nullable T value) {
         lock();
         try {
             checkPreconditions();
 
+            @Nullable
             T oldValue = getSignalValue();
 
             setSignalValue(value);
@@ -111,7 +116,8 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * using {@link #equals(Object)}.
      */
     @Override
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         lock();
         try {
             checkPreconditions();
@@ -151,7 +157,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         try {
             checkPreconditions();
 
+            @Nullable
             T oldValue = getSignalValue();
+            @Nullable
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setSignalValue(newValue);
@@ -265,5 +273,87 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     public <C> WritableSignal<C> mapMutable(SignalMapper<T, C> getter,
             SignalModifier<T, C> modifier) {
         return new MappedModifySignal<>(this, getter, modifier);
+    }
+
+    /**
+     * Creates a callback that updates this signal value using the provided
+     * merger function. This is useful for creating write callbacks for
+     * {@code bindValue} when working with immutable value patterns.
+     * <p>
+     * The merger function receives the current signal value and a new child
+     * value, and should return a new signal value. This is typically a method
+     * reference to a "with" style method on an immutable record or class.
+     * <p>
+     * Example usage with an immutable record:
+     *
+     * <pre>
+     * record Person(String name, int age) {
+     *     Person withName(String name) {
+     *         return new Person(name, this.age);
+     *     }
+     * }
+     *
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(
+     *         new Person("Alice", 30));
+     * textField.bindValue(personSignal.map(Person::name),
+     *         personSignal.updater(Person::withName));
+     * </pre>
+     *
+     * @param <C>
+     *            the child value type that will be provided to the callback
+     * @param merger
+     *            the function to create a new signal value from the old value
+     *            and a new child value, not <code>null</code>
+     * @return a callback that updates this signal using the merger function,
+     *         not <code>null</code>
+     */
+    public <C> SerializableConsumer<C> updater(ValueMerger<T, C> merger) {
+        Objects.requireNonNull(merger);
+        return newChildValue -> update(
+                currentValue -> merger.merge(currentValue, newChildValue));
+    }
+
+    /**
+     * Creates a callback that modifies this signal's mutable value in place
+     * using the provided modifier function. This is useful for creating write
+     * callbacks for {@code bindValue} when working with mutable value patterns.
+     * <p>
+     * The modifier function receives the current signal value and a new child
+     * value, and should modify the signal value in place. This is typically a
+     * method reference to a setter method on a mutable bean.
+     * <p>
+     * Example usage with a mutable bean:
+     *
+     * <pre>
+     * class Person {
+     *     private String name;
+     *     private int age;
+     *
+     *     public String getName() {
+     *         return name;
+     *     }
+     *
+     *     public void setName(String name) {
+     *         this.name = name;
+     *     }
+     * }
+     *
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
+     * textField.bindValue(personSignal.map(Person::getName),
+     *         personSignal.modifier(Person::setName));
+     * </pre>
+     *
+     * @param <C>
+     *            the child value type that will be provided to the callback
+     * @param modifier
+     *            the function to modify the signal value in place with a new
+     *            child value, not <code>null</code>
+     * @return a callback that modifies this signal using the modifier function,
+     *         not <code>null</code>
+     */
+    public <C> SerializableConsumer<C> modifier(SignalModifier<T, C> modifier) {
+        Objects.requireNonNull(modifier);
+        return newValue -> modify(
+                parentValue -> modifier.modify(parentValue, newValue));
     }
 }

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
@@ -92,7 +93,8 @@ public class SharedMapSignal<T>
     }
 
     @Override
-    protected Map<String, SharedValueSignal<T>> extractValue(Data data) {
+    protected Map<String, SharedValueSignal<T>> extractValue(
+            @Nullable Data data) {
         if (data == null) {
             return Map.of();
         } else {
@@ -125,13 +127,15 @@ public class SharedMapSignal<T>
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> put(String key, T value) {
+    public SignalOperation<T> put(String key, @Nullable T value) {
         return submit(
                 new SignalCommand.PutCommand(Id.random(), id(),
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
                     if (success.updates().size() == 1) {
-                        return nodeValue(success.onlyUpdate().oldNode(),
+                        return nodeValue(
+                                Objects.requireNonNull(
+                                        success.onlyUpdate().oldNode()),
                                 elementType);
                     } else {
                         // New node and mapChildren update -> no previous value
@@ -156,16 +160,24 @@ public class SharedMapSignal<T>
      * @return an operation containing the eventual result with the entry signal
      */
     public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
-            String key, T value) {
+            String key, @Nullable T value) {
         Id commandId = Id.random();
         return submit(
                 new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
                     boolean created = success.updates().containsKey(commandId);
-                    Id childId = created ? commandId
-                            : ((Data) success.updates().get(id()).newNode())
-                                    .mapChildren().get(key);
+                    Id childId;
+                    if (created) {
+                        childId = commandId;
+                    } else {
+                        var modification = Objects
+                                .requireNonNull(success.updates().get(id()));
+                        var newNode = (Data) Objects
+                                .requireNonNull(modification.newNode());
+                        childId = Objects
+                                .requireNonNull(newNode.mapChildren().get(key));
+                    }
                     return new PutIfAbsentResult<>(created, child(childId));
                 });
     }
@@ -186,7 +198,8 @@ public class SharedMapSignal<T>
                     NodeModification removal = success.updates().values()
                             .stream().filter(update -> update.newNode() == null)
                             .findAny().get();
-                    return nodeValue(removal.oldNode(), elementType);
+                    return nodeValue(Objects.requireNonNull(removal.oldNode()),
+                            elementType);
                 });
     }
 
@@ -203,7 +216,7 @@ public class SharedMapSignal<T>
     }
 
     private SignalOperation<Void> submitKeyCondition(String key,
-            Id expectedChildId) {
+            @Nullable Id expectedChildId) {
         return submit(new SignalCommand.KeyCondition(Id.random(), id(), key,
                 expectedChildId));
     }
@@ -335,7 +348,11 @@ public class SharedMapSignal<T>
 
     @Override
     public String toString() {
-        return peek().entrySet().stream()
+        var value = peek();
+        if (value == null) {
+            return "SharedMapSignal[null]";
+        }
+        return value.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue().get())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }

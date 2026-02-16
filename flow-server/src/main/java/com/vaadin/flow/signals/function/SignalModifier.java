@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -62,5 +64,5 @@ public interface SignalModifier<P, C> extends Serializable {
      * @param newChildValue
      *            the new child value to apply, may be <code>null</code>
      */
-    void modify(P parentValue, C newChildValue);
+    void modify(@Nullable P parentValue, @Nullable C newChildValue);
 }
