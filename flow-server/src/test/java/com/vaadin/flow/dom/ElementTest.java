@@ -2725,11 +2725,11 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
         assertEquals(1, pendingJs.size());
-        assertEquals(expected, pendingJs.get(0).getInvocation());
+        assertInvocationEquals(expected, pendingJs.get(0).getInvocation());
 
     }
 
-    private void assertEquals(JavaScriptInvocation expected,
+    private void assertInvocationEquals(JavaScriptInvocation expected,
             JavaScriptInvocation actual) {
         assertEquals(expected.getExpression(), actual.getExpression());
         assertArrayEquals(expected.getParameters().toArray(),
