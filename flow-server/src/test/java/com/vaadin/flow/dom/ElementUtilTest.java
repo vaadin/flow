@@ -85,31 +85,28 @@ class ElementUtilTest {
 
     @Test
     public void attachTwiceToComponent() {
-        assertThrows(IllegalStateException.class, () -> {
-            Element e = ElementFactory.createDiv();
-            Component c = Mockito.mock(Component.class);
-            ElementUtil.setComponent(e, c);
-            ElementUtil.setComponent(e, c);
-        });
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        assertThrows(IllegalStateException.class,
+                () -> ElementUtil.setComponent(e, c));
     }
 
     @Test
     public void attachToNull() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element e = ElementFactory.createDiv();
-            ElementUtil.setComponent(e, null);
-        });
+        Element e = ElementFactory.createDiv();
+        assertThrows(IllegalArgumentException.class,
+                () -> ElementUtil.setComponent(e, null));
     }
 
     @Test
     public void attachTwoComponents() {
-        assertThrows(IllegalStateException.class, () -> {
-            Element e = ElementFactory.createDiv();
-            Component c = Mockito.mock(Component.class);
-            Component c2 = Mockito.mock(Component.class);
-            ElementUtil.setComponent(e, c);
-            ElementUtil.setComponent(e, c2);
-        });
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        Component c2 = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        assertThrows(IllegalStateException.class,
+                () -> ElementUtil.setComponent(e, c2));
     }
 
     @Test

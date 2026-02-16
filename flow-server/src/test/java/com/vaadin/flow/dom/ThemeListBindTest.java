@@ -185,18 +185,17 @@ class ThemeListBindTest extends SignalsUnitTest {
 
     @Test
     public void rebinding_alreadyBound_throws() {
-        assertThrows(BindingActiveException.class, () -> {
-            TestComponent component = new TestComponent();
-            UI.getCurrent().add(component);
-            ValueSignal<Boolean> s1 = new ValueSignal<>(true);
-            ValueSignal<Boolean> s2 = new ValueSignal<>(false);
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<Boolean> s1 = new ValueSignal<>(true);
+        ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
-            component.bindThemeName("tag", s1);
-            assertTrue(component.hasThemeName("tag"));
+        component.bindThemeName("tag", s1);
+        assertTrue(component.hasThemeName("tag"));
 
-            // Rebind to a new signal
-            component.bindThemeName("tag", s2);
-        });
+        // Rebind to a new signal
+        assertThrows(BindingActiveException.class,
+                () -> component.bindThemeName("tag", s2));
     }
 
     @Test

@@ -39,18 +39,16 @@ public abstract class AbstractNodeTest {
 
     @Test
     public void insertWithNullParameter() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            parent.insertChild(0, (Element[]) null);
-        });
+        Node<?> parent = createParentNode();
+        assertThrows(IllegalArgumentException.class,
+                () -> parent.insertChild(0, (Element[]) null));
     }
 
     @Test
     public void insertNullChild() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            parent.insertChild(0, new Element[] { null });
-        });
+        Node<?> parent = createParentNode();
+        assertThrows(IllegalArgumentException.class,
+                () -> parent.insertChild(0, new Element[] { null }));
     }
 
     @Test
@@ -111,14 +109,13 @@ public abstract class AbstractNodeTest {
 
     @Test
     public void insertChildAfterLast() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            Element child1 = new Element("child1");
-            Element child2 = new Element("child2");
-            Element child3 = new Element("child3");
-            parent.appendChild(child1, child2);
-            parent.insertChild(3, child3);
-        });
+        Node<?> parent = createParentNode();
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2);
+        assertThrows(IllegalArgumentException.class,
+                () -> parent.insertChild(3, child3));
     }
 
     @Test
@@ -276,11 +273,10 @@ public abstract class AbstractNodeTest {
 
     @Test
     public void removeNonChild() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            Element otherElement = new Element("other");
-            parent.removeChild(otherElement);
-        });
+        Node<?> parent = createParentNode();
+        Element otherElement = new Element("other");
+        assertThrows(IllegalArgumentException.class,
+                () -> parent.removeChild(otherElement));
     }
 
     @Test
@@ -299,24 +295,20 @@ public abstract class AbstractNodeTest {
 
     @Test
     public void getNegativeChild() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            Element child1 = new Element("child1");
-            Element child2 = new Element("child2");
-            parent.appendChild(child1, child2);
-            parent.getChild(-1);
-        });
+        Node<?> parent = createParentNode();
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1, child2);
+        assertThrows(IllegalArgumentException.class, () -> parent.getChild(-1));
     }
 
     @Test
     public void getAfterLastChild() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Node<?> parent = createParentNode();
-            Element child1 = new Element("child1");
-            Element child2 = new Element("child2");
-            parent.appendChild(child1, child2);
-            parent.getChild(2);
-        });
+        Node<?> parent = createParentNode();
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1, child2);
+        assertThrows(IllegalArgumentException.class, () -> parent.getChild(2));
     }
 
     @Test

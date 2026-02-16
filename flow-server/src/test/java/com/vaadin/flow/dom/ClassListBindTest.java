@@ -168,18 +168,17 @@ class ClassListBindTest extends SignalsUnitTest {
 
     @Test
     public void rebinding_alreadyBound_throws() {
-        assertThrows(BindingActiveException.class, () -> {
-            Element element = new Element("div");
-            UI.getCurrent().getElement().appendChild(element);
-            ValueSignal<Boolean> s1 = new ValueSignal<>(true);
-            ValueSignal<Boolean> s2 = new ValueSignal<>(false);
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> s1 = new ValueSignal<>(true);
+        ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
-            element.getClassList().bind("tag", s1);
-            assertTrue(element.getClassList().contains("tag"));
+        element.getClassList().bind("tag", s1);
+        assertTrue(element.getClassList().contains("tag"));
 
-            // Rebind to a new signal
-            element.getClassList().bind("tag", s2);
-        });
+        // Rebind to a new signal
+        assertThrows(BindingActiveException.class,
+                () -> element.getClassList().bind("tag", s2));
     }
 
     @Test
