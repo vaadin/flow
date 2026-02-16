@@ -77,8 +77,8 @@ public class SharedNodeSignal
          * @param value
          *            the JSON value, or <code>null</code> if there is no value
          * @param parent
-         *            the parent node, or <code>null</code> for the value of
-         *            the root node
+         *            the parent node, or <code>null</code> for the value of the
+         *            root node
          * @param listChildren
          *            a list of children accessed by order, or an empty list if
          *            there are no list children. Not <code>null</code>.
