@@ -21,6 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.CleanupCallback;
@@ -43,7 +45,7 @@ public class Effect implements Serializable {
     private final List<CleanupCallback> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
-    private SerializableRunnable action;
+    private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
