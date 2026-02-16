@@ -153,14 +153,13 @@ class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueRead_exceptionOnNonBooleanValue() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Properties initParameters = new Properties();
-            initParameters.setProperty(
-                    InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                    "incorrectValue");
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "incorrectValue");
 
-            createDeploymentConfig(initParameters);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> createDeploymentConfig(initParameters));
     }
 
     @Test

@@ -131,12 +131,9 @@ class VaadinSessionTest {
                 Object res;
                 try {
                     Thread.sleep(100); // for deadlock testing
+                    // simulates servlet container's session locking
                     assertTrue(httpSessionLock.tryLock(5, TimeUnit.SECONDS),
-                            "Deadlock detected"); // simulates
-                    // servlet
-                    // container's
-                    // session
-                    // locking
+                            "Deadlock detected");
                     String lockAttribute = mockService.getServiceName()
                             + ".lock";
                     if (lockAttribute.equals(name)) {
@@ -593,23 +590,23 @@ class VaadinSessionTest {
 
     @Test
     public void findComponent_nonExistingNodeIdThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent testComponent = createTestComponentInSession();
-            int nodeId = testComponent.getElement().getNode().getId();
-            int uiId = testComponent.getUI().get().getUIId();
-            VaadinSession session = testComponent.getUI().get().getSession();
-            session.findElement(uiId, nodeId * 10);
-        });
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        int uiId = testComponent.getUI().get().getUIId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> session.findElement(uiId, nodeId * 10));
     }
 
     @Test
     public void findComponent_nonExistingAppIdThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent testComponent = createTestComponentInSession();
-            int nodeId = testComponent.getElement().getNode().getId();
-            VaadinSession session = testComponent.getUI().get().getSession();
-            session.findElement(123, nodeId);
-        });
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> session.findElement(123, nodeId));
     }
 
     private TestComponent createTestComponentInSession() {

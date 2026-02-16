@@ -687,33 +687,28 @@ class SessionRouteRegistryTest {
 
     @Test
     public void settingSessionRouteRegistryOfAnotherSession_getRegistryFails() {
-        assertThrows(IllegalStateException.class, () -> {
-            SessionRouteRegistry registry = getRegistry(session);
+        SessionRouteRegistry registry = getRegistry(session);
 
-            VaadinSession anotherSession = new MockVaadinSession(
-                    vaadinService) {
-                @Override
-                public VaadinService getService() {
-                    return vaadinService;
-                }
-            };
-
-            SessionRouteRegistry anotherRegistry = getRegistry(anotherSession);
-            assertNotEquals(registry, anotherRegistry,
-                    "Another session should receive another session");
-
-            session.lock();
-            try {
-                session.setAttribute(SessionRouteRegistry.class,
-                        anotherRegistry);
-            } finally {
-                session.unlock();
+        VaadinSession anotherSession = new MockVaadinSession(vaadinService) {
+            @Override
+            public VaadinService getService() {
+                return vaadinService;
             }
+        };
 
-            getRegistry(session);
+        SessionRouteRegistry anotherRegistry = getRegistry(anotherSession);
+        assertNotEquals(registry, anotherRegistry,
+                "Another session should receive another session");
 
-            fail("Setting anotherRegistry to session should fail when getting the registry!");
-        });
+        session.lock();
+        try {
+            session.setAttribute(SessionRouteRegistry.class, anotherRegistry);
+        } finally {
+            session.unlock();
+        }
+
+        assertThrows(IllegalStateException.class,
+                () -> getRegistry(session));
     }
 
     private static class Result {

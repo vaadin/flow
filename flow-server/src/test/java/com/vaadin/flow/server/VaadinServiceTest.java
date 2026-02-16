@@ -712,19 +712,18 @@ class VaadinServiceTest {
     @Test
     public void loadInstantiators_twoFactoriesInLookup_throws()
             throws ServiceException {
-        assertThrows(ServiceException.class, () -> {
-            MockVaadinServletService service = createService();
+        MockVaadinServletService service = createService();
 
-            Lookup lookup = service.getLookup();
+        Lookup lookup = service.getLookup();
 
-            InstantiatorFactory factory1 = createInstantiatorFactory();
-            InstantiatorFactory factory2 = createInstantiatorFactory();
+        InstantiatorFactory factory1 = createInstantiatorFactory();
+        InstantiatorFactory factory2 = createInstantiatorFactory();
 
-            Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
-                    .thenReturn(Arrays.asList(factory1, factory2));
+        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                .thenReturn(Arrays.asList(factory1, factory2));
 
-            service.loadInstantiators();
-        });
+        assertThrows(ServiceException.class,
+                () -> service.loadInstantiators());
     }
 
     @Test

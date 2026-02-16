@@ -78,7 +78,7 @@ class AbstractConfigurationTest {
 
     private void assertProjectFolderDetected(String projectFile)
             throws IOException {
-        Files.createFile(temporaryFolder.resolve(projectFile)).toFile();
+        Files.createFile(temporaryFolder.resolve(projectFile));
         withTemporaryUserDir(() -> {
             File projectFolder = configuration.getProjectFolder();
             assertEquals(temporaryFolder.toFile(), projectFolder);

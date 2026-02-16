@@ -107,14 +107,13 @@ class VaadinServletTest {
     @Test
     public void init_passDifferentConfigInstance_throws()
             throws ServletException {
-        assertThrows(IllegalArgumentException.class, () -> {
-            VaadinServlet servlet = new VaadinServlet();
+        VaadinServlet servlet = new VaadinServlet();
 
-            ServletConfig config = mockConfig();
-            servlet.init(config);
+        ServletConfig config = mockConfig();
+        servlet.init(config);
 
-            servlet.init(mockConfig());
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> servlet.init(mockConfig()));
     }
 
     @Test

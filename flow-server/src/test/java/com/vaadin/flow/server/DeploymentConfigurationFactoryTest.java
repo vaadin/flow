@@ -234,17 +234,15 @@ class DeploymentConfigurationFactoryTest {
     @Test
     public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
-        IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> {
-                    FileUtils.writeLines(tokenFile,
-                            Arrays.asList("{", "\"productionMode\": false,",
-                                    "\"npmFolder\": \"npm\",",
-                                    "\"generatedFolder\": \"generated\",",
-                                    "\"frontendFolder\": \"frontend\"", "}"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"productionMode\": false,",
+                        "\"npmFolder\": \"npm\",",
+                        "\"generatedFolder\": \"generated\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
-                    createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                            tokenFile.getPath()));
-                });
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
         assertTrue(thrown.getMessage()
                 .contains(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm")));
     }
@@ -252,15 +250,13 @@ class DeploymentConfigurationFactoryTest {
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
-        IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> {
-                    FileUtils.writeLines(tokenFile,
-                            Arrays.asList("{", "\"productionMode\": false,",
-                                    "\"frontendFolder\": \"frontend\"", "}"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"productionMode\": false,",
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
-                    createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                            tokenFile.getPath()));
-                });
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
         assertTrue(thrown.getMessage().contains(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }
@@ -268,22 +264,19 @@ class DeploymentConfigurationFactoryTest {
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
-        IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> {
-                    java.nio.file.Files
-                            .createDirectories(temporaryFolder.resolve("npm"))
-                            .toFile();
-                    String tempFolder = temporaryFolder.toFile()
-                            .getAbsolutePath().replace("\\", "/");
-                    FileUtils.writeLines(tokenFile,
-                            Arrays.asList("{", "\"productionMode\": false,",
-                                    "\"npmFolder\": \"" + tempFolder
-                                            + "/npm\",",
-                                    "\"frontendFolder\": \"frontend\"", "}"));
+        java.nio.file.Files
+                .createDirectories(temporaryFolder.resolve("npm"));
+        String tempFolder = temporaryFolder.toFile()
+                .getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"productionMode\": false,",
+                        "\"npmFolder\": \"" + tempFolder
+                                + "/npm\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
-                    createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                            tokenFile.getPath()));
-                });
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
         assertTrue(thrown.getMessage().contains(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }

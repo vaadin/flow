@@ -357,7 +357,6 @@ class StaticFileServerTest implements Serializable {
         assertTrue(fileServer.serveStaticResource(request, response),
                 "File 'file.txt' inside jar should be a static resource.");
 
-        // cleanup handled by temp directory
     }
 
     @Test
@@ -392,7 +391,6 @@ class StaticFileServerTest implements Serializable {
         assertTrue(fileServer.serveStaticResource(request, response),
                 "Request should return as static request as we can not determine non file resources in jar files.");
 
-        // cleanup handled by temp directory
     }
 
     @Test
@@ -427,7 +425,6 @@ class StaticFileServerTest implements Serializable {
         assertTrue(fileServer.serveStaticResource(request, response),
                 "Request should return as static request as we can not determine non file resources in jar files.");
 
-        // cleanup handled by temp directory
     }
 
     private Path generateZipArchive(Path folder) throws IOException {
@@ -656,7 +653,6 @@ class StaticFileServerTest implements Serializable {
             // This should happen as we should not have an open FileSystem here.
         }
 
-        // cleanup handled by temp directory
     }
 
     private static class Result {
