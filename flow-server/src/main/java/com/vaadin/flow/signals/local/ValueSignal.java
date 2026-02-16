@@ -18,6 +18,8 @@ package com.vaadin.flow.signals.local;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.SignalMapper;
@@ -64,7 +66,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * @param initialValue
      *            the initial value, may be <code>null</code>
      */
-    public ValueSignal(T initialValue) {
+    public ValueSignal(@Nullable T initialValue) {
         super(initialValue);
     }
 
@@ -90,11 +92,12 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     }
 
     @Override
-    public SignalOperation<T> set(T value) {
+    public SignalOperation<T> set(@Nullable T value) {
         lock();
         try {
             checkPreconditions();
 
+            @Nullable
             T oldValue = getSignalValue();
 
             setSignalValue(value);
@@ -113,7 +116,8 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * using {@link #equals(Object)}.
      */
     @Override
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         lock();
         try {
             checkPreconditions();
@@ -153,7 +157,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         try {
             checkPreconditions();
 
+            @Nullable
             T oldValue = getSignalValue();
+            @Nullable
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setSignalValue(newValue);

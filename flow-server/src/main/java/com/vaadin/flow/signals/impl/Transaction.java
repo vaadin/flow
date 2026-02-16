@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -52,10 +54,11 @@ public abstract class Transaction implements Serializable {
      * Committing and rolling back are no-ops since all commands have already
      * been applied.
      */
-    private static abstract class ImmediateTransaction extends Transaction {
+    private abstract static class ImmediateTransaction extends Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -97,7 +100,8 @@ public abstract class Transaction implements Serializable {
 
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             // Update the read revision first so that change observers can read
             // the updated value
             getOrCreateReadRevision(tree).apply(command, null);
@@ -310,7 +314,7 @@ public abstract class Transaction implements Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T runWithoutTransaction(ValueSupplier<T> task) {
+    public static <T> @Nullable T runWithoutTransaction(ValueSupplier<T> task) {
         Transaction previousTransaction = currentTransaction.get();
         try {
             currentTransaction.set(null);
@@ -353,7 +357,7 @@ public abstract class Transaction implements Serializable {
      *            repeatable-read revision
      */
     public abstract void include(SignalTree tree, SignalCommand command,
-            CommandResultHandler resultHandler, boolean applyToTree);
+            @Nullable CommandResultHandler resultHandler, boolean applyToTree);
 
     /**
      * Includes the given command to the given tree in the context of this
@@ -372,7 +376,7 @@ public abstract class Transaction implements Serializable {
      *            ignore the result
      */
     public void include(SignalTree tree, SignalCommand command,
-            CommandResultHandler resultHandler) {
+            @Nullable CommandResultHandler resultHandler) {
         include(tree, command, resultHandler, true);
     }
 
