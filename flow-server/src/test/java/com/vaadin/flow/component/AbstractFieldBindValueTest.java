@@ -393,8 +393,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("foo", input.getValue());
 
         input.addValueChangeListener(event -> {
-            fail(
-                    "Value change listener should not be triggered when write callback throws");
+            fail("Value change listener should not be triggered when write callback throws");
         });
 
         assertThrows(RuntimeException.class, () -> input.setValue("bar"));
@@ -447,8 +446,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         });
 
         input.addValueChangeListener(event -> {
-            fail(
-                    "Value change listener should not be triggered with a no-op callback");
+            fail("Value change listener should not be triggered with a no-op callback");
         });
 
         // With a no-op callback, value is not changed and event should not be
