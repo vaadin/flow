@@ -150,7 +150,8 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> replace(@Nullable T expectedValue, @Nullable T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),

@@ -126,7 +126,8 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> replace(@Nullable T expectedValue, @Nullable T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         lock();
         try {
             checkPreconditions();
