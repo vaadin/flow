@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -150,6 +151,12 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
         } finally {
             unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }

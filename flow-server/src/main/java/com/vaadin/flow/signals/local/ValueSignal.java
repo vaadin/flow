@@ -356,4 +356,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         return newValue -> modify(
                 parentValue -> modifier.modify(parentValue, newValue));
     }
+
+    @Override
+    public String toString() {
+        return "ValueSignal[" + peek() + "]";
+    }
 }
