@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
@@ -89,44 +88,6 @@ public final class ComponentEffect implements Serializable {
     public static <C extends Component> Registration effect(C owner,
             SerializableRunnable effectFunction) {
         return Effect.effect(owner, effectFunction);
-    }
-
-    /**
-     * Binds a <code>signal</code>'s value to a given owner component in a way
-     * defined in <code>setter</code> function and creates a Signal effect
-     * function executing the setter whenever the signal value changes.
-     * <p>
-     * Example of usage:
-     *
-     * <pre>
-     * Registration effect = ComponentEffect.bind(mySpan, stringSignal,
-     *         Span::setText);
-     * effect.remove(); // to remove the effect when no longer needed
-     *
-     * ComponentEffect.bind(mySpan, stringSignal.map(value -> !value.isEmpty()),
-     *         Span::setVisible);
-     * </pre>
-     *
-     * @see Signal#effect(EffectAction)
-     * @param owner
-     *            the owner component for which the effect is applied, must not
-     *            be <code>null</code>
-     * @param signal
-     *            the signal whose value is to be bound to the component, must
-     *            not be <code>null</code>
-     * @param setter
-     *            the setter function that defines how the signal value is
-     *            applied to the component, must not be <code>null</code>
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
-     * @param <C>
-     *            the type of the component
-     * @param <T>
-     *            the type of the signal value
-     */
-    public static <C extends Component, T> Registration bind(C owner,
-            Signal<T> signal, SerializableBiConsumer<C, T> setter) {
-        return Effect.effect(owner, () -> setter.accept(owner, signal.get()));
     }
 
     /**
