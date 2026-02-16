@@ -26,7 +26,6 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.function.TransactionTask;
@@ -46,8 +45,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the signal value type
  */
-public class SharedValueSignal<T> extends AbstractSignal<T>
-        implements WritableSignal<T> {
+public class SharedValueSignal<T> extends AbstractSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -99,7 +97,19 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
         this.valueType = Objects.requireNonNull(valueType);
     }
 
-    @Override
+    /**
+     * Sets the value of this signal.
+     * <p>
+     * The result of the returned operation will be resolved with the previous
+     * value at the time when this operation was confirmed.
+     * <p>
+     * Setting a new value will trigger effect functions that have reads from
+     * this signal.
+     *
+     * @param value
+     *            the value to set
+     * @return an operation containing the eventual result
+     */
     public SignalOperation<T> set(T value) {
         assert value == null || valueType.isInstance(value);
 
@@ -123,7 +133,21 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
         return data.value();
     }
 
-    @Override
+    /**
+     * Sets the value of this signal if and only if the signal has the expected
+     * value at the time when the operation is confirmed. This is the signal
+     * counterpart to
+     * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
+     * The result of the returned operation will be resolved as successful if
+     * the expected value was present and resolved as unsuccessful if any other
+     * value was present when the operation is processed.
+     *
+     * @param expectedValue
+     *            the expected value
+     * @param newValue
+     *            the new value
+     * @return an operation containing the eventual result
+     */
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
@@ -134,7 +158,30 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
                 List.of(condition, set)));
     }
 
-    @Override
+    /**
+     * Updates the signal value based on the given callback. The callback
+     * receives the current signal value and returns the new value to use. If
+     * the original value has changed by the time this change is confirmed, then
+     * the returned value is ignored and the callback is run again with the new
+     * value as input. This process is repeated until canceled or until the
+     * update succeeds without conflicting changes.
+     * <p>
+     * The process can be canceled through the returned operation instance. Note
+     * that canceling will only prevent further retries but the change will
+     * still be made if the currently running attempt succeeds.
+     * <p>
+     * The result of the returned operation will be resolved with the previous
+     * value at the time when a successful update operation was confirmed.
+     * <p>
+     * Update operations cannot participate in transactions since any retry
+     * would occur after the original transaction has already been committed.
+     * For this reason, the whole operation completely bypasses all transaction
+     * handling.
+     *
+     * @param updater
+     *            the value update callback, not <code>null</code>
+     * @return an operation containing the eventual result
+     */
     public CancelableOperation<T> update(SignalUpdater<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
@@ -210,7 +257,14 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
                 valueType);
     }
 
-    @Override
+    /**
+     * Wraps this signal to not accept changes.
+     * <p>
+     * This signal will keep its current configuration and changes applied
+     * through this instance will be visible through the wrapped instance.
+     *
+     * @return the new readonly signal, not <code>null</code>
+     */
     public SharedValueSignal<T> asReadonly() {
         /*
          * While this method could semantically be declared to return a less

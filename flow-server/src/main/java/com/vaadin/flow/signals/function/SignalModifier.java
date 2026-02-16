@@ -21,8 +21,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Modifies the parent signal value in place based on a new child value. Used
- * for creating two-way computed signals with mutable parent values where
- * changes to the mapped signal propagate back to the parent signal.
+ * with the {@link ValueSignal#modifier(SignalModifier)} helper method to create
+ * write callbacks for mutable value patterns.
  * <p>
  * This interface is used with mutable value patterns where changing the child
  * value directly modifies the parent value instance rather than creating a new
@@ -31,26 +31,60 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * Example usage with a mutable bean:
  *
  * <pre>
- * class Todo {
- *     private String text;
- *     private boolean done;
+ * class Person {
+ *     private String name;
+ *     private int age;
  *
- *     // getters and setters...
+ *     public String getName() {
+ *         return name;
+ *     }
+ *
+ *     public void setName(String name) {
+ *         this.name = name;
+ *     }
  * }
  *
- * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
- *         new Todo("Buy milk", false));
- * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
- *         Todo::setDone);
+ * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
+ * textField.bindValue(personSignal.map(Person::getName),
+ *         personSignal.modifier(Person::setName));
+ * </pre>
  *
- * doneSignal.set(true); // Calls todoSignal.modify(t -&gt; t.setDone(true))
+ * Example with a Todo class:
+ *
+ * <pre>
+ * class Todo {
+ *     private String task;
+ *     private boolean done;
+ *
+ *     public String getTask() {
+ *         return task;
+ *     }
+ *
+ *     public void setTask(String task) {
+ *         this.task = task;
+ *     }
+ *
+ *     public boolean isDone() {
+ *         return done;
+ *     }
+ *
+ *     public void setDone(boolean done) {
+ *         this.done = done;
+ *     }
+ * }
+ *
+ * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
+ * textField.bindValue(todoSignal.map(Todo::getTask),
+ *         todoSignal.modifier(Todo::setTask));
+ * checkbox.bindValue(todoSignal.map(Todo::isDone),
+ *         todoSignal.modifier(Todo::setDone));
  * </pre>
  *
  * @param <P>
  *            the parent signal value type
  * @param <C>
  *            the child (mapped) signal value type
- * @see ValueSignal#mapMutable(SignalMapper, SignalModifier)
+ * @see ValueSignal#modifier(SignalModifier)
  */
 @FunctionalInterface
 public interface SignalModifier<P, C> extends Serializable {

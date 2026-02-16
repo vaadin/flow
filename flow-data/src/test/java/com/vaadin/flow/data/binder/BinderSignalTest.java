@@ -30,7 +30,6 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.tests.data.bean.Person;
 
@@ -725,7 +724,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
                 .getValidationStatus();
         Assert.assertThrows(ClassCastException.class,
-                () -> ((WritableSignal<BinderValidationStatus<Person>>) statusSignal)
+                () -> ((ValueSignal<BinderValidationStatus<Person>>) statusSignal)
                         .set(null));
     }
 
