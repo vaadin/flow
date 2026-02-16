@@ -46,7 +46,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@vaadin/common-frontend": "0.0.19",
+    "@vaadin/common-frontend": "0.0.22",
     "lit": "3.2.1"
   }
 }
