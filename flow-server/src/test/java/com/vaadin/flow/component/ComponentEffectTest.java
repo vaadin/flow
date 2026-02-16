@@ -37,6 +37,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -132,7 +133,7 @@ public class ComponentEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -155,7 +156,7 @@ public class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -190,7 +191,7 @@ public class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -214,7 +215,7 @@ public class ComponentEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -239,7 +240,7 @@ public class ComponentEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -259,7 +260,7 @@ public class ComponentEffectTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
-        Registration registration = ComponentEffect.effect(component, () -> {
+        Registration registration = Effect.effect(component, () -> {
             signal.get();
             count.incrementAndGet();
         });

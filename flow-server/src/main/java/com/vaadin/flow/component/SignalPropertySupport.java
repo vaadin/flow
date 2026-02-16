@@ -22,6 +22,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 
 /**
  * Helper class for binding a {@link Signal} to a property of a
@@ -130,7 +131,7 @@ public class SignalPropertySupport<T> implements Serializable {
             throw new BindingActiveException();
         }
         this.signal = signal;
-        registration = ComponentEffect.effect(owner, () -> {
+        registration = Effect.effect(owner, () -> {
             value = signal.get();
             valueChangeConsumer.accept(value);
         });

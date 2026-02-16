@@ -82,11 +82,13 @@ public final class ComponentEffect implements Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @deprecated Use {@link Effect#effect(Component, SerializableRunnable)}
+     *             instead
      */
+    @Deprecated(forRemoval = true)
     public static <C extends Component> Registration effect(C owner,
             SerializableRunnable effectFunction) {
-        ComponentEffect effect = new ComponentEffect(owner, effectFunction);
-        return effect::close;
+        return Effect.effect(owner, effectFunction);
     }
 
     /**
@@ -124,7 +126,7 @@ public final class ComponentEffect implements Serializable {
      */
     public static <C extends Component, T> Registration bind(C owner,
             Signal<T> signal, SerializableBiConsumer<C, T> setter) {
-        return effect(owner, () -> setter.accept(owner, signal.get()));
+        return Effect.effect(owner, () -> setter.accept(owner, signal.get()));
     }
 
     /**
@@ -210,7 +212,7 @@ public final class ComponentEffect implements Serializable {
         // effect runs due to signal changes.
         HashMap<S, Element> valueSignalToChildCache = new HashMap<>();
 
-        return ComponentEffect.effect(parentComponent,
+        return Effect.effect(parentComponent,
                 () -> runEffect(new BindChildrenEffectContext<T, S>(parent,
                         list.get(), childFactory, valueSignalToChildCache)));
     }
