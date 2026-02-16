@@ -80,6 +80,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     @Override
     protected void checkPreconditions() {
         assertLockHeld();
+        super.checkPreconditions();
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(

@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.vaadin.flow.signals.impl.Transaction;
+
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
  * reactivity.
@@ -45,6 +47,17 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
         super(List.of());
     }
 
+    @Override
+    protected void checkPreconditions() {
+        assertLockHeld();
+        super.checkPreconditions();
+
+        if (Transaction.inTransaction()) {
+            throw new IllegalStateException(
+                    "ListSignal cannot be used inside signal transactions.");
+        }
+    }
+
     /**
      * Inserts a value as the first entry in this list.
      *
@@ -66,6 +79,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertLast(T value) {
         lock();
         try {
+            checkPreconditions();
             return insertAtInternal(
                     Objects.requireNonNull(getSignalValue()).size(), value);
         } finally {
@@ -94,6 +108,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertAt(int index, T value) {
         lock();
         try {
+            checkPreconditions();
             List<ValueSignal<T>> entries = Objects
                     .requireNonNull(getSignalValue());
             if (index < 0 || index > entries.size()) {
@@ -126,6 +141,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void remove(ValueSignal<T> entry) {
         lock();
         try {
+            checkPreconditions();
             List<ValueSignal<T>> entries = Objects
                     .requireNonNull(getSignalValue());
             List<ValueSignal<T>> newEntries = entries.stream()
@@ -144,6 +160,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void clear() {
         lock();
         try {
+            checkPreconditions();
             if (!Objects.requireNonNull(getSignalValue()).isEmpty()) {
                 setSignalValue(List.of());
             }
