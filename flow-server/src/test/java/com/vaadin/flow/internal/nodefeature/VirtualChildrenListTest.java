@@ -115,10 +115,9 @@ class VirtualChildrenListTest {
 
     @Test
     public void clear_throw() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            list.append(child, "foo");
-            list.clear();
-        });
+        list.append(child, "foo");
+        assertThrows(UnsupportedOperationException.class,
+                () -> list.clear());
     }
 
 }

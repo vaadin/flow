@@ -341,20 +341,18 @@ public class ElementListenersTest
 
     @Test
     public void synchronizeProperty_nullArgument_illegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            DomListenerRegistration registration = ns.add("foo", noOp);
+        DomListenerRegistration registration = ns.add("foo", noOp);
 
-            registration.synchronizeProperty(null);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.synchronizeProperty(null));
     }
 
     @Test
     public void synchronizeProperty_emptyArgument_illegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            DomListenerRegistration registration = ns.add("foo", noOp);
+        DomListenerRegistration registration = ns.add("foo", noOp);
 
-            registration.synchronizeProperty("");
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.synchronizeProperty(""));
     }
 
     @Test

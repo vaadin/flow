@@ -220,14 +220,13 @@ class ElementPropertyMapTest {
     @Test
     public void deferredUpdateFromClient_noFilter_throws()
             throws PropertyChangeDeniedException {
-        assertThrows(PropertyChangeDeniedException.class, () -> {
-            ElementPropertyMap map = createSimplePropertyMap();
-            StateNode child = new StateNode(ElementPropertyMap.class);
-            ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
-            map.put("foo", child);
-            childModel.deferredUpdateFromClient("bar", "a");
-        });
+        map.put("foo", child);
+        assertThrows(PropertyChangeDeniedException.class,
+                () -> childModel.deferredUpdateFromClient("bar", "a"));
     }
 
     @Test
@@ -276,17 +275,16 @@ class ElementPropertyMapTest {
     @Test
     public void deferredUpdateFromClient_listItem_noFilter_throws()
             throws PropertyChangeDeniedException {
-        assertThrows(PropertyChangeDeniedException.class, () -> {
-            ElementPropertyMap map = createSimplePropertyMap();
-            ModelList list = map.resolveModelList("foo");
-            StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap map = createSimplePropertyMap();
+        ModelList list = map.resolveModelList("foo");
+        StateNode child = new StateNode(ElementPropertyMap.class);
 
-            list.add(child);
+        list.add(child);
 
-            ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
-            childModel.deferredUpdateFromClient("bar", "a");
-        });
+        assertThrows(PropertyChangeDeniedException.class,
+                () -> childModel.deferredUpdateFromClient("bar", "a"));
     }
 
     @Test
@@ -354,11 +352,10 @@ class ElementPropertyMapTest {
     @Test
     public void deferredUpdateFromClient_updateNotAllowed_throw()
             throws PropertyChangeDeniedException {
-        assertThrows(PropertyChangeDeniedException.class, () -> {
-            ElementPropertyMap map = createSimplePropertyMap();
+        ElementPropertyMap map = createSimplePropertyMap();
 
-            map.deferredUpdateFromClient("foo", "value");
-        });
+        assertThrows(PropertyChangeDeniedException.class,
+                () -> map.deferredUpdateFromClient("foo", "value"));
     }
 
     @Test
@@ -377,14 +374,13 @@ class ElementPropertyMapTest {
     @Test
     public void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw()
             throws PropertyChangeDeniedException {
-        assertThrows(PropertyChangeDeniedException.class, () -> {
-            ElementPropertyMap map = createSimplePropertyMap();
-            map.put("classList", "a");
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.put("classList", "a");
 
-            map.setUpdateFromClientFilter(key -> true);
+        map.setUpdateFromClientFilter(key -> true);
 
-            map.deferredUpdateFromClient("classList", "value");
-        });
+        assertThrows(PropertyChangeDeniedException.class,
+                () -> map.deferredUpdateFromClient("classList", "value"));
     }
 
     @Test
