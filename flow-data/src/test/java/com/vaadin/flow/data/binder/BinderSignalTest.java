@@ -165,8 +165,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         lastNameSignal.set("");
 
         assertTrue(firstNameField.isInvalid());
-        assertEquals("First and last name are required", binder
-                .validate().getValidationErrors().getFirst().getErrorMessage());
+        assertEquals("First and last name are required", binder.validate()
+                .getValidationErrors().getFirst().getErrorMessage());
     }
 
     // verifies that cross-field validation works also without signal-bound
@@ -192,8 +192,8 @@ public class BinderSignalTest extends SignalsUnitTest {
         lastNameField.setValue("");
 
         assertTrue(firstNameField.isInvalid());
-        assertEquals("First and last name are required", binder
-                .validate().getValidationErrors().getFirst().getErrorMessage());
+        assertEquals("First and last name are required", binder.validate()
+                .getValidationErrors().getFirst().getErrorMessage());
     }
 
     // verifies that cross-field validation works with mix of signal-bound and
