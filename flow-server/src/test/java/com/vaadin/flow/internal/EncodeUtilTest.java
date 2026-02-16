@@ -15,25 +15,33 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EncodeUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Test(expected = NullPointerException.class)
+class EncodeUtilTest {
+
+    @Test
     public void rfc5987Encode_withNull_nullPointerException() {
-        EncodeUtil.rfc5987Encode(null);
+        assertThrows(NullPointerException.class, () -> {
+            EncodeUtil.rfc5987Encode(null);
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void rfc2047Encode_withNull_nullPointerException() {
-        EncodeUtil.rfc2047Encode(null);
+        assertThrows(NullPointerException.class, () -> {
+            EncodeUtil.rfc2047Encode(null);
+        });
     }
 
     @Test
     public void rfc5987Encode_asciiCharacters() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~";
-        Assert.assertEquals(
+        assertEquals(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&%27%2A+-.^_`|~",
                 EncodeUtil.rfc5987Encode(input));
     }
@@ -45,7 +53,7 @@ public class EncodeUtilTest {
         for (int codePoint = 0; codePoint <= 126; codePoint++) {
             text.append(new String(new int[] { codePoint }, 0, 1));
         }
-        Assert.assertEquals(
+        assertEquals(
                 "%00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%20!%22#$%25&%27%28%29%2A+%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D^_`abcdefghijklmnopqrstuvwxyz%7B|%7D~",
                 EncodeUtil.rfc5987Encode(text.toString()));
     }
@@ -54,20 +62,19 @@ public class EncodeUtilTest {
     @Test
     public void rfc5987Encode_unicodeLatin1SupplementCharacters()
             throws Exception {
-        Assert.assertEquals("%E2%82%AC%20%C3%BF",
-                EncodeUtil.rfc5987Encode("€ ÿ"));
+        assertEquals("%E2%82%AC%20%C3%BF", EncodeUtil.rfc5987Encode("€ ÿ"));
     }
 
     // UTF-8 Latin Extended A
     @Test
     public void rfc5987Encode_unicodeLatinExtendACharacters() throws Exception {
-        Assert.assertEquals("%C4%80%C4%81", EncodeUtil.rfc5987Encode("Āā"));
+        assertEquals("%C4%80%C4%81", EncodeUtil.rfc5987Encode("Āā"));
     }
 
     @Test
     public void rfc2047Encode_asciiCharacters() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
-        Assert.assertEquals(
+        assertEquals(
                 "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22?=",
                 EncodeUtil.rfc2047Encode(input));
     }
@@ -75,7 +82,7 @@ public class EncodeUtilTest {
     @Test
     public void rfc2047Encode_nonAsciiCharacters() {
         String input = "Řřüñîçødë 1中文 € ÿĀā";
-        Assert.assertEquals(
+        assertEquals(
                 "=?UTF-8?Q?=C5=98=C5=99=C3=BC=C3=B1=C3=AE=C3=A7=C3=B8d=C3=AB_1=E4=B8=AD=E6=96=87_=E2=82=AC_=C3=BF=C4=80=C4=81?=",
                 EncodeUtil.rfc2047Encode(input));
     }
@@ -83,16 +90,15 @@ public class EncodeUtilTest {
     @Test
     public void isPureUSASCII_withAsciiOnly_returnTrue() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
-        Assert.assertTrue(EncodeUtil.isPureUSASCII(input));
+        assertTrue(EncodeUtil.isPureUSASCII(input));
     }
 
     @Test
     public void isPureUSASCII_withNonAscii_returnFalse() {
         String input = "Řřüñîçøë中文€ÿĀā";
         input.chars().forEach(c -> {
-            Assert.assertFalse(
-                    "Character " + (char) c + " should not be US-ASCII",
-                    EncodeUtil.isPureUSASCII(Character.toString((char) c)));
+            assertFalse(EncodeUtil.isPureUSASCII(Character.toString((char) c)),
+                    "Character " + (char) c + " should not be US-ASCII");
         });
     }
 }
