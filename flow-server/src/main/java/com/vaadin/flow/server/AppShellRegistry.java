@@ -428,14 +428,11 @@ public class AppShellRegistry implements Serializable {
             });
         }
 
-        StylesheetContentHashUtil hashUtil = config.isProductionMode()
-                ? new StylesheetContentHashUtil()
-                : null;
-
         stylesheets.forEach((href, sourcePath) -> {
             String linkHref = href;
-            if (hashUtil != null) {
-                String hash = hashUtil.getContentHash(service, sourcePath);
+            if (config.isProductionMode()) {
+                String hash = StylesheetContentHashUtil.getContentHash(service,
+                        sourcePath);
                 linkHref = StylesheetContentHashUtil.appendHashToUrl(href,
                         hash);
             }

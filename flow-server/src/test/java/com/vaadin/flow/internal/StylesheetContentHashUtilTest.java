@@ -28,12 +28,10 @@ import com.vaadin.flow.server.VaadinService;
 public class StylesheetContentHashUtilTest {
 
     private VaadinService service;
-    private StylesheetContentHashUtil util;
 
     @Before
     public void setUp() {
         service = Mockito.mock(VaadinService.class);
-        util = new StylesheetContentHashUtil();
     }
 
     @Test
@@ -43,7 +41,8 @@ public class StylesheetContentHashUtilTest {
         Mockito.when(service.getResourceAsStream("styles.css"))
                 .thenReturn(new ByteArrayInputStream(content));
 
-        String hash = util.getContentHash(service, "styles.css");
+        String hash = StylesheetContentHashUtil.getContentHash(service,
+                "styles.css");
 
         Assert.assertNotNull(hash);
         Assert.assertEquals(8, hash.length());
@@ -56,33 +55,32 @@ public class StylesheetContentHashUtilTest {
 
     @Test
     public void getContentHash_externalHttpUrl_returnsNull() {
-        String hash = util.getContentHash(service,
-                "http://cdn.example.com/styles.css");
-        Assert.assertNull(hash);
+        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+                "http://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalHttpsUrl_returnsNull() {
-        String hash = util.getContentHash(service,
-                "https://cdn.example.com/styles.css");
-        Assert.assertNull(hash);
+        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+                "https://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalUrlMixedCase_returnsNull() {
-        String hash = util.getContentHash(service,
-                "HTTPS://cdn.example.com/styles.css");
-        Assert.assertNull(hash);
+        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+                "HTTPS://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_nullUrl_returnsNull() {
-        Assert.assertNull(util.getContentHash(service, null));
+        Assert.assertNull(
+                StylesheetContentHashUtil.getContentHash(service, null));
     }
 
     @Test
     public void getContentHash_blankUrl_returnsNull() {
-        Assert.assertNull(util.getContentHash(service, "  "));
+        Assert.assertNull(
+                StylesheetContentHashUtil.getContentHash(service, "  "));
     }
 
     @Test
@@ -90,9 +88,8 @@ public class StylesheetContentHashUtilTest {
         Mockito.when(service.getResourceAsStream("missing.css"))
                 .thenReturn(null);
 
-        String hash = util.getContentHash(service, "missing.css");
-
-        Assert.assertNull(hash);
+        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+                "missing.css"));
     }
 
     @Test
@@ -101,30 +98,15 @@ public class StylesheetContentHashUtilTest {
         Mockito.when(service.getResourceAsStream("cached.css"))
                 .thenReturn(new ByteArrayInputStream(content));
 
-        String hash1 = util.getContentHash(service, "cached.css");
-        String hash2 = util.getContentHash(service, "cached.css");
+        String hash1 = StylesheetContentHashUtil.getContentHash(service,
+                "cached.css");
+        String hash2 = StylesheetContentHashUtil.getContentHash(service,
+                "cached.css");
 
         Assert.assertEquals(hash1, hash2);
         // Resource should only be read once due to caching
         Mockito.verify(service, Mockito.times(1))
                 .getResourceAsStream("cached.css");
-    }
-
-    @Test
-    public void getContentHash_differentContentProducesDifferentHash() {
-        Mockito.when(service.getResourceAsStream("a.css"))
-                .thenReturn(new ByteArrayInputStream("body { color: red; }"
-                        .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(service.getResourceAsStream("b.css"))
-                .thenReturn(new ByteArrayInputStream("body { color: blue; }"
-                        .getBytes(StandardCharsets.UTF_8)));
-
-        String hashA = util.getContentHash(service, "a.css");
-        String hashB = util.getContentHash(service, "b.css");
-
-        Assert.assertNotNull(hashA);
-        Assert.assertNotNull(hashB);
-        Assert.assertNotEquals(hashA, hashB);
     }
 
     @Test

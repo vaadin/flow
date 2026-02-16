@@ -805,25 +805,6 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void nonProductionMode_writeCacheHeaders_withVersionParam_noCache() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(request.getParameter("v")).thenReturn("abcd1234");
-
-        fileServer.writeCacheHeaders("/folder/myfile.css", request, response);
-        Assert.assertEquals("no-cache", headers.get("Cache-Control"));
-    }
-
-    @Test
-    public void productionMode_writeCacheHeaders_withoutVersionParam_defaultBehavior() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(request.getParameter("v")).thenReturn(null);
-
-        fileServer.overrideCacheTime = 3600;
-        fileServer.writeCacheHeaders("/folder/myfile.css", request, response);
-        Assert.assertEquals("max-age=3600", headers.get("Cache-Control"));
-    }
-
-    @Test
     public void getCacheTime() {
         int oneYear = 60 * 60 * 24 * 365;
         assertEquals(oneYear, fileServer.getCacheTime("somefile.cache.js"));

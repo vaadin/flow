@@ -32,27 +32,24 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.8
  */
 public class StylesheetContentHashUtil {
 
     private static final int HASH_LENGTH = 8;
 
-    private final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     private static final Logger logger = LoggerFactory
             .getLogger(StylesheetContentHashUtil.class);
 
-    /**
-     * Creates a new instance.
-     */
-    public StylesheetContentHashUtil() {
+    private StylesheetContentHashUtil() {
     }
 
     /**
      * Computes a truncated SHA-256 content hash for the given resource URL.
      * Returns {@code null} for external URLs (http/https), missing resources,
-     * or on any I/O error.
+     * or on any I/O error. Results are cached so that each resource is read at
+     * most once.
      *
      * @param service
      *            the Vaadin service used to load the resource
@@ -61,7 +58,8 @@ public class StylesheetContentHashUtil {
      * @return an 8-character hex hash string, or {@code null} if the hash
      *         cannot be computed
      */
-    public String getContentHash(VaadinService service, String resourceUrl) {
+    public static String getContentHash(VaadinService service,
+            String resourceUrl) {
         if (resourceUrl == null || resourceUrl.isBlank()) {
             return null;
         }

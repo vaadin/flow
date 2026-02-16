@@ -248,9 +248,8 @@ public class UidlWriter implements Serializable {
             dependencyJson.remove(Dependency.KEY_URL);
         } else if (dependency.getType() == Dependency.Type.STYLESHEET && context
                 .getService().getDeploymentConfiguration().isProductionMode()) {
-            VaadinService service = context.getService();
-            StylesheetContentHashUtil hashUtil = new StylesheetContentHashUtil();
-            String hash = hashUtil.getContentHash(service, dependency.getUrl());
+            String hash = StylesheetContentHashUtil
+                    .getContentHash(context.getService(), dependency.getUrl());
             if (hash != null) {
                 dependencyJson.put(Dependency.KEY_URL, StylesheetContentHashUtil
                         .appendHashToUrl(dependency.getUrl(), hash));
