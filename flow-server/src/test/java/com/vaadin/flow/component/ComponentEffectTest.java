@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
@@ -305,8 +306,8 @@ public class ComponentEffectTest {
         MockUI ui = new MockUI();
         ui.add(component);
 
-        Registration registration = ComponentEffect.bind(component, signal,
-                TestComponent::setValue);
+        Registration registration = new ElementEffect(component.getElement(),
+                () -> component.setValue(signal.get()))::close;
 
         assertEquals("Initial value should be set", "initial",
                 component.getValue());
