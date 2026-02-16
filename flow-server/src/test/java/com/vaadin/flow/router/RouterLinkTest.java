@@ -277,11 +277,10 @@ class RouterLinkTest extends HasCurrentService {
 
     @Test
     public void noImplicitRouter() {
-        assertThrows(IllegalStateException.class, () -> {
-            VaadinService service = VaadinService.getCurrent();
-            Mockito.when(service.getRouter()).thenReturn(null);
-            new RouterLink("Show something", TestView.class);
-        });
+        VaadinService service = VaadinService.getCurrent();
+        Mockito.when(service.getRouter()).thenReturn(null);
+        assertThrows(IllegalStateException.class,
+                () -> new RouterLink("Show something", TestView.class));
     }
 
     @Test

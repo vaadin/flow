@@ -311,10 +311,9 @@ class DefaultRouteResolverTest extends RoutingTestBase {
 
     @Test
     public void clientRouteRequest_noLayoutForPath_Throws() {
+        String path = "route";
+
         NotFoundException ex = assertThrows(NotFoundException.class, () -> {
-
-            String path = "route";
-
             try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                     .mockStatic(MenuRegistry.class)) {
                 menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
@@ -322,7 +321,7 @@ class DefaultRouteResolverTest extends RoutingTestBase {
                                 new AvailableViewInfo("", null, false, "/route",
                                         false, false, null, null, null, true,
                                         null)));
-                NavigationState greeting = resolveNavigationState(path);
+                resolveNavigationState(path);
             }
         });
         assertTrue(

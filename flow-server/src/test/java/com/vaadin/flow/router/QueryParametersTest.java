@@ -80,10 +80,10 @@ class QueryParametersTest {
 
     @Test
     public void underlyingMapUnmodifiable_empty() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            QueryParameters.empty().getParameters().put("one",
-                    Collections.emptyList());
-        });
+        Map<String, List<String>> parameters = QueryParameters.empty()
+                .getParameters();
+        assertThrows(UnsupportedOperationException.class,
+                () -> parameters.put("one", Collections.emptyList()));
     }
 
     @Test
@@ -129,11 +129,10 @@ class QueryParametersTest {
 
     @Test
     public void underlyingMapUnmodifiable_simple() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            QueryParameters params = QueryParameters
-                    .simple(getSimpleInputParameters());
-            params.getParameters().put("one", Collections.emptyList());
-        });
+        Map<String, List<String>> parameters = QueryParameters
+                .simple(getSimpleInputParameters()).getParameters();
+        assertThrows(UnsupportedOperationException.class,
+                () -> parameters.put("one", Collections.emptyList()));
     }
 
     @Test
@@ -194,10 +193,10 @@ class QueryParametersTest {
 
     @Test
     public void underlyingMapUnmodifiable_full() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            QueryParameters.full(getFullInputParameters()).getParameters()
-                    .put("one", Collections.emptyList());
-        });
+        Map<String, List<String>> parameters = QueryParameters
+                .full(getFullInputParameters()).getParameters();
+        assertThrows(UnsupportedOperationException.class,
+                () -> parameters.put("one", Collections.emptyList()));
     }
 
     @Test

@@ -214,9 +214,8 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
 
     @Test
     public void testWrongTypeOfRepeatIndexParam() {
-        assertThrows(IllegalStateException.class,
-                () -> addAndVerifyMethod(wronglyAnnotatedHandlers
-                        .get("wrongTypeOfRepeatIndexParam")));
+        assertThrows(IllegalStateException.class, () -> addAndVerifyMethod(
+                wronglyAnnotatedHandlers.get("wrongTypeOfRepeatIndexParam")));
     }
 
     @Test

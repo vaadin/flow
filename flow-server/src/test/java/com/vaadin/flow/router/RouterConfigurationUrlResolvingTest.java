@@ -266,12 +266,9 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
     @Test // 3519
     public void getUrl_throws_for_required_parameter() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class, () -> {
-                    setNavigationTargets(RouteWithParameter.class);
-
-                    routeConfiguration.getUrl(RouteWithParameter.class);
-                });
+        setNavigationTargets(RouteWithParameter.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> routeConfiguration.getUrl(RouteWithParameter.class));
     }
 
     @Test // 3519

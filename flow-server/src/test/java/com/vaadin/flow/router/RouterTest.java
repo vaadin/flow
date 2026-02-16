@@ -2367,12 +2367,9 @@ public class RouterTest extends RoutingTestBase {
     public void base_route_and_optional_parameter_throws_configuration_error()
             throws InvalidRouteConfigurationException {
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    setNavigationTargets(OptionalParameter.class,
-                            OptionalNoParameter.class);
-
-                });
+                InvalidRouteConfigurationException.class,
+                () -> setNavigationTargets(OptionalParameter.class,
+                        OptionalNoParameter.class));
         assertTrue(ex.getMessage().contains(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
                 OptionalNoParameter.class.getName(),

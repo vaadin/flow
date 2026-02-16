@@ -608,12 +608,10 @@ class AbstractRouteRegistryTest {
     @Test
     public void multiple_normal_routes_throw_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(NormalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(NormalRoute.class);
-                    addTarget(SecondNormalRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(SecondNormalRoute.class));
         assertTrue(ex.getMessage()
                 .contains(String.format(RouteUtil.ROUTE_CONFLICT,
                         NormalRoute.class.getName(),
@@ -623,12 +621,10 @@ class AbstractRouteRegistryTest {
     @Test
     public void normal_and_optional_throws_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(NormalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(NormalRoute.class);
-                    addTarget(OptionalRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(OptionalRoute.class));
         assertTrue(ex.getMessage().contains(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
                 NormalRoute.class.getName(), OptionalRoute.class.getName(),
@@ -640,23 +636,19 @@ class AbstractRouteRegistryTest {
     @Test
     public void two_optionals_throw_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(OptionalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(OptionalRoute.class);
-                    addTarget(SecondOptionalRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(SecondOptionalRoute.class));
     }
 
     @Test
     public void optional_and_normal_throws_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(OptionalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(OptionalRoute.class);
-                    addTarget(NormalRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(NormalRoute.class));
         assertTrue(ex.getMessage().contains(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
                 NormalRoute.class.getName(), OptionalRoute.class.getName(),
@@ -667,24 +659,20 @@ class AbstractRouteRegistryTest {
     @Test
     public void two_has_route_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(HasUrlRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(HasUrlRoute.class);
-                    addTarget(SecondHasUrlRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(SecondHasUrlRoute.class));
     }
 
     /* Wildcard parameters */
     @Test
     public void two_wildcard_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
+        addTarget(WildcardRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-
-                    addTarget(WildcardRoute.class);
-                    addTarget(SecondWildcardRoute.class);
-                });
+                InvalidRouteConfigurationException.class,
+                () -> addTarget(SecondWildcardRoute.class));
     }
 
     @Test

@@ -129,70 +129,65 @@ class ErrorStateRendererTest {
 
     @Test
     public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
-        assertThrows(ExceptionsTrace.class, () -> {
-            UI ui = configureMocks();
+        UI ui = configureMocks();
 
-            NavigationState state = new NavigationStateBuilder(
-                    ui.getInternals().getRouter())
-                    .withTarget(InfiniteLoopErrorTarget.class).build();
-            ErrorStateRenderer renderer = new ErrorStateRenderer(state);
+        NavigationState state = new NavigationStateBuilder(
+                ui.getInternals().getRouter())
+                .withTarget(InfiniteLoopErrorTarget.class).build();
+        ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
-            RouteConfiguration
-                    .forRegistry(ui.getInternals().getRouter().getRegistry())
-                    .setAnnotatedRoute(InfiniteLoopNPEView.class);
+        RouteConfiguration
+                .forRegistry(ui.getInternals().getRouter().getRegistry())
+                .setAnnotatedRoute(InfiniteLoopNPEView.class);
 
-            ErrorParameter<Exception> parameter = new ErrorParameter<>(
-                    Exception.class, new NullPointerException());
-            ErrorNavigationEvent event = new ErrorNavigationEvent(
-                    ui.getInternals().getRouter(), new Location("error"), ui,
-                    NavigationTrigger.CLIENT_SIDE, parameter);
-            // event should route to ErrorTarget whose layout forwards to
-            // NPEView
-            // which reroute to ErrorTarget and this is an infinite loop
-            renderer.handle(event);
-        });
+        ErrorParameter<Exception> parameter = new ErrorParameter<>(
+                Exception.class, new NullPointerException());
+        ErrorNavigationEvent event = new ErrorNavigationEvent(
+                ui.getInternals().getRouter(), new Location("error"), ui,
+                NavigationTrigger.CLIENT_SIDE, parameter);
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
+        // which reroute to ErrorTarget and this is an infinite loop
+        assertThrows(ExceptionsTrace.class, () -> renderer.handle(event));
     }
 
     @Test
     public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
-        assertThrows(ExceptionsTrace.class, () -> {
-            UI ui = configureMocks();
+        UI ui = configureMocks();
 
-            NavigationState state = new NavigationStateBuilder(
-                    ui.getInternals().getRouter())
-                    .withTarget(InfiniteLoopNPEView.class).build();
-            NavigationStateRenderer renderer = new NavigationStateRenderer(
-                    state);
+        NavigationState state = new NavigationStateBuilder(
+                ui.getInternals().getRouter())
+                .withTarget(InfiniteLoopNPEView.class).build();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(state);
 
-            RouteConfiguration
-                    .forRegistry(ui.getInternals().getRouter().getRegistry())
-                    .setAnnotatedRoute(InfiniteLoopNPEView.class);
-            ((ApplicationRouteRegistry) ui.getInternals().getRouter()
-                    .getRegistry())
-                    .setErrorNavigationTargets(Collections
-                            .singleton(InfiniteLoopErrorTarget.class));
+        RouteConfiguration
+                .forRegistry(ui.getInternals().getRouter().getRegistry())
+                .setAnnotatedRoute(InfiniteLoopNPEView.class);
+        ((ApplicationRouteRegistry) ui.getInternals().getRouter().getRegistry())
+                .setErrorNavigationTargets(
+                        Collections.singleton(InfiniteLoopErrorTarget.class));
 
-            NavigationEvent event = new NavigationEvent(
-                    ui.getInternals().getRouter(), new Location("npe"), ui,
-                    NavigationTrigger.CLIENT_SIDE);
-            // event should route to ErrorTarget whose layout forwards to
-            // NPEView
-            // which reroute to ErrorTarget and this is an infinite loop
-            renderer.handle(event);
+        NavigationEvent event = new NavigationEvent(
+                ui.getInternals().getRouter(), new Location("npe"), ui,
+                NavigationTrigger.CLIENT_SIDE);
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
+        // which reroute to ErrorTarget and this is an infinite loop
+        assertThrows(ExceptionsTrace.class, () -> renderer.handle(event));
 
-            ObjectNode routerLinkState = new ObjectMapper().createObjectNode();
-            routerLinkState.put("href", "router_link");
-            routerLinkState.put("scrollPositionX", 0d);
-            routerLinkState.put("scrollPositionY", 0d);
+        ObjectNode routerLinkState = new ObjectMapper().createObjectNode();
+        routerLinkState.put("href", "router_link");
+        routerLinkState.put("scrollPositionX", 0d);
+        routerLinkState.put("scrollPositionY", 0d);
 
-            event = new NavigationEvent(ui.getInternals().getRouter(),
-                    new Location("npe"), ui, NavigationTrigger.ROUTER_LINK,
-                    routerLinkState, false);
-            // event should route to ErrorTarget whose layout forwards to
-            // NPEView
-            // which reroute to ErrorTarget and this is an infinite loop
-            renderer.handle(event);
-        });
+        NavigationEvent routerLinkEvent = new NavigationEvent(
+                ui.getInternals().getRouter(), new Location("npe"), ui,
+                NavigationTrigger.ROUTER_LINK, routerLinkState, false);
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
+        // which reroute to ErrorTarget and this is an infinite loop
+        assertThrows(ExceptionsTrace.class,
+                () -> renderer.handle(routerLinkEvent));
     }
 
     @Test
