@@ -298,7 +298,7 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bind_signalValueChanges_componentUpdated() {
+    public void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
