@@ -164,7 +164,7 @@ public class MutableTreeRevision extends TreeRevision {
             }
         }
 
-        private Optional<Data> data(@Nullable Id nodeId) {
+        private Optional<Data> data(Id nodeId) {
             Id id = Objects.requireNonNull(resolveAlias(nodeId));
 
             if (detachedNodes.contains(id)) {

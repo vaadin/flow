@@ -320,7 +320,7 @@ public abstract class SignalTree implements Serializable {
      *            the command to apply, not <code>null</code>
      * @param resultHandler
      *            a result handler that will be notified when the command is
-     *            confirmed, not <code>null</code> to ignore the result
+     *            confirmed, or <code>null</code> to ignore the result
      */
     public void commitSingleCommand(SignalCommand command,
             @Nullable CommandResultHandler resultHandler) {
