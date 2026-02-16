@@ -256,14 +256,42 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * any attempt to set the value while the element is attached will throw an
      * {@link IllegalStateException}.
      * <p>
-     * Example of usage:
+     * Examples of usage:
      *
      * <pre>
+     * // Simple binding to a signal holding the component value
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Input component = new Input();
      * add(component);
      * component.bindValue(signal, signal::set);
      * signal.set("Hello"); // The input's value changes
+     *
+     * // Binding to a property of an immutable record using updater helper
+     * record Person(String name, int age) {
+     *     Person withName(String name) {
+     *         return new Person(name, this.age);
+     *     }
+     * }
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(
+     *         new Person("Alice", 30));
+     * component.bindValue(personSignal.map(Person::name),
+     *         personSignal.updater(Person::withName));
+     *
+     * // Binding to a property of a mutable bean using modifier helper
+     * class Person {
+     *     private String name;
+     *
+     *     public String getName() {
+     *         return name;
+     *     }
+     *
+     *     public void setName(String name) {
+     *         this.name = name;
+     *     }
+     * }
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
+     * component.bindValue(personSignal.map(Person::getName),
+     *         personSignal.modifier(Person::setName));
      * </pre>
      *
      * @param valueSignal

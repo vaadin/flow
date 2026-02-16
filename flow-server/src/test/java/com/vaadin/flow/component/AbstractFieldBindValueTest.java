@@ -454,6 +454,112 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.setValue("bar");
     }
 
+    @Test
+    public void bindValue_updaterHelper_immutableRecord() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+
+        record Person(String name, int age) {
+            Person withName(String name) {
+                return new Person(name, this.age);
+            }
+        }
+
+        ValueSignal<Person> personSignal = new ValueSignal<>(
+                new Person("Alice", 30));
+        input.bindValue(personSignal.map(Person::name),
+                personSignal.updater(Person::withName));
+
+        assertEquals("Alice", input.getValue());
+        assertEquals(30, personSignal.get().age());
+
+        input.setValue("Bob");
+        assertEquals("Bob", input.getValue());
+        assertEquals("Bob", personSignal.get().name());
+        assertEquals(30, personSignal.get().age());
+
+        personSignal.update(p -> new Person("Charlie", 35));
+        assertEquals("Charlie", input.getValue());
+        assertEquals(35, personSignal.get().age());
+    }
+
+    @Test
+    public void bindValue_modifierHelper_mutableBean() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+
+        class Person {
+            private String name;
+            private int age;
+
+            Person(String name, int age) {
+                this.name = name;
+                this.age = age;
+            }
+
+            String getName() {
+                return name;
+            }
+
+            void setName(String name) {
+                this.name = name;
+            }
+
+            int getAge() {
+                return age;
+            }
+        }
+
+        Person person = new Person("Alice", 30);
+        ValueSignal<Person> personSignal = new ValueSignal<>(person);
+        input.bindValue(personSignal.map(Person::getName),
+                personSignal.modifier(Person::setName));
+
+        assertEquals("Alice", input.getValue());
+        assertEquals(30, personSignal.get().getAge());
+
+        input.setValue("Bob");
+        assertEquals("Bob", input.getValue());
+        assertEquals("Bob", personSignal.get().getName());
+        assertEquals(30, personSignal.get().getAge());
+        Assert.assertSame(person, personSignal.get());
+
+        personSignal.modify(p -> p.setName("Charlie"));
+        assertEquals("Charlie", input.getValue());
+    }
+
+    @Test
+    public void bindValue_updaterHelper_valueChangeEvents() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+
+        record Person(String name) {
+            Person withName(String name) {
+                return new Person(name);
+            }
+        }
+
+        ValueSignal<Person> personSignal = new ValueSignal<>(
+                new Person("Alice"));
+        input.bindValue(personSignal.map(Person::name),
+                personSignal.updater(Person::withName));
+
+        AtomicInteger counter = new AtomicInteger(0);
+        AtomicReference<String> lastValue = new AtomicReference<>();
+        input.addValueChangeListener(event -> {
+            counter.incrementAndGet();
+            lastValue.set(event.getValue());
+        });
+
+        input.setValue("Bob");
+        assertEquals(1, counter.get());
+        assertEquals("Bob", lastValue.get());
+
+        personSignal.update(p -> new Person("Charlie"));
+        assertEquals(2, counter.get());
+        assertEquals("Charlie", lastValue.get());
+    }
+
     /**
      * Test input component using {@link AbstractField} directly.
      */
