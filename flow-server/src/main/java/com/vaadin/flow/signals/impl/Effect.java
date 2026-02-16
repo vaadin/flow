@@ -21,9 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.ElementEffect;
 import org.jspecify.annotations.Nullable;
-
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
@@ -186,6 +188,37 @@ public class Effect implements Serializable {
     public synchronized void dispose() {
         clearRegistrations();
         action = null;
+    }
+
+    /**
+     * Creates a Signal effect that is owned by a given component. The effect is
+     * enabled when the component is attached and automatically disabled when it
+     * is detached.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Registration effect = Effect.effect(myComponent, () -> {
+     *     Notification.show("Component is attached and signal value is "
+     *             + someSignal.get());
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @param <C>
+     *            the type of the component
+     * @param owner
+     *            the owner component for which the effect is applied, must not
+     *            be <code>null</code>
+     * @param effectFunction
+     *            the effect function to be executed when any dependency is
+     *            changed, must not be <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    public static <C extends Component> Registration effect(C owner,
+            SerializableRunnable effectFunction) {
+        return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 
 }

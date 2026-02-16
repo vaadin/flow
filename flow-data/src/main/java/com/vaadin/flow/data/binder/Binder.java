@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -66,6 +65,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -383,7 +383,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link BindingBuilder#withValidator(Validator)}.
          * <p>
          * The Binder automatically runs validators inside a
-         * {@link com.vaadin.flow.component.ComponentEffect#effect} context.
+         * {@link com.vaadin.flow.signals.impl.Effect#effect(Component, com.vaadin.flow.function.SerializableRunnable)} context.
          * This makes validators reactive to signal changes - when you call
          * {@code value()} on another binding from within a validator, the
          * validator will automatically re-run whenever that other binding's
@@ -436,7 +436,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @see BindingBuilder#withValidator(Validator)
          * @see com.vaadin.flow.component.HasValue#bindValue
-         * @see com.vaadin.flow.component.ComponentEffect#effect
+         * @see com.vaadin.flow.signals.impl.Effect#effect(Component, com.vaadin.flow.function.SerializableRunnable)
          *
          * @since 25.1
          */
@@ -1711,7 +1711,7 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
-                signalRegistration = ComponentEffect.effect(component, () -> {
+                signalRegistration = Effect.effect(component, () -> {
                     if (valueInit) {
                         // start to track signal usage
                         doConversion();
