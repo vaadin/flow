@@ -23,6 +23,7 @@ import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -440,44 +441,32 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void threadSafety_singleThreadWithModify_noException() {
+    void threadSafety_modifyWithSessionLock_noException() throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+
         ValueSignal<String[]> signal = new ValueSignal<>(
                 new String[] { "initial" });
 
-        signal.modify(value -> value[0] = "modified");
-        signal.get();
-        signal.peek();
-        signal.set(new String[] { "new" });
-        signal.replace(new String[] { "new" }, new String[] { "replaced" });
-        signal.update(x -> x);
-        signal.modify(value -> value[0] = "modified again");
-    }
-
-    @Test
-    void threadSafety_multipleThreadsWithoutModify_noException()
-            throws InterruptedException {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        signal.get();
-        signal.set("update");
-
-        Thread other = Thread.startVirtualThread(() -> {
+        session.runWithLock(() -> {
+            signal.modify(value -> value[0] = "modified");
             signal.get();
-            signal.set("from other thread");
-            signal.peek();
+            signal.set(new String[] { "new" });
+            return null;
         });
-        other.join();
-
-        signal.get();
     }
 
     @Test
-    void threadSafety_modifyThenAccessFromDifferentThread_throws()
-            throws InterruptedException {
+    void threadSafety_modifyWithSessionThenAccessWithoutLock_throws()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+
         ValueSignal<String[]> signal = new ValueSignal<>(
                 new String[] { "initial" });
 
-        signal.modify(value -> value[0] = "modified");
+        session.runWithLock(() -> {
+            signal.modify(value -> value[0] = "modified");
+            return null;
+        });
 
         Thread other = Thread.startVirtualThread(() -> {
             assertThrows(IllegalStateException.class, () -> signal.get());
@@ -486,38 +475,12 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void threadSafety_accessFromDifferentThreadThenModify_throws()
-            throws InterruptedException {
+    void threadSafety_modifyWithoutSession_noException() {
         ValueSignal<String[]> signal = new ValueSignal<>(
                 new String[] { "initial" });
 
-        Thread other = Thread.startVirtualThread(() -> {
-            signal.get();
-        });
-        other.join();
-
-        assertThrows(IllegalStateException.class, () -> {
-            signal.modify(value -> {
-                fail("Should not reach modifier callback");
-            });
-        });
-    }
-
-    @Test
-    void threadSafety_mappedModifyWriteThenOtherThread_throws()
-            throws InterruptedException {
-        ValueSignal<String[]> signal = new ValueSignal<>(
-                new String[] { "initial" });
-
-        WritableSignal<String> mapped = signal.mapMutable(v -> v[0],
-                (parent, child) -> parent[0] = child);
-
-        mapped.set("updated");
-
-        Thread other = Thread.startVirtualThread(() -> {
-            assertThrows(IllegalStateException.class, () -> signal.get());
-        });
-        other.join();
+        signal.modify(value -> value[0] = "modified");
+        signal.get();
     }
 
     private static void assertEventually(BooleanSupplier test) {

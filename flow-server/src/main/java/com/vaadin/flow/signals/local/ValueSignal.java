@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.SignalModifier;
@@ -60,8 +61,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
 
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
-    private transient boolean multipleThreadsDetected = false;
-    private transient @Nullable Thread firstThread = null;
+    private transient boolean sessionBound = false;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -93,23 +93,24 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
             throw new ConcurrentModificationException();
         }
 
-        // Track thread access for detecting unsafe mutable sharing
-        Thread current = Thread.currentThread();
-        if (firstThread == null) {
-            firstThread = current;
-        } else if (firstThread != current) {
-            multipleThreadsDetected = true;
+        // Detect unsafe mutable sharing: if modify() has been used on a
+        // session-bound signal, all access must hold the session lock.
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            sessionBound = true;
         }
 
-        if (modifyUsed && multipleThreadsDetected) {
+        if (modifyUsed && sessionBound
+                && (session == null || !session.hasLock())) {
             throw new IllegalStateException(
                     "This ValueSignal instance has been used with modify() "
-                            + "and accessed from multiple threads. This is not "
-                            + "thread-safe because modify() works with mutable "
-                            + "values without holding a lock while the modifier "
-                            + "callback runs. Use immutable values with set(), "
-                            + "replace(), or update() instead of modify() when "
-                            + "the signal is shared between threads.");
+                            + "and accessed without holding the session lock. "
+                            + "This is not thread-safe because modify() works "
+                            + "with mutable values without holding a lock while "
+                            + "the modifier callback runs. Use immutable values "
+                            + "with set(), replace(), or update() instead of "
+                            + "modify() when the signal is shared between "
+                            + "threads.");
         }
     }
 
