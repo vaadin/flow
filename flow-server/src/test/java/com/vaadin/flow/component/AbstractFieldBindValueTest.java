@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -523,7 +524,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         assertEquals("Bob", input.getValue());
         assertEquals("Bob", personSignal.get().getName());
         assertEquals(30, personSignal.get().getAge());
-        Assert.assertSame(person, personSignal.get());
+        assertSame(person, personSignal.get());
 
         personSignal.modify(p -> p.setName("Charlie"));
         assertEquals("Charlie", input.getValue());
