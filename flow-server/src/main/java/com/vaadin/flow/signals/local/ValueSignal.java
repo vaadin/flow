@@ -59,9 +59,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         implements WritableSignal<T> {
 
     private boolean modifyRunning = false;
-    private boolean modifyUsed = false;
-    private boolean multipleThreadsDetected = false;
-    private @Nullable Thread firstThread = null;
+    private transient boolean modifyUsed = false;
+    private transient boolean multipleThreadsDetected = false;
+    private transient @Nullable Thread firstThread = null;
 
     /**
      * Creates a new value signal with the given initial value.
