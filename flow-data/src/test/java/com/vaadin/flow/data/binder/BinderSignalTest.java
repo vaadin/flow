@@ -23,14 +23,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.tests.data.bean.Person;
 
@@ -725,7 +724,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
                 .getValidationStatus();
         Assert.assertThrows(ClassCastException.class,
-                () -> ((WritableSignal<BinderValidationStatus<Person>>) statusSignal)
+                () -> ((ValueSignal<BinderValidationStatus<Person>>) statusSignal)
                         .set(null));
     }
 
@@ -864,7 +863,7 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         AtomicInteger effectCalled = new AtomicInteger(0);
         AtomicBoolean prevStatus = new AtomicBoolean(true);
-        ComponentEffect.effect(firstNameField, () -> {
+        Effect.effect(firstNameField, () -> {
             prevStatus.set(binder.getValidationStatus().get().isOk());
             effectCalled.incrementAndGet();
         });
@@ -911,7 +910,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         binderSetup.accept(item);
 
         AtomicBoolean prevStatus = new AtomicBoolean(true);
-        ComponentEffect.effect(firstNameField, () -> {
+        Effect.effect(firstNameField, () -> {
             prevStatus.set(binder.getValidationStatus().get().isOk());
         });
 
