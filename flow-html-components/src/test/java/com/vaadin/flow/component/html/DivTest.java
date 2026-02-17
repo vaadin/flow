@@ -50,4 +50,40 @@ class DivTest extends ComponentTest {
     void testNonDefaultConstructor() {
         assertEquals("text", new Div("text").getText());
     }
+
+    @Test
+    public void testAddTypedCollectionOfComponents() {
+        // Test for the GitHub issue fix - should compile and work with typed collections
+        Div container = new Div();
+        
+        // Create a List<Span> (subtype of Component)
+        java.util.List<Span> typedSpans = java.util.List
+                .of(new Span("span1"), new Span("span2"), new Span("span3"));
+        
+        // This should now compile with Collection<? extends Component>
+        container.add(typedSpans);
+        
+        Assert.assertEquals(3, container.getChildren().count());
+    }
+
+    @Test
+    public void testRemoveTypedCollectionOfComponents() {
+        // Test for the GitHub issue fix - should compile and work with typed collections
+        Div container = new Div();
+        
+        Span span1 = new Span("span1");
+        Span span2 = new Span("span2");
+        Span span3 = new Span("span3");
+        
+        container.add(span1, span2, span3);
+        Assert.assertEquals(3, container.getChildren().count());
+        
+        // Create a List<Span> (subtype of Component)
+        java.util.List<Span> typedSpans = java.util.List.of(span1, span2);
+        
+        // This should now compile with Collection<? extends Component>
+        container.remove(typedSpans);
+        
+        Assert.assertEquals(1, container.getChildren().count());
+    }
 }
