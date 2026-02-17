@@ -2,10 +2,14 @@
 const fs = require("fs");
 const { execSync } = require("child_process");
 
+const lockDir = ".husky/_lock";
 try {
-  fs.mkdirSync(".husky/_lock");
-  execSync("npx husky@9.1.7", { stdio: "inherit" });
-  fs.rmSync(".husky/_lock", { recursive: true });
+  fs.mkdirSync(lockDir);
 } catch (e) {
-  // Already exists, another process won the race or husky is already set up
+  return; // another process or already set up
+}
+try {
+  execSync("npx husky@9.1.7", { stdio: "inherit" });
+} finally {
+  fs.rmSync(lockDir, { recursive: true });
 }
