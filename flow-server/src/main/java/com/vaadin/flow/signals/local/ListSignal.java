@@ -162,8 +162,7 @@ public class ListSignal<T>
         if (value == null) {
             return "ListSignal[null]";
         }
-        return value.stream().map(ValueSignal::peek)
-                .map(Objects::toString)
+        return value.stream().map(ValueSignal::peek).map(Objects::toString)
                 .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
