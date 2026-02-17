@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.Id;
@@ -183,7 +186,7 @@ public abstract class SignalTree implements Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned by the supplier
      */
-    protected <T> T getWithLock(ValueSupplier<T> action) {
+    protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
         lock.lock();
         try {
             return action.supply();
@@ -239,7 +242,7 @@ public abstract class SignalTree implements Serializable {
         assert nodeId != null;
         assert observer != null;
 
-        return getWithLock(() -> {
+        return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
             List<TransientListener> list = observers.computeIfAbsent(nodeId,
@@ -248,7 +251,7 @@ public abstract class SignalTree implements Serializable {
             list.add(observer);
 
             return wrapWithLock(() -> list.remove(observer));
-        });
+        }));
     }
 
     /**
@@ -317,10 +320,10 @@ public abstract class SignalTree implements Serializable {
      *            the command to apply, not <code>null</code>
      * @param resultHandler
      *            a result handler that will be notified when the command is
-     *            confirmed, not <code>null</code> to ignore the result
+     *            confirmed, or <code>null</code> to ignore the result
      */
     public void commitSingleCommand(SignalCommand command,
-            CommandResultHandler resultHandler) {
+            @Nullable CommandResultHandler resultHandler) {
         assert command != null;
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,
@@ -389,10 +392,10 @@ public abstract class SignalTree implements Serializable {
      */
     public CleanupCallback subscribeToProcessed(CommandSubscriber subscriber) {
         assert subscriber != null;
-        return getWithLock(() -> {
+        return Objects.requireNonNull(getWithLock(() -> {
             subscribers.add(subscriber);
             return wrapWithLock(() -> subscribers.remove(subscriber));
-        });
+        }));
     }
 
     /**
@@ -408,9 +411,13 @@ public abstract class SignalTree implements Serializable {
             List<SignalCommand> commands, Map<Id, CommandResult> results) {
         assert hasLock();
         for (var command : commands) {
+            CommandResult result = results.get(command.commandId());
+            if (result == null) {
+                throw new IllegalStateException(
+                        "Missing result for command " + command.commandId());
+            }
             for (var subscriber : subscribers) {
-                subscriber.onCommandProcessed(command,
-                        results.get(command.commandId()));
+                subscriber.onCommandProcessed(command, result);
             }
         }
     }

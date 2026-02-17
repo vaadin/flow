@@ -16,10 +16,10 @@
 package com.vaadin.tests.server.component;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -34,7 +34,7 @@ class SerializedLocalSignalComponent extends Component {
     SerializedLocalSignalComponent(ValueSignal<String> signal) {
         this.signal = signal;
 
-        registration = ComponentEffect.effect(this, () -> {
+        registration = Effect.effect(this, () -> {
             signal.get();
             effectExecutionCounter++;
         });
@@ -46,10 +46,10 @@ class SerializedLocalSignalComponent extends Component {
                 signal.map(value -> value != null && !value.isEmpty()));
         getElement().bindVisible(Signal.computed(() -> signal.get() != null));
 
-        var twoWayMappedSignal = signal.map(str -> str + "!!!",
-                (str, value) -> value.replace("!!!", ""));
-        getElement().bindProperty("two-way-prop", twoWayMappedSignal,
-                twoWayMappedSignal::set);
+        // Use updater helper for explicit two-way binding
+        getElement().bindProperty("two-way-prop",
+                signal.map(str -> str + "!!!"),
+                signal.updater((str, value) -> value.replace("!!!", "")));
 
         // sync property from the client
         getElement().addPropertyChangeListener("two-way-prop",
