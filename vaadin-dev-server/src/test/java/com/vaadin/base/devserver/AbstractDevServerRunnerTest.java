@@ -124,6 +124,8 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getRequestURI()).thenReturn("/foo%20bar");
         Mockito.when(request.getPathInfo()).thenReturn("foo bar");
+        Mockito.when(request.getContextPath()).thenReturn("");
+        Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(request.getHeaderNames())
                 .thenReturn(Collections.emptyEnumeration());
 
@@ -135,8 +137,72 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                 });
         Assert.assertTrue("Dev server should have served the resource",
                 devServer.serveDevModeRequest(request, response));
-        Assert.assertEquals("foo%20bar", requestedPath.get());
+        Assert.assertEquals("/foo%20bar", requestedPath.get());
+    }
 
+    @Test
+    public void shouldPreserveCurlyBraceEncodingInUrlToDevServer()
+            throws Exception {
+        handler = new DummyRunner();
+        waitForDevServer();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(Mockito.mock(ServletOutputStream.class));
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getRequestURI()).thenReturn(
+                "/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx");
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/VAADIN/views/movie/{movieId}/@index.tsx");
+        Mockito.when(request.getContextPath()).thenReturn("");
+        Mockito.when(request.getServletPath()).thenReturn("");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        AtomicReference<String> requestedPath = new AtomicReference<>();
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .then(invocation -> {
+                    requestedPath.set((String) invocation.getArguments()[0]);
+                    return Mockito.mock(HttpURLConnection.class);
+                });
+        Assert.assertTrue("Dev server should have served the resource",
+                devServer.serveDevModeRequest(request, response));
+        Assert.assertEquals(
+                "/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx",
+                requestedPath.get());
+    }
+
+    @Test
+    public void shouldPreserveEncodedCharactersWithContextPath()
+            throws Exception {
+        handler = new DummyRunner();
+        waitForDevServer();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(Mockito.mock(ServletOutputStream.class));
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getRequestURI())
+                .thenReturn("/app/vaadinServlet/VAADIN/%23special%20file");
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/VAADIN/#special file");
+        Mockito.when(request.getContextPath()).thenReturn("/app");
+        Mockito.when(request.getServletPath()).thenReturn("/vaadinServlet");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        AtomicReference<String> requestedPath = new AtomicReference<>();
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .then(invocation -> {
+                    requestedPath.set((String) invocation.getArguments()[0]);
+                    return Mockito.mock(HttpURLConnection.class);
+                });
+        Assert.assertTrue("Dev server should have served the resource",
+                devServer.serveDevModeRequest(request, response));
+        Assert.assertEquals("/VAADIN/%23special%20file",
+                requestedPath.get());
     }
 
     @Test

@@ -48,7 +48,6 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.NetworkUtil;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -736,17 +735,31 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             return true;
         }
 
+        // Compute raw (encoded) path info from request URI to preserve
+        // original percent-encoding (e.g. %7B, %7D) without lossy
+        // decode-then-re-encode roundtrip
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath() != null
+                ? request.getContextPath()
+                : "";
+        String servletPath = request.getServletPath() != null
+                ? request.getServletPath()
+                : "";
+        String rawPathInfo = requestURI
+                .substring(contextPath.length() + servletPath.length());
+
         // Redirect theme source request
         if (StaticFileServer.APP_THEME_ASSETS_PATTERN.matcher(requestFilename)
                 .find()) {
             requestFilename = "/VAADIN/static" + requestFilename;
+            rawPathInfo = "/VAADIN/static" + rawPathInfo;
         }
 
         if (requestFilename.equals("") || requestFilename.equals("/")) {
             // Index file must be handled by IndexHtmlRequestHandler
             return false;
         }
-        String devServerRequestPath = UrlUtil.encodeURI(requestFilename);
+        String devServerRequestPath = rawPathInfo;
         if (request.getQueryString() != null) {
             devServerRequestPath += "?" + request.getQueryString();
         }
