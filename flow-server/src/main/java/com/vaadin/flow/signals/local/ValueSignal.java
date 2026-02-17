@@ -27,8 +27,6 @@ import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.function.ValueModifier;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.operations.CancelableOperation;
-import com.vaadin.flow.signals.operations.SignalOperation;
 
 /**
  * A local writable signal that holds a reference to an object.
@@ -113,9 +111,6 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * value at the time when the operation is confirmed. This is the signal
      * counterpart to
      * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
-     * The result of the returned operation will be resolved as successful if
-     * the expected value was present and resolved as unsuccessful if any other
-     * value was present when the operation is processed.
      * <p>
      * Comparison between the expected value and the new value is performed
      * using {@link #equals(Object)}.
@@ -124,21 +119,19 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the expected value
      * @param newValue
      *            the new value
-     * @return an operation containing the eventual result
+     * @return <code>true</code> if the expected value was present,
+     *         <code>false</code> if there was a different value
      */
-    public SignalOperation<Void> replace(@Nullable T expectedValue,
-            @Nullable T newValue) {
+    public boolean replace(@Nullable T expectedValue, @Nullable T newValue) {
         lock();
         try {
             checkPreconditions();
 
             if (Objects.equals(expectedValue, getSignalValue())) {
                 setSignalValue(newValue);
-                return new SignalOperation<>(
-                        new SignalOperation.Result<>(null));
+                return true;
             } else {
-                return new SignalOperation<>(
-                        new SignalOperation.Error<>("Unexpected value"));
+                return false;
             }
         } finally {
             unlock();
@@ -152,9 +145,6 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * it's never necessary to run the callback again. This also means that
      * canceling the returned operation will never have any effect.
      * <p>
-     * The result of the returned operation is resolved with the same value that
-     * was passed to the updater callback.
-     * <p>
      * Update operations cannot participate in transactions since any retry
      * would occur after the original transaction has already been committed.
      * For this reason, the whole operation completely bypasses all transaction
@@ -162,26 +152,21 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *
      * @param updater
      *            the value update callback, not <code>null</code>
-     * @return an operation containing the result
+     * @return the previous value
      */
-    public synchronized CancelableOperation<T> update(
-            SignalUpdater<T> updater) {
+    public synchronized @Nullable T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
         try {
             checkPreconditions();
 
-            @Nullable
             T oldValue = getSignalValue();
-            @Nullable
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setSignalValue(newValue);
             }
 
-            CancelableOperation<T> operation = new CancelableOperation<>();
-            operation.result().complete(new SignalOperation.Result<>(oldValue));
-            return operation;
+            return oldValue;
         } finally {
             unlock();
         }
