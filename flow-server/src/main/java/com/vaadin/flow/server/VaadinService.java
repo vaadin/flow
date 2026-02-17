@@ -95,6 +95,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.impl.Transaction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -389,6 +390,15 @@ public abstract class VaadinService implements Serializable {
             @Override
             public Executor getEffectDispatcher() {
                 return getExecutor();
+            }
+
+            @Override
+            protected Transaction getTransactionFallback() {
+                VaadinSession session = VaadinSession.getCurrent();
+                if (session == null || !session.hasLock()) {
+                    return null;
+                }
+                return session.getOrCreateSessionScopedTransaction();
             }
         }
 

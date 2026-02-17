@@ -81,7 +81,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     protected void checkPreconditions() {
         assertLockHeld();
 
-        if (Transaction.inTransaction()) {
+        if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
                     "ValueSignal cannot be used inside signal transactions.");
         }

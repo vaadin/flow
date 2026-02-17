@@ -21,6 +21,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.signals.impl.Transaction;
+
 /**
  * The context in which signal operations are processed. Gives frameworks
  * control over how application code is executed to allow acquiring relevant
@@ -83,6 +87,24 @@ public abstract class SignalEnvironment {
     protected abstract Executor getEffectDispatcher();
 
     /**
+     * Gets a transaction to use as a fallback when no explicit transaction is
+     * active on the current thread. This allows framework code to provide
+     * automatic repeatable-read guarantees for signal operations running in a
+     * specific context (e.g. while the session lock is held).
+     * <p>
+     * The returned transaction is only used when the thread-local transaction
+     * is not set. If an explicit transaction is active (including one
+     * established via {@link Transaction#runWithoutTransaction}), this method
+     * is not consulted.
+     *
+     * @return a transaction to use as fallback, or <code>null</code> if no
+     *         fallback is available
+     */
+    protected @Nullable Transaction getTransactionFallback() {
+        return null;
+    }
+
+    /**
      * Registers a signal environment to consider when processing signal
      * operations. The environment should be unregistered using the returned
      * callback when it's no longer needed.
@@ -130,5 +152,20 @@ public abstract class SignalEnvironment {
      */
     public static Executor getDefaultEffectDispatcher() {
         return EFFECT_DISPATCHER;
+    }
+
+    /**
+     * Queries currently active environments for a transaction to use as a
+     * fallback when no explicit transaction is active on the current thread.
+     *
+     * @see #getTransactionFallback()
+     *
+     * @return the fallback transaction, or <code>null</code> if no fallback is
+     *         available
+     */
+    public static @Nullable Transaction getCurrentTransactionFallback() {
+        return environments.stream().filter(SignalEnvironment::isActive)
+                .map(SignalEnvironment::getTransactionFallback)
+                .filter(Objects::nonNull).findFirst().orElse(null);
     }
 }

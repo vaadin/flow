@@ -18,14 +18,17 @@ package com.vaadin.flow.signals.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
+import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -342,8 +345,144 @@ public class TransactionTest {
         }, Type.WRITE_THROUGH);
     }
 
+    private Runnable environmentUnregister;
+
+    @AfterEach
+    void cleanupEnvironment() {
+        if (environmentUnregister != null) {
+            environmentUnregister.run();
+            environmentUnregister = null;
+        }
+    }
+
+    @Test
+    void fallback_providesRepeatableReads() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        environmentUnregister = SignalEnvironment
+                .register(new FallbackEnvironment(fallbackTx));
+
+        JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
+
+        // External write bypassing the transaction
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("external"));
+
+        JsonNode secondRead = TestUtil.readTransactionRootValue(tree);
+        assertSame(firstRead, secondRead,
+                "Fallback transaction should provide repeatable reads");
+    }
+
+    @Test
+    void noFallback_withoutRegistration_rootBehavior() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        assertFalse(Transaction.inTransaction());
+        Transaction current = Transaction.getCurrent();
+
+        TreeRevision revision = current.read(tree);
+        assertSame(tree.submitted(), revision);
+    }
+
+    @Test
+    void runWithoutTransaction_bypassesFallback() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        environmentUnregister = SignalEnvironment
+                .register(new FallbackEnvironment(fallbackTx));
+
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should make inTransaction() return true");
+
+        Transaction.runWithoutTransaction(() -> {
+            assertFalse(Transaction.inTransaction(),
+                    "runWithoutTransaction should bypass fallback");
+
+            // Read directly from tree (ROOT behavior)
+            TreeRevision revision = Transaction.getCurrent().read(tree);
+            assertSame(tree.submitted(), revision);
+        });
+
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should be restored after runWithoutTransaction");
+    }
+
+    @Test
+    void runInTransaction_nestsWithFallback() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        environmentUnregister = SignalEnvironment
+                .register(new FallbackEnvironment(fallbackTx));
+
+        assertTrue(Transaction.inTransaction());
+
+        Transaction.runInTransaction(() -> {
+            assertTrue(Transaction.inTransaction());
+            assertInstanceOf(StagedTransaction.class, Transaction.getCurrent());
+        });
+
+        // After explicit transaction completes, fallback should still be
+        // active
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should still be active after nested transaction");
+    }
+
+    @Test
+    void inTransaction_reflectsFallback() {
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        assertFalse(Transaction.inTransaction());
+
+        environmentUnregister = SignalEnvironment
+                .register(new FallbackEnvironment(fallbackTx));
+
+        assertTrue(Transaction.inTransaction(),
+                "inTransaction should return true when fallback is active");
+
+        Transaction.runWithoutTransaction(() -> {
+            assertFalse(Transaction.inTransaction(),
+                    "inTransaction should return false inside runWithoutTransaction");
+        });
+
+        assertTrue(Transaction.inTransaction());
+    }
+
     private static TransactionTask dummyTask() {
         return () -> {
         };
+    }
+
+    /**
+     * A test signal environment that provides a fallback transaction when
+     * active.
+     */
+    private static class FallbackEnvironment extends SignalEnvironment {
+        private final Transaction fallbackTransaction;
+
+        FallbackEnvironment(Transaction fallbackTransaction) {
+            this.fallbackTransaction = fallbackTransaction;
+        }
+
+        @Override
+        protected boolean isActive() {
+            return true;
+        }
+
+        @Override
+        protected Executor getResultNotifier() {
+            return null;
+        }
+
+        @Override
+        protected Executor getEffectDispatcher() {
+            return null;
+        }
+
+        @Override
+        protected Transaction getTransactionFallback() {
+            return fallbackTransaction;
+        }
     }
 }

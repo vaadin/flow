@@ -55,6 +55,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
@@ -141,6 +142,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private long lastUnlocked;
 
     private long lastLocked;
+
+    private transient Transaction sessionScopedTransaction;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -698,6 +701,23 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the session-scoped write-through transaction, creating it lazily if
+     * needed. The transaction provides repeatable-read guarantees for shared
+     * signal operations while the session lock is held.
+     * <p>
+     * The session lock must be held when calling this method.
+     *
+     * @return the session-scoped transaction, not <code>null</code>
+     */
+    Transaction getOrCreateSessionScopedTransaction() {
+        assert hasLock();
+        if (sessionScopedTransaction == null) {
+            sessionScopedTransaction = Transaction.createWriteThrough();
+        }
+        return sessionScopedTransaction;
+    }
+
+    /**
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
@@ -777,6 +797,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
