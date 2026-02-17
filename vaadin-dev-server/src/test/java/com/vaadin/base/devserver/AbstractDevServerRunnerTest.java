@@ -151,8 +151,8 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         Mockito.when(response.getOutputStream())
                 .thenReturn(Mockito.mock(ServletOutputStream.class));
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getRequestURI()).thenReturn(
-                "/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx");
+        Mockito.when(request.getRequestURI())
+                .thenReturn("/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx");
         Mockito.when(request.getPathInfo())
                 .thenReturn("/VAADIN/views/movie/{movieId}/@index.tsx");
         Mockito.when(request.getContextPath()).thenReturn("");
@@ -168,8 +168,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                 });
         Assert.assertTrue("Dev server should have served the resource",
                 devServer.serveDevModeRequest(request, response));
-        Assert.assertEquals(
-                "/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx",
+        Assert.assertEquals("/VAADIN/views/movie/%7BmovieId%7D/%40index.tsx",
                 requestedPath.get());
     }
 
@@ -186,8 +185,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getRequestURI())
                 .thenReturn("/app/vaadinServlet/VAADIN/%23special%20file");
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/VAADIN/#special file");
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/#special file");
         Mockito.when(request.getContextPath()).thenReturn("/app");
         Mockito.when(request.getServletPath()).thenReturn("/vaadinServlet");
         Mockito.when(request.getHeaderNames())
@@ -201,8 +199,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                 });
         Assert.assertTrue("Dev server should have served the resource",
                 devServer.serveDevModeRequest(request, response));
-        Assert.assertEquals("/VAADIN/%23special%20file",
-                requestedPath.get());
+        Assert.assertEquals("/VAADIN/%23special%20file", requestedPath.get());
     }
 
     @Test
