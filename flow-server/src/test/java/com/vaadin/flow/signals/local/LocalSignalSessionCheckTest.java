@@ -65,7 +65,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     // ValueSignal - different session
 
     @Test
-    void valueSignal_differentSession_get_throws() {
+    void valueSignal_differentSession_throws() {
         VaadinSession session1 = Mockito.mock(VaadinSession.class);
         VaadinSession session2 = Mockito.mock(VaadinSession.class);
 
@@ -74,72 +74,14 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         signal.get();
 
         VaadinSession.setCurrent(session2);
+
+        // All operations should throw when accessed from different session
         assertThrows(IllegalStateException.class, () -> signal.get());
-    }
-
-    @Test
-    void valueSignal_differentSession_peek_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class, () -> signal.peek());
-    }
-
-    @Test
-    void valueSignal_differentSession_set_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class, () -> signal.set("world"));
-    }
-
-    @Test
-    void valueSignal_differentSession_replace_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class,
                 () -> signal.replace("hello", "world"));
-    }
-
-    @Test
-    void valueSignal_differentSession_update_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class, () -> signal.update(v -> v));
-    }
-
-    @Test
-    void valueSignal_differentSession_modify_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class, () -> signal.modify(v -> {
         }));
     }
@@ -202,62 +144,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     // ListSignal - different session
 
     @Test
-    void listSignal_differentSession_get_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ListSignal<String> signal = new ListSignal<>();
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
-        assertThrows(IllegalStateException.class, () -> signal.get());
-    }
-
-    @Test
-    void listSignal_differentSession_insertFirst_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ListSignal<String> signal = new ListSignal<>();
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
-        assertThrows(IllegalStateException.class,
-                () -> signal.insertFirst("value"));
-    }
-
-    @Test
-    void listSignal_differentSession_insertLast_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ListSignal<String> signal = new ListSignal<>();
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
-        assertThrows(IllegalStateException.class,
-                () -> signal.insertLast("value"));
-    }
-
-    @Test
-    void listSignal_differentSession_insertAt_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ListSignal<String> signal = new ListSignal<>();
-        signal.get();
-
-        VaadinSession.setCurrent(session2);
-        assertThrows(IllegalStateException.class,
-                () -> signal.insertAt(0, "value"));
-    }
-
-    @Test
-    void listSignal_differentSession_remove_throws() {
+    void listSignal_differentSession_throws() {
         VaadinSession session1 = Mockito.mock(VaadinSession.class);
         VaadinSession session2 = Mockito.mock(VaadinSession.class);
 
@@ -266,19 +153,16 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         ValueSignal<String> entry = signal.insertFirst("value");
 
         VaadinSession.setCurrent(session2);
+
+        // All operations should throw when accessed from different session
+        assertThrows(IllegalStateException.class, () -> signal.get());
+        assertThrows(IllegalStateException.class,
+                () -> signal.insertFirst("value"));
+        assertThrows(IllegalStateException.class,
+                () -> signal.insertLast("value"));
+        assertThrows(IllegalStateException.class,
+                () -> signal.insertAt(0, "value"));
         assertThrows(IllegalStateException.class, () -> signal.remove(entry));
-    }
-
-    @Test
-    void listSignal_differentSession_clear_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
-
-        VaadinSession.setCurrent(session1);
-        ListSignal<String> signal = new ListSignal<>();
-        signal.insertFirst("value");
-
-        VaadinSession.setCurrent(session2);
         assertThrows(IllegalStateException.class, () -> signal.clear());
     }
 

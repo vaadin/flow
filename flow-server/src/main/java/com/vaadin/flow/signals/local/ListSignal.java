@@ -66,7 +66,13 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
      * @return a signal for the inserted entry
      */
     public ValueSignal<T> insertFirst(T value) {
-        return insertAt(0, value);
+        lock();
+        try {
+            checkPreconditions();
+            return insertAtInternal(0, value);
+        } finally {
+            unlock();
+        }
     }
 
     /**
