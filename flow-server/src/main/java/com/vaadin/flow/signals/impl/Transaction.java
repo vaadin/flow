@@ -19,11 +19,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -190,12 +190,35 @@ public abstract class Transaction implements Serializable {
 
     private static final ThreadLocal<Transaction> currentTransaction = new ThreadLocal<>();
 
+    private static volatile @Nullable Supplier<@Nullable Transaction> transactionFallback;
+
+    /**
+     * Sets a supplier that provides a fallback transaction when no explicit
+     * transaction is active on the current thread. The supplier is called each
+     * time a transaction is needed and no thread-local transaction is set.
+     * <p>
+     * The supplier should return <code>null</code> if no fallback is available
+     * for the current context (e.g. no session lock is held).
+     *
+     * @param fallback
+     *            the fallback supplier, or <code>null</code> to remove the
+     *            fallback
+     */
+    public static void setTransactionFallback(
+            @Nullable Supplier<@Nullable Transaction> fallback) {
+        transactionFallback = fallback;
+    }
+
+    private static @Nullable Transaction getFallback() {
+        Supplier<@Nullable Transaction> fallback = transactionFallback;
+        return fallback != null ? fallback.get() : null;
+    }
+
     /**
      * Gets the current transaction handler. If no explicit transaction is
      * active on the current thread, a fallback from
-     * {@link SignalEnvironment#getCurrentTransactionFallback()} is used if
-     * available. If no fallback is available either, the stateless ROOT
-     * transaction is returned.
+     * {@link #setTransactionFallback} is used if available. If no fallback is
+     * available either, the stateless ROOT transaction is returned.
      *
      * @return the current transaction handler, not <code>null</code>
      */
@@ -205,8 +228,7 @@ public abstract class Transaction implements Serializable {
             return transaction == EXPLICITLY_NO_TRANSACTION ? ROOT
                     : transaction;
         }
-        Transaction fallback = SignalEnvironment
-                .getCurrentTransactionFallback();
+        Transaction fallback = getFallback();
         if (fallback != null) {
             return fallback;
         }
@@ -227,14 +249,14 @@ public abstract class Transaction implements Serializable {
         if (transaction != null) {
             return transaction != EXPLICITLY_NO_TRANSACTION;
         }
-        return SignalEnvironment.getCurrentTransactionFallback() != null;
+        return getFallback() != null;
     }
 
     /**
      * Checks whether an explicit transaction (started via
      * {@link #runInTransaction}) is currently active on the current thread.
      * Unlike {@link #inTransaction()}, this method does not consider fallback
-     * transactions from the signal environment.
+     * transactions set via {@link #setTransactionFallback}.
      * <p>
      * This is used by local signal types that are incompatible with
      * transactional semantics to guard against being used in explicit

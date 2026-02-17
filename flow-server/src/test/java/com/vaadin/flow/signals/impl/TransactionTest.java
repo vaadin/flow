@@ -18,7 +18,6 @@ package com.vaadin.flow.signals.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,7 +27,6 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
-import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -345,14 +343,9 @@ public class TransactionTest {
         }, Type.WRITE_THROUGH);
     }
 
-    private Runnable environmentUnregister;
-
     @AfterEach
-    void cleanupEnvironment() {
-        if (environmentUnregister != null) {
-            environmentUnregister.run();
-            environmentUnregister = null;
-        }
+    void cleanupFallback() {
+        Transaction.setTransactionFallback(null);
     }
 
     @Test
@@ -360,8 +353,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        environmentUnregister = SignalEnvironment
-                .register(new FallbackEnvironment(fallbackTx));
+        Transaction.setTransactionFallback(() -> fallbackTx);
 
         JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
 
@@ -389,8 +381,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        environmentUnregister = SignalEnvironment
-                .register(new FallbackEnvironment(fallbackTx));
+        Transaction.setTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "Fallback should make inTransaction() return true");
@@ -413,8 +404,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        environmentUnregister = SignalEnvironment
-                .register(new FallbackEnvironment(fallbackTx));
+        Transaction.setTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction());
 
@@ -435,8 +425,7 @@ public class TransactionTest {
 
         assertFalse(Transaction.inTransaction());
 
-        environmentUnregister = SignalEnvironment
-                .register(new FallbackEnvironment(fallbackTx));
+        Transaction.setTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "inTransaction should return true when fallback is active");
@@ -452,37 +441,5 @@ public class TransactionTest {
     private static TransactionTask dummyTask() {
         return () -> {
         };
-    }
-
-    /**
-     * A test signal environment that provides a fallback transaction when
-     * active.
-     */
-    private static class FallbackEnvironment extends SignalEnvironment {
-        private final Transaction fallbackTransaction;
-
-        FallbackEnvironment(Transaction fallbackTransaction) {
-            this.fallbackTransaction = fallbackTransaction;
-        }
-
-        @Override
-        protected boolean isActive() {
-            return true;
-        }
-
-        @Override
-        protected Executor getResultNotifier() {
-            return null;
-        }
-
-        @Override
-        protected Executor getEffectDispatcher() {
-            return null;
-        }
-
-        @Override
-        protected Transaction getTransactionFallback() {
-            return fallbackTransaction;
-        }
     }
 }

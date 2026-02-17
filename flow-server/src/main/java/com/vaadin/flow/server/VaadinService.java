@@ -391,21 +391,23 @@ public abstract class VaadinService implements Serializable {
             public Executor getEffectDispatcher() {
                 return getExecutor();
             }
-
-            @Override
-            protected Transaction getTransactionFallback() {
-                VaadinSession session = VaadinSession.getCurrent();
-                if (session == null || !session.hasLock()) {
-                    return null;
-                }
-                return session.getOrCreateSessionScopedTransaction();
-            }
         }
 
         Runnable unregister = SignalEnvironment
                 .register(new VaadinServiceEnvironment());
 
-        addServiceDestroyListener(event -> unregister.run());
+        Transaction.setTransactionFallback(() -> {
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session == null || !session.hasLock()) {
+                return null;
+            }
+            return session.getOrCreateSessionScopedTransaction();
+        });
+
+        addServiceDestroyListener(event -> {
+            unregister.run();
+            Transaction.setTransactionFallback(null);
+        });
     }
 
     private void addRouterUsageStatistics() {
