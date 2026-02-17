@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.CleanupCallback;
@@ -147,7 +148,7 @@ public interface Signal<T> extends Serializable {
      */
     static <C extends Component> Registration effect(C owner,
             SerializableRunnable effectFunction) {
-        return Effect.effect(owner, effectFunction);
+        return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 
     /**
