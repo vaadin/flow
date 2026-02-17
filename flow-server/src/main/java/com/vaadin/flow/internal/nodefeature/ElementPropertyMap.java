@@ -84,11 +84,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param value
      *            the value to store
      * @return a runnable for firing the deferred change event
-     * @exception PropertyChangeDeniedException
-     *                if the property change is disallowed due to the property
-     *                not being set as synchronized, or the signal bound to the
-     *                property is not a WritableSignal and can not thus be
-     *                updated
+     * @throws PropertyChangeDeniedException
+     *             if the property change is disallowed due to the property not
+     *             being set as synchronized
+     * @throws IllegalStateException
+     *             if the property change is disallowed due to the signal bound
+     *             to the property is read-only and cannot thus be updated by a
+     *             client
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
             throws PropertyChangeDeniedException {
