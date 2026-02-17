@@ -58,7 +58,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
 
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
-    private transient boolean sessionBound = false;
+    private transient boolean usedWithoutSessionLock = false;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -90,15 +90,13 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
             throw new ConcurrentModificationException();
         }
 
-        // Detect unsafe mutable sharing: if modify() has been used on a
-        // session-bound signal, all access must hold the session lock.
+        // Track if the signal has ever been accessed without a locked session
         VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            sessionBound = true;
+        if (session == null || !session.hasLock()) {
+            usedWithoutSessionLock = true;
         }
 
-        if (modifyUsed && sessionBound
-                && (session == null || !session.hasLock())) {
+        if (modifyUsed && usedWithoutSessionLock) {
             throw new IllegalStateException(
                     "This ValueSignal instance has been used with modify() "
                             + "and accessed without holding the session lock. "
@@ -233,9 +231,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
             throw new ConcurrentModificationException();
         }
         try {
-            modifyUsed = true;
             checkPreconditions();
 
+            modifyUsed = true;
             modifyRunning = true;
         } finally {
             unlock();

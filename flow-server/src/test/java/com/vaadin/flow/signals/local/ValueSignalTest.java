@@ -115,17 +115,20 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void modify_modifiesValue_valueModified() {
+    void modify_modifiesValue_valueModified() throws Exception {
         String[] holder = new String[] { "initial" };
         ValueSignal<String[]> signal = new ValueSignal<>(holder);
 
-        signal.modify(value -> {
-            assertSame(holder, value);
-            holder[0] = "update";
-        });
+        new MockVaadinSession().runWithLock(() -> {
+            signal.modify(value -> {
+                assertSame(holder, value);
+                holder[0] = "update";
+            });
 
-        assertEquals("update", holder[0]);
-        assertSame(holder, signal.get());
+            assertEquals("update", holder[0]);
+            assertSame(holder, signal.get());
+            return null;
+        });
     }
 
     @Test
@@ -464,12 +467,13 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void threadSafety_modifyWithoutSession_noException() {
+    void threadSafety_modifyWithoutSessionThenAccess_throws() {
         ValueSignal<String[]> signal = new ValueSignal<>(
                 new String[] { "initial" });
 
         signal.modify(value -> value[0] = "modified");
-        signal.get();
+
+        assertThrows(IllegalStateException.class, () -> signal.get());
     }
 
     private static void assertEventually(BooleanSupplier test) {
