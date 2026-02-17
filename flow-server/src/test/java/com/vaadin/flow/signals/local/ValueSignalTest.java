@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.CancelableOperation;
@@ -62,16 +61,6 @@ public class ValueSignalTest extends SignalTestBase {
         signal.set("value");
 
         assertEquals("value", signal.get());
-    }
-
-    @Test
-    void setValue_oldValueInResult() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        SignalOperation<String> operation = signal.set("update");
-
-        String resultValue = TestUtil.assertSuccess(operation);
-        assertEquals("initial", resultValue);
     }
 
     @Test
@@ -143,7 +132,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
-        assertFalse(readonly instanceof WritableSignal<String>);
+        assertFalse(readonly instanceof ValueSignal<String>);
     }
 
     @Test
