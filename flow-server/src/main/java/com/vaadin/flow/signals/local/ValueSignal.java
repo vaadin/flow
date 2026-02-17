@@ -154,15 +154,13 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the value update callback, not <code>null</code>
      * @return the previous value
      */
-    public synchronized T update(SignalUpdater<T> updater) {
+    public synchronized @Nullable T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
         try {
             checkPreconditions();
 
-            @Nullable
             T oldValue = getSignalValue();
-            @Nullable
             T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setSignalValue(newValue);
