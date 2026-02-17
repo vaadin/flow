@@ -439,6 +439,20 @@ public class ValueSignalTest extends SignalTestBase {
         });
     }
 
+    @Test
+    void toString_includesValue() {
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+
+        assertEquals("ValueSignal[hello]", signal.toString());
+    }
+
+    @Test
+    void toString_nullValue() {
+        ValueSignal<String> signal = new ValueSignal<>();
+
+        assertEquals("ValueSignal[null]", signal.toString());
+    }
+
     private static void assertEventually(BooleanSupplier test) {
         for (int i = 0; i < 10; i++) {
             if (test.getAsBoolean()) {

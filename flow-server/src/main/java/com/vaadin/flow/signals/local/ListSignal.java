@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -36,7 +39,8 @@ import java.util.Objects;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
+public class ListSignal<T>
+        extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {
 
     /**
      * Creates a new empty list signal.
@@ -150,6 +154,17 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
         } finally {
             unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        var value = peek();
+        if (value == null) {
+            return "ListSignal[null]";
+        }
+        return value.stream().map(ValueSignal::peek)
+                .map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }
