@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
  * reactivity.
@@ -37,7 +39,8 @@ import java.util.stream.Collectors;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
+public class ListSignal<T>
+        extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {
 
     /**
      * Creates a new empty list signal.
