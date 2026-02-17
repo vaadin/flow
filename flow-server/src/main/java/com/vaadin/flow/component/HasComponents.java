@@ -76,7 +76,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param components
      *            the components to add
      */
-    default void add(Collection<Component> components) {
+    default void add(Collection<? extends Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("add");
         if (hasChildrenBinding()) {
@@ -145,7 +145,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             if there is a component whose non {@code null} parent is not
      *             this component
      */
-    default void remove(Collection<Component> components) {
+    default void remove(Collection<? extends Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("remove");
         if (hasChildrenBinding()) {

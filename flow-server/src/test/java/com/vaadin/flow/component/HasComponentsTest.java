@@ -432,6 +432,46 @@ class HasComponentsTest {
                 "bindChildren should throw while text binding is active");
     }
 
+    @Test
+    public void addTypedCollection_allowsAddingListOfSubtypes() {
+        TestComponent container = new TestComponent();
+
+        java.util.List<TestComponent> typedComponents = java.util.List
+                .of(new TestComponent("comp1"), new TestComponent("comp2"),
+                        new TestComponent("comp3"));
+
+        container.add(typedComponents);
+
+        assertEquals(3, container.getChildren().count());
+        assertEquals("comp1",
+                container.getChildren().toList().get(0).getId().orElse(null));
+        assertEquals("comp2",
+                container.getChildren().toList().get(1).getId().orElse(null));
+        assertEquals("comp3",
+                container.getChildren().toList().get(2).getId().orElse(null));
+    }
+
+    @Test
+    public void removeTypedCollection_allowsRemovingListOfSubtypes() {
+        TestComponent container = new TestComponent();
+
+        TestComponent comp1 = new TestComponent("comp1");
+        TestComponent comp2 = new TestComponent("comp2");
+        TestComponent comp3 = new TestComponent("comp3");
+
+        container.add(comp1, comp2, comp3);
+        assertEquals(3, container.getChildren().count());
+
+        java.util.List<TestComponent> typedComponents = java.util.List
+                .of(comp1, comp2);
+
+        container.remove(typedComponents);
+
+        assertEquals(1, container.getChildren().count());
+        assertEquals("comp3",
+                container.getChildren().toList().get(0).getId().orElse(null));
+    }
+
     private TestComponent createContainerWithTextBinding() {
         TestComponent container = new TestComponent();
         TextBindingFeature feature = container.getElement().getNode()
