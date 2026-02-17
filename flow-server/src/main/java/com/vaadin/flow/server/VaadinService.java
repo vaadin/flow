@@ -398,7 +398,8 @@ public abstract class VaadinService implements Serializable {
 
         Transaction.setTransactionFallback(() -> {
             VaadinSession session = VaadinSession.getCurrent();
-            if (session == null || !session.hasLock()) {
+            if (session == null || session.getLockInstance() == null
+                    || !session.hasLock()) {
                 return null;
             }
             return session.getOrCreateSessionScopedTransaction();
