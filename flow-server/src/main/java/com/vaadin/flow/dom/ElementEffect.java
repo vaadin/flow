@@ -46,6 +46,8 @@ import com.vaadin.flow.signals.impl.Effect;
  * element is attached and disabled when the element is detached. Additionally,
  * it provides methods to bind signals to element according to a given value
  * setting function.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 25.0
  */
