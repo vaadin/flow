@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,17 +74,22 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             confirmed = new Snapshot(builder);
 
+            /*
+             * Check if the confirmed commands were at the head of
+             * unconfirmedCommands. If so, submitted doesn't change and we can
+             * skip re-applying and notifying observers.
+             */
+            boolean confirmedFromHead = wereAtHead(
+                    unconfirmedCommands.getCommands(), results.keySet());
+
             // Remove any pending commands that are now confirmed from the queue
             unconfirmedCommands.removeHandledCommands(results.keySet());
 
             Snapshot oldSubmitted = submitted;
 
-            /*
-             * TODO: could skip this part if the newly confirmed commands were
-             * at the head of unconfirmedCommands since submitted doesn't change
-             * in that case
-             */
-            if (!unconfirmedCommands.isEmpty()) {
+            if (confirmedFromHead) {
+                // submitted doesn't change so no need to rebuild or notify
+            } else if (!unconfirmedCommands.isEmpty()) {
                 // Re-apply pending commands that remain in the queue
                 builder.apply(unconfirmedCommands.getCommands());
 
@@ -92,12 +98,52 @@ public abstract class AsynchronousSignalTree extends SignalTree {
                 submitted = confirmed;
             }
 
-            notifyObservers(oldSubmitted, submitted);
+            if (!confirmedFromHead) {
+                notifyObservers(oldSubmitted, submitted);
+            }
 
             unconfirmedCommands.notifyResultHandlers(results, commands);
 
             notifyProcessedCommandSubscribers(commands, results);
         });
+    }
+
+    /**
+     * Checks whether all confirmed command IDs appear at the head of the
+     * unconfirmed command list. This means the confirmed commands were the
+     * first commands submitted to this tree and no reordering or external
+     * commands were involved.
+     */
+    private static boolean wereAtHead(List<SignalCommand> unconfirmedCommands,
+            java.util.Set<Id> confirmedIds) {
+        if (confirmedIds.isEmpty()) {
+            return true;
+        }
+        int confirmedCount = confirmedIds.size();
+        if (confirmedCount > unconfirmedCommands.size()) {
+            return false;
+        }
+        for (int i = 0; i < confirmedCount; i++) {
+            if (!confirmedIds
+                    .contains(unconfirmedCommands.get(i).commandId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Recursively adds rejection results for all commands and their
+     * sub-commands (e.g., commands inside a TransactionCommand).
+     */
+    private static void rejectAll(List<SignalCommand> commands,
+            CommandResult failure, Map<Id, CommandResult> rejected) {
+        for (SignalCommand command : commands) {
+            rejected.put(command.commandId(), failure);
+            if (command instanceof SignalCommand.TransactionCommand tx) {
+                rejectAll(tx.commands(), failure, rejected);
+            }
+        }
     }
 
     @Override
@@ -108,7 +154,17 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
         MutableTreeRevision builder = new MutableTreeRevision(submitted);
 
-        builder.apply(changes.getCommands());
+        Map<Id, CommandResult> prepareResults = builder
+                .applyAndGetResults(changes.getCommands());
+
+        /*
+         * Check if all top-level commands succeeded. If any command was
+         * rejected at the submitted level, we know it will also be rejected at
+         * the confirmed level (since confirmed is at or behind submitted for
+         * local trees).
+         */
+        boolean allAccepted = prepareResults.values().stream()
+                .allMatch(CommandResult::accepted);
 
         Snapshot newSnapshot = new Snapshot(builder);
 
@@ -117,9 +173,7 @@ public abstract class AsynchronousSignalTree extends SignalTree {
             public boolean canCommit() {
                 assert hasLock();
 
-                // Can always "commit" since conflicts will be resolved only
-                // when confirmed
-                return true;
+                return allAccepted;
             }
 
             @Override
@@ -141,8 +195,14 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             @Override
             public void markAsAborted() {
-                // Async transactions cannot be aborted
-                throw new UnsupportedOperationException();
+                assert hasLock();
+                Map<Id, CommandResult> rejected = new HashMap<>();
+                CommandResult failure = CommandResult
+                        .fail("Transaction aborted");
+                rejectAll(changes.getCommands(), failure, rejected);
+                changes.notifyResultHandlers(rejected);
+                notifyProcessedCommandSubscribers(changes.getCommands(),
+                        rejected);
             }
         };
     }
