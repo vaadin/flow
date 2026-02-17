@@ -1072,37 +1072,31 @@ class RouteUtilTest {
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
                 "", false, false, null, null, null, false, null));
 
-        InvalidRouteConfigurationException ex = assertThrows(
-                InvalidRouteConfigurationException.class, () -> {
-                    try (MockedStatic<MenuRegistry> registry = Mockito
-                            .mockStatic(MenuRegistry.class,
-                                    Mockito.CALLS_REAL_METHODS);
-                            MockedStatic<FrontendUtils> frontendUtils = Mockito
-                                    .mockStatic(FrontendUtils.class,
-                                            Mockito.CALLS_REAL_METHODS);) {
-                        VaadinService service = Mockito
-                                .mock(VaadinService.class);
-                        DeploymentConfiguration conf = Mockito
-                                .mock(DeploymentConfiguration.class);
-                        Mockito.when(service.getDeploymentConfiguration())
-                                .thenReturn(conf);
-                        Mockito.when(conf.isProductionMode()).thenReturn(false);
-                        Mockito.when(conf.getFrontendFolder())
-                                .thenReturn(new File("/tmp/folder"));
+        try (MockedStatic<MenuRegistry> registry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
+                MockedStatic<FrontendUtils> frontendUtils = Mockito.mockStatic(
+                        FrontendUtils.class, Mockito.CALLS_REAL_METHODS);) {
+            VaadinService service = Mockito.mock(VaadinService.class);
+            DeploymentConfiguration conf = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
+            Mockito.when(conf.isProductionMode()).thenReturn(false);
+            Mockito.when(conf.getFrontendFolder())
+                    .thenReturn(new File("/tmp/folder"));
 
-                        registry.when(() -> MenuRegistry
-                                .collectClientMenuItems(false, conf))
-                                .thenReturn(clientRoutes);
-                        frontendUtils.when(
-                                () -> FrontendUtils.isHillaUsed(Mockito.any()))
-                                .thenReturn(true);
+            registry.when(
+                    () -> MenuRegistry.collectClientMenuItems(false, conf))
+                    .thenReturn(clientRoutes);
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(true);
 
-                        RouteUtil.checkForClientRouteCollisions(service, "flow",
-                                "flow/hello-world", "hilla/flow");
-                    }
-                });
-        assertTrue(ex.getMessage().contains(
-                "Invalid route configuration. The following Hilla route(s) conflict with configured Flow routes: 'flow'"));
+            InvalidRouteConfigurationException ex = assertThrows(
+                    InvalidRouteConfigurationException.class,
+                    () -> RouteUtil.checkForClientRouteCollisions(service,
+                            "flow", "flow/hello-world", "hilla/flow"));
+            assertTrue(ex.getMessage().contains(
+                    "Invalid route configuration. The following Hilla route(s) conflict with configured Flow routes: 'flow'"));
+        }
     }
 
     @SuppressWarnings("unchecked")

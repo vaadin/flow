@@ -313,19 +313,18 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     public void clientRouteRequest_noLayoutForPath_Throws() {
         String path = "route";
 
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> {
-            try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                    .mockStatic(MenuRegistry.class)) {
-                menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
-                        .thenReturn(Collections.singletonMap("/route",
-                                new AvailableViewInfo("", null, false, "/route",
-                                        false, false, null, null, null, true,
-                                        null)));
-                resolveNavigationState(path);
-            }
-        });
-        assertTrue(
-                ex.getMessage().contains("No layout for client path 'route'"));
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true,
+                                    null)));
+            NotFoundException ex = assertThrows(NotFoundException.class,
+                    () -> resolveNavigationState(path));
+            assertTrue(ex.getMessage()
+                    .contains("No layout for client path 'route'"));
+        }
     }
 
     @Tag("div")
