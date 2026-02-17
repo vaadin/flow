@@ -59,6 +59,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         implements WritableSignal<T> {
 
     private boolean modifyRunning = false;
+    private boolean modifyUsed = false;
+    private boolean multipleThreadsDetected = false;
+    private @Nullable Thread firstThread = null;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -88,6 +91,25 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
 
         if (modifyRunning) {
             throw new ConcurrentModificationException();
+        }
+
+        // Track thread access for detecting unsafe mutable sharing
+        Thread current = Thread.currentThread();
+        if (firstThread == null) {
+            firstThread = current;
+        } else if (firstThread != current) {
+            multipleThreadsDetected = true;
+        }
+
+        if (modifyUsed && multipleThreadsDetected) {
+            throw new IllegalStateException(
+                    "This ValueSignal instance has been used with modify() "
+                            + "and accessed from multiple threads. This is not "
+                            + "thread-safe because modify() works with mutable "
+                            + "values without holding a lock while the modifier "
+                            + "callback runs. Use immutable values with set(), "
+                            + "replace(), or update() instead of modify() when "
+                            + "the signal is shared between threads.");
         }
     }
 
@@ -196,6 +218,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
             throw new ConcurrentModificationException();
         }
         try {
+            modifyUsed = true;
             checkPreconditions();
 
             modifyRunning = true;
