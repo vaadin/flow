@@ -226,11 +226,10 @@ class PendingJavaScriptInvocationTest {
 
     @Test
     public void thenAfterSend_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            invocation.setSentToBrowser();
+        invocation.setSentToBrowser();
 
-            invocation.then(jsonSuccessConsumer);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> invocation.then(jsonSuccessConsumer));
     }
 
     @Test

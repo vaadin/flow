@@ -495,12 +495,12 @@ class ComponentEventBusTest {
 
     @Test
     public void nonDomEvent_addListenerWithDomListenerConsumer_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent component = new TestComponent();
-            EventTracker<ServerEvent> eventTracker = new EventTracker<>();
-            component.getEventBus().addListener(ServerEvent.class, eventTracker,
-                    domRegistration -> domRegistration.debounce(200));
-        });
+        TestComponent component = new TestComponent();
+        EventTracker<ServerEvent> eventTracker = new EventTracker<>();
+        assertThrows(IllegalArgumentException.class,
+                () -> component.getEventBus().addListener(ServerEvent.class,
+                        eventTracker,
+                        domRegistration -> domRegistration.debounce(200)));
     }
 
     private int calls = 0;
@@ -629,43 +629,44 @@ class ComponentEventBusTest {
 
     @Test
     public void invalidEventConstructor_addListener() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent c = new TestComponent();
-            c.addListener(InvalidMappedToDomEvent.class, e -> {
-            });
-        });
+        TestComponent c = new TestComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> c.addListener(InvalidMappedToDomEvent.class, e -> {
+                }));
     }
 
     @Test
     public void invalidEventDataInConstructor_addListener() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent c = new TestComponent();
-            c.addListener(MappedToDomInvalidEventData.class, e -> {
-            });
-        });
+        TestComponent c = new TestComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> c.addListener(MappedToDomInvalidEventData.class,
+                        e -> {
+                        }));
     }
 
     @Test
     public void multipleEventDataConstructors_addListener() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent c = new TestComponent();
-            c.addListener(MappedToDomEventMultipleConstructors.class, e -> {
-            });
-        });
+        TestComponent c = new TestComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> c.addListener(MappedToDomEventMultipleConstructors.class,
+                        e -> {
+                        }));
     }
 
     @Test
     public void hasListeners_nullEventType_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new ComponentEventBus(new TestComponent()).hasListener(null);
-        });
+        ComponentEventBus eventBus = new ComponentEventBus(
+                new TestComponent());
+        assertThrows(IllegalArgumentException.class,
+                () -> eventBus.hasListener(null));
     }
 
     @Test
     public void getListeners_nullEventType_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new ComponentEventBus(new TestComponent()).getListeners(null);
-        });
+        ComponentEventBus eventBus = new ComponentEventBus(
+                new TestComponent());
+        assertThrows(IllegalArgumentException.class,
+                () -> eventBus.getListeners(null));
     }
 
     @Test
@@ -734,27 +735,25 @@ class ComponentEventBusTest {
 
     @Test
     public void eventUnregisterListener_insideListenerTwiceThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent c = new TestComponent();
-            c.addListener(ServerEvent.class, e -> {
-                e.unregisterListener();
-                e.unregisterListener();
-            });
-            c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+        TestComponent c = new TestComponent();
+        c.addListener(ServerEvent.class, e -> {
+            e.unregisterListener();
+            e.unregisterListener();
         });
+        assertThrows(IllegalArgumentException.class,
+                () -> c.fireEvent(new ServerEvent(c, new BigDecimal(0))));
     }
 
     @Test
     public void eventUnregisterListener_outsideListenerTwiceThrows() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestComponent c = new TestComponent();
-            AtomicReference<ServerEvent> storedEvent = new AtomicReference<>();
-            c.addListener(ServerEvent.class, e -> {
-                storedEvent.set(e);
-            });
-            c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
-            storedEvent.get().unregisterListener();
+        TestComponent c = new TestComponent();
+        AtomicReference<ServerEvent> storedEvent = new AtomicReference<>();
+        c.addListener(ServerEvent.class, e -> {
+            storedEvent.set(e);
         });
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+        assertThrows(IllegalStateException.class,
+                () -> storedEvent.get().unregisterListener());
     }
 
     @Test // #7826

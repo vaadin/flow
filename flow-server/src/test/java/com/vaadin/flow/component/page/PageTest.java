@@ -199,11 +199,10 @@ class PageTest {
 
     @Test
     public void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> {
-            final UI mockUI = new MockUI();
-            Page page = new Page(mockUI);
-            page.fetchCurrentURL(null);
-        });
+        final UI mockUI = new MockUI();
+        Page page = new Page(mockUI);
+        assertThrows(NullPointerException.class,
+                () -> page.fetchCurrentURL(null));
     }
 
     @Test

@@ -92,22 +92,20 @@ class HasComponentsTest {
 
     @Test
     public void insertComponentIndexLessThanZero() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent component = createTestStructure();
-            TestComponent innerComponent = new TestComponent();
-            innerComponent.setId("insert-component-index-less");
-            component.addComponentAtIndex(-5, innerComponent);
-        });
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        innerComponent.setId("insert-component-index-less");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(-5, innerComponent));
     }
 
     @Test
     public void insertComponentIndexGreaterThanChildrenNumber() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent component = createTestStructure();
-            TestComponent innerComponent = new TestComponent();
-            innerComponent.setId("insert-component-index-greater");
-            component.addComponentAtIndex(100, innerComponent);
-        });
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        innerComponent.setId("insert-component-index-greater");
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(100, innerComponent));
     }
 
     @Test
@@ -169,16 +167,15 @@ class HasComponentsTest {
 
     @Test
     public void remove_removeComponentWithDifferentParent() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestComponent component = createTestStructure();
+        TestComponent component = createTestStructure();
 
-            TestComponent another = createTestStructure();
-            TestComponent innerComponent = new TestComponent();
+        TestComponent another = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
 
-            another.add(innerComponent);
+        another.add(innerComponent);
 
-            component.remove(innerComponent);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> component.remove(innerComponent));
     }
 
     private TestComponent createTestStructure() {

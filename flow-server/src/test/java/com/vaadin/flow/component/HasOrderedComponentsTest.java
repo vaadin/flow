@@ -86,11 +86,10 @@ class HasOrderedComponentsTest {
 
     @Test
     public void indexOf_componentIsNull_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Mockito.when(components.getChildren()).thenReturn(Stream.empty());
+        Mockito.when(components.getChildren()).thenReturn(Stream.empty());
 
-            components.indexOf(null);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> components.indexOf(null));
     }
 
     @Test
@@ -122,13 +121,12 @@ class HasOrderedComponentsTest {
 
     @Test
     public void getComponentAt_negativeIndex_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Mockito.when(components.getChildren())
-                    .thenReturn(Arrays.asList(Mockito.mock(Component.class),
-                            Mockito.mock(Component.class)).stream());
+        Mockito.when(components.getChildren())
+                .thenReturn(Arrays.asList(Mockito.mock(Component.class),
+                        Mockito.mock(Component.class)).stream());
 
-            components.getComponentAt(-1);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> components.getComponentAt(-1));
     }
 
     @Test

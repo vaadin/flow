@@ -195,14 +195,13 @@ public class CompositeTest {
 
     @Test
     public void compositeContentTypeWithVariableTypeParameter() {
-        assertThrows(IllegalStateException.class, () -> {
-            class CompositeWithVariableType<C extends Component>
-                    extends Composite<C> {
-            }
+        class CompositeWithVariableType<C extends Component>
+                extends Composite<C> {
+        }
 
-            CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
-            composite.getContent();
-        });
+        CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
+        assertThrows(IllegalStateException.class,
+                () -> composite.getContent());
     }
 
     public static class CustomComponent<T> extends UI {
@@ -225,37 +224,34 @@ public class CompositeTest {
 
     @Test
     public void compositeContentTypeWithTypeVariable() {
-        assertThrows(IllegalStateException.class, () -> {
-            class CompositeWithComposite extends
-                    Composite<CompositeWithVariableType<TestComponent>> {
-            }
+        class CompositeWithComposite extends
+                Composite<CompositeWithVariableType<TestComponent>> {
+        }
 
-            CompositeWithComposite composite = new CompositeWithComposite();
-            composite.getContent();
-        });
+        CompositeWithComposite composite = new CompositeWithComposite();
+        assertThrows(IllegalStateException.class,
+                () -> composite.getContent());
     }
 
     @Test
     public void rawContentType() {
-        assertThrows(IllegalStateException.class, () -> {
-            @SuppressWarnings("rawtypes")
-            class CompositeWithRawType extends Composite {
-            }
+        @SuppressWarnings("rawtypes")
+        class CompositeWithRawType extends Composite {
+        }
 
-            CompositeWithRawType composite = new CompositeWithRawType();
-            composite.getContent();
-        });
+        CompositeWithRawType composite = new CompositeWithRawType();
+        assertThrows(IllegalStateException.class,
+                () -> composite.getContent());
     }
 
     @Test
     public void noDefaultConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            class NoDefaultConstructor extends Composite<Text> {
-            }
+        class NoDefaultConstructor extends Composite<Text> {
+        }
 
-            NoDefaultConstructor composite = new NoDefaultConstructor();
-            composite.getContent();
-        });
+        NoDefaultConstructor composite = new NoDefaultConstructor();
+        assertThrows(IllegalArgumentException.class,
+                () -> composite.getContent());
     }
 
     @Test

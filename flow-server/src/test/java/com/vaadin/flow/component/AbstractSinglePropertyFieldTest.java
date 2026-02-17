@@ -97,12 +97,8 @@ class AbstractSinglePropertyFieldTest {
         ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
 
         try {
-
-            assertThrows(NullPointerException.class, () -> {
-
-                field.setValue(null);
-
-            });
+            assertThrows(NullPointerException.class,
+                    () -> field.setValue(null));
         } finally {
             monitor.assertNoEvent();
         }

@@ -507,11 +507,9 @@ public class ComponentTest {
 
     @Test
     public void attachBrokenComponent() {
-        assertThrows(AssertionError.class, () -> {
-            BrokenComponent c = new BrokenComponent();
-            TestComponentContainer tc = new TestComponentContainer();
-            tc.add(c);
-        });
+        BrokenComponent c = new BrokenComponent();
+        TestComponentContainer tc = new TestComponentContainer();
+        assertThrows(AssertionError.class, () -> tc.add(c));
     }
 
     @Test
@@ -527,22 +525,20 @@ public class ComponentTest {
 
     @Test
     public void setElementNull() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Component c = new Component(null) {
-            };
-            Component.setElement(c, null);
-        });
+        Component c = new Component(null) {
+        };
+        assertThrows(IllegalArgumentException.class,
+                () -> Component.setElement(c, null));
     }
 
     @Test
     public void setElementTwice() {
-        assertThrows(IllegalStateException.class, () -> {
-            Component c = new Component(null) {
-            };
-            Element element = ElementFactory.createDiv();
-            Component.setElement(c, element);
-            Component.setElement(c, element);
-        });
+        Component c = new Component(null) {
+        };
+        Element element = ElementFactory.createDiv();
+        Component.setElement(c, element);
+        assertThrows(IllegalStateException.class,
+                () -> Component.setElement(c, element));
     }
 
     @Test
@@ -998,41 +994,37 @@ public class ComponentTest {
 
     @Test
     public void wrapNullComponentType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Element("div").as(null);
-        });
+        Element div = new Element("div");
+        assertThrows(IllegalArgumentException.class, () -> div.as(null));
     }
 
     @Test
     public void wrapWrongTag() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element foo = new Element("foo");
-            foo.as(TestDiv.class);
-        });
+        Element foo = new Element("foo");
+        assertThrows(IllegalArgumentException.class,
+                () -> foo.as(TestDiv.class));
     }
 
     @Test
     public void wrappedComponentGetParent() {
-        assertThrows(IllegalStateException.class, () -> {
-            Element div = new Element("div");
-            Element button = new Element("button");
-            div.appendChild(button);
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
 
-            div.as(TestDiv.class);
-            button.as(TestButton.class).getParent();
-        });
+        div.as(TestDiv.class);
+        assertThrows(IllegalStateException.class,
+                () -> button.as(TestButton.class).getParent());
     }
 
     @Test
     public void wrappedComponentGetChildren() {
-        assertThrows(IllegalStateException.class, () -> {
-            Element div = new Element("div");
-            Element button = new Element("button");
-            div.appendChild(button);
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
 
-            button.as(TestButton.class);
-            div.as(TestDiv.class).getChildren();
-        });
+        button.as(TestButton.class);
+        assertThrows(IllegalStateException.class,
+                () -> div.as(TestDiv.class).getChildren());
     }
 
     @Test
@@ -1082,17 +1074,16 @@ public class ComponentTest {
 
     @Test
     public void mapToExistingComponent() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestButton button = new TestButton();
-            Component.from(button.getElement(), TestButton.class);
-        });
+        TestButton button = new TestButton();
+        assertThrows(IllegalArgumentException.class,
+                () -> Component.from(button.getElement(), TestButton.class));
     }
 
     @Test
     public void mapToNullComponentType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Component.from(new Element("div"), null);
-        });
+        Element div = new Element("div");
+        assertThrows(IllegalArgumentException.class,
+                () -> Component.from(div, null));
     }
 
     @Test
@@ -1823,16 +1814,14 @@ public class ComponentTest {
 
     @Test
     public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
-        assertThrows(IllegalStateException.class, () -> {
-            // given
-            TestComponent child = new TestComponent();
-            UI ui1 = new UI();
-            ui1.add(child);
-            UI ui2 = new UI();
+        // given
+        TestComponent child = new TestComponent();
+        UI ui1 = new UI();
+        ui1.add(child);
+        UI ui2 = new UI();
 
-            // then
-            ui2.add(child);
-        });
+        // then
+        assertThrows(IllegalStateException.class, () -> ui2.add(child));
     }
 
     @Test
