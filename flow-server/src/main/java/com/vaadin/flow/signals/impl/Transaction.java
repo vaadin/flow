@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -120,18 +120,25 @@ public abstract class Transaction implements Serializable {
     }
 
     /**
+     * An immediate transaction that reads directly from the submitted tree
+     * state. Used for both the default ROOT transaction and the
+     * EXPLICITLY_NO_TRANSACTION sentinel since they share identical behavior.
+     */
+    private static class DirectReadTransaction extends ImmediateTransaction {
+        @Override
+        public TreeRevision read(SignalTree tree) {
+            return tree.submitted();
+        }
+    }
+
+    /**
      * The default stateless transaction logic that is used when no transaction
      * is active. Applies commands directly to the underlying tree and reads
      * directly from the tree. This is basically not a transaction at all but
      * still expressed as a transaction so that transaction-aware logic doesn't
      * have to check whether a transaction is active.
      */
-    private static final Transaction ROOT = new ImmediateTransaction() {
-        @Override
-        public TreeRevision read(SignalTree tree) {
-            return tree.submitted();
-        }
-    };
+    private static final Transaction ROOT = new DirectReadTransaction();
 
     /**
      * Sentinel value used to indicate that the developer has explicitly opted
@@ -139,12 +146,7 @@ public abstract class Transaction implements Serializable {
      * thread-local, the fallback mechanism is bypassed and ROOT behavior is
      * used instead.
      */
-    private static final Transaction EXPLICITLY_NO_TRANSACTION = new ImmediateTransaction() {
-        @Override
-        public TreeRevision read(SignalTree tree) {
-            return tree.submitted();
-        }
-    };
+    private static final Transaction EXPLICITLY_NO_TRANSACTION = new DirectReadTransaction();
 
     /**
      * The type of a transaction, determining how it handles reads and writes.
@@ -190,7 +192,7 @@ public abstract class Transaction implements Serializable {
 
     private static final ThreadLocal<Transaction> currentTransaction = new ThreadLocal<>();
 
-    private static volatile @Nullable Supplier<@Nullable Transaction> transactionFallback;
+    private static volatile @Nullable SerializableSupplier<@Nullable Transaction> transactionFallback;
 
     /**
      * Sets a supplier that provides a fallback transaction when no explicit
@@ -205,12 +207,12 @@ public abstract class Transaction implements Serializable {
      *            fallback
      */
     public static void setTransactionFallback(
-            @Nullable Supplier<@Nullable Transaction> fallback) {
+            @Nullable SerializableSupplier<@Nullable Transaction> fallback) {
         transactionFallback = fallback;
     }
 
     private static @Nullable Transaction getFallback() {
-        Supplier<@Nullable Transaction> fallback = transactionFallback;
+        SerializableSupplier<@Nullable Transaction> fallback = transactionFallback;
         return fallback != null ? fallback.get() : null;
     }
 
