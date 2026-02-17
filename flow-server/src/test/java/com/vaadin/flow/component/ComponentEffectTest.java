@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
@@ -37,6 +38,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -132,7 +134,7 @@ public class ComponentEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -155,7 +157,7 @@ public class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -190,7 +192,7 @@ public class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -214,7 +216,7 @@ public class ComponentEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -239,7 +241,7 @@ public class ComponentEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -259,7 +261,7 @@ public class ComponentEffectTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
-        Registration registration = ComponentEffect.effect(component, () -> {
+        Registration registration = Effect.effect(component, () -> {
             signal.get();
             count.incrementAndGet();
         });
@@ -296,7 +298,7 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bind_signalValueChanges_componentUpdated() {
+    public void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -304,8 +306,8 @@ public class ComponentEffectTest {
         MockUI ui = new MockUI();
         ui.add(component);
 
-        Registration registration = ComponentEffect.bind(component, signal,
-                TestComponent::setValue);
+        Registration registration = new ElementEffect(component.getElement(),
+                () -> component.setValue(signal.get()))::close;
 
         assertEquals("Initial value should be set", "initial",
                 component.getValue());

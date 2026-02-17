@@ -16,10 +16,10 @@
 package com.vaadin.tests.server.component;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -34,7 +34,7 @@ class SerializedLocalSignalComponent extends Component {
     SerializedLocalSignalComponent(ValueSignal<String> signal) {
         this.signal = signal;
 
-        registration = ComponentEffect.effect(this, () -> {
+        registration = Effect.effect(this, () -> {
             signal.get();
             effectExecutionCounter++;
         });
