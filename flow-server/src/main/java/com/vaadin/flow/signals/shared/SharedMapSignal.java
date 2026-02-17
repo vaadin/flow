@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *            the element type
  */
 public class SharedMapSignal<T>
-        extends AbstractSignal<Map<String, SharedValueSignal<T>>> {
+        extends AbstractSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *            the element type
  */
 public class SharedListSignal<T>
-        extends AbstractSignal<List<SharedValueSignal<T>>> {
+        extends AbstractSignal<@NonNull List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If

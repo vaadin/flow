@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +34,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         assertNotNull("localeSignal() should never return null", signal);
         assertEquals("Signal value should match getLocale()", ui.getLocale(),
@@ -44,7 +44,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_setLocale_signalUpdated() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         Locale initialLocale = ui.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -65,7 +65,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_writeToSignal_updatesGetLocale() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         Locale initialLocale = ui.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -87,8 +87,8 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     public void localeSignal_sameInstance_returnedOnMultipleCalls() {
         UI ui = UI.getCurrent();
 
-        WritableSignal<Locale> signal1 = ui.localeSignal();
-        WritableSignal<Locale> signal2 = ui.localeSignal();
+        ValueSignal<Locale> signal1 = ui.localeSignal();
+        ValueSignal<Locale> signal2 = ui.localeSignal();
 
         assertSame("localeSignal() should return the same instance on "
                 + "multiple calls", signal1, signal2);
@@ -97,7 +97,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_multipleLocaleChanges_signalFollows() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         ui.setLocale(Locale.FRENCH);
         assertEquals(Locale.FRENCH, signal.get());
@@ -112,7 +112,7 @@ public class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_multipleSignalWrites_getLocaleFollows() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         signal.set(Locale.FRENCH);
         assertEquals(Locale.FRENCH, ui.getLocale());
