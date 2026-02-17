@@ -666,7 +666,8 @@ public class SharedValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_peekConfirmedInTransactionAndChangeOutside_transactionSuccessful() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>(String.class);
+        SharedValueSignal<String> signal = new SharedValueSignal<>(
+                String.class);
         assertSuccess(signal.set("value"));
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
