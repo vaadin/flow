@@ -20,6 +20,9 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
@@ -37,10 +40,10 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  * A signal is a reactive value holder with automatic subscription and
  * unsubscription of listeners.
  * <p>
- * Reactivity is based on {@link Signal#effect(EffectAction)} callbacks that
- * detect the signals used during invocation. The callback will be run again
- * whenever there's a change to any of the signal instances used in the previous
- * invocation. Detection is based on running {@link #get()}.
+ * Reactivity is based on {@link Signal#unboundEffect(EffectAction)} callbacks
+ * that detect the signals used during invocation. The callback will be run
+ * again whenever there's a change to any of the signal instances used in the
+ * previous invocation. Detection is based on running {@link #get()}.
  * {@link #untracked(ValueSupplier)} can be used to read the value within an
  * effect without registering a dependency.
  * <p>
@@ -64,7 +67,7 @@ public interface Signal<T> extends Serializable {
      * transaction depend on the value so that the transaction fails in case the
      * signal value is changed concurrently.
      * <p>
-     * Reading the value inside an {@link #effect(EffectAction)} or
+     * Reading the value inside an {@link #unboundEffect(EffectAction)} or
      * {@link #computed(SignalComputation)} callback sets up that effect or
      * computed signal to depend on the signal.
      *
@@ -117,16 +120,50 @@ public interface Signal<T> extends Serializable {
      */
 
     /**
-     * Creates a signal effect with the given action. The action is run when the
-     * effect is created and is subsequently run again whenever there's a change
-     * to any signal value that was read during the last invocation.
+     * Creates a signal effect that is owned by a given component. The effect is
+     * enabled when the component is attached and automatically disabled when it
+     * is detached.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Registration effect = Signal.effect(myComponent, () -> {
+     *     Notification.show("Component is attached and signal value is "
+     *             + someSignal.get());
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @param <C>
+     *            the type of the component
+     * @param owner
+     *            the owner component for which the effect is applied, must not
+     *            be <code>null</code>
+     * @param effectFunction
+     *            the effect function to be executed when any dependency is
+     *            changed, must not be <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    static <C extends Component> Registration effect(C owner,
+            SerializableRunnable effectFunction) {
+        return Effect.effect(owner, effectFunction);
+    }
+
+    /**
+     * Creates an unbound signal effect with the given action. The action is run
+     * when the effect is created and is subsequently run again whenever there's
+     * a change to any signal value that was read during the last invocation.
+     * <p>
+     * Consider using {@link #effect(Component, SerializableRunnable)} instead
+     * to tie the effect lifecycle to a component.
      *
      * @param action
      *            the effect action to use, not <code>null</code>
      * @return a callback used to close the effect so that it no longer listens
      *         to signal changes, not <code>null</code>
      */
-    static CleanupCallback effect(EffectAction action) {
+    static CleanupCallback unboundEffect(EffectAction action) {
         Effect effect = new Effect(Objects.requireNonNull(action));
         return effect::dispose;
     }
@@ -140,10 +177,10 @@ public interface Signal<T> extends Serializable {
      * and only if the previously computed value might have been invalidated by
      * dependent signal changes. If the computation callback throws a
      * {@link RuntimeException}, then that exception will be re-thrown when
-     * accessing the signal value. An {@link Signal#effect(EffectAction) effect}
-     * or computed signal that uses the value from a computed signal will not be
-     * invalidated if the computation is run again but produces the same value
-     * as before.
+     * accessing the signal value. An {@link Signal#unboundEffect(EffectAction)
+     * effect} or computed signal that uses the value from a computed signal
+     * will not be invalidated if the computation is run again but produces the
+     * same value as before.
      *
      * @param <T>
      *            the signal type

@@ -177,7 +177,7 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -201,7 +201,7 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         ArrayList<Integer> invocations = new ArrayList<>();
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -229,7 +229,7 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -264,7 +264,7 @@ public class ComputedSignalTest extends SignalTestBase {
             }
         }
 
-        Signal.effect(new CapturingRunnable(signal)).cleanup();
+        Signal.unboundEffect(new CapturingRunnable(signal)).cleanup();
 
         assertEquals(List.of("value"), invocations);
 

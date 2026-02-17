@@ -42,7 +42,7 @@ public class EffectTest extends SignalTestBase {
     void newEffect_actionIsRunOnce() {
         AtomicInteger count = new AtomicInteger();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             count.incrementAndGet();
         });
 
@@ -53,7 +53,7 @@ public class EffectTest extends SignalTestBase {
     void newEffect_closeImmediately_actionIsRunOnce() {
         AtomicInteger count = new AtomicInteger();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             count.incrementAndGet();
         }).cleanup();
 
@@ -65,7 +65,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -83,7 +83,7 @@ public class EffectTest extends SignalTestBase {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get().size());
         });
 
@@ -101,7 +101,7 @@ public class EffectTest extends SignalTestBase {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get().size());
         });
 
@@ -120,7 +120,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -144,7 +144,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -169,7 +169,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -182,7 +182,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -200,7 +200,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal2 = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal1.get() + signal2.get());
         });
 
@@ -217,7 +217,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -235,7 +235,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -257,7 +257,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -275,7 +275,7 @@ public class EffectTest extends SignalTestBase {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<List<String>> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             List<String> values = signal.get().stream().map(Signal::get)
                     .toList();
             invocations.add(values);
@@ -296,7 +296,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -313,7 +313,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<Integer> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(doubled.get());
         });
 
@@ -328,7 +328,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
 
-        CleanupCallback closer = Signal.effect(() -> {
+        CleanupCallback closer = Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -345,7 +345,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
         dispatcher.runPendingTasks();
@@ -366,7 +366,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
 
-        CleanupCallback closer = Signal.effect(() -> {
+        CleanupCallback closer = Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
         dispatcher.runPendingTasks();
@@ -387,7 +387,7 @@ public class EffectTest extends SignalTestBase {
         RuntimeException exception = new RuntimeException("Expected exception");
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
             throw exception;
         });
@@ -404,14 +404,14 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         RuntimeException exception = new RuntimeException("Expected exception");
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             throw exception;
         });
 
         assertUncaughtException(exception);
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
@@ -425,7 +425,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
         Error error = new Error("Expected error");
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
 
             throw error;
@@ -442,7 +442,7 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> other = new SharedValueSignal<>("other");
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal");
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             other.set(signal.get());
         });
         assertEquals("signal", other.get());
@@ -458,7 +458,7 @@ public class EffectTest extends SignalTestBase {
 
         AtomicInteger count = new AtomicInteger();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             count.incrementAndGet();
             trigger.get();
             signal.get();
@@ -482,7 +482,7 @@ public class EffectTest extends SignalTestBase {
 
         AtomicInteger throwCount = new AtomicInteger();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             String value = signal2.get() + " update";
 
             try {
@@ -494,7 +494,7 @@ public class EffectTest extends SignalTestBase {
         assertEquals(0, throwCount.get(),
                 "Should not fail with only one effect active");
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             signal2.set(signal1.get() + " update");
         });
         assertEquals(1, throwCount.get(),
@@ -507,11 +507,11 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
         SharedValueSignal<Boolean> trigger = new SharedValueSignal<>(false);
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             signal1.set(signal2.get() + " update");
         });
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             if (trigger.get()) {
                 signal2.set(signal1.get() + " update");
             }
@@ -529,12 +529,12 @@ public class EffectTest extends SignalTestBase {
         SharedValueSignal<String> signal1 = new SharedValueSignal<>("signal");
         SharedValueSignal<String> signal2 = new SharedValueSignal<>("signal");
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             signal1.set(signal2.get() + " update");
         });
         dispatcher.runPendingTasks();
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             signal2.set(signal1.get() + " update");
         });
         // Runs the 2nd effect which schedules running the 1st effect
@@ -578,7 +578,7 @@ public class EffectTest extends SignalTestBase {
             }
         };
 
-        Signal.effect(() -> {
+        Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
