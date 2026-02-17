@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.dom;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -27,8 +27,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -37,6 +39,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -50,7 +53,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class ComponentEffectTest {
+class ElementEffectTest {
 
     private static TestService service;
 
@@ -132,7 +135,7 @@ class ComponentEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -155,7 +158,7 @@ class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -190,7 +193,7 @@ class ComponentEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -214,7 +217,7 @@ class ComponentEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -239,7 +242,7 @@ class ComponentEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
-        ComponentEffect.effect(ui, () -> {
+        Effect.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -259,7 +262,7 @@ class ComponentEffectTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
-        Registration registration = ComponentEffect.effect(component, () -> {
+        Registration registration = Effect.effect(component, () -> {
             signal.get();
             count.incrementAndGet();
         });
@@ -295,7 +298,7 @@ class ComponentEffectTest {
     }
 
     @Test
-    public void bind_signalValueChanges_componentUpdated() {
+    public void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -303,8 +306,8 @@ class ComponentEffectTest {
         MockUI ui = new MockUI();
         ui.add(component);
 
-        Registration registration = ComponentEffect.bind(component, signal,
-                TestComponent::setValue);
+        Registration registration = new ElementEffect(component.getElement(),
+                () -> component.setValue(signal.get()))::close;
 
         assertEquals("initial", component.getValue(),
                 "Initial value should be set");
@@ -338,12 +341,10 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI();
 
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(null, taskList, valueSignal -> null));
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(parentComponent, null, valueSignal -> null));
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(parentComponent, taskList, null));
+        assertThrows(NullPointerException.class,
+                () -> parentComponent.bindChildren(null, valueSignal -> null));
+        assertThrows(NullPointerException.class,
+                () -> parentComponent.bindChildren(taskList, null));
     }
 
     @Test
@@ -353,7 +354,7 @@ class ComponentEffectTest {
                 String.class);
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
-        ComponentEffect.bindChildren(parentComponent, taskList,
+        parentComponent.bindChildren(taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
         assertEquals(0, parentComponent.getComponentCount());
     }
@@ -370,11 +371,10 @@ class ComponentEffectTest {
 
         new MockUI().add(parentComponent);
         assertThrows(IllegalStateException.class, () -> {
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> {
-                        fail("Should not call element factory");
-                        return null;
-                    });
+            parentComponent.bindChildren(taskList, valueSignal -> {
+                fail("Should not call element factory");
+                return null;
+            });
         });
         assertEquals(1, parentComponent.getComponentCount());
     }
@@ -390,7 +390,7 @@ class ComponentEffectTest {
         var expectedComponent = new TestComponent();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
+        parentComponent.bindChildren(taskList, valueSignal -> {
             expectedComponent.setValue(valueSignal.get());
             return expectedComponent;
         });
@@ -412,7 +412,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
+        parentComponent.bindChildren(taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals(1, parentComponent.getComponentCount(),
@@ -447,7 +447,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
+        parentComponent.bindChildren(taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals(3, parentComponent.getComponentCount(),
@@ -486,7 +486,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
+        parentComponent.bindChildren(taskList,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals(3, parentComponent.getComponentCount(),
@@ -610,8 +610,9 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> new TestComponent(valueSignal.get())
+                        .getElement());
 
         var expectedComponent = new TestComponent("added directly");
         // doing wrong
@@ -652,8 +653,9 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> new TestComponent(valueSignal.get())
+                        .getElement());
 
         var directlyAddedComponent1 = new TestComponent("added directly 1");
         var directlyAddedComponent2 = new TestComponent("added directly 2");
@@ -703,7 +705,7 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
+        parentComponent.bindChildren(taskList, valueSignal -> {
             String value = valueSignal.get();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
@@ -751,7 +753,7 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
+        parentComponent.bindChildren(taskList, valueSignal -> {
             String value = valueSignal.get();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
@@ -802,7 +804,7 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
+        parentComponent.bindChildren(taskList, valueSignal -> {
             String value = valueSignal.get();
             var component = new TestComponent(value);
             component.getElement().setText(value);
@@ -842,7 +844,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout(expectedMockedElements);
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList, valueSignal -> {
+        parentComponent.bindChildren(taskList, valueSignal -> {
             var component = new TestComponent(valueSignal.get(),
                     parentComponent.getElement(), null);
             expectedMockedElements.add(component.getElement());
@@ -888,8 +890,7 @@ class ComponentEffectTest {
 
         ui.add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, taskList,
-                valueSignal -> null);
+        parentComponent.bindChildren(taskList, valueSignal -> null);
 
         ErrorEvent event = events.pollFirst();
 
@@ -897,7 +898,7 @@ class ComponentEffectTest {
         assertEquals(IllegalStateException.class,
                 event.getThrowable().getClass());
         assertEquals(
-                "ComponentEffect.bindChildren childFactory must not return null",
+                "HasComponents.bindChildren childFactory must not return null",
                 event.getThrowable().getMessage());
     }
 
@@ -912,9 +913,10 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        Registration registration = ComponentEffect.bindChildren(
-                parentComponent, taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+        Registration registration = ElementEffect.bindChildren(
+                parentComponent.getElement(), taskList,
+                valueSignal -> new TestComponent(valueSignal.get())
+                        .getElement());
 
         assertEquals(2, parentComponent.getComponentCount(),
                 "Parent should have initial children");
@@ -954,7 +956,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, listSignal,
+        parentComponent.bindChildren(listSignal,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
         assertEquals(1, parentComponent.getComponentCount());
@@ -991,7 +993,7 @@ class ComponentEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
-        ComponentEffect.bindChildren(parentComponent, listSignal,
+        parentComponent.bindChildren(listSignal,
                 valueSignal -> new TestComponent(valueSignal.get()));
 
         parentComponent.getChildren().map(TestComponent.class::cast)

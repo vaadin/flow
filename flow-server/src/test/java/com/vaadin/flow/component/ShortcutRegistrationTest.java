@@ -630,7 +630,7 @@ class ShortcutRegistrationTest {
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
         // Shortcut event should not have been fired
-        Assert.assertNull(event.get());
+        assertNull(event.get());
     }
 
     @Test
