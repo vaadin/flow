@@ -32,12 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.core.StringContains;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -78,10 +74,17 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
  */
-public class RouteRegistryInitializerTest {
+class RouteRegistryInitializerTest {
 
     private RouteRegistryInitializer routeRegistryInitializer;
     private ApplicationRouteRegistry registry;
@@ -90,7 +93,7 @@ public class RouteRegistryInitializerTest {
     private Lookup lookup;
     private RoutePathProvider pathProvider;
 
-    @Before
+    @BeforeEach
     public void init() {
         pathProvider = Mockito.mock(RoutePathProvider.class);
         routeRegistryInitializer = new RouteRegistryInitializer();
@@ -118,9 +121,6 @@ public class RouteRegistryInitializerTest {
         }).when(pathProvider).getRoutePath(Mockito.any());
     }
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void process() throws ServletException {
         routeRegistryInitializer.process(
@@ -128,16 +128,15 @@ public class RouteRegistryInitializerTest {
                         NavigationTargetBar.class).collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals("Route '' registered to NavigationTarget.class",
-                NavigationTarget.class, registry.getNavigationTarget("").get());
-        Assert.assertEquals(
-                "Route 'foo' registered to NavigationTargetFoo.class",
-                NavigationTargetFoo.class,
-                registry.getNavigationTarget("foo").get());
-        Assert.assertEquals(
-                "Route 'bar' registered to NavigationTargetBar.class",
-                NavigationTargetBar.class,
-                registry.getNavigationTarget("bar").get());
+        assertEquals(NavigationTarget.class,
+                registry.getNavigationTarget("").get(),
+                "Route '' registered to NavigationTarget.class");
+        assertEquals(NavigationTargetFoo.class,
+                registry.getNavigationTarget("foo").get(),
+                "Route 'foo' registered to NavigationTargetFoo.class");
+        assertEquals(NavigationTargetBar.class,
+                registry.getNavigationTarget("bar").get(),
+                "Route 'bar' registered to NavigationTargetBar.class");
     }
 
     @Test
@@ -145,45 +144,49 @@ public class RouteRegistryInitializerTest {
         try {
             routeRegistryInitializer.process(null, servletContext);
         } catch (Exception e) {
-            Assert.fail(
-                    "RouteRegistryInitializer.process should not throw with null arguments");
+            fail("RouteRegistryInitializer.process should not throw with null arguments");
         }
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void process_duplicate_routes_throws() throws ServletException {
-        routeRegistryInitializer.process(
-                Stream.of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
-                        .collect(Collectors.toSet()),
-                servletContext);
+        assertThrows(ServletException.class, () -> {
+            routeRegistryInitializer.process(Stream
+                    .of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
+                    .collect(Collectors.toSet()), servletContext);
+        });
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void process_duplicate_routesViaAlias_throws()
             throws ServletException {
-        routeRegistryInitializer.process(
-                Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
-                        .collect(Collectors.toSet()),
-                servletContext);
+        assertThrows(ServletException.class, () -> {
+            routeRegistryInitializer.process(Stream
+                    .of(NavigationTargetBar.class, NavigationTargetBar2.class)
+                    .collect(Collectors.toSet()), servletContext);
+        });
     }
 
     @Test
     public void routeRegistry_fails_for_multiple_registration_of_same_route() {
-        expectedEx.expect(InvalidRouteConfigurationException.class);
-        expectedEx.expectMessage(String.format(RouteUtil.ROUTE_CONFLICT,
+        InvalidRouteConfigurationException thrown = assertThrows(
+                InvalidRouteConfigurationException.class, () -> {
+                    RouteConfiguration.forRegistry(registry)
+                            .setAnnotatedRoute(NavigationTargetFoo.class);
+
+                    assertTrue(registry.hasNavigationTargets(),
+                            "RouteRegistry should be initialized");
+
+                    // Test should fail on this as there already exists a route
+                    // for this
+                    // route
+                    RouteConfiguration.forRegistry(registry)
+                            .setAnnotatedRoute(NavigationTargetFoo2.class);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
+                RouteUtil.ROUTE_CONFLICT,
                 "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo",
-                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2"));
-
-        RouteConfiguration.forRegistry(registry)
-                .setAnnotatedRoute(NavigationTargetFoo.class);
-
-        Assert.assertTrue("RouteRegistry should be initialized",
-                registry.hasNavigationTargets());
-
-        // Test should fail on this as there already exists a route for this
-        // route
-        RouteConfiguration.forRegistry(registry)
-                .setAnnotatedRoute(NavigationTargetFoo2.class);
+                "com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2")));
     }
 
     @Test
@@ -197,17 +200,19 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("middle_parent");
 
-        Assert.assertTrue("Couldn't find navigation target for `middle_parent`",
-                navigationTarget.isPresent());
+        assertTrue(navigationTarget.isPresent(),
+                "Couldn't find navigation target for `middle_parent`");
     }
 
-    @Test(expected = InvalidRouteLayoutConfigurationException.class)
+    @Test
     public void routeRegistry_fails_on_aloneRouteAlias()
             throws ServletException {
-        routeRegistryInitializer.process(
-                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
-                        RouteAliasAlone.class).collect(Collectors.toSet()),
-                servletContext);
+        assertThrows(InvalidRouteLayoutConfigurationException.class, () -> {
+            routeRegistryInitializer.process(
+                    Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
+                            RouteAliasAlone.class).collect(Collectors.toSet()),
+                    servletContext);
+        });
     }
 
     @Test
@@ -220,11 +225,10 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("parent/prefix");
 
-        Assert.assertTrue("Couldn't find navigation target for `parent/prefix`",
-                navigationTarget.isPresent());
-        Assert.assertEquals(
-                "Route 'parent/prefix' was not registered to ExtendingPrefix.class",
-                ExtendingPrefix.class, navigationTarget.get());
+        assertTrue(navigationTarget.isPresent(),
+                "Couldn't find navigation target for `parent/prefix`");
+        assertEquals(ExtendingPrefix.class, navigationTarget.get(),
+                "Route 'parent/prefix' was not registered to ExtendingPrefix.class");
     }
 
     @Test
@@ -237,10 +241,10 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("absolute");
 
-        Assert.assertTrue("Could not find navigation target for `absolute`",
-                navigationTarget.isPresent());
-        Assert.assertEquals("Route 'absolute' was not registered correctly",
-                AbsoluteRoute.class, navigationTarget.get());
+        assertTrue(navigationTarget.isPresent(),
+                "Could not find navigation target for `absolute`");
+        assertEquals(AbsoluteRoute.class, navigationTarget.get(),
+                "Route 'absolute' was not registered correctly");
     }
 
     @Test
@@ -266,9 +270,9 @@ public class RouteRegistryInitializerTest {
         Optional<String> url = registry
                 .getTargetUrl(MultiLevelRouteAlias.class);
 
-        Assert.assertTrue(url.isPresent());
+        assertTrue(url.isPresent());
 
-        Assert.assertEquals("absolute/levels", url.get());
+        assertEquals("absolute/levels", url.get());
 
         assertRouteTarget(MultiLevelRouteAlias.class, "parent/alias1",
                 "RouteAlias 'alias1' was not registered correctly");
@@ -321,13 +325,12 @@ public class RouteRegistryInitializerTest {
                         AbsoluteRoute.class, ExtendingPrefix.class)
                 .collect(Collectors.toSet()), servletContext);
 
-        Assert.assertEquals("",
-                registry.getTargetUrl(NavigationTarget.class).get());
-        Assert.assertEquals("foo",
+        assertEquals("", registry.getTargetUrl(NavigationTarget.class).get());
+        assertEquals("foo",
                 registry.getTargetUrl(NavigationTargetFoo.class).get());
-        Assert.assertEquals("absolute",
+        assertEquals("absolute",
                 registry.getTargetUrl(AbsoluteRoute.class).get());
-        Assert.assertEquals("parent/prefix",
+        assertEquals("parent/prefix",
                 registry.getTargetUrl(ExtendingPrefix.class).get());
     }
 
@@ -339,12 +342,12 @@ public class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals(
+        assertEquals(
                 String.format("parameter/:%s(%s)",
                         HasUrlParameterFormat.PARAMETER_NAME,
                         RouteParameterRegex.INTEGER),
                 registry.getTemplate(ParameterRoute.class).get());
-        Assert.assertEquals(
+        assertEquals(
                 String.format("string/:%s",
                         HasUrlParameterFormat.PARAMETER_NAME),
                 registry.getTemplate(StringParameterRoute.class).get());
@@ -357,36 +360,39 @@ public class RouteRegistryInitializerTest {
                 .of(NavigationRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
 
-        Assert.assertEquals(
-                "The root target for a parent layout should not end with '/'",
-                "parent",
-                registry.getTargetUrl(NavigationRootWithParent.class).get());
+        assertEquals("parent",
+                registry.getTargetUrl(NavigationRootWithParent.class).get(),
+                "The root target for a parent layout should not end with '/'");
     }
 
     @Test
     public void registration_fails_for_navigation_target_with_duplicate_title()
             throws ServletException {
-        expectedEx.expect(DuplicateNavigationTitleException.class);
-        expectedEx.expectMessage(String.format(
+        DuplicateNavigationTitleException thrown = assertThrows(
+                DuplicateNavigationTitleException.class, () -> {
+                    routeRegistryInitializer.process(
+                            Collections.singleton(
+                                    FaultyNavigationTargetWithTitle.class),
+                            servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
-                FaultyNavigationTargetWithTitle.class.getName()));
-
-        routeRegistryInitializer.process(
-                Collections.singleton(FaultyNavigationTargetWithTitle.class),
-                servletContext);
+                FaultyNavigationTargetWithTitle.class.getName())));
     }
 
     @Test
     public void registration_fails_for_navigation_target_with_inherited_dynamic_title()
             throws ServletException {
-        expectedEx.expect(DuplicateNavigationTitleException.class);
-        expectedEx.expectMessage(String.format(
+        DuplicateNavigationTitleException thrown = assertThrows(
+                DuplicateNavigationTitleException.class, () -> {
+                    routeRegistryInitializer.process(
+                            Collections.singleton(
+                                    FaultyChildWithDuplicateTitle.class),
+                            servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
-                FaultyChildWithDuplicateTitle.class.getName()));
-
-        routeRegistryInitializer.process(
-                Collections.singleton(FaultyChildWithDuplicateTitle.class),
-                servletContext);
+                FaultyChildWithDuplicateTitle.class.getName())));
     }
 
     @Test
@@ -396,7 +402,7 @@ public class RouteRegistryInitializerTest {
                 Collections.singleton(ChildWithDynamicTitle.class),
                 servletContext);
 
-        Assert.assertEquals("bar",
+        assertEquals("bar",
                 registry.getTargetUrl(ChildWithDynamicTitle.class).get());
     }
 
@@ -550,9 +556,9 @@ public class RouteRegistryInitializerTest {
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget(path);
 
-        Assert.assertTrue("Could not find navigation target for `" + path + "`",
-                navigationTarget.isPresent());
-        Assert.assertEquals(errorMessage, routeClass, navigationTarget.get());
+        assertTrue(navigationTarget.isPresent(),
+                "Could not find navigation target for `" + path + "`");
+        assertEquals(routeClass, navigationTarget.get(), errorMessage);
     }
 
     /* @Viewport tests */
@@ -618,41 +624,51 @@ public class RouteRegistryInitializerTest {
     @Test
     public void process_wrong_position_view_layout_throws()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(RootWithParents.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                Parent.class.getName(), MiddleParentLayout.class.getName()));
-
-        routeRegistryInitializer.process(
-                Stream.of(RootWithParents.class).collect(Collectors.toSet()),
-                servletContext);
+                Parent.class.getName(), MiddleParentLayout.class.getName())));
     }
 
     @Test
     public void process_check_only_one_viewport_in_route_chain()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(MultiViewport.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(
                 "Only one Viewport annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
                         + MultiMiddleParentLayout.class.getName() + ", "
-                        + MiddleParentLayout.class.getName());
-
-        routeRegistryInitializer.process(
-                Stream.of(MultiViewport.class).collect(Collectors.toSet()),
-                servletContext);
+                        + MiddleParentLayout.class.getName()));
     }
 
     @Test
     public void process_route_can_not_contain_viewport_if_has_parent()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(RootViewportWithParent.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
                 Parent.class.getName(),
-                RootViewportWithParent.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(RootViewportWithParent.class)
-                .collect(Collectors.toSet()), servletContext);
+                RootViewportWithParent.class.getName())));
     }
 
     @Test
@@ -667,14 +683,17 @@ public class RouteRegistryInitializerTest {
     @Test
     public void process_check_also_faulty_alias_route()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(FailingAliasView.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
-                Parent.class.getName(), FailingAliasView.class.getName()));
-
-        routeRegistryInitializer.process(
-                Stream.of(FailingAliasView.class).collect(Collectors.toSet()),
-                servletContext);
+                Parent.class.getName(), FailingAliasView.class.getName())));
     }
 
     @Test
@@ -747,42 +766,52 @@ public class RouteRegistryInitializerTest {
     @Test
     public void process_wrong_position_body_size_view_layout_throws()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(BodyRootWithParents.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "BodySize annotation should be on the top most route layout '%s'. Offending class: '%s'",
                 BodyParent.class.getName(),
-                BodyMiddleParentLayout.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(BodyRootWithParents.class)
-                .collect(Collectors.toSet()), servletContext);
+                BodyMiddleParentLayout.class.getName())));
     }
 
     @Test
     public void process_check_only_one_body_size_in_route_chain()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(BodyMultiViewport.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(
                 "Only one BodySize annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
                         + BodyMultiMiddleParentLayout.class.getName() + ", "
-                        + BodyMiddleParentLayout.class.getName());
-
-        routeRegistryInitializer.process(
-                Stream.of(BodyMultiViewport.class).collect(Collectors.toSet()),
-                servletContext);
+                        + BodyMiddleParentLayout.class.getName()));
     }
 
     @Test
     public void process_route_can_not_contain_body_size_if_has_parent()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(BodyRootViewportWithParent.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
                 BodyParent.class.getName(),
-                BodyRootViewportWithParent.class.getName()));
-
-        routeRegistryInitializer
-                .process(Stream.of(BodyRootViewportWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
+                BodyRootViewportWithParent.class.getName())));
     }
 
     @Test
@@ -797,14 +826,18 @@ public class RouteRegistryInitializerTest {
     @Test
     public void process_check_also_faulty_body_size_alias_route()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(BodyFailingAliasView.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "BodySize annotation needs to be on the top parent layout '%s' not on '%s'",
                 BodyParent.class.getName(),
-                BodyFailingAliasView.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(BodyFailingAliasView.class)
-                .collect(Collectors.toSet()), servletContext);
+                BodyFailingAliasView.class.getName())));
     }
 
     @Test
@@ -896,14 +929,17 @@ public class RouteRegistryInitializerTest {
     @Test
     public void layout_annotation_on_non_routelayout_throws()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(FaultyParentLayout.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Found @Layout on classes { %s } not implementing RouterLayout.",
-                FaultyParentLayout.class.getName()));
-
-        routeRegistryInitializer.process(
-                Stream.of(FaultyParentLayout.class).collect(Collectors.toSet()),
-                servletContext);
+                FaultyParentLayout.class.getName())));
     }
 
     @Test
@@ -914,55 +950,65 @@ public class RouteRegistryInitializerTest {
                 .append(AnnotatedParentLayout.class.getName()).append(" - ")
                 .append(AnotherAnnotatedParentLayout.class.getName());
 
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
-                StringContains.containsString(messageBuilder.toString()));
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    Set<Class<?>> classes = new LinkedHashSet<>(2);
+                    classes.add(AnnotatedParentLayout.class);
+                    classes.add(AnotherAnnotatedParentLayout.class);
 
-        Set<Class<?>> classes = new LinkedHashSet<>(2);
-        classes.add(AnnotatedParentLayout.class);
-        classes.add(AnotherAnnotatedParentLayout.class);
-
-        routeRegistryInitializer.validateLayoutAnnotations(classes);
+                    routeRegistryInitializer.validateLayoutAnnotations(classes);
+                });
+        assertTrue(thrown.getMessage().contains(messageBuilder.toString()));
     }
 
     @Test
     public void process_wrong_position_inline_view_layout_throws()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(InlineRootWithParents.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Inline annotation should be on the top most route layout '%s'. Offending class: '%s'",
                 InlineParent.class.getName(),
-                InlineMiddleParentLayout.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(InlineRootWithParents.class)
-                .collect(Collectors.toSet()), servletContext);
+                InlineMiddleParentLayout.class.getName())));
     }
 
     @Test
     public void process_check_only_one_inline_in_route_chain()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(InlineMultiViewport.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(
                 "Only one Inline annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
                         + InlineMultiMiddleParentLayout.class.getName() + ", "
-                        + InlineMiddleParentLayout.class.getName());
-
-        routeRegistryInitializer.process(Stream.of(InlineMultiViewport.class)
-                .collect(Collectors.toSet()), servletContext);
+                        + InlineMiddleParentLayout.class.getName()));
     }
 
     @Test
     public void process_route_can_not_contain_inline_if_has_parent()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer.process(
+                            Stream.of(InlineRootViewportWithParent.class)
+                                    .collect(Collectors.toSet()),
+                            servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
                 InlineParent.class.getName(),
-                InlineRootViewportWithParent.class.getName()));
-
-        routeRegistryInitializer
-                .process(Stream.of(InlineRootViewportWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
+                InlineRootViewportWithParent.class.getName())));
     }
 
     @Test
@@ -977,14 +1023,18 @@ public class RouteRegistryInitializerTest {
     @Test
     public void process_check_also_faulty_inline_alias_route()
             throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
+        InvalidRouteLayoutConfigurationException thrown = assertThrows(
+                InvalidRouteLayoutConfigurationException.class, () -> {
+                    routeRegistryInitializer
+                            .process(
+                                    Stream.of(InlineFailingAliasView.class)
+                                            .collect(Collectors.toSet()),
+                                    servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Inline annotation needs to be on the top parent layout '%s' not on '%s'",
                 InlineParent.class.getName(),
-                InlineFailingAliasView.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(InlineFailingAliasView.class)
-                .collect(Collectors.toSet()), servletContext);
+                InlineFailingAliasView.class.getName())));
     }
 
     @Test
@@ -1006,15 +1056,15 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.process(routes, servletContext);
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
-        Assert.assertEquals("Not all registered routes were returned", 3,
-                registeredRoutes.size());
+        assertEquals(3, registeredRoutes.size(),
+                "Not all registered routes were returned");
 
         Set<Class<?>> collectedRoutes = registeredRoutes.stream()
                 .map(RouteData::getNavigationTarget)
                 .collect(Collectors.toSet());
 
-        Assert.assertTrue("Not all targets were correct",
-                routes.containsAll(collectedRoutes));
+        assertTrue(routes.containsAll(collectedRoutes),
+                "Not all targets were correct");
     }
 
     @Test
@@ -1028,28 +1078,30 @@ public class RouteRegistryInitializerTest {
 
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
-        Assert.assertEquals("Not all registered routes were returned", 7,
-                registeredRoutes.size());
+        assertEquals(7, registeredRoutes.size(),
+                "Not all registered routes were returned");
 
         // RouteData should be sorted by template
-        Assert.assertEquals("Sort order was not the one expected", "",
-                registeredRoutes.get(0).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected", "absolute",
-                registeredRoutes.get(1).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
-                "absolute/levels", registeredRoutes.get(2).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
+        assertEquals("", registeredRoutes.get(0).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("absolute", registeredRoutes.get(1).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("absolute/levels", registeredRoutes.get(2).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals(
                 HasUrlParameterFormat.getTemplate("parameter",
                         ParameterRoute.class),
-                registeredRoutes.get(3).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected", "parent",
-                registeredRoutes.get(4).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
-                "parent/prefix", registeredRoutes.get(5).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
+                registeredRoutes.get(3).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("parent", registeredRoutes.get(4).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("parent/prefix", registeredRoutes.get(5).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals(
                 HasUrlParameterFormat.getTemplate("string",
                         StringParameterRoute.class),
-                registeredRoutes.get(6).getTemplate());
+                registeredRoutes.get(6).getTemplate(),
+                "Sort order was not the one expected");
     }
 
     @Test
@@ -1063,30 +1115,30 @@ public class RouteRegistryInitializerTest {
 
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
-        Assert.assertEquals("Not all registered routes were returned", 7,
-                registeredRoutes.size());
+        assertEquals(7, registeredRoutes.size(),
+                "Not all registered routes were returned");
 
-        Assert.assertEquals("Parent is wrongly set to data",
-                Collections.emptyList(),
-                registeredRoutes.get(0).getParentLayouts());
-        Assert.assertEquals("Parent is wrongly set to data",
-                ParentWithRoutePrefix.class,
-                registeredRoutes.get(1).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data",
-                AbsoluteMiddleParent.class,
-                registeredRoutes.get(2).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data",
-                Collections.emptyList(),
-                registeredRoutes.get(3).getParentLayouts());
-        Assert.assertEquals("Parent is wrongly set to data",
-                ParentWithRoutePrefix.class,
-                registeredRoutes.get(4).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data",
-                ParentWithRoutePrefix.class,
-                registeredRoutes.get(5).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data",
-                Collections.emptyList(),
-                registeredRoutes.get(6).getParentLayouts());
+        assertEquals(Collections.emptyList(),
+                registeredRoutes.get(0).getParentLayouts(),
+                "Parent is wrongly set to data");
+        assertEquals(ParentWithRoutePrefix.class,
+                registeredRoutes.get(1).getParentLayout(),
+                "Parent is wrongly set to data");
+        assertEquals(AbsoluteMiddleParent.class,
+                registeredRoutes.get(2).getParentLayout(),
+                "Parent is wrongly set to data");
+        assertEquals(Collections.emptyList(),
+                registeredRoutes.get(3).getParentLayouts(),
+                "Parent is wrongly set to data");
+        assertEquals(ParentWithRoutePrefix.class,
+                registeredRoutes.get(4).getParentLayout(),
+                "Parent is wrongly set to data");
+        assertEquals(ParentWithRoutePrefix.class,
+                registeredRoutes.get(5).getParentLayout(),
+                "Parent is wrongly set to data");
+        assertEquals(Collections.emptyList(),
+                registeredRoutes.get(6).getParentLayouts(),
+                "Parent is wrongly set to data");
 
     }
 
@@ -1101,36 +1153,37 @@ public class RouteRegistryInitializerTest {
 
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
-        Assert.assertEquals("Not all registered routes were returned", 7,
-                registeredRoutes.size());
+        assertEquals(7, registeredRoutes.size(),
+                "Not all registered routes were returned");
 
-        Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(0).getRouteParameters().size());
-        Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(1).getRouteParameters().size());
-        Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(2).getRouteParameters().size());
-        Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(3).getRouteParameters().size());
+        assertEquals(0, registeredRoutes.get(0).getRouteParameters().size(),
+                "Unexpected parameters encountered");
+        assertEquals(0, registeredRoutes.get(1).getRouteParameters().size(),
+                "Unexpected parameters encountered");
+        assertEquals(0, registeredRoutes.get(2).getRouteParameters().size(),
+                "Unexpected parameters encountered");
+        assertEquals(1, registeredRoutes.get(3).getRouteParameters().size(),
+                "Missing parameters");
 
-        Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(4).getRouteParameters().size());
-        Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(5).getRouteParameters().size());
-        Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(6).getRouteParameters().size());
+        assertEquals(0, registeredRoutes.get(4).getRouteParameters().size(),
+                "Unexpected parameters encountered");
+        assertEquals(0, registeredRoutes.get(5).getRouteParameters().size(),
+                "Unexpected parameters encountered");
+        assertEquals(1, registeredRoutes.get(6).getRouteParameters().size(),
+                "Missing parameters");
 
-        Assert.assertEquals("Unexpected parameter type encountered",
+        assertEquals(
                 ":" + HasUrlParameterFormat.PARAMETER_NAME + "("
                         + RouteParameterRegex.INTEGER + ")",
                 registeredRoutes.get(3).getRouteParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME)
-                        .getTemplate());
-        Assert.assertEquals("Unexpected parameter type encountered",
-                ":" + HasUrlParameterFormat.PARAMETER_NAME,
+                        .getTemplate(),
+                "Unexpected parameter type encountered");
+        assertEquals(":" + HasUrlParameterFormat.PARAMETER_NAME,
                 registeredRoutes.get(6).getRouteParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME)
-                        .getTemplate());
+                        .getTemplate(),
+                "Unexpected parameter type encountered");
     }
 
     @Test
@@ -1140,40 +1193,40 @@ public class RouteRegistryInitializerTest {
 
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
-        Assert.assertEquals("Not all registered routes were returned", 1,
-                registeredRoutes.size());
+        assertEquals(1, registeredRoutes.size(),
+                "Not all registered routes were returned");
 
         RouteData routeData = registeredRoutes.get(0);
-        Assert.assertEquals("Not all registered routes were returned", 5,
-                routeData.getRouteAliases().size());
+        assertEquals(5, routeData.getRouteAliases().size(),
+                "Not all registered routes were returned");
 
         List<RouteAliasData> routeAliases = routeData.getRouteAliases();
 
-        Assert.assertEquals("Sort order was not the one expected",
-                "absolute/alias2", routeAliases.get(0).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected", "alias3",
-                routeAliases.get(1).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected", "alias4",
-                routeAliases.get(2).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
-                "parent/alias1", routeAliases.get(3).getTemplate());
-        Assert.assertEquals("Sort order was not the one expected",
-                "parent/middle/alias5", routeAliases.get(4).getTemplate());
+        assertEquals("absolute/alias2", routeAliases.get(0).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("alias3", routeAliases.get(1).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("alias4", routeAliases.get(2).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("parent/alias1", routeAliases.get(3).getTemplate(),
+                "Sort order was not the one expected");
+        assertEquals("parent/middle/alias5", routeAliases.get(4).getTemplate(),
+                "Sort order was not the one expected");
 
-        Assert.assertEquals("Sort order was not the one expected",
-                AbsoluteMiddleParent.class,
-                routeAliases.get(0).getParentLayout());
-        Assert.assertEquals("Sort order was not the one expected",
-                ParentWithRoutePrefix.class,
-                routeAliases.get(1).getParentLayout());
-        Assert.assertEquals("Sort order was not the one expected",
-                Collections.emptyList(),
-                routeAliases.get(2).getParentLayouts());
-        Assert.assertEquals("Sort order was not the one expected",
-                ParentWithRoutePrefix.class,
-                routeAliases.get(3).getParentLayout());
-        Assert.assertEquals("Sort order was not the one expected",
-                MiddleParent.class, routeAliases.get(4).getParentLayout());
+        assertEquals(AbsoluteMiddleParent.class,
+                routeAliases.get(0).getParentLayout(),
+                "Sort order was not the one expected");
+        assertEquals(ParentWithRoutePrefix.class,
+                routeAliases.get(1).getParentLayout(),
+                "Sort order was not the one expected");
+        assertEquals(Collections.emptyList(),
+                routeAliases.get(2).getParentLayouts(),
+                "Sort order was not the one expected");
+        assertEquals(ParentWithRoutePrefix.class,
+                routeAliases.get(3).getParentLayout(),
+                "Sort order was not the one expected");
+        assertEquals(MiddleParent.class, routeAliases.get(4).getParentLayout(),
+                "Sort order was not the one expected");
     }
 
     @Route("ignored")
@@ -1221,8 +1274,7 @@ public class RouteRegistryInitializerTest {
         List<?> registeredTargets = registry.getRegisteredRoutes().stream()
                 .map(RouteData::getNavigationTarget)
                 .collect(Collectors.toList());
-        Assert.assertEquals(Arrays.asList(NavigationTarget.class),
-                registeredTargets);
+        assertEquals(Arrays.asList(NavigationTarget.class), registeredTargets);
     }
 
     public static class IgnoredErrorView extends Component
@@ -1241,13 +1293,13 @@ public class RouteRegistryInitializerTest {
                 Stream.of(IgnoredErrorView.class, FileNotFound.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertTrue(registry
-                .getErrorNavigationTarget(new NotFoundException()).isPresent());
+        assertTrue(registry.getErrorNavigationTarget(new NotFoundException())
+                .isPresent());
 
         ErrorTargetEntry errorTargetEntry = registry
                 .getErrorNavigationTarget(new Exception()).get();
 
-        Assert.assertNotEquals(IgnoredErrorView.class,
+        assertNotEquals(IgnoredErrorView.class,
                 errorTargetEntry.getNavigationTarget());
     }
 
@@ -1259,7 +1311,7 @@ public class RouteRegistryInitializerTest {
         classes.add(BaseRouteTarget.class);
         routeRegistryInitializer.process(classes, servletContext);
 
-        Assert.assertEquals(BaseRouteTarget.class,
+        assertEquals(BaseRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
     }
 
@@ -1271,7 +1323,7 @@ public class RouteRegistryInitializerTest {
         classes.add(AbstractRouteTarget.class);
         routeRegistryInitializer.process(classes, servletContext);
 
-        Assert.assertEquals(BaseRouteTarget.class,
+        assertEquals(BaseRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
     }
 
@@ -1283,7 +1335,7 @@ public class RouteRegistryInitializerTest {
         classes.add(SuperRouteTarget.class);
         routeRegistryInitializer.process(classes, servletContext);
 
-        Assert.assertEquals(SuperRouteTarget.class,
+        assertEquals(SuperRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
     }
 
@@ -1295,44 +1347,52 @@ public class RouteRegistryInitializerTest {
         classes.add(BaseRouteTarget.class);
         routeRegistryInitializer.process(classes, servletContext);
 
-        Assert.assertEquals(SuperRouteTarget.class,
+        assertEquals(SuperRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void registerClassesWithSameRoute_absatrctClass_unrelatedClass_throws()
             throws ServletException {
-        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
-        classes.add(AbstractRouteTarget.class);
-        classes.add(OtherRouteTarget.class);
-        routeRegistryInitializer.process(classes, servletContext);
+        assertThrows(ServletException.class, () -> {
+            LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+            classes.add(AbstractRouteTarget.class);
+            classes.add(OtherRouteTarget.class);
+            routeRegistryInitializer.process(classes, servletContext);
+        });
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void registerClassesWithSameRoute_unrelatedClass_abstractClass_throws()
             throws ServletException {
-        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
-        classes.add(OtherRouteTarget.class);
-        classes.add(AbstractRouteTarget.class);
-        routeRegistryInitializer.process(classes, servletContext);
+        assertThrows(ServletException.class, () -> {
+            LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+            classes.add(OtherRouteTarget.class);
+            classes.add(AbstractRouteTarget.class);
+            routeRegistryInitializer.process(classes, servletContext);
+        });
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void registerClassesWithSameRoute_class_unrelatedClass_throws()
             throws ServletException {
-        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
-        classes.add(BaseRouteTarget.class);
-        classes.add(OtherRouteTarget.class);
-        routeRegistryInitializer.process(classes, servletContext);
+        assertThrows(ServletException.class, () -> {
+            LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+            classes.add(BaseRouteTarget.class);
+            classes.add(OtherRouteTarget.class);
+            routeRegistryInitializer.process(classes, servletContext);
+        });
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void registerClassesWithSameRoute_unrelatedClass_class_throws()
             throws ServletException {
-        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
-        classes.add(OtherRouteTarget.class);
-        classes.add(BaseRouteTarget.class);
-        routeRegistryInitializer.process(classes, servletContext);
+        assertThrows(ServletException.class, () -> {
+            LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+            classes.add(OtherRouteTarget.class);
+            classes.add(BaseRouteTarget.class);
+            routeRegistryInitializer.process(classes, servletContext);
+        });
     }
 
     @Test
@@ -1347,8 +1407,8 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
-        Assert.assertFalse(registry.cleanCalled);
-        Assert.assertFalse(registry.removeCalled);
+        assertFalse(registry.cleanCalled);
+        assertFalse(registry.removeCalled);
     }
 
     @Test
@@ -1363,7 +1423,7 @@ public class RouteRegistryInitializerTest {
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(vaadinContext);
-        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
+        assertEquals(1, registry.getRegisteredRoutes().size());
 
         AtomicReference<RoutesChangedEvent> event = new AtomicReference<>();
         registry.addRoutesChangeListener(event::set);
@@ -1371,10 +1431,10 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.initialize(new HashSet<>(
                 Arrays.asList(OldRouteTarget.class, BaseRouteTarget.class)),
                 vaadinContext);
-        Assert.assertEquals(2, registry.getRegisteredRoutes().size());
+        assertEquals(2, registry.getRegisteredRoutes().size());
 
-        Assert.assertTrue(event.get().getRemovedRoutes().isEmpty());
-        Assert.assertEquals(1, event.get().getAddedRoutes().size());
+        assertTrue(event.get().getRemovedRoutes().isEmpty());
+        assertEquals(1, event.get().getAddedRoutes().size());
     }
 
     @Test
@@ -1387,8 +1447,8 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
-        Assert.assertFalse(registry.cleanCalled);
-        Assert.assertFalse(registry.removeCalled);
+        assertFalse(registry.cleanCalled);
+        assertFalse(registry.removeCalled);
     }
 
     @Test
@@ -1400,9 +1460,8 @@ public class RouteRegistryInitializerTest {
 
         routeRegistryInitializer.initialize(
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
-        Assert.assertEquals(1, registry.getRegisteredRoutes().size());
-        Assert.assertTrue(
-                registry.getTemplate(BaseRouteTarget.class).isPresent());
+        assertEquals(1, registry.getRegisteredRoutes().size());
+        assertTrue(registry.getTemplate(BaseRouteTarget.class).isPresent());
     }
 
     @Test
@@ -1421,9 +1480,8 @@ public class RouteRegistryInitializerTest {
                 Collections.singleton(BaseRouteTarget.class), vaadinContext);
         // two routes: manually added and set during init phase
 
-        Assert.assertTrue(
-                registry.getTemplate(BaseRouteTarget.class).isPresent());
-        Assert.assertTrue(registry.getNavigationTarget(
+        assertTrue(registry.getTemplate(BaseRouteTarget.class).isPresent());
+        assertTrue(registry.getNavigationTarget(
                 PathUtil.getPath("manual-route", Collections.emptyList()))
                 .isPresent());
     }
@@ -1457,13 +1515,13 @@ public class RouteRegistryInitializerTest {
         List<RouteData> routes = registry.getRegisteredRoutes();
         // self check
 
-        Assert.assertEquals(1, routes.size());
+        assertEquals(1, routes.size());
         RouteData data = routes.get(0);
-        Assert.assertEquals("foo-bar", data.getTemplate());
+        assertEquals("foo-bar", data.getTemplate());
         List<RouteAliasData> aliases = data.getRouteAliases();
-        Assert.assertEquals(1, aliases.size());
+        assertEquals(1, aliases.size());
         RouteAliasData alias = aliases.get(0);
-        Assert.assertEquals("baz", alias.getTemplate());
+        assertEquals("baz", alias.getTemplate());
         return registry;
     }
 

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +39,6 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.signals.WritableSignal;
 
 /**
  * Map for element property values.
@@ -84,11 +84,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param value
      *            the value to store
      * @return a runnable for firing the deferred change event
-     * @exception PropertyChangeDeniedException
-     *                if the property change is disallowed due to the property
-     *                not being set as synchronized, or the signal bound to the
-     *                property is not a WritableSignal and can not thus be
-     *                updated
+     * @throws PropertyChangeDeniedException
+     *             if the property change is disallowed due to the property not
+     *             being set as synchronized
+     * @throws IllegalStateException
+     *             if the property change is disallowed due to the signal bound
+     *             to the property is read-only and cannot thus be updated by a
+     *             client
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
             throws PropertyChangeDeniedException {
@@ -612,16 +614,24 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         PutResult putResult = null;
         if (hasSignal(key)) {
             SignalBinding binding = (SignalBinding) super.get(key);
-            putResult = putWithDeferredChangeEvent(key, new SignalBinding(
-                    binding.signal(), binding.registration(), value), false);
-            if (binding.signal() instanceof WritableSignal valueSignal) {
-                valueSignal.set(value);
-            } else {
-                throw new PropertyChangeDeniedException(String.format(
-                        "Signal bound to property '%s' is not a WritableSignal, "
-                                + "cannot update its value from the client.",
-                        key));
-            }
+
+            AtomicReference<Serializable> putValue = new AtomicReference<>(
+                    value);
+
+            // use new SignalBindingFeature instance to update the signal value
+            SignalBindingFeature feat = new SignalBindingFeature(getNode());
+            feat.setBinding(SignalBindingFeature.VALUE, binding.registration(),
+                    binding.signal(), binding.writeCallback());
+            feat.updateSignalByWriteCallback(SignalBindingFeature.VALUE,
+                    get(key), value, Objects::equals, putValue::set);
+            // never trigger change event here since the change event will be
+            // triggered by the signal update
+            Serializable oldValue = super.put(key,
+                    new SignalBinding(binding.signal(), binding.registration(),
+                            putValue.get(), binding.writeCallback()),
+                    false);
+            putResult = new PutResult(oldValue, null);
+
         } else {
             putResult = putWithDeferredChangeEvent(key, value, false);
         }

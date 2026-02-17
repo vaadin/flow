@@ -19,10 +19,9 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
@@ -33,14 +32,18 @@ import com.vaadin.flow.server.InvalidMenuAccessControlException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class DefaultInstantiatorMenuAccessControlTest {
+class DefaultInstantiatorMenuAccessControlTest {
     private ClassLoader contextClassLoader;
     private ClassLoader classLoader;
 
-    @Before
+    @BeforeEach
     public void init() throws NoSuchFieldException, IllegalAccessException,
             ClassNotFoundException {
         clearMenuAccessControlField();
@@ -52,7 +55,7 @@ public class DefaultInstantiatorMenuAccessControlTest {
         Thread.currentThread().setContextClassLoader(classLoader);
     }
 
-    @After
+    @AfterEach
     public void destroy() throws NoSuchFieldException, IllegalAccessException {
         Thread.currentThread().setContextClassLoader(contextClassLoader);
     }
@@ -66,10 +69,9 @@ public class DefaultInstantiatorMenuAccessControlTest {
                 service);
         MenuAccessControl menuAccessControl = defaultInstantiator
                 .getMenuAccessControl();
-        Assert.assertNotNull(menuAccessControl);
-        Assert.assertTrue(
-                menuAccessControl instanceof DefaultMenuAccessControl);
-        Assert.assertSame(menuAccessControl.getPopulateClientSideMenu(),
+        assertNotNull(menuAccessControl);
+        assertTrue(menuAccessControl instanceof DefaultMenuAccessControl);
+        assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.AUTOMATIC);
     }
 
@@ -89,9 +91,9 @@ public class DefaultInstantiatorMenuAccessControlTest {
         };
         MenuAccessControl menuAccessControl = defaultInstantiator
                 .getMenuAccessControl();
-        Assert.assertNotNull(menuAccessControl);
-        Assert.assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
-        Assert.assertSame(menuAccessControl.getPopulateClientSideMenu(),
+        assertNotNull(menuAccessControl);
+        assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
+        assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.ALWAYS);
 
         Mockito.verify(classLoader).loadClass(customMenuAccessControlClassName);
@@ -111,12 +113,10 @@ public class DefaultInstantiatorMenuAccessControlTest {
         String errorMessage = assertThrows(
                 InvalidMenuAccessControlException.class,
                 () -> defaultInstantiator.getMenuAccessControl()).getMessage();
-        Assert.assertEquals(
-                "Menu access control implementation class property '"
-                        + InitParameters.MENU_ACCESS_CONTROL
-                        + "' is set to 'com.vaadin.flow.server.auth.InvalidMenuAccessControl' but it's not "
-                        + MenuAccessControl.class.getSimpleName()
-                        + " implementation",
+        assertEquals("Menu access control implementation class property '"
+                + InitParameters.MENU_ACCESS_CONTROL
+                + "' is set to 'com.vaadin.flow.server.auth.InvalidMenuAccessControl' but it's not "
+                + MenuAccessControl.class.getSimpleName() + " implementation",
                 errorMessage);
     }
 

@@ -20,15 +20,17 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.function.TransactionTask;
+import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.operations.CancelableOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -44,8 +46,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the signal value type
  */
-public class SharedValueSignal<T> extends AbstractSignal<T>
-        implements WritableSignal<T> {
+public class SharedValueSignal<T> extends AbstractSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -97,18 +98,31 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
         this.valueType = Objects.requireNonNull(valueType);
     }
 
-    @Override
-    public SignalOperation<T> set(T value) {
+    /**
+     * Sets the value of this signal.
+     * <p>
+     * The result of the returned operation will be resolved with the previous
+     * value at the time when this operation was confirmed.
+     * <p>
+     * Setting a new value will trigger effect functions that have reads from
+     * this signal.
+     *
+     * @param value
+     *            the value to set
+     * @return an operation containing the eventual result
+     */
+    public SignalOperation<T> set(@Nullable T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
                 new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
-                success -> nodeValue(success.onlyUpdate().oldNode(),
+                success -> nodeValue(
+                        Objects.requireNonNull(success.onlyUpdate().oldNode()),
                         valueType));
     }
 
     @Override
-    protected T extractValue(Data data) {
+    protected @Nullable T extractValue(@Nullable Data data) {
         if (data == null) {
             return null;
         } else {
@@ -117,12 +131,27 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    protected Object usageChangeValue(Data data) {
+    protected @Nullable Object usageChangeValue(Data data) {
         return data.value();
     }
 
-    @Override
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    /**
+     * Sets the value of this signal if and only if the signal has the expected
+     * value at the time when the operation is confirmed. This is the signal
+     * counterpart to
+     * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
+     * The result of the returned operation will be resolved as successful if
+     * the expected value was present and resolved as unsuccessful if any other
+     * value was present when the operation is processed.
+     *
+     * @param expectedValue
+     *            the expected value
+     * @param newValue
+     *            the new value
+     * @return an operation containing the eventual result
+     */
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
@@ -132,7 +161,30 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
                 List.of(condition, set)));
     }
 
-    @Override
+    /**
+     * Updates the signal value based on the given callback. The callback
+     * receives the current signal value and returns the new value to use. If
+     * the original value has changed by the time this change is confirmed, then
+     * the returned value is ignored and the callback is run again with the new
+     * value as input. This process is repeated until canceled or until the
+     * update succeeds without conflicting changes.
+     * <p>
+     * The process can be canceled through the returned operation instance. Note
+     * that canceling will only prevent further retries but the change will
+     * still be made if the currently running attempt succeeds.
+     * <p>
+     * The result of the returned operation will be resolved with the previous
+     * value at the time when a successful update operation was confirmed.
+     * <p>
+     * Update operations cannot participate in transactions since any retry
+     * would occur after the original transaction has already been committed.
+     * For this reason, the whole operation completely bypasses all transaction
+     * handling.
+     *
+     * @param updater
+     *            the value update callback, not <code>null</code>
+     * @return an operation containing the eventual result
+     */
     public CancelableOperation<T> update(SignalUpdater<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
@@ -152,13 +204,14 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
          * Cannot easily optimize this to directly submit a transaction command
          * since we need the previous value from the set command result
          */
-        SignalOperation<T> setOperation = Transaction.runInTransaction(() -> {
-            T value = peek();
-            verifyValue(value);
+        SignalOperation<T> setOperation = Objects
+                .requireNonNull(Transaction.runInTransaction(() -> {
+                    T value = peek();
+                    verifyValue(value);
 
-            T newValue = updater.update(value);
-            return set(newValue);
-        }).returnValue();
+                    T newValue = updater.update(value);
+                    return set(newValue);
+                }).returnValue());
 
         setOperation.result().whenComplete((result, error) -> {
             if (error != null) {
@@ -183,7 +236,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
      *            the expected value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyValue(T expectedValue) {
+    public SignalOperation<Void> verifyValue(@Nullable T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue)));
     }
@@ -208,7 +261,14 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
                 valueType);
     }
 
-    @Override
+    /**
+     * Wraps this signal to not accept changes.
+     * <p>
+     * This signal will keep its current configuration and changes applied
+     * through this instance will be visible through the wrapped instance.
+     *
+     * @return the new readonly signal, not <code>null</code>
+     */
     public SharedValueSignal<T> asReadonly() {
         /*
          * While this method could semantically be declared to return a less
@@ -243,6 +303,44 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     @Override
     public String toString() {
         return "SharedValueSignal[" + peek() + "]";
+    }
+
+    /**
+     * Creates a callback that updates this signal value using the provided
+     * merger function. This is useful for creating write callbacks for
+     * {@code bindValue} when working with immutable value patterns.
+     * <p>
+     * The merger function receives the current signal value and a new child
+     * value, and should return a new signal value. This is typically a method
+     * reference to a "with" style method on an immutable record or class.
+     * <p>
+     * Example usage with an immutable record:
+     *
+     * <pre>
+     * record Person(String name, int age) {
+     *     Person withName(String name) {
+     *         return new Person(name, this.age);
+     *     }
+     * }
+     *
+     * SharedValueSignal&lt;Person&gt; personSignal = new SharedValueSignal&lt;&gt;(
+     *         new Person("Alice", 30));
+     * textField.bindValue(personSignal.map(Person::name),
+     *         personSignal.updater(Person::withName));
+     * </pre>
+     *
+     * @param <C>
+     *            the child value type that will be provided to the callback
+     * @param merger
+     *            the function to create a new signal value from the old value
+     *            and a new child value, not <code>null</code>
+     * @return a callback that updates this signal using the merger function,
+     *         not <code>null</code>
+     */
+    public <C> SerializableConsumer<C> updater(ValueMerger<T, C> merger) {
+        Objects.requireNonNull(merger);
+        return newChildValue -> update(
+                currentValue -> merger.merge(currentValue, newChildValue));
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

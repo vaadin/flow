@@ -27,8 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -43,7 +42,13 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
-public class LookupServletContainerInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class LookupServletContainerInitializerTest {
 
     private LookupServletContainerInitializer initializer = new LookupServletContainerInitializer();
 
@@ -116,14 +121,14 @@ public class LookupServletContainerInitializerTest {
         Lookup lookup = mockLookup(TestResourceProvider.class);
 
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Assert.assertNotNull(provider);
-        Assert.assertEquals(TestResourceProvider.class, provider.getClass());
+        assertNotNull(provider);
+        assertEquals(TestResourceProvider.class, provider.getClass());
 
         Collection<ResourceProvider> allProviders = lookup
                 .lookupAll(ResourceProvider.class);
-        Assert.assertEquals(1, allProviders.size());
+        assertEquals(1, allProviders.size());
 
-        Assert.assertEquals(TestResourceProvider.class,
+        assertEquals(TestResourceProvider.class,
                 allProviders.iterator().next().getClass());
     }
 
@@ -134,15 +139,15 @@ public class LookupServletContainerInitializerTest {
 
         DeprecatedPolymerPublishedEventHandler handler = lookup
                 .lookup(DeprecatedPolymerPublishedEventHandler.class);
-        Assert.assertNotNull(handler);
-        Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+        assertNotNull(handler);
+        assertEquals(TestPolymerPublishedEventHandler.class,
                 handler.getClass());
 
         Collection<DeprecatedPolymerPublishedEventHandler> allHandlers = lookup
                 .lookupAll(DeprecatedPolymerPublishedEventHandler.class);
-        Assert.assertEquals(1, allHandlers.size());
+        assertEquals(1, allHandlers.size());
 
-        Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+        assertEquals(TestPolymerPublishedEventHandler.class,
                 allHandlers.iterator().next().getClass());
     }
 
@@ -152,14 +157,14 @@ public class LookupServletContainerInitializerTest {
         Lookup lookup = mockLookup(TestRoutePathProvider.class);
 
         RoutePathProvider handler = lookup.lookup(RoutePathProvider.class);
-        Assert.assertNotNull(handler);
-        Assert.assertEquals(TestRoutePathProvider.class, handler.getClass());
+        assertNotNull(handler);
+        assertEquals(TestRoutePathProvider.class, handler.getClass());
 
         Collection<RoutePathProvider> allHandlers = lookup
                 .lookupAll(RoutePathProvider.class);
-        Assert.assertEquals(1, allHandlers.size());
+        assertEquals(1, allHandlers.size());
 
-        Assert.assertEquals(TestRoutePathProvider.class,
+        assertEquals(TestRoutePathProvider.class,
                 allHandlers.iterator().next().getClass());
     }
 
@@ -187,9 +192,8 @@ public class LookupServletContainerInitializerTest {
 
         ApplicationConfigurationFactory config = lookup
                 .lookup(ApplicationConfigurationFactory.class);
-        Assert.assertNotNull(config);
-        Assert.assertTrue(
-                config instanceof TestApplicationConfigurationFactory);
+        assertNotNull(config);
+        assertTrue(config instanceof TestApplicationConfigurationFactory);
     }
 
     @Test
@@ -199,17 +203,17 @@ public class LookupServletContainerInitializerTest {
                 TestResourceProvider.class,
                 TestApplicationConfigurationFactory.class,
                 TestLookupInitializer.class);
-        Assert.assertTrue(lookup instanceof TestLookup);
+        assertTrue(lookup instanceof TestLookup);
 
         TestLookup customLookup = (TestLookup) lookup;
         Map<Class<?>, Collection<Class<?>>> services = customLookup.services;
-        Assert.assertFalse(services.containsKey(LookupInitializer.class));
-        Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+        assertFalse(services.containsKey(LookupInitializer.class));
+        assertEquals(TestPolymerPublishedEventHandler.class,
                 services.get(DeprecatedPolymerPublishedEventHandler.class)
                         .iterator().next());
-        Assert.assertEquals(TestResourceProvider.class,
+        assertEquals(TestResourceProvider.class,
                 services.get(ResourceProvider.class).iterator().next());
-        Assert.assertEquals(TestApplicationConfigurationFactory.class, services
+        assertEquals(TestApplicationConfigurationFactory.class, services
                 .get(ApplicationConfigurationFactory.class).iterator().next());
     }
 
@@ -226,21 +230,23 @@ public class LookupServletContainerInitializerTest {
         Lookup lookup = mockLookup(TestLookupInitializer.class,
                 ArrayList.class);
 
-        Assert.assertTrue(lookup instanceof TestLookup);
+        assertTrue(lookup instanceof TestLookup);
 
         TestLookup customLookup = (TestLookup) lookup;
         Map<Class<?>, Collection<Class<?>>> services = customLookup.services;
-        Assert.assertFalse(services.containsKey(LookupInitializer.class));
-        Assert.assertTrue(services.containsKey(List.class));
+        assertFalse(services.containsKey(LookupInitializer.class));
+        assertTrue(services.containsKey(List.class));
 
         Collection<Class<?>> collection = services.get(List.class);
-        Assert.assertEquals(1, collection.size());
-        Assert.assertEquals(ArrayList.class, collection.iterator().next());
+        assertEquals(1, collection.size());
+        assertEquals(ArrayList.class, collection.iterator().next());
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void process_classSetIsNull_throws() throws ServletException {
-        initializer.process(null, Mockito.mock(ServletContext.class));
+        assertThrows(ServletException.class, () -> {
+            initializer.process(null, Mockito.mock(ServletContext.class));
+        });
     }
 
     private Lookup mockLookup(ServletContext context, Class<?>... classes)

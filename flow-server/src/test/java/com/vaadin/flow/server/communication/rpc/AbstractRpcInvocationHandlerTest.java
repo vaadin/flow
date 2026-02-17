@@ -18,8 +18,7 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,11 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mockStatic;
@@ -42,7 +46,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class AbstractRpcInvocationHandlerTest {
+class AbstractRpcInvocationHandlerTest {
 
     private static class TestRpcInvocationHandler
             extends AbstractRpcInvocationHandler {
@@ -71,7 +75,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         Element element = createRpcInvocationData(ui, null);
 
-        Assert.assertSame(element.getNode(), handler.node);
+        assertSame(element.getNode(), handler.node);
     }
 
     @Test
@@ -84,7 +88,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         });
 
-        Assert.assertNull(handler.node);
+        assertNull(handler.node);
     }
 
     @Test
@@ -98,7 +102,7 @@ public class AbstractRpcInvocationHandlerTest {
                     }));
         });
 
-        Assert.assertNull(handler.node);
+        assertNull(handler.node);
     }
 
     @Test
@@ -108,7 +112,7 @@ public class AbstractRpcInvocationHandlerTest {
         JsonNode invocationJson = createNonPollingRpcInvocationPayload(ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
     }
 
     @Test
@@ -119,15 +123,15 @@ public class AbstractRpcInvocationHandlerTest {
         JsonNode invocationJson = createLegitimatePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
 
         ui.setPollInterval(0);
         runnable = handler.handle(ui, invocationJson);
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
 
         ui.setPollInterval(5000);
         runnable = handler.handle(ui, invocationJson);
-        Assert.assertNotEquals(Optional.empty(), runnable);
+        assertNotEquals(Optional.empty(), runnable);
     }
 
     @Test
@@ -138,7 +142,7 @@ public class AbstractRpcInvocationHandlerTest {
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
     }
 
     @Test
@@ -149,7 +153,7 @@ public class AbstractRpcInvocationHandlerTest {
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
     }
 
     @Test
@@ -160,7 +164,7 @@ public class AbstractRpcInvocationHandlerTest {
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
     }
 
     @Test
@@ -168,7 +172,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
-        Assert.assertThrows(AssertionError.class,
+        assertThrows(AssertionError.class,
                 () -> handler.handle(ui, invocationJson));
     }
 
@@ -180,7 +184,7 @@ public class AbstractRpcInvocationHandlerTest {
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
-        Assert.assertEquals(Optional.empty(), runnable);
+        assertEquals(Optional.empty(), runnable);
     }
 
     @Test

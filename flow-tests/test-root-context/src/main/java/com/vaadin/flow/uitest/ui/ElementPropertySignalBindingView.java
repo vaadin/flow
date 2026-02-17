@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -46,11 +46,12 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Div signalValue = createAndAddDiv(SIGNAL_VALUE_DIV_ID);
         Div listenerCountDiv = createAndAddDiv(LISTENER_COUNT_DIV_ID);
 
-        Signal<String> signal = new ValueSignal<>("foo");
-        ComponentEffect.effect(this, () -> {
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        Effect.effect(this, () -> {
             signalValue.setText("Signal value: " + signal.get());
         });
-        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal);
+        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
+                signal::set);
 
         target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
                 "change", event -> {
@@ -67,7 +68,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Signal<String> computedSignal = Signal
                 .computed(() -> "computed-" + signal.get());
         shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
-                computedSignal);
+                computedSignal, null);
         shouldThrowTarget.getElement().addPropertyChangeListener(
                 TEST_PROPERTY_NAME, "change", event -> {
                     // NOP; listener is needed to synchronize the property

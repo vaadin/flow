@@ -25,9 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -36,12 +35,15 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class CurrentInstanceTest {
+class CurrentInstanceTest {
 
-    @Before
+    @BeforeEach
     public void clearExistingThreadLocals() {
         // Ensure no previous test left some thread locals hanging
         CurrentInstance.clearAll();
@@ -55,8 +57,7 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
@@ -65,8 +66,7 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
 
         assertCleared();
@@ -74,7 +74,7 @@ public class CurrentInstanceTest {
 
     private void assertCleared() throws SecurityException, NoSuchFieldException,
             IllegalAccessException {
-        Assert.assertNull(getInternalCurrentInstanceVariable().get());
+        assertNull(getInternalCurrentInstanceVariable().get());
     }
 
     @SuppressWarnings("unchecked")
@@ -158,11 +158,11 @@ public class CurrentInstanceTest {
         WeakReference<VaadinSession> ref = new WeakReference<>(session1);
 
         session1 = null;
-        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
+        assertTrue(TestUtil.isGarbageCollected(ref));
 
         CurrentInstance.restoreInstances(previous);
 
-        Assert.assertNull(VaadinSession.getCurrent());
+        assertNull(VaadinSession.getCurrent());
     }
 
     @Test
@@ -171,10 +171,10 @@ public class CurrentInstanceTest {
         CurrentInstance.clearAll();
         CurrentInstance.set(CurrentInstanceTest.class, this);
 
-        Assert.assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
+        assertNotNull(CurrentInstance.get(CurrentInstanceTest.class));
 
         Callable<Void> runnable = () -> {
-            Assert.assertNull(CurrentInstance.get(CurrentInstanceTest.class));
+            assertNull(CurrentInstance.get(CurrentInstanceTest.class));
             return null;
         };
         ExecutorService service = Executors.newSingleThreadExecutor();

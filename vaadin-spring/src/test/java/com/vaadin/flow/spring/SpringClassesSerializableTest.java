@@ -21,9 +21,8 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -37,7 +36,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.scopes.TestBeanStore;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-public class SpringClassesSerializableTest extends ClassesSerializableTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private static String CAPTURE;
 
@@ -124,8 +126,8 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 super.getExcludedPatterns());
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         CAPTURE = null;
     }
 
@@ -139,7 +141,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
         TestBeanStore deserialized = serializeAndDeserialize(store);
 
         Object object = deserialized.get("foo", () -> null);
-        Assert.assertEquals("bar", object);
+        assertEquals("bar", object);
     }
 
     @Test
@@ -149,7 +151,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
         Callback callback = new Callback();
 
-        Assert.assertNull(CAPTURE);
+        assertNull(CAPTURE);
 
         store.registerDestructionCallback("foo", callback);
 
@@ -157,7 +159,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
         deserialized.destroy();
 
-        Assert.assertEquals("bar", CAPTURE);
+        assertEquals("bar", CAPTURE);
     }
 
     private TestBeanStore createStore() {

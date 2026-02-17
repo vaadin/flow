@@ -27,6 +27,7 @@ import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.SharedNodeSignal.SharedNodeSignalState;
@@ -183,9 +184,11 @@ public class SharedNodeSignalTest extends SignalTestBase {
     void putChildIfAbsent_emptyNode_insertsEmptyMapChild() {
         SharedNodeSignal signal = new SharedNodeSignal();
 
-        InsertOperation<SharedNodeSignal> operation = signal
+        SignalOperation<PutIfAbsentResult<SharedNodeSignal>> operation = signal
                 .putChildIfAbsent("key");
-        SharedNodeSignal child = operation.signal();
+        PutIfAbsentResult<SharedNodeSignal> result = assertSuccess(operation);
+        assertTrue(result.created());
+        SharedNodeSignal child = signal.get().mapChildren().get("key");
         assertEquals(Map.of("key", child), signal.get().mapChildren());
         assertEquals(null, child.get().value(String.class));
     }
@@ -241,24 +244,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
     }
 
     @Test
-    void adoptAt_addParentToChildWithAlias_rejected() {
-        SharedNodeSignal signal = new SharedNodeSignal();
-
-        signal.putChildWithValue("key", "value");
-        SharedNodeSignal parentAlias = signal.putChildIfAbsent("key").signal();
-
-        SharedNodeSignal child = parentAlias.insertChild(ListPosition.last())
-                .signal();
-
-        SignalOperation<Void> operation = child.adoptAt(parentAlias,
-                ListPosition.first());
-        assertFailure(operation);
-    }
-
-    @Test
     void adoptAt_adoptMapChild_noLongerMapChild() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
+        signal.putChildIfAbsent("key");
+        SharedNodeSignal child = signal.get().mapChildren().get("key");
 
         assertEquals(List.of(), signal.get().listChildren());
 
@@ -271,7 +260,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_existingChild_keyChanged() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
+        signal.putChildIfAbsent("key");
+        SharedNodeSignal child = signal.get().mapChildren().get("key");
 
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
@@ -283,8 +273,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_nestedStructure_hierarchyChanged() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignal parent = signal.putChildIfAbsent("parent").signal();
-        SharedNodeSignal child = parent.putChildIfAbsent("child").signal();
+        signal.putChildIfAbsent("parent");
+        SharedNodeSignal parent = signal.get().mapChildren().get("parent");
+        parent.putChildIfAbsent("child");
+        SharedNodeSignal child = parent.get().mapChildren().get("child");
 
         assertEquals(parent, child.get().parent());
 
@@ -300,8 +292,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void adoptAs_addParentToChild_rejected() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignal parent = signal.putChildIfAbsent("parent").signal();
-        SharedNodeSignal child = parent.putChildIfAbsent("child").signal();
+        signal.putChildIfAbsent("parent");
+        SharedNodeSignal parent = signal.get().mapChildren().get("parent");
+        parent.putChildIfAbsent("child");
+        SharedNodeSignal child = parent.get().mapChildren().get("child");
 
         SignalOperation<Void> operation = child.adoptAs(parent, "child");
 
@@ -328,7 +322,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
                 .signal();
-        SharedNodeSignal mapChild = signal.putChildIfAbsent("key").signal();
+        signal.putChildIfAbsent("key");
+        SharedNodeSignal mapChild = signal.get().mapChildren().get("key");
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild(mapChild);
         assertSuccess(mapRemoveOp);
@@ -346,7 +341,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void removeChildByString_mapNode_nodeRemoved() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
+        signal.putChildIfAbsent("key");
+        SharedNodeSignal child = signal.get().mapChildren().get("key");
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild("key");
         assertSuccess(mapRemoveOp);
@@ -360,7 +356,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
                 .signal();
-        SharedNodeSignal mapChild = signal.putChildIfAbsent("key").signal();
+        signal.putChildIfAbsent("key");
+        SharedNodeSignal mapChild = signal.get().mapChildren().get("key");
 
         SignalOperation<Void> operation = signal.clear();
         assertSuccess(operation);
@@ -502,16 +499,18 @@ public class SharedNodeSignalTest extends SignalTestBase {
     void equalsHashCode_mapChildren() {
         SharedNodeSignal signal = new SharedNodeSignal();
 
-        SharedNodeSignal operationChild = signal.putChildIfAbsent("child")
-                .signal();
-        SharedNodeSignal other = signal.putChildIfAbsent("other").signal();
+        signal.putChildIfAbsent("child");
+        signal.putChildIfAbsent("other");
+
+        SharedNodeSignal child = signal.get().mapChildren().get("child");
+        SharedNodeSignal other = signal.get().mapChildren().get("other");
 
         SharedNodeSignal valueChild = signal.get().mapChildren().get("child");
 
-        assertEquals(operationChild, valueChild);
-        assertEquals(operationChild.hashCode(), valueChild.hashCode());
+        assertEquals(child, valueChild);
+        assertEquals(child.hashCode(), valueChild.hashCode());
 
-        assertNotEquals(operationChild, other);
+        assertNotEquals(child, other);
     }
 
     @Test

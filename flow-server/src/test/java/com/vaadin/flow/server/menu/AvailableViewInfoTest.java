@@ -23,15 +23,16 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.flow.router.MenuData;
 
-public class AvailableViewInfoTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AvailableViewInfoTest {
 
     private record Badge(String text, String color) {
     }
@@ -45,7 +46,7 @@ public class AvailableViewInfoTest {
     Detail detail;
     String detailAsString;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mapper = new ObjectMapper();
         menuData = new MenuData("title", 1.0, false, "icon", null);
@@ -56,8 +57,8 @@ public class AvailableViewInfoTest {
 
     @Test
     public void testEquality() {
-        Assert.assertEquals("Two instance created the same way are not equal",
-                createInfo(true, true), createInfo(true, true));
+        assertEquals(createInfo(true, true), createInfo(true, true),
+                "Two instance created the same way are not equal");
     }
 
     @Test
@@ -73,24 +74,24 @@ public class AvailableViewInfoTest {
                 new ByteArrayInputStream(baos.toByteArray()));
         var deserializedInfo = (AvailableViewInfo) ois.readObject();
 
-        Assert.assertEquals("Serialized instance is not equal to origin", info,
-                deserializedInfo);
+        assertEquals(info, deserializedInfo,
+                "Serialized instance is not equal to origin");
     }
 
     @Test
     public void testJsonSerialization() throws JacksonException {
         var info = createInfo(true, true);
         var json = mapper.writeValueAsString(info);
-        Assert.assertEquals("JSON conversion doesn't give the same object",
-                info, mapper.readValue(json, AvailableViewInfo.class));
+        assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),
+                "JSON conversion doesn't give the same object");
     }
 
     @Test
     public void testJsonSerializationNull() throws JacksonException {
         var info = createInfo(true, false);
         var json = mapper.writeValueAsString(info);
-        Assert.assertEquals("JSON conversion doesn't give the same object",
-                info, mapper.readValue(json, AvailableViewInfo.class));
+        assertEquals(info, mapper.readValue(json, AvailableViewInfo.class),
+                "JSON conversion doesn't give the same object");
     }
 
     private AvailableViewInfo createInfo(boolean withChild,
