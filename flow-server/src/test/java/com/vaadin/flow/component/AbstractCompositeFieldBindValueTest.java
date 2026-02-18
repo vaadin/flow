@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.local.ValueSignal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
@@ -73,13 +75,13 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
-        Assert.assertEquals("", field.start.getValue());
-        Assert.assertEquals("", field.rest.getValue());
+        assertEquals("", field.start.getValue());
+        assertEquals("", field.rest.getValue());
 
         // setValue doesn't update the bound signal when detached
         field.setValue("Hey You");
-        Assert.assertEquals("Hey You", field.getValue());
-        Assert.assertEquals("Hello Cool World", signal.peek());
+        assertEquals("Hey You", field.getValue());
+        assertEquals("Hello Cool World", signal.peek());
     }
 
     @Test
@@ -89,14 +91,14 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
         // not attached yet, so presentation value not used from the signal
-        Assert.assertEquals("", field.start.getValue());
-        Assert.assertEquals("", field.rest.getValue());
+        assertEquals("", field.start.getValue());
+        assertEquals("", field.rest.getValue());
 
         // setModelValue doesn't update the bound signal when detached
         field.start.setValue("Hey");
         field.rest.setValue("You");
-        Assert.assertEquals("Hey You", field.getValue());
-        Assert.assertEquals("Hello Cool World", signal.peek());
+        assertEquals("Hey You", field.getValue());
+        assertEquals("Hello Cool World", signal.peek());
     }
 
     @Test
@@ -106,24 +108,24 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
-        Assert.assertEquals("Hello", field.start.getValue());
-        Assert.assertEquals("Cool World", field.rest.getValue());
+        assertEquals("Hello", field.start.getValue());
+        assertEquals("Cool World", field.rest.getValue());
 
         // test that setValue updates the signal
         field.setValue("");
-        Assert.assertEquals("", field.getValue());
-        Assert.assertEquals("", signal.peek());
+        assertEquals("", field.getValue());
+        assertEquals("", signal.peek());
 
         signal.set("Hello Cool World");
         // setValue for CompositeField's components value change listeners
         // update the value by internal setModelValue method
         field.rest.setValue("");
-        Assert.assertEquals("Hello", field.getValue());
-        Assert.assertEquals("Hello", signal.peek());
+        assertEquals("Hello", field.getValue());
+        assertEquals("Hello", signal.peek());
 
         field.rest.setValue("Vaadin");
-        Assert.assertEquals("Hello Vaadin", field.getValue());
-        Assert.assertEquals("Hello Vaadin", signal.peek());
+        assertEquals("Hello Vaadin", field.getValue());
+        assertEquals("Hello Vaadin", signal.peek());
     }
 
     @Test
@@ -131,7 +133,7 @@ public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 
-        Assert.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
                 () -> field.bindValue(null, null));
     }
 }

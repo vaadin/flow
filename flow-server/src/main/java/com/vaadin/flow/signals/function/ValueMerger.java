@@ -17,12 +17,14 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.signals.WritableSignal;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Creates a new outer value by merging a new inner value with the old outer
- * value. Used for creating two-way computed signals where changes to the mapped
- * signal propagate back to the parent signal.
+ * value. Used with the {@link ValueSignal#updater(ValueMerger)} helper method
+ * to create write callbacks for immutable value patterns.
  * <p>
  * This interface is used with immutable value patterns where changing the inner
  * value requires creating a new outer value instance.
@@ -30,25 +32,29 @@ import com.vaadin.flow.signals.WritableSignal;
  * Example usage with a record:
  *
  * <pre>
- * record Todo(String text, boolean done) {
+ * record Todo(String task, boolean done) {
+ *     Todo withTask(String task) {
+ *         return new Todo(task, this.done);
+ *     }
+ *
  *     Todo withDone(boolean done) {
- *         return new Todo(this.text, done);
+ *         return new Todo(this.task, done);
  *     }
  * }
  *
- * WritableSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
- *         new Todo("Buy milk", false));
- * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.map(Todo::done,
- *         Todo::withDone);
- *
- * doneSignal.set(true); // Updates todoSignal to Todo("Buy milk", true)
+ * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
+ *         new Todo("Buy groceries", false));
+ * textField.bindValue(todoSignal.map(Todo::task),
+ *         todoSignal.updater(Todo::withTask));
+ * checkbox.bindValue(todoSignal.map(Todo::done),
+ *         todoSignal.updater(Todo::withDone));
  * </pre>
  *
  * @param <O>
  *            the outer (parent) signal value type
  * @param <I>
  *            the inner (mapped) signal value type
- * @see WritableSignal#map(SignalMapper, ValueMerger)
+ * @see ValueSignal#updater(ValueMerger)
  */
 @FunctionalInterface
 public interface ValueMerger<O, I> extends Serializable {
@@ -62,5 +68,6 @@ public interface ValueMerger<O, I> extends Serializable {
      *            the new inner value to merge, may be <code>null</code>
      * @return the new outer value, may be <code>null</code>
      */
-    O merge(O outerValue, I newInnerValue);
+    @Nullable
+    O merge(@Nullable O outerValue, @Nullable I newInnerValue);
 }

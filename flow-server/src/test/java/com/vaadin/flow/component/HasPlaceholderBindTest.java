@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit tests for
@@ -114,10 +114,9 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when setting placeholder while binding is active",
-                BindingActiveException.class,
-                () -> component.setPlaceholder("bar"));
+        assertThrows(BindingActiveException.class,
+                () -> component.setPlaceholder("bar"),
+                "Expected BindingActiveException when setting placeholder while binding is active");
     }
 
     @Test
@@ -127,9 +126,8 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when binding a new signal while a binding is active",
-                BindingActiveException.class,
-                () -> component.bindPlaceholder(new ValueSignal<>("bar")));
+        assertThrows(BindingActiveException.class,
+                () -> component.bindPlaceholder(new ValueSignal<>("bar")),
+                "Expected BindingActiveException when binding a new signal while a binding is active");
     }
 }

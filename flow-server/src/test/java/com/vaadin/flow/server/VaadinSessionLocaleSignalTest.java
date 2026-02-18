@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -39,7 +39,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        SharedValueSignal<Locale> signal = session.localeSignal();
 
         assertNotNull(signal, "localeSignal() should never return null");
         assertEquals(session.getLocale(), signal.get(),
@@ -49,7 +49,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_setLocale_signalUpdated() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        SharedValueSignal<Locale> signal = session.localeSignal();
 
         Locale initialLocale = session.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -70,7 +70,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_writeToSignal_updatesGetLocale() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        SharedValueSignal<Locale> signal = session.localeSignal();
 
         Locale initialLocale = session.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -93,8 +93,8 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     public void localeSignal_sameInstance_returnedOnMultipleCalls() {
         VaadinSession session = getSession();
 
-        WritableSignal<Locale> signal1 = session.localeSignal();
-        WritableSignal<Locale> signal2 = session.localeSignal();
+        SharedValueSignal<Locale> signal1 = session.localeSignal();
+        SharedValueSignal<Locale> signal2 = session.localeSignal();
 
         assertSame(signal1, signal2,
                 "localeSignal() should return the same instance on "
@@ -104,7 +104,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_multipleLocaleChanges_signalFollows() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        SharedValueSignal<Locale> signal = session.localeSignal();
 
         session.setLocale(Locale.FRENCH);
         assertEquals(Locale.FRENCH, signal.get());
@@ -119,7 +119,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_multipleSignalWrites_getLocaleFollows() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        SharedValueSignal<Locale> signal = session.localeSignal();
 
         signal.set(Locale.FRENCH);
         assertEquals(Locale.FRENCH, session.getLocale());

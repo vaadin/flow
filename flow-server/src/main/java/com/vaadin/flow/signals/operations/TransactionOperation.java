@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.operations;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A signal operation representing a transaction and the return value from the
  * transaction callback. The {@link #result()} for a transaction doesn't carry
@@ -26,7 +28,7 @@ package com.vaadin.flow.signals.operations;
  *            the transaction return value type
  */
 public class TransactionOperation<T> extends SignalOperation<Void> {
-    private final T returnValue;
+    private final @Nullable T returnValue;
 
     /**
      * Creates a new transaction operation with the provided return value.
@@ -34,7 +36,7 @@ public class TransactionOperation<T> extends SignalOperation<Void> {
      * @param returnValue
      *            the transaction callback return value
      */
-    public TransactionOperation(T returnValue) {
+    public TransactionOperation(@Nullable T returnValue) {
         this.returnValue = returnValue;
     }
 
@@ -45,7 +47,7 @@ public class TransactionOperation<T> extends SignalOperation<Void> {
      *
      * @return the operation callback return value
      */
-    public T returnValue() {
+    public @Nullable T returnValue() {
         return returnValue;
     }
 }

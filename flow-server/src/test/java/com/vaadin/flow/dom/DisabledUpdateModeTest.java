@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.vaadin.flow.dom.DisabledUpdateMode.ALWAYS;
 import static com.vaadin.flow.dom.DisabledUpdateMode.ONLY_WHEN_ENABLED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DisabledUpdateModeTest {
+class DisabledUpdateModeTest {
 
     @Test
     public void permissiveOrdering() {
@@ -39,9 +39,9 @@ public class DisabledUpdateModeTest {
     private static void assertMostPermissive(DisabledUpdateMode expectedResult,
             DisabledUpdateMode first, DisabledUpdateMode second) {
 
-        Assert.assertEquals(expectedResult,
+        assertEquals(expectedResult,
                 DisabledUpdateMode.mostPermissive(first, second));
-        Assert.assertEquals(expectedResult,
+        assertEquals(expectedResult,
                 DisabledUpdateMode.mostPermissive(second, first));
     }
 }

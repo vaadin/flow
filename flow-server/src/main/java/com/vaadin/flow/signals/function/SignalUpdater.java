@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Computes a new signal value based on the current value, enabling atomic
@@ -36,5 +38,6 @@ public interface SignalUpdater<T> extends Serializable {
      *            the current signal value, may be <code>null</code>
      * @return the new value to set, may be <code>null</code>
      */
-    T update(T currentValue);
+    @Nullable
+    T update(@Nullable T currentValue);
 }
