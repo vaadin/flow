@@ -36,9 +36,8 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.web.context.WebApplicationContext;
@@ -47,7 +46,11 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.server.VaadinServletContext;
 
-public class SpringLookupInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SpringLookupInitializerTest {
 
     private SpringLookupInitializer initializer = new SpringLookupInitializer();
 
@@ -67,8 +70,8 @@ public class SpringLookupInitializerTest {
 
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Mockito.when(context.getContext()).thenReturn(servletContext);
         Mockito.when(servletContext.getAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
@@ -76,7 +79,7 @@ public class SpringLookupInitializerTest {
     }
 
     @Test
-    public void initialize_contextIsAvailable_bootstrapImmidiately()
+    void initialize_contextIsAvailable_bootstrapImmidiately()
             throws ServletException {
         VaadinApplicationInitializationBootstrap bootstrap = Mockito
                 .mock(VaadinApplicationInitializationBootstrap.class);
@@ -86,7 +89,7 @@ public class SpringLookupInitializerTest {
     }
 
     @Test
-    public void initialize_contextIsNotAvailable_bootstrapIsPostponed()
+    void initialize_contextIsNotAvailable_bootstrapIsPostponed()
             throws ServletException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         Mockito.when(servletContext.getAttribute(
@@ -103,7 +106,7 @@ public class SpringLookupInitializerTest {
         Mockito.verify(context).setAttribute(Mockito.any(), captor.capture());
 
         Object value = captor.getValue();
-        Assert.assertTrue(value.getClass().getName()
+        assertTrue(value.getClass().getName()
                 .startsWith(SpringLookupInitializer.class.getName()));
 
         List<Method> methods = Stream.of(value.getClass().getDeclaredMethods())
@@ -113,7 +116,7 @@ public class SpringLookupInitializerTest {
                 .collect(Collectors.toList());
 
         // self check
-        Assert.assertEquals(1, methods.size());
+        assertEquals(1, methods.size());
 
         // at this moment the context should be available
         Mockito.when(servletContext.getAttribute(
@@ -126,47 +129,48 @@ public class SpringLookupInitializerTest {
     }
 
     @Test
-    public void createLookup_noBeans_lookup_returnsServiceImpl() {
+    void createLookup_noBeans_lookup_returnsServiceImpl() {
         Lookup lookup = initializer.createLookup(context,
                 Collections.singletonMap(List.class,
                         Collections.singletonList(ArrayList.class)));
         assertSingleServiceInLookup(lookup, List.class, ArrayList.class);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void createLookup_severalBeansAndDefaultServiceImpl_lookupThrows() {
-        Map<String, TestSpi> map = new HashMap<>();
-        map.put("foo", new TestSpi());
-        map.put("bar", new TestSpi());
-        Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
-                .thenReturn(map);
-        Lookup lookup = initializer.createLookup(context,
-                Collections.singletonMap(TestSpi.class,
-                        Collections.singletonList(ServiceImpl.class)));
+    @Test
+    void createLookup_severalBeansAndDefaultServiceImpl_lookupThrows() {
+        assertThrows(IllegalStateException.class, () -> {
+            Map<String, TestSpi> map = new HashMap<>();
+            map.put("foo", new TestSpi());
+            map.put("bar", new TestSpi());
+            Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
+                    .thenReturn(map);
+            Lookup lookup = initializer.createLookup(context,
+                    Collections.singletonMap(TestSpi.class,
+                            Collections.singletonList(ServiceImpl.class)));
 
-        lookup.lookup(TestSpi.class);
+            lookup.lookup(TestSpi.class);
+        });
     }
 
     @Test
-    public void createLookup_oneBeanAndDefaultServiceImpl_lookupReturnsTheBeanAndIgnoresDefaultServiceImpl() {
+    void createLookup_oneBeanAndDefaultServiceImpl_lookupReturnsTheBeanAndIgnoresDefaultServiceImpl() {
         Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
                 .thenReturn(Collections.singletonMap("foo", new TestSpi()));
         Lookup lookup = initializer.createLookup(context,
                 Collections.singletonMap(TestSpi.class,
                         Collections.singletonList(ServiceImpl.class)));
 
-        Assert.assertEquals(TestSpi.class,
-                lookup.lookup(TestSpi.class).getClass());
+        assertEquals(TestSpi.class, lookup.lookup(TestSpi.class).getClass());
 
         Collection<TestSpi> services = lookup.lookupAll(TestSpi.class);
-        Assert.assertEquals(2, services.size());
+        assertEquals(2, services.size());
         Iterator<TestSpi> iterator = services.iterator();
-        Assert.assertEquals(TestSpi.class, iterator.next().getClass());
-        Assert.assertEquals(ServiceImpl.class, iterator.next().getClass());
+        assertEquals(TestSpi.class, iterator.next().getClass());
+        assertEquals(ServiceImpl.class, iterator.next().getClass());
     }
 
     @Test
-    public void createLookup_oneBean_noServiceImpl_lookup_returnsBean() {
+    void createLookup_oneBean_noServiceImpl_lookup_returnsBean() {
         Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
                 .thenReturn(Collections.singletonMap("foo", new TestSpi()));
         Lookup lookup = initializer.createLookup(context,
@@ -175,19 +179,21 @@ public class SpringLookupInitializerTest {
         assertSingleServiceInLookup(lookup, TestSpi.class, TestSpi.class);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void createLookup_oneBeanAndOneServiceImpl_lookupThrows() {
-        Mockito.when(webAppContext.getBeansOfType(List.class))
-                .thenReturn(Collections.singletonMap("foo", new LinkedList()));
-        Lookup lookup = initializer.createLookup(context,
-                Collections.singletonMap(List.class,
-                        Collections.singletonList(ArrayList.class)));
+    @Test
+    void createLookup_oneBeanAndOneServiceImpl_lookupThrows() {
+        assertThrows(IllegalStateException.class, () -> {
+            Mockito.when(webAppContext.getBeansOfType(List.class)).thenReturn(
+                    Collections.singletonMap("foo", new LinkedList()));
+            Lookup lookup = initializer.createLookup(context,
+                    Collections.singletonMap(List.class,
+                            Collections.singletonList(ArrayList.class)));
 
-        lookup.lookup(List.class);
+            lookup.lookup(List.class);
+        });
     }
 
     @Test
-    public void createLookup_oneBeanExtendsServiceImpl_lookupReturnsBeanAndIgnoresServiceImpl() {
+    void createLookup_oneBeanExtendsServiceImpl_lookupReturnsBeanAndIgnoresServiceImpl() {
         Mockito.when(webAppContext.getBeansOfType(List.class))
                 .thenReturn(Collections.singletonMap("foo", new Stack<>()));
         Lookup lookup = initializer.createLookup(context,
@@ -201,7 +207,7 @@ public class SpringLookupInitializerTest {
     }
 
     @Test
-    public void createLookup_lookupAll_beans_oneBeanExtendsServiceImpl_beansAndServiceImplsAreReturned_overriddenServiceImplIsIgnored() {
+    void createLookup_lookupAll_beans_oneBeanExtendsServiceImpl_beansAndServiceImplsAreReturned_overriddenServiceImplIsIgnored() {
         Map<String, List> map = new HashMap<>();
         map.put("foo", new LinkedList<>());
         map.put("bar", new Stack());
@@ -212,22 +218,22 @@ public class SpringLookupInitializerTest {
                         Arrays.asList(Vector.class, ArrayList.class)));
 
         Collection<List> lists = lookup.lookupAll(List.class);
-        Assert.assertEquals(3, lists.size());
+        assertEquals(3, lists.size());
         Set<?> serviceClasses = lists.stream().map(Object::getClass)
                 .collect(Collectors.toSet());
 
-        Assert.assertTrue(serviceClasses.contains(LinkedList.class));
-        Assert.assertTrue(serviceClasses.contains(Stack.class));
-        Assert.assertTrue(serviceClasses.contains(ArrayList.class));
+        assertTrue(serviceClasses.contains(LinkedList.class));
+        assertTrue(serviceClasses.contains(Stack.class));
+        assertTrue(serviceClasses.contains(ArrayList.class));
     }
 
     private <T> void assertSingleServiceInLookup(Lookup lookup, Class<T> spi,
             Class<? extends T> impl) {
-        Assert.assertEquals(impl, lookup.lookup(spi).getClass());
+        assertEquals(impl, lookup.lookup(spi).getClass());
 
         Collection<T> services = lookup.lookupAll(spi);
-        Assert.assertEquals(1, services.size());
-        Assert.assertEquals(impl, services.iterator().next().getClass());
+        assertEquals(1, services.size());
+        assertEquals(impl, services.iterator().next().getClass());
     }
 
 }

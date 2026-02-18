@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinRequestInterceptor;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 @Component
-public class MyVaadinServiceInitListener implements VaadinServiceInitListener {
+class MyVaadinServiceInitListener implements VaadinServiceInitListener {
 
     private final List<VaadinRequestInterceptor> interceptors;
 

@@ -21,9 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
@@ -38,12 +37,15 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public abstract class AbstractScopeTest {
+abstract class AbstractScopeTest {
 
     private VaadinSession session;
 
@@ -61,34 +63,41 @@ public abstract class AbstractScopeTest {
         }
     }
 
-    @After
-    public void clearSession() {
+    @AfterEach
+    void clearSession() {
         session = null;
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void get_noCurrentSession_throwException() {
-        Scope scope = getScope();
+    @Test
+    void get_noCurrentSession_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
 
-        scope.get("foo", Mockito.mock(ObjectFactory.class));
+            scope.get("foo", Mockito.mock(ObjectFactory.class));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void registerDestructionCallback_noCurrentSession_throwException() {
-        Scope scope = getScope();
+    @Test
+    void registerDestructionCallback_noCurrentSession_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
 
-        scope.registerDestructionCallback("foo", Mockito.mock(Runnable.class));
+            scope.registerDestructionCallback("foo",
+                    Mockito.mock(Runnable.class));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void remove_noCurrentSession_throwException() {
-        Scope scope = getScope();
+    @Test
+    void remove_noCurrentSession_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
 
-        scope.remove("foo");
+            scope.remove("foo");
+        });
     }
 
     @SuppressWarnings("rawtypes")
-    public void get_currentScopeIsSet_objectIsStored(Scope scope) {
+    void get_currentScopeIsSet_objectIsStored(Scope scope) {
         ObjectFactory factory = Mockito.mock(ObjectFactory.class);
 
         Object object = new Object();
@@ -96,14 +105,14 @@ public abstract class AbstractScopeTest {
         when(factory.getObject()).thenReturn(object);
         Object fooObject = scope.get("foo", factory);
 
-        Assert.assertSame(object, fooObject);
+        assertSame(object, fooObject);
         verify(factory).getObject();
 
         fooObject = scope.get("foo", factory);
 
         // This time it has not been called. Otherwise this would have failed.
         verify(factory).getObject();
-        Assert.assertSame(object, fooObject);
+        assertSame(object, fooObject);
     }
 
     @SuppressWarnings("rawtypes")
@@ -133,7 +142,7 @@ public abstract class AbstractScopeTest {
 
         scope.getBeanStore().destroy();
 
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
     }
 
     @SuppressWarnings("unchecked")
