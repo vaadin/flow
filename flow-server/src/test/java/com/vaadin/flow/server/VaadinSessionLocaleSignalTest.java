@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Unit tests for {@link VaadinSession#localeSignal()}.
  */
-public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
+class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
 
     private VaadinSession getSession() {
         return UI.getCurrent().getSession();
