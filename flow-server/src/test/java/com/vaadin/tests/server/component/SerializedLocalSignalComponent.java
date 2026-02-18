@@ -19,7 +19,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -34,7 +33,7 @@ class SerializedLocalSignalComponent extends Component {
     SerializedLocalSignalComponent(ValueSignal<String> signal) {
         this.signal = signal;
 
-        registration = Effect.effect(this, () -> {
+        registration = Signal.effect(this, () -> {
             signal.get();
             effectExecutionCounter++;
         });

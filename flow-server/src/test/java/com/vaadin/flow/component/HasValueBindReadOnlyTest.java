@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for {@link HasValue#bindReadOnly(Signal)}.
  */
-public class HasValueBindReadOnlyTest extends SignalsUnitTest {
+class HasValueBindReadOnlyTest extends SignalsUnitTest {
 
     @Test
     public void bindReadOnly_elementAttachedBefore_bindingActive() {

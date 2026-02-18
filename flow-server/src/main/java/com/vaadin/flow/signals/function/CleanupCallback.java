@@ -24,10 +24,10 @@ import com.vaadin.flow.signals.Signal;
  * dispose of resources, or cancel an ongoing operation.
  * <p>
  * This is typically returned from registration methods such as
- * {@link Signal#effect(EffectAction)} to allow the caller to clean up the
- * registration when it's no longer needed.
+ * {@link Signal#unboundEffect(EffectAction)} to allow the caller to clean up
+ * the registration when it's no longer needed.
  *
- * @see Signal#effect(EffectAction)
+ * @see Signal#unboundEffect(EffectAction)
  */
 @FunctionalInterface
 public interface CleanupCallback extends Serializable {

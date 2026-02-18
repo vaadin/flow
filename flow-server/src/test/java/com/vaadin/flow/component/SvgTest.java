@@ -18,10 +18,13 @@ package com.vaadin.flow.component;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SvgTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SvgTest {
 
     @Test
     public void attachedToElement() {
@@ -30,14 +33,18 @@ public class SvgTest {
         new Svg("<svg></svg>").getParent();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullStream() {
-        new Svg((InputStream) null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Svg((InputStream) null);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void text() {
-        new Svg("hello");
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Svg("hello");
+        });
     }
 
     static String TRIVIAL_SVG = """
@@ -67,27 +74,27 @@ public class SvgTest {
     @Test
     public void simpleSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
-        Assert.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }
 
     @Test
     public void withDocType() {
         Svg svg = new Svg(SVG_WITH_DOCTYPE_ET_AL);
-        Assert.assertTrue(getSvgDocumentBody(svg).startsWith("<svg"));
+        assertTrue(getSvgDocumentBody(svg).startsWith("<svg"));
     }
 
     @Test
     public void resetSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
-        Assert.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
         svg.setSvg(TRIVIAL_SVG2);
-        Assert.assertEquals(TRIVIAL_SVG2, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG2, getSvgDocumentBody(svg));
     }
 
     @Test
     public void fromStream() {
         Svg svg = new Svg(new ByteArrayInputStream(TRIVIAL_SVG.getBytes()));
-        Assert.assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
+        assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }
 
     private static String getSvgDocumentBody(Svg svg) {
