@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Tests for {@link HasValue#bindReadOnly(Signal)}.
  */
-public class HasValueBindReadOnlyTest extends SignalsUnitTest {
+class HasValueBindReadOnlyTest extends SignalsUnitTest {
 
     @Test
     public void bindReadOnly_elementAttachedBefore_bindingActive() {

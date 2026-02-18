@@ -25,7 +25,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
+class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
     private static class MultipleFieldsField extends
             AbstractCompositeField<TestDiv, MultipleFieldsField, String> {

@@ -23,10 +23,9 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -63,11 +62,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class JavaScriptBootstrapUITest {
+class JavaScriptBootstrapUITest {
 
     private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
     private static final String REACT_PUSHSTATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
@@ -183,7 +183,7 @@ public class JavaScriptBootstrapUITest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         mocks.getService().getRouter().getRegistry().setRoute("clean",
@@ -229,7 +229,7 @@ public class JavaScriptBootstrapUITest {
         CurrentInstance.setCurrent(ui);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         mocks.cleanup();
     }
@@ -641,7 +641,7 @@ public class JavaScriptBootstrapUITest {
             return;
         }
         // self control: code inside catch should be invoked
-        Assert.fail();
+        fail();
     }
 
     private void assertExceptionComponent(Class<?> errorClass,
@@ -649,15 +649,16 @@ public class JavaScriptBootstrapUITest {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
-        Assert.assertTrue("No navigation component visible",
-                visibleComponent.isPresent());
+        assertTrue(visibleComponent.isPresent(),
+                "No navigation component visible");
 
         Component internalServerError = visibleComponent.get();
-        Assert.assertEquals(errorClass, internalServerError.getClass());
+        assertEquals(errorClass, internalServerError.getClass());
         String errorText = internalServerError.getElement().getText();
         for (String exceptionText : exceptionTexts) {
-            Assert.assertTrue("Expected the error text to contain '"
-                    + exceptionText + "'", errorText.contains(exceptionText));
+            assertTrue(errorText.contains(exceptionText),
+                    "Expected the error text to contain '" + exceptionText
+                            + "'");
         }
     }
 
