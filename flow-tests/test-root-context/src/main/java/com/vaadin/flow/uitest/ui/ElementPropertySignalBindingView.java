@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -47,7 +46,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Div listenerCountDiv = createAndAddDiv(LISTENER_COUNT_DIV_ID);
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
-        Effect.effect(this, () -> {
+        Signal.effect(this, () -> {
             signalValue.setText("Signal value: " + signal.get());
         });
         target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
