@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.local;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -64,6 +66,7 @@ public class ValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void updater_nullUpdater_throwsNullPointerException() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
@@ -74,8 +77,9 @@ public class ValueSignalHelperTest extends SignalTestBase {
     void updater_returnsCallback() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
         assertNotNull(callback);
     }
 
@@ -83,59 +87,67 @@ public class ValueSignalHelperTest extends SignalTestBase {
     void updater_callbackUpdatesSignal() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        ImmutablePerson result = Objects.requireNonNull(signal.get());
+        assertEquals("Bob", result.name());
+        assertEquals(30, result.age());
     }
 
     @Test
     void updater_multipleCallbackInvocations_updatesSignalEachTime() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
 
         callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().name());
+        assertEquals("Charlie", Objects.requireNonNull(signal.get()).name());
 
         callback.accept("Diana");
-        assertEquals("Diana", signal.get().name());
+        assertEquals("Diana", Objects.requireNonNull(signal.get()).name());
     }
 
     @Test
     void updater_preservesOtherFields() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> nameCallback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> nameCallback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        ImmutablePerson result = Objects.requireNonNull(signal.get());
+        assertEquals("Bob", result.name());
+        assertEquals(30, result.age());
     }
 
     @Test
     void updater_withNullValue_works() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept(null);
 
-        assertNull(signal.get().name());
-        assertEquals(30, signal.get().age());
+        ImmutablePerson result = Objects.requireNonNull(signal.get());
+        assertNull(result.name());
+        assertEquals(30, result.age());
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void modifier_nullModifier_throwsNullPointerException() {
         ValueSignal<MutablePerson> signal = new ValueSignal<>(
                 new MutablePerson("Alice", 30));
@@ -146,8 +158,9 @@ public class ValueSignalHelperTest extends SignalTestBase {
     void modifier_returnsCallback() {
         ValueSignal<MutablePerson> signal = new ValueSignal<>(
                 new MutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .modifier(MutablePerson::setName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.modifier(
+                (person, name) -> Objects.requireNonNull(person).setName(name));
         assertNotNull(callback);
     }
 
@@ -155,57 +168,64 @@ public class ValueSignalHelperTest extends SignalTestBase {
     void modifier_callbackModifiesSignalInPlace() {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
+        @SuppressWarnings("NullAway")
         SerializableConsumer<String> callback = signal
-                .modifier(MutablePerson::setName);
+                .modifier((p, name) -> Objects.requireNonNull(p).setName(name));
 
         callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().getName());
-        assertEquals(30, signal.get().getAge());
-        assertEquals(person, signal.get());
+        MutablePerson result = Objects.requireNonNull(signal.get());
+        assertEquals("Bob", result.getName());
+        assertEquals(30, result.getAge());
+        assertEquals(person, result);
     }
 
     @Test
     void modifier_multipleCallbackInvocations_modifiesSignalEachTime() {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
+        @SuppressWarnings("NullAway")
         SerializableConsumer<String> callback = signal
-                .modifier(MutablePerson::setName);
+                .modifier((p, name) -> Objects.requireNonNull(p).setName(name));
 
         callback.accept("Bob");
-        assertEquals("Bob", signal.get().getName());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).getName());
 
         callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().getName());
+        assertEquals("Charlie", Objects.requireNonNull(signal.get()).getName());
 
         callback.accept("Diana");
-        assertEquals("Diana", signal.get().getName());
+        assertEquals("Diana", Objects.requireNonNull(signal.get()).getName());
     }
 
     @Test
     void modifier_preservesOtherFields() {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
+        @SuppressWarnings("NullAway")
         SerializableConsumer<String> nameCallback = signal
-                .modifier(MutablePerson::setName);
+                .modifier((p, name) -> Objects.requireNonNull(p).setName(name));
 
         nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().getName());
-        assertEquals(30, signal.get().getAge());
+        MutablePerson result = Objects.requireNonNull(signal.get());
+        assertEquals("Bob", result.getName());
+        assertEquals(30, result.getAge());
     }
 
     @Test
     void modifier_withNullValue_works() {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
+        @SuppressWarnings("NullAway")
         SerializableConsumer<String> callback = signal
-                .modifier(MutablePerson::setName);
+                .modifier((p, name) -> Objects.requireNonNull(p).setName(name));
 
         callback.accept(null);
 
-        assertNull(signal.get().getName());
-        assertEquals(30, signal.get().getAge());
+        MutablePerson result = Objects.requireNonNull(signal.get());
+        assertNull(result.getName());
+        assertEquals(30, result.getAge());
     }
 
 }

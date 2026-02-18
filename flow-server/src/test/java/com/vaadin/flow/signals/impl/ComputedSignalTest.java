@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
@@ -100,9 +101,11 @@ public class ComputedSignalTest extends SignalTestBase {
     void map_mapComputedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<Integer> computed = Signal.computed(() -> source.get().length());
+        Signal<Integer> computed = Signal
+                .computed(() -> Objects.requireNonNull(source.get()).length());
 
-        Signal<Integer> doubled = computed.map(l -> l * 2);
+        Signal<Integer> doubled = computed
+                .map(l -> Objects.requireNonNull(l) * 2);
 
         assertEquals(10, doubled.get());
     }
@@ -111,9 +114,11 @@ public class ComputedSignalTest extends SignalTestBase {
     void map_mapMappedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<Integer> computed = source.map(String::length);
+        Signal<Integer> computed = source
+                .map(s -> Objects.requireNonNull(s).length());
 
-        Signal<Integer> doubled = computed.map(l -> l * 2);
+        Signal<Integer> doubled = computed
+                .map(l -> Objects.requireNonNull(l) * 2);
 
         assertEquals(10, doubled.get());
     }
@@ -125,7 +130,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> computed = source.map(value -> {
             count.incrementAndGet();
-            return value.length();
+            return Objects.requireNonNull(value).length();
         });
         assertEquals(0, count.get());
 
@@ -142,10 +147,10 @@ public class ComputedSignalTest extends SignalTestBase {
                 Boolean.TRUE);
         Signal<Boolean> negated = Signal.not(signal);
 
-        assertFalse(negated.get());
+        assertFalse(Objects.requireNonNull(negated.get()));
 
         signal.set(false);
-        assertTrue(negated.get());
+        assertTrue(Objects.requireNonNull(negated.get()));
 
         signal.set(null);
         assertNull(negated.get());
@@ -197,7 +202,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.get().length();
+            return Objects.requireNonNull(source.get()).length();
         });
 
         ArrayList<Integer> invocations = new ArrayList<>();
@@ -346,7 +351,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = () -> {
             count.incrementAndGet();
-            return signal.get() * 2;
+            return Objects.requireNonNull(signal.get()) * 2;
         };
 
         assertEquals(2, doubled.get());
@@ -369,13 +374,13 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
         Signal<Boolean> computed = Signal.computed(() -> {
             count.incrementAndGet();
-            if (shouldThrow.get()) {
+            if (Boolean.TRUE.equals(shouldThrow.get())) {
                 throw new RuntimeException("Expected exception");
             } else {
                 return shouldThrow.get();
             }
         });
-        assertFalse(computed.get());
+        assertFalse(Objects.requireNonNull(computed.get()));
         assertEquals(1, count.get());
 
         shouldThrow.set(true);
@@ -386,7 +391,7 @@ public class ComputedSignalTest extends SignalTestBase {
         assertEquals(2, count.get(), "Exception should be cached");
 
         shouldThrow.set(false);
-        assertFalse(computed.get());
+        assertFalse(Objects.requireNonNull(computed.get()));
         assertEquals(3, count.get());
     }
 

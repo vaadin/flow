@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableConsumer;
@@ -37,6 +39,7 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void updater_nullUpdater_throwsNullPointerException() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
@@ -47,8 +50,9 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
     void updater_returnsCallback() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
         assertNotNull(callback);
     }
 
@@ -56,73 +60,79 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
     void updater_callbackUpdatesSignal() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
+        assertEquals(30, Objects.requireNonNull(signal.get()).age());
     }
 
     @Test
     void updater_multipleCallbackInvocations_updatesSignalEachTime() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
 
         callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().name());
+        assertEquals("Charlie", Objects.requireNonNull(signal.get()).name());
 
         callback.accept("Diana");
-        assertEquals("Diana", signal.get().name());
+        assertEquals("Diana", Objects.requireNonNull(signal.get()).name());
     }
 
     @Test
     void updater_preservesOtherFields() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> nameCallback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> nameCallback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
+        assertEquals(30, Objects.requireNonNull(signal.get()).age());
     }
 
     @Test
     void updater_withNullValue_works() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> callback = signal
-                .updater(ImmutablePerson::withName);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> callback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
 
         callback.accept(null);
 
-        assertEquals(null, signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals(null, Objects.requireNonNull(signal.get()).name());
+        assertEquals(30, Objects.requireNonNull(signal.get()).age());
     }
 
     @Test
     void updater_multipleDifferentUpdaters_canBeCreated() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));
-        SerializableConsumer<String> nameCallback = signal
-                .updater(ImmutablePerson::withName);
-        SerializableConsumer<Integer> ageCallback = signal
-                .updater(ImmutablePerson::withAge);
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<String> nameCallback = signal.updater((person,
+                name) -> Objects.requireNonNull(person).withName(name));
+        @SuppressWarnings("NullAway")
+        SerializableConsumer<Integer> ageCallback = signal.updater(
+                (person, age) -> Objects.requireNonNull(person).withAge(age));
 
         nameCallback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
+        assertEquals(30, Objects.requireNonNull(signal.get()).age());
 
         ageCallback.accept(35);
-        assertEquals("Bob", signal.get().name());
-        assertEquals(35, signal.get().age());
+        assertEquals("Bob", Objects.requireNonNull(signal.get()).name());
+        assertEquals(35, Objects.requireNonNull(signal.get()).age());
     }
 }

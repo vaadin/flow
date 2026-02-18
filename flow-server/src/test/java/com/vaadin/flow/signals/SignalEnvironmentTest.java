@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SignalEnvironmentTest extends SignalTestBase {
 
     @Test
+    @SuppressWarnings("NullAway")
     void registerAndUnregister_environmentIsUsedUntilUnregistered() {
         Thread testThread = Thread.currentThread();
         AtomicInteger count = new AtomicInteger();
@@ -63,6 +64,7 @@ public class SignalEnvironmentTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void isActive_environmentUsedOnlyWhenActive() {
         ThreadLocal<Boolean> active = new ThreadLocal<Boolean>();
         AtomicInteger count = new AtomicInteger();

@@ -17,6 +17,7 @@ package com.vaadin.flow.signals.shared.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,7 +79,7 @@ public class SynchronousSignalTreeTest {
             return tree.hasLock();
         });
 
-        assertTrue(hasLock);
+        assertTrue(Objects.requireNonNull(hasLock));
     }
 
     @Test
@@ -480,8 +481,10 @@ public class SynchronousSignalTreeTest {
 
         canceler1.cleanup(); // removes the first subscriber
 
-        resultContainer1.set(null);
-        resultContainer2.set(null);
+        @SuppressWarnings("NullAway")
+        var ignored1 = resultContainer1.getAndSet(null);
+        @SuppressWarnings("NullAway")
+        var ignored2 = resultContainer2.getAndSet(null);
 
         tree.commitSingleCommand(
                 new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(3)));
@@ -489,7 +492,8 @@ public class SynchronousSignalTreeTest {
         assertEquals(id1, resultContainer2.get().getKey().commandId());
 
         canceler2.cleanup();
-        resultContainer2.set(null);
+        @SuppressWarnings("NullAway")
+        var ignored3 = resultContainer2.getAndSet(null);
 
         tree.commitSingleCommand(
                 new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(4)));

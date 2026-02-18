@@ -146,6 +146,7 @@ public class AsynchronousSignalTreeTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void subscribeToProcessed_changesConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();

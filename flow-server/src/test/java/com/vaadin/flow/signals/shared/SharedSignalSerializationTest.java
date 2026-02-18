@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class SharedSignalSerializationTest {
 
+    @SuppressWarnings("NullAway")
     private <T> T assertSerializeAndDeserialize(T obj) {
         try {
             return serializeAndDeserialize(obj);
@@ -98,8 +100,10 @@ public class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
-                .value(String.class));
+        Assert.assertEquals("Test",
+                Objects.requireNonNull(Objects.requireNonNull(Objects
+                        .requireNonNull(signal.get()).mapChildren().get("key"))
+                        .get()).value(String.class));
     }
 
     @Test

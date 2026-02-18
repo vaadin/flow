@@ -17,6 +17,7 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +65,8 @@ public class SharedNumberSignalTest extends SignalTestBase {
 
         assertEquals(3, signal.get());
 
-        Double result = TestUtil.assertSuccess(operation);
+        Double result = TestUtil
+                .assertSuccess(Objects.requireNonNull(operation));
         assertEquals(3, result);
     }
 

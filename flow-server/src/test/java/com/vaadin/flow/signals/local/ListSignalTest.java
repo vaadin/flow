@@ -16,6 +16,7 @@
 package com.vaadin.flow.signals.local;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,7 +38,7 @@ public class ListSignalTest extends SignalTestBase {
     void constructor_empty_emptyList() {
         ListSignal<String> signal = new ListSignal<>();
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = Objects.requireNonNull(signal.get());
 
         assertTrue(value.isEmpty());
     }
@@ -174,7 +175,7 @@ public class ListSignalTest extends SignalTestBase {
 
         signal.clear();
 
-        assertTrue(signal.get().isEmpty());
+        assertTrue(Objects.requireNonNull(signal.get()).isEmpty());
     }
 
     @Test
@@ -182,7 +183,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = Objects.requireNonNull(signal.get());
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new ValueSignal<>("new"));
@@ -206,7 +207,8 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("first");
 
-        List<ValueSignal<String>> snapshot = signal.get();
+        List<ValueSignal<String>> snapshot = Objects
+                .requireNonNull(signal.get());
 
         signal.insertFirst("second");
 
@@ -378,8 +380,8 @@ public class ListSignalTest extends SignalTestBase {
 
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
-        List<String> values = signal.get().stream().map(ValueSignal::get)
-                .toList();
+        List<String> values = Objects.requireNonNull(signal.get()).stream()
+                .map(ValueSignal::get).toList();
         assertEquals(List.of(expectedValues), values);
     }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -173,8 +174,8 @@ public class StagedTransactionTest {
             assertNull(h2.result);
         });
 
-        assertTrue(h1.result.accepted());
-        assertTrue(h2.result.accepted());
+        assertTrue(Objects.requireNonNull(h1.result).accepted());
+        assertTrue(Objects.requireNonNull(h2.result).accepted());
 
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
@@ -204,8 +205,8 @@ public class StagedTransactionTest {
             assertNull(h2.result);
         });
 
-        assertFalse(h1.result.accepted());
-        assertFalse(h2.result.accepted());
+        assertFalse(Objects.requireNonNull(h1.result).accepted());
+        assertFalse(Objects.requireNonNull(h2.result).accepted());
 
         assertTrue(operation.result().isDone());
         assertFalse(operation.result().get().successful());
@@ -234,7 +235,7 @@ public class StagedTransactionTest {
 
         tree.confirmSubmitted();
 
-        assertTrue(handler.result.accepted());
+        assertTrue(Objects.requireNonNull(handler.result).accepted());
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
         assertNotNull(tree.submitted().data(Id.ZERO).get().value());
@@ -267,8 +268,8 @@ public class StagedTransactionTest {
 
         tree.confirmSubmitted();
 
-        assertFalse(h1.result.accepted());
-        assertFalse(h1.result.accepted());
+        assertFalse(Objects.requireNonNull(h1.result).accepted());
+        assertFalse(Objects.requireNonNull(h1.result).accepted());
         assertTrue(operation.result().isDone());
         assertFalse(operation.result().get().successful());
         assertNull(tree.submitted().data(Id.ZERO).get().value());
@@ -363,7 +364,8 @@ public class StagedTransactionTest {
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readConfirmedRootValue(tree))
+                        .asString());
     }
 
     @Test
@@ -387,13 +389,15 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).asString(),
+                    Objects.requireNonNull(
+                            TestUtil.readTransactionRootValue(tree)).asString(),
                     "Should take inner transaction changes into account");
         });
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readConfirmedRootValue(tree))
+                        .asString());
     }
 
     @Test
@@ -412,12 +416,15 @@ public class StagedTransactionTest {
                     TestUtil.writeRootValueCommand("unexpected"));
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).asString());
+                    Objects.requireNonNull(
+                            TestUtil.readTransactionRootValue(tree))
+                            .asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readConfirmedRootValue(tree))
+                        .asString());
     }
 
     @Test
@@ -438,12 +445,15 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("unexpected",
-                    TestUtil.readTransactionRootValue(tree).asString());
+                    Objects.requireNonNull(
+                            TestUtil.readTransactionRootValue(tree))
+                            .asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readConfirmedRootValue(tree))
+                        .asString());
     }
 
     @Test
@@ -465,7 +475,8 @@ public class StagedTransactionTest {
         tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readSubmittedRootValue(tree))
+                        .asString());
 
         tree.confirmSubmitted();
 
@@ -486,12 +497,14 @@ public class StagedTransactionTest {
         });
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readSubmittedRootValue(tree))
+                        .asString());
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("unexpected")));
 
         assertEquals("unexpected",
-                TestUtil.readSubmittedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readSubmittedRootValue(tree))
+                        .asString());
 
         tree.confirmSubmitted();
 
@@ -522,7 +535,9 @@ public class StagedTransactionTest {
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("observer"), null);
 
-            String value = TestUtil.readTransactionRootValue(tree).asString();
+            String value = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString();
             valueInObserver.set(value);
 
             return false;
@@ -535,7 +550,8 @@ public class StagedTransactionTest {
 
         assertEquals("observer", valueInObserver.get());
         assertEquals("observer",
-                TestUtil.readConfirmedRootValue(tree).asString());
+                Objects.requireNonNull(TestUtil.readConfirmedRootValue(tree))
+                        .asString());
     }
 
     @Test

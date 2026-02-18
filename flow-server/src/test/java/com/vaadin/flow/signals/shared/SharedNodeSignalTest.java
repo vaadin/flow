@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.shared;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     void constructor_initialValue_isEmpty() {
         SharedNodeSignal signal = new SharedNodeSignal();
 
-        SharedNodeSignalState value = signal.get();
+        SharedNodeSignalState value = Objects.requireNonNull(signal.get());
 
         assertNull(value.value(String.class));
         assertNull(value.parent());
@@ -64,10 +65,12 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         assertSuccess(operation);
 
-        List<SharedNodeSignal> listChildren = signal.get().listChildren();
+        List<SharedNodeSignal> listChildren = Objects
+                .requireNonNull(signal.get()).listChildren();
         assertEquals(1, listChildren.size());
         assertEquals(operation.signal().id(), listChildren.get(0).id());
-        assertEquals("value", operation.signal().get().value(String.class));
+        assertEquals("value", Objects.requireNonNull(operation.signal().get())
+                .value(String.class));
     }
 
     @Test
@@ -78,7 +81,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
         assertEquals(null, asValue.get());
 
         asValue.set("update");
-        assertEquals("update", signal.get().value(String.class));
+        assertEquals("update",
+                Objects.requireNonNull(signal.get()).value(String.class));
     }
 
     @Test
@@ -89,7 +93,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         asString.set("update");
 
         assertThrows(RuntimeException.class, () -> {
-            signal.get().value(Double.class);
+            Objects.requireNonNull(signal.get()).value(Double.class);
         });
 
         SharedValueSignal<Double> asDouble = signal.asValue(Double.class);
@@ -108,7 +112,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
         asNumber.incrementBy(1);
         assertEquals(1, asNumber.get());
 
-        assertEquals(1, signal.get().value(Double.class));
+        assertEquals(1,
+                Objects.requireNonNull(signal.get()).value(Double.class));
     }
 
     @Test
@@ -118,10 +123,12 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         asList.insertLast("last");
 
-        List<SharedNodeSignal> listChildren = signal.get().listChildren();
+        List<SharedNodeSignal> listChildren = Objects
+                .requireNonNull(signal.get()).listChildren();
         assertEquals(1, listChildren.size());
 
-        assertEquals("last", listChildren.get(0).get().value(String.class));
+        assertEquals("last", Objects.requireNonNull(listChildren.get(0).get())
+                .value(String.class));
     }
 
     @Test
@@ -131,7 +138,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         signal.insertChildWithValue("last", ListPosition.last());
 
-        List<SharedValueSignal<String>> value = asList.get();
+        List<SharedValueSignal<String>> value = Objects
+                .requireNonNull(asList.get());
         assertEquals(1, value.size());
 
         assertEquals("last", value.get(0).get());
@@ -144,10 +152,14 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         asMap.put("key", "value");
 
-        Map<String, SharedNodeSignal> mapChildren = signal.get().mapChildren();
+        Map<String, SharedNodeSignal> mapChildren = Objects
+                .requireNonNull(signal.get()).mapChildren();
         assertEquals(Set.of("key"), mapChildren.keySet());
 
-        assertEquals("value", mapChildren.get("key").get().value(String.class));
+        SharedNodeSignal keyChild = Objects
+                .requireNonNull(mapChildren.get("key"));
+        assertEquals("value",
+                Objects.requireNonNull(keyChild.get()).value(String.class));
     }
 
     @Test
@@ -157,10 +169,11 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         signal.putChildWithValue("key", "value");
 
-        Map<String, SharedValueSignal<String>> value = asMap.get();
+        Map<String, SharedValueSignal<String>> value = Objects
+                .requireNonNull(asMap.get());
 
         assertEquals(Set.of("key"), value.keySet());
-        assertEquals("value", value.get("key").get());
+        assertEquals("value", Objects.requireNonNull(value.get("key")).get());
     }
 
     /*
@@ -176,8 +189,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
                 .insertChild(ListPosition.last());
         SharedNodeSignal child = operation.signal();
 
-        assertEquals(List.of(child), signal.get().listChildren());
-        assertEquals(null, child.get().value(String.class));
+        assertEquals(List.of(child),
+                Objects.requireNonNull(signal.get()).listChildren());
+        assertEquals(null,
+                Objects.requireNonNull(child.get()).value(String.class));
     }
 
     @Test
@@ -186,11 +201,15 @@ public class SharedNodeSignalTest extends SignalTestBase {
 
         SignalOperation<PutIfAbsentResult<SharedNodeSignal>> operation = signal
                 .putChildIfAbsent("key");
-        PutIfAbsentResult<SharedNodeSignal> result = assertSuccess(operation);
+        PutIfAbsentResult<SharedNodeSignal> result = Objects
+                .requireNonNull(assertSuccess(operation));
         assertTrue(result.created());
-        SharedNodeSignal child = signal.get().mapChildren().get("key");
-        assertEquals(Map.of("key", child), signal.get().mapChildren());
-        assertEquals(null, child.get().value(String.class));
+        SharedNodeSignal child = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
+        assertEquals(Map.of("key", child),
+                Objects.requireNonNull(signal.get()).mapChildren());
+        assertEquals(null,
+                Objects.requireNonNull(child.get()).value(String.class));
     }
 
     @Test
@@ -204,8 +223,9 @@ public class SharedNodeSignalTest extends SignalTestBase {
                 ListPosition.last());
 
         assertSuccess(operation);
-        assertEquals(List.of(b, a), signal.get().listChildren());
-        assertEquals(signal, a.get().parent());
+        assertEquals(List.of(b, a),
+                Objects.requireNonNull(signal.get()).listChildren());
+        assertEquals(signal, Objects.requireNonNull(a.get()).parent());
     }
 
     @Test
@@ -217,15 +237,17 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal child = parent.insertChild(ListPosition.last())
                 .signal();
 
-        assertEquals(parent, child.get().parent());
+        assertEquals(parent, Objects.requireNonNull(child.get()).parent());
 
         SignalOperation<Void> operation = signal.adoptAt(child,
                 ListPosition.first());
 
         assertSuccess(operation);
-        assertEquals(signal, child.get().parent());
-        assertEquals(List.of(child, parent), signal.get().listChildren());
-        assertEquals(List.of(), parent.get().listChildren());
+        assertEquals(signal, Objects.requireNonNull(child.get()).parent());
+        assertEquals(List.of(child, parent),
+                Objects.requireNonNull(signal.get()).listChildren());
+        assertEquals(List.of(),
+                Objects.requireNonNull(parent.get()).listChildren());
     }
 
     @Test
@@ -247,55 +269,66 @@ public class SharedNodeSignalTest extends SignalTestBase {
     void adoptAt_adoptMapChild_noLongerMapChild() {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
-        SharedNodeSignal child = signal.get().mapChildren().get("key");
+        SharedNodeSignal child = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
 
-        assertEquals(List.of(), signal.get().listChildren());
+        assertEquals(List.of(),
+                Objects.requireNonNull(signal.get()).listChildren());
 
         signal.adoptAt(child, ListPosition.last());
 
-        assertEquals(List.of(child), signal.get().listChildren());
-        assertEquals(Map.of(), signal.get().mapChildren());
+        assertEquals(List.of(child),
+                Objects.requireNonNull(signal.get()).listChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(signal.get()).mapChildren());
     }
 
     @Test
     void adoptAs_existingChild_keyChanged() {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
-        SharedNodeSignal child = signal.get().mapChildren().get("key");
+        SharedNodeSignal child = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
 
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
         assertSuccess(operation);
-        assertEquals(Map.of("update", child), signal.get().mapChildren());
-        assertEquals(signal, child.get().parent());
+        assertEquals(Map.of("update", child),
+                Objects.requireNonNull(signal.get()).mapChildren());
+        assertEquals(signal, Objects.requireNonNull(child.get()).parent());
     }
 
     @Test
     void adoptAs_nestedStructure_hierarchyChanged() {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("parent");
-        SharedNodeSignal parent = signal.get().mapChildren().get("parent");
+        SharedNodeSignal parent = Objects.requireNonNull(Objects
+                .requireNonNull(signal.get()).mapChildren().get("parent"));
         parent.putChildIfAbsent("child");
-        SharedNodeSignal child = parent.get().mapChildren().get("child");
+        SharedNodeSignal child = Objects.requireNonNull(Objects
+                .requireNonNull(parent.get()).mapChildren().get("child"));
 
-        assertEquals(parent, child.get().parent());
+        assertEquals(parent, Objects.requireNonNull(child.get()).parent());
 
         SignalOperation<Void> operation = signal.adoptAs(child, "child");
 
         assertSuccess(operation);
-        assertEquals(signal, child.get().parent());
+        assertEquals(signal, Objects.requireNonNull(child.get()).parent());
         assertEquals(Map.of("parent", parent, "child", child),
-                signal.get().mapChildren());
-        assertEquals(Map.of(), parent.get().mapChildren());
+                Objects.requireNonNull(signal.get()).mapChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(parent.get()).mapChildren());
     }
 
     @Test
     void adoptAs_addParentToChild_rejected() {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("parent");
-        SharedNodeSignal parent = signal.get().mapChildren().get("parent");
+        SharedNodeSignal parent = Objects.requireNonNull(Objects
+                .requireNonNull(signal.get()).mapChildren().get("parent"));
         parent.putChildIfAbsent("child");
-        SharedNodeSignal child = parent.get().mapChildren().get("child");
+        SharedNodeSignal child = Objects.requireNonNull(Objects
+                .requireNonNull(parent.get()).mapChildren().get("child"));
 
         SignalOperation<Void> operation = child.adoptAs(parent, "child");
 
@@ -308,13 +341,16 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal child = signal.insertChild(ListPosition.last())
                 .signal();
 
-        assertEquals(Map.of(), signal.get().mapChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(signal.get()).mapChildren());
 
         SignalOperation<Void> operation = signal.adoptAs(child, "key");
 
         assertSuccess(operation);
-        assertEquals(List.of(), signal.get().listChildren());
-        assertEquals(Map.of("key", child), signal.get().mapChildren());
+        assertEquals(List.of(),
+                Objects.requireNonNull(signal.get()).listChildren());
+        assertEquals(Map.of("key", child),
+                Objects.requireNonNull(signal.get()).mapChildren());
     }
 
     @Test
@@ -323,32 +359,37 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
                 .signal();
         signal.putChildIfAbsent("key");
-        SharedNodeSignal mapChild = signal.get().mapChildren().get("key");
+        SharedNodeSignal mapChild = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild(mapChild);
         assertSuccess(mapRemoveOp);
 
         assertNull(mapChild.get());
-        assertEquals(Map.of(), signal.get().mapChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(signal.get()).mapChildren());
 
         SignalOperation<Void> listRemoveOp = signal.removeChild(listChild);
         assertSuccess(listRemoveOp);
 
         assertNull(listChild.get());
-        assertEquals(List.of(), signal.get().listChildren());
+        assertEquals(List.of(),
+                Objects.requireNonNull(signal.get()).listChildren());
     }
 
     @Test
     void removeChildByString_mapNode_nodeRemoved() {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
-        SharedNodeSignal child = signal.get().mapChildren().get("key");
+        SharedNodeSignal child = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild("key");
         assertSuccess(mapRemoveOp);
 
         assertNull(child.get());
-        assertEquals(Map.of(), signal.get().mapChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(signal.get()).mapChildren());
     }
 
     @Test
@@ -357,21 +398,24 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
                 .signal();
         signal.putChildIfAbsent("key");
-        SharedNodeSignal mapChild = signal.get().mapChildren().get("key");
+        SharedNodeSignal mapChild = Objects.requireNonNull(
+                Objects.requireNonNull(signal.get()).mapChildren().get("key"));
 
         SignalOperation<Void> operation = signal.clear();
         assertSuccess(operation);
 
         assertNull(mapChild.get());
         assertNull(listChild.get());
-        assertEquals(Map.of(), signal.get().mapChildren());
-        assertEquals(List.of(), signal.get().listChildren());
+        assertEquals(Map.of(),
+                Objects.requireNonNull(signal.get()).mapChildren());
+        assertEquals(List.of(),
+                Objects.requireNonNull(signal.get()).listChildren());
     }
 
     @Test
     void value_modifyStateInstance_isImmutable() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignalState value = signal.get();
+        SharedNodeSignalState value = Objects.requireNonNull(signal.get());
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.listChildren().clear();
@@ -384,7 +428,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void value_readStateAfterModifications_seesOldState() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        SharedNodeSignalState value = signal.get();
+        SharedNodeSignalState value = Objects.requireNonNull(signal.get());
 
         signal.asValue(String.class).set("value");
         signal.insertChild(ListPosition.last());
@@ -424,17 +468,20 @@ public class SharedNodeSignalTest extends SignalTestBase {
         signal.insertChildWithValue("child", ListPosition.last()).signal();
 
         SharedNodeSignal readonly = signal.asReadonly();
-        SharedNodeSignal readonlyChild = readonly.get().listChildren().get(0);
+        SharedNodeSignal readonlyChild = Objects.requireNonNull(readonly.get())
+                .listChildren().get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
         });
-        assertEquals(List.of(readonlyChild), readonly.get().listChildren());
+        assertEquals(List.of(readonlyChild),
+                Objects.requireNonNull(readonly.get()).listChildren());
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonlyChild.asValue(String.class).set("update");
         });
-        assertEquals("child", readonlyChild.get().value(String.class));
+        assertEquals("child", Objects.requireNonNull(readonlyChild.get())
+                .value(String.class));
     }
 
     @Test
@@ -487,7 +534,8 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal other = signal.insertChild(ListPosition.last())
                 .signal();
 
-        SharedNodeSignal valueChild = signal.get().listChildren().get(0);
+        SharedNodeSignal valueChild = Objects.requireNonNull(signal.get())
+                .listChildren().get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -502,10 +550,13 @@ public class SharedNodeSignalTest extends SignalTestBase {
         signal.putChildIfAbsent("child");
         signal.putChildIfAbsent("other");
 
-        SharedNodeSignal child = signal.get().mapChildren().get("child");
-        SharedNodeSignal other = signal.get().mapChildren().get("other");
+        SharedNodeSignal child = Objects.requireNonNull(Objects
+                .requireNonNull(signal.get()).mapChildren().get("child"));
+        SharedNodeSignal other = Objects.requireNonNull(Objects
+                .requireNonNull(signal.get()).mapChildren().get("other"));
 
-        SharedNodeSignal valueChild = signal.get().mapChildren().get("child");
+        SharedNodeSignal valueChild = Objects.requireNonNull(Objects
+                .requireNonNull(signal.get()).mapChildren().get("child"));
 
         assertEquals(child, valueChild);
         assertEquals(child.hashCode(), valueChild.hashCode());

@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,7 +85,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.unboundEffect(() -> {
-            invocations.add(signal.get().size());
+            invocations.add(Objects.requireNonNull(signal.get()).size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -102,7 +103,7 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.unboundEffect(() -> {
-            invocations.add(signal.get().size());
+            invocations.add(Objects.requireNonNull(signal.get()).size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -276,8 +277,8 @@ public class EffectTest extends SignalTestBase {
         ArrayList<List<String>> invocations = new ArrayList<>();
 
         Signal.unboundEffect(() -> {
-            List<String> values = signal.get().stream().map(Signal::get)
-                    .toList();
+            List<String> values = Objects.requireNonNull(signal.get()).stream()
+                    .map(Signal::get).toList();
             invocations.add(values);
         });
 
@@ -309,7 +310,8 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_lambdaSignal_changeTracked() {
         SharedValueSignal<Integer> signal = new SharedValueSignal<>(1);
-        Signal<Integer> doubled = () -> signal.get() * 2;
+        Signal<Integer> doubled = () -> Objects.requireNonNull(signal.get())
+                * 2;
 
         ArrayList<Integer> invocations = new ArrayList<>();
 
@@ -512,7 +514,7 @@ public class EffectTest extends SignalTestBase {
         });
 
         Signal.unboundEffect(() -> {
-            if (trigger.get()) {
+            if (Boolean.TRUE.equals(trigger.get())) {
                 signal2.set(signal1.get() + " update");
             }
         });

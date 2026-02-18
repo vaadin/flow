@@ -17,6 +17,7 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
@@ -87,6 +88,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertEquals("a string", signal.get());
     }
 
+    @SuppressWarnings("NullAway")
     @Test
     void constructor_nullType_throws() {
         assertThrows(NullPointerException.class, () -> {
@@ -95,6 +97,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
     }
 
+    @SuppressWarnings("NullAway")
     @Test
     void constructor_nullInitialValue_throws() {
         assertThrows(NullPointerException.class, () -> {
@@ -109,10 +112,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String[]> signal = new SharedValueSignal<>(array);
 
         array[0] = "modified";
-        assertEquals("initial", signal.get()[0]);
+        assertEquals("initial", Objects.requireNonNull(signal.get())[0]);
 
-        signal.get()[0] = "modified";
-        assertEquals("initial", signal.get()[0]);
+        Objects.requireNonNull(signal.get())[0] = "modified";
+        assertEquals("initial", Objects.requireNonNull(signal.get())[0]);
     }
 
     @Test
@@ -215,14 +218,15 @@ public class SharedValueSignalTest extends SignalTestBase {
                 Integer.valueOf(0));
 
         CancelableOperation<Integer> operation = signal.update(previous -> {
-            if (previous < 5) {
+            int prev = Objects.requireNonNull(previous);
+            if (prev < 5) {
                 // Provoke a conflict while still making progress
                 Signal.runWithoutTransaction(() -> {
-                    signal.set(previous + 1);
+                    signal.set(prev + 1);
                 });
             }
 
-            return previous + 1;
+            return prev + 1;
         });
 
         assertEquals(5, assertSuccess(operation));
@@ -272,7 +276,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             if (command instanceof SetCommand set) {
-                return !set.value().isNull();
+                return set.value() != null && !set.value().isNull();
             }
             return true;
         });
