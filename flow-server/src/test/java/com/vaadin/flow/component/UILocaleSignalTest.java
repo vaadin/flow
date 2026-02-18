@@ -17,14 +17,14 @@ package com.vaadin.flow.component;
 
 import java.util.Locale;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Unit tests for {@link UI#localeSignal()}.
@@ -36,9 +36,9 @@ public class UILocaleSignalTest extends SignalsUnitTest {
         UI ui = UI.getCurrent();
         ValueSignal<Locale> signal = ui.localeSignal();
 
-        assertNotNull("localeSignal() should never return null", signal);
-        assertEquals("Signal value should match getLocale()", ui.getLocale(),
-                signal.get());
+        assertNotNull(signal, "localeSignal() should never return null");
+        assertEquals(ui.getLocale(), signal.get(),
+                "Signal value should match getLocale()");
     }
 
     @Test
@@ -56,10 +56,10 @@ public class UILocaleSignalTest extends SignalsUnitTest {
 
         ui.setLocale(newLocale);
 
-        assertEquals("Signal should reflect the new locale after setLocale()",
-                newLocale, signal.get());
-        assertEquals("getLocale() should also return the new locale", newLocale,
-                ui.getLocale());
+        assertEquals(newLocale, signal.get(),
+                "Signal should reflect the new locale after setLocale()");
+        assertEquals(newLocale, ui.getLocale(),
+                "getLocale() should also return the new locale");
     }
 
     @Test
@@ -77,10 +77,11 @@ public class UILocaleSignalTest extends SignalsUnitTest {
 
         signal.set(newLocale);
 
-        assertEquals("getLocale() should reflect the new locale after "
-                + "writing to signal", newLocale, ui.getLocale());
-        assertEquals("Signal should have the new value", newLocale,
-                signal.get());
+        assertEquals(newLocale, ui.getLocale(),
+                "getLocale() should reflect the new locale after "
+                        + "writing to signal");
+        assertEquals(newLocale, signal.get(),
+                "Signal should have the new value");
     }
 
     @Test
@@ -90,8 +91,9 @@ public class UILocaleSignalTest extends SignalsUnitTest {
         ValueSignal<Locale> signal1 = ui.localeSignal();
         ValueSignal<Locale> signal2 = ui.localeSignal();
 
-        assertSame("localeSignal() should return the same instance on "
-                + "multiple calls", signal1, signal2);
+        assertSame(signal1, signal2,
+                "localeSignal() should return the same instance on "
+                        + "multiple calls");
     }
 
     @Test
