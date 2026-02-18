@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class AbstractFieldBindValueTest extends SignalsUnitTest {
+class AbstractFieldBindValueTest extends SignalsUnitTest {
 
     @Test
     public void bindValue_elementAttachedBefore_bindingActive() {

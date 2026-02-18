@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Unit tests for Html.bindHtmlContent(Signal<String>).
  */
-public class HtmlBindHtmlContentTest extends SignalsUnitTest {
+class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
     @Test
     public void bindHtmlContent_componentAttachedBefore_bindingActive() {

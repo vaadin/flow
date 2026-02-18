@@ -24,32 +24,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PlatformTest {
+class PlatformTest {
     private ClassLoader oldContextClassLoader;
+    @TempDir
+    Path temporary;
 
-    @Rule
-    public TemporaryFolder temporary = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void rememberContextClassLoader() {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
-    @After
+    @AfterEach
     public void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
     }
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void cleanMemoizedValues() {
         Platform.hillaVersion = null;
         Platform.vaadinVersion = null;
@@ -63,7 +61,8 @@ public class PlatformTest {
         final List<URL> classPath = new LinkedList<>();
 
         if (hillaVersion != null) {
-            final Path hillaJar = temporary.newFolder().toPath();
+            final Path hillaJar = Files.createTempDirectory(temporary, "temp")
+                    .toFile().toPath();
             final Path pomProperties = hillaJar
                     .resolve(Platform.HILLA_POM_PROPERTIES);
             Files.createDirectories(pomProperties.getParent());
@@ -72,7 +71,8 @@ public class PlatformTest {
         }
 
         if (vaadinVersion != null) {
-            final Path vaadinJar = temporary.newFolder().toPath();
+            final Path vaadinJar = Files.createTempDirectory(temporary, "temp")
+                    .toFile().toPath();
             final Path pomProperties = vaadinJar.resolve(
                     "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
             Files.createDirectories(pomProperties.getParent());
