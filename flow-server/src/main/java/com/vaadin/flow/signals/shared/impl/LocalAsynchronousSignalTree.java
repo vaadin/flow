@@ -15,37 +15,22 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.vaadin.flow.signals.SignalCommand;
+import com.vaadin.flow.signals.SignalEnvironment;
 
 /**
  * An asynchronous signal tree for single-JVM use that dispatches
- * {@link #confirm(List)} on a virtual thread. This makes the behavior
- * consistent with future clustered implementations where confirmation happens
- * asynchronously. Each tree instance uses its own single-threaded executor to
- * ensure that confirmations are processed in submission order.
+ * {@link #confirm(List)} using the default effect dispatcher from
+ * {@link SignalEnvironment}. This makes the behavior consistent with future
+ * clustered implementations where confirmation happens asynchronously.
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
-    private transient ExecutorService confirmExecutor = createExecutor();
-
-    private static ExecutorService createExecutor() {
-        return Executors.newSingleThreadExecutor(
-                Thread.ofVirtual().name("signal-confirm-", 1).factory());
-    }
 
     @Override
     protected void submit(List<SignalCommand> commands) {
-        confirmExecutor.execute(() -> confirm(commands));
-    }
-
-    private void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        confirmExecutor = createExecutor();
+        SignalEnvironment.getDefaultEffectDispatcher()
+                .execute(() -> confirm(commands));
     }
 }

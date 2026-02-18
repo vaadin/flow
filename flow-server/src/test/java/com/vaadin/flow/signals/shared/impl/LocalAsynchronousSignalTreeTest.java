@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -38,19 +36,13 @@ public class LocalAsynchronousSignalTreeTest {
     }
 
     @Test
-    void submit_singleCommand_eventuallyConfirmed() throws Exception {
+    void submit_singleCommand_immediatelyConfirmed() {
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<CommandResult> result = new AtomicReference<>();
 
         SignalCommand command = TestUtil.writeRootValueCommand();
-        tree.commitSingleCommand(command, r -> {
-            result.set(r);
-            latch.countDown();
-        });
+        tree.commitSingleCommand(command, result::set);
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS),
-                "Confirmation did not arrive in time");
         assertTrue(result.get().accepted());
     }
 
@@ -64,30 +56,23 @@ public class LocalAsynchronousSignalTreeTest {
     }
 
     @Test
-    void confirmed_afterCommand_eventuallyUpdated() throws Exception {
+    void confirmed_afterCommand_immediatelyUpdated() {
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        CountDownLatch latch = new CountDownLatch(1);
 
-        tree.commitSingleCommand(TestUtil.writeRootValueCommand(),
-                r -> latch.countDown());
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS),
-                "Confirmation did not arrive in time");
         assertNotNull(TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
-    void multipleCommands_allEventuallyConfirmed() throws Exception {
+    void multipleCommands_allImmediatelyConfirmed() {
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        CountDownLatch latch = new CountDownLatch(3);
 
         for (int i = 0; i < 3; i++) {
+            AtomicReference<CommandResult> result = new AtomicReference<>();
             tree.commitSingleCommand(
-                    TestUtil.writeRootValueCommand("value" + i),
-                    r -> latch.countDown());
+                    TestUtil.writeRootValueCommand("value" + i), result::set);
+            assertTrue(result.get().accepted());
         }
-
-        assertTrue(latch.await(5, TimeUnit.SECONDS),
-                "Not all confirmations arrived in time");
     }
 }

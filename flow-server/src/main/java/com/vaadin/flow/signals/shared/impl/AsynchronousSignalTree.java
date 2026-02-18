@@ -80,7 +80,7 @@ public abstract class AsynchronousSignalTree extends SignalTree {
              * skip re-applying and notifying observers.
              */
             boolean confirmedFromHead = wereAtHead(
-                    unconfirmedCommands.getCommands(), results.keySet());
+                    unconfirmedCommands.getCommands(), commands);
 
             // Remove any pending commands that are now confirmed from the queue
             unconfirmedCommands.removeHandledCommands(results.keySet());
@@ -109,23 +109,25 @@ public abstract class AsynchronousSignalTree extends SignalTree {
     }
 
     /**
-     * Checks whether all confirmed command IDs appear at the head of the
+     * Checks whether all confirmed commands appear at the head of the
      * unconfirmed command list. This means the confirmed commands were the
      * first commands submitted to this tree and no reordering or external
-     * commands were involved.
+     * commands were involved. Uses the top-level command list to determine the
+     * count rather than the results key set, since results may also include
+     * sub-command IDs from transaction commands.
      */
     private static boolean wereAtHead(List<SignalCommand> unconfirmedCommands,
-            java.util.Set<Id> confirmedIds) {
-        if (confirmedIds.isEmpty()) {
+            List<SignalCommand> confirmedCommands) {
+        int confirmedCount = confirmedCommands.size();
+        if (confirmedCount == 0) {
             return true;
         }
-        int confirmedCount = confirmedIds.size();
         if (confirmedCount > unconfirmedCommands.size()) {
             return false;
         }
         for (int i = 0; i < confirmedCount; i++) {
-            if (!confirmedIds
-                    .contains(unconfirmedCommands.get(i).commandId())) {
+            if (!unconfirmedCommands.get(i).commandId()
+                    .equals(confirmedCommands.get(i).commandId())) {
                 return false;
             }
         }
