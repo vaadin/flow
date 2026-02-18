@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -27,10 +26,12 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class HasComponentsTest {
+class HasComponentsTest {
 
     private static MockVaadinServletService service;
 
@@ -47,12 +48,12 @@ public class HasComponentsTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
@@ -64,7 +65,7 @@ public class HasComponentsTest {
         TestComponent component = new TestComponent();
         component.add(text);
 
-        Assert.assertEquals(text, component.getElement().getText());
+        assertEquals(text, component.getElement().getText());
     }
 
     @Test
@@ -74,7 +75,7 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-first");
         component.addComponentAsFirst(innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
+        assertEquals(innerComponent.getId(),
                 component.getChildren().findFirst().get().getId());
     }
 
@@ -85,24 +86,26 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(2).getComponent().get().getId());
+        assertEquals(innerComponent.getId(), component.getElement().getChild(2)
+                .getComponent().get().getId());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void insertComponentIndexLessThanZero() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-less");
-        component.addComponentAtIndex(-5, innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(-5, innerComponent));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void insertComponentIndexGreaterThanChildrenNumber() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-greater");
-        component.addComponentAtIndex(100, innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(100, innerComponent));
     }
 
     @Test
@@ -127,9 +130,9 @@ public class HasComponentsTest {
 
         try {
             component.remove(child, innerComponent);
-            Assert.fail();
+            fail();
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals(component, child.getParent().get());
+            assertEquals(component, child.getParent().get());
         }
     }
 
@@ -143,9 +146,9 @@ public class HasComponentsTest {
         TestComponent notAChild = new TestComponent();
 
         component.remove(notAChild, child);
-        Assert.assertFalse(child.getParent().isPresent());
-        Assert.assertFalse(component.getChildren()
-                .filter(comp -> comp.equals(child)).findAny().isPresent());
+        assertFalse(child.getParent().isPresent());
+        assertFalse(component.getChildren().filter(comp -> comp.equals(child))
+                .findAny().isPresent());
     }
 
     @Test
@@ -159,10 +162,10 @@ public class HasComponentsTest {
 
         component.remove(innerComponent);
 
-        Assert.assertEquals(size, component.getChildren().count());
+        assertEquals(size, component.getChildren().count());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void remove_removeComponentWithDifferentParent() {
         TestComponent component = createTestStructure();
 
@@ -171,7 +174,8 @@ public class HasComponentsTest {
 
         another.add(innerComponent);
 
-        component.remove(innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.remove(innerComponent));
     }
 
     private TestComponent createTestStructure() {
@@ -184,7 +188,7 @@ public class HasComponentsTest {
     }
 
     private void checkChildren(int number, TestComponent component) {
-        Assert.assertEquals(number, component.getChildren().count());
+        assertEquals(number, component.getChildren().count());
     }
 
     @Test
@@ -306,9 +310,9 @@ public class HasComponentsTest {
 
         container.bindChildren(items, item -> new TestComponent(item.get()));
 
-        assertThrows("add should throw while binding is active",
-                BindingActiveException.class,
-                () -> container.add(new TestComponent("manual")));
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent("manual")),
+                "add should throw while binding is active");
     }
 
     @Test
@@ -324,8 +328,9 @@ public class HasComponentsTest {
 
         Component child = container.getChildren().toList().get(0);
 
-        assertThrows("remove should throw while binding is active",
-                BindingActiveException.class, () -> container.remove(child));
+        assertThrows(BindingActiveException.class,
+                () -> container.remove(child),
+                "remove should throw while binding is active");
     }
 
 }

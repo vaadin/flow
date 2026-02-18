@@ -42,10 +42,10 @@ import com.vaadin.flow.signals.impl.Effect;
  * context of a given element's life-cycle.
  * <p>
  * It ultimately creates a Signal effect, i.e. a call to
- * {@link Signal#effect(EffectAction)}, that is automatically enabled when an
- * element is attached and disabled when the element is detached. Additionally,
- * it provides methods to bind signals to element according to a given value
- * setting function.
+ * {@link Signal#unboundEffect(EffectAction)}, that is automatically enabled
+ * when an element is attached and disabled when the element is detached.
+ * Additionally, it provides methods to bind signals to element according to a
+ * given value setting function.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -98,7 +98,7 @@ public final class ElementEffect implements Serializable {
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
      *
-     * @see Signal#effect(EffectAction)
+     * @see Signal#unboundEffect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
@@ -131,7 +131,7 @@ public final class ElementEffect implements Serializable {
      *         Element::setVisible);
      * </pre>
      *
-     * @see Signal#effect(EffectAction)
+     * @see Signal#unboundEffect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>

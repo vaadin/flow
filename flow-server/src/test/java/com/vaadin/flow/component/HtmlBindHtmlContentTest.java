@@ -15,20 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit tests for Html.bindHtmlContent(Signal<String>).
  */
-public class HtmlBindHtmlContentTest extends SignalsUnitTest {
+class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
     @Test
     public void bindHtmlContent_componentAttachedBefore_bindingActive() {
