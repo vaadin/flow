@@ -35,7 +35,7 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#computed(SignalComputation)
  */
 @FunctionalInterface
-public interface SignalComputation<T> extends Serializable {
+public interface SignalComputation<T> extends TrackableSupplier<T> {
     /**
      * Computes the signal value, automatically tracking dependencies on other
      * signals.
@@ -44,4 +44,10 @@ public interface SignalComputation<T> extends Serializable {
      */
     @Nullable
     T compute();
+
+    @Override
+    @Nullable
+    default T supply() {
+        return compute();
+    }
 }

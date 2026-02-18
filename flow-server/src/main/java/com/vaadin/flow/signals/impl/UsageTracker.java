@@ -18,12 +18,11 @@ package com.vaadin.flow.signals.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.function.TrackableSupplier;
 import com.vaadin.flow.signals.function.ValueSupplier;
 
 /**
@@ -31,9 +30,9 @@ import com.vaadin.flow.signals.function.ValueSupplier;
  */
 public class UsageTracker {
     static final class CombinedUsage implements Usage {
-        private final Collection<Usage> usages;
+        private final Collection<? extends Usage> usages;
 
-        CombinedUsage(Collection<Usage> usages) {
+        CombinedUsage(Collection<? extends Usage> usages) {
             this.usages = usages;
         }
 
@@ -136,20 +135,6 @@ public class UsageTracker {
     }
 
     /**
-     * Receives notifications about signal usage events.
-     */
-    @FunctionalInterface
-    public interface UsageRegistrar extends Serializable {
-        /**
-         * Called when a usage event occurs.
-         *
-         * @param usage
-         *            the usage instance, not <code>null</code>
-         */
-        void register(Usage usage);
-    }
-
-    /**
      * A usage that doesn't have any changes and never fires any events.
      */
     public static final Usage NO_USAGE = new Usage() {
@@ -172,100 +157,74 @@ public class UsageTracker {
     }
 
     /**
-     * Runs the given task while collecting all cases where a managed value is
-     * used.
+     * Wraps the given task to track its usage of managed values through the
+     * provided tracker.
+     *
+     * <p>
+     * When this supplier is invoked, it temporarily sets the current usage
+     * tracker to the provided one during the execution of the wrapped task.
+     * This allows any signal value accessed within the task to be registered
+     * with the tracker for later inspection of its dependencies.
+     * </p>
      *
      * @param task
-     *            the task to run, not <code>null</code>
-     * @return a usage instance that combines all used managed values, not
-     *         <code>null</code>
-     */
-    public static Usage track(SerializableRunnable task) {
-        Collection<Usage> usages = new ArrayList<>();
-
-        track(task, usages::add);
-
-        int usageSize = usages.size();
-        if (usageSize == 0) {
-            return NO_USAGE;
-        } else if (usageSize == 1) {
-            return usages.iterator().next();
-        } else {
-            return new CombinedUsage(usages);
-        }
-    }
-
-    /**
-     * Runs the given task while reacting to all cases where a managed value is
-     * used.
-     *
-     * @param task
-     *            the task to run, not <code>null</code>
+     *            the task whose usage should be tracked, not {@code null}
      * @param tracker
-     *            a consumer that receives all usages as they happen, not
-     *            <code>null</code>
+     *            a consumer that will receive notifications about all managed
+     *            values used by the task, not {@code null}
+     * @param <T>
+     *            the type returned by the task
+     * @return a new TrackableSupplier that wraps the given task and tracks its
+     *         usage through the provided tracker
      */
-    public static void track(SerializableRunnable task,
+    public static <T> TrackableSupplier<T> tracked(TrackableSupplier<T> task,
             UsageRegistrar tracker) {
         assert task != null;
         assert tracker != null;
 
-        track(() -> {
-            task.run();
-            return null;
-        }, tracker);
+        // avoid lambda to allow proper deserialization
+        return new TrackableSupplier<T>() {
+            @Override
+            public @Nullable T supply() {
+                var previousTracker = currentTracker.get();
+                try {
+                    currentTracker.set(tracker);
+                    return task.supply();
+                } finally {
+                    currentTracker.set(previousTracker);
+                }
+            }
+        };
     }
 
     /**
-     * Runs the given task with return value while reacting to all cases where a
-     * managed value is used.
-     *
-     * @param task
-     *            the task to run, not <code>null</code>
-     * @param tracker
-     *            a consumer that receives all usages as they happen, not
-     *            <code>null</code>
-     * @param <T>
-     *            the task return type
-     * @return the value returned from the task
-     */
-    public static <T> T track(Supplier<T> task, UsageRegistrar tracker) {
-        assert task != null;
-        assert tracker != null;
-
-        var previousTracker = currentTracker.get();
-        try {
-            currentTracker.set(tracker);
-
-            return task.get();
-        } finally {
-            currentTracker.set(previousTracker);
-        }
-    }
-
-    /**
-     * Runs the given supplier without tracking usage even if a usage tracker is
+     * Wraps the given task to avoid tracking usage even when a usage tracker is
      * active.
      *
      * @param <T>
-     *            the supplier type
+     *            the task result type
      * @param task
-     *            the supplier task to run, not <code>null</code>
-     * @return the value returned from the supplier
+     *            the task to wrap, not <code>null</code>
+     * @return the wrapped supplier
      */
-    public static <T> @Nullable T untracked(ValueSupplier<T> task) {
-        var previousTracker = currentTracker.get();
-        if (previousTracker == null) {
-            return task.supply();
-        }
+    public static <T> ValueSupplier<T> untracked(ValueSupplier<T> task) {
+        // avoid lambda to allow proper deserialization
+        return new ValueSupplier<T>() {
+            @Override
+            public @Nullable T supply() {
+                var previousTracker = currentTracker.get();
+                if (previousTracker == null) {
+                    return task.supply();
+                }
+                try {
+                    currentTracker.remove();
 
-        try {
-            currentTracker.remove();
-
-            return task.supply();
-        } finally {
-            currentTracker.set(previousTracker);
-        }
+                    return task.supply();
+                } finally {
+                    currentTracker.set(previousTracker);
+                }
+            }
+        };
     }
 
     /**

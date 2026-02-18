@@ -38,9 +38,12 @@ public class UsageTrackerTest extends SignalTestBase {
     void hasChanges_runInTransaction_readsFromTransaction() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             signal.get();
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         Signal.runInTransaction(() -> {
             signal.set("changed");
@@ -54,9 +57,12 @@ public class UsageTrackerTest extends SignalTestBase {
     }
 
     @Test
-    void track_noUsage_noChnages() {
-        Usage usage = UsageTracker.track(() -> {
-        });
+    void track_noUsage_noChanges() {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         assertFalse(usage.hasChanges());
     }
@@ -65,9 +71,12 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_readValueInCallback_tracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             signal.get();
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         signal.set("update");
         assertTrue(usage.hasChanges());
@@ -77,9 +86,12 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekInCallback_notTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             signal.peek();
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -89,9 +101,12 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekConfirmedInCallback_notTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             signal.peekConfirmed();
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -101,12 +116,15 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_useValue_notRegistered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             Signal.untracked(() -> {
                 signal.get();
                 return null;
             });
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -116,12 +134,12 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_writeInCallback_allowedNoUsageTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            Signal.untracked(() -> {
-                signal.set("update");
-                return null;
-            });
-        });
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
+            signal.set("update");
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         signal.set("another");
         assertFalse(usage.hasChanges());
@@ -129,33 +147,40 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_multipleUsages_combinedUsage() {
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             UsageTracker.registerUsage(new TestUsage());
             UsageTracker.registerUsage(new TestUsage());
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         assertInstanceOf(CombinedUsage.class, usage);
     }
 
     @Test
     void track_singleUsage_notCombinedUsage() {
-        Usage usage = UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             UsageTracker.registerUsage(new TestUsage());
-        });
+            return null;
+        }, usageDetector).supply();
+        Usage usage = usageDetector.dependencies();
 
         assertFalse(usage instanceof CombinedUsage);
     }
 
     @Test
     void isActive_activeInsideTrackerInactiveOutsdide() {
-        UsageTracker.track(() -> {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
             assertTrue(UsageTracker.isActive());
-
             Signal.untracked(() -> {
                 assertFalse(UsageTracker.isActive());
                 return null;
             });
-        });
+            return null;
+        }, usageDetector).supply();
 
         assertFalse(UsageTracker.isActive());
     }

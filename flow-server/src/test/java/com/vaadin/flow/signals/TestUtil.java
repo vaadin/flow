@@ -20,7 +20,10 @@ import java.util.concurrent.ExecutionException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.impl.UsageDetector;
+import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.operations.SignalOperation.Result;
 import com.vaadin.flow.signals.operations.SignalOperation.ResultOrError;
@@ -89,5 +92,24 @@ public class TestUtil {
      */
     public static SignalTree tree(AbstractSignal<?> signal) {
         return SignalUtils.treeOf(signal);
+    }
+
+    /**
+     * Runs the given task while collecting all cases where a managed value is
+     * used.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @return a usage instance that combines all used managed values, not
+     *         <code>null</code>
+     */
+    public static UsageTracker.Usage runAndTrackUsage(
+            SerializableRunnable task) {
+        UsageDetector usageDetector = UsageDetector.createCollecting();
+        UsageTracker.tracked(() -> {
+            task.run();
+            return null;
+        }, usageDetector).supply();
+        return usageDetector.dependencies();
     }
 }
