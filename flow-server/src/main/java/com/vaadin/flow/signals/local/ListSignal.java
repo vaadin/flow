@@ -22,6 +22,8 @@ import java.util.Objects;
 
 import org.jspecify.annotations.NonNull;
 
+import com.vaadin.flow.signals.impl.Transaction;
+
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
  * reactivity.
@@ -58,6 +60,17 @@ public class ListSignal<T>
         return Objects.requireNonNull(super.peek());
     }
 
+    @Override
+    protected void checkPreconditions() {
+        assertLockHeld();
+        super.checkPreconditions();
+
+        if (Transaction.inTransaction()) {
+            throw new IllegalStateException(
+                    "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
+        }
+    }
+
     /**
      * Inserts a value as the first entry in this list.
      *
@@ -66,7 +79,13 @@ public class ListSignal<T>
      * @return a signal for the inserted entry
      */
     public ValueSignal<T> insertFirst(T value) {
-        return insertAt(0, value);
+        lock();
+        try {
+            checkPreconditions();
+            return insertAtInternal(0, value);
+        } finally {
+            unlock();
+        }
     }
 
     /**
@@ -79,6 +98,7 @@ public class ListSignal<T>
     public ValueSignal<T> insertLast(T value) {
         lock();
         try {
+            checkPreconditions();
             return insertAtInternal(
                     Objects.requireNonNull(getSignalValue()).size(), value);
         } finally {
@@ -107,6 +127,7 @@ public class ListSignal<T>
     public ValueSignal<T> insertAt(int index, T value) {
         lock();
         try {
+            checkPreconditions();
             List<ValueSignal<T>> entries = Objects
                     .requireNonNull(getSignalValue());
             if (index < 0 || index > entries.size()) {
@@ -139,6 +160,7 @@ public class ListSignal<T>
     public void remove(ValueSignal<T> entry) {
         lock();
         try {
+            checkPreconditions();
             List<ValueSignal<T>> entries = Objects
                     .requireNonNull(getSignalValue());
             List<ValueSignal<T>> newEntries = entries.stream()
@@ -157,6 +179,7 @@ public class ListSignal<T>
     public void clear() {
         lock();
         try {
+            checkPreconditions();
             if (!Objects.requireNonNull(getSignalValue()).isEmpty()) {
                 setSignalValue(List.of());
             }

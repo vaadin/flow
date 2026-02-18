@@ -75,10 +75,11 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
     @Override
     protected void checkPreconditions() {
         assertLockHeld();
+        super.checkPreconditions();
 
         if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
-                    "ValueSignal cannot be used inside signal transactions.");
+                    "ValueSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedValueSignal instead.");
         }
 
         if (modifyRunning) {
