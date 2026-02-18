@@ -96,12 +96,28 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     @Override
     public Double get() {
         Double value = super.get();
-
         if (value == null) {
             return Double.valueOf(0);
-        } else {
-            return value;
         }
+        return value;
+    }
+
+    @Override
+    public Double peek() {
+        Double value = super.peek();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
+    }
+
+    @Override
+    public Double peekConfirmed() {
+        Double value = super.peekConfirmed();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
     }
 
     /**

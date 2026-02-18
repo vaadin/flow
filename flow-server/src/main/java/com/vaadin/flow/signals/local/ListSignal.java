@@ -51,6 +51,16 @@ public class ListSignal<T>
     }
 
     @Override
+    public List<ValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public List<ValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
+    @Override
     protected void checkPreconditions() {
         assertLockHeld();
         super.checkPreconditions();
