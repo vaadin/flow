@@ -33,8 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import junit.framework.AssertionFailedError;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.BeanUtil;
@@ -44,10 +43,16 @@ import com.vaadin.flow.tests.data.bean.FatherAndSon;
 import com.vaadin.flow.tests.data.bean.Sex;
 import com.vaadin.flow.tests.server.ClassesSerializableUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BeanPropertySetTest {
+class BeanPropertySetTest {
 
     public static class Person implements Serializable {
         private String name;
@@ -116,7 +121,7 @@ public class BeanPropertySetTest {
     }
 
     @Test
-    public void testSerializeDeserialize_propertySet() throws Exception {
+    void testSerializeDeserialize_propertySet() throws Exception {
         PropertySet<Person> originalPropertySet = BeanPropertySet
                 .get(Person.class);
 
@@ -137,15 +142,14 @@ public class BeanPropertySetTest {
                 .sorted(Comparator.comparing(PropertyDefinition::getName))
                 .toArray(PropertyDefinition<?, ?>[]::new);
 
-        assertEquals(message, propertiesA.length, propertiesB.length);
+        assertEquals(propertiesA.length, propertiesB.length, message);
         for (int i = 0; i < propertiesB.length; i++) {
-            assertSame(message, propertiesA[i], propertiesB[i]);
+            assertSame(propertiesA[i], propertiesB[i], message);
         }
     }
 
     @Test
-    public void testSerializeDeserialize_propertySet_cacheCleared()
-            throws Exception {
+    void testSerializeDeserialize_propertySet_cacheCleared() throws Exception {
         PropertySet<Person> originalPropertySet = BeanPropertySet
                 .get(Person.class);
 
@@ -171,13 +175,12 @@ public class BeanPropertySetTest {
                 deserializedPropertySet,
                 "Deserialized instance should be the same as in the cache");
 
-        Assert.assertNotSame(
-                "Deserialized instance should not be the same as the original",
-                originalPropertySet, deserializedPropertySet);
+        assertNotSame(originalPropertySet, deserializedPropertySet,
+                "Deserialized instance should not be the same as the original");
     }
 
     @Test
-    public void testSerializeDeserialize_propertyDefinition() throws Exception {
+    void testSerializeDeserialize_propertyDefinition() throws Exception {
         PropertyDefinition<Person, ?> definition = BeanPropertySet
                 .get(Person.class).getProperty("born")
                 .orElseThrow(RuntimeException::new);
@@ -189,19 +192,18 @@ public class BeanPropertySetTest {
         Person person = new Person("Milennial", 2000);
         Integer age = (Integer) getter.apply(person);
 
-        Assert.assertEquals("Deserialized definition should be functional",
-                Integer.valueOf(2000), age);
+        assertEquals(Integer.valueOf(2000), age,
+                "Deserialized definition should be functional");
 
-        Assert.assertSame(
-                "Deserialized instance should be the same as in the cache",
+        assertSame(
                 BeanPropertySet.get(Person.class).getProperty("born")
                         .orElseThrow(RuntimeException::new),
-                deserializedDefinition);
+                deserializedDefinition,
+                "Deserialized instance should be the same as in the cache");
     }
 
     @Test
-    public void testSerializeDeserialize_nestedPropertyDefinition()
-            throws Exception {
+    void testSerializeDeserialize_nestedPropertyDefinition() throws Exception {
         PropertyDefinition<com.vaadin.flow.tests.data.bean.Person, ?> definition = BeanPropertySet
                 .get(com.vaadin.flow.tests.data.bean.Person.class, true,
                         PropertyFilterDefinition.getDefaultFilter())
@@ -220,12 +222,12 @@ public class BeanPropertySetTest {
 
         Integer postalCode = (Integer) getter.apply(person);
 
-        Assert.assertEquals("Deserialized definition should be functional",
-                address.getPostalCode(), postalCode);
+        assertEquals(address.getPostalCode(), postalCode,
+                "Deserialized definition should be functional");
     }
 
     @Test
-    public void testSerializeDeserializeRecord() throws Exception {
+    void testSerializeDeserializeRecord() throws Exception {
         PropertyDefinition<TestRecord, ?> definition = BeanPropertySet
                 .get(TestRecord.class).getProperty("name")
                 .orElseThrow(AssertionFailedError::new);
@@ -240,31 +242,31 @@ public class BeanPropertySetTest {
 
         String name = (String) getter.apply(testRecord);
 
-        Assert.assertEquals("Deserialized definition should be functional",
-                "someone", name);
+        assertEquals("someone", name,
+                "Deserialized definition should be functional");
 
         PropertyDescriptor namePropertyDescriptor = BeanUtil
                 .getPropertyDescriptor(TestRecord.class, "name");
-        Assert.assertNotNull(namePropertyDescriptor);
-        Assert.assertEquals("Property has unexpected name",
-                namePropertyDescriptor.getName(), "name");
-        Assert.assertEquals("Property read method has unexpected name",
-                namePropertyDescriptor.getReadMethod().getName(), "name");
+        assertNotNull(namePropertyDescriptor);
+        assertEquals(namePropertyDescriptor.getName(), "name",
+                "Property has unexpected name");
+        assertEquals(namePropertyDescriptor.getReadMethod().getName(), "name",
+                "Property read method has unexpected name");
 
         Class<?> namePropertyType = BeanUtil.getPropertyType(TestRecord.class,
                 "name");
-        Assert.assertEquals("Property type is unexpected", namePropertyType,
-                String.class);
+        assertEquals(namePropertyType, String.class,
+                "Property type is unexpected");
 
         // Ensure props for Record are not sorted, but are in code order
         List<PropertyDefinition<TestRecord, ?>> propertyList = definition
                 .getPropertySet().getProperties().toList();
-        Assert.assertEquals("name", propertyList.get(0).getName());
-        Assert.assertEquals("age", propertyList.get(1).getName());
+        assertEquals("name", propertyList.get(0).getName());
+        assertEquals("age", propertyList.get(1).getName());
     }
 
     @Test
-    public void nestedPropertyDefinition_samePropertyNameOnMultipleLevels() {
+    void nestedPropertyDefinition_samePropertyNameOnMultipleLevels() {
         PropertyDefinition<FatherAndSon, ?> definition = BeanPropertySet
                 .get(FatherAndSon.class).getProperty("father.father.firstName")
                 .orElseThrow(RuntimeException::new);
@@ -279,133 +281,134 @@ public class BeanPropertySetTest {
 
         String firstName = (String) getter.apply(son);
 
-        Assert.assertEquals(grandFather.getFirstName(), firstName);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nestedPropertyDefinition_propertyChainBroken() {
-        PropertyDefinition<FatherAndSon, ?> definition = BeanPropertySet
-                .get(FatherAndSon.class).getProperty("father.firstName")
-                .orElseThrow(RuntimeException::new);
-
-        ValueProvider<FatherAndSon, ?> getter = definition.getGetter();
-
-        getter.apply(new FatherAndSon("Jon", "Doe", null, null));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nestedPropertyDefinition_invalidPropertyNameInChain() {
-        BeanPropertySet.get(FatherAndSon.class)
-                .getProperty("grandfather.firstName");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nestedPropertyDefinition_invalidPropertyNameAtChainEnd() {
-        BeanPropertySet.get(FatherAndSon.class).getProperty("father.age");
+        assertEquals(grandFather.getFirstName(), firstName);
     }
 
     @Test
-    public void properties() {
+    void nestedPropertyDefinition_propertyChainBroken() {
+        assertThrows(NullPointerException.class, () -> {
+            PropertyDefinition<FatherAndSon, ?> definition = BeanPropertySet
+                    .get(FatherAndSon.class).getProperty("father.firstName")
+                    .orElseThrow(RuntimeException::new);
+
+            ValueProvider<FatherAndSon, ?> getter = definition.getGetter();
+
+            getter.apply(new FatherAndSon("Jon", "Doe", null, null));
+        });
+    }
+
+    @Test
+    void nestedPropertyDefinition_invalidPropertyNameInChain() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            BeanPropertySet.get(FatherAndSon.class)
+                    .getProperty("grandfather.firstName");
+        });
+    }
+
+    @Test
+    void nestedPropertyDefinition_invalidPropertyNameAtChainEnd() {
+        assertThrows(IllegalArgumentException.class, () -> BeanPropertySet
+                .get(FatherAndSon.class).getProperty("father.age"));
+    }
+
+    @Test
+    void properties() {
         PropertySet<Person> propertySet = BeanPropertySet.get(Person.class);
 
         Set<String> propertyNames = propertySet.getProperties()
                 .map(PropertyDefinition::getName).collect(Collectors.toSet());
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("name", "born")),
+        assertEquals(new HashSet<>(Arrays.asList("name", "born")),
                 propertyNames);
     }
 
     @Test
-    public void isSubProperty() {
+    void isSubProperty() {
         PropertySet<FatherAndSon> propertySet = BeanPropertySet
                 .get(FatherAndSon.class);
 
-        Assert.assertTrue(
-                "Dot-separated property chain \"father.firstName\" should refer to a sub-property",
+        assertTrue(
                 propertySet.getProperty("father.firstName").get()
-                        .isSubProperty());
-        Assert.assertFalse(
-                "Property name without dot-separated parent properties should not refer to a sub-property",
-                propertySet.getProperty("father").get().isSubProperty());
-        Assert.assertTrue(
-                "Dot-separated property chain \"father.son.father.son\" should refer to a sub-property",
+                        .isSubProperty(),
+                "Dot-separated property chain \"father.firstName\" should refer to a sub-property");
+        assertFalse(propertySet.getProperty("father").get().isSubProperty(),
+                "Property name without dot-separated parent properties should not refer to a sub-property");
+        assertTrue(
                 propertySet.getProperty("father.son.father.son").get()
-                        .isSubProperty());
+                        .isSubProperty(),
+                "Dot-separated property chain \"father.son.father.son\" should refer to a sub-property");
     }
 
     @Test
-    public void getFullName_returnsFullPropertyChain() {
+    void getFullName_returnsFullPropertyChain() {
         PropertySet<FatherAndSon> propertySet = BeanPropertySet
                 .get(FatherAndSon.class);
         String subPropertyFullName = "father.son.father.son.firstName";
         PropertyDefinition<FatherAndSon, ?> subProperty = propertySet
                 .getProperty(subPropertyFullName).get();
-        Assert.assertEquals(
-                "Name of a sub-property should be the simple name of the property",
-                "firstName", subProperty.getTopLevelName());
-        Assert.assertEquals(
-                "Full name of a sub-property should be the full property chain with parent properties",
-                subPropertyFullName, subProperty.getName());
+        assertEquals("firstName", subProperty.getTopLevelName(),
+                "Name of a sub-property should be the simple name of the property");
+        assertEquals(subPropertyFullName, subProperty.getName(),
+                "Full name of a sub-property should be the full property chain with parent properties");
     }
 
     @Test
-    public void getParentForDirectProperty_returnsNull() {
+    void getParentForDirectProperty_returnsNull() {
         PropertySet<FatherAndSon> propertySet = BeanPropertySet
                 .get(FatherAndSon.class);
-        Assert.assertNull(
-                "Direct property of a property set should not have a parent",
-                propertySet.getProperty("father").get().getParent());
+        assertNull(propertySet.getProperty("father").get().getParent(),
+                "Direct property of a property set should not have a parent");
     }
 
     @Test
-    public void getParentForSubProperty_returnsParent() {
+    void getParentForSubProperty_returnsParent() {
         PropertySet<FatherAndSon> propertySet = BeanPropertySet
                 .get(FatherAndSon.class);
-        Assert.assertEquals(
-                "Parent property of \"father.son.father\" should be \"father.son\"",
-                "father.son", propertySet.getProperty("father.son.father").get()
-                        .getParent().getName());
+        assertEquals("father.son",
+                propertySet.getProperty("father.son.father").get().getParent()
+                        .getName(),
+                "Parent property of \"father.son.father\" should be \"father.son\"");
     }
 
     @Test
-    public void get_beanImplementsSameInterfaceSeveralTimes_interfacePropertyIsNotDuplicated() {
+    void get_beanImplementsSameInterfaceSeveralTimes_interfacePropertyIsNotDuplicated() {
         PropertySet<Iface3> set = BeanPropertySet.get(Iface3.class, false,
                 PropertyFilterDefinition.getDefaultFilter());
 
         List<PropertyDefinition<Iface3, ?>> defs = set.getProperties()
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(1, defs.size());
-        Assert.assertEquals("name", defs.get(0).getName());
+        assertEquals(1, defs.size());
+        assertEquals("name", defs.get(0).getName());
     }
 
     @Test
-    public void get_beanImplementsInterfaceWithDefaultMethod_propertyFound() {
+    void get_beanImplementsInterfaceWithDefaultMethod_propertyFound() {
         PropertySet<DefaultMethodIface> set = BeanPropertySet
                 .get(DefaultMethodIface.class);
 
         List<PropertyDefinition<DefaultMethodIface, ?>> defs = set
                 .getProperties().collect(Collectors.toList());
 
-        Assert.assertEquals(1, defs.size());
-        Assert.assertEquals("name", defs.get(0).getName());
+        assertEquals(1, defs.size());
+        assertEquals("name", defs.get(0).getName());
     }
 
     @Test
-    public void get_beanImplementsGenericInterfaceSubclassWithDefaultMethod_interfacePropertyIsNotDuplicated() {
+    void get_beanImplementsGenericInterfaceSubclassWithDefaultMethod_interfacePropertyIsNotDuplicated() {
         PropertySet<DefaultMethodSubclassIface> set = BeanPropertySet
                 .get(DefaultMethodSubclassIface.class);
 
         List<PropertyDefinition<DefaultMethodSubclassIface, ?>> defs = set
                 .getProperties().collect(Collectors.toList());
 
-        Assert.assertEquals(3, defs.size());
-        Assert.assertEquals("name", defs.get(0).getName());
-        Assert.assertEquals(String.class, defs.get(0).getType());
-        Assert.assertEquals("property", defs.get(1).getName());
-        Assert.assertEquals(String.class, defs.get(1).getType());
-        Assert.assertEquals("wrappedProperty", defs.get(2).getName());
-        Assert.assertEquals(GenericIface.class, defs.get(2).getType());
+        assertEquals(3, defs.size());
+        assertEquals("name", defs.get(0).getName());
+        assertEquals(String.class, defs.get(0).getType());
+        assertEquals("property", defs.get(1).getName());
+        assertEquals(String.class, defs.get(1).getType());
+        assertEquals("wrappedProperty", defs.get(2).getName());
+        assertEquals(GenericIface.class, defs.get(2).getType());
     }
 
     public interface HasSomething {
@@ -468,21 +471,21 @@ public class BeanPropertySetTest {
     }
 
     @Test
-    public void includesDefaultMethodsFromInterfaces() {
+    void includesDefaultMethodsFromInterfaces() {
         PropertySet<MyClass> set = BeanPropertySet.get(MyClass.class);
 
         List<PropertyDefinition<MyClass, ?>> defs = set.getProperties()
                 .collect(Collectors.toList());
 
-        Assert.assertEquals(4, defs.size());
-        Assert.assertEquals("firstName", defs.get(0).getName());
-        Assert.assertEquals(String.class, defs.get(0).getType());
-        Assert.assertEquals("lastName", defs.get(1).getName());
-        Assert.assertEquals(String.class, defs.get(1).getType());
-        Assert.assertEquals("name", defs.get(2).getName());
-        Assert.assertEquals(String.class, defs.get(2).getType());
-        Assert.assertEquals("something", defs.get(3).getName());
-        Assert.assertEquals(String.class, defs.get(3).getType());
+        assertEquals(4, defs.size());
+        assertEquals("firstName", defs.get(0).getName());
+        assertEquals(String.class, defs.get(0).getType());
+        assertEquals("lastName", defs.get(1).getName());
+        assertEquals(String.class, defs.get(1).getType());
+        assertEquals("name", defs.get(2).getName());
+        assertEquals(String.class, defs.get(2).getType());
+        assertEquals("something", defs.get(3).getName());
+        assertEquals(String.class, defs.get(3).getType());
 
     }
 }

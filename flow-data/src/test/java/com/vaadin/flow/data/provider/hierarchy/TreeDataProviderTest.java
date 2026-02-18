@@ -22,26 +22,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
 import com.vaadin.flow.function.SerializablePredicate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TreeDataProviderTest
+class TreeDataProviderTest
         extends DataProviderTestBase<TreeDataProvider<StrBean>> {
 
     private TreeData<StrBean> data;
     private List<StrBean> flattenedData;
     private List<StrBean> rootData;
 
+    @BeforeEach
     @Override
     public void setUp() {
         List<StrBean> randomBeans = StrBean.generateRandomBeans(20);
@@ -67,43 +69,47 @@ public class TreeDataProviderTest
         super.setUp();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void treeData_add_item_parent_not_in_hierarchy_throws() {
-        new TreeData<>().addItem(new StrBean("", 0, 0), new StrBean("", 0, 0));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void treeData_add_null_item_throws() {
-        new TreeData<>().addItem(null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void treeData_add_item_already_in_hierarchy_throws() {
-        StrBean bean = new StrBean("", 0, 0);
-        new TreeData<>().addItem(null, bean).addItem(null, bean);
+    @Test
+    void treeData_add_item_parent_not_in_hierarchy_throws() {
+        assertThrows(IllegalArgumentException.class, () -> new TreeData<>()
+                .addItem(new StrBean("", 0, 0), new StrBean("", 0, 0)));
     }
 
     @Test
-    public void treeData_remove_root_item() {
+    void treeData_add_null_item_throws() {
+        assertThrows(NullPointerException.class,
+                () -> new TreeData<>().addItem(null, null));
+    }
+
+    @Test
+    void treeData_add_item_already_in_hierarchy_throws() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            StrBean bean = new StrBean("", 0, 0);
+            new TreeData<>().addItem(null, bean).addItem(null, bean);
+        });
+    }
+
+    @Test
+    void treeData_remove_root_item() {
         data.removeItem(null);
         assertTrue(data.getChildren(null).isEmpty());
     }
 
     @Test
-    public void treeData_clear() {
+    void treeData_clear() {
         data.clear();
         assertTrue(data.getChildren(null).isEmpty());
     }
 
     @Test
-    public void treeData_re_add_removed_item() {
+    void treeData_re_add_removed_item() {
         StrBean item = rootData.get(0);
         data.removeItem(item).addItem(null, item);
         assertTrue(data.getChildren(null).contains(item));
     }
 
     @Test
-    public void treeData_get_parent() {
+    void treeData_get_parent() {
         StrBean root = rootData.get(0);
         StrBean firstChild = data.getChildren(root).get(0);
         assertNull(data.getParent(root));
@@ -111,7 +117,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void treeData_set_parent() {
+    void treeData_set_parent() {
         StrBean item1 = rootData.get(0);
         StrBean item2 = rootData.get(1);
         assertEquals(0, data.getChildren(item2).size());
@@ -130,7 +136,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void treeData_move_after_sibling() {
+    void treeData_move_after_sibling() {
         StrBean root0 = rootData.get(0);
         StrBean root9 = rootData.get(9);
         assertEquals(root0, data.getRootItems().get(0));
@@ -160,16 +166,18 @@ public class TreeDataProviderTest
         assertEquals(2, data.getChildren(root0).indexOf(child2));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void treeData_move_after_sibling_different_parents() {
-        StrBean root0 = rootData.get(0);
-        StrBean wrongSibling = data.getChildren(root0).get(0);
+    @Test
+    void treeData_move_after_sibling_different_parents() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            StrBean root0 = rootData.get(0);
+            StrBean wrongSibling = data.getChildren(root0).get(0);
 
-        data.moveAfterSibling(root0, wrongSibling);
+            data.moveAfterSibling(root0, wrongSibling);
+        });
     }
 
     @Test
-    public void treeData_setParent_direct_cycle_throws() {
+    void treeData_setParent_direct_cycle_throws() {
         // Test direct cycle: parent -> child, then try to set child as parent's
         // parent
         StrBean parent = rootData.get(0);
@@ -177,7 +185,7 @@ public class TreeDataProviderTest
 
         // This should throw because it would create cycle: child -> parent ->
         // child
-        IllegalArgumentException exception = Assert.assertThrows(
+        IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> data.setParent(parent, child));
         assertTrue(exception.getMessage().contains("would create a cycle"));
@@ -186,14 +194,14 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void treeData_setParent_multi_level_cycle_throws() {
+    void treeData_setParent_multi_level_cycle_throws() {
         // Test multi-level cycle: A -> B -> C, then try to set C as A's parent
         StrBean itemA = rootData.get(0);
         StrBean itemB = data.getChildren(itemA).get(0);
         StrBean itemC = data.getChildren(itemB).get(0);
 
         // This should throw because it would create cycle: C -> A -> B -> C
-        IllegalArgumentException exception = Assert.assertThrows(
+        IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> data.setParent(itemA, itemC));
         assertTrue(exception.getMessage().contains("would create a cycle"));
@@ -202,7 +210,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void treeData_root_items() {
+    void treeData_root_items() {
         TreeData<String> data = new TreeData<>();
         TreeData<String> dataVarargs = new TreeData<>();
         TreeData<String> dataCollection = new TreeData<>();
@@ -219,7 +227,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void populate_treeData_with_child_item_provider() {
+    void populate_treeData_with_child_item_provider() {
         TreeData<String> stringData = new TreeData<>();
         List<String> rootItems = Arrays.asList("a", "b", "c");
         stringData.addItems(rootItems, item -> {
@@ -237,7 +245,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void populate_treeData_with_stream_child_item_provider() {
+    void populate_treeData_with_stream_child_item_provider() {
         TreeData<String> stringData = new TreeData<>();
         Stream<String> rootItems = Stream.of("a", "b", "c");
         stringData.addItems(rootItems, item -> {
@@ -255,7 +263,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void filter_is_applied_to_children_provider_filter() {
+    void filter_is_applied_to_children_provider_filter() {
         final SerializablePredicate<String> dataProviderFilter = item -> item
                 .contains("Sub");
         final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(
@@ -264,7 +272,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void filter_is_applied_to_children_query_filter() {
+    void filter_is_applied_to_children_query_filter() {
         final SerializablePredicate<String> dataProviderFilter = null;
         final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(
                 item -> item.contains("Sub"), null);
@@ -272,7 +280,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void filter_is_applied_to_children_both_filters() {
+    void filter_is_applied_to_children_both_filters() {
         final SerializablePredicate<String> dataProviderFilter = item -> item
                 .contains("Sub");
         final HierarchicalQuery<String, SerializablePredicate<String>> query = new HierarchicalQuery<>(
@@ -296,7 +304,7 @@ public class TreeDataProviderTest
     }
 
     @Test
-    public void setFilter() {
+    void setFilter() {
         getDataProvider().setFilter(item -> item.getValue().equals("Xyz")
                 || item.getValue().equals("Baz"));
 
@@ -305,38 +313,37 @@ public class TreeDataProviderTest
         getDataProvider().setFilter(item -> !item.getValue().equals("Foo")
                 && !item.getValue().equals("Xyz"));
 
-        assertEquals(
-                "Previous filter should be replaced when setting a new one", 14,
-                sizeWithUnfilteredQuery());
+        assertEquals(14, sizeWithUnfilteredQuery(),
+                "Previous filter should be replaced when setting a new one");
 
         getDataProvider().setFilter(null);
 
-        assertEquals("Setting filter to null should remove all filters", 20,
-                sizeWithUnfilteredQuery());
+        assertEquals(20, sizeWithUnfilteredQuery(),
+                "Setting filter to null should remove all filters");
     }
 
     @Test
-    public void addFilter() {
+    void addFilter() {
         getDataProvider().addFilter(item -> item.getId() <= 10);
         getDataProvider().addFilter(item -> item.getId() >= 5);
         assertEquals(8, sizeWithUnfilteredQuery());
     }
 
     @Test
-    public void rootItem_getParent_returnsNull() {
+    void rootItem_getParent_returnsNull() {
         var rootItem = rootData.get(0);
         assertNull(getDataProvider().getParent(rootItem));
     }
 
     @Test
-    public void childItem_getParent_returnsParent() {
+    void childItem_getParent_returnsParent() {
         var rootItem = rootData.get(0);
         var childItem = data.getChildren(rootItem).get(0);
         assertEquals(rootItem, data.getParent(childItem));
     }
 
     @Test
-    public void notPresentItem_getParent_returnsNull() {
+    void notPresentItem_getParent_returnsNull() {
         var itemNotPresentInProvider = new StrBean("Not present", -1, 0);
         assertNull(getDataProvider().getParent(itemNotPresentInProvider));
     }
@@ -346,17 +353,21 @@ public class TreeDataProviderTest
         HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
                 .withConvertedFilter(
                         text -> strBean -> strBean.getValue().contains(text));
-        assertEquals("Only one item should match 'Xyz'", 1,
+        assertEquals(1,
                 strFilterDataProvider
-                        .size(new HierarchicalQuery<>("Xyz", null)));
-        assertEquals("No item should match 'Zyx'", 0, strFilterDataProvider
-                .size(new HierarchicalQuery<>("Zyx", null)));
-        assertEquals("Unexpected number of matches for 'Foo'", 4,
+                        .size(new HierarchicalQuery<>("Xyz", null)),
+                "Only one item should match 'Xyz'");
+        assertEquals(0,
                 strFilterDataProvider
-                        .size(new HierarchicalQuery<>("Foo", null)));
-        assertEquals("No items should've been filtered out", rootData.size(),
+                        .size(new HierarchicalQuery<>("Zyx", null)),
+                "No item should match 'Zyx'");
+        assertEquals(4,
                 strFilterDataProvider
-                        .size(new HierarchicalQuery<>(null, null)));
+                        .size(new HierarchicalQuery<>("Foo", null)),
+                "Unexpected number of matches for 'Foo'");
+        assertEquals(rootData.size(),
+                strFilterDataProvider.size(new HierarchicalQuery<>(null, null)),
+                "No items should've been filtered out");
     }
 
     @Override
@@ -367,43 +378,50 @@ public class TreeDataProviderTest
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Xyz"));
 
-        assertEquals("Only one item should match 'Xyz'", 1,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+        assertEquals(1,
+                configurableFilterDataProvider
+                        .size(new HierarchicalQuery<StrBean, Void>(null, null)),
+                "Only one item should match 'Xyz'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Zyx"));
 
-        assertEquals("No item should match 'Zyx'", 0,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+        assertEquals(0,
+                configurableFilterDataProvider
+                        .size(new HierarchicalQuery<StrBean, Void>(null, null)),
+                "No item should match 'Zyx'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Foo"));
 
-        assertEquals("Unexpected number of matches for 'Foo'", 4,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+        assertEquals(4,
+                configurableFilterDataProvider
+                        .size(new HierarchicalQuery<StrBean, Void>(null, null)),
+                "Unexpected number of matches for 'Foo'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue() == null);
 
-        assertEquals("No items should've been filtered out", 0,
-                configurableFilterDataProvider.size(
-                        new HierarchicalQuery<StrBean, Void>(null, null)));
+        assertEquals(0,
+                configurableFilterDataProvider
+                        .size(new HierarchicalQuery<StrBean, Void>(null, null)),
+                "No items should've been filtered out");
     }
 
     @Override
     public void filteringListDataProvider_defaultFilterType() {
-        assertEquals("Only one item should match 'Xyz'", 1,
+        assertEquals(1,
                 getDataProvider().size(new HierarchicalQuery<>(
-                        strBean -> strBean.getValue().contains("Xyz"), null)));
-        assertEquals("No item should match 'Zyx'", 0,
+                        strBean -> strBean.getValue().contains("Xyz"), null)),
+                "Only one item should match 'Xyz'");
+        assertEquals(0,
                 dataProvider.size(new HierarchicalQuery<>(
-                        strBean -> strBean.getValue().contains("Zyx"), null)));
-        assertEquals("Unexpected number of matches for 'Foo'", 4,
+                        strBean -> strBean.getValue().contains("Zyx"), null)),
+                "No item should match 'Zyx'");
+        assertEquals(4,
                 getDataProvider()
-                        .size(new HierarchicalQuery<>(fooFilter, null)));
+                        .size(new HierarchicalQuery<>(fooFilter, null)),
+                "Unexpected number of matches for 'Foo'");
     }
 
     @Override
@@ -418,19 +436,18 @@ public class TreeDataProviderTest
                         null))
                 .collect(Collectors.toList());
 
-        assertEquals("Sorted data and original data sizes don't match",
+        assertEquals(
                 getDataProvider().fetch(new HierarchicalQuery<>(null, null))
                         .count(),
-                list.size());
+                list.size(), "Sorted data and original data sizes don't match");
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
             StrBean cur = list.get(i);
             // Test specific sort
-            assertTrue(
+            assertTrue(prev.getRandomNumber() <= cur.getRandomNumber(),
                     "Failure: " + prev.getRandomNumber() + " > "
-                            + cur.getRandomNumber(),
-                    prev.getRandomNumber() <= cur.getRandomNumber());
+                            + cur.getRandomNumber());
 
             if (prev.getRandomNumber() == cur.getRandomNumber()) {
                 // Test default sort
@@ -451,8 +468,8 @@ public class TreeDataProviderTest
                 .fetch(new HierarchicalQuery<>(null, null))
                 .collect(Collectors.toList());
 
-        assertEquals("Sorted data and original data sizes don't match",
-                rootData.size(), list.size());
+        assertEquals(rootData.size(), list.size(),
+                "Sorted data and original data sizes don't match");
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
@@ -479,16 +496,16 @@ public class TreeDataProviderTest
                         .thenAsc("id").build(), comp, null, null))
                 .collect(Collectors.toList());
 
-        assertNotEquals("First value should not match", rootData.get(0),
-                list.get(0));
+        assertNotEquals(rootData.get(0), list.get(0),
+                "First value should not match");
 
-        assertEquals("Sorted data and original data sizes don't match",
-                rootData.size(), list.size());
+        assertEquals(rootData.size(), list.size(),
+                "Sorted data and original data sizes don't match");
 
         rootData.sort(comp);
         for (int i = 0; i < rootData.size(); ++i) {
-            assertEquals("Sorting result differed", rootData.get(i),
-                    list.get(i));
+            assertEquals(rootData.get(i), list.get(i),
+                    "Sorting result differed");
         }
     }
 

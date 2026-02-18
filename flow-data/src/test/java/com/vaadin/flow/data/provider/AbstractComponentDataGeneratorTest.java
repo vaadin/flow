@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
@@ -24,7 +24,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class AbstractComponentDataGeneratorTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class AbstractComponentDataGeneratorTest {
 
     private static class TestComponentDataGenerator
             extends AbstractComponentDataGenerator<String> {
@@ -53,14 +55,16 @@ public class AbstractComponentDataGeneratorTest {
 
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void registerRenderedComponent_containerHasUi_componentHasDifferentUi_throws() {
-        TestComponentDataGenerator generator = new TestComponentDataGenerator();
+    @Test
+    void registerRenderedComponent_containerHasUi_componentHasDifferentUi_throws() {
+        assertThrows(IllegalStateException.class, () -> {
+            TestComponentDataGenerator generator = new TestComponentDataGenerator();
 
-        Component component = new Text("bar");
-        UI ui = new UI();
-        ui.add(component);
-        generator.registerRenderedComponent("foo", component);
+            Component component = new Text("bar");
+            UI ui = new UI();
+            ui.add(component);
+            generator.registerRenderedComponent("foo", component);
+        });
     }
 
 }

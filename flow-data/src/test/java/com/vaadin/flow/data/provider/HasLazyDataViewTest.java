@@ -17,15 +17,16 @@ package com.vaadin.flow.data.provider;
 
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-public class HasLazyDataViewTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HasLazyDataViewTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component implements
@@ -56,31 +57,28 @@ public class HasLazyDataViewTest {
         }
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @Test
-    public void setItemsCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
+    void setItemsCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
         TestComponent testComponent = new TestComponent();
         // uses a NOOP count callback that will throw when called
         testComponent.setItems(query -> Stream.of("foo", "bar", "baz"));
 
-        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator()
+        assertFalse(testComponent.getLazyDataView().getDataCommunicator()
                 .isDefinedSize());
 
         testComponent.getLazyDataView().setItemCountFromDataProvider();
 
-        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator()
+        assertTrue(testComponent.getLazyDataView().getDataCommunicator()
                 .isDefinedSize());
 
-        expectedException.expect(IllegalStateException.class);
         // to make things fail, just need to call size() which will trigger a
         // size query
         //
         // Although we don't have getSize() method for lazy data view, it is
         // still possible for developer to call getItemCount() from
         // dataCommunicator.
-        testComponent.getDataCommunicator().getItemCount();
+        assertThrows(IllegalStateException.class,
+                () -> testComponent.getDataCommunicator().getItemCount());
     }
 
 }

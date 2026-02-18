@@ -17,49 +17,49 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class LongToBigDecimalConverterTest {
+class LongToBigDecimalConverterTest {
 
     LongToBigDecimalConverter converter = new LongToBigDecimalConverter();
 
     @Test
-    public void testNullConversionToModel() {
+    void testNullConversionToModel() {
         assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
-    public void testNullConversionToPresentation() {
+    void testNullConversionToPresentation() {
         assertNull(converter.convertToPresentation(null, null));
     }
 
     @Test
-    public void testConvertToModel() {
+    void testConvertToModel() {
         Result<BigDecimal> result = converter.convertToModel(42L, null);
         assertEquals(Result.ok(BigDecimal.valueOf(42)), result);
     }
 
     @Test
-    public void testConvertToPresentation() {
+    void testConvertToPresentation() {
         Long value = converter.convertToPresentation(BigDecimal.valueOf(42),
                 null);
         assertEquals(Long.valueOf(42), value);
     }
 
     @Test
-    public void testConvertToModelWithLargeValue() {
+    void testConvertToModelWithLargeValue() {
         Result<BigDecimal> result = converter.convertToModel(2147483648L, null); // large
                                                                                  // value
         assertEquals(Result.ok(BigDecimal.valueOf(2147483648L)), result);
     }
 
     @Test
-    public void testConvertToPresentationWithLargeValue() {
+    void testConvertToPresentationWithLargeValue() {
         Long value = converter
                 .convertToPresentation(BigDecimal.valueOf(2147483648L), null); // large
                                                                                // value

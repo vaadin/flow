@@ -18,10 +18,9 @@ package com.vaadin.flow.data.binder;
 import java.util.Locale;
 import java.util.Objects;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -30,7 +29,10 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 
-public class ValueContextTest extends UI {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class ValueContextTest extends UI {
 
     private static final Locale UI_LOCALE = Locale.GERMAN;
     private static final Locale COMPONENT_LOCALE = Locale.FRENCH;
@@ -41,60 +43,59 @@ public class ValueContextTest extends UI {
     private TestTextField confirmPasswordField;
 
     @Test
-    public void locale_from_component() {
+    void locale_from_component() {
         setLocale(COMPONENT_LOCALE);
         ValueContext fromComponent = new ValueContext(new Binder(), textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
-                COMPONENT_LOCALE, locale);
+        assertEquals(COMPONENT_LOCALE, locale,
+                "Unexpected locale from component");
     }
 
     @Test
-    public void locale_from_ui() {
+    void locale_from_ui() {
         ValueContext fromComponent = new ValueContext(new Binder(), textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component", UI_LOCALE,
-                locale);
+        assertEquals(UI_LOCALE, locale, "Unexpected locale from component");
     }
 
     @Test
-    public void default_locale() {
+    void default_locale() {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new Binder(), textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
-                Locale.getDefault(), locale);
+        assertEquals(Locale.getDefault(), locale,
+                "Unexpected locale from component");
     }
 
     @Test
-    public void testHasValue1() {
+    void testHasValue1() {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new Binder(), textField);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
-    public void testHasValue2() {
+    void testHasValue2() {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new Binder(),
                 new TestDatePicker(), textField);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
-    public void testHasValue3() {
+    void testHasValue3() {
         setLocale(Locale.getDefault());
         ValueContext fromComponent = new ValueContext(new Binder(),
                 new TestDatePicker(), textField, Locale.CANADA);
-        Assert.assertEquals(textField, fromComponent.getHasValue().get());
-        Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
+        assertEquals(textField, fromComponent.getHasValue().get());
+        assertEquals(Locale.CANADA, fromComponent.getLocale().get());
     }
 
     @Test
-    public void getLocale_localeComesFromComponentUI() {
+    void getLocale_localeComesFromComponentUI() {
         UI.setCurrent(null);
 
         UI ui = new UI();
@@ -104,11 +105,11 @@ public class ValueContextTest extends UI {
         ui.add(text);
         ValueContext context = new ValueContext(new Binder(), text);
 
-        Assert.assertEquals(Locale.GERMAN, context.getLocale().get());
+        assertEquals(Locale.GERMAN, context.getLocale().get());
     }
 
     @Test
-    public void testWithBinder() {
+    void testWithBinder() {
 
         // Test password mismatch
         PasswordBean passwordBean = new PasswordBean();
@@ -116,18 +117,18 @@ public class ValueContextTest extends UI {
         passwordField.setValue("abc123");
         confirmPasswordField.setValue("def456");
         BinderValidationStatus<PasswordBean> status = binder.validate();
-        Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals(status.getFieldValidationErrors().iterator().next()
+        assertEquals(1, status.getFieldValidationErrors().size());
+        assertEquals(status.getFieldValidationErrors().iterator().next()
                 .getMessage().get(), "Passwords must match");
 
         // Test password match
         confirmPasswordField.setValue("abc123");
         status = binder.validate();
-        Assert.assertEquals(0, status.getFieldValidationErrors().size());
+        assertEquals(0, status.getFieldValidationErrors().size());
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         setLocale(UI_LOCALE);
         UI.setCurrent(this);
         textField = new TestTextField();
@@ -140,7 +141,7 @@ public class ValueContextTest extends UI {
         binder.forField(confirmPasswordField)
                 .withValidator((confirmValue, valueContext) -> {
                     Binder<?> ctxBinder = valueContext.getBinder().get();
-                    Assert.assertSame(ctxBinder, binder);
+                    assertSame(ctxBinder, binder);
                     TestTextField passwordField = (TestTextField) ctxBinder
                             .getBinding("password").get().getField();
                     return !Objects.equals(confirmValue,
@@ -151,13 +152,13 @@ public class ValueContextTest extends UI {
                 }).bind("confirmPassword");
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
     @Override
-    public void init(VaadinRequest request) {
+    protected void init(VaadinRequest request) {
     }
 
     // PasswordBean
