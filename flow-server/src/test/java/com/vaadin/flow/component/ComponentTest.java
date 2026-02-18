@@ -1012,8 +1012,9 @@ public class ComponentTest {
         div.appendChild(button);
 
         div.as(TestDiv.class);
+        TestButton wrappedButton = button.as(TestButton.class);
         assertThrows(IllegalStateException.class,
-                () -> button.as(TestButton.class).getParent());
+                () -> wrappedButton.getParent());
     }
 
     @Test
@@ -1023,8 +1024,9 @@ public class ComponentTest {
         div.appendChild(button);
 
         button.as(TestButton.class);
+        TestDiv wrappedDiv = div.as(TestDiv.class);
         assertThrows(IllegalStateException.class,
-                () -> div.as(TestDiv.class).getChildren());
+                () -> wrappedDiv.getChildren());
     }
 
     @Test
