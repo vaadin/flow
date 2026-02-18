@@ -81,7 +81,7 @@ public class AsynchronousSignalTreeTest {
     }
 
     @Test
-    void applyChange_invalidCommand_immediatelyRejected() {
+    void applyChange_invalidCommand_submittedThenConfirmed() {
         AsyncTestTree tree = new AsyncTestTree();
 
         AtomicReference<CommandResult> result = new AtomicReference<>();
@@ -90,12 +90,17 @@ public class AsynchronousSignalTreeTest {
         tree.commitSingleCommand(command, result::set);
 
         /*
-         * A command that fails at the submitted level is immediately rejected
-         * since the confirmed state is at or behind the submitted state for
-         * local trees, so it would also fail at confirm time.
+         * It might seem weird that an obviously invalid command wouldn't be
+         * rejected right away but there is a theoretical possibility that a
+         * concurrent command changes the circumstances so that the command
+         * would be accepted.
          */
+        assertNull(result.get());
+        assertEquals(List.of(List.of(command)), tree.submitted);
+
+        tree.confirmSubmitted();
+
         assertInstanceOf(Reject.class, result.get());
-        assertEquals(List.of(), tree.submitted);
     }
 
     @Test
@@ -173,7 +178,7 @@ public class AsynchronousSignalTreeTest {
     }
 
     @Test
-    void subscribeToProcessed_failingCommandRejected_receives() {
+    void subscribeToProcessed_failingCommandConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
 
@@ -183,9 +188,10 @@ public class AsynchronousSignalTreeTest {
         SignalCommand command = TestUtil.failingCommand();
         tree.commitSingleCommand(command);
 
-        // Invalid commands are immediately rejected and subscribers are
-        // notified
+        assertNull(resultContainer.get());
+
+        tree.confirmSubmitted();
+
         assertEquals(command, resultContainer.get().getKey());
-        assertInstanceOf(Reject.class, resultContainer.get().getValue());
     }
 }

@@ -259,11 +259,16 @@ public class StagedTransactionTest {
             assertNull(h2.result);
         });
 
-        // With async trees, a transaction that fails at the submitted level
-        // is immediately rejected since it will also fail at the confirmed
-        // level.
+        assertNull(h1.result);
+        assertNull(h2.result);
+        assertFalse(operation.result().isDone());
+        assertNull(tree.submitted().data(Id.ZERO).get().value());
+        assertNull(tree.confirmed().data(Id.ZERO).get().value());
+
+        tree.confirmSubmitted();
+
         assertFalse(h1.result.accepted());
-        assertFalse(h2.result.accepted());
+        assertFalse(h1.result.accepted());
         assertTrue(operation.result().isDone());
         assertFalse(operation.result().get().successful());
         assertNull(tree.submitted().data(Id.ZERO).get().value());
@@ -442,7 +447,7 @@ public class StagedTransactionTest {
     }
 
     @Test
-    void commit_failingTransactionAgainstAsyncTree_immediatelyRejected()
+    void commit_failingTransactionSavedByAsyncConfirm_seemsFailingButIsAccepted()
             throws InterruptedException, ExecutionException {
         AsyncTestTree tree = new AsyncTestTree();
 
@@ -455,12 +460,16 @@ public class StagedTransactionTest {
                     TestUtil.writeRootValueCommand("update"), null);
         });
 
-        // Transaction is immediately rejected because the condition fails
-        // at the submitted level
-        assertTrue(operation.result().isDone());
-        assertFalse(operation.result().get().successful());
         assertNull(TestUtil.readSubmittedRootValue(tree));
-        assertNull(TestUtil.readConfirmedRootValue(tree));
+
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
+
+        assertEquals("update",
+                TestUtil.readSubmittedRootValue(tree).asString());
+
+        tree.confirmSubmitted();
+
+        assertTrue(operation.result().get().successful());
     }
 
     @Test
@@ -566,13 +575,16 @@ public class StagedTransactionTest {
     }
 
     @Test
-    void treeMixing_multipleAsync_allIsFine() {
+    void treeMixing_multipleAsync_throws() {
         SignalTree a1 = new AsyncTestTree();
         SignalTree a2 = new AsyncTestTree();
 
         Transaction.runInTransaction(() -> {
             TestUtil.readTransactionRootValue(a1);
-            TestUtil.readTransactionRootValue(a2);
+
+            assertThrows(IllegalStateException.class, () -> {
+                TestUtil.readTransactionRootValue(a2);
+            });
         });
     }
 

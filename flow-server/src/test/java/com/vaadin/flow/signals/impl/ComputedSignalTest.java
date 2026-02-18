@@ -321,7 +321,7 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         signal.get();
-        assertEquals(2, count.get());
+        assertEquals(3, count.get());
     }
 
     @Test

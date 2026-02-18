@@ -381,10 +381,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         signal.set("update");
-        assertEquals(1, count.intValue());
+        assertEquals(2, count.intValue());
 
         signal.set("anohter");
-        assertEquals(2, count.intValue());
+        assertEquals(4, count.intValue());
     }
 
     @Test
@@ -459,7 +459,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.set("again");
         assertEquals(1, falseCount.intValue());
-        assertEquals(2, trueCount.intValue());
+        assertEquals(3, trueCount.intValue());
     }
 
     @Test

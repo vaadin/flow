@@ -292,15 +292,15 @@ public class StagedTransaction extends Transaction {
     private void validateTreeTypes(SignalTree tree) {
         SignalTree.Type treeType = tree.type();
         if (treeType == SignalTree.Type.ASYNCHRONOUS) {
-            if (openTreeTypes().anyMatch(SignalTree.Type.SYNCHRONOUS::equals)) {
+            if (!openTreeTypes().allMatch(SignalTree.Type.COMPUTED::equals)) {
                 throw new IllegalStateException(
-                        "An asynchronous signal cannot share a transaction with synchronous signals.");
+                        "An asynchronous signal can only share transaction with computed signals and other asynchronous signals that belong to the same tree.");
             }
         } else if (treeType == SignalTree.Type.SYNCHRONOUS) {
             if (openTreeTypes()
                     .anyMatch(SignalTree.Type.ASYNCHRONOUS::equals)) {
                 throw new IllegalStateException(
-                        "A synchronous signal cannot share a transaction with asynchronous signals.");
+                        "A synchronous signal cannot share transaction with asynchronous signals.");
             }
         }
     }
