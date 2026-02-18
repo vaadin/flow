@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,10 @@ import com.vaadin.flow.signals.Signal;
  * dispose of resources, or cancel an ongoing operation.
  * <p>
  * This is typically returned from registration methods such as
- * {@link Signal#effect(EffectAction)} to allow the caller to clean up the
- * registration when it's no longer needed.
+ * {@link Signal#unboundEffect(EffectAction)} to allow the caller to clean up
+ * the registration when it's no longer needed.
  *
- * @see Signal#effect(EffectAction)
+ * @see Signal#unboundEffect(EffectAction)
  */
 @FunctionalInterface
 public interface CleanupCallback extends Serializable {

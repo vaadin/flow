@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -28,9 +28,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CustomUIClassLoaderTest {
+class CustomUIClassLoaderTest {
 
     /**
      * Stub root

@@ -18,9 +18,8 @@ package com.vaadin.flow.component;
 import java.io.File;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -39,9 +38,10 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class InvalidUrlTest {
+class InvalidUrlTest {
 
     @Test
     public void invalidUrlAtInitialization_uiInitialiazesWith404ReturnCode()
@@ -53,11 +53,11 @@ public class InvalidUrlTest {
 
         initUI(ui, "%3faaa", statusCodeCaptor);
 
-        assertEquals("Return message should have been 404 not found.",
-                Integer.valueOf(404), statusCodeCaptor.getValue());
+        assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue(),
+                "Return message should have been 404 not found.");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
     }
@@ -72,7 +72,7 @@ public class InvalidUrlTest {
         if (initialLocation.isEmpty()) {
             pathInfo = null;
         } else {
-            Assert.assertFalse(initialLocation.startsWith("/"));
+            assertFalse(initialLocation.startsWith("/"));
             pathInfo = "/" + initialLocation;
         }
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);

@@ -41,9 +41,9 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * changed for any of the signals that were used when computing the previous
  * value. If the computation callback throws a {@link RuntimeException}, then
  * that exception will be re-thrown when accessing the value of this signal. An
- * {@link Signal#effect(EffectAction) effect} or computed signal that uses the
- * value from a computed signal will not be invalidated if the computation is
- * run again but produces the same value as before.
+ * {@link Signal#unboundEffect(EffectAction) effect} or computed signal that
+ * uses the value from a computed signal will not be invalidated if the
+ * computation is run again but produces the same value as before.
  *
  * @param <T>
  *            the value type

@@ -16,15 +16,17 @@
 package com.vaadin.flow.component;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.internal.JacksonUtils;
 
-public class JavaScriptInvocationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+
+class JavaScriptInvocationTest {
     @Test
     public void testSerializable() {
         JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
@@ -33,12 +35,12 @@ public class JavaScriptInvocationTest {
         JavaScriptInvocation deserialized = SerializationUtils
                 .deserialize(SerializationUtils.serialize(invocation));
 
-        Assert.assertNotSame(invocation, deserialized);
+        assertNotSame(invocation, deserialized);
 
-        Assert.assertEquals("expression", deserialized.getExpression());
-        Assert.assertEquals(2, deserialized.getParameters().size());
-        Assert.assertEquals("string", deserialized.getParameters().get(0));
-        Assert.assertEquals("jsonString",
+        assertEquals("expression", deserialized.getExpression());
+        assertEquals(2, deserialized.getParameters().size());
+        assertEquals("string", deserialized.getParameters().get(0));
+        assertEquals("jsonString",
                 ((JsonNode) deserialized.getParameters().get(1)).asString());
     }
 }

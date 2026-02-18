@@ -18,8 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -50,7 +49,10 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-public class ErrorStateRendererTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ErrorStateRendererTest {
 
     /**
      * This view reroutes to {@link InfiniteLoopErrorTarget}
@@ -125,7 +127,7 @@ public class ErrorStateRendererTest {
 
     }
 
-    @Test(expected = ExceptionsTrace.class)
+    @Test
     public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
@@ -143,12 +145,13 @@ public class ErrorStateRendererTest {
         ErrorNavigationEvent event = new ErrorNavigationEvent(
                 ui.getInternals().getRouter(), new Location("error"), ui,
                 NavigationTrigger.CLIENT_SIDE, parameter);
-        // event should route to ErrorTarget whose layout forwards to NPEView
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
         // which reroute to ErrorTarget and this is an infinite loop
-        renderer.handle(event);
+        assertThrows(ExceptionsTrace.class, () -> renderer.handle(event));
     }
 
-    @Test(expected = ExceptionsTrace.class)
+    @Test
     public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
@@ -167,21 +170,24 @@ public class ErrorStateRendererTest {
         NavigationEvent event = new NavigationEvent(
                 ui.getInternals().getRouter(), new Location("npe"), ui,
                 NavigationTrigger.CLIENT_SIDE);
-        // event should route to ErrorTarget whose layout forwards to NPEView
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
         // which reroute to ErrorTarget and this is an infinite loop
-        renderer.handle(event);
+        assertThrows(ExceptionsTrace.class, () -> renderer.handle(event));
 
         ObjectNode routerLinkState = new ObjectMapper().createObjectNode();
         routerLinkState.put("href", "router_link");
         routerLinkState.put("scrollPositionX", 0d);
         routerLinkState.put("scrollPositionY", 0d);
 
-        event = new NavigationEvent(ui.getInternals().getRouter(),
-                new Location("npe"), ui, NavigationTrigger.ROUTER_LINK,
-                routerLinkState, false);
-        // event should route to ErrorTarget whose layout forwards to NPEView
+        NavigationEvent routerLinkEvent = new NavigationEvent(
+                ui.getInternals().getRouter(), new Location("npe"), ui,
+                NavigationTrigger.ROUTER_LINK, routerLinkState, false);
+        // event should route to ErrorTarget whose layout forwards to
+        // NPEView
         // which reroute to ErrorTarget and this is an infinite loop
-        renderer.handle(event);
+        assertThrows(ExceptionsTrace.class,
+                () -> renderer.handle(routerLinkEvent));
     }
 
     @Test
@@ -202,12 +208,12 @@ public class ErrorStateRendererTest {
         ErrorNavigationEvent event = new ErrorNavigationEvent(
                 ui.getInternals().getRouter(), new Location("error"), ui,
                 NavigationTrigger.CLIENT_SIDE, parameter);
-        Assert.assertEquals(200, renderer.handle(event));
+        assertEquals(200, renderer.handle(event));
 
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
-        Assert.assertEquals(1, chain.size());
-        Assert.assertEquals(HappyPathViewView.class, chain.get(0).getClass());
+        assertEquals(1, chain.size());
+        assertEquals(HappyPathViewView.class, chain.get(0).getClass());
     }
 
     private UI configureMocks() {

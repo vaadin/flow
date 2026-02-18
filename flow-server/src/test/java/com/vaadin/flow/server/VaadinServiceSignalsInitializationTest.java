@@ -21,10 +21,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -33,13 +32,15 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class VaadinServiceSignalsInitializationTest {
+class VaadinServiceSignalsInitializationTest {
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearTestEnvironment() {
         CurrentInstance.clearAll();
     }
@@ -63,7 +64,7 @@ public class VaadinServiceSignalsInitializationTest {
         var invocations = new ArrayList<EffectExecution>();
 
         try {
-            Signal.effect(() -> {
+            Signal.unboundEffect(() -> {
                 invocations.add(new EffectExecution(UI.getCurrent(),
                         Thread.currentThread().getName()));
                 signal.get();
@@ -72,17 +73,16 @@ public class VaadinServiceSignalsInitializationTest {
 
             phaser.awaitAdvanceInterruptibly(0, 500, TimeUnit.MILLISECONDS);
 
-            Assert.assertEquals("Expected effect to be executed", 1,
-                    invocations.size());
+            assertEquals(1, invocations.size(),
+                    "Expected effect to be executed");
 
             var execution = invocations.get(0);
-            Assert.assertEquals(
-                    "Expected UI to not be available during effect execution",
-                    null, execution.ui);
-            Assert.assertTrue(
-                    "Expected effect to be executed in Vaadin Executor thread",
+            assertEquals(null, execution.ui,
+                    "Expected UI to not be available during effect execution");
+            assertTrue(
                     execution.threadName
-                            .startsWith("VaadinTaskExecutor-thread-"));
+                            .startsWith("VaadinTaskExecutor-thread-"),
+                    "Expected effect to be executed in Vaadin Executor thread");
         } finally {
             session.unlock();
             UI.setCurrent(null);
@@ -92,16 +92,15 @@ public class VaadinServiceSignalsInitializationTest {
 
         phaser.awaitAdvanceInterruptibly(1, 500, TimeUnit.MILLISECONDS);
 
-        Assert.assertEquals("Expected effect to be executed twice", 2,
-                invocations.size());
+        assertEquals(2, invocations.size(),
+                "Expected effect to be executed twice");
 
         var execution = invocations.get(1);
-        Assert.assertEquals(
-                "Expected UI to not be available during effect execution", null,
-                execution.ui);
-        Assert.assertTrue(
-                "Expected effect to be executed in Vaadin Executor thread",
-                execution.threadName.startsWith("VaadinTaskExecutor-thread-"));
+        assertEquals(null, execution.ui,
+                "Expected UI to not be available during effect execution");
+        assertTrue(
+                execution.threadName.startsWith("VaadinTaskExecutor-thread-"),
+                "Expected effect to be executed in Vaadin Executor thread");
     }
 
 }
