@@ -83,7 +83,6 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -816,7 +815,7 @@ public class UI extends Component
      * Gets a signal that holds the current locale of this UI.
      * <p>
      * The signal is the source of truth for the locale. Use
-     * {@link WritableSignal#get()} to read the locale reactively (creates a
+     * {@link ValueSignal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
      * for non-reactive reads.
      * <p>
@@ -829,7 +828,7 @@ public class UI extends Component
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public WritableSignal<Locale> localeSignal() {
+    public ValueSignal<Locale> localeSignal() {
         return localeSignal;
     }
 

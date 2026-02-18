@@ -13,16 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.signals.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
 import java.util.function.IntFunction;
 
 /**
- * A {@link Runnable} that is also {@link Serializable}.
+ * An {@link IntFunction} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @param <R>
+ *            the type of the result of the function
  */
 @FunctionalInterface
-public interface IntMapper<T> extends IntFunction<T>, Serializable {
+public interface SerializableIntFunction<R>
+        extends IntFunction<R>, Serializable {
 }

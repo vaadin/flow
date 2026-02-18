@@ -17,7 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
@@ -27,10 +27,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for Anchor constructors that accept Signal<String> and related
@@ -101,24 +101,24 @@ public class AnchorBindTextTest extends SignalsUnitTest {
         var attachmentHandler = new AttachmentHandler();
         Anchor a1 = new Anchor(attachmentHandler, new ValueSignal<>("d1"));
         UI.getCurrent().add(a1);
-        assertTrue("download attribute should be set for attachment handler",
-                a1.isDownload());
+        assertTrue(a1.isDownload(),
+                "download attribute should be set for attachment handler");
         assertEquals("d1", a1.getText());
 
         // AbstractDownloadHandler inline: no download attribute
         var inlineHandler = new InlineHandler();
         Anchor a2 = new Anchor(inlineHandler, new ValueSignal<>("d2"));
         UI.getCurrent().add(a2);
-        assertFalse("download attribute should NOT be set for inline handler",
-                a2.isDownload());
+        assertFalse(a2.isDownload(),
+                "download attribute should NOT be set for inline handler");
         assertEquals("d2", a2.getText());
 
         // Custom non-abstract DownloadHandler: treated as DOWNLOAD per Javadoc
         DownloadHandler custom = new CustomHandler();
         Anchor a3 = new Anchor(custom, new ValueSignal<>("d3"));
         UI.getCurrent().add(a3);
-        assertTrue("download attribute should be set for custom handler",
-                a3.isDownload());
+        assertTrue(a3.isDownload(),
+                "download attribute should be set for custom handler");
         assertEquals("d3", a3.getText());
     }
 

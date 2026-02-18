@@ -64,8 +64,6 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -383,7 +381,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link BindingBuilder#withValidator(Validator)}.
          * <p>
          * The Binder automatically runs validators inside a
-         * {@link com.vaadin.flow.signals.impl.Effect#effect(Component, com.vaadin.flow.function.SerializableRunnable)}
+         * {@link Signal#effect(Component, com.vaadin.flow.signals.function.EffectAction)}
          * context. This makes validators reactive to signal changes - when you
          * call {@code value()} on another binding from within a validator, the
          * validator will automatically re-run whenever that other binding's
@@ -436,8 +434,8 @@ public class Binder<BEAN> implements Serializable {
          *
          * @see BindingBuilder#withValidator(Validator)
          * @see com.vaadin.flow.component.HasValue#bindValue
-         * @see com.vaadin.flow.signals.impl.Effect#effect(Component,
-         *      com.vaadin.flow.function.SerializableRunnable)
+         * @see Signal#effect(Component,
+         *      com.vaadin.flow.signals.function.EffectAction)
          *
          * @since 25.1
          */
@@ -1514,7 +1512,7 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
-        private transient WritableSignal<Boolean> internalValidationTriggerSignal;
+        private transient ValueSignal<Boolean> internalValidationTriggerSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1712,7 +1710,7 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
-                signalRegistration = Effect.effect(component, () -> {
+                signalRegistration = Signal.effect(component, () -> {
                     if (valueInit) {
                         // start to track signal usage
                         doConversion();

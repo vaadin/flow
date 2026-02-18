@@ -22,10 +22,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -39,13 +37,17 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
-public class DefaultRouteResolverTest extends RoutingTestBase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
+class DefaultRouteResolverTest extends RoutingTestBase {
 
     private RouteResolver resolver;
 
+    @BeforeEach
     @Override
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
@@ -64,11 +66,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                         GreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals(RootNavigationTarget.class,
-                resolveNavigationTarget(""));
-        Assert.assertEquals(FooNavigationTarget.class,
-                resolveNavigationTarget("foo"));
-        Assert.assertEquals(FooBarNavigationTarget.class,
+        assertEquals(RootNavigationTarget.class, resolveNavigationTarget(""));
+        assertEquals(FooNavigationTarget.class, resolveNavigationTarget("foo"));
+        assertEquals(FooBarNavigationTarget.class,
                 resolveNavigationTarget("foo/bar"));
     }
 
@@ -84,10 +84,10 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
 
     @Test
     public void no_route_found_resolves_to_null() {
-        Assert.assertNull(
-                "Attempting to resolve an invalid location should return null",
+        assertNull(
                 resolver.resolve(new ResolveRequest(router,
-                        new Location("Not a configured location"))));
+                        new Location("Not a configured location"))),
+                "Attempting to resolve an invalid location should return null");
     }
 
     @Test
@@ -96,7 +96,7 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         setRoutes(router.getRegistry(),
                 Collections.singleton(GreetingNavigationTarget.class));
 
-        Assert.assertEquals(Collections.singletonList("World"),
+        assertEquals(Collections.singletonList("World"),
                 resolveNavigationState("greeting/World").getUrlParameters()
                         .get());
     }
@@ -109,9 +109,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                         OtherGreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals(GreetingNavigationTarget.class,
+        assertEquals(GreetingNavigationTarget.class,
                 resolveNavigationTarget("greeting/World"));
-        Assert.assertEquals(OtherGreetingNavigationTarget.class,
+        assertEquals(OtherGreetingNavigationTarget.class,
                 resolveNavigationTarget("greeting/other/World"));
     }
 
@@ -121,9 +121,8 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         setRoutes(router.getRegistry(),
                 Collections.singleton(GreetingNavigationTarget.class));
 
-        Assert.assertEquals(null,
-                resolveNavigationState("greeting/World/something"));
-        Assert.assertEquals(null, resolveNavigationState("greeting"));
+        assertEquals(null, resolveNavigationState("greeting/World/something"));
+        assertEquals(null, resolveNavigationState("greeting"));
     }
 
     @Test
@@ -140,9 +139,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                                     false, false, null, null, null, true,
                                     null)));
             NavigationState greeting = resolveNavigationState(path);
-            Assert.assertEquals(
-                    "Layout should be returned for a non server route when matching @Layout exists",
-                    DefaultLayout.class, greeting.getRouteTarget().getTarget());
+            assertEquals(DefaultLayout.class,
+                    greeting.getRouteTarget().getTarget(),
+                    "Layout should be returned for a non server route when matching @Layout exists");
         }
     }
 
@@ -160,17 +159,14 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                                     false, false, null, null, null, true,
                                     null)));
             NavigationState greeting = resolveNavigationState(path);
-            Assert.assertEquals(
-                    "Layout should be returned for a non server route when matching @Layout exists",
-                    DefaultWithParentLayout.class,
-                    greeting.getRouteTarget().getTarget());
-            Assert.assertEquals(
-                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.",
-                    1, greeting.getRouteTarget().getParentLayouts().size());
-            Assert.assertEquals(
-                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.",
-                    DefaultParentLayout.class,
-                    greeting.getRouteTarget().getParentLayouts().get(0));
+            assertEquals(DefaultWithParentLayout.class,
+                    greeting.getRouteTarget().getTarget(),
+                    "Layout should be returned for a non server route when matching @Layout exists");
+            assertEquals(1, greeting.getRouteTarget().getParentLayouts().size(),
+                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.");
+            assertEquals(DefaultParentLayout.class,
+                    greeting.getRouteTarget().getParentLayouts().get(0),
+                    "@ParentLayout annotation should be followed. @Layout class should not be in parent layout list.");
 
         }
     }
@@ -211,10 +207,11 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                                 "Layout should be returned for path '%s' a non server route when matching @Layout exists",
                                 path);
                         var state = resolveNavigationState(path);
-                        Assert.assertNotNull(msg, state);
-                        Assert.assertEquals(msg, DefaultLayout.class,
+                        assertNotNull(state, msg);
+                        assertEquals(DefaultLayout.class,
                                 resolveNavigationState(path).getRouteTarget()
-                                        .getTarget());
+                                        .getTarget(),
+                                msg);
                     });
         }
     }
@@ -248,9 +245,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                             "foo/foo/foo/bar/bar/")
                     // @formatter:on
                     .forEach(path -> {
-                        Assert.assertNull(String.format(
+                        assertNull(resolveNavigationState(path), String.format(
                                 "Layout should not be returned for a non server route '%s' when matching @Layout doesn't exist",
-                                path), resolveNavigationState(path));
+                                path));
                     });
         }
     }
@@ -285,15 +282,16 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                                 "Layout should be returned for path '%s' a non server route when matching @Layout exists",
                                 path);
                         var state = resolveNavigationState(path);
-                        Assert.assertNotNull(msg, state);
-                        Assert.assertEquals(msg, DefaultLayout.class,
+                        assertNotNull(state, msg);
+                        assertEquals(DefaultLayout.class,
                                 resolveNavigationState(path).getRouteTarget()
-                                        .getTarget());
+                                        .getTarget(),
+                                msg);
                     });
             Stream.of("route/1").forEach(path -> {
-                Assert.assertNull(String.format(
+                assertNull(resolveNavigationState(path), String.format(
                         "Layout should not be returned for a non server route '%s' when matching @Layout doesn't exist",
-                        path), resolveNavigationState(path));
+                        path));
             });
         }
     }
@@ -313,9 +311,6 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
 
     @Test
     public void clientRouteRequest_noLayoutForPath_Throws() {
-        expectedEx.expect(NotFoundException.class);
-        expectedEx.expectMessage("No layout for client path 'route'");
-
         String path = "route";
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
@@ -325,7 +320,10 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                             new AvailableViewInfo("", null, false, "/route",
                                     false, false, null, null, null, true,
                                     null)));
-            NavigationState greeting = resolveNavigationState(path);
+            NotFoundException ex = assertThrows(NotFoundException.class,
+                    () -> resolveNavigationState(path));
+            assertTrue(ex.getMessage()
+                    .contains("No layout for client path 'route'"));
         }
     }
 

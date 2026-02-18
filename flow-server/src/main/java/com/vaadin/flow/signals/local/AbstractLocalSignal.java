@@ -23,7 +23,6 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
@@ -195,7 +194,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
             }
 
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
+            public Registration onNextChange(TransientListener listener) {
                 lock.lock();
                 try {
                     if (hasChanges()) {

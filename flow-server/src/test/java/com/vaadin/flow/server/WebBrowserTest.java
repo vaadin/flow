@@ -17,47 +17,49 @@ package com.vaadin.flow.server;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class WebBrowserTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class WebBrowserTest {
 
     private WebBrowser browser = new WebBrowser();
 
     @Test
     public void isLinux_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isLinux());
+        assertFalse(browser.isLinux());
     }
 
     @Test
     public void isMacOSX_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isMacOSX());
+        assertFalse(browser.isMacOSX());
     }
 
     @Test
     public void isWindows_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isWindows());
+        assertFalse(browser.isWindows());
     }
 
     @Test
     public void isWindowsPhone_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isWindowsPhone());
+        assertFalse(browser.isWindowsPhone());
     }
 
     @Test
     public void isAndroid_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isAndroid());
+        assertFalse(browser.isAndroid());
     }
 
     @Test
     public void isIPhone_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isIPhone());
+        assertFalse(browser.isIPhone());
     }
 
     @Test
     public void isChromeOS_noDetails_returnsFalse() {
-        Assert.assertFalse(browser.isChromeOS());
+        assertFalse(browser.isChromeOS());
     }
 
     @Test
@@ -66,8 +68,8 @@ public class WebBrowserTest {
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6_2) AppleWebKit/611.3.10.1.5 (KHTML, like Gecko) Version/14.1.2 Safari/611.3.10.1.5");
 
         browser = new WebBrowser(request);
-        Assert.assertTrue(browser.isSafari());
-        Assert.assertTrue(browser.isMacOSX());
+        assertTrue(browser.isSafari());
+        assertTrue(browser.isMacOSX());
     }
 
     @Test
@@ -76,8 +78,8 @@ public class WebBrowserTest {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
         browser = new WebBrowser(request);
-        Assert.assertTrue(browser.isChrome());
-        Assert.assertTrue(browser.isWindows());
+        assertTrue(browser.isChrome());
+        assertTrue(browser.isWindows());
     }
 
     @Test
@@ -86,8 +88,8 @@ public class WebBrowserTest {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0");
 
         browser = new WebBrowser(request);
-        Assert.assertTrue(browser.isOpera());
-        Assert.assertTrue(browser.isWindows());
+        assertTrue(browser.isOpera());
+        assertTrue(browser.isWindows());
     }
 
     @Test
@@ -96,8 +98,8 @@ public class WebBrowserTest {
                 "Mozilla/5.0 (Android; Tablet; rv:33.0) Gecko/33.0 Firefox/33.0");
 
         browser = new WebBrowser(request);
-        Assert.assertTrue(browser.isFirefox());
-        Assert.assertTrue(browser.isAndroid());
+        assertTrue(browser.isFirefox());
+        assertTrue(browser.isAndroid());
     }
 
     private static VaadinRequest initRequest(String userAgent) {
