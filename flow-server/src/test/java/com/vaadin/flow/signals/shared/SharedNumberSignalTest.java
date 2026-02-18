@@ -151,4 +151,25 @@ public class SharedNumberSignalTest extends SignalTestBase {
         assertEquals("SharedNumberSignal[1.0]", signal.toString());
     }
 
+    @Test
+    void get_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.get());
+    }
+
+    @Test
+    void peek_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.peek());
+    }
+
+    @Test
+    void peekConfirmed_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.peekConfirmed());
+    }
+
 }
