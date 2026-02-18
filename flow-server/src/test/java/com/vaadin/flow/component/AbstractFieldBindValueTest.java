@@ -25,7 +25,6 @@ import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class AbstractFieldBindValueTest extends SignalsUnitTest {
+class AbstractFieldBindValueTest extends SignalsUnitTest {
 
     @Test
     public void bindValue_elementAttachedBefore_bindingActive() {
@@ -232,7 +231,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.bindValue(signal, signal::set);
 
         AtomicInteger counter = new AtomicInteger(0);
-        Effect.effect(input, () -> {
+        Signal.effect(input, () -> {
             signal.get();
             counter.incrementAndGet();
         });

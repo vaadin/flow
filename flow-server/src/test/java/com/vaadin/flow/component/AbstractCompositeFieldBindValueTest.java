@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
+class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
     private static class MultipleFieldsField extends
             AbstractCompositeField<TestDiv, MultipleFieldsField, String> {

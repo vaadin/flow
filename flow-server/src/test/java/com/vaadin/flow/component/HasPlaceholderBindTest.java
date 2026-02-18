@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Unit tests for
  * {@link HasPlaceholder#bindPlaceholder(com.vaadin.flow.signals.Signal)}.
  */
-public class HasPlaceholderBindTest extends SignalsUnitTest {
+class HasPlaceholderBindTest extends SignalsUnitTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component

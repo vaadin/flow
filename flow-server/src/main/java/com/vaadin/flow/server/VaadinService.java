@@ -95,6 +95,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.impl.Transaction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -395,7 +396,19 @@ public abstract class VaadinService implements Serializable {
         Runnable unregister = SignalEnvironment
                 .register(new VaadinServiceEnvironment());
 
-        addServiceDestroyListener(event -> unregister.run());
+        Transaction.setTransactionFallback(() -> {
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session == null || session.getLockInstance() == null
+                    || !session.hasLock()) {
+                return null;
+            }
+            return session.getOrCreateSessionScopedTransaction();
+        });
+
+        addServiceDestroyListener(event -> {
+            unregister.run();
+            Transaction.setTransactionFallback(null);
+        });
     }
 
     private void addRouterUsageStatistics() {

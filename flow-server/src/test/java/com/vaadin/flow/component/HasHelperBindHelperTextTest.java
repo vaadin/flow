@@ -24,7 +24,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class HasHelperBindHelperTextTest extends SignalsUnitTest {
+class HasHelperBindHelperTextTest extends SignalsUnitTest {
 
     @Tag("div")
     public static class HasHelperComponent extends Component

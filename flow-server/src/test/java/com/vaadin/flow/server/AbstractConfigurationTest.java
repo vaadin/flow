@@ -17,17 +17,19 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class AbstractConfigurationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+class AbstractConfigurationTest {
+    @TempDir
+    Path temporaryFolder;
     AbstractConfiguration configuration = new AbstractConfiguration() {
         @Override
         public boolean isProductionMode() {
@@ -64,22 +66,22 @@ public class AbstractConfigurationTest {
     @Test
     public void getProjectFolder_unknownProject_throws() throws IOException {
         withTemporaryUserDir(() -> {
-            IllegalStateException exception = Assert.assertThrows(
+            IllegalStateException exception = assertThrows(
                     IllegalStateException.class,
                     configuration::getProjectFolder);
-            Assert.assertTrue(exception.getMessage().contains(
+            assertTrue(exception.getMessage().contains(
                     "Failed to determine project directory for dev mode"));
-            Assert.assertTrue(exception.getMessage()
-                    .contains(temporaryFolder.getRoot().getAbsolutePath()));
+            assertTrue(exception.getMessage()
+                    .contains(temporaryFolder.toFile().getAbsolutePath()));
         });
     }
 
     private void assertProjectFolderDetected(String projectFile)
             throws IOException {
-        temporaryFolder.newFile(projectFile);
+        Files.createFile(temporaryFolder.resolve(projectFile));
         withTemporaryUserDir(() -> {
             File projectFolder = configuration.getProjectFolder();
-            Assert.assertEquals(temporaryFolder.getRoot(), projectFolder);
+            assertEquals(temporaryFolder.toFile(), projectFolder);
         });
     }
 
@@ -87,7 +89,7 @@ public class AbstractConfigurationTest {
         String userDir = System.getProperty("user.dir");
         try {
             System.setProperty("user.dir",
-                    temporaryFolder.getRoot().getAbsolutePath());
+                    temporaryFolder.toFile().getAbsolutePath());
             test.run();
         } finally {
             if (userDir != null) {

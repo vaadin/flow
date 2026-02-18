@@ -184,6 +184,21 @@ public class SharedListSignal<T>
         this.elementType = Objects.requireNonNull(elementType);
     }
 
+    @Override
+    public List<SharedValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public List<SharedValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
+    @Override
+    public List<SharedValueSignal<T>> peekConfirmed() {
+        return Objects.requireNonNull(super.peekConfirmed());
+    }
+
     private SharedValueSignal<T> child(Id childId) {
         return new SharedValueSignal<T>(tree(), childId, validator(),
                 elementType);
