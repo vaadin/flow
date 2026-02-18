@@ -39,7 +39,7 @@ class NodeListEmptyRequiredFeatureTest {
     private NodeList<StateNode> nodeList;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         node = new StateNode(Arrays.asList(ElementChildrenList.class)) {
             @Override
             public boolean isAttached() {
@@ -50,7 +50,7 @@ class NodeListEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_featureHasChangesToCollect() {
+    void generateChangesFromEmpty_featureHasChangesToCollect() {
         nodeList.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
@@ -65,7 +65,7 @@ class NodeListEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_noEmptyChange() {
+    void generateChangesFromEmpty_noEmptyChange() {
         nodeList.add(new StateNode());
         node.clearChanges();
         nodeList.generateChangesFromEmpty();
@@ -78,7 +78,7 @@ class NodeListEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_featureHasEmptyChange() {
+    void collectChanges_featureHasEmptyChange() {
         AtomicReference<NodeChange> change = new AtomicReference<>();
         nodeList.collectChanges(change::set);
 
@@ -90,7 +90,7 @@ class NodeListEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_noEmptyChange() {
+    void collectChanges_noEmptyChange() {
         nodeList.add(new StateNode());
 
         List<NodeChange> changes = new ArrayList<>();

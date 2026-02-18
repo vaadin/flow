@@ -32,14 +32,14 @@ class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     private StateNode grandchild;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         parent = createNode(null);
         child = createNode(parent);
         grandchild = createNode(child);
     }
 
     @Test
-    public void inertData_defaults() {
+    void inertData_defaults() {
         Element element = ElementFactory.createDiv();
         assertFalse(
                 element.getNode().getFeatureIfInitialized(InertData.class)
@@ -53,7 +53,7 @@ class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     }
 
     @Test
-    public void inertData_hasShadowRoot_handlesInertCheck() {
+    void inertData_hasShadowRoot_handlesInertCheck() {
         parent = createNode(null);
         StateNode shadow = new StateNode(ElementChildrenList.class,
                 ShadowRootHost.class);
@@ -71,7 +71,7 @@ class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     }
 
     @Test
-    public void inertData_inheritingInert_allPermutations() {
+    void inertData_inheritingInert_allPermutations() {
         final InertData childFeature = child.getFeature(InertData.class);
         childFeature.setIgnoreParentInert(true);
         assertFalse(childFeature.isInert());
@@ -139,7 +139,7 @@ class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     }
 
     @Test
-    public void inertDataUpdates_hierarchyWithGaps_updatesCascaded() {
+    void inertDataUpdates_hierarchyWithGaps_updatesCascaded() {
         StateNode greatgrandchild = createNode(grandchild);
 
         final InertData greatgrandchildFeature = greatgrandchild

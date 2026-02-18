@@ -44,17 +44,17 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ElementPropertyMapTest {
 
     @Test
-    public void addPropertyChangeListener_fireServerEvent_listenerIsNotified() {
+    void addPropertyChangeListener_fireServerEvent_listenerIsNotified() {
         listenerIsNotified(false);
     }
 
     @Test
-    public void addPropertyChangeListener_fireClientEvent_listenerIsNotified() {
+    void addPropertyChangeListener_fireClientEvent_listenerIsNotified() {
         listenerIsNotified(true);
     }
 
     @Test
-    public void removeProperty_fireEvent_listenerIsNotNotified() {
+    void removeProperty_fireEvent_listenerIsNotNotified() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setProperty("foo", "bar");
@@ -75,7 +75,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void removePropertyChangeListener_fireEvent_listenerIsNotNotified() {
+    void removePropertyChangeListener_fireEvent_listenerIsNotNotified() {
         ElementPropertyMap map = createSimplePropertyMap();
         PropertyChangeListener listener = ev -> {
             fail();
@@ -89,7 +89,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void addSeveralPropertyChangeListeners_fireEvent_listenersAreNotified() {
+    void addSeveralPropertyChangeListeners_fireEvent_listenersAreNotified() {
         ElementPropertyMap map = createSimplePropertyMap();
         AtomicBoolean first = new AtomicBoolean();
         AtomicBoolean second = new AtomicBoolean();
@@ -105,7 +105,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void resolveModelList_modelListStateNodeHasReportedFeature() {
+    void resolveModelList_modelListStateNodeHasReportedFeature() {
         ElementPropertyMap map = createSimplePropertyMap();
         map.resolveModelList("foo");
 
@@ -114,7 +114,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void resolveModelMap_modelMapStateNodeHasReportedFeature() {
+    void resolveModelMap_modelMapStateNodeHasReportedFeature() {
         ElementPropertyMap map = createSimplePropertyMap();
         map.resolveModelMap("foo");
 
@@ -123,7 +123,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void put_ignoreSameValue() {
+    void put_ignoreSameValue() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         AtomicReference<Serializable> value = new AtomicReference<>();
@@ -140,7 +140,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void basicUpdateFromClientFilter() {
+    void basicUpdateFromClientFilter() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         Set<String> clientFilterQueries = new HashSet<>();
@@ -152,7 +152,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void updateSynchronizedPropertyDespiteFilter() {
+    void updateSynchronizedPropertyDespiteFilter() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setUpdateFromClientFilter(name -> false);
@@ -177,7 +177,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void updateFromClientFilter_replaceFilter() {
+    void updateFromClientFilter_replaceFilter() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setUpdateFromClientFilter("foo"::equals);
@@ -192,7 +192,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void childPropertyUpdateFilter_setFilterBeforeChild() {
+    void childPropertyUpdateFilter_setFilterBeforeChild() {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -205,7 +205,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterAllowsUpdate()
+    void deferredUpdateFromClient_filterAllowsUpdate()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -218,7 +218,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_noFilter_throws()
+    void deferredUpdateFromClient_noFilter_throws()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -230,7 +230,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterDisallowsUpdate()
+    void deferredUpdateFromClient_filterDisallowsUpdate()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -243,7 +243,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void listChildPropertyUpdateFilter_setFilterBeforeChild() {
+    void listChildPropertyUpdateFilter_setFilterBeforeChild() {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
         StateNode child = new StateNode(ElementPropertyMap.class);
@@ -258,7 +258,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_listChild_filterAllowsUpdate()
+    void deferredUpdateFromClient_listChild_filterAllowsUpdate()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
@@ -273,7 +273,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_listItem_noFilter_throws()
+    void deferredUpdateFromClient_listItem_noFilter_throws()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
@@ -288,7 +288,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_listChild_filterDisallowsUpdate()
+    void deferredUpdateFromClient_listChild_filterDisallowsUpdate()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
@@ -303,7 +303,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void childPropertyUpdateFilter_setFilterAfterChild() {
+    void childPropertyUpdateFilter_setFilterAfterChild() {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -316,7 +316,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void childPropertyUpdateFilter_renameProperty() {
+    void childPropertyUpdateFilter_renameProperty() {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode child = new StateNode(ElementPropertyMap.class);
         ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
@@ -334,7 +334,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void childPropertyUpdateFilter_deepNesting() {
+    void childPropertyUpdateFilter_deepNesting() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setUpdateFromClientFilter("a.b.c.d.e.f.g.h.i.j.property"::equals);
@@ -350,7 +350,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_updateNotAllowed_throw()
+    void deferredUpdateFromClient_updateNotAllowed_throw()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
 
@@ -359,7 +359,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterDisallowUpdate_eventIsSynchronized()
+    void deferredUpdateFromClient_filterDisallowUpdate_eventIsSynchronized()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         Element.get(map.getNode()).addEventListener("dummy", event -> {
@@ -372,7 +372,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw()
+    void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         map.put("classList", "a");
@@ -384,7 +384,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_clientFiltersOutUpdate_noOpRunnable()
+    void deferredUpdateFromClient_clientFiltersOutUpdate_noOpRunnable()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> !name.equals("foo"));
@@ -401,7 +401,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_clientFilterAcceptUpdate_putResultRunnable()
+    void deferredUpdateFromClient_clientFilterAcceptUpdate_putResultRunnable()
             throws PropertyChangeDeniedException {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> name.equals("foo"));
@@ -415,7 +415,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void producePutChange_innerHTMLProperty_valueIsTheSame_returnsTrue() {
+    void producePutChange_innerHTMLProperty_valueIsTheSame_returnsTrue() {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setProperty("innerHTML", "foo");
 
@@ -424,7 +424,7 @@ class ElementPropertyMapTest {
     }
 
     @Test
-    public void producePutChange_notInnerHTMLProperty_valueIsTheSame_returnsFalse() {
+    void producePutChange_notInnerHTMLProperty_valueIsTheSame_returnsFalse() {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setProperty("foo", "bar");
 

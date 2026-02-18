@@ -24,7 +24,7 @@ class LoadingIndicatorConfigurationMapTest
     private final LoadingIndicatorConfigurationMap map = createFeature();
 
     @Test
-    public void defaults() {
+    void defaults() {
         assertEquals(LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT,
                 map.getFirstDelay());
         assertEquals(LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT,
@@ -37,25 +37,25 @@ class LoadingIndicatorConfigurationMapTest
     }
 
     @Test
-    public void setGetFirstDelay() {
+    void setGetFirstDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
                 map::setFirstDelay, map::getFirstDelay);
     }
 
     @Test
-    public void setGetSecondDelay() {
+    void setGetSecondDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
                 map::setSecondDelay, map::getSecondDelay);
     }
 
     @Test
-    public void setGetThirdDelay() {
+    void setGetThirdDelay() {
         testInt(map, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
                 map::setThirdDelay, map::getThirdDelay);
     }
 
     @Test
-    public void setGetDefaultThemeApplied() {
+    void setGetDefaultThemeApplied() {
         testBoolean(map,
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
                 map::setApplyDefaultTheme, map::isApplyDefaultTheme);

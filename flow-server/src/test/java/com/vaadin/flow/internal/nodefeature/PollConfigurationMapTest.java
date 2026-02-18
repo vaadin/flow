@@ -25,12 +25,12 @@ class PollConfigurationMapTest
     private final PollConfigurationMap map = createFeature();
 
     @Test
-    public void setDefaultPollInterval() {
+    void setDefaultPollInterval() {
         assertEquals(-1, map.getPollInterval());
     }
 
     @Test
-    public void setGetPollInterval() {
+    void setGetPollInterval() {
         super.testInt(map, PollConfigurationMap.POLL_INTERVAL_KEY,
                 map::setPollInterval, map::getPollInterval);
     }

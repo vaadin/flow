@@ -40,7 +40,7 @@ class NodeValueEmptyRequiredFeatureTest {
     private NodeValue<Serializable> nodeValue;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         node = new StateNode(Arrays.asList(BasicTypeValue.class)) {
             @Override
             public boolean isAttached() {
@@ -51,7 +51,7 @@ class NodeValueEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_featureHasChangesToCollect() {
+    void generateChangesFromEmpty_featureHasChangesToCollect() {
         nodeValue.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
@@ -66,7 +66,7 @@ class NodeValueEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_noEmptyChange() {
+    void generateChangesFromEmpty_noEmptyChange() {
         nodeValue.setValue("foo");
         node.clearChanges();
         nodeValue.generateChangesFromEmpty();
@@ -79,7 +79,7 @@ class NodeValueEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_featureHasEmptyChange() {
+    void collectChanges_featureHasEmptyChange() {
         nodeValue.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
@@ -93,7 +93,7 @@ class NodeValueEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_noEmptyChange() {
+    void collectChanges_noEmptyChange() {
         nodeValue.setValue("foo");
 
         List<NodeChange> changes = new ArrayList<>();

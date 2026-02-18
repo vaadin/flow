@@ -39,7 +39,7 @@ class MapPutChangeTest {
             .createFeature(ElementPropertyMap.class);
 
     @Test
-    public void testJson() {
+    void testJson() {
         MapPutChange change = new MapPutChange(feature, "some", "string");
 
         ObjectNode json = change.toJson(null);
@@ -57,7 +57,7 @@ class MapPutChangeTest {
     }
 
     @Test
-    public void testJsonValueTypes() {
+    void testJsonValueTypes() {
         JsonNode stringValue = getValue("string");
         assertSame(JsonNodeType.STRING, stringValue.getNodeType());
         assertEquals("string", stringValue.textValue());
@@ -78,7 +78,7 @@ class MapPutChangeTest {
     }
 
     @Test
-    public void testNodeValueType() {
+    void testNodeValueType() {
         StateNode value = StateNodeTest.createEmptyNode("value");
         MapPutChange change = new MapPutChange(feature, "myKey", value);
 

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VisibilityDataTest {
 
     @Test
-    public void setVisible() {
+    void setVisible() {
         StateNode node = new StateNode(ElementData.class);
         ElementData data = node.getFeature(ElementData.class);
 
@@ -42,7 +42,7 @@ class VisibilityDataTest {
     }
 
     @Test
-    public void allowsChanges_delegateToIsVisible() {
+    void allowsChanges_delegateToIsVisible() {
         ElementData data = Mockito.mock(ElementData.class);
 
         Mockito.doCallRealMethod().when(data).allowsChanges();

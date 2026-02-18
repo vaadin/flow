@@ -79,7 +79,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testBasicFunctionality() {
+    void testBasicFunctionality() {
         assertFalse(nodeMap.contains(KEY));
         assertNull(nodeMap.get(KEY));
 
@@ -93,7 +93,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCollectChange() {
+    void testCollectChange() {
         List<NodeChange> initialChanges = collectChanges(nodeMap);
         assertEquals(0, initialChanges.size());
 
@@ -123,7 +123,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCollectChange_withSignalBinding() {
+    void testCollectChange_withSignalBinding() {
         // Signal and Registration instances are irrelevant in this test.
         nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value", null));
         List<NodeChange> putChanges = collectChanges(nodeMap);
@@ -135,7 +135,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testNoChangeEvent() {
+    void testNoChangeEvent() {
         nodeMap.put(KEY, "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);
         assertEquals(0, changes.size());
@@ -148,7 +148,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testNoChangeOverwritesOldChanges() {
+    void testNoChangeOverwritesOldChanges() {
         nodeMap.put(KEY, "value", true);
         nodeMap.put(KEY, "foobar", false);
         List<NodeChange> changes = collectChanges(nodeMap);
@@ -162,7 +162,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCoalescePutRemove() {
+    void testCoalescePutRemove() {
         nodeMap.put(KEY, "value");
         nodeMap.remove(KEY);
 
@@ -171,7 +171,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCoalesceDoublePut() {
+    void testCoalesceDoublePut() {
         nodeMap.put(KEY, "value1");
         nodeMap.put(KEY, "value2");
 
@@ -181,7 +181,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCoalescePutSame() {
+    void testCoalescePutSame() {
         nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
@@ -192,7 +192,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCoalesceRemovePut() {
+    void testCoalesceRemovePut() {
         nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
@@ -204,7 +204,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testResetChanges() {
+    void testResetChanges() {
         nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
@@ -216,7 +216,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testCoalesceRemoveReset() {
+    void testCoalesceRemoveReset() {
         nodeMap.put(KEY, "value");
         collectChanges(nodeMap);
 
@@ -228,7 +228,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testNullKeyThrows() {
+    void testNullKeyThrows() {
         assertFailsAssert("get(null)", () -> nodeMap.get(null));
         assertFailsAssert("contains(null)", () -> nodeMap.contains(null));
         assertFailsAssert("put(null, x)", () -> nodeMap.put(null, ""));
@@ -246,7 +246,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testPutAttachDetachChildren() {
+    void testPutAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
         assertNull(child.getParent());
@@ -261,7 +261,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testRemoveDetachChildren() {
+    void testRemoveDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
         nodeMap.put(KEY, child);
@@ -274,7 +274,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testSerializable() {
+    void testSerializable() {
         nodeMap.put("string", "bar");
         nodeMap.put("null", null);
         nodeMap.put("boolean", Boolean.TRUE);
@@ -316,7 +316,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testGetIntDefaultValue() {
+    void testGetIntDefaultValue() {
         assertEquals(12, nodeMap.getOrDefault(KEY, 12));
 
         nodeMap.put(KEY, 24);
@@ -330,7 +330,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testGetBooleanDefaultValue() {
+    void testGetBooleanDefaultValue() {
         assertTrue(nodeMap.getOrDefault(KEY, true));
         assertFalse(nodeMap.getOrDefault(KEY, false));
 
@@ -347,7 +347,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testGetStringDefaultValue() {
+    void testGetStringDefaultValue() {
         assertEquals("default", nodeMap.getOrDefault(KEY, "default"));
 
         nodeMap.put(KEY, "assigned");
@@ -361,7 +361,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         nodeMap.put("foo", 1);
         nodeMap.put("bar", 1);
         nodeMap.put("baz", 1);
@@ -373,7 +373,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void put_sameValue_hasNoEffect() {
+    void put_sameValue_hasNoEffect() {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
         StateNode child = new StateNode();
@@ -396,7 +396,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void put_replaceSingleValue_stillUseSingleValue() {
+    void put_replaceSingleValue_stillUseSingleValue() {
         nodeMap.put("foo", "bar");
 
         assertTrue(nodeMap.usesSingleMap());
@@ -407,7 +407,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void streamSingleNullValue() {
+    void streamSingleNullValue() {
         nodeMap.put("foo", null);
 
         assertTrue(nodeMap.usesSingleMap());
@@ -418,7 +418,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void collectChanges_sameValue_alwaysCollect_allValueChangesCollected() {
+    void collectChanges_sameValue_alwaysCollect_allValueChangesCollected() {
         StateNode node = new StateNode(ElementPropertyMap.class);
         AlwaysProduceChangeMap map = new AlwaysProduceChangeMap(node);
 
@@ -428,7 +428,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void put_sameValue_alwaysProduceChange_nodeIsDirty() {
+    void put_sameValue_alwaysProduceChange_nodeIsDirty() {
         UI ui = new UI();
         StateNode node = new StateNode(ElementPropertyMap.class);
         StateTree tree = ui.getInternals().getStateTree();
@@ -458,7 +458,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void put_sameValue_neverProduceChange_nodeIsNotDirty() {
+    void put_sameValue_neverProduceChange_nodeIsNotDirty() {
         UI ui = new UI();
         StateNode node = new StateNode(ElementPropertyMap.class);
         StateTree tree = ui.getInternals().getStateTree();
@@ -488,7 +488,7 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    public void collectChanges_sameValue_neverCollect_noValueChanges() {
+    void collectChanges_sameValue_neverCollect_noValueChanges() {
         StateNode node = new StateNode(ElementPropertyMap.class);
         NeverProduceChangeMap map = new NeverProduceChangeMap(node);
 

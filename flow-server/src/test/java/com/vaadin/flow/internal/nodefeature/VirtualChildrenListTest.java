@@ -40,7 +40,7 @@ class VirtualChildrenListTest {
     private StateNode child = new StateNode(ElementData.class);
 
     @Test
-    public void insert_atIndexWithType_payloadIsSetAndElementIsInserted() {
+    void insert_atIndexWithType_payloadIsSetAndElementIsInserted() {
         list.add(0, child, "foo", (String) null);
 
         assertEquals(child, list.get(0));
@@ -64,7 +64,7 @@ class VirtualChildrenListTest {
     }
 
     @Test
-    public void insert_atIndexWithPayload_payloadIsSetAndElementIsInserted() {
+    void insert_atIndexWithPayload_payloadIsSetAndElementIsInserted() {
         list.add(0, child, "foo", "bar");
 
         assertEquals(child, list.get(0));
@@ -78,7 +78,7 @@ class VirtualChildrenListTest {
     }
 
     @Test
-    public void iteratorAndSize_addTwoItems_methodsReturnCorrectValues() {
+    void iteratorAndSize_addTwoItems_methodsReturnCorrectValues() {
         list.append(child, "foo");
         StateNode anotherChild = new StateNode(ElementData.class);
         list.append(anotherChild, "bar");
@@ -98,7 +98,7 @@ class VirtualChildrenListTest {
     }
 
     @Test
-    public void remove_withIndex_removesNodeAndPayload() {
+    void remove_withIndex_removesNodeAndPayload() {
         list.append(child, "foo");
 
         assertEquals(child, list.get(0));
@@ -114,10 +114,9 @@ class VirtualChildrenListTest {
     }
 
     @Test
-    public void clear_throw() {
+    void clear_throw() {
         list.append(child, "foo");
-        assertThrows(UnsupportedOperationException.class,
-                () -> list.clear());
+        assertThrows(UnsupportedOperationException.class, () -> list.clear());
     }
 
 }

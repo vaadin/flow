@@ -39,21 +39,21 @@ class NodeFeatureTest {
     }
 
     @Test
-    public void testCreateNullTypeThrows() {
+    void testCreateNullTypeThrows() {
         assertThrows(AssertionError.class, () -> {
             NodeFeatureRegistry.create(null, StateNodeTest.createEmptyNode());
         });
     }
 
     @Test
-    public void testCreateNullNodeThrows() {
+    void testCreateNullNodeThrows() {
         assertThrows(AssertionError.class, () -> {
             NodeFeatureRegistry.create(ElementData.class, null);
         });
     }
 
     @Test
-    public void testCreateUnknownFeatureThrows() {
+    void testCreateUnknownFeatureThrows() {
         assertThrows(AssertionError.class, () -> {
             NodeFeatureRegistry.create(UnregisteredNodeFeature.class,
                     StateNodeTest.createEmptyNode());
@@ -112,7 +112,7 @@ class NodeFeatureTest {
     }
 
     @Test
-    public void testGetIdValues() {
+    void testGetIdValues() {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
@@ -127,7 +127,7 @@ class NodeFeatureTest {
     }
 
     @Test
-    public void testGetById() {
+    void testGetById() {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         expectedIds.forEach((expectedType, id) -> {
@@ -137,7 +137,7 @@ class NodeFeatureTest {
     }
 
     @Test
-    public void priorityOrder() {
+    void priorityOrder() {
         List<Class<? extends NodeFeature>> priorityOrder = buildExpectedIdMap()
                 .keySet().stream()
                 .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)

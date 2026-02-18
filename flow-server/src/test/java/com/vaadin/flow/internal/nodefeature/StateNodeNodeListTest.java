@@ -39,7 +39,7 @@ class StateNodeNodeListTest
     private NodeList<StateNode> nodeList = createFeature();
 
     @Test
-    public void testAddingAndRemoving() {
+    void testAddingAndRemoving() {
         StateNode value1 = StateNodeTest.createEmptyNode("value1");
         StateNode value2 = StateNodeTest.createEmptyNode("value2");
 
@@ -81,7 +81,7 @@ class StateNodeNodeListTest
     }
 
     @Test
-    public void testChangesAfterReset() {
+    void testChangesAfterReset() {
         StateNode value1 = StateNodeTest.createEmptyNode("value1");
         StateNode value2 = StateNodeTest.createEmptyNode("value2");
 
@@ -101,7 +101,7 @@ class StateNodeNodeListTest
     }
 
     @Test
-    public void testAttachDetachChildren() {
+    void testAttachDetachChildren() {
         StateNode child = StateNodeTest.createEmptyNode("child");
 
         assertNull(child.getParent());
@@ -116,7 +116,7 @@ class StateNodeNodeListTest
     }
 
     @Test
-    public void testIndexOf() {
+    void testIndexOf() {
         StateNode one = StateNodeTest.createEmptyNode("one");
         StateNode two = StateNodeTest.createEmptyNode("two");
         StateNode three = StateNodeTest.createEmptyNode("three");
@@ -129,7 +129,7 @@ class StateNodeNodeListTest
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         StateNode one = StateNodeTest.createEmptyNode("one");
         StateNode two = StateNodeTest.createEmptyNode("two");
 
@@ -141,14 +141,14 @@ class StateNodeNodeListTest
     }
 
     @Test
-    public void nullNotAllowed() {
+    void nullNotAllowed() {
         assertThrows(AssertionError.class, () -> {
             nodeList.add(null);
         });
     }
 
     @Test
-    public void testSerializable() {
+    void testSerializable() {
         StateNode one = StateNodeTest.createTestNode("one",
                 ElementClassList.class);
         one.getFeature(ElementClassList.class).add("foo");

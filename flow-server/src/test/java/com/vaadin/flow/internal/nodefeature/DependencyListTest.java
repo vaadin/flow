@@ -46,7 +46,7 @@ class DependencyListTest {
     private DependencyList deps;
 
     @BeforeEach
-    public void before() {
+    void before() {
         ui = MockUI.createUI();
         deps = ui.getInternals().getDependencyList();
 
@@ -54,54 +54,54 @@ class DependencyListTest {
     }
 
     @AfterEach
-    public void after() {
+    void after() {
         UI.setCurrent(null);
     }
 
     @Test
-    public void addStyleSheetDependency_eager1() {
+    void addStyleSheetDependency_eager1() {
         ui.getPage().addStyleSheet(URL);
         validateDependency(URL, Type.STYLESHEET, LoadMode.EAGER);
     }
 
     @Test
-    public void addStyleSheetDependency_eager2() {
+    void addStyleSheetDependency_eager2() {
         ui.getPage().addStyleSheet(URL, LoadMode.EAGER);
         validateDependency(URL, Type.STYLESHEET, LoadMode.EAGER);
     }
 
     @Test
-    public void addStyleSheetDependency_lazy() {
+    void addStyleSheetDependency_lazy() {
         ui.getPage().addStyleSheet(URL, LoadMode.LAZY);
         validateDependency(URL, Type.STYLESHEET, LoadMode.LAZY);
     }
 
     @Test
-    public void addStyleSheetDependency_inline() {
+    void addStyleSheetDependency_inline() {
         ui.getPage().addStyleSheet(URL, LoadMode.INLINE);
         validateDependency(URL, Type.STYLESHEET, LoadMode.INLINE);
     }
 
     @Test
-    public void addJavaScriptDependency_eager1() {
+    void addJavaScriptDependency_eager1() {
         ui.getPage().addJavaScript(URL);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.EAGER);
     }
 
     @Test
-    public void addJavaScriptDependency_eager2() {
+    void addJavaScriptDependency_eager2() {
         ui.getPage().addJavaScript(URL, LoadMode.EAGER);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.EAGER);
     }
 
     @Test
-    public void addJavaScriptDependency_lazy() {
+    void addJavaScriptDependency_lazy() {
         ui.getPage().addJavaScript(URL, LoadMode.LAZY);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.LAZY);
     }
 
     @Test
-    public void addJavaScriptDependency_inline() {
+    void addJavaScriptDependency_inline() {
         ui.getPage().addJavaScript(URL, LoadMode.INLINE);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
     }
@@ -136,7 +136,7 @@ class DependencyListTest {
     }
 
     @Test
-    public void specialUrls() {
+    void specialUrls() {
         assertUrlUnchanged("/foo?bar");
         assertUrlUnchanged("/foo/baz?bar=http://some.thing");
         assertUrlUnchanged("/foo/baz?bar=http://some.thing&ftp://bar");
@@ -162,7 +162,7 @@ class DependencyListTest {
     }
 
     @Test
-    public void urlAddedOnlyOnce() {
+    void urlAddedOnlyOnce() {
         addSimpleDependency("foo/bar.js");
         addSimpleDependency("foo/bar.js");
         assertEquals(1, deps.getPendingSendToClient().size());
@@ -177,7 +177,7 @@ class DependencyListTest {
     }
 
     @Test
-    public void addSameDependencyInDifferentModes_usesMostEagerLoadMode() {
+    void addSameDependencyInDifferentModes_usesMostEagerLoadMode() {
         testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.EAGER,
                 LoadMode.EAGER);
         testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.LAZY,
@@ -221,7 +221,7 @@ class DependencyListTest {
     }
 
     @Test
-    public void addDependencyPerformance() {
+    void addDependencyPerformance() {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
             addSimpleDependency("foo" + i + "/bar.js");
@@ -234,7 +234,7 @@ class DependencyListTest {
     }
 
     @Test
-    public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
+    void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
         Dependency eagerJs = new Dependency(Type.JAVASCRIPT, "eager.js",
                 LoadMode.EAGER);
         Dependency eagerCss = new Dependency(Type.STYLESHEET, "eager.css",

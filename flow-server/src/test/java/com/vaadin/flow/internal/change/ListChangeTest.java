@@ -37,7 +37,7 @@ class ListChangeTest {
             .createFeature(ElementChildrenList.class);
 
     @Test
-    public void testBasicJson() {
+    void testBasicJson() {
         StateNode child1 = StateNodeTest.createEmptyNode("child1");
         StateNode child2 = StateNodeTest.createEmptyNode("child2");
         ListAddChange<StateNode> change = new ListAddChange<>(feature, true, 0,
@@ -62,7 +62,7 @@ class ListChangeTest {
     }
 
     @Test
-    public void testZeroRemoveNotInJson() {
+    void testZeroRemoveNotInJson() {
         ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 
@@ -72,7 +72,7 @@ class ListChangeTest {
     }
 
     @Test
-    public void testEmptyAddNotInJson() {
+    void testEmptyAddNotInJson() {
         ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 

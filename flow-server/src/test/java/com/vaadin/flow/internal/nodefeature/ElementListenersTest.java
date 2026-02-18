@@ -63,12 +63,12 @@ public class ElementListenersTest
     private ElementListenerMap ns;
 
     @BeforeEach
-    public void init() {
+    void init() {
         ns = createFeature();
     }
 
     @Test
-    public void addedListenerGetsEvent() {
+    void addedListenerGetsEvent() {
 
         AtomicInteger eventCount = new AtomicInteger();
 
@@ -88,7 +88,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void eventNameInClientData() {
+    void eventNameInClientData() {
         assertFalse(ns.contains("foo"));
 
         Registration handle = ns.add("foo", noOp);
@@ -101,7 +101,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void addAndRemoveEventData() {
+    void addAndRemoveEventData() {
         ns.add("eventType", noOp).addEventData("data1").addEventData("data2");
 
         Set<String> expressions = getExpressions("eventType");
@@ -136,7 +136,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
+    void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
         ns = spy(createFeature());
         DomEventListener del1 = event -> {
         };
@@ -183,7 +183,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void addingRemovingAndAddingListenerOfTheSameType() {
+    void addingRemovingAndAddingListenerOfTheSameType() {
         DomEventListener del1 = event -> {
         };
         DomEventListener del2 = event -> {
@@ -210,7 +210,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void eventDataInEvent() {
+    void eventDataInEvent() {
         AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
         ns.add("foo", e -> {
             assertNull(eventDataReference.get());
@@ -231,7 +231,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void disabledElement_listenerDoesntReceiveEvent() {
+    void disabledElement_listenerDoesntReceiveEvent() {
         AtomicInteger eventCount = new AtomicInteger();
 
         ns.add("foo", e -> eventCount.incrementAndGet());
@@ -244,7 +244,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void implicitlyDisabledElement_listenerDoesntReceiveEvent() {
+    void implicitlyDisabledElement_listenerDoesntReceiveEvent() {
         AtomicInteger eventCount = new AtomicInteger();
 
         ns.add("foo", e -> eventCount.incrementAndGet());
@@ -261,7 +261,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void disabledElement_listenerWithAlwaysUpdateModeReceivesEvent() {
+    void disabledElement_listenerWithAlwaysUpdateModeReceivesEvent() {
         AtomicInteger eventCount = new AtomicInteger();
 
         ns.add("foo", e -> eventCount.incrementAndGet())
@@ -275,7 +275,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void serializable() {
+    void serializable() {
         ns.add("click", noOp).addEventData("eventdata");
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
@@ -285,7 +285,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_hasSynchronizedProperty() {
+    void synchronizeProperty_hasSynchronizedProperty() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         assertNull(ns.getPropertySynchronizationMode("name"));
@@ -301,7 +301,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_alwaysMode() {
+    void synchronizeProperty_alwaysMode() {
         DomListenerRegistration registration = ns.add("foo", noOp)
                 .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
@@ -312,7 +312,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_bothModes() {
+    void synchronizeProperty_bothModes() {
         DomListenerRegistration registration1 = ns.add("foo", noOp)
                 .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
@@ -326,7 +326,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_hasExpressionToken() {
+    void synchronizeProperty_hasExpressionToken() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         assertEquals(Collections.emptySet(), getExpressions("foo"));
@@ -340,7 +340,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_nullArgument_illegalArgumentException() {
+    void synchronizeProperty_nullArgument_illegalArgumentException() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         assertThrows(IllegalArgumentException.class,
@@ -348,7 +348,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizeProperty_emptyArgument_illegalArgumentException() {
+    void synchronizeProperty_emptyArgument_illegalArgumentException() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         assertThrows(IllegalArgumentException.class,
@@ -356,7 +356,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void mapEventTargetToElement_targetNodeIdInJsonData_elementMapped() {
+    void mapEventTargetToElement_targetNodeIdInJsonData_elementMapped() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         Element grandChild = new Element("grandChild");
@@ -407,7 +407,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void addEventDataElement_targetNodeInJsonData_elementMapped() {
+    void addEventDataElement_targetNodeInJsonData_elementMapped() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         Element sibling = new Element("sibling");
@@ -453,7 +453,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
+    void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         parent.appendChild(child);
@@ -484,7 +484,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void eventDataKeyNotPresentNotFail() {
+    void eventDataKeyNotPresentNotFail() {
         AtomicInteger eventCount = new AtomicInteger();
         DomListenerRegistration registration = ns.add("foo",
                 e -> eventCount.incrementAndGet());
@@ -500,7 +500,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testPreventDefaultWithFilter() {
+    void testPreventDefaultWithFilter() {
         // Test that preventDefault only applies to filtered events (see issue
         // #22294)
 
@@ -531,7 +531,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testPreventDefaultWithoutFilter() {
+    void testPreventDefaultWithoutFilter() {
         // Test preventDefault without filter - should apply to all events
         DomListenerRegistration registration = ns.add("keydown", noOp);
         registration.preventDefault();
@@ -546,7 +546,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testPreventDefaultThenSetFilter() {
+    void testPreventDefaultThenSetFilter() {
         // Test that preventDefault becomes conditional even when filter is set
         // after
         DomListenerRegistration registration = ns.add("keydown", noOp);
@@ -567,7 +567,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testSetFilterThenPreventDefault() {
+    void testSetFilterThenPreventDefault() {
         // Test that preventDefault is conditional when filter is set before
         DomListenerRegistration registration = ns.add("keydown", noOp);
         registration.setFilter("event.key === 'Delete'");
@@ -587,7 +587,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testStopPropagationWithFilter() {
+    void testStopPropagationWithFilter() {
         // Test that stopPropagation only applies to filtered events
 
         // Create a listener with filter for space and enter keys
@@ -617,7 +617,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testStopPropagationWithoutFilter() {
+    void testStopPropagationWithoutFilter() {
         // Test stopPropagation without filter - should apply to all events
         DomListenerRegistration registration = ns.add("keydown", noOp);
         registration.stopPropagation();
@@ -632,7 +632,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testStopPropagationThenSetFilter() {
+    void testStopPropagationThenSetFilter() {
         // Test that stopPropagation becomes conditional even when filter is
         // set after
         DomListenerRegistration registration = ns.add("keydown", noOp);
@@ -653,7 +653,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testSetFilterThenStopPropagation() {
+    void testSetFilterThenStopPropagation() {
         // Test that stopPropagation is conditional when filter is set before
         DomListenerRegistration registration = ns.add("keydown", noOp);
         registration.setFilter("event.key === 'Delete'");
@@ -673,7 +673,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDataWithRecord() {
+    void testAddEventDataWithRecord() {
         // Test that addEventData correctly extracts nested record structure
         record EventDetails(int button, int clientX, int clientY) {
         }
@@ -699,7 +699,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDataWithSimpleBean() {
+    void testAddEventDataWithSimpleBean() {
         // Test with a simple bean (non-record)
         class SimpleEventData {
             private String message;
@@ -726,7 +726,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetail() {
+    void testAddEventDetail() {
         // Test that addEventDetail adds "event.detail" to expressions
         DomListenerRegistration registration = ns.add("color-change", noOp);
         registration.addEventDetail();
@@ -740,7 +740,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetailChaining() {
+    void testAddEventDetailChaining() {
         // Test that addEventDetail can be chained with other methods
         DomListenerRegistration registration = ns.add("custom-event", noOp);
         registration.addEventDetail().addEventData("event.timestamp");
@@ -756,7 +756,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetailWithClass() {
+    void testAddEventDetailWithClass() {
         // Test that addEventDetail(Class) adds specific properties from
         // event.detail
         record RgbColor(int r, int g, int b) {
@@ -784,7 +784,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetailWithClassAndGetEventDetail() {
+    void testAddEventDetailWithClassAndGetEventDetail() {
         // Test full flow: addEventDetail(Class) and getEventDetail(Class)
         record RgbColor(int r, int g, int b) {
         }
@@ -824,7 +824,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetailWithNestedClass() {
+    void testAddEventDetailWithNestedClass() {
         // Test that nested properties work correctly
         record Position(int x, int y) {
         }
@@ -851,7 +851,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testGetEventDetailWithRecord() {
+    void testGetEventDetailWithRecord() {
         // Test getEventDetail with a Java record
         record RgbColor(int r, int g, int b) {
         }
@@ -896,7 +896,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testGetEventDetailWithBean() {
+    void testGetEventDetailWithBean() {
         // Test getEventDetail with a regular bean class
         ObjectNode eventData = JacksonUtils.createObjectNode();
         ObjectNode detailData = JacksonUtils.createObjectNode();
@@ -916,7 +916,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testGetEventDetailWithTypeReference() {
+    void testGetEventDetailWithTypeReference() {
         // Test getEventDetail with TypeReference for generic types
         ObjectNode eventData = JacksonUtils.createObjectNode();
         tools.jackson.databind.node.ArrayNode detailArray = JacksonUtils
@@ -941,7 +941,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testGetEventDetailReturnsNullWhenNotPresent() {
+    void testGetEventDetailReturnsNullWhenNotPresent() {
         // Test that getEventDetail returns null when event.detail is not
         // present
         ObjectNode eventData = JacksonUtils.createObjectNode();
@@ -957,7 +957,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testGetEventDetailReturnsNullWhenNull() {
+    void testGetEventDetailReturnsNullWhenNull() {
         // Test that getEventDetail returns null when event.detail is null
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.set("event.detail", JacksonUtils.nullNode());

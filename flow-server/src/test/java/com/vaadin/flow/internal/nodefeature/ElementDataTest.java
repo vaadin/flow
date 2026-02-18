@@ -38,7 +38,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
             .getFeature(ElementData.class);
 
     @Test
-    public void setGetTag() {
+    void setGetTag() {
         assertNull(elementData.getTag(), "Tag should initially be null");
 
         elementData.setTag("myTag");
@@ -47,7 +47,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     @Test
-    public void setGetPayload() {
+    void setGetPayload() {
         assertNull(elementData.getPayload(), "Tag should initially be null");
 
         ObjectNode object = JacksonUtils.createObjectNode();
@@ -57,7 +57,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     @Test
-    public void collectChanges_setTagOnly_onlyOneChanges() {
+    void collectChanges_setTagOnly_onlyOneChanges() {
         elementData.setTag("foo");
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
@@ -73,7 +73,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     @Test
-    public void collectChanges_setPayloadOnly_onlyOneChanges() {
+    void collectChanges_setPayloadOnly_onlyOneChanges() {
         ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
         List<NodeChange> changes = new ArrayList<>();
@@ -89,7 +89,7 @@ class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     }
 
     @Test
-    public void collectChanges_setBothTagAndPayload_twoChanges() {
+    void collectChanges_setBothTagAndPayload_twoChanges() {
         ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
         elementData.setTag("foo");

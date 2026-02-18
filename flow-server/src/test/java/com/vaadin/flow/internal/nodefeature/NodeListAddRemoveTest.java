@@ -47,7 +47,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clear_onlyListClearChange() {
+    void clear_onlyListClearChange() {
         resetToRemoveAfterAddCase();
 
         nodeList.clear();
@@ -58,7 +58,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void remove_add_changesAreNotAdjusted() {
+    void remove_add_changesAreNotAdjusted() {
         List<String> items = resetToRemoveAfterAddCase();
 
         // remove an item before the last one
@@ -86,7 +86,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void add_immediatelyRemove_changesDiscarded() {
+    void add_immediatelyRemove_changesDiscarded() {
         List<String> items = resetToRemoveAfterAddCase();
 
         String newItem = "foo";
@@ -101,7 +101,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void addAll_immediatelyRemove_changeIsAdjusted() {
+    void addAll_immediatelyRemove_changeIsAdjusted() {
         resetToRemoveAfterAddCase();
 
         List<String> items = new ArrayList<>();
@@ -124,7 +124,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void add_addInBetweenAndRemove_changesAreAdjusted() {
+    void add_addInBetweenAndRemove_changesAreAdjusted() {
         List<String> items = resetToRemoveAfterAddCase();
 
         String newItem = "foo";
@@ -153,7 +153,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void insertBefore_addAndRemove_changesAreDiscarded() {
+    void insertBefore_addAndRemove_changesAreDiscarded() {
         resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -171,7 +171,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void insertAfter_addAllAndRemove_changesAreAdjusted() {
+    void insertAfter_addAllAndRemove_changesAreAdjusted() {
         resetToRemoveAfterAddCase();
 
         List<String> items = new ArrayList<>();
@@ -205,7 +205,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void addOperationAfterDelete_addRemove_subsequentOoperationsAreNotAffected() {
+    void addOperationAfterDelete_addRemove_subsequentOoperationsAreNotAffected() {
         List<String> items = resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -225,7 +225,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void removeOperationAfterDelete_addRemove_subsequentOperationsAreNotAffected() {
+    void removeOperationAfterDelete_addRemove_subsequentOperationsAreNotAffected() {
         List<String> items = resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -243,7 +243,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void removeInBetween_addRemove_removeIsNotAdjusted() {
+    void removeInBetween_addRemove_removeIsNotAdjusted() {
         List<String> items = resetToRemoveAfterAddCase();
 
         int index = items.size();
@@ -265,7 +265,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clearInBetween_addRemove_removeIsAdjustedProperly() {
+    void clearInBetween_addRemove_removeIsAdjustedProperly() {
         resetToRemoveAfterAddCase();
 
         // First add some item
@@ -288,7 +288,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clear_collectChanges_allPreviousEventsAreRemoved() {
+    void clear_collectChanges_allPreviousEventsAreRemoved() {
         List<String> items = resetToRemoveAfterAddCase();
 
         int index = items.size();
@@ -314,7 +314,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clear_collectChanges_resetChangeTracker_clearEventIsCollected() {
+    void clear_collectChanges_resetChangeTracker_clearEventIsCollected() {
         resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -353,7 +353,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clear_collectChanges_resetChangeTracker_reattach_clearEventIsCollected() {
+    void clear_collectChanges_resetChangeTracker_reattach_clearEventIsCollected() {
         resetToRemoveAfterAddCase();
 
         nodeList.add("foo");
@@ -402,7 +402,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clearNodeList_clearChanges_generateChangesFromEmpty_clearChangeIsCollected() {
+    void clearNodeList_clearChanges_generateChangesFromEmpty_clearChangeIsCollected() {
         // removes all children
         nodeList.clear();
 
@@ -421,7 +421,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clearNodeList_clearChanges_reatach_generateChangesFromEmpty_clearChangeIsCollected() {
+    void clearNodeList_clearChanges_reatach_generateChangesFromEmpty_clearChangeIsCollected() {
         // removes all children
         nodeList.clear();
 
@@ -457,7 +457,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void collectChanges_clearNodeListIsDoneFirst_noClearEventinCollectedChanges() {
+    void collectChanges_clearNodeListIsDoneFirst_noClearEventinCollectedChanges() {
         // removes all children
         nodeList.clear();
 
@@ -480,7 +480,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     }
 
     @Test
-    public void clear_modifyList_collectChanges_clearChangeIsCollected() {
+    void clear_modifyList_collectChanges_clearChangeIsCollected() {
         nodeList.clear();
         nodeList.add("foo");
 

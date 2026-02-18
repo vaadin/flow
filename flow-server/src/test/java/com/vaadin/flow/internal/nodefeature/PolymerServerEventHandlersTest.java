@@ -119,7 +119,7 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
                 .getFeatures();
         stateNode = new StateNode(features.toArray(new Class[features.size()]));
@@ -166,12 +166,12 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testNoParamsMethod() {
+    void testNoParamsMethod() {
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("noParams"));
     }
 
     @Test
-    public void testCorrectMethodWithDifferentAnnotations()
+    void testCorrectMethodWithDifferentAnnotations()
             throws NoSuchFieldException, IllegalAccessException {
         // Insert component without using ComponentMapping::setComponent as we
         // only want to map and test the method
@@ -185,7 +185,7 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testEventDataParam()
+    void testEventDataParam()
             throws NoSuchFieldException, IllegalAccessException {
         // Insert component without using ComponentMapping::setComponent as we
         // only want to map and test the method `eventDataParam`
@@ -197,17 +197,17 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testRepeatIndexParam1() {
+    void testRepeatIndexParam1() {
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("repeatIndexParam1"));
     }
 
     @Test
-    public void testRepeatIndexParam2() {
+    void testRepeatIndexParam2() {
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("repeatIndexParam2"));
     }
 
     @Test
-    public void testNotAnnotatedParam() {
+    void testNotAnnotatedParam() {
         assertThrows(IllegalStateException.class, () -> {
             addAndVerifyMethod(
                     wronglyAnnotatedHandlers.get("notAnnotatedParam"));
@@ -215,7 +215,7 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testWrongTypeOfRepeatIndexParam() {
+    void testWrongTypeOfRepeatIndexParam() {
         assertThrows(IllegalStateException.class, () -> {
             addAndVerifyMethod(wronglyAnnotatedHandlers
                     .get("wrongTypeOfRepeatIndexParam"));
@@ -223,7 +223,7 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testMultipleAnnotationsOnOneParam() {
+    void testMultipleAnnotationsOnOneParam() {
         assertThrows(IllegalStateException.class, () -> {
             addAndVerifyMethod(wronglyAnnotatedHandlers
                     .get("eventDataAndRepeatIndexOnOneParam"));

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class AttachExistingElementFeatureTest {
 
     @Test
-    public void register_dataIsAvailaleByNode() {
+    void register_dataIsAvailaleByNode() {
         StateNode node = new StateNode();
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
@@ -52,7 +52,7 @@ class AttachExistingElementFeatureTest {
     }
 
     @Test
-    public void forEachChild_register_registeredStatNodeIsAChild() {
+    void forEachChild_register_registeredStatNodeIsAChild() {
         StateNode node = new StateNode();
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
@@ -71,7 +71,7 @@ class AttachExistingElementFeatureTest {
     }
 
     @Test
-    public void unregister_dataIsNotAvailaleByNode() {
+    void unregister_dataIsNotAvailaleByNode() {
         StateNode node = new StateNode();
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);

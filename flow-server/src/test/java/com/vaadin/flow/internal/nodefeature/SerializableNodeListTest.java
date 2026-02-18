@@ -36,7 +36,7 @@ class SerializableNodeListTest
     private ElementClassList nodeList = createFeature();
 
     @Test
-    public void testSerializable() {
+    void testSerializable() {
         nodeList.add("bar");
         nodeList.add(null);
 
@@ -64,7 +64,7 @@ class SerializableNodeListTest
     }
 
     @Test
-    public void testRemoveUsingIterator() {
+    void testRemoveUsingIterator() {
         nodeList.add("1");
         nodeList.add("2");
         nodeList.add("3");
@@ -95,7 +95,7 @@ class SerializableNodeListTest
     }
 
     @Test
-    public void clearUsingIterator() {
+    void clearUsingIterator() {
         nodeList.add("1");
         nodeList.add("2");
         collectChanges(nodeList);

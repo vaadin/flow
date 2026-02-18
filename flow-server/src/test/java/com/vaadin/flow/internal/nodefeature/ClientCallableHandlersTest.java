@@ -46,7 +46,7 @@ class ClientCallableHandlersTest {
     }
 
     @Test
-    public void attach_noFeature() {
+    void attach_noFeature() {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
@@ -58,7 +58,7 @@ class ClientCallableHandlersTest {
     }
 
     @Test
-    public void attach_noComponent() {
+    void attach_noComponent() {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
@@ -71,7 +71,7 @@ class ClientCallableHandlersTest {
     }
 
     @Test
-    public void nonTemplateComponentWithEventHandler() {
+    void nonTemplateComponentWithEventHandler() {
         UI ui = new UI();
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
@@ -82,7 +82,7 @@ class ClientCallableHandlersTest {
     }
 
     @Test
-    public void nonTemplateComponentWithoutEventHandler() {
+    void nonTemplateComponentWithoutEventHandler() {
         UI ui = new UI();
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);

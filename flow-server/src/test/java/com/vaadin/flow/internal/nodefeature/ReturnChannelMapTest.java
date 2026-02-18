@@ -35,7 +35,7 @@ class ReturnChannelMapTest {
             .getFeature(ReturnChannelMap.class);
 
     @Test
-    public void registerHandler_regstrationHasCorrectData() {
+    void registerHandler_regstrationHasCorrectData() {
         ReturnChannelRegistration registration = returnChannelMap
                 .registerChannel((arguments, channel) -> {
                 });
@@ -51,7 +51,7 @@ class ReturnChannelMapTest {
     }
 
     @Test
-    public void twoArgsHandler_invoked() {
+    void twoArgsHandler_invoked() {
         AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
         AtomicReference<ReturnChannelRegistration> observedRegistration = new AtomicReference<>();
 
@@ -75,7 +75,7 @@ class ReturnChannelMapTest {
     }
 
     @Test
-    public void shorthandHandler_invoked() {
+    void shorthandHandler_invoked() {
         AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
 
         ReturnChannelRegistration registration = returnChannelMap

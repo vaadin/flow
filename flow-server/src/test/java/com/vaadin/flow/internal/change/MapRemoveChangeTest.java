@@ -31,7 +31,7 @@ class MapRemoveChangeTest {
             .createFeature(ElementPropertyMap.class);
 
     @Test
-    public void testJson() {
+    void testJson() {
         MapRemoveChange change = new MapRemoveChange(feature, "some");
 
         ObjectNode json = change.toJson(null);

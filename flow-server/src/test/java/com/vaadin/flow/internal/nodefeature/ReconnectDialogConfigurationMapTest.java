@@ -30,7 +30,7 @@ class ReconnectDialogConfigurationMapTest
             node);
 
     @Test
-    public void defaults() {
+    void defaults() {
         assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
                 map.getDialogText());
         assertEquals(
@@ -43,25 +43,25 @@ class ReconnectDialogConfigurationMapTest
     }
 
     @Test
-    public void setGetDialogText() {
+    void setGetDialogText() {
         testString(map, ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY,
                 map::setDialogText, map::getDialogText);
     }
 
     @Test
-    public void setGetDialogTextGaveUp() {
+    void setGetDialogTextGaveUp() {
         testString(map, ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY,
                 map::setDialogTextGaveUp, map::getDialogTextGaveUp);
     }
 
     @Test
-    public void setGetReconnectAttempts() {
+    void setGetReconnectAttempts() {
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY,
                 map::setReconnectAttempts, map::getReconnectAttempts);
     }
 
     @Test
-    public void setGetReconnectInterval() {
+    void setGetReconnectInterval() {
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY,
                 map::setReconnectInterval, map::getReconnectInterval);
     }

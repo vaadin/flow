@@ -67,13 +67,13 @@ class ListFeatureSetViewTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         feature = new TestFeature();
         set = new TestSetView(feature);
     }
 
     @Test
-    public void testSetViewAdd() {
+    void testSetViewAdd() {
         set.add("0");
         assertContents("0");
         set.add("1");
@@ -83,7 +83,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewSize() {
+    void testSetViewSize() {
         set.add("0");
         assertEquals(1, set.size());
         set.add("1");
@@ -97,7 +97,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewRemove() {
+    void testSetViewRemove() {
         set.add("0");
         set.add("1");
         set.remove("0");
@@ -107,14 +107,14 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewValidateAdd() {
+    void testSetViewValidateAdd() {
         assertThrows(IllegalArgumentException.class, () -> {
             set.add("as89w4573");
         });
     }
 
     @Test
-    public void testSetViewClear() {
+    void testSetViewClear() {
         set.add("a");
         set.add("b");
         set.add("c");
@@ -124,7 +124,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewIteratorIterate() {
+    void testSetViewIteratorIterate() {
         set.add("a");
         set.add("b");
         set.add("c");
@@ -137,7 +137,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewIteratorRemove() {
+    void testSetViewIteratorRemove() {
         set.add("a");
         set.add("b");
         set.add("c");
@@ -151,7 +151,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewContains() {
+    void testSetViewContains() {
         set.add("a");
         set.add("b");
         set.add("c");
@@ -163,7 +163,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewSameFeatureEquals() {
+    void testSetViewSameFeatureEquals() {
         set.add("a");
 
         TestSetView otherSet = new TestSetView(feature);
@@ -173,7 +173,7 @@ class ListFeatureSetViewTest {
     }
 
     @Test
-    public void testSetViewDifferentFeatureEquals() {
+    void testSetViewDifferentFeatureEquals() {
         set.add("a");
         TestFeature otherFeature = new TestFeature();
         TestSetView otherSet = new TestSetView(otherFeature);

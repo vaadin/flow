@@ -34,7 +34,7 @@ class PushConfigurationMapTest
     private PushConfigurationMap ns = createFeature();
 
     @Test
-    public void transportWebsocket() {
+    void transportWebsocket() {
         ns.setTransport(Transport.WEBSOCKET);
         assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
@@ -43,7 +43,7 @@ class PushConfigurationMapTest
     }
 
     @Test
-    public void transportLongPolling() {
+    void transportLongPolling() {
         ns.setTransport(Transport.LONG_POLLING);
         assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("transport"));
@@ -52,7 +52,7 @@ class PushConfigurationMapTest
     }
 
     @Test
-    public void transportLongWebsocketXHR() {
+    void transportLongWebsocketXHR() {
         ns.setTransport(Transport.WEBSOCKET_XHR);
         assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
@@ -62,7 +62,7 @@ class PushConfigurationMapTest
     }
 
     @Test
-    public void fallbackTransportLongPolling() {
+    void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
         assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
@@ -70,7 +70,7 @@ class PushConfigurationMapTest
     }
 
     @Test
-    public void fallbackTransportWebsocket() {
+    void fallbackTransportWebsocket() {
         ns.setFallbackTransport(Transport.WEBSOCKET);
         assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
@@ -78,14 +78,14 @@ class PushConfigurationMapTest
     }
 
     @Test
-    public void fallbackTransportWebsocketXHR() {
+    void fallbackTransportWebsocketXHR() {
         assertThrows(IllegalArgumentException.class, () -> {
             ns.setFallbackTransport(Transport.WEBSOCKET_XHR);
         });
     }
 
     @Test
-    public void parameterNames() {
+    void parameterNames() {
         ns.setParameter("foo", "bar");
         assertArrayEquals(new String[] { "foo" },
                 ns.getParameterNames().toArray());

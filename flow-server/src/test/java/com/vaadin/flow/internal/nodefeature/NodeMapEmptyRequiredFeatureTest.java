@@ -39,7 +39,7 @@ class NodeMapEmptyRequiredFeatureTest {
     private NodeMap nodeMap;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         node = new StateNode(Arrays.asList(ElementPropertyMap.class)) {
             @Override
             public boolean isAttached() {
@@ -50,7 +50,7 @@ class NodeMapEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_featureHasChangesToCollect() {
+    void generateChangesFromEmpty_featureHasChangesToCollect() {
         nodeMap.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
@@ -65,7 +65,7 @@ class NodeMapEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_noEmptyChange() {
+    void generateChangesFromEmpty_noEmptyChange() {
         nodeMap.put("foo", "bar");
         node.clearChanges();
         nodeMap.generateChangesFromEmpty();
@@ -78,7 +78,7 @@ class NodeMapEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_featureHasEmptyChange() {
+    void collectChanges_featureHasEmptyChange() {
         AtomicReference<NodeChange> change = new AtomicReference<>();
         nodeMap.collectChanges(change::set);
 
@@ -90,7 +90,7 @@ class NodeMapEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void collectChanges_noEmptyChange() {
+    void collectChanges_noEmptyChange() {
         nodeMap.put("foo", "bar");
 
         List<NodeChange> changes = new ArrayList<>();
