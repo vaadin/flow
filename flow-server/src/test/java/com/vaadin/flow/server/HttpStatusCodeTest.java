@@ -20,10 +20,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HttpStatusCodeTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HttpStatusCodeTest {
 
     @Test
     public void isValidStatusCode_invalidCode_returnsFalse() {
@@ -32,17 +34,15 @@ public class HttpStatusCodeTest {
 
         IntStream.rangeClosed(-1000, 1000)
                 .filter(sc -> !validCodes.contains(sc))
-                .forEach(sc -> Assert.assertFalse(
-                        sc + " should be invalid, but was not",
-                        HttpStatusCode.isValidStatusCode(sc)));
+                .forEach(sc -> assertFalse(HttpStatusCode.isValidStatusCode(sc),
+                        sc + " should be invalid, but was not"));
     }
 
     @Test
     public void isValidStatusCode_validCode_returnsTrue() {
         Stream.of(HttpStatusCode.values()).mapToInt(HttpStatusCode::getCode)
-                .forEach(sc -> Assert.assertTrue(
-                        sc + " should be valid, but was not",
-                        HttpStatusCode.isValidStatusCode(sc)));
+                .forEach(sc -> assertTrue(HttpStatusCode.isValidStatusCode(sc),
+                        sc + " should be valid, but was not"));
 
     }
 

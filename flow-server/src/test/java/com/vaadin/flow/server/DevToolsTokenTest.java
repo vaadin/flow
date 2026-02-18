@@ -15,44 +15,43 @@
  */
 package com.vaadin.flow.server;
 
+import java.nio.file.Path;
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
 
-public class DevToolsTokenTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Rule
-    public TemporaryFolder projectFolder = new TemporaryFolder();
-
+class DevToolsTokenTest {
+    @TempDir
+    Path projectFolder;
     private VaadinService service;
     private DeploymentConfiguration configuration;
     private String initialToken;
     private String systemTempDir;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.getProjectFolder())
-                .thenReturn(projectFolder.getRoot());
+                .thenReturn(projectFolder.toFile());
         service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         initialToken = DevToolsToken.getToken();
         systemTempDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir",
-                projectFolder.getRoot().getAbsolutePath());
+                projectFolder.toFile().getAbsolutePath());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         overwriteToken(initialToken);
         System.setProperty("java.io.tmpdir", systemTempDir);
@@ -61,13 +60,13 @@ public class DevToolsTokenTest {
     @Test
     public void init_tokenFileNotExising_createTokenFile() {
         DevToolsToken.init(service);
-        Assert.assertEquals(initialToken, DevToolsToken.getToken());
+        assertEquals(initialToken, DevToolsToken.getToken());
 
         overwriteToken("EMPTY");
 
         // Token restored from file
         DevToolsToken.init(service);
-        Assert.assertEquals(initialToken, DevToolsToken.getToken());
+        assertEquals(initialToken, DevToolsToken.getToken());
     }
 
     @Test
@@ -77,7 +76,7 @@ public class DevToolsTokenTest {
         String testToken = UUID.randomUUID().toString();
         overwriteToken(testToken);
         DevToolsToken.init(service);
-        Assert.assertEquals(testToken, DevToolsToken.getToken());
+        assertEquals(testToken, DevToolsToken.getToken());
     }
 
     private void overwriteToken(String token) {
