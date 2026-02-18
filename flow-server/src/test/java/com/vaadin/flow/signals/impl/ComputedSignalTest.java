@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -43,6 +44,8 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
         Signal<Object> signal = Signal.computed(() -> {
             count.incrementAndGet();
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             return null;
         });
 
@@ -51,6 +54,14 @@ public class ComputedSignalTest extends SignalTestBase {
 
         signal.get();
         assertEquals(1, count.intValue());
+    }
+
+    @Test
+    void value_constantCallback_throws() {
+        Signal<String> signal = Signal.computed(() -> "const");
+
+        assertThrows(UsageDetector.MissingSignalUsageException.class,
+                signal::get);
     }
 
     @Test
@@ -156,6 +167,8 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<String> signal = Signal.computed((() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             other.set("update");
             return null;
         }));

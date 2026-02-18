@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
-import com.vaadin.flow.signals.impl.UsageTracker;
+import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -313,7 +313,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     void usageTracking_changeDifferentValues_onlyMapChangeDetected() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 

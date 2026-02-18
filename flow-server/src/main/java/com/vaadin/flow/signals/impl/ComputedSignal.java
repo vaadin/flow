@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.flow.signals.function.TrackableSupplier;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
@@ -196,21 +198,23 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
+            UsageDetector usageDetector = UsageDetector.createNecessary(
+                    "Signal computation must use other signals.");
+            var tracked = UsageTracker.tracked(computation, usageDetector);
             @Nullable
             Object[] holder = new @Nullable Object[2];
-            Usage dependencies = UsageTracker.track(() -> {
-                try {
-                    holder[0] = computation.compute();
-                } catch (RuntimeException e) {
-                    holder[1] = e;
-                }
-            });
+            try {
+                holder[0] = tracked.supply();
+            } catch (RuntimeException e) {
+                holder[1] = e;
+            }
             @Nullable
             Object value = holder[0];
             @Nullable
             RuntimeException exception = (RuntimeException) holder[1];
 
-            state = new ComputedState(value, exception, dependencies);
+            state = new ComputedState(value, exception,
+                    usageDetector.dependencies());
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
                     new ComputedPOJONode(state)));

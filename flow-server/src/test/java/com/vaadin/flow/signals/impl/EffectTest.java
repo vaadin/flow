@@ -28,6 +28,7 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
@@ -39,10 +40,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class EffectTest extends SignalTestBase {
 
     @Test
+    void newEffect_noSignalUsage_throws() {
+        assertThrows(UsageDetector.MissingSignalUsageException.class, () -> {
+            Signal.unboundEffect(() -> {
+                // no-op - action doesn't read any signals
+            });
+        });
+    }
+
+    @Test
     void newEffect_actionIsRunOnce() {
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             count.incrementAndGet();
         });
 
@@ -54,6 +66,8 @@ public class EffectTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             count.incrementAndGet();
         }).remove();
 
@@ -121,6 +135,8 @@ public class EffectTest extends SignalTestBase {
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -145,6 +161,8 @@ public class EffectTest extends SignalTestBase {
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -405,6 +423,8 @@ public class EffectTest extends SignalTestBase {
 
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.unboundEffect(() -> {
+            // bypass signal usage requirement
+            new ValueSignal<>().get();
             throw exception;
         });
 
