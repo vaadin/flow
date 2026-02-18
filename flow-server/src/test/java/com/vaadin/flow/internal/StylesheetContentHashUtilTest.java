@@ -87,9 +87,27 @@ public class StylesheetContentHashUtilTest {
     public void getContentHash_missingResource_returnsNull() {
         Mockito.when(service.getResourceAsStream("missing.css"))
                 .thenReturn(null);
+        Mockito.when(service.getResourceAsStream("/missing.css"))
+                .thenReturn(null);
 
         Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
                 "missing.css"));
+    }
+
+    @Test
+    public void getContentHash_barePath_fallsBackToSlashPrefixed() {
+        // Bare path "styles.css" may not resolve in servlet context.
+        // The utility should fall back to "/styles.css".
+        byte[] content = "body { color: blue; }"
+                .getBytes(StandardCharsets.UTF_8);
+        Mockito.when(service.getResourceAsStream("bare.css")).thenReturn(null);
+        Mockito.when(service.getResourceAsStream("/bare.css"))
+                .thenReturn(new ByteArrayInputStream(content));
+
+        String hash = StylesheetContentHashUtil.getContentHash(service,
+                "bare.css");
+        Assert.assertNotNull(hash);
+        Assert.assertEquals(8, hash.length());
     }
 
     @Test

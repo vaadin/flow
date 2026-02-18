@@ -801,7 +801,7 @@ class StaticFileServerTest implements Serializable {
         Mockito.when(request.getParameter("v")).thenReturn("abcd1234");
 
         fileServer.writeCacheHeaders("/folder/myfile.css", request, response);
-        Assert.assertEquals("max-age=31536000", headers.get("Cache-Control"));
+        assertEquals("max-age=31536000", headers.get("Cache-Control"));
     }
 
     @Test

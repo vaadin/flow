@@ -29,6 +29,8 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppShellRegistryStyleSheetDataFilePathTest {
 
@@ -119,7 +121,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assert.assertEquals(4, links.size());
+        assertEquals(4, links.size());
 
         Pattern hashPattern = Pattern.compile("\\?v=[0-9a-f]{8}$");
 
@@ -128,36 +130,34 @@ class AppShellRegistryStyleSheetDataFilePathTest {
 
         // 1) Absolute path: href has hash appended, data-file-path unchanged
         Element abs = links.get(0);
-        Assert.assertTrue("Absolute href should contain ?v=<hash>",
-                hashPattern.matcher(abs.attr("href")).find());
-        Assert.assertTrue("Absolute href should start with /absolute.css",
-                abs.attr("href").startsWith("/absolute.css"));
-        Assert.assertEquals("/absolute.css", abs.attr("data-file-path"));
+        assertTrue(hashPattern.matcher(abs.attr("href")).find(),
+                "Absolute href should contain ?v=<hash>");
+        assertTrue(abs.attr("href").startsWith("/absolute.css"),
+                "Absolute href should start with /absolute.css");
+        assertEquals("/absolute.css", abs.attr("data-file-path"));
 
         // 2) Relative path: href has hash appended, data-file-path unchanged
         Element rel = links.get(1);
-        Assert.assertTrue("Relative href should contain ?v=<hash>",
-                hashPattern.matcher(rel.attr("href")).find());
-        Assert.assertTrue("Relative href should start with /ctx/",
-                rel.attr("href").startsWith("/ctx/relative/path.css"));
-        Assert.assertEquals("./relative/path.css", rel.attr("data-file-path"));
+        assertTrue(hashPattern.matcher(rel.attr("href")).find(),
+                "Relative href should contain ?v=<hash>");
+        assertTrue(rel.attr("href").startsWith("/ctx/relative/path.css"),
+                "Relative href should start with /ctx/");
+        assertEquals("./relative/path.css", rel.attr("data-file-path"));
 
         // 3) Context path: href has hash appended, data-file-path unchanged
         Element ctx = links.get(2);
-        Assert.assertTrue("Context href should contain ?v=<hash>",
-                hashPattern.matcher(ctx.attr("href")).find());
-        Assert.assertTrue("Context href should start with /ctx/",
-                ctx.attr("href").startsWith("/ctx/from-context.css"));
-        Assert.assertEquals("context://from-context.css",
-                ctx.attr("data-file-path"));
+        assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
+                "Context href should contain ?v=<hash>");
+        assertTrue(ctx.attr("href").startsWith("/ctx/from-context.css"),
+                "Context href should start with /ctx/");
+        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
 
         // 4) External URL: no hash appended, data-file-path unchanged
         Element remote = links.get(3);
-        Assert.assertEquals("https://cdn.example.com/remote.css",
-                remote.attr("href"));
-        Assert.assertFalse("External href should not have hash",
-                hashPattern.matcher(remote.attr("href")).find());
-        Assert.assertEquals("https://cdn.example.com/remote.css",
+        assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
+        assertFalse(hashPattern.matcher(remote.attr("href")).find(),
+                "External href should not have hash");
+        assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("data-file-path"));
     }
 
@@ -177,10 +177,9 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         List<Element> links = document.head().select("link[rel=stylesheet]");
         // The links should still be present, just without ?v= hash
         for (Element link : links) {
-            Assert.assertFalse(
+            assertFalse(link.attr("href").contains("?v="),
                     "Missing resource href should not have hash: "
-                            + link.attr("href"),
-                    link.attr("href").contains("?v="));
+                            + link.attr("href"));
         }
     }
 

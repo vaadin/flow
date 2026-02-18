@@ -73,7 +73,7 @@ public class StylesheetContentHashUtil {
 
     private static String computeHash(VaadinService service,
             String resourceUrl) {
-        try (InputStream stream = service.getResourceAsStream(resourceUrl)) {
+        try (InputStream stream = openResource(service, resourceUrl)) {
             if (stream == null) {
                 logger.debug("Resource not found for content hashing: {}",
                         resourceUrl);
@@ -87,6 +87,19 @@ public class StylesheetContentHashUtil {
                     resourceUrl, e);
             return null;
         }
+    }
+
+    private static InputStream openResource(VaadinService service,
+            String resourceUrl) {
+        InputStream stream = service.getResourceAsStream(resourceUrl);
+        // Bare paths (e.g. "styles.css") may not resolve in the servlet
+        // context which requires a leading '/'. Try with '/' prefix as
+        // fallback.
+        if (stream == null && !resourceUrl.startsWith("/")
+                && !resourceUrl.contains("://")) {
+            stream = service.getResourceAsStream("/" + resourceUrl);
+        }
+        return stream;
     }
 
     /**
