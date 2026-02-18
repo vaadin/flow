@@ -28,7 +28,7 @@ import com.vaadin.flow.signals.Signal;
  * during the action execution. When any of those signals change, the action is
  * re-run with updated dependencies.
  *
- * @see Signal#effect(EffectAction)
+ * @see Signal#unboundEffect(EffectAction)
  */
 @FunctionalInterface
 public interface EffectAction extends Serializable {

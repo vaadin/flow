@@ -40,7 +40,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -136,7 +135,7 @@ public class ElementEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        Effect.effect(ui, () -> {
+        Signal.effect(ui, () -> {
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -159,7 +158,7 @@ public class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        Effect.effect(ui, () -> {
+        Signal.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -194,7 +193,7 @@ public class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
-        Effect.effect(ui, () -> {
+        Signal.effect(ui, () -> {
             currentUI.set(UI.getCurrent());
         });
 
@@ -218,7 +217,7 @@ public class ElementEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
-        Effect.effect(ui, () -> {
+        Signal.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -243,7 +242,7 @@ public class ElementEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
-        Effect.effect(ui, () -> {
+        Signal.effect(ui, () -> {
             throw new RuntimeException("Expected exception");
         });
 
@@ -263,7 +262,7 @@ public class ElementEffectTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
-        Registration registration = Effect.effect(component, () -> {
+        Registration registration = Signal.effect(component, () -> {
             signal.get();
             count.incrementAndGet();
         });
