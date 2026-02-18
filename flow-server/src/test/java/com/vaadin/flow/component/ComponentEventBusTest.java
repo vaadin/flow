@@ -639,32 +639,28 @@ class ComponentEventBusTest {
     public void invalidEventDataInConstructor_addListener() {
         TestComponent c = new TestComponent();
         assertThrows(IllegalArgumentException.class,
-                () -> c.addListener(MappedToDomInvalidEventData.class,
-                        e -> {
-                        }));
+                () -> c.addListener(MappedToDomInvalidEventData.class, e -> {
+                }));
     }
 
     @Test
     public void multipleEventDataConstructors_addListener() {
         TestComponent c = new TestComponent();
-        assertThrows(IllegalArgumentException.class,
-                () -> c.addListener(MappedToDomEventMultipleConstructors.class,
-                        e -> {
-                        }));
+        assertThrows(IllegalArgumentException.class, () -> c
+                .addListener(MappedToDomEventMultipleConstructors.class, e -> {
+                }));
     }
 
     @Test
     public void hasListeners_nullEventType_throws() {
-        ComponentEventBus eventBus = new ComponentEventBus(
-                new TestComponent());
+        ComponentEventBus eventBus = new ComponentEventBus(new TestComponent());
         assertThrows(IllegalArgumentException.class,
                 () -> eventBus.hasListener(null));
     }
 
     @Test
     public void getListeners_nullEventType_throws() {
-        ComponentEventBus eventBus = new ComponentEventBus(
-                new TestComponent());
+        ComponentEventBus eventBus = new ComponentEventBus(new TestComponent());
         assertThrows(IllegalArgumentException.class,
                 () -> eventBus.getListeners(null));
     }

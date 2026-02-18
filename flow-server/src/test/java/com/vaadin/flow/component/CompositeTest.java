@@ -200,8 +200,7 @@ public class CompositeTest {
         }
 
         CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
-        assertThrows(IllegalStateException.class,
-                () -> composite.getContent());
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     public static class CustomComponent<T> extends UI {
@@ -224,13 +223,12 @@ public class CompositeTest {
 
     @Test
     public void compositeContentTypeWithTypeVariable() {
-        class CompositeWithComposite extends
-                Composite<CompositeWithVariableType<TestComponent>> {
+        class CompositeWithComposite
+                extends Composite<CompositeWithVariableType<TestComponent>> {
         }
 
         CompositeWithComposite composite = new CompositeWithComposite();
-        assertThrows(IllegalStateException.class,
-                () -> composite.getContent());
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     @Test
@@ -240,8 +238,7 @@ public class CompositeTest {
         }
 
         CompositeWithRawType composite = new CompositeWithRawType();
-        assertThrows(IllegalStateException.class,
-                () -> composite.getContent());
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     @Test
