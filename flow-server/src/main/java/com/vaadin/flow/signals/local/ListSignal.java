@@ -54,7 +54,7 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
-                    "ListSignal cannot be used inside signal transactions.");
+                    "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
         }
     }
 

@@ -84,7 +84,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
-                    "ValueSignal cannot be used inside signal transactions.");
+                    "ValueSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedValueSignal instead.");
         }
 
         if (modifyRunning) {
