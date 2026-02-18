@@ -22,9 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,6 +34,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 abstract public class AbstractHierarchicalDataCommunicatorTest {
     public static class Item {
@@ -83,15 +84,15 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
 
     protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.openMocks(this);
         Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
                 .thenReturn(arrayUpdate);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         UI.setCurrent(null);
     }
 
@@ -108,7 +109,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
      *            the expected property values of items
      */
     protected void assertArrayUpdateItems(String property, String... expected) {
-        Assert.assertEquals(Arrays.asList(expected),
+        assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().values().stream()
                         .map((item) -> item.get(property).asString()).toList());
     }
@@ -122,8 +123,8 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
      */
     protected void assertArrayUpdateItems(String property,
             Map<Integer, String> expected) {
-        Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
-                .stream().collect(Collectors.toMap(//
+        assertEquals(expected, captureArrayUpdateItems().entrySet().stream()
+                .collect(Collectors.toMap(//
                         (entry) -> entry.getKey(),
                         (entry) -> entry.getValue().get(property).asString())));
     }

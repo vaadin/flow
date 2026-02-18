@@ -29,63 +29,61 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.testutil.ClassFinder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DefaultConverterFactoryTest {
+class DefaultConverterFactoryTest {
 
     private final DefaultConverterFactory factory = DefaultConverterFactory.INSTANCE;
 
     @Test
-    public void newInstance_unknownConversion_converterNotFound() {
+    void newInstance_unknownConversion_converterNotFound() {
         assertThatConversionIsNotSupported(Integer.class, Float.class);
         assertThatConversionIsNotSupported(String.class, ZonedDateTime.class);
         assertThatConversionIsNotSupported(String.class, Timestamp.class);
     }
 
     @Test
-    public void newInstance_knownConversion_converterCreated()
-            throws IOException {
+    void newInstance_knownConversion_converterCreated() throws IOException {
         Map<Class<? extends Converter<?, ?>>, List<Class<?>>> converters = new ConverterClassFinder()
                 .knownConverters();
-        Assert.assertFalse(
-                "Expecting standard converters to exist, but none found",
-                converters.isEmpty());
+        assertFalse(converters.isEmpty(),
+                "Expecting standard converters to exist, but none found");
         converters.forEach(
                 (converterType, types) -> assertThatConversionIsSupported(
                         types.get(0), types.get(1), converterType));
     }
 
     @Test
-    public void newInstance_knownConversionPrimitiveTypes_converterCreated()
+    void newInstance_knownConversionPrimitiveTypes_converterCreated()
             throws IOException {
         Map<Class<? extends Converter<?, ?>>, List<Class<?>>> converters = new ConverterClassFinder()
                 .knownConverters();
         converters.replaceAll((converterType, genericTypes) -> genericTypes
                 .stream().map(this::toPrimitiveTypeIfExist)
                 .collect(Collectors.toList()));
-        Assert.assertFalse(
-                "Expecting standard converters to exist, but none found",
-                converters.isEmpty());
+        assertFalse(converters.isEmpty(),
+                "Expecting standard converters to exist, but none found");
         converters.forEach(
                 (converterType, types) -> assertThatConversionIsSupported(
                         types.get(0), types.get(1), converterType));
     }
 
     @Test
-    public void newInstance_nullArguments_invocationFails() {
-        Assert.assertThrows("Expecting null presentationType not allowed",
-                IllegalArgumentException.class,
-                () -> factory.newInstance(null, String.class));
-        Assert.assertThrows("Expecting null modelType not allowed",
-                IllegalArgumentException.class,
-                () -> factory.newInstance(String.class, null));
+    void newInstance_nullArguments_invocationFails() {
+        assertThrows(IllegalArgumentException.class,
+                () -> factory.newInstance(null, String.class),
+                "Expecting null presentationType not allowed");
+        assertThrows(IllegalArgumentException.class,
+                () -> factory.newInstance(String.class, null),
+                "Expecting null modelType not allowed");
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -93,26 +91,24 @@ public class DefaultConverterFactoryTest {
             Class modelType, Class<? extends Converter> expectedConverter) {
         Optional<Converter> maybeConverter = factory
                 .newInstance(presentationType, modelType);
-        assertTrue(
+        assertTrue(maybeConverter.isPresent(),
                 "Expected conversion (" + presentationType + " -> " + modelType
                         + ") to be handled in "
                         + DefaultConverterFactory.class.getName() + " by "
-                        + expectedConverter.getName() + ", but was not",
-                maybeConverter.isPresent());
+                        + expectedConverter.getName() + ", but was not");
         Converter instance = maybeConverter.get();
-        assertEquals(
+        assertEquals(expectedConverter, instance.getClass(),
                 "Expecting converter (" + presentationType + " -> " + modelType
                         + ") to be of type " + expectedConverter.getName()
-                        + ", but was " + instance.getClass().getName(),
-                expectedConverter, instance.getClass());
+                        + ", but was " + instance.getClass().getName());
     }
 
     private <P, M> void assertThatConversionIsNotSupported(
             Class<P> presentationType, Class<M> modelType) {
-        Assert.assertFalse(
+        assertFalse(
+                factory.newInstance(presentationType, modelType).isPresent(),
                 "Converter (" + presentationType + " -> " + modelType
-                        + ") should not be supported",
-                factory.newInstance(presentationType, modelType).isPresent());
+                        + ") should not be supported");
     }
 
     private Class<?> toPrimitiveTypeIfExist(Class<?> type) {

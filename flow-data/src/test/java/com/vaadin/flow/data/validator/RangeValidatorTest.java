@@ -17,46 +17,46 @@ package com.vaadin.flow.data.validator;
 
 import java.time.LocalDate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RangeValidatorTest extends ValidatorTestBase {
+class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
-    public void testIntegerRangeValidIntPasses() {
+    void testIntegerRangeValidIntPasses() {
         assertPasses(10,
                 RangeValidator.of("Must be between -123 and 42", -123, 42));
     }
 
     @Test
-    public void testIntegerRangeInvalidIntFails() {
+    void testIntegerRangeInvalidIntFails() {
         assertFails(123,
                 RangeValidator.of("Must be between -123 and 42", -123, 42));
     }
 
     @Test
-    public void testRangeWithoutUpperBoundLargeIntegerPasses() {
+    void testRangeWithoutUpperBoundLargeIntegerPasses() {
         assertPasses(Integer.MAX_VALUE,
                 RangeValidator.of("Must be at least 18", 18, null));
     }
 
     @Test
-    public void testRangeWithoutUpperBoundSmallIntegerFails() {
+    void testRangeWithoutUpperBoundSmallIntegerFails() {
         assertFails(17, RangeValidator.of("Must be at least 18", 18, null));
     }
 
     @Test
-    public void testRangeWithoutLowerBoundSmallIntegerPasses() {
+    void testRangeWithoutLowerBoundSmallIntegerPasses() {
         assertPasses(Integer.MIN_VALUE,
                 RangeValidator.of("Must be at most 0", null, 0));
     }
 
     @Test
-    public void testRangeWithoutLowerBoundLargeIntegerFails() {
+    void testRangeWithoutLowerBoundLargeIntegerFails() {
         assertFails(1, RangeValidator.of("Must be at most 0", null, 0));
     }
 
     @Test
-    public void testUnboundedRangePassesEverything() {
+    void testUnboundedRangePassesEverything() {
         RangeValidator<Integer> v = RangeValidator.of("This should not happen!",
                 null, null);
 
@@ -67,7 +67,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testBoundsInclusiveByDefault() {
+    void testBoundsInclusiveByDefault() {
         RangeValidator<Integer> v = RangeValidator
                 .of("Must be between -10 and 10", -10, 10);
 
@@ -76,7 +76,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testUpperBoundExclusive() {
+    void testUpperBoundExclusive() {
         RangeValidator<Integer> v = RangeValidator
                 .of("Must be between -10 and 10", -10, 10);
         v.setMaxValueIncluded(false);
@@ -87,7 +87,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testLowerBoundExclusive() {
+    void testLowerBoundExclusive() {
         RangeValidator<Integer> v = RangeValidator
                 .of("Must be between -10 and 10", -10, 10);
         v.setMinValueIncluded(false);
@@ -98,7 +98,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testNullLessThanEverything() {
+    void testNullLessThanEverything() {
         RangeValidator<Integer> v = RangeValidator.of("Must be any integer",
                 Integer.MIN_VALUE, Integer.MAX_VALUE);
         assertPasses(null, v);
@@ -108,7 +108,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testDateRange() {
+    void testDateRange() {
         RangeValidator<LocalDate> v = RangeValidator.of("Date must be in 2016",
                 LocalDate.of(2016, 1, 1), LocalDate.of(2016, 12, 31));
 

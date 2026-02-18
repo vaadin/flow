@@ -17,15 +17,17 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.dom.ThemeList;
 
-public class DefaultBinderValidationErrorHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DefaultBinderValidationErrorHandlerTest {
 
     private DefaultBinderValidationErrorHandler handler = new DefaultBinderValidationErrorHandler();
 
@@ -42,17 +44,17 @@ public class DefaultBinderValidationErrorHandlerTest {
     }
 
     @Test
-    public void handleError_setValidationStatus_setErrorTheme() {
+    void handleError_setValidationStatus_setErrorTheme() {
         handler.handleError(field, ValidationResult.error(""));
 
-        Assert.assertTrue(field.isInvalid());
+        assertTrue(field.isInvalid());
 
-        Assert.assertTrue(field.getElement().getThemeList()
+        assertTrue(field.getElement().getThemeList()
                 .contains(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH)));
     }
 
     @Test
-    public void handleError_fieldHasTheme_setErrorTheme() {
+    void handleError_fieldHasTheme_setErrorTheme() {
         TestHasTheme field = new TestHasTheme();
         handler.handleError(field, ValidationResult.error(""));
 
@@ -61,20 +63,20 @@ public class DefaultBinderValidationErrorHandlerTest {
     }
 
     @Test
-    public void clearError_setValidationStatus_clearErrorTheme() {
+    void clearError_setValidationStatus_clearErrorTheme() {
         field.setInvalid(true);
         field.getElement().getThemeList()
                 .add(ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH));
         handler.clearError(field);
 
-        Assert.assertFalse(field.isInvalid());
+        assertFalse(field.isInvalid());
 
-        Assert.assertFalse(field.getElement().getThemeList().contains(
+        assertFalse(field.getElement().getThemeList().contains(
                 ErrorLevel.CRITICAL.name().toLowerCase(Locale.ENGLISH)));
     }
 
     @Test
-    public void clearError_fieldHasTheme_clearErrorTheme() {
+    void clearError_fieldHasTheme_clearErrorTheme() {
         TestHasTheme field = new TestHasTheme();
         handler.clearError(field);
 
