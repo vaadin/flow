@@ -43,6 +43,7 @@ public class SharedValueSignalIT extends ChromeBrowserTest {
 
         Assert.assertEquals("initial", getFirstReadValue());
         Assert.assertEquals("initial", getSecondReadValue());
+        Assert.assertEquals("updated #1", getSecondPeekConfirmedValue());
         Assert.assertEquals("updated #1", getSignalValue());
 
         button.click();
@@ -50,6 +51,7 @@ public class SharedValueSignalIT extends ChromeBrowserTest {
 
         Assert.assertEquals("updated #1", getFirstReadValue());
         Assert.assertEquals("updated #1", getSecondReadValue());
+        Assert.assertEquals("updated #2", getSecondPeekConfirmedValue());
         Assert.assertEquals("updated #2", getSignalValue());
 
         button.click();
@@ -57,6 +59,7 @@ public class SharedValueSignalIT extends ChromeBrowserTest {
 
         Assert.assertEquals("updated #2", getFirstReadValue());
         Assert.assertEquals("updated #2", getSecondReadValue());
+        Assert.assertEquals("updated #3", getSecondPeekConfirmedValue());
         Assert.assertEquals("updated #3", getSignalValue());
     }
 
@@ -66,6 +69,10 @@ public class SharedValueSignalIT extends ChromeBrowserTest {
 
     private String getSecondReadValue() {
         return findElement(By.id("second-read-value")).getText();
+    }
+
+    private String getSecondPeekConfirmedValue() {
+        return findElement(By.id("second-peek-confirmed-value")).getText();
     }
 
     private String getSignalValue() {
