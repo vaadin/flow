@@ -26,11 +26,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
@@ -387,8 +387,8 @@ public abstract class SignalTree implements Serializable {
      * @param subscriber
      *            the callback to run when a command is confirmed, not
      *            <code>null</code>
-     * @return a {@link Registration} that can be used to remove the
-     *         subscriber, not <code>null</code>
+     * @return a {@link Registration} that can be used to remove the subscriber,
+     *         not <code>null</code>
      */
     public Registration subscribeToProcessed(CommandSubscriber subscriber) {
         assert subscriber != null;

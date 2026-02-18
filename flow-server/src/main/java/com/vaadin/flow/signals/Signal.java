@@ -154,8 +154,8 @@ public interface Signal<T> extends Serializable {
      * when the effect is created and is subsequently run again whenever there's
      * a change to any signal value that was read during the last invocation.
      * <p>
-     * Consider using {@link #effect(Component, EffectAction)} instead
-     * to tie the effect lifecycle to a component.
+     * Consider using {@link #effect(Component, EffectAction)} instead to tie
+     * the effect lifecycle to a component.
      *
      * @param action
      *            the effect action to use, not <code>null</code>

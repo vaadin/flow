@@ -26,12 +26,12 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.StringNode;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;

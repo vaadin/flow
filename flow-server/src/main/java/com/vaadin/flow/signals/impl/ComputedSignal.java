@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;

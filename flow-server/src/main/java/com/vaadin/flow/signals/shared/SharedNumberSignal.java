@@ -21,11 +21,11 @@ import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
-import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
