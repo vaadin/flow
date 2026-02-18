@@ -17,8 +17,7 @@ package com.vaadin.flow.spring.scopes;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
@@ -28,15 +27,19 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class VaadinUIScopeTest extends AbstractUIScopedTest {
+class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @Test
-    public void get_currentUiIsSet_objectIsStored() {
+    void get_currentUiIsSet_objectIsStored() {
         VaadinUIScope scope = new VaadinUIScope();
 
         mockUI();
@@ -44,7 +47,7 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    public void remove_currentUiIsSet_objectIsStored() {
+    void remove_currentUiIsSet_objectIsStored() {
         VaadinUIScope scope = new VaadinUIScope();
 
         mockUI();
@@ -52,41 +55,48 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    public void registerDestructionCallback_currentSessionIsSet_objectIsStored() {
+    void registerDestructionCallback_currentSessionIsSet_objectIsStored() {
         VaadinUIScope scope = new VaadinUIScope();
 
         mockUI();
         registerDestructionCallback_currentScopeIsSet_objectIsStored(scope);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void get_noCurrentUI_throwException() {
-        Scope scope = getScope();
-        mockSession();
+    @Test
+    void get_noCurrentUI_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
+            mockSession();
 
-        scope.get("foo", Mockito.mock(ObjectFactory.class));
+            scope.get("foo", Mockito.mock(ObjectFactory.class));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void registerDestructionCallback_noCurrentUI_throwException() {
-        Scope scope = getScope();
-        mockSession();
+    @Test
+    void registerDestructionCallback_noCurrentUI_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
+            mockSession();
 
-        scope.registerDestructionCallback("foo", Mockito.mock(Runnable.class));
+            scope.registerDestructionCallback("foo",
+                    Mockito.mock(Runnable.class));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void remove_noCurrentUI_throwException() {
-        Scope scope = getScope();
+    @Test
+    void remove_noCurrentUI_throwException() {
+        assertThrows(IllegalStateException.class, () -> {
+            Scope scope = getScope();
 
-        mockSession();
+            mockSession();
 
-        scope.remove("foo");
+            scope.remove("foo");
+        });
     }
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
+    void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         mockUI();
 
         VaadinSession session = VaadinSession.getCurrent();
@@ -112,17 +122,17 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
         String attribute = VaadinUIScope.class.getName() + "$UIStoreWrapper";
 
         // self control - the attribute name is used by the implementation
-        Assert.assertNotNull(session.getAttribute(attribute));
+        assertNotNull(session.getAttribute(attribute));
 
         service.fireSessionDestroy(session);
         service.runPendingAccessTasks(session);
 
-        Assert.assertEquals(1, count.get());
-        Assert.assertNull(session.getAttribute(attribute));
+        assertEquals(1, count.get());
+        assertNull(session.getAttribute(attribute));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // object has been removed from the storage, so object factory is called
         // once again to create the bean
@@ -132,7 +142,7 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void detachUI_uiClosing_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
+    void detachUI_uiClosing_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         UI ui = mockUI();
         ui.close();
 
@@ -149,11 +159,11 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         ComponentUtil.onComponentDetach(ui);
 
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // object has been removed from the storage, so object factory is called
         // once again to create the bean
@@ -163,7 +173,7 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void detachUi_uiNotClosing_sessionAttributeIsNotCleanedAndDestructionCallbackIsNotCalled() {
+    void detachUi_uiNotClosing_sessionAttributeIsNotCleanedAndDestructionCallbackIsNotCalled() {
         UI ui = mockUI();
 
         VaadinUIScope scope = new VaadinUIScope();
@@ -179,11 +189,11 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         ComponentUtil.onComponentDetach(ui);
 
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
         // Destruction callbacks are not called anymore (they are removed)
         // scope.getBeanStore().destroy();
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
         // object has been not removed from the storage, so object factory is
         // not called to create the bean

@@ -28,12 +28,11 @@ import java.util.Locale;
 import java.util.Properties;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.DefaultI18NProvider;
@@ -50,10 +49,14 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.spring.VaadinApplicationConfiguration;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ExtendWith(SpringExtension.class)
 @Import(VaadinApplicationConfiguration.class)
 @NotThreadSafe
-public class DefaultI18NProviderFactoryTest {
+class DefaultI18NProviderFactoryTest {
 
     @Autowired
     private ApplicationContext context;
@@ -62,16 +65,17 @@ public class DefaultI18NProviderFactoryTest {
 
     static private ClassLoader testClassLoader;
 
-    static private TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    static private File temporaryFolder;
 
     static volatile private MockedConstruction<PathMatchingResourcePatternResolver> pathMatchingResourcePatternResolverMockedConstruction;
 
-    @BeforeClass
+    @BeforeAll
     static public void setup() throws IOException {
         originalClassLoader = Thread.currentThread().getContextClassLoader();
 
-        temporaryFolder.create();
-        File resources = temporaryFolder.newFolder();
+        File resources = new File(temporaryFolder, "resources");
+        resources.mkdirs();
 
         File translations = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
@@ -100,7 +104,7 @@ public class DefaultI18NProviderFactoryTest {
                                     .thenAnswer(invocationOnMock -> {
                                         String pattern = invocationOnMock
                                                 .getArgument(0);
-                                        Assert.assertEquals(
+                                        assertEquals(
                                                 "classpath*:/vaadin-i18n/*.properties",
                                                 pattern);
                                         return new Resource[] {
@@ -109,20 +113,20 @@ public class DefaultI18NProviderFactoryTest {
                         });
     }
 
-    @AfterClass
+    @AfterAll
     static public void teardown() throws Exception {
         pathMatchingResourcePatternResolverMockedConstruction.close();
         Thread.currentThread().setContextClassLoader(originalClassLoader);
     }
 
     @Test
-    public void create_usesThreadContextClassLoader() throws ServletException {
+    void create_usesThreadContextClassLoader() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         I18NProvider i18NProvider = instantiator.getI18NProvider();
 
-        Assert.assertNotNull(i18NProvider);
-        Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
-        Assert.assertEquals("Default lang",
+        assertNotNull(i18NProvider);
+        assertTrue(i18NProvider instanceof DefaultI18NProvider);
+        assertEquals("Default lang",
                 i18NProvider.getTranslation("title", Locale.getDefault()));
     }
 
