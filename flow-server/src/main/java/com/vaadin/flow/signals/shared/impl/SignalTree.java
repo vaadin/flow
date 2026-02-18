@@ -215,10 +215,10 @@ public abstract class SignalTree implements Serializable {
      *
      * @param action
      *            the action to wrap, not <code>null</code>
-     * @return a {@link Registration} that runs the provided action while
-     *         holding the lock, not <code>null</code>
+     * @return a runnable that runs the provided action while holding the lock,
+     *         not <code>null</code>
      */
-    protected Registration wrapWithLock(SerializableRunnable action) {
+    protected SerializableRunnable wrapWithLock(SerializableRunnable action) {
         return () -> runWithLock(action);
     }
 
@@ -250,7 +250,7 @@ public abstract class SignalTree implements Serializable {
 
             list.add(observer);
 
-            return wrapWithLock(() -> list.remove(observer));
+            return wrapWithLock(() -> list.remove(observer))::run;
         }));
     }
 
@@ -394,7 +394,7 @@ public abstract class SignalTree implements Serializable {
         assert subscriber != null;
         return Objects.requireNonNull(getWithLock(() -> {
             subscribers.add(subscriber);
-            return wrapWithLock(() -> subscribers.remove(subscriber));
+            return wrapWithLock(() -> subscribers.remove(subscriber))::run;
         }));
     }
 

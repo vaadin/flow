@@ -98,13 +98,13 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicBoolean hasLock = new AtomicBoolean();
 
-        Registration wrapped = tree.wrapWithLock(() -> {
+        var wrapped = tree.wrapWithLock(() -> {
             hasLock.set(tree.hasLock());
         });
 
         assertFalse(hasLock.get());
 
-        wrapped.remove();
+        wrapped.run();
 
         assertTrue(hasLock.get());
     }
