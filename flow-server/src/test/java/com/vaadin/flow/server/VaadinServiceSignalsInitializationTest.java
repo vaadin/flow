@@ -64,7 +64,7 @@ class VaadinServiceSignalsInitializationTest {
         var invocations = new ArrayList<EffectExecution>();
 
         try {
-            Signal.effect(() -> {
+            Signal.unboundEffect(() -> {
                 invocations.add(new EffectExecution(UI.getCurrent(),
                         Thread.currentThread().getName()));
                 signal.get();

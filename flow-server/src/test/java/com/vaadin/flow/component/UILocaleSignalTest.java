@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 /**
  * Unit tests for {@link UI#localeSignal()}.
  */
-public class UILocaleSignalTest extends SignalsUnitTest {
+class UILocaleSignalTest extends SignalsUnitTest {
 
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
