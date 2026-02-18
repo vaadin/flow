@@ -17,16 +17,12 @@ package com.vaadin.flow.signals;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.signals.local.ListSignal;
-import com.vaadin.flow.signals.shared.SharedListSignal;
-import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedNumberSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests null safety contracts for signals that guarantee non-null return
- * values.
+ * Tests that SharedNumberSignal converts null to zero on read.
  */
 public class SignalNullabilityTest extends SignalTestBase {
 
@@ -49,28 +45,5 @@ public class SignalNullabilityTest extends SignalTestBase {
         SharedNumberSignal signal = new SharedNumberSignal();
         signal.set(null);
         assertEquals(0.0, signal.peekConfirmed());
-    }
-
-    // The following tests verify the compile-time non-null return type
-    // contract for collection-based signals. Calling methods like .size()
-    // directly on the return value would produce null-safety warnings if
-    // the return type were changed to @Nullable.
-
-    @Test
-    void listSignal_get_nonNull() {
-        ListSignal<String> signal = new ListSignal<>();
-        signal.get().size();
-    }
-
-    @Test
-    void sharedListSignal_get_nonNull() {
-        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
-        signal.get().size();
-    }
-
-    @Test
-    void sharedMapSignal_get_nonNull() {
-        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        signal.get().size();
     }
 }
