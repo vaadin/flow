@@ -48,6 +48,16 @@ public class ListSignal<T>
         super(List.of());
     }
 
+    @Override
+    public List<ValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public List<ValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
     /**
      * Inserts a value as the first entry in this list.
      *

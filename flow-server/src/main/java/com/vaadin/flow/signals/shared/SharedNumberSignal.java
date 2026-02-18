@@ -104,6 +104,24 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
         }
     }
 
+    @Override
+    public Double peek() {
+        Double value = super.peek();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
+    }
+
+    @Override
+    public Double peekConfirmed() {
+        Double value = super.peekConfirmed();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
+    }
+
     /**
      * Gets the value of this signal as an integer. This method works in the
      * same way was {@link #get()} with regards to transactions and dependency
