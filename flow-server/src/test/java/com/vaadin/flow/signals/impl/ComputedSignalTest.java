@@ -264,7 +264,7 @@ public class ComputedSignalTest extends SignalTestBase {
             }
         }
 
-        Signal.unboundEffect(new CapturingRunnable(signal)).cleanup();
+        Signal.unboundEffect(new CapturingRunnable(signal)).remove();
 
         assertEquals(List.of("value"), invocations);
 

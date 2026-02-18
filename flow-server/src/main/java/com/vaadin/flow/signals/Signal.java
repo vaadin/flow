@@ -22,9 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.ElementEffect;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.function.SignalMapper;
@@ -147,7 +145,7 @@ public interface Signal<T> extends Serializable {
      *         function
      */
     static <C extends Component> Registration effect(C owner,
-            SerializableRunnable effectFunction) {
+            EffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 
@@ -156,15 +154,16 @@ public interface Signal<T> extends Serializable {
      * when the effect is created and is subsequently run again whenever there's
      * a change to any signal value that was read during the last invocation.
      * <p>
-     * Consider using {@link #effect(Component, SerializableRunnable)} instead
-     * to tie the effect lifecycle to a component.
+     * Consider using {@link #effect(Component, EffectAction)} instead to tie
+     * the effect lifecycle to a component.
      *
      * @param action
      *            the effect action to use, not <code>null</code>
-     * @return a callback used to close the effect so that it no longer listens
-     *         to signal changes, not <code>null</code>
+     * @return a {@link Registration} that can be used to close the effect so
+     *         that it no longer listens to signal changes, not
+     *         <code>null</code>
      */
-    static CleanupCallback unboundEffect(EffectAction action) {
+    static Registration unboundEffect(EffectAction action) {
         Effect effect = new Effect(Objects.requireNonNull(action));
         return effect::dispose;
     }

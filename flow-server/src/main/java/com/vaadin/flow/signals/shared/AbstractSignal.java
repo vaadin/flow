@@ -24,13 +24,13 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalEnvironment;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.TransientListener;
@@ -446,7 +446,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
             }
 
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
+            public Registration onNextChange(TransientListener listener) {
                 SignalTree tree = tree();
 
                 /*
