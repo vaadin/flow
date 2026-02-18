@@ -17,31 +17,31 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class BootstrapHandlerHelperTest {
+public class BootstrapHandlerHelperTest {
 
     @Test
-    void getServiceUrl_nullPathInfo_returnsDot() {
+    public void getServiceUrl_nullPathInfo_returnsDot() {
         VaadinServletRequest request = createRequest(null, "", "/", "");
         assertEquals(".", BootstrapHandlerHelper.getServiceUrl(request));
     }
 
     @Test
-    void getServiceUrl_simplePath_returnsCorrectRelativePath() {
+    public void getServiceUrl_simplePath_returnsCorrectRelativePath() {
         VaadinServletRequest request = createRequest("/some/path", "",
                 "/some/path", "");
         assertEquals("./..", BootstrapHandlerHelper.getServiceUrl(request));
     }
 
     @Test
-    void getServiceUrl_encodedSlashInPath_treatsAsOneSegment() {
+    public void getServiceUrl_encodedSlashInPath_treatsAsOneSegment() {
         // Simulates a wildcard route with %2F: /wild/a%2Fb
         // getPathInfo() returns decoded /wild/a/b (2 slashes after root)
         // but the raw URI has /wild/a%2Fb (1 slash after root)
@@ -52,14 +52,14 @@ class BootstrapHandlerHelperTest {
     }
 
     @Test
-    void getServiceUrl_encodedSlashWithContextPath_treatsAsOneSegment() {
+    public void getServiceUrl_encodedSlashWithContextPath_treatsAsOneSegment() {
         VaadinServletRequest request = createRequest("/wild/a/b", "",
                 "/ctx/wild/a%2Fb", "/ctx");
         assertEquals("./..", BootstrapHandlerHelper.getServiceUrl(request));
     }
 
     @Test
-    void getServiceUrl_multipleEncodedSlashes_countsCorrectly() {
+    public void getServiceUrl_multipleEncodedSlashes_countsCorrectly() {
         // /wild/a%2Fb%2Fc has 1 real slash after root in the raw form
         VaadinServletRequest request = createRequest("/wild/a/b/c", "",
                 "/wild/a%2Fb%2Fc", "");
@@ -67,7 +67,7 @@ class BootstrapHandlerHelperTest {
     }
 
     @Test
-    void getServiceUrl_pathWithSpaces_unaffected() {
+    public void getServiceUrl_pathWithSpaces_unaffected() {
         // Spaces (%20) don't affect slash counting
         VaadinServletRequest request = createRequest("/file with spaces.js", "",
                 "/file%20with%20spaces.js", "");
@@ -75,7 +75,7 @@ class BootstrapHandlerHelperTest {
     }
 
     @Test
-    void getServiceUrl_normalPathWithServletPath_returnsCorrectPath() {
+    public void getServiceUrl_normalPathWithServletPath_returnsCorrectPath() {
         VaadinServletRequest request = createRequest("/view/sub", "/app",
                 "/app/view/sub", "");
         assertEquals("./..", BootstrapHandlerHelper.getServiceUrl(request));
