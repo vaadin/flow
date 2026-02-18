@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.signals.impl.UsageDetector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -705,9 +706,9 @@ public class BinderSignalTest extends SignalsUnitTest {
             return true;
         }, "Bean level validation with a signal failed");
 
-        assertThrows(Binder.InvalidSignalUsageError.class,
+        assertThrows(UsageDetector.DeniedSignalUsageException.class,
                 () -> binder.validate());
-        assertThrows(Binder.InvalidSignalUsageError.class,
+        assertThrows(UsageDetector.DeniedSignalUsageException.class,
                 () -> binder.isValid());
     }
 

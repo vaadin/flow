@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import com.vaadin.flow.signals.impl.UsageDetector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializablePredicate;
@@ -202,6 +203,8 @@ public interface Validator<T>
                     return ValidationResult.create(
                             errorMessageProvider.apply(context), errorLevel);
                 }
+            } catch (UsageDetector.DeniedSignalUsageException e) {
+                throw e;
             } catch (Exception e) {
                 LoggerFactory.getLogger(Validator.class.getName())
                         .info("An exception is thrown during validation", e);

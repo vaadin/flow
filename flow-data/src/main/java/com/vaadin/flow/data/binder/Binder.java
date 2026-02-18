@@ -40,6 +40,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.signals.impl.UsageDetector;
+import com.vaadin.flow.signals.impl.UsageRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.function.TrackableSupplier;
-import com.vaadin.flow.signals.impl.UsageRegistrar;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -2129,15 +2130,6 @@ public class Binder<BEAN> implements Serializable {
     private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
 
     /**
-     * Error thrown when a signal is used incorrectly.
-     */
-    public static class InvalidSignalUsageError extends Error {
-        public InvalidSignalUsageError(String message) {
-            super(message);
-        }
-    }
-
-    /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
      * {@link #bindInstanceFields(Object)}, {@link #bind(HasValue, String)} and
@@ -3134,7 +3126,7 @@ public class Binder<BEAN> implements Serializable {
      * @param validator
      *            the validator to add, not null
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws com.vaadin.flow.signals.impl.UsageDetector.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(Validator<? super BEAN> validator) {
@@ -3143,20 +3135,13 @@ public class Binder<BEAN> implements Serializable {
             if (isValidatorsDisabled()) {
                 return ValidationResult.ok();
             } else {
-                // Track Signal usage and throw Error to help detect
-                // attempt to use signals reactively without an active effect.
-                // Use Error (not Exception) to bypass Validator.from() exception handling.
-                // avoid lambda to allow proper deserialization
-                UsageRegistrar denySignalUsage = new UsageRegistrar() {
-                    @Override
-                    public void register(UsageTracker.Usage usage) {
-                        throw new InvalidSignalUsageError(
-                                "Detected Signal.get() call inside a bean level validator. "
-                                        + "This is not supported since bean level validators "
-                                        + "are not run inside a reactive effect. "
-                                        + "Use of Signal.get() is only supported in field level validators.");
-                    }
-                };
+                // Track Signal usage and throw to help detect attempt to use
+                // signals reactively without an active effect.
+                UsageDetector usageDetector = UsageDetector.createDenied(
+                        "Detected Signal.get() call inside a bean level validator. "
+                                + "This is not supported since bean level validators "
+                                + "are not run inside a reactive effect. "
+                                + "Use of Signal.get() is only supported in field level validators.");
                 return UsageTracker.tracked(
                         // avoid lambda to allow proper deserialization
                         new TrackableSupplier<ValidationResult>() {
@@ -3164,7 +3149,7 @@ public class Binder<BEAN> implements Serializable {
                             public ValidationResult supply() {
                                 return validator.apply(value, context);
                             }
-                        }, denySignalUsage).supply();
+                        }, usageDetector).supply();
             }
         });
         validators.add(wrappedValidator);
@@ -3189,7 +3174,7 @@ public class Binder<BEAN> implements Serializable {
      * @param message
      *            the error message to report in case validation failure
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws com.vaadin.flow.signals.impl.UsageDetector.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
@@ -3216,7 +3201,7 @@ public class Binder<BEAN> implements Serializable {
      * @param errorMessageProvider
      *            the provider to generate error messages, not null
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws com.vaadin.flow.signals.impl.UsageDetector.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
