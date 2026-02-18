@@ -965,12 +965,11 @@ public class UITest {
 
     @Test
     public void accessLaterRunnable_nullHandler_exception() {
-        assertThrows(NullPointerException.class, () -> {
-            UI ui = createAccessableTestUI();
+        UI ui = createAccessableTestUI();
 
-            ui.accessLater((SerializableRunnable) null, () -> {
-            });
-        });
+        assertThrows(NullPointerException.class,
+                () -> ui.accessLater((SerializableRunnable) null, () -> {
+                }));
     }
 
     @Test
@@ -998,13 +997,11 @@ public class UITest {
 
     @Test
     public void accessLaterRunnable_detachedUiNoHandler_throws() {
-        assertThrows(UIDetachedException.class, () -> {
-            UI ui = createTestUI();
+        UI ui = createTestUI();
 
-            SerializableRunnable wrapped = ui
-                    .accessLater(() -> fail("Action should never run"), null);
-            wrapped.run();
-        });
+        SerializableRunnable wrapped = ui
+                .accessLater(() -> fail("Action should never run"), null);
+        assertThrows(UIDetachedException.class, () -> wrapped.run());
     }
 
     @Test
@@ -1037,10 +1034,9 @@ public class UITest {
 
     @Test
     public void getCurrentOrThrow_withoutCurrentUI_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            CurrentInstance.clearAll();
-            UI.getCurrentOrThrow();
-        });
+        CurrentInstance.clearAll();
+        assertThrows(IllegalStateException.class,
+                () -> UI.getCurrentOrThrow());
     }
 
     @Test
@@ -1078,12 +1074,12 @@ public class UITest {
 
     @Test
     public void accessLaterConsumer_nullHandler_exception() {
-        assertThrows(NullPointerException.class, () -> {
-            UI ui = createAccessableTestUI();
+        UI ui = createAccessableTestUI();
 
-            ui.accessLater((SerializableConsumer<Object>) null, () -> {
-            });
-        });
+        assertThrows(NullPointerException.class,
+                () -> ui.accessLater((SerializableConsumer<Object>) null,
+                        () -> {
+                        }));
     }
 
     @Test
@@ -1111,13 +1107,12 @@ public class UITest {
 
     @Test
     public void accessLaterConsumer_detachedUiNoHandler_throws() {
-        assertThrows(UIDetachedException.class, () -> {
-            UI ui = createTestUI();
+        UI ui = createTestUI();
 
-            SerializableConsumer<Object> wrapped = ui.accessLater(
-                    value -> fail("Action should never run"), null);
-            wrapped.accept(null);
-        });
+        SerializableConsumer<Object> wrapped = ui.accessLater(
+                value -> fail("Action should never run"), null);
+        assertThrows(UIDetachedException.class,
+                () -> wrapped.accept(null));
     }
 
     @Test
