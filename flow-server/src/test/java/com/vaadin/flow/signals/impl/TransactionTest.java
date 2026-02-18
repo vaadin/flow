@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
@@ -340,6 +341,101 @@ public class TransactionTest {
             Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
             Transaction.runWithoutTransaction(dummyTask());
         }, Type.WRITE_THROUGH);
+    }
+
+    @AfterEach
+    void cleanupFallback() {
+        Transaction.setTransactionFallback(null);
+    }
+
+    @Test
+    void fallback_providesRepeatableReads() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        Transaction.setTransactionFallback(() -> fallbackTx);
+
+        JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
+
+        // External write bypassing the transaction
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("external"));
+
+        JsonNode secondRead = TestUtil.readTransactionRootValue(tree);
+        assertSame(firstRead, secondRead,
+                "Fallback transaction should provide repeatable reads");
+    }
+
+    @Test
+    void noFallback_withoutRegistration_rootBehavior() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        assertFalse(Transaction.inTransaction());
+        Transaction current = Transaction.getCurrent();
+
+        TreeRevision revision = current.read(tree);
+        assertSame(tree.submitted(), revision);
+    }
+
+    @Test
+    void runWithoutTransaction_bypassesFallback() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        Transaction.setTransactionFallback(() -> fallbackTx);
+
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should make inTransaction() return true");
+
+        Transaction.runWithoutTransaction(() -> {
+            assertFalse(Transaction.inTransaction(),
+                    "runWithoutTransaction should bypass fallback");
+
+            // Read directly from tree (ROOT behavior)
+            TreeRevision revision = Transaction.getCurrent().read(tree);
+            assertSame(tree.submitted(), revision);
+        });
+
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should be restored after runWithoutTransaction");
+    }
+
+    @Test
+    void runInTransaction_nestsWithFallback() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        Transaction.setTransactionFallback(() -> fallbackTx);
+
+        assertTrue(Transaction.inTransaction());
+
+        Transaction.runInTransaction(() -> {
+            assertTrue(Transaction.inTransaction());
+            assertInstanceOf(StagedTransaction.class, Transaction.getCurrent());
+        });
+
+        // After explicit transaction completes, fallback should still be
+        // active
+        assertTrue(Transaction.inTransaction(),
+                "Fallback should still be active after nested transaction");
+    }
+
+    @Test
+    void inTransaction_reflectsFallback() {
+        Transaction fallbackTx = Transaction.createWriteThrough();
+
+        assertFalse(Transaction.inTransaction());
+
+        Transaction.setTransactionFallback(() -> fallbackTx);
+
+        assertTrue(Transaction.inTransaction(),
+                "inTransaction should return true when fallback is active");
+
+        Transaction.runWithoutTransaction(() -> {
+            assertFalse(Transaction.inTransaction(),
+                    "inTransaction should return false inside runWithoutTransaction");
+        });
+
+        assertTrue(Transaction.inTransaction());
     }
 
     private static TransactionTask dummyTask() {

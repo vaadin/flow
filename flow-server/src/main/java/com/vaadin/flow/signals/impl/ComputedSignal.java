@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
@@ -62,7 +62,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     private final SignalComputation<T> computation;
 
     private int dependentCount = 0;
-    private @Nullable CleanupCallback dependencyRegistration;
+    private @Nullable Registration dependencyRegistration;
 
     /**
      * Creates a new computed signal with the provided compute callback.
@@ -95,7 +95,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     private synchronized void revalidateAndListen() {
         // Clear listeners on old dependencies
         if (dependencyRegistration != null) {
-            dependencyRegistration.cleanup();
+            dependencyRegistration.remove();
         }
 
         // Run compute callback to get new dependencies
@@ -119,7 +119,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
      *
      * @return a callback to count back down again, not <code>null</code>
      */
-    private synchronized CleanupCallback countActiveExternalListener() {
+    private synchronized Registration countActiveExternalListener() {
         if (dependentCount++ == 0) {
             revalidateAndListen();
         }
@@ -137,7 +137,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                      */
                     if (--dependentCount == 0) {
                         if (dependencyRegistration != null) {
-                            dependencyRegistration.cleanup();
+                            dependencyRegistration.remove();
                             dependencyRegistration = null;
                         }
                     }
@@ -166,8 +166,8 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             }
 
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                CleanupCallback uncount = countActiveExternalListener();
+            public Registration onNextChange(TransientListener listener) {
+                Registration uncount = countActiveExternalListener();
 
                 // avoid lambda to allow proper deserialization
                 TransientListener usageListener = new TransientListener() {
@@ -175,18 +175,18 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                     public boolean invoke(boolean immediate) {
                         boolean listenToNext = listener.invoke(immediate);
                         if (!listenToNext) {
-                            uncount.cleanup();
+                            uncount.remove();
                         }
                         return listenToNext;
                     }
                 };
 
-                CleanupCallback superCleanup = superUsage
+                Registration superCleanup = superUsage
                         .onNextChange(usageListener);
 
                 return () -> {
-                    superCleanup.cleanup();
-                    uncount.cleanup();
+                    superCleanup.remove();
+                    uncount.remove();
                 };
             }
         };
