@@ -1035,8 +1035,7 @@ public class UITest {
     @Test
     public void getCurrentOrThrow_withoutCurrentUI_throws() {
         CurrentInstance.clearAll();
-        assertThrows(IllegalStateException.class,
-                () -> UI.getCurrentOrThrow());
+        assertThrows(IllegalStateException.class, () -> UI.getCurrentOrThrow());
     }
 
     @Test
@@ -1076,10 +1075,9 @@ public class UITest {
     public void accessLaterConsumer_nullHandler_exception() {
         UI ui = createAccessableTestUI();
 
-        assertThrows(NullPointerException.class,
-                () -> ui.accessLater((SerializableConsumer<Object>) null,
-                        () -> {
-                        }));
+        assertThrows(NullPointerException.class, () -> ui
+                .accessLater((SerializableConsumer<Object>) null, () -> {
+                }));
     }
 
     @Test
@@ -1109,10 +1107,9 @@ public class UITest {
     public void accessLaterConsumer_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> fail("Action should never run"), null);
-        assertThrows(UIDetachedException.class,
-                () -> wrapped.accept(null));
+        SerializableConsumer<Object> wrapped = ui
+                .accessLater(value -> fail("Action should never run"), null);
+        assertThrows(UIDetachedException.class, () -> wrapped.accept(null));
     }
 
     @Test

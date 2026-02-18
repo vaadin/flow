@@ -17,8 +17,6 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.PropertyDescriptor;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,8 +65,7 @@ class TextTest {
     void setId_throwsWithMeaningfulMessage() {
         Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
-                UnsupportedOperationException.class,
-                () -> text.setId("foo"));
+                UnsupportedOperationException.class, () -> text.setId("foo"));
         assertTrue(ex.getMessage().contains("Cannot set 'id' "));
         assertTrue(ex.getMessage().contains(
                 "component because it doesn't represent an HTML Element"));
