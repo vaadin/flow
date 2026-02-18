@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.vaadin.flow.shared.Registration;
 import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Collects and provides access to dependencies of computations.
@@ -70,7 +71,8 @@ public sealed abstract class UsageDetector
          * the action that read it.
          */
         protected boolean hasCircularDependency() {
-            for (PreventPrematureChangeUsage usage : Objects.requireNonNull(usages)) {
+            for (PreventPrematureChangeUsage usage : Objects
+                    .requireNonNull(usages)) {
                 if (usage.hadChangesAtCreation()) {
                     return true;
                 }

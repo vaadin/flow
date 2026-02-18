@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.signals.function;
 
-import java.io.Serializable;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.signals.Signal;

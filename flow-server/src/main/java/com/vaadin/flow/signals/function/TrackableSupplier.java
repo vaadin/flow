@@ -17,9 +17,10 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.impl.UsageRegistrar;
 import com.vaadin.flow.signals.impl.UsageTracker;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Represents an executable supplier that is potentially using signals and
@@ -37,5 +38,6 @@ public interface TrackableSupplier<T> extends Serializable {
      *
      * @return the result value
      */
-    @Nullable T supply();
+    @Nullable
+    T supply();
 }

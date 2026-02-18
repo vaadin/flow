@@ -21,12 +21,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.vaadin.flow.shared.Registration;
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableExecutor;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.signals.function.TrackableSupplier;
 
 /**

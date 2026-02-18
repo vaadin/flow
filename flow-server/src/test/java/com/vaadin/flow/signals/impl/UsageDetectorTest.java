@@ -18,10 +18,10 @@ package com.vaadin.flow.signals.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.shared.Registration;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageDetector.CircularSignalUsageException;
 import com.vaadin.flow.signals.impl.UsageDetector.DeniedSignalUsageException;

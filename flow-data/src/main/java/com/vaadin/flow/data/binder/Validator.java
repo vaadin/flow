@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import com.vaadin.flow.signals.impl.UsageDetector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.signals.impl.UsageDetector;
 
 /**
  * A functional interface for validating user input or other potentially invalid
