@@ -30,7 +30,7 @@ import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.function.CleanupCallback;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
@@ -215,10 +215,10 @@ public abstract class SignalTree implements Serializable {
      *
      * @param action
      *            the action to wrap, not <code>null</code>
-     * @return a cleanup callback that runs the provided action while holding
-     *         the lock, not <code>null</code>
+     * @return a {@link Registration} that runs the provided action while
+     *         holding the lock, not <code>null</code>
      */
-    protected CleanupCallback wrapWithLock(SerializableRunnable action) {
+    protected Registration wrapWithLock(SerializableRunnable action) {
         return () -> runWithLock(action);
     }
 
@@ -234,10 +234,10 @@ public abstract class SignalTree implements Serializable {
      * @param observer
      *            the callback to run when the node has changed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the observer before it's
-     *         triggered, not <code>null</code>
+     * @return a {@link Registration} that can be used to remove the observer
+     *         before it's triggered, not <code>null</code>
      */
-    public CleanupCallback observeNextChange(Id nodeId,
+    public Registration observeNextChange(Id nodeId,
             TransientListener observer) {
         assert nodeId != null;
         assert observer != null;
@@ -387,10 +387,10 @@ public abstract class SignalTree implements Serializable {
      * @param subscriber
      *            the callback to run when a command is confirmed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the subscriber, not
-     *         <code>null</code>
+     * @return a {@link Registration} that can be used to remove the
+     *         subscriber, not <code>null</code>
      */
-    public CleanupCallback subscribeToProcessed(CommandSubscriber subscriber) {
+    public Registration subscribeToProcessed(CommandSubscriber subscriber) {
         assert subscriber != null;
         return Objects.requireNonNull(getWithLock(() -> {
             subscribers.add(subscriber);

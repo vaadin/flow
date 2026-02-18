@@ -31,7 +31,7 @@ import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.function.CleanupCallback;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
@@ -98,13 +98,13 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicBoolean hasLock = new AtomicBoolean();
 
-        CleanupCallback wrapped = tree.wrapWithLock(() -> {
+        Registration wrapped = tree.wrapWithLock(() -> {
             hasLock.set(tree.hasLock());
         });
 
         assertFalse(hasLock.get());
 
-        wrapped.cleanup();
+        wrapped.remove();
 
         assertTrue(hasLock.get());
     }
@@ -320,9 +320,9 @@ public class SynchronousSignalTreeTest {
     void observe_cancelled_notInvoked() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        CleanupCallback canceler = tree.observeNextChange(Id.ZERO,
+        Registration canceler = tree.observeNextChange(Id.ZERO,
                 immediate -> Assertions.fail());
-        canceler.cleanup();
+        canceler.remove();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
                 Id.ZERO, new DoubleNode(2)));
@@ -478,7 +478,7 @@ public class SynchronousSignalTreeTest {
         assertEquals(id1, resultContainer1.get().getKey().commandId());
         assertEquals(id1, resultContainer2.get().getKey().commandId());
 
-        canceler1.cleanup(); // removes the first subscriber
+        canceler1.remove(); // removes the first subscriber
 
         resultContainer1.set(null);
         resultContainer2.set(null);
@@ -488,7 +488,7 @@ public class SynchronousSignalTreeTest {
         assertNull(resultContainer1.get());
         assertEquals(id1, resultContainer2.get().getKey().commandId());
 
-        canceler2.cleanup();
+        canceler2.remove();
         resultContainer2.set(null);
 
         tree.commitSingleCommand(

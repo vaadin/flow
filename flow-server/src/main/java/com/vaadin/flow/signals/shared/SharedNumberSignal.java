@@ -25,7 +25,7 @@ import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
-import com.vaadin.flow.signals.function.IntMapper;
+import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -176,7 +176,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    public <C> Signal<C> mapIntValue(IntMapper<C> mapper) {
+    public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
         return map(doubleValue -> {
             if (doubleValue == null) {
                 return null;
