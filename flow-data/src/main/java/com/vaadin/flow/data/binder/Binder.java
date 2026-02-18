@@ -64,6 +64,8 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.function.TrackableSupplier;
+import com.vaadin.flow.signals.impl.UsageRegistrar;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -393,7 +395,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link Binder#validate()} will still work.
          * <p>
          * <b>Example - Cross-field validation:</b>
-         * 
+         *
          * <pre>
          * {@code
          * Binder<UserRegistration> binder = new Binder<>(
@@ -1412,7 +1414,8 @@ public class Binder<BEAN> implements Serializable {
                                 ValueContext context) {
                             return UsageTracker
                                     .untracked(() -> converter.convertToModel(
-                                            presentationValue, context));
+                                            presentationValue, context))
+                                    .supply();
                         }
 
                         @Override
@@ -1420,7 +1423,8 @@ public class Binder<BEAN> implements Serializable {
                                 NEWTARGET modelValue, ValueContext context) {
                             return UsageTracker.untracked(
                                     (() -> converter.convertToPresentation(
-                                            modelValue, context)));
+                                            modelValue, context)))
+                                    .supply();
                         }
                     });
             return (BindingBuilder<BEAN, NEWTARGET>) this;
@@ -1711,6 +1715,9 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
                 signalRegistration = Signal.effect(component, () -> {
+                    // Always track the signal to satisfy the effect requirement
+                    // even when no validators use value()
+                    trackUsageOfInternalValidationSignal();
                     if (valueInit) {
                         // start to track signal usage
                         doConversion();
@@ -3136,16 +3143,28 @@ public class Binder<BEAN> implements Serializable {
             if (isValidatorsDisabled()) {
                 return ValidationResult.ok();
             } else {
-                // Track Signal usage and throw exception to help to detect
+                // Track Signal usage and throw Error to help detect
                 // attempt to use signals reactively without an active effect.
-                return UsageTracker.track(() -> validator.apply(value, context),
-                        usage -> {
-                            throw new InvalidSignalUsageError(
-                                    "Detected Signal.get() call inside a bean level validator. "
-                                            + "This is not supported since bean level validators "
-                                            + "are not run inside a reactive effect. "
-                                            + "Use of Signal.get() is only supported in field level validators.");
-                        });
+                // Use Error (not Exception) to bypass Validator.from() exception handling.
+                // avoid lambda to allow proper deserialization
+                UsageRegistrar denySignalUsage = new UsageRegistrar() {
+                    @Override
+                    public void register(UsageTracker.Usage usage) {
+                        throw new InvalidSignalUsageError(
+                                "Detected Signal.get() call inside a bean level validator. "
+                                        + "This is not supported since bean level validators "
+                                        + "are not run inside a reactive effect. "
+                                        + "Use of Signal.get() is only supported in field level validators.");
+                    }
+                };
+                return UsageTracker.tracked(
+                        // avoid lambda to allow proper deserialization
+                        new TrackableSupplier<ValidationResult>() {
+                            @Override
+                            public ValidationResult supply() {
+                                return validator.apply(value, context);
+                            }
+                        }, denySignalUsage).supply();
             }
         });
         validators.add(wrappedValidator);
