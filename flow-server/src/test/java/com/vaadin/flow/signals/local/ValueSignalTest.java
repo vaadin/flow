@@ -25,12 +25,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
-import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.operations.CancelableOperation;
-import com.vaadin.flow.signals.operations.SignalOperation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -65,22 +61,12 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void setValue_oldValueInResult() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        SignalOperation<String> operation = signal.set("update");
-
-        String resultValue = TestUtil.assertSuccess(operation);
-        assertEquals("initial", resultValue);
-    }
-
-    @Test
     void replace_expectedValue_valueUpdated() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        SignalOperation<Void> operation = signal.replace("initial", "update");
+        boolean result = signal.replace("initial", "update");
 
-        TestUtil.assertSuccess(operation);
+        assertTrue(result);
         assertEquals("update", signal.get());
     }
 
@@ -88,9 +74,9 @@ public class ValueSignalTest extends SignalTestBase {
     void replace_otherValue_valueNotUpdated() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        SignalOperation<Void> operation = signal.replace("other", "update");
+        boolean result = signal.replace("other", "update");
 
-        TestUtil.assertFailure(operation);
+        assertFalse(result);
         assertEquals("initial", signal.get());
     }
 
@@ -98,13 +84,12 @@ public class ValueSignalTest extends SignalTestBase {
     void update_updatesTheValue() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        CancelableOperation<String> operation = signal.update(oldValue -> {
+        String previousValue = signal.update(oldValue -> {
             assertEquals("initial", oldValue);
             return "update";
         });
 
-        String oldValue = TestUtil.assertSuccess(operation);
-        assertEquals("initial", oldValue);
+        assertEquals("initial", previousValue);
 
         assertEquals("update", signal.get());
     }
@@ -143,7 +128,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
-        assertFalse(readonly instanceof WritableSignal<String>);
+        assertFalse(readonly instanceof ValueSignal<String>);
     }
 
     @Test

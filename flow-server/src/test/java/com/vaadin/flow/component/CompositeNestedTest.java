@@ -17,15 +17,16 @@ package com.vaadin.flow.component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class CompositeNestedTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CompositeNestedTest {
     TestLayout layout;
     TestComponent componentInComposite;
     Composite<?> compositeOuter;
@@ -74,7 +75,7 @@ public class CompositeNestedTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         layout = new TestLayout();
         componentInComposite = new TestComponent(
@@ -96,25 +97,25 @@ public class CompositeNestedTest {
 
     @Test
     public void compositeOuterElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeOuter.getElement());
     }
 
     @Test
     public void compositeInnerElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
+        assertEquals(componentInComposite.getElement(),
                 compositeInner.getElement());
     }
 
     @Test
     public void getParentElement_compositeOuter() {
-        Assert.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeOuter.getElement().getParent());
     }
 
     @Test
     public void getParentElement_compositeInner() {
-        Assert.assertEquals(layout.getElement(),
+        assertEquals(layout.getElement(),
                 compositeInner.getElement().getParent());
     }
 
@@ -126,18 +127,17 @@ public class CompositeNestedTest {
 
     @Test
     public void getParent_compositeOuter() {
-        Assert.assertEquals(layout, compositeOuter.getParent().get());
+        assertEquals(layout, compositeOuter.getParent().get());
     }
 
     @Test
     public void getParent_compositeInner() {
-        Assert.assertEquals(compositeOuter, compositeInner.getParent().get());
+        assertEquals(compositeOuter, compositeInner.getParent().get());
     }
 
     @Test
     public void getParent_componentInComposite() {
-        Assert.assertEquals(compositeInner,
-                componentInComposite.getParent().get());
+        assertEquals(compositeInner, componentInComposite.getParent().get());
     }
 
     @Test

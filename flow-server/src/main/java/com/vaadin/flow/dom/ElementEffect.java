@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -42,20 +41,22 @@ import com.vaadin.flow.signals.impl.Effect;
  * context of a given element's life-cycle.
  * <p>
  * It ultimately creates a Signal effect, i.e. a call to
- * {@link Signal#effect(EffectAction)}, that is automatically enabled when an
- * element is attached and disabled when the element is detached. Additionally,
- * it provides methods to bind signals to element according to a given value
- * setting function.
+ * {@link Signal#unboundEffect(EffectAction)}, that is automatically enabled
+ * when an element is attached and disabled when the element is detached.
+ * Additionally, it provides methods to bind signals to element according to a
+ * given value setting function.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
-    private final SerializableRunnable effectFunction;
+    private final EffectAction effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
-    public ElementEffect(Element owner, SerializableRunnable effectFunction) {
+    public ElementEffect(Element owner, EffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -96,7 +97,7 @@ public final class ElementEffect implements Serializable {
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
      *
-     * @see Signal#effect(EffectAction)
+     * @see Signal#unboundEffect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
@@ -107,7 +108,7 @@ public final class ElementEffect implements Serializable {
      *         function
      */
     public static Registration effect(Element owner,
-            SerializableRunnable effectFunction) {
+            EffectAction effectFunction) {
         ElementEffect effect = new ElementEffect(owner, effectFunction);
         return effect::close;
     }
@@ -129,7 +130,7 @@ public final class ElementEffect implements Serializable {
      *         Element::setVisible);
      * </pre>
      *
-     * @see Signal#effect(EffectAction)
+     * @see Signal#unboundEffect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
@@ -162,7 +163,7 @@ public final class ElementEffect implements Serializable {
 
         EffectAction errorHandlingEffectFunction = () -> {
             try {
-                effectFunction.run();
+                effectFunction.execute();
             } catch (Exception e) {
                 ui.getSession().getErrorHandler()
                         .error(new ErrorEvent(e, owner.getNode()));
