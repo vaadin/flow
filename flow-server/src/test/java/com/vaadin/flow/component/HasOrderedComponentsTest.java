@@ -131,11 +131,10 @@ class HasOrderedComponentsTest {
 
     @Test
     public void getComponentAt_indexIsGreaterThanSize_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Mockito.when(components.getChildren())
-                    .thenReturn(Stream.of(Mockito.mock(Component.class)));
+        Mockito.when(components.getChildren())
+                .thenReturn(Stream.of(Mockito.mock(Component.class)));
 
-            components.getComponentAt(2);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> components.getComponentAt(2));
     }
 }

@@ -88,13 +88,11 @@ class HTMLTest {
 
     @Test
     public void setHtmlContent_tagMismatch() {
-        assertThrows(IllegalStateException.class, () -> {
-            Html html = new Html("<span>hello</span>");
-            assertEquals(Tag.SPAN, html.getElement().getTag());
-            assertEquals("hello", html.getInnerHtml());
-            html.setHtmlContent("<div>world</div>");
-            assertEquals("world", html.getInnerHtml());
-        });
+        Html html = new Html("<span>hello</span>");
+        assertEquals(Tag.SPAN, html.getElement().getTag());
+        assertEquals("hello", html.getInnerHtml());
+        assertThrows(IllegalStateException.class,
+                () -> html.setHtmlContent("<div>world</div>"));
     }
 
     @Test

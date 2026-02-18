@@ -203,14 +203,14 @@ class WebComponentExporterTest {
     @Test
     @SuppressWarnings("unchecked")
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
-        assertThrows(IllegalStateException.class, () -> {
-            SharedTagExporter sharedTagExporter = new SharedTagExporter();
-            WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
-                    .create(sharedTagExporter);
+        SharedTagExporter sharedTagExporter = new SharedTagExporter();
+        WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(sharedTagExporter);
 
-            sharedConfig.createWebComponentBinding(new MockInstantiator(),
-                    mock(Element.class), JacksonUtils.createObjectNode());
-        });
+        assertThrows(IllegalStateException.class,
+                () -> sharedConfig.createWebComponentBinding(
+                        new MockInstantiator(), mock(Element.class),
+                        JacksonUtils.createObjectNode()));
     }
 
     @Test

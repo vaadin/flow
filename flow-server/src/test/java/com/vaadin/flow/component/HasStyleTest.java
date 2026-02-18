@@ -206,34 +206,30 @@ class HasStyleTest {
 
     @Test
     public void addClassNames_addEmptyClassName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HasStyleComponent component = new HasStyleComponent();
-            component.addClassNames(" ");
-        });
+        HasStyleComponent component = new HasStyleComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addClassNames(" "));
     }
 
     @Test
     public void addClassNames_addNullClassName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HasStyleComponent component = new HasStyleComponent();
-            component.addClassNames(null, null);
-        });
+        HasStyleComponent component = new HasStyleComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addClassNames(null, null));
     }
 
     @Test
     public void removeClassNames_removeEmptyClassName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HasStyleComponent component = new HasStyleComponent();
-            component.addClassNames(" ");
-        });
+        HasStyleComponent component = new HasStyleComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> component.removeClassNames(" "));
     }
 
     @Test
     public void removeClassNames_removeNullClassName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HasStyleComponent component = new HasStyleComponent();
-            component.addClassNames(null, null);
-        });
+        HasStyleComponent component = new HasStyleComponent();
+        assertThrows(IllegalArgumentException.class,
+                () -> component.removeClassNames(null, null));
     }
 
     @Test

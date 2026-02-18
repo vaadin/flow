@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.PropertyDescriptor;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,9 +65,10 @@ class TextTest {
 
     @Test
     void setId_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").setId("foo"));
+                () -> text.setId("foo"));
         assertTrue(ex.getMessage().contains("Cannot set 'id' "));
         assertTrue(ex.getMessage().contains(
                 "component because it doesn't represent an HTML Element"));
@@ -73,11 +76,12 @@ class TextTest {
 
     @Test
     void setFooProperty_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
+        PropertyDescriptor<Boolean, Boolean> property = PropertyDescriptors
+                .propertyWithDefault("foo", true);
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").set(
-                        PropertyDescriptors.propertyWithDefault("foo", true),
-                        false));
+                () -> text.set(property, false));
         assertTrue(ex.getMessage().contains("Cannot set 'foo' "));
         assertTrue(ex.getMessage().contains(
                 "component because it doesn't represent an HTML Element"));
@@ -85,9 +89,10 @@ class TextTest {
 
     @Test
     void setVisibility_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").setVisible(false));
+                () -> text.setVisible(false));
         assertTrue(ex.getMessage()
                 .contains("Cannot change Text component visibility"));
         assertTrue(ex.getMessage()
@@ -96,9 +101,10 @@ class TextTest {
 
     @Test
     void addClassName_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").addClassName("foo"));
+                () -> text.addClassName("foo"));
         assertTrue(ex.getMessage().contains("Cannot add a class to the Text"));
         assertTrue(ex.getMessage()
                 .contains("because it doesn't represent an HTML Element"));
@@ -106,9 +112,10 @@ class TextTest {
 
     @Test
     void addClassNames_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").addClassNames("foor", "bar"));
+                () -> text.addClassNames("foor", "bar"));
         assertTrue(ex.getMessage().contains("Cannot add classes to the Text"));
         assertTrue(ex.getMessage()
                 .contains("because it doesn't represent an HTML Element"));
@@ -116,9 +123,10 @@ class TextTest {
 
     @Test
     void removeClassName_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").removeClassName("foo"));
+                () -> text.removeClassName("foo"));
         assertTrue(ex.getMessage()
                 .contains("Cannot remove a class from the Text"));
         assertTrue(ex.getMessage()
@@ -127,9 +135,10 @@ class TextTest {
 
     @Test
     void removeClassNames_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").removeClassNames("foo", "bar"));
+                () -> text.removeClassNames("foo", "bar"));
         assertTrue(ex.getMessage()
                 .contains("Cannot remove classes from the Text"));
         assertTrue(ex.getMessage()
@@ -138,9 +147,10 @@ class TextTest {
 
     @Test
     void setClassName_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").setClassName("foo"));
+                () -> text.setClassName("foo"));
         assertTrue(ex.getMessage()
                 .contains("Cannot set the Text component class"));
         assertTrue(ex.getMessage()
@@ -149,9 +159,10 @@ class TextTest {
 
     @Test
     void setClassName_withBooleanParameter_throwsWithMeaningfulMessage() {
+        Text text = new Text("");
         UnsupportedOperationException ex = assertThrows(
                 UnsupportedOperationException.class,
-                () -> new Text("").setClassName("foo", true));
+                () -> text.setClassName("foo", true));
         assertTrue(ex.getMessage()
                 .contains("Cannot set the Text component class"));
         assertTrue(ex.getMessage()
