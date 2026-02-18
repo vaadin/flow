@@ -17,10 +17,11 @@ package com.vaadin.flow.dom;
 
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StyleUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class StyleUtilTest {
     private static final Map<String, String> stylepPropertyToAttribute = new java.util.HashMap<>();
     static {
         stylepPropertyToAttribute.put("width", "width");
@@ -37,7 +38,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(property,
+            assertEquals(property,
                     StyleUtil.styleAttributeToProperty(attribute));
 
         });
@@ -48,7 +49,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(attribute,
+            assertEquals(attribute,
                     StyleUtil.stylePropertyToAttribute(property));
 
         });

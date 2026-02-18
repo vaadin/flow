@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class VaadinRequestTest {
+class VaadinRequestTest {
 
     public static abstract class TestVaadinRequest implements VaadinRequest {
 

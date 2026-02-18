@@ -20,13 +20,16 @@ import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.Registration;
 
-public class ShortcutsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ShortcutsTest {
 
     @Test
     public void hasOnlyStaticMethods() {
@@ -34,7 +37,7 @@ public class ShortcutsTest {
 
         for (Method method : methods) {
             if (!Modifier.isStatic(method.getModifiers())) {
-                Assert.fail(String.format("Method %s(%s) should be static",
+                fail(String.format("Method %s(%s) should be static",
                         method.getName(),
                         Stream.of(method.getParameterTypes())
                                 .map(Class::getSimpleName)
@@ -50,12 +53,12 @@ public class ShortcutsTest {
         final Registration registration = Shortcuts
                 .setShortcutListenOnElement(locator, routerLink);
 
-        Assert.assertEquals(locator, ComponentUtil.getData(routerLink,
+        assertEquals(locator, ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));
 
         registration.remove();
 
-        Assert.assertNull(ComponentUtil.getData(routerLink,
+        assertNull(ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));
     }
 
@@ -66,20 +69,20 @@ public class ShortcutsTest {
         final Registration registration = Shortcuts
                 .setShortcutListenOnElement(locator, routerLink);
 
-        Assert.assertEquals(locator, ComponentUtil.getData(routerLink,
+        assertEquals(locator, ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));
 
         Shortcuts.setShortcutListenOnElement("another", routerLink);
 
         registration.remove();
 
-        Assert.assertEquals("another", ComponentUtil.getData(routerLink,
+        assertEquals("another", ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));
 
         final Registration nullRegistration = Shortcuts
                 .setShortcutListenOnElement(null, routerLink);
 
-        Assert.assertNull(ComponentUtil.getData(routerLink,
+        assertNull(ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));
 
         nullRegistration.remove();

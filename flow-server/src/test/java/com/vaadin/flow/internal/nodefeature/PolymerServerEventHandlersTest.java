@@ -208,25 +208,20 @@ class PolymerServerEventHandlersTest extends HasCurrentService {
 
     @Test
     void testNotAnnotatedParam() {
-        assertThrows(IllegalStateException.class, () -> {
-            addAndVerifyMethod(
-                    wronglyAnnotatedHandlers.get("notAnnotatedParam"));
-        });
+        assertThrows(IllegalStateException.class, () -> addAndVerifyMethod(
+                wronglyAnnotatedHandlers.get("notAnnotatedParam")));
     }
 
     @Test
     void testWrongTypeOfRepeatIndexParam() {
-        assertThrows(IllegalStateException.class, () -> {
-            addAndVerifyMethod(wronglyAnnotatedHandlers
-                    .get("wrongTypeOfRepeatIndexParam"));
-        });
+        assertThrows(IllegalStateException.class, () -> addAndVerifyMethod(
+                wronglyAnnotatedHandlers.get("wrongTypeOfRepeatIndexParam")));
     }
 
     @Test
     void testMultipleAnnotationsOnOneParam() {
-        assertThrows(IllegalStateException.class, () -> {
-            addAndVerifyMethod(wronglyAnnotatedHandlers
-                    .get("eventDataAndRepeatIndexOnOneParam"));
-        });
+        assertThrows(IllegalStateException.class,
+                () -> addAndVerifyMethod(wronglyAnnotatedHandlers
+                        .get("eventDataAndRepeatIndexOnOneParam")));
     }
 }
