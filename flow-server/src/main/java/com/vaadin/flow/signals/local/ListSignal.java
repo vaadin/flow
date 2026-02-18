@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.flow.signals.impl.Transaction;
-
 import org.jspecify.annotations.NonNull;
+
+import com.vaadin.flow.signals.impl.Transaction;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
