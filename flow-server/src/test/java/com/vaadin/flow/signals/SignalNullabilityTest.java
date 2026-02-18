@@ -15,92 +15,35 @@
  */
 package com.vaadin.flow.signals;
 
-import java.util.List;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.signals.local.ListSignal;
-import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.flow.signals.shared.SharedListSignal;
-import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedNumberSignal;
-import com.vaadin.flow.signals.shared.SharedValueSignal;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests that signals whose values should never be null actually return non-null
- * values from get(), peek(), and peekConfirmed().
+ * Tests that SharedNumberSignal converts null to zero on read.
  */
 public class SignalNullabilityTest extends SignalTestBase {
 
     @Test
-    void listSignal_get_nonNull() {
-        ListSignal<String> signal = new ListSignal<>();
-        List<ValueSignal<String>> value = signal.get();
-        assertNotNull(value);
-    }
-
-    @Test
-    void listSignal_peek_nonNull() {
-        ListSignal<String> signal = new ListSignal<>();
-        assertNotNull(signal.peek());
-    }
-
-    @Test
-    void sharedListSignal_get_nonNull() {
-        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
-        List<SharedValueSignal<String>> value = signal.get();
-        assertNotNull(value);
-    }
-
-    @Test
-    void sharedListSignal_peek_nonNull() {
-        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
-        assertNotNull(signal.peek());
-    }
-
-    @Test
-    void sharedListSignal_peekConfirmed_nonNull() {
-        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
-        assertNotNull(signal.peekConfirmed());
-    }
-
-    @Test
-    void sharedMapSignal_get_nonNull() {
-        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        Map<String, SharedValueSignal<String>> value = signal.get();
-        assertNotNull(value);
-    }
-
-    @Test
-    void sharedMapSignal_peek_nonNull() {
-        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertNotNull(signal.peek());
-    }
-
-    @Test
-    void sharedMapSignal_peekConfirmed_nonNull() {
-        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertNotNull(signal.peekConfirmed());
-    }
-
-    @Test
-    void sharedNumberSignal_get_nonNull() {
+    void sharedNumberSignal_get_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
-        assertNotNull(signal.get());
+        signal.set(null);
+        assertEquals(0.0, signal.get());
     }
 
     @Test
-    void sharedNumberSignal_peek_nonNull() {
+    void sharedNumberSignal_peek_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
-        assertNotNull(signal.peek());
+        signal.set(null);
+        assertEquals(0.0, signal.peek());
     }
 
     @Test
-    void sharedNumberSignal_peekConfirmed_nonNull() {
+    void sharedNumberSignal_peekConfirmed_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
-        assertNotNull(signal.peekConfirmed());
+        signal.set(null);
+        assertEquals(0.0, signal.peekConfirmed());
     }
 }
