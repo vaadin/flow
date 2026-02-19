@@ -18,6 +18,7 @@ package com.vaadin.flow.component.react;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -53,7 +54,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
  * @since 24.4
  */
 public abstract class ReactAdapterComponent extends Component {
-    private Map<String, Element> contentMap;
+    private @Nullable Map<String, Element> contentMap;
 
     /**
      * Adds the specified listener for the state change event in the React
