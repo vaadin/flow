@@ -37,7 +37,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
         ValueSignal<Locale> signal = ui.localeSignal();
 
         assertNotNull(signal, "localeSignal() should never return null");
-        assertEquals(ui.getLocale(), signal.get(),
+        assertEquals(ui.getLocale(), signal.peek(),
                 "Signal value should match getLocale()");
     }
 
@@ -56,7 +56,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
 
         ui.setLocale(newLocale);
 
-        assertEquals(newLocale, signal.get(),
+        assertEquals(newLocale, signal.peek(),
                 "Signal should reflect the new locale after setLocale()");
         assertEquals(newLocale, ui.getLocale(),
                 "getLocale() should also return the new locale");
@@ -80,7 +80,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
         assertEquals(newLocale, ui.getLocale(),
                 "getLocale() should reflect the new locale after "
                         + "writing to signal");
-        assertEquals(newLocale, signal.get(),
+        assertEquals(newLocale, signal.peek(),
                 "Signal should have the new value");
     }
 
@@ -102,13 +102,13 @@ class UILocaleSignalTest extends SignalsUnitTest {
         ValueSignal<Locale> signal = ui.localeSignal();
 
         ui.setLocale(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, signal.get());
+        assertEquals(Locale.FRENCH, signal.peek());
 
         ui.setLocale(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, signal.get());
+        assertEquals(Locale.GERMAN, signal.peek());
 
         ui.setLocale(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, signal.get());
+        assertEquals(Locale.JAPANESE, signal.peek());
     }
 
     @Test

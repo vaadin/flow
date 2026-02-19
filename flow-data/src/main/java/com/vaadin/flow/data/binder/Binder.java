@@ -1987,6 +1987,9 @@ public class Binder<BEAN> implements Serializable {
         }
 
         private void trackUsageOfInternalValidationSignal() {
+            if (!UsageTracker.isActive()) {
+                return;
+            }
             if (internalValidationTriggerSignal == null) {
                 internalValidationTriggerSignal = new ValueSignal<>(false);
             }

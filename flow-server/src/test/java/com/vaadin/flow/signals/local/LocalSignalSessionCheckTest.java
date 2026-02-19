@@ -41,9 +41,9 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(session);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
+        signal.peek();
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> signal.peek());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
@@ -71,12 +71,12 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
 
         // All operations should throw when accessed from different session
-        assertThrows(IllegalStateException.class, () -> signal.get());
+        assertThrows(IllegalStateException.class, () -> signal.peek());
         assertThrows(IllegalStateException.class, () -> signal.peek());
         assertThrows(IllegalStateException.class, () -> signal.set("world"));
         assertThrows(IllegalStateException.class,
@@ -92,7 +92,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     void valueSignal_noSession_works() {
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
@@ -110,11 +110,11 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class, () -> signal.get());
+                IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
         assertTrue(message.contains("ValueSignal"));
@@ -131,7 +131,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         ListSignal<String> signal = new ListSignal<>();
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.peek());
 
         ValueSignal<String> entry = signal.insertFirst("first");
@@ -155,7 +155,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(session2);
 
         // All operations should throw when accessed from different session
-        assertThrows(IllegalStateException.class, () -> signal.get());
+        assertThrows(IllegalStateException.class, () -> signal.peek());
         assertThrows(IllegalStateException.class,
                 () -> signal.insertFirst("value"));
         assertThrows(IllegalStateException.class,
@@ -175,11 +175,11 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ListSignal<String> signal = new ListSignal<>();
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class, () -> signal.get());
+                IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
         assertTrue(message.contains("ListSignal"));
@@ -192,7 +192,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     void listSignal_noSession_works() {
         ListSignal<String> signal = new ListSignal<>();
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> signal.peek());
         assertDoesNotThrow(() -> signal.peek());
 
         ValueSignal<String> entry = signal.insertFirst("first");
