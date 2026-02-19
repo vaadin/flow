@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -68,7 +69,11 @@ public class ListModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public List<T> modelToApplication(Serializable modelValue) {
+    public @Nullable List<T> modelToApplication(
+            @Nullable Serializable modelValue) {
+        if (modelValue == null) {
+            return null;
+        }
         if (modelValue instanceof StateNode) {
             return new TemplateModelListProxy<>((StateNode) modelValue,
                     itemType);
@@ -81,8 +86,8 @@ public class ListModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public StateNode applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public @Nullable StateNode applicationToModel(
+            @Nullable Object applicationValue, PropertyFilter filter) {
         if (applicationValue == null) {
             return null;
         }

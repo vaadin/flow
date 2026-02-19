@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
@@ -113,9 +114,9 @@ public class TemplateInitializer {
         return parserData.getTwoWayBindingPaths();
     }
 
-    private void doRequestAttachCustomElement(String id, String tag,
+    private void doRequestAttachCustomElement(@Nullable String id, String tag,
             JsonNode path) {
-        if (idMapper.isMapped(id)) {
+        if (id != null && idMapper.isMapped(id)) {
             return;
         }
 

@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -24,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -55,11 +57,12 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 public class BeanModelType<T> implements ComplexModelType<T> {
     static class BeanModelTypeProperty implements Serializable {
         private final ModelType propretyType;
-        private final ClientUpdateMode clientUpdateMode;
+        private final @Nullable ClientUpdateMode clientUpdateMode;
         private final boolean hasGetter;
 
         public BeanModelTypeProperty(ModelType propretyType,
-                ClientUpdateMode clientUpdateMode, boolean hasGetter) {
+                @Nullable ClientUpdateMode clientUpdateMode,
+                boolean hasGetter) {
             this.propretyType = propretyType;
             this.clientUpdateMode = clientUpdateMode;
             this.hasGetter = hasGetter;
@@ -69,7 +72,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return propretyType;
         }
 
-        public ClientUpdateMode getClientUpdateMode() {
+        public @Nullable ClientUpdateMode getClientUpdateMode() {
             return clientUpdateMode;
         }
 
@@ -352,11 +355,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     protected BeanModelTypeProperty getExistingProperty(String propertyName) {
         assert hasProperty(propertyName);
 
-        return properties.get(propertyName);
+        return Objects.requireNonNull(properties.get(propertyName));
     }
 
     @Override
-    public T modelToApplication(Serializable modelValue) {
+    public @Nullable T modelToApplication(@Nullable Serializable modelValue) {
         if (modelValue == null) {
             return null;
         }
@@ -390,8 +393,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public StateNode applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public @Nullable StateNode applicationToModel(
+            @Nullable Object applicationValue, PropertyFilter filter) {
         if (applicationValue == null) {
             return null;
         }
@@ -416,6 +419,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @param propertyFilter
      *            defines which properties from this model type to import
      */
+    @SuppressWarnings("NullAway") // setProperty accepts null per Javadoc
     public void importProperties(ElementPropertyMap model, Object bean,
             PropertyFilter propertyFilter) {
         Class<?> beanClass = bean.getClass();
@@ -679,7 +683,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         });
     }
 
-    private BeanModelType<?> getListItemBeanModelType(ListModelType<?> type) {
+    private @Nullable BeanModelType<?> getListItemBeanModelType(
+            ListModelType<?> type) {
         ComplexModelType<?> itemType = type.getItemType();
         if (itemType instanceof BeanModelType<?>) {
             return (BeanModelType<?>) itemType;

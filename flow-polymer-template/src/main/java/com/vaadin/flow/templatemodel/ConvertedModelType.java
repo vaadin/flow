@@ -11,6 +11,7 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -59,7 +60,8 @@ public class ConvertedModelType<A, M extends Serializable>
     }
 
     @Override
-    public Object modelToApplication(Serializable modelValue) {
+    public @Nullable Object modelToApplication(
+            @Nullable Serializable modelValue) {
         @SuppressWarnings("unchecked")
         M wrappedApplicationValue = (M) wrappedModelType
                 .modelToApplication(modelValue);
@@ -67,8 +69,8 @@ public class ConvertedModelType<A, M extends Serializable>
     }
 
     @Override
-    public Serializable applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public @Nullable Serializable applicationToModel(
+            @Nullable Object applicationValue, PropertyFilter filter) {
         @SuppressWarnings("unchecked")
         M convertedValue = converter.encode((A) applicationValue);
         return wrappedModelType.applicationToModel(convertedValue, filter);

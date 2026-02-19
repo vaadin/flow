@@ -29,6 +29,7 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -147,8 +148,8 @@ public class TemplateModelProxyHandler implements Serializable {
      */
     @RuntimeType
     @SuppressWarnings("static-method")
-    public Object intercept(@This Object target, @Origin Method method,
-            @AllArguments Object[] args) {
+    public @Nullable Object intercept(@This Object target,
+            @Origin Method method, @AllArguments Object[] args) {
         String propertyName = ReflectTools.getPropertyName(method);
 
         BeanModelType<?> modelType = getModelTypeForProxy(target);
@@ -311,7 +312,7 @@ public class TemplateModelProxyHandler implements Serializable {
                                 .collect(Collectors.joining(", ")));
     }
 
-    private static Object handleGetter(ElementPropertyMap modelMap,
+    private static @Nullable Object handleGetter(ElementPropertyMap modelMap,
             String propertyName, ModelType propertyType) {
         Serializable modelValue = modelMap.getProperty(propertyName);
 
@@ -324,6 +325,7 @@ public class TemplateModelProxyHandler implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // setProperty accepts null per Javadoc
     private static void handleSetter(ElementPropertyMap modelMap,
             String propertyName, ModelType propertyType, Object value) {
         Serializable modelValue = propertyType.applicationToModel(value,

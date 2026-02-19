@@ -16,6 +16,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,8 +131,8 @@ public final class BundleParser {
         return template;
     }
 
-    private static Element tryParsePolymer2(Document templateDocument,
-            Matcher noTemplateMatcher) {
+    private static @Nullable Element tryParsePolymer2(
+            @Nullable Document templateDocument, Matcher noTemplateMatcher) {
         while (noTemplateMatcher.find()
                 && noTemplateMatcher.groupCount() == 2) {
             String group = noTemplateMatcher.group(2);

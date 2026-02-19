@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
 
@@ -79,7 +81,10 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
 
     @SuppressWarnings("unchecked")
     @Override
-    public T modelToApplication(Serializable modelValue) {
+    public @Nullable T modelToApplication(@Nullable Serializable modelValue) {
+        if (modelValue == null) {
+            return null;
+        }
         assert modelValue instanceof StateNode;
         StateNode stateNode = (StateNode) modelValue;
         assert stateNode.hasFeature(BasicTypeValue.class);
@@ -90,8 +95,8 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
     }
 
     @Override
-    public StateNode applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public @Nullable StateNode applicationToModel(
+            @Nullable Object applicationValue, PropertyFilter filter) {
         if (applicationValue == null) {
             return null;
         }

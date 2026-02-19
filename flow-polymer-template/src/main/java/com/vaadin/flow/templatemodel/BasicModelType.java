@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
  * booleans.
@@ -52,13 +54,14 @@ public class BasicModelType extends AbstractBasicModelType {
     }
 
     @Override
-    public Object modelToApplication(Serializable modelValue) {
+    public @Nullable Object modelToApplication(
+            @Nullable Serializable modelValue) {
         return convertToApplication(modelValue);
     }
 
     @Override
-    public Serializable applicationToModel(Object applicationValue,
-            PropertyFilter filter) {
+    public @Nullable Serializable applicationToModel(
+            @Nullable Object applicationValue, PropertyFilter filter) {
         return (Serializable) applicationValue;
     }
 

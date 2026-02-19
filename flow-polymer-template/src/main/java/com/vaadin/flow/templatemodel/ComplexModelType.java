@@ -8,6 +8,8 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -32,7 +34,8 @@ import com.vaadin.flow.internal.StateNode;
 public interface ComplexModelType<T> extends ModelType {
 
     @Override
-    StateNode applicationToModel(Object applicationValue,
+    @Nullable
+    StateNode applicationToModel(@Nullable Object applicationValue,
             PropertyFilter filter);
 
     /**

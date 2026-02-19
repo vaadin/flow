@@ -10,6 +10,7 @@ package com.vaadin.flow.templatemodel;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.Objects;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
@@ -65,7 +66,8 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
             return TemplateModelProxyHandler.createModelProxy(modelNode,
                     (BeanModelType<T>) itemType);
         } else if (itemType instanceof BasicComplexModelType<?>) {
-            return (T) modelNode.getFeature(BasicTypeValue.class).getValue();
+            return (T) Objects.requireNonNull(
+                    modelNode.getFeature(BasicTypeValue.class).getValue());
         }
         throw new IllegalStateException("Item type has unexpected type "
                 + itemType + ". Don't know how to create a proxy for it");
@@ -85,8 +87,8 @@ public class TemplateModelListProxy<T> extends AbstractList<T>
                     "Null values cannot be added to a list in the model");
         }
 
-        StateNode nodeToAdd = itemType.applicationToModel(object,
-                PropertyFilter.ACCEPT_ALL);
+        StateNode nodeToAdd = Objects.requireNonNull(
+                itemType.applicationToModel(object, PropertyFilter.ACCEPT_ALL));
 
         getModelList().add(index, nodeToAdd);
     }

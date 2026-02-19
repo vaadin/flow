@@ -16,10 +16,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
@@ -49,7 +51,7 @@ import com.vaadin.flow.templatemodel.TemplateModelProxyHandler;
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component implements DeprecatedPolymerTemplate {
     private final StateNode stateNode;
-    private transient M model;
+    private transient @Nullable M model;
 
     protected AbstractTemplate() {
         this.stateNode = getElement().getNode();
@@ -193,7 +195,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                 descriptor);
     }
 
-    private static ModelType getModelTypeForListModel(Type type,
+    private static @Nullable ModelType getModelTypeForListModel(Type type,
             ModelType mtype) {
         ModelType modelType = mtype;
         while (modelType instanceof ListModelType) {
@@ -215,7 +217,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         getModel();
 
         BeanModelType<?> modelType = TemplateModelProxyHandler
-                .getModelTypeForProxy(model);
+                .getModelTypeForProxy(Objects.requireNonNull(model));
 
         Map<String, Boolean> allowedProperties = modelType
                 .getClientUpdateAllowedProperties(twoWayBindingPaths);

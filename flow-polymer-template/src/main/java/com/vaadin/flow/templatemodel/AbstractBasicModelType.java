@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -69,6 +70,7 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // setProperty accepts null per Javadoc
     public void createInitialValue(StateNode node, String property) {
         ElementPropertyMap feature = node.getFeature(ElementPropertyMap.class);
         if (!feature.hasProperty(property)) {
@@ -88,7 +90,8 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
      * @return the converted value, not <code>null</code> if the application
      *         type is a primitive
      */
-    protected Object convertToApplication(Serializable modelValue) {
+    protected @Nullable Object convertToApplication(
+            @Nullable Serializable modelValue) {
         if (modelValue == null && getJavaType().isPrimitive()) {
             return ReflectTools.getPrimitiveDefaultValue(getJavaType());
         }

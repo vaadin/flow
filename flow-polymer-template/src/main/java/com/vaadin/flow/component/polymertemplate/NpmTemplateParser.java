@@ -18,9 +18,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +157,9 @@ public class NpmTemplateParser implements TemplateParser {
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
-        String url = FileIOUtils.removeExtension(dependency.getUrl())
+        String url = Objects
+                .requireNonNull(
+                        FileIOUtils.removeExtension(dependency.getUrl()))
                 .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
@@ -176,8 +180,8 @@ public class NpmTemplateParser implements TemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
-    protected String getSourcesFromTemplate(VaadinService service, String tag,
-            String url) {
+    protected @Nullable String getSourcesFromTemplate(VaadinService service,
+            String tag, String url) {
         InputStream content = getResourceStream(service, url);
         if (content == null) {
             // Attempt to get the sources from dev server, if available
@@ -218,9 +222,12 @@ public class NpmTemplateParser implements TemplateParser {
         return null;
     }
 
-    private InputStream getResourceStream(VaadinService service, String url) {
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+    private @Nullable InputStream getResourceStream(VaadinService service,
+            String url) {
+        ResourceProvider resourceProvider = Objects.requireNonNull(Objects
+                .requireNonNull(Objects.requireNonNull(service.getContext())
+                        .getAttribute(Lookup.class))
+                .lookup(ResourceProvider.class));
         URL resourceUrl = resourceProvider.getApplicationResource(url);
         if (resourceUrl != null) {
             try {

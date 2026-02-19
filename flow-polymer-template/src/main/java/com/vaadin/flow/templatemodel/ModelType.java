@@ -11,6 +11,7 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.StateNode;
@@ -51,7 +52,8 @@ public interface ModelType extends Serializable {
      * @throws IllegalArgumentException
      *             if {@code modelValue} cannot be handled by the type
      */
-    Object modelToApplication(Serializable modelValue)
+    @Nullable
+    Object modelToApplication(@Nullable Serializable modelValue)
             throws IllegalArgumentException;
 
     /**
@@ -68,7 +70,8 @@ public interface ModelType extends Serializable {
      *            not <code>null</code>
      * @return a model value representation of the provided user value.
      */
-    Serializable applicationToModel(Object applicationValue,
+    @Nullable
+    Serializable applicationToModel(@Nullable Object applicationValue,
             PropertyFilter filter);
 
     /**

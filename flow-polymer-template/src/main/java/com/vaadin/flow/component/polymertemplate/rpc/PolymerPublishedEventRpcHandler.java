@@ -9,6 +9,7 @@
 package com.vaadin.flow.component.polymertemplate.rpc;
 
 import java.lang.reflect.Type;
+import java.util.Objects;
 import java.util.Optional;
 
 import tools.jackson.databind.JsonNode;
@@ -84,7 +85,8 @@ public class PolymerPublishedEventRpcHandler
             ModelType propertyType = ((PolymerTemplate<?>) template)
                     .getModelType(convertedType);
 
-            return propertyType.modelToApplication(node);
+            return Objects
+                    .requireNonNull(propertyType.modelToApplication(node));
         }
         throw new IllegalArgumentException(
                 "Event sent for a non attached template component");

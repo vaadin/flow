@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Template models encoder. Used for enabling the use of types in template model
@@ -82,7 +83,8 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      *            the value to encode
      * @return the encoded model value
      */
-    E encode(D value);
+    @Nullable
+    E encode(@Nullable D value);
 
     /**
      * Decodes the given value.
@@ -91,5 +93,6 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      *            the value to decode
      * @return the decoded value
      */
-    D decode(E value);
+    @Nullable
+    D decode(@Nullable E value);
 }

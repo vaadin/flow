@@ -26,6 +26,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -69,7 +70,7 @@ public class TemplateDataAnalyzer {
     private final Set<String> twoWayBindingPaths = new HashSet<>();
     private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private String modulePath;
+    private @Nullable String modulePath;
 
     /**
      * Three argument consumer.
@@ -96,7 +97,7 @@ public class TemplateDataAnalyzer {
          *            the element tag
          */
         @Override
-        void apply(Field field, String id, String tag);
+        void apply(Field field, String id, @Nullable String tag);
     }
 
     /**
@@ -159,16 +160,17 @@ public class TemplateDataAnalyzer {
     }
 
     static class SubTemplateData {
-        private final String id;
+        private final @Nullable String id;
         private final String tag;
         private final JsonNode path;
 
-        SubTemplateData(String id, String tag, JsonNode path) {
+        SubTemplateData(@Nullable String id, String tag, JsonNode path) {
             this.id = id;
             this.tag = tag;
             this.path = path;
         }
 
+        @Nullable
         String getId() {
             return id;
         }
@@ -310,6 +312,9 @@ public class TemplateDataAnalyzer {
         org.jsoup.nodes.Element current = element;
         while (!current.equals(templateRoot)) {
             org.jsoup.nodes.Element parent = current.parent();
+            if (parent == null) {
+                break;
+            }
             path.add(indexOf(parent, current));
             current = parent;
         }
@@ -364,10 +369,15 @@ public class TemplateDataAnalyzer {
         if ("template".equalsIgnoreCase(element.tagName())) {
             return true;
         }
-        return isInsideTemplate(element.parent(), templateRoot);
+        org.jsoup.nodes.Element parent = element.parent();
+        if (parent == null) {
+            return false;
+        }
+        return isInsideTemplate(parent, templateRoot);
     }
 
-    private void addSubTemplate(String id, String tag, ArrayNode path) {
+    private void addSubTemplate(@Nullable String id, String tag,
+            ArrayNode path) {
         subTemplates.add(new SubTemplateData(id, tag, path));
     }
 

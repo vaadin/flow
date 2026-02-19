@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -70,7 +71,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
-        this(parser, VaadinService.getCurrent());
+        this(parser, Objects.requireNonNull(VaadinService.getCurrent()));
     }
 
     /**
@@ -115,7 +116,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(VaadinService.getCurrent().getInstantiator()
+        this(Objects.requireNonNull(VaadinService.getCurrent())
+                .getInstantiator()
                 .getOrCreate(TemplateParser.TemplateParserFactory.class)
                 .createParser(), VaadinService.getCurrent());
     }

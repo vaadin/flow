@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utilities for JSOUP DOM manipulations.
@@ -66,7 +67,7 @@ final class JsoupUtils {
      *            element, may be {@code null}
      * @return
      */
-    static Optional<Element> getDomModule(Element parent, String id) {
+    static Optional<Element> getDomModule(Element parent, @Nullable String id) {
         Stream<Element> stream = parent.getElementsByTag("dom-module").stream();
         if (id != null) {
             stream = stream.filter(element -> id.equals(element.id()));
