@@ -18,9 +18,8 @@ package com.vaadin.flow.component.html;
 import java.net.URI;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -34,10 +33,14 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
-public class HtmlObjectTest extends ComponentTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @After
-    public void tearDown() {
+class HtmlObjectTest extends ComponentTest {
+
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
@@ -49,12 +52,12 @@ public class HtmlObjectTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         super.testHasOrderedComponents();
     }
 
     @Test
-    public void setData_dataAsAResource() {
+    void setData_dataAsAResource() {
         UI ui = new UI();
         UI.setCurrent(ui);
         HtmlObject object = new HtmlObject();
@@ -64,12 +67,12 @@ public class HtmlObjectTest extends ComponentTest {
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
+        assertEquals(uri.toASCIIString(),
                 object.getElement().getAttribute("data"));
     }
 
     @Test
-    public void setData_dataAsAResourceinCTOR() {
+    void setData_dataAsAResourceinCTOR() {
         UI ui = new UI();
         UI.setCurrent(ui);
         StreamResource resource = new StreamResource("foo",
@@ -79,37 +82,39 @@ public class HtmlObjectTest extends ComponentTest {
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
+        assertEquals(uri.toASCIIString(),
                 object.getElement().getAttribute("data"));
     }
 
     @Test
-    public void setDownloadHandlerData_dataAsAResource() {
+    void setDownloadHandlerData_dataAsAResource() {
         UI ui = new UI();
         UI.setCurrent(ui);
         HtmlObject object = new HtmlObject();
         object.setData(event -> event.getWriter().write("foo"));
 
-        Assert.assertTrue("Data should be set as dynamic resource.",
+        assertTrue(
                 object.getElement().getAttribute("data")
-                        .startsWith("VAADIN/dynamic/resource/-1/"));
+                        .startsWith("VAADIN/dynamic/resource/-1/"),
+                "Data should be set as dynamic resource.");
     }
 
     @Test
-    public void setDownloadHandlerData_dataAsAResourceinCTOR() {
+    void setDownloadHandlerData_dataAsAResourceinCTOR() {
         UI ui = new UI();
         UI.setCurrent(ui);
 
         HtmlObject object = new HtmlObject(
                 event -> event.getWriter().write("foo"), "foo");
 
-        Assert.assertTrue("Data should be set as dynamic resource.",
+        assertTrue(
                 object.getElement().getAttribute("data")
-                        .startsWith("VAADIN/dynamic/resource/-1/"));
+                        .startsWith("VAADIN/dynamic/resource/-1/"),
+                "Data should be set as dynamic resource.");
     }
 
     @Test
-    public void downloadHandler_isSetToInline() {
+    void downloadHandler_isSetToInline() {
         Element element = Mockito.mock(Element.class);
         StateNode node = Mockito.mock(StateNode.class);
         Mockito.when(element.getNode()).thenReturn(node);
@@ -141,21 +146,21 @@ public class HtmlObjectTest extends ComponentTest {
             }
         }
         InputStreamDownloadHandler handler = createDummyDownloadHandler();
-        Assert.assertFalse(handler.isInline());
+        assertFalse(handler.isInline());
         new TestHtmlObject(handler);
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type");
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type", new Param("param", "paramValue"));
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
 
         handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, new Param("param", "paramValue"));
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
     }
 
     private InputStreamDownloadHandler createDummyDownloadHandler() {
