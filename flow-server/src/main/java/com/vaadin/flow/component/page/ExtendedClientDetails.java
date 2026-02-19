@@ -235,7 +235,7 @@ public class ExtendedClientDetails implements Serializable {
      * @return the browser window inner width in pixels, or {@code -1}
      */
     public int getWindowInnerWidth() {
-        return ui == null ? -1 : ui.getPage().windowSizeSignal().get().width();
+        return ui == null ? -1 : ui.getPage().windowSizeSignal().peek().width();
     }
 
     /**
