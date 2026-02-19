@@ -122,7 +122,9 @@ public class WebPush {
         if (!SubscriptionState.ACTIVE.equals(status)) {
             getLogger().error(
                     "Failed to send web push notification, received status code: 404 or 410");
-            getLogger().error(String.join("\n", response.body()));
+            if (response != null) {
+                getLogger().error(String.join("\n", response.body()));
+            }
             throw new WebPushException(
                     "Sending of web push notification failed with status code 404 or 410");
         }

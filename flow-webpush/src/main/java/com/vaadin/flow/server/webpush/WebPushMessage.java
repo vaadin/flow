@@ -17,6 +17,7 @@ package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -31,7 +32,7 @@ import tools.jackson.databind.node.ObjectNode;
  * @since 24.2
  */
 public record WebPushMessage(String title,
-        ObjectNode options) implements Serializable {
+        @Nullable ObjectNode options) implements Serializable {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

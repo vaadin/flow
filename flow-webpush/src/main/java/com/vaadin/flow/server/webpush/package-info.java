@@ -13,25 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@NullMarked
 package com.vaadin.flow.server.webpush;
 
-import java.io.Serializable;
-
-import org.jspecify.annotations.Nullable;
-
-/**
- * Callback for receiving web push subscription details
- *
- * @since 24.2
- */
-@FunctionalInterface
-public interface WebPushSubscriptionResponse extends Serializable {
-
-    /**
-     * Invoked when the client-side details are available.
-     *
-     * @param subscription
-     *            web push subscription object
-     */
-    void subscription(@Nullable WebPushSubscription subscription);
-}
+import org.jspecify.annotations.NullMarked;
