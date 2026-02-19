@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -334,18 +336,15 @@ class HasComponentsTest {
     }
 
     @Test
-    public void addTypedCollection_allowsAddingListOfSubtypes() {
-        // Test the fix for GitHub issue - should compile and work
+    public void add_typedCollectionOfSubtypes_addsAllChildren() {
         TestComponent container = new TestComponent();
-        
-        // Create a List<TestComponent> (subtype of Component)
-        java.util.List<TestComponent> typedComponents = java.util.List
-                .of(new TestComponent("comp1"), new TestComponent("comp2"),
-                        new TestComponent("comp3"));
-        
-        // This should now compile with Collection<? extends Component>
+
+        List<TestComponent> typedComponents = List.of(
+                new TestComponent("comp1"), new TestComponent("comp2"),
+                new TestComponent("comp3"));
+
         container.add(typedComponents);
-        
+
         assertEquals(3, container.getChildren().count());
         assertEquals("comp1",
                 container.getChildren().toList().get(0).getId().orElse(null));
@@ -356,24 +355,20 @@ class HasComponentsTest {
     }
 
     @Test
-    public void removeTypedCollection_allowsRemovingListOfSubtypes() {
-        // Test the fix for GitHub issue - should compile and work
+    public void remove_typedCollectionOfSubtypes_removesMatchingChildren() {
         TestComponent container = new TestComponent();
-        
+
         TestComponent comp1 = new TestComponent("comp1");
         TestComponent comp2 = new TestComponent("comp2");
         TestComponent comp3 = new TestComponent("comp3");
-        
+
         container.add(comp1, comp2, comp3);
         assertEquals(3, container.getChildren().count());
-        
-        // Create a List<TestComponent> (subtype of Component)
-        java.util.List<TestComponent> typedComponents = java.util.List
-                .of(comp1, comp2);
-        
-        // This should now compile with Collection<? extends Component>
+
+        List<TestComponent> typedComponents = List.of(comp1, comp2);
+
         container.remove(typedComponents);
-        
+
         assertEquals(1, container.getChildren().count());
         assertEquals("comp3",
                 container.getChildren().toList().get(0).getId().orElse(null));
