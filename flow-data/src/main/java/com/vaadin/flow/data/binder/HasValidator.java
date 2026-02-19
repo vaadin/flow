@@ -17,6 +17,8 @@ package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
@@ -127,7 +129,7 @@ public interface HasValidator<V> extends Serializable {
      *            the validation status change listener to add
      * @return Registration of the added listener.
      */
-    default Registration addValidationStatusChangeListener(
+    default @Nullable Registration addValidationStatusChangeListener(
             ValidationStatusChangeListener<V> listener) {
         return null;
     }

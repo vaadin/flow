@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
@@ -35,9 +37,9 @@ public class ListDataProvider<T>
         extends AbstractDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
-    private SerializableComparator<T> sortOrder = null;
+    private @Nullable SerializableComparator<T> sortOrder = null;
 
-    private SerializablePredicate<T> filter;
+    private @Nullable SerializablePredicate<T> filter;
 
     private final Collection<T> backend;
 
@@ -103,23 +105,24 @@ public class ListDataProvider<T>
     }
 
     @Override
-    public SerializableComparator<T> getSortComparator() {
+    public @Nullable SerializableComparator<T> getSortComparator() {
         return sortOrder;
     }
 
     @Override
-    public void setSortComparator(SerializableComparator<T> comparator) {
+    public void setSortComparator(
+            @Nullable SerializableComparator<T> comparator) {
         this.sortOrder = comparator;
         refreshAll();
     }
 
     @Override
-    public SerializablePredicate<T> getFilter() {
+    public @Nullable SerializablePredicate<T> getFilter() {
         return filter;
     }
 
     @Override
-    public void setFilter(SerializablePredicate<T> filter) {
+    public void setFilter(@Nullable SerializablePredicate<T> filter) {
         this.filter = filter;
         refreshAll();
     }

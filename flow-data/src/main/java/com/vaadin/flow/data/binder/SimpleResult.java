@@ -18,6 +18,8 @@ package com.vaadin.flow.data.binder;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 
@@ -30,8 +32,8 @@ import com.vaadin.flow.function.SerializableFunction;
  */
 class SimpleResult<R> implements Result<R> {
 
-    private final R value;
-    private final String message;
+    private final @Nullable R value;
+    private final @Nullable String message;
 
     /**
      * Creates a new {@link Result} instance using {@code value} for a non error
@@ -45,7 +47,7 @@ class SimpleResult<R> implements Result<R> {
      * @param message
      *            the error message of the result, may be {@code null}
      */
-    SimpleResult(R value, String message) {
+    SimpleResult(@Nullable R value, @Nullable String message) {
         // value != null => message == null
         assert value == null || message == null
                 : "Message must be null if value is provided";
@@ -54,7 +56,9 @@ class SimpleResult<R> implements Result<R> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // value is @Nullable R but
+                                                   // callers of ok() accept
+                                                   // null values
     public <S> Result<S> flatMap(SerializableFunction<R, Result<S>> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
 
@@ -98,6 +102,9 @@ class SimpleResult<R> implements Result<R> {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // value is @Nullable R but Result's contract
+                                  // allows null success values; message is
+                                  // guaranteed non-null when isError() is true
     public <X extends Throwable> R getOrThrow(
             SerializableFunction<String, ? extends X> exceptionSupplier)
             throws X {

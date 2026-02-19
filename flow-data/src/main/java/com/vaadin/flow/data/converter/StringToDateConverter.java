@@ -20,6 +20,8 @@ import java.text.ParsePosition;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -45,7 +47,7 @@ public class StringToDateConverter implements Converter<String, Date> {
      *            The locale to use
      * @return A DateFormat instance
      */
-    protected DateFormat getFormat(Locale locale) {
+    protected DateFormat getFormat(@Nullable Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
@@ -57,7 +59,8 @@ public class StringToDateConverter implements Converter<String, Date> {
     }
 
     @Override
-    public Result<Date> convertToModel(String value, ValueContext context) {
+    public Result<Date> convertToModel(@Nullable String value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -76,7 +79,8 @@ public class StringToDateConverter implements Converter<String, Date> {
     }
 
     @Override
-    public String convertToPresentation(Date value, ValueContext context) {
+    public @Nullable String convertToPresentation(@Nullable Date value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

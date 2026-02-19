@@ -18,6 +18,8 @@ package com.vaadin.flow.data.validator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -35,7 +37,7 @@ public class RegexpValidator extends AbstractValidator<String> {
 
     private Pattern pattern;
     private boolean complete;
-    private transient Matcher matcher = null;
+    private transient @Nullable Matcher matcher = null;
 
     /**
      * Creates a validator for checking that the regular expression matches the

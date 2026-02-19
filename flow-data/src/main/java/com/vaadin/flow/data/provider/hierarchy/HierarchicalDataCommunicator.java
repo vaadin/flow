@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -103,11 +104,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
-    private FlushRequest<T> flushRequest = null;
+    private @Nullable FlushRequest<T> flushRequest = null;
     private Range viewportRange = Range.withLength(0, 0);
     private int lastUpdateId = -1;
 
     // package private for testing purposes
+    @Nullable
     RootCache<T> rootCache;
 
     /**
@@ -124,6 +126,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            Unique key provider for a row. If null, then using Grid's
      *            default key generator.
      */
+    @SuppressWarnings("NullAway") // dataUpdater is intentionally null; not
+                                  // used by HierarchicalDataCommunicator
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
@@ -289,7 +293,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return a {@link SerializableConsumer} for updating the filter value
      */
     public <F> SerializableConsumer<F> setDataProvider(
-            HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
+            HierarchicalDataProvider<T, F> dataProvider,
+            @Nullable F initialFilter) {
         expandedItemIds.clear();
         return super.setDataProvider(dataProvider, initialFilter);
     }
@@ -312,7 +317,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public <F> SerializableConsumer<F> setDataProvider(
-            DataProvider<T, F> dataProvider, F initialFilter) {
+            DataProvider<T, F> dataProvider, @Nullable F initialFilter) {
         if (dataProvider instanceof HierarchicalDataProvider<T, F> hierarchicalDataProvider) {
             return setDataProvider(hierarchicalDataProvider, initialFilter);
         }
@@ -487,9 +492,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the flat index of the target item after resolving all ancestors
      */
     protected int resolveIndexPath(int... path) {
-        ensureRootCache();
-        resolveIndexPath(rootCache, path);
-        return rootCache.getFlatIndexByPath(path);
+        var cache = ensureRootCache();
+        resolveIndexPath(cache, path);
+        return cache.getFlatIndexByPath(path);
     }
 
     private void resolveIndexPath(Cache<T> cache, int... path) {
@@ -512,7 +517,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
 
         var item = cache.getItem(index);
-        if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+        if (item != null && getHierarchyFormat().equals(HierarchyFormat.NESTED)
                 && isExpanded(item)) {
             var subCache = cache.ensureSubCache(index, item, () -> {
                 requestFlush().invalidateViewport();
@@ -548,11 +553,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return a list of items preloaded in the specified range
      */
     protected List<T> preloadFlatRangeBackward(int start, int length) {
-        ensureRootCache();
+        var root = ensureRootCache();
 
         LinkedList<T> result = new LinkedList<>();
         while (result.size() < length) {
-            var context = rootCache.getContextByFlatIndex(start);
+            var context = root.getContextByFlatIndex(start);
             if (context == null) {
                 break;
             }
@@ -569,6 +574,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
 
             var item = cache.getItem(index);
+            if (item == null) {
+                break;
+            }
 
             // Checking result.size() > 0 ensures that the start item
             // won't be expanded and its descendants won't be included
@@ -609,11 +617,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return a list of items preloaded in the specified range
      */
     protected List<T> preloadFlatRangeForward(int start, int length) {
-        ensureRootCache();
+        var root = ensureRootCache();
 
         LinkedList<T> result = new LinkedList<>();
         while (result.size() < length) {
-            var context = rootCache.getContextByFlatIndex(start);
+            var context = root.getContextByFlatIndex(start);
             if (context == null) {
                 break;
             }
@@ -625,6 +633,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
 
             var item = cache.getItem(index);
+            if (item == null) {
+                break;
+            }
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                     && isExpanded(item)) {
                 cache.ensureSubCache(index, item, () -> {
@@ -662,9 +673,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             arrayUpdater.initialize();
         }
 
-        ensureRootCache();
+        var root = ensureRootCache();
 
-        if (viewportRange.getStart() >= rootCache.getFlatSize()) {
+        if (viewportRange.getStart() >= root.getFlatSize()) {
             setViewportRange(0, viewportRange.length());
         }
 
@@ -674,7 +685,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         var viewportItems = preloadFlatRangeForward(start, length);
 
-        var flatSize = rootCache.getFlatSize();
+        var flatSize = root.getFlatSize();
 
         var update = arrayUpdater.startUpdate(flatSize);
         if (start > 0) {
@@ -683,6 +694,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (end < flatSize) {
             update.clear(end, flatSize - end);
         }
+        var currentFlushRequest = Objects.requireNonNull(flushRequest);
         for (int i = 0; i < viewportItems.size(); i++) {
             var item = viewportItems.get(i);
             var index = start + i;
@@ -690,9 +702,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             // Send updates only for items that are new in the viewport,
             // whose data has changed, or when the entire viewport needs
             // to be updated.
-            if (flushRequest.isViewportInvalidated()
-                    || flushRequest.isItemInvalidated(item)
-                    || flushRequest.isIndexInvalidated(index)) {
+            if (currentFlushRequest.isViewportInvalidated()
+                    || currentFlushRequest.isItemInvalidated(item)
+                    || currentFlushRequest.isIndexInvalidated(index)) {
                 update.set(index, List.of(generateItemJson(item)));
             }
         }
@@ -732,6 +744,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
 
             var item = cache.getItem(index);
+            if (item == null) {
+                continue;
+            }
             viewportItemIds.add(getDataProvider().getId(item));
         }
 
@@ -793,15 +808,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the maximum number of items to fetch
      * @return a hierarchical query for the specified range and parent
      */
-    public HierarchicalQuery<T, Object> buildQuery(T parent, int offset,
-            int limit) {
+    public HierarchicalQuery<T, Object> buildQuery(@Nullable T parent,
+            int offset, int limit) {
         return new HierarchicalQuery<>(offset, limit, getBackEndSorting(),
                 getInMemorySorting(), getFilter(), getExpandedItemIds(),
                 parent);
     }
 
     @SuppressWarnings("unchecked")
-    private List<T> fetchDataProviderChildren(T parent, Range range) {
+    private List<T> fetchDataProviderChildren(@Nullable T parent, Range range) {
         var query = buildQuery(parent, range.getStart(), range.length());
 
         var items = ((HierarchicalDataProvider<T, Object>) getDataProvider())
@@ -822,7 +837,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private int getDataProviderChildCount(T parent) {
+    private int getDataProviderChildCount(@Nullable T parent) {
         var query = new HierarchicalQuery<>(getFilter(), getExpandedItemIds(),
                 parent);
 
@@ -897,7 +912,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     private class KeyMapperWrapper<V> extends KeyMapper<T> {
 
-        private T object;
+        private @Nullable T object;
 
         @Override
         public String key(T o) {
@@ -911,8 +926,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         @Override
         protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
+            return Optional.ofNullable(uniqueKeyProviderSupplier.get()).map(
+                    provider -> provider.apply(Objects.requireNonNull(object)))
                     .orElse(super.createKey());
         }
     }

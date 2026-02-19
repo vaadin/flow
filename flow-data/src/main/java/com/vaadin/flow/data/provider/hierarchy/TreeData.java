@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -43,19 +45,19 @@ import com.vaadin.flow.function.ValueProvider;
 public class TreeData<T> implements Serializable {
 
     private static class HierarchyWrapper<T> implements Serializable {
-        private T parent;
+        private @Nullable T parent;
         private List<T> children;
 
-        public HierarchyWrapper(T parent) {
+        public HierarchyWrapper(@Nullable T parent) {
             this.parent = parent;
             children = new ArrayList<>();
         }
 
-        public T getParent() {
+        public @Nullable T getParent() {
             return parent;
         }
 
-        public void setParent(T parent) {
+        public void setParent(@Nullable T parent) {
             this.parent = parent;
         }
 
@@ -72,7 +74,7 @@ public class TreeData<T> implements Serializable {
         }
     }
 
-    private final Map<T, HierarchyWrapper<T>> itemToWrapperMap;
+    private final Map<@Nullable T, HierarchyWrapper<T>> itemToWrapperMap;
 
     /**
      * Creates an initially empty hierarchical data representation to which
@@ -155,7 +157,7 @@ public class TreeData<T> implements Serializable {
      * @throws NullPointerException
      *             if item is null
      */
-    public TreeData<T> addItem(T parent, T item) {
+    public TreeData<T> addItem(@Nullable T parent, T item) {
         Objects.requireNonNull(item, "Item cannot be null");
         if (parent != null && !contains(parent)) {
             throw new IllegalArgumentException(
@@ -190,7 +192,7 @@ public class TreeData<T> implements Serializable {
      * @throws NullPointerException
      *             if any of the items are null
      */
-    public TreeData<T> addItems(T parent,
+    public TreeData<T> addItems(@Nullable T parent,
             @SuppressWarnings("unchecked") T... items) {
         Arrays.stream(items).forEach(item -> addItem(parent, item));
         return this;
@@ -216,7 +218,7 @@ public class TreeData<T> implements Serializable {
      * @throws NullPointerException
      *             if any of the items are null
      */
-    public TreeData<T> addItems(T parent, Collection<T> items) {
+    public TreeData<T> addItems(@Nullable T parent, Collection<T> items) {
         items.forEach(item -> addItem(parent, item));
         return this;
     }
@@ -241,7 +243,7 @@ public class TreeData<T> implements Serializable {
      * @throws NullPointerException
      *             if any of the items are null
      */
-    public TreeData<T> addItems(T parent, Stream<T> items) {
+    public TreeData<T> addItems(@Nullable T parent, Stream<T> items) {
         items.forEach(item -> addItem(parent, item));
         return this;
     }
@@ -298,15 +300,18 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if the item does not exist in this structure
      */
-    public TreeData<T> removeItem(T item) {
+    public TreeData<T> removeItem(@Nullable T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
                     "Item '" + item + "' not in the hierarchy");
         }
         new ArrayList<>(getChildren(item)).forEach(child -> removeItem(child));
-        itemToWrapperMap.get(itemToWrapperMap.get(item).getParent())
-                .removeChild(item);
         if (item != null) {
+            HierarchyWrapper<T> itemWrapper = Objects
+                    .requireNonNull(itemToWrapperMap.get(item));
+            HierarchyWrapper<T> parentWrapper = Objects.requireNonNull(
+                    itemToWrapperMap.get(itemWrapper.getParent()));
+            parentWrapper.removeChild(item);
             // remove non root item from backing map
             itemToWrapperMap.remove(item);
         }
@@ -344,13 +349,13 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if the item does not exist in this structure
      */
-    public List<T> getChildren(T item) {
+    public List<T> getChildren(@Nullable T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
                     "Item '" + item + "' not in the hierarchy");
         }
-        return Collections
-                .unmodifiableList(itemToWrapperMap.get(item).getChildren());
+        return Collections.unmodifiableList(Objects
+                .requireNonNull(itemToWrapperMap.get(item)).getChildren());
     }
 
     /**
@@ -363,12 +368,12 @@ public class TreeData<T> implements Serializable {
      * @throws IllegalArgumentException
      *             if the item does not exist in this structure
      */
-    public T getParent(T item) {
+    public @Nullable T getParent(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
                     "Item '" + item + "' not in hierarchy");
         }
-        return itemToWrapperMap.get(item).getParent();
+        return Objects.requireNonNull(itemToWrapperMap.get(item)).getParent();
     }
 
     /**
@@ -383,7 +388,7 @@ public class TreeData<T> implements Serializable {
      *            the item to be set as parent or {@code null} to set the item
      *            as root
      */
-    public void setParent(T item, T parent) {
+    public void setParent(T item, @Nullable T parent) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
                     "Item '" + item + "' not in the hierarchy");
@@ -408,17 +413,21 @@ public class TreeData<T> implements Serializable {
                             + "' would create a cycle in the tree hierarchy");
         }
 
-        T oldParent = itemToWrapperMap.get(item).getParent();
+        HierarchyWrapper<T> itemWrapper = Objects
+                .requireNonNull(itemToWrapperMap.get(item));
+        @Nullable
+        T oldParent = itemWrapper.getParent();
 
         if (!Objects.equals(oldParent, parent)) {
             // Remove item from old parent's children
-            itemToWrapperMap.get(oldParent).removeChild(item);
+            Objects.requireNonNull(itemToWrapperMap.get(oldParent))
+                    .removeChild(item);
 
             // Add item to parent's children
-            itemToWrapperMap.get(parent).addChild(item);
+            Objects.requireNonNull(itemToWrapperMap.get(parent)).addChild(item);
 
             // Set item's new parent
-            itemToWrapperMap.get(item).setParent(parent);
+            itemWrapper.setParent(parent);
         }
     }
 
@@ -433,14 +442,15 @@ public class TreeData<T> implements Serializable {
      *            the item after which the moved item will be located, or {@code
      *         null} to move item to first position
      */
-    public void moveAfterSibling(T item, T sibling) {
+    public void moveAfterSibling(T item, @Nullable T sibling) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
                     "Item '" + item + "' not in the hierarchy");
         }
 
         if (sibling == null) {
-            List<T> children = itemToWrapperMap.get(getParent(item))
+            List<T> children = Objects
+                    .requireNonNull(itemToWrapperMap.get(getParent(item)))
                     .getChildren();
 
             // Move item to first position
@@ -452,15 +462,19 @@ public class TreeData<T> implements Serializable {
                         "Item '" + sibling + "' not in the hierarchy");
             }
 
-            T parent = itemToWrapperMap.get(item).getParent();
+            @Nullable
+            T parent = Objects.requireNonNull(itemToWrapperMap.get(item))
+                    .getParent();
 
             if (!Objects.equals(parent,
-                    itemToWrapperMap.get(sibling).getParent())) {
+                    Objects.requireNonNull(itemToWrapperMap.get(sibling))
+                            .getParent())) {
                 throw new IllegalArgumentException("Items '" + item + "' and '"
                         + sibling + "' don't have the same parent");
             }
 
-            List<T> children = itemToWrapperMap.get(parent).getChildren();
+            List<T> children = Objects
+                    .requireNonNull(itemToWrapperMap.get(parent)).getChildren();
 
             // Move item to the position after the sibling
             children.remove(item);
@@ -476,14 +490,14 @@ public class TreeData<T> implements Serializable {
      * @return {@code true} if the item is in this hierarchy, {@code false} if
      *         not
      */
-    public boolean contains(T item) {
+    public boolean contains(@Nullable T item) {
         return itemToWrapperMap.containsKey(item);
     }
 
-    private void putItem(T item, T parent) {
+    private void putItem(T item, @Nullable T parent) {
         HierarchyWrapper<T> wrappedItem = new HierarchyWrapper<>(parent);
         if (itemToWrapperMap.containsKey(parent)) {
-            itemToWrapperMap.get(parent).addChild(item);
+            Objects.requireNonNull(itemToWrapperMap.get(parent)).addChild(item);
         }
         itemToWrapperMap.put(item, wrappedItem);
     }
@@ -512,12 +526,16 @@ public class TreeData<T> implements Serializable {
         if (potentialDescendant == null) {
             return false;
         }
-        T current = itemToWrapperMap.get(potentialDescendant).getParent();
+        @Nullable
+        T current = Objects
+                .requireNonNull(itemToWrapperMap.get(potentialDescendant))
+                .getParent();
         while (current != null) {
             if (current.equals(potentialAncestor)) {
                 return true;
             }
-            current = itemToWrapperMap.get(current).getParent();
+            current = Objects.requireNonNull(itemToWrapperMap.get(current))
+                    .getParent();
         }
         return false;
     }

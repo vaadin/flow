@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.binder.HasFilterableDataProvider;
 import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
@@ -210,7 +212,7 @@ public interface DataProvider<T, F> extends Serializable {
                 "Filter converter can't be null");
         return new DataProviderWrapper<T, C, F>(this) {
             @Override
-            protected F getFilter(Query<T, C> query) {
+            protected @Nullable F getFilter(Query<T, C> query) {
                 return FilterUtils.convertFilter(filterConverter, query);
             }
         };
@@ -242,7 +244,8 @@ public interface DataProvider<T, F> extends Serializable {
             SerializableBiFunction<Q, C, F> filterCombiner) {
         return new ConfigurableFilterDataProviderWrapper<T, Q, C, F>(this) {
             @Override
-            protected F combineFilters(Q queryFilter, C configuredFilter) {
+            protected @Nullable F combineFilters(@Nullable Q queryFilter,
+                    @Nullable C configuredFilter) {
                 return FilterUtils.combineFilters(filterCombiner, queryFilter,
                         configuredFilter);
             }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.converter;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -26,7 +28,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class FloatToDoubleConverter implements Converter<Float, Double> {
 
     @Override
-    public Result<Double> convertToModel(Float value, ValueContext context) {
+    public Result<Double> convertToModel(@Nullable Float value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -34,7 +37,8 @@ public class FloatToDoubleConverter implements Converter<Float, Double> {
     }
 
     @Override
-    public Float convertToPresentation(Double value, ValueContext context) {
+    public @Nullable Float convertToPresentation(@Nullable Double value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

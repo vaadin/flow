@@ -17,6 +17,8 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -26,7 +28,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class LongToBigDecimalConverter implements Converter<Long, BigDecimal> {
 
     @Override
-    public Result<BigDecimal> convertToModel(Long value, ValueContext context) {
+    public Result<BigDecimal> convertToModel(@Nullable Long value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -34,7 +37,8 @@ public class LongToBigDecimalConverter implements Converter<Long, BigDecimal> {
     }
 
     @Override
-    public Long convertToPresentation(BigDecimal value, ValueContext context) {
+    public @Nullable Long convertToPresentation(@Nullable BigDecimal value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

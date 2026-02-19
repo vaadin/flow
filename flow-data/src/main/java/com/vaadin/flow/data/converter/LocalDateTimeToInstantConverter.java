@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -44,7 +46,7 @@ public class LocalDateTimeToInstantConverter
     }
 
     @Override
-    public Result<Instant> convertToModel(LocalDateTime localDateTime,
+    public Result<Instant> convertToModel(@Nullable LocalDateTime localDateTime,
             ValueContext context) {
         if (localDateTime == null) {
             return Result.ok(null);
@@ -54,8 +56,8 @@ public class LocalDateTimeToInstantConverter
     }
 
     @Override
-    public LocalDateTime convertToPresentation(Instant instant,
-            ValueContext context) {
+    public @Nullable LocalDateTime convertToPresentation(
+            @Nullable Instant instant, ValueContext context) {
         if (instant == null) {
             return null;
         }

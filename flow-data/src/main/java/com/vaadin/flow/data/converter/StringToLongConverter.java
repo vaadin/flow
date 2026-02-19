@@ -18,6 +18,8 @@ package com.vaadin.flow.data.converter;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -56,7 +58,8 @@ public class StringToLongConverter
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    public StringToLongConverter(Long emptyValue, String errorMessage) {
+    public StringToLongConverter(@Nullable Long emptyValue,
+            String errorMessage) {
         super(emptyValue, errorMessage);
     }
 
@@ -81,7 +84,7 @@ public class StringToLongConverter
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToLongConverter(Long emptyValue,
+    public StringToLongConverter(@Nullable Long emptyValue,
             ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
@@ -96,7 +99,7 @@ public class StringToLongConverter
      * @return A NumberFormat instance
      */
     @Override
-    protected NumberFormat getFormat(Locale locale) {
+    protected NumberFormat getFormat(@Nullable Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
@@ -104,7 +107,9 @@ public class StringToLongConverter
     }
 
     @Override
-    public Result<Long> convertToModel(String value, ValueContext context) {
+    @SuppressWarnings("NullAway") // Result value can be null for empty input
+    public Result<Long> convertToModel(@Nullable String value,
+            ValueContext context) {
         Result<Number> n = convertToNumber(value, context);
         return n.map(number -> {
             if (number == null) {

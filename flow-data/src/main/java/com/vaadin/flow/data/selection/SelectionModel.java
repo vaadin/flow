@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
@@ -79,7 +81,7 @@ public interface SelectionModel<C extends Component, T> extends Serializable {
          * @param item
          *            the item to select or {@code null} to clear selection
          */
-        default void setSelectedItem(T item) {
+        default void setSelectedItem(@Nullable T item) {
             if (item != null) {
                 select(item);
             } else {

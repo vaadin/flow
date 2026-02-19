@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,8 +125,10 @@ public class Binder<BEAN> implements Serializable {
         /**
          * Gets the field the binding uses.
          *
-         * @return the field for the binding
+         * @return the field for the binding, or null if the binding has been
+         *         unbound
          */
+        @Nullable
         HasValue<?, ?> getField();
 
         /**
@@ -219,6 +222,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the setter
          */
+        @Nullable
         Setter<BEAN, TARGET> getSetter();
 
         /**
@@ -275,7 +279,8 @@ public class Binder<BEAN> implements Serializable {
          * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
          *      toggle default validators for all bound fields.
          */
-        void setDefaultValidatorEnabled(Boolean defaultValidatorEnabled);
+        void setDefaultValidatorEnabled(
+                @Nullable Boolean defaultValidatorEnabled);
 
         /**
          * Returns if default validator of bound field is enabled.
@@ -284,6 +289,7 @@ public class Binder<BEAN> implements Serializable {
          *         binding, {@literal false} if it is disabled, {@literal null}
          *         if falls back to Binder-level setting
          */
+        @Nullable
         Boolean isDefaultValidatorEnabled();
 
         /**
@@ -333,8 +339,10 @@ public class Binder<BEAN> implements Serializable {
          * Once set, the value of the field that binding uses will be compared
          * with the initial value for hasChanged.
          *
-         * @return the predicate to use for equality comparison
+         * @return the predicate to use for equality comparison, or null if not
+         *         set
          */
+        @Nullable
         SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate();
 
         /**
@@ -516,7 +524,7 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called on this binding
          */
         Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter);
+                @Nullable Setter<BEAN, TARGET> setter);
 
         /**
          * Completes this binding using the given getter function representing a
@@ -847,6 +855,8 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
+        @SuppressWarnings("NullAway") // Throwable.getMessage() is @Nullable
+                                      // but used as error message provider
         default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
                 SerializableFunction<TARGET, NEWTARGET> toModel,
                 SerializableFunction<NEWTARGET, TARGET> toPresentation) {
@@ -907,6 +917,8 @@ public class Binder<BEAN> implements Serializable {
          *            the value to use instead of {@code null}
          * @return this BindingBuilder with null representation handling.
          */
+        @SuppressWarnings("NullAway") // intentionally converts null
+                                      // representation to null and back
         default BindingBuilder<BEAN, TARGET> withNullRepresentation(
                 TARGET nullRepresentation) {
             return withConverter(
@@ -957,7 +969,8 @@ public class Binder<BEAN> implements Serializable {
                     @SuppressWarnings("unchecked")
                     BindingImpl<BEAN, ?, TARGET> binding = (BindingImpl<BEAN, ?, TARGET>) status
                             .getBinding();
-                    Binder<BEAN> binder = binding.getBinder();
+                    Binder<BEAN> binder = Objects
+                            .requireNonNull(binding.getBinder());
                     binder.handleValidationStatus(status);
                 }
             });
@@ -1126,7 +1139,7 @@ public class Binder<BEAN> implements Serializable {
         private final HasValue<?, FIELDVALUE> field;
         private BindingValidationStatusHandler statusHandler;
         private boolean isStatusHandlerChanged;
-        private Binding<BEAN, TARGET> binding;
+        private @Nullable Binding<BEAN, TARGET> binding;
 
         private boolean bound;
 
@@ -1138,14 +1151,14 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean asRequiredSet;
 
-        private Boolean defaultValidatorEnabled;
+        private @Nullable Boolean defaultValidatorEnabled;
 
         /**
          * A predicate used to compare the current value of a field with its
          * initial value. By default it is {@literal null} meaning that the
          * initial value comparison is not active
          */
-        private SerializableBiPredicate<TARGET, TARGET> equalityPredicate = null;
+        private @Nullable SerializableBiPredicate<TARGET, TARGET> equalityPredicate = null;
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -1188,7 +1201,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter) {
+                @Nullable Setter<BEAN, TARGET> setter) {
             checkUnbound();
             Objects.requireNonNull(getter, "getter cannot be null");
 
@@ -1216,7 +1229,7 @@ public class Binder<BEAN> implements Serializable {
                 binding.initFieldValue(getBinder().getBean(), true);
             }
             if (setter == null && !binder.isRecord) {
-                binding.getField().setReadOnly(true);
+                Objects.requireNonNull(binding.getField()).setReadOnly(true);
             }
             getBinder().fireStatusChangeEvent(false);
 
@@ -1401,23 +1414,25 @@ public class Binder<BEAN> implements Serializable {
             Objects.requireNonNull(converter, "converter cannot be null");
 
             if (resetNullRepresentation) {
-                getBinder().initialConverters.get(field).setIdentity();
+                Objects.requireNonNull(getBinder().initialConverters.get(field))
+                        .setIdentity();
             }
 
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
                     .chain(new Converter<TARGET, NEWTARGET>() {
                         @Override
                         public Result<NEWTARGET> convertToModel(
-                                TARGET presentationValue,
+                                @Nullable TARGET presentationValue,
                                 ValueContext context) {
-                            return UsageTracker
+                            return Objects.requireNonNull(UsageTracker
                                     .untracked(() -> converter.convertToModel(
-                                            presentationValue, context));
+                                            presentationValue, context)));
                         }
 
                         @Override
-                        public TARGET convertToPresentation(
-                                NEWTARGET modelValue, ValueContext context) {
+                        public @Nullable TARGET convertToPresentation(
+                                @Nullable NEWTARGET modelValue,
+                                ValueContext context) {
                             return UsageTracker.untracked(
                                     (() -> converter.convertToPresentation(
                                             modelValue, context)));
@@ -1474,17 +1489,17 @@ public class Binder<BEAN> implements Serializable {
     protected static class BindingImpl<BEAN, FIELDVALUE, TARGET>
             implements Binding<BEAN, TARGET> {
 
-        private Binder<BEAN> binder;
+        private @Nullable Binder<BEAN> binder;
 
-        private HasValue<?, FIELDVALUE> field;
+        private @Nullable HasValue<?, FIELDVALUE> field;
         private final BindingValidationStatusHandler statusHandler;
 
         private final ValueProvider<BEAN, TARGET> getter;
-        private final Setter<BEAN, TARGET> setter;
+        private final @Nullable Setter<BEAN, TARGET> setter;
 
         private boolean readOnly;
 
-        private Registration onValueChange;
+        private @Nullable Registration onValueChange;
         private boolean valueInit = false;
         private boolean convertedBack = false;
 
@@ -1500,23 +1515,23 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean convertBackToPresentation = true;
 
-        private Registration onValidationStatusChange;
+        private @Nullable Registration onValidationStatusChange;
 
-        private Boolean defaultValidatorEnabled;
+        private @Nullable Boolean defaultValidatorEnabled;
 
-        private SerializableBiPredicate<TARGET, TARGET> equalityPredicate;
+        private @Nullable SerializableBiPredicate<TARGET, TARGET> equalityPredicate;
 
-        private TARGET initialValue;
+        private @Nullable TARGET initialValue;
 
-        private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
+        private @Nullable SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
 
-        private transient Registration signalRegistration;
+        private transient @Nullable Registration signalRegistration;
 
-        private transient ValueSignal<Boolean> internalValidationTriggerSignal;
+        private transient @Nullable ValueSignal<Boolean> internalValidationTriggerSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter) {
+                @Nullable Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
             statusHandler = builder.statusHandler;
@@ -1527,15 +1542,18 @@ public class Binder<BEAN> implements Serializable {
 
             equalityPredicate = builder.equalityPredicate;
 
-            onValueChange = getField().addValueChangeListener(
-                    event -> handleFieldValueChange(event));
+            onValueChange = Objects.requireNonNull(getField())
+                    .addValueChangeListener(
+                            event -> handleFieldValueChange(event));
 
-            if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
+            if (Objects.requireNonNull(getBinder())
+                    .isFieldsValidationStatusChangeListenerEnabled()
                     && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
-                        .addValidationStatusChangeListener(event -> getBinder()
-                                .handleFieldValueChange(this));
+                        .addValidationStatusChangeListener(
+                                event -> Objects.requireNonNull(getBinder())
+                                        .handleFieldValueChange(this));
             }
 
             this.getter = getter;
@@ -1544,7 +1562,7 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public HasValue<?, FIELDVALUE> getField() {
+        public @Nullable HasValue<?, FIELDVALUE> getField() {
             return field;
         }
 
@@ -1566,17 +1584,16 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public BindingValidationStatus<TARGET> validate(boolean fireEvent) {
-            Objects.requireNonNull(binder,
+            Binder<BEAN> b = Objects.requireNonNull(binder,
                     "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
-                var statusChange = new BinderValidationStatus<>(getBinder(),
+                var statusChange = new BinderValidationStatus<>(b,
                         Collections.singletonList(status),
                         Collections.emptyList());
-                getBinder().getValidationStatusHandler()
-                        .statusChange(statusChange);
-                getBinder().signalStatusChangeFromBinding(status);
-                getBinder().fireStatusChangeEvent(status.isError());
+                b.getValidationStatusHandler().statusChange(statusChange);
+                b.signalStatusChangeFromBinding(status);
+                b.fireStatusChangeEvent(status.isError());
             }
             return status;
         }
@@ -1623,7 +1640,8 @@ public class Binder<BEAN> implements Serializable {
          */
         private Result<TARGET> doConversion() {
             return execute(() -> {
-                FIELDVALUE fieldValue = field.getValue();
+                FIELDVALUE fieldValue = Objects.requireNonNull(field)
+                        .getValue();
                 return converterValidatorChain.convertToModel(fieldValue,
                         createValueContext());
             });
@@ -1655,8 +1673,8 @@ public class Binder<BEAN> implements Serializable {
             return createValueContext(binder, field);
         }
 
-        static ValueContext createValueContext(Binder binder,
-                HasValue<?, ?> field) {
+        static ValueContext createValueContext(@Nullable Binder binder,
+                @Nullable HasValue<?, ?> field) {
             if (field instanceof Component) {
                 return new ValueContext(binder, (Component) field, field);
             }
@@ -1736,17 +1754,17 @@ public class Binder<BEAN> implements Serializable {
 
             if (binder != null) {
                 // Inform binder of changes; if setBean: writeIfValid
-                getBinder().handleFieldValueChange(this);
+                binder.handleFieldValueChange(this);
                 // Compare the value with initial value, and remove the binder
                 // from changed bindings if reverted
                 removeFromChangedBindingsIfReverted(
-                        getBinder()::removeFromChangedBindings);
-                getBinder().fireEvent(event);
+                        binder::removeFromChangedBindings);
+                binder.fireEvent(event);
                 if (internalValidationTriggerSignal != null) {
                     // Trigger re-validation signal to notify validators using
                     // value()
-                    internalValidationTriggerSignal
-                            .set(!internalValidationTriggerSignal.peek());
+                    internalValidationTriggerSignal.set(!Objects.requireNonNull(
+                            internalValidationTriggerSignal.peek()));
                 }
             }
         }
@@ -1765,12 +1783,15 @@ public class Binder<BEAN> implements Serializable {
                 Result<TARGET> result = doConversion();
                 if (!isReadOnly()) {
                     result.ifOk(value -> {
-                        setter.accept(bean, value);
+                        Objects.requireNonNull(setter).accept(bean, value);
                         if (convertBackToPresentation && value != null) {
                             FIELDVALUE converted = convertToFieldType(value);
-                            if (!Objects.equals(field.getValue(), converted)) {
+                            if (!Objects.equals(
+                                    Objects.requireNonNull(field).getValue(),
+                                    converted)) {
                                 convertedBack = true;
-                                getField().setValue(converted);
+                                Objects.requireNonNull(getField())
+                                        .setValue(converted);
                             }
                         }
                     });
@@ -1785,7 +1806,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the binder
          */
-        protected Binder<BEAN> getBinder() {
+        protected @Nullable Binder<BEAN> getBinder() {
             return binder;
         }
 
@@ -1802,8 +1823,9 @@ public class Binder<BEAN> implements Serializable {
         private void convertAndSetFieldValue(TARGET modelValue) {
             execute(() -> {
                 FIELDVALUE convertedValue = convertToFieldType(modelValue);
+                HasValue<?, FIELDVALUE> f = Objects.requireNonNull(field);
                 try {
-                    field.setValue(convertedValue);
+                    f.setValue(convertedValue);
                     initialValue = modelValue;
                 } catch (RuntimeException e) {
                     /*
@@ -1813,12 +1835,11 @@ public class Binder<BEAN> implements Serializable {
                      * that the field doesn't accept null rather than throwing
                      * for some other reason.
                      */
-                    if (convertedValue == null
-                            && field.getEmptyValue() != null) {
+                    if (convertedValue == null && f.getEmptyValue() != null) {
                         throw new IllegalStateException(String.format(
                                 "A field of type %s didn't accept a null value."
                                         + " If null values are expected, then configure a null representation for the binding.",
-                                field.getClass().getName()), e);
+                                f.getClass().getName()), e);
                     } else {
                         // Otherwise, let the original exception speak for
                         // itself
@@ -1831,12 +1852,13 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setReadOnly(boolean readOnly) {
-            if (!binder.isRecord && this.setter == null && !readOnly) {
+            if (!Objects.requireNonNull(binder).isRecord && this.setter == null
+                    && !readOnly) {
                 throw new IllegalStateException(
                         "Binding with a null setter has to be read-only");
             }
             this.readOnly = readOnly;
-            getField().setReadOnly(readOnly);
+            Objects.requireNonNull(getField()).setReadOnly(readOnly);
         }
 
         @Override
@@ -1850,7 +1872,7 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public Setter<BEAN, TARGET> getSetter() {
+        public @Nullable Setter<BEAN, TARGET> getSetter() {
             return setter;
         }
 
@@ -1862,13 +1884,14 @@ public class Binder<BEAN> implements Serializable {
                                 + "asRequired has not been set.");
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
-                field.setRequiredIndicatorVisible(asRequiredEnabled);
+                Objects.requireNonNull(field)
+                        .setRequiredIndicatorVisible(asRequiredEnabled);
             }
         }
 
         @Override
         public boolean isAsRequiredEnabled() {
-            return field.isRequiredIndicatorVisible();
+            return Objects.requireNonNull(field).isRequiredIndicatorVisible();
         }
 
         @Override
@@ -1883,12 +1906,12 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setDefaultValidatorEnabled(
-                Boolean defaultValidatorEnabled) {
+                @Nullable Boolean defaultValidatorEnabled) {
             this.defaultValidatorEnabled = defaultValidatorEnabled;
         }
 
         @Override
-        public Boolean isDefaultValidatorEnabled() {
+        public @Nullable Boolean isDefaultValidatorEnabled() {
             return defaultValidatorEnabled;
         }
 
@@ -1916,7 +1939,8 @@ public class Binder<BEAN> implements Serializable {
                 BindingExceptionHandler handler = binder
                         .getBindingExceptionHandler();
                 Optional<BindingException> bindingException = handler
-                        .handleException(field, exception);
+                        .handleException(Objects.requireNonNull(field),
+                                exception);
                 if (bindingException.isPresent()) {
                     BindingException toThrow = bindingException.get();
                     toThrow.fillInStackTrace();
@@ -1938,7 +1962,7 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate() {
+        public @Nullable SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate() {
             return equalityPredicate;
         }
 
@@ -1954,7 +1978,7 @@ public class Binder<BEAN> implements Serializable {
          */
         private void removeFromChangedBindingsIfReverted(
                 SerializableConsumer<Binding<BEAN, TARGET>> removeBindingAction) {
-            if (binder.isChangeDetectionEnabled()
+            if (Objects.requireNonNull(binder).isChangeDetectionEnabled()
                     || equalityPredicate != null) {
                 doConversion().ifOk(convertedValue -> {
                     SerializableBiPredicate<TARGET, TARGET> effectivePredicate = equalityPredicate == null
@@ -1981,9 +2005,10 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public TARGET value() {
-            HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
+            HasValue<?, TARGET> f = (HasValue<?, TARGET>) Objects
+                    .requireNonNull(getField());
             trackUsageOfInternalValidationSignal();
-            return field.getValue();
+            return f.getValue();
         }
 
         private void trackUsageOfInternalValidationSignal() {
@@ -2020,13 +2045,18 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public Result<T> convertToModel(T value, ValueContext context) {
+        @SuppressWarnings("NullAway") // value is @Nullable from Converter
+                                      // interface but validators may receive
+                                      // null values
+        public Result<T> convertToModel(@Nullable T value,
+                ValueContext context) {
             ValidationResult validationResult = validator.apply(value, context);
             return new ValidationResultWrap<>(value, validationResult);
         }
 
         @Override
-        public T convertToPresentation(T value, ValueContext context) {
+        public @Nullable T convertToPresentation(@Nullable T value,
+                ValueContext context) {
             return value;
         }
 
@@ -2044,14 +2074,14 @@ public class Binder<BEAN> implements Serializable {
     private static class ConverterDelegate<FIELDVALUE>
             implements Converter<FIELDVALUE, FIELDVALUE> {
 
-        private Converter<FIELDVALUE, FIELDVALUE> delegate;
+        private @Nullable Converter<FIELDVALUE, FIELDVALUE> delegate;
 
         private ConverterDelegate(Converter<FIELDVALUE, FIELDVALUE> converter) {
             delegate = converter;
         }
 
         @Override
-        public Result<FIELDVALUE> convertToModel(FIELDVALUE value,
+        public Result<FIELDVALUE> convertToModel(@Nullable FIELDVALUE value,
                 ValueContext context) {
             if (delegate == null) {
                 return Result.ok(value);
@@ -2061,8 +2091,8 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public FIELDVALUE convertToPresentation(FIELDVALUE value,
-                ValueContext context) {
+        public @Nullable FIELDVALUE convertToPresentation(
+                @Nullable FIELDVALUE value, ValueContext context) {
             if (delegate == null) {
                 return value;
             } else {
@@ -2082,17 +2112,17 @@ public class Binder<BEAN> implements Serializable {
      */
     private final Map<String, Binding<BEAN, ?>> boundProperties = new HashMap<>();
 
-    private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteMemberFieldBindings;
+    private @Nullable Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteMemberFieldBindings;
 
-    private BEAN bean;
+    private @Nullable BEAN bean;
 
     private boolean isRecord;
 
-    private Class<BEAN> beanType;
+    private @Nullable Class<BEAN> beanType;
 
     private final Collection<Binding<BEAN, ?>> bindings = new ArrayList<>();
 
-    private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings;
+    private @Nullable Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings;
 
     private final List<Validator<? super BEAN>> validators = new ArrayList<>();
 
@@ -2101,9 +2131,9 @@ public class Binder<BEAN> implements Serializable {
 
     private HashMap<Class<?>, List<SerializableConsumer<?>>> listeners = new HashMap<>();
 
-    private HasText statusLabel;
+    private @Nullable HasText statusLabel;
 
-    private BinderValidationStatusHandler<BEAN> statusHandler;
+    private @Nullable BinderValidationStatusHandler<BEAN> statusHandler;
 
     private BinderValidationErrorHandler errorHandler = new DefaultBinderValidationErrorHandler();
 
@@ -2119,7 +2149,7 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean changeDetectionEnabled = false;
 
-    private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
+    private @Nullable ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
 
     /**
      * Error thrown when a signal is used incorrectly.
@@ -2266,7 +2296,7 @@ public class Binder<BEAN> implements Serializable {
      *
      * @return the currently bound bean if any
      */
-    public BEAN getBean() {
+    public @Nullable BEAN getBean() {
         return bean;
     }
 
@@ -2569,7 +2599,7 @@ public class Binder<BEAN> implements Serializable {
      * @throws IllegalStateException
      *             if the Binder's model type is record
      */
-    public void setBean(BEAN bean) {
+    public void setBean(@Nullable BEAN bean) {
         if (isRecord) {
             throw new IllegalStateException(
                     "setBean can't be used with records, call readBean instead");
@@ -2619,7 +2649,7 @@ public class Binder<BEAN> implements Serializable {
      *            the bean or record whose property values to read or
      *            {@code null} to clear bound fields
      */
-    public void readBean(BEAN bean) {
+    public void readBean(@Nullable BEAN bean) {
         checkBindingsCompleted("readBean");
         if (bean == null) {
             clearFields();
@@ -2906,7 +2936,8 @@ public class Binder<BEAN> implements Serializable {
             setValidatorsDisabled(true);
             // Fetch all conversion results
             List<Result<?>> values = new ArrayList<>();
-            for (RecordComponent rc : beanType.getRecordComponents()) {
+            for (RecordComponent rc : Objects.requireNonNull(beanType)
+                    .getRecordComponents()) {
                 String name = rc.getName();
                 if (boundProperties.containsKey(name)) {
                     Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
@@ -2952,7 +2983,7 @@ public class Binder<BEAN> implements Serializable {
         if (!status.isOk()) {
             throw new ValidationException(bindingResults, binderResults);
         }
-        return record;
+        return Objects.requireNonNull(record);
     }
 
     /**
@@ -3079,7 +3110,7 @@ public class Binder<BEAN> implements Serializable {
      * @param oldValues
      *            the old values
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes", "NullAway" })
     protected void restoreBeanState(BEAN bean,
             Map<Binding<BEAN, ?>, Object> oldValues) {
         getBindings().stream().filter(oldValues::containsKey)
@@ -3210,8 +3241,11 @@ public class Binder<BEAN> implements Serializable {
      */
     private void clearFields() {
         bindings.forEach(binding -> {
-            binding.getField().clear();
-            clearError(binding.getField());
+            HasValue<?, ?> f = binding.getField();
+            if (f != null) {
+                f.clear();
+                clearError(f);
+            }
         });
         if (hasChanges()) {
             fireStatusChangeEvent(false);
@@ -3642,6 +3676,9 @@ public class Binder<BEAN> implements Serializable {
      */
     protected void handleValidationStatus(BindingValidationStatus<?> status) {
         HasValue<?, ?> source = status.getField();
+        if (source == null) {
+            return;
+        }
         clearError(source);
         if (status.isError()) {
             Optional<ValidationResult> firstError = status
@@ -3821,6 +3858,8 @@ public class Binder<BEAN> implements Serializable {
                 });
     }
 
+    @SuppressWarnings("NullAway") // Throwable.getMessage() is @Nullable but
+                                  // used as error message provider
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
             HasValue<?, FIELDVALUE> field) {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
@@ -3947,7 +3986,7 @@ public class Binder<BEAN> implements Serializable {
         return value ? count + 1 : count;
     }
 
-    private BindingBuilder<BEAN, ?> getIncompleteMemberFieldBinding(
+    private @Nullable BindingBuilder<BEAN, ?> getIncompleteMemberFieldBinding(
             Field memberField, Object objectWithMemberFields) {
         if (incompleteMemberFieldBindings == null) {
             return null;
@@ -4039,9 +4078,11 @@ public class Binder<BEAN> implements Serializable {
                 // Forcing a converter will overwrite null handling set by
                 // forField() using createNullRepresentationAdapter()
                 // so we need to add a null representation based on same logics.
-                bindingBuilder = ((BindingBuilder) bindingBuilder)
+                @SuppressWarnings("NullAway") // empty value can be null
+                var builder = ((BindingBuilder) bindingBuilder)
                         .withNullRepresentation(field.getEmptyValue())
                         .withConverter(automaticConverter);
+                bindingBuilder = builder;
             }
             bindingBuilder.bind(property);
             return true;
@@ -4401,7 +4442,8 @@ public class Binder<BEAN> implements Serializable {
         if (binderValidationStatusSignal == null) {
             return;
         }
-        var oldStatus = binderValidationStatusSignal.peek();
+        var oldStatus = Objects
+                .requireNonNull(binderValidationStatusSignal.peek());
         var fieldValidationStatuses = new ArrayList<>(oldStatus
                 .getFieldValidationStatuses().stream().filter(status -> status
                         .getBinding() != statusChange.getBinding())
@@ -4412,7 +4454,8 @@ public class Binder<BEAN> implements Serializable {
                 oldStatus.getBeanValidationErrors()));
     }
 
-    private void signalStatusChange(BinderValidationStatus<BEAN> statusChange) {
+    private void signalStatusChange(
+            @Nullable BinderValidationStatus<BEAN> statusChange) {
         if (binderValidationStatusSignal == null) {
             return;
         }

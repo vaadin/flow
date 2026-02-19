@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -44,9 +46,9 @@ public class TreeDataProvider<T>
 
     private final TreeData<T> treeData;
 
-    private SerializablePredicate<T> filter = null;
+    private @Nullable SerializablePredicate<T> filter = null;
 
-    private SerializableComparator<T> sortOrder = null;
+    private @Nullable SerializableComparator<T> sortOrder = null;
 
     private HierarchyFormat hierarchyFormat = HierarchyFormat.NESTED;
 
@@ -110,7 +112,7 @@ public class TreeDataProvider<T>
     }
 
     @Override
-    public T getParent(T item) {
+    public @Nullable T getParent(T item) {
         Objects.requireNonNull(item, "Item cannot be null.");
         try {
             return getTreeData().getParent(item);
@@ -122,8 +124,11 @@ public class TreeDataProvider<T>
     @Override
     public int getDepth(T item) {
         int depth = 0;
-        while ((item = treeData.getParent(item)) != null) {
+        @Nullable
+        T current = treeData.getParent(item);
+        while (current != null) {
             depth++;
+            current = treeData.getParent(current);
         }
         return depth;
     }
@@ -163,23 +168,24 @@ public class TreeDataProvider<T>
     }
 
     @Override
-    public SerializablePredicate<T> getFilter() {
+    public @Nullable SerializablePredicate<T> getFilter() {
         return filter;
     }
 
     @Override
-    public void setFilter(SerializablePredicate<T> filter) {
+    public void setFilter(@Nullable SerializablePredicate<T> filter) {
         this.filter = filter;
         refreshAll();
     }
 
     @Override
-    public SerializableComparator<T> getSortComparator() {
+    public @Nullable SerializableComparator<T> getSortComparator() {
         return sortOrder;
     }
 
     @Override
-    public void setSortComparator(SerializableComparator<T> comparator) {
+    public void setSortComparator(
+            @Nullable SerializableComparator<T> comparator) {
         sortOrder = comparator;
         refreshAll();
     }
@@ -191,7 +197,7 @@ public class TreeDataProvider<T>
                 : queryFilter;
     }
 
-    private List<T> flatten(T parent, Set<Object> expandedItemIds,
+    private List<T> flatten(@Nullable T parent, Set<Object> expandedItemIds,
             Optional<SerializablePredicate<T>> combinedFilter,
             Optional<Comparator<T>> comparator) {
         List<T> result = new ArrayList<>();

@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -148,7 +150,7 @@ public abstract class AbstractComponentDataGenerator<T>
         renderedComponents.put(itemKey, component);
     }
 
-    protected Component getRenderedComponent(String itemKey) {
+    protected @Nullable Component getRenderedComponent(String itemKey) {
         return renderedComponents.get(itemKey);
     }
 

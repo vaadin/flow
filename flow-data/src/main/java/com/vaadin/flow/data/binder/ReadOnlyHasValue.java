@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -42,10 +44,10 @@ import com.vaadin.flow.shared.Registration;
  */
 public class ReadOnlyHasValue<V>
         implements HasValue<ValueChangeEvent<V>, V>, Serializable {
-    private V value;
+    private @Nullable V value;
     private final SerializableConsumer<V> valueProcessor;
-    private final V emptyValue;
-    private LinkedHashSet<ValueChangeListener<? super ValueChangeEvent<V>>> listenerList;
+    private final @Nullable V emptyValue;
+    private @Nullable LinkedHashSet<ValueChangeListener<? super ValueChangeEvent<V>>> listenerList;
 
     /**
      * Creates new {@code ReadOnlyHasValue}
@@ -57,7 +59,7 @@ public class ReadOnlyHasValue<V>
      *            the value to be used as empty, {@code null} by default
      */
     public ReadOnlyHasValue(SerializableConsumer<V> valueProcessor,
-            V emptyValue) {
+            @Nullable V emptyValue) {
         this.valueProcessor = valueProcessor;
         this.emptyValue = emptyValue;
     }
@@ -74,6 +76,8 @@ public class ReadOnlyHasValue<V>
     }
 
     @Override
+    @SuppressWarnings("NullAway") // value and oldValue can be null for
+                                  // nullable V types
     public void setValue(V value) {
         V oldValue = this.value;
         this.value = value;
@@ -88,6 +92,7 @@ public class ReadOnlyHasValue<V>
     }
 
     @Override
+    @SuppressWarnings("NullAway") // value can be null before first setValue
     public V getValue() {
         return value;
     }
@@ -127,10 +132,11 @@ public class ReadOnlyHasValue<V>
     }
 
     @Override
-    public V getEmptyValue() {
+    public @Nullable V getEmptyValue() {
         return emptyValue;
     }
 
+    @SuppressWarnings("NullAway") // V type parameter values can be null
     private static class ReadOnlyValueChangeEvent<V>
             implements ValueChangeEvent<V> {
 

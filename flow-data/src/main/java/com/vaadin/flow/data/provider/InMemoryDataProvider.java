@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableComparator;
@@ -47,6 +49,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return the filter of this data provider
      */
+    @Nullable
     SerializablePredicate<T> getFilter();
 
     /**
@@ -62,7 +65,7 @@ public interface InMemoryDataProvider<T> extends
      *            filters
      */
     @Override
-    void setFilter(SerializablePredicate<T> filter);
+    void setFilter(@Nullable SerializablePredicate<T> filter);
 
     /**
      * Sets a filter for an item property. The filter replaces any filter that
@@ -195,6 +198,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return the sort comparator of this data provider
      */
+    @Nullable
     SerializableComparator<T> getSortComparator();
 
     /**
@@ -213,7 +217,7 @@ public interface InMemoryDataProvider<T> extends
      *            a comparator to use, or <code>null</code> to clear any
      *            previously set sort order
      */
-    void setSortComparator(SerializableComparator<T> comparator);
+    void setSortComparator(@Nullable SerializableComparator<T> comparator);
 
     /**
      * Adds a comparator to the default sorting for this data provider. If no

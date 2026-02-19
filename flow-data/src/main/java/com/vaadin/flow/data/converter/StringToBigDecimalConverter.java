@@ -20,6 +20,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -60,7 +62,7 @@ public class StringToBigDecimalConverter
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    public StringToBigDecimalConverter(BigDecimal emptyValue,
+    public StringToBigDecimalConverter(@Nullable BigDecimal emptyValue,
             String errorMessage) {
         super(emptyValue, errorMessage);
     }
@@ -87,13 +89,13 @@ public class StringToBigDecimalConverter
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToBigDecimalConverter(BigDecimal emptyValue,
+    public StringToBigDecimalConverter(@Nullable BigDecimal emptyValue,
             ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
 
     @Override
-    protected NumberFormat getFormat(Locale locale) {
+    protected NumberFormat getFormat(@Nullable Locale locale) {
         NumberFormat numberFormat = super.getFormat(locale);
         if (numberFormat instanceof DecimalFormat) {
             ((DecimalFormat) numberFormat).setParseBigDecimal(true);
@@ -103,7 +105,7 @@ public class StringToBigDecimalConverter
     }
 
     @Override
-    public Result<BigDecimal> convertToModel(String value,
+    public Result<BigDecimal> convertToModel(@Nullable String value,
             ValueContext context) {
         return convertToNumber(value, context)
                 .map(number -> (BigDecimal) number);

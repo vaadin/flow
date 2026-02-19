@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -78,11 +80,11 @@ class RootCache<T> extends Cache<T> {
      *            the flat index to get the context for
      * @return an {@link ItemContext} record, or {@code null} if not found
      */
-    public ItemContext<T> getContextByFlatIndex(int flatIndex) {
+    public @Nullable ItemContext<T> getContextByFlatIndex(int flatIndex) {
         return getContextByFlatIndex(this, flatIndex);
     }
 
-    private ItemContext<T> getContextByFlatIndex(Cache<T> cache,
+    private @Nullable ItemContext<T> getContextByFlatIndex(Cache<T> cache,
             int localFlatIndex) {
         int index = localFlatIndex;
 
@@ -185,7 +187,7 @@ class RootCache<T> extends Cache<T> {
      *            the item to get the context for
      * @return an {@link ItemContext} record, or {@code null} if not found
      */
-    public ItemContext<T> getContextByItem(T item) {
+    public @Nullable ItemContext<T> getContextByItem(T item) {
         Object itemId = getItemId(item);
         return itemIdToContext.get(itemId);
     }

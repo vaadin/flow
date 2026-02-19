@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -75,7 +77,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     private final Status status;
     private final List<ValidationResult> results;
     private final Binding<?, TARGET> binding;
-    private Result<TARGET> result;
+    private @Nullable Result<TARGET> result;
 
     /**
      * Creates a new status change event.
@@ -89,7 +91,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *            field whose status has changed, not {@code null}
      *
      */
-    public BindingValidationStatus(Result<TARGET> result,
+    public BindingValidationStatus(@Nullable Result<TARGET> result,
             Binding<?, TARGET> source) {
         Objects.requireNonNull(source, "Event source may not be null");
 
@@ -198,7 +200,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *
      * @return the field
      */
-    public HasValue<?, ?> getField() {
+    public @Nullable HasValue<?, ?> getField() {
         return getBinding().getField();
     }
 }

@@ -18,6 +18,8 @@ package com.vaadin.flow.data.converter;
 import java.io.Serializable;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -49,7 +51,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    Result<MODEL> convertToModel(PRESENTATION value, ValueContext context);
+    Result<MODEL> convertToModel(@Nullable PRESENTATION value,
+            ValueContext context);
 
     /**
      * Converts the given value from model type to presentation type.
@@ -62,7 +65,9 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    PRESENTATION convertToPresentation(MODEL value, ValueContext context);
+    @Nullable
+    PRESENTATION convertToPresentation(@Nullable MODEL value,
+            ValueContext context);
 
     /**
      * Returns a converter that returns its input as-is in both directions.
@@ -125,12 +130,18 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         return new Converter<P, M>() {
 
             @Override
-            public Result<M> convertToModel(P value, ValueContext context) {
+            @SuppressWarnings("NullAway") // caller-provided function handles
+                                          // nullability
+            public Result<M> convertToModel(@Nullable P value,
+                    ValueContext context) {
                 return toModel.apply(value);
             }
 
             @Override
-            public P convertToPresentation(M value, ValueContext context) {
+            @SuppressWarnings("NullAway") // caller-provided function handles
+                                          // nullability
+            public @Nullable P convertToPresentation(@Nullable M value,
+                    ValueContext context) {
                 return toPresentation.apply(value);
             }
         };
@@ -157,7 +168,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     default <T> Converter<PRESENTATION, T> chain(Converter<MODEL, T> other) {
         return new Converter<PRESENTATION, T>() {
             @Override
-            public Result<T> convertToModel(PRESENTATION value,
+            public Result<T> convertToModel(@Nullable PRESENTATION value,
                     ValueContext context) {
                 Result<MODEL> model = Converter.this.convertToModel(value,
                         context);
@@ -165,8 +176,9 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
             }
 
             @Override
-            public PRESENTATION convertToPresentation(T value,
-                    ValueContext context) {
+            public @Nullable PRESENTATION convertToPresentation(
+                    @Nullable T value, ValueContext context) {
+                @Nullable
                 MODEL model = other.convertToPresentation(value, context);
                 return Converter.this.convertToPresentation(model, context);
             }

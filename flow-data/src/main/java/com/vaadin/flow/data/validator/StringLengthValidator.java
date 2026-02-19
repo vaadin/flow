@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.validator;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -42,8 +44,8 @@ public class StringLengthValidator extends AbstractValidator<String> {
      *            the maximum permissible length of the string or null for no
      *            limit.
      */
-    public StringLengthValidator(String errorMessage, Integer minLength,
-            Integer maxLength) {
+    public StringLengthValidator(String errorMessage,
+            @Nullable Integer minLength, @Nullable Integer maxLength) {
         super(errorMessage);
         validator = RangeValidator.of(errorMessage, minLength, maxLength);
     }
@@ -62,7 +64,7 @@ public class StringLengthValidator extends AbstractValidator<String> {
      *
      * @return the maximum length of the string or null if there is no limit
      */
-    public Integer getMaxLength() {
+    public @Nullable Integer getMaxLength() {
         return validator.getMaxValue();
     }
 
@@ -71,7 +73,7 @@ public class StringLengthValidator extends AbstractValidator<String> {
      *
      * @return the minimum length of the string or null if there is no limit
      */
-    public Integer getMinLength() {
+    public @Nullable Integer getMinLength() {
         return validator.getMinValue();
     }
 
@@ -81,7 +83,7 @@ public class StringLengthValidator extends AbstractValidator<String> {
      * @param maxLength
      *            the maximum length to accept or null for no limit
      */
-    public void setMaxLength(Integer maxLength) {
+    public void setMaxLength(@Nullable Integer maxLength) {
         validator.setMaxValue(maxLength);
     }
 
@@ -91,7 +93,7 @@ public class StringLengthValidator extends AbstractValidator<String> {
      * @param minLength
      *            the minimum length to accept or null for no limit
      */
-    public void setMinLength(Integer minLength) {
+    public void setMinLength(@Nullable Integer minLength) {
         validator.setMaxValue(minLength);
     }
 

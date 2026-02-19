@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
@@ -36,7 +38,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
  */
 public class HierarchicalQuery<T, F> extends Query<T, F> {
 
-    private final T parent;
+    private final @Nullable T parent;
 
     private final Set<Object> expandedItemIds;
 
@@ -50,7 +52,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      *            the hierarchical parent object, <code>null</code>
      *            corresponding to the root node
      */
-    public HierarchicalQuery(F filter, T parent) {
+    public HierarchicalQuery(@Nullable F filter, @Nullable T parent) {
         super(filter);
         this.expandedItemIds = Collections.emptySet();
         this.parent = parent;
@@ -68,7 +70,8 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      *            the hierarchical parent object, <code>null</code>
      *            corresponding to the root node
      */
-    public HierarchicalQuery(F filter, Set<Object> expandedItemIds, T parent) {
+    public HierarchicalQuery(@Nullable F filter, Set<Object> expandedItemIds,
+            @Nullable T parent) {
         super(filter);
         this.expandedItemIds = expandedItemIds;
         this.parent = parent;
@@ -93,8 +96,9 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      *            corresponding to the root node
      */
     public HierarchicalQuery(int offset, int limit,
-            List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
-            F filter, T parent) {
+            List<QuerySortOrder> sortOrders,
+            @Nullable Comparator<T> inMemorySorting, @Nullable F filter,
+            @Nullable T parent) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
         this.expandedItemIds = Collections.emptySet();
         this.parent = parent;
@@ -121,8 +125,9 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      *            corresponding to the root node
      */
     public HierarchicalQuery(int offset, int limit,
-            List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
-            F filter, Set<Object> expandedItemIds, T parent) {
+            List<QuerySortOrder> sortOrders,
+            @Nullable Comparator<T> inMemorySorting, @Nullable F filter,
+            Set<Object> expandedItemIds, @Nullable T parent) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
         this.expandedItemIds = expandedItemIds;
         this.parent = parent;
@@ -134,7 +139,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      *
      * @return the hierarchical parent object
      */
-    public T getParent() {
+    public @Nullable T getParent() {
         return parent;
     }
 

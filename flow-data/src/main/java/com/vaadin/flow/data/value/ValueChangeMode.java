@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.value;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.dom.DomListenerRegistration;
 
@@ -84,7 +86,7 @@ public enum ValueChangeMode {
      *            change
      * @return the event name
      */
-    public static String eventForMode(ValueChangeMode mode,
+    public static @Nullable String eventForMode(@Nullable ValueChangeMode mode,
             String immediateEventName) {
         if (mode == null) {
             return null;
@@ -122,8 +124,8 @@ public enum ValueChangeMode {
      * @param registration
      *            The registration of the DOM event listener that synchronizes.
      */
-    public static void applyChangeTimeout(ValueChangeMode mode, int timeout,
-            DomListenerRegistration registration) {
+    public static void applyChangeTimeout(@Nullable ValueChangeMode mode,
+            int timeout, @Nullable DomListenerRegistration registration) {
         if (mode == null || registration == null) {
             return;
         }

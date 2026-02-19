@@ -18,6 +18,8 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -107,6 +109,7 @@ public interface PropertyDefinition<T, V> extends Serializable {
      *
      * @return the parent property, may be {@code null}
      */
+    @Nullable
     PropertyDefinition<T, ?> getParent();
 
     /**

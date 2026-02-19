@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
@@ -32,10 +34,10 @@ import com.vaadin.flow.component.UI;
  */
 public class ValueContext implements Serializable {
 
-    private final Binder<?> binder;
-    private final Component component;
-    private final HasValue<?, ?> hasValue;
-    private final Locale locale;
+    private final @Nullable Binder<?> binder;
+    private final @Nullable Component component;
+    private final @Nullable HasValue<?, ?> hasValue;
+    private final @Nullable Locale locale;
 
     /**
      * Constructor for {@code ValueContext} without a {@code Locale}.
@@ -66,7 +68,7 @@ public class ValueContext implements Serializable {
      * @param locale
      *            The locale used with conversion. Can be null.
      */
-    public ValueContext(Locale locale) {
+    public ValueContext(@Nullable Locale locale) {
         this.binder = null;
         component = null;
         this.locale = locale;
@@ -81,7 +83,7 @@ public class ValueContext implements Serializable {
      * @param locale
      *            The locale used with conversion. Can be null.
      */
-    public ValueContext(Binder binder, Locale locale) {
+    public ValueContext(@Nullable Binder binder, @Nullable Locale locale) {
         this.binder = binder;
         component = null;
         this.locale = locale;
@@ -96,7 +98,7 @@ public class ValueContext implements Serializable {
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      */
-    public ValueContext(Component component) {
+    public ValueContext(@Nullable Component component) {
         this.binder = null;
         this.component = component;
         if (component instanceof HasValue) {
@@ -117,7 +119,8 @@ public class ValueContext implements Serializable {
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      */
-    public ValueContext(Binder binder, Component component) {
+    public ValueContext(@Nullable Binder binder,
+            @Nullable Component component) {
         this.binder = binder;
         this.component = component;
         if (component instanceof HasValue) {
@@ -136,7 +139,8 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
-    public ValueContext(Component component, HasValue<?, ?> hasValue) {
+    public ValueContext(@Nullable Component component,
+            @Nullable HasValue<?, ?> hasValue) {
         this.binder = null;
         this.component = component;
         this.hasValue = hasValue;
@@ -153,8 +157,8 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
-    public ValueContext(Binder binder, Component component,
-            HasValue<?, ?> hasValue) {
+    public ValueContext(@Nullable Binder binder, @Nullable Component component,
+            @Nullable HasValue<?, ?> hasValue) {
         this.binder = binder;
         this.component = component;
         this.hasValue = hasValue;
@@ -172,8 +176,8 @@ public class ValueContext implements Serializable {
      *            The value source related to current value. Can be
      *            {@code null}.
      */
-    public ValueContext(Component component, HasValue<?, ?> hasValue,
-            Locale locale) {
+    public ValueContext(@Nullable Component component,
+            @Nullable HasValue<?, ?> hasValue, @Nullable Locale locale) {
         this.binder = null;
         this.component = component;
         this.hasValue = hasValue;
@@ -193,15 +197,15 @@ public class ValueContext implements Serializable {
      *            The value source related to current value. Can be
      *            {@code null}.
      */
-    public ValueContext(Binder binder, Component component,
-            HasValue<?, ?> hasValue, Locale locale) {
+    public ValueContext(@Nullable Binder binder, @Nullable Component component,
+            @Nullable HasValue<?, ?> hasValue, @Nullable Locale locale) {
         this.binder = binder;
         this.component = component;
         this.hasValue = hasValue;
         this.locale = locale;
     }
 
-    private Locale findLocale(Component component) {
+    private Locale findLocale(@Nullable Component component) {
         UI ui = null;
         if (component != null) {
             ui = component.getUI().orElseGet(UI::getCurrent);

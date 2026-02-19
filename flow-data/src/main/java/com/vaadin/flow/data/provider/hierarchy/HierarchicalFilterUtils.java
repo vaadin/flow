@@ -17,6 +17,8 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProviderWrapper;
 import com.vaadin.flow.data.provider.DataProviderWrapper;
 import com.vaadin.flow.data.provider.Query;
@@ -161,7 +163,7 @@ final class HierarchicalFilterUtils {
     }
 
     private static <T, F, Q> HierarchicalQuery<T, F> adapt(
-            HierarchicalQuery<T, Q> query, F filter) {
+            HierarchicalQuery<T, Q> query, @Nullable F filter) {
         return new HierarchicalQuery<T, F>(query.getOffset(), query.getLimit(),
                 query.getSortOrders(), query.getInMemorySorting(), filter,
                 query.getParent());

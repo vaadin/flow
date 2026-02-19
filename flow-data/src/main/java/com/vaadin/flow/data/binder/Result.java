@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -48,7 +50,7 @@ public interface Result<R> extends Serializable {
      *            the result value, can be null
      * @return a successful result
      */
-    static <R> Result<R> ok(R value) {
+    static <R> Result<R> ok(@Nullable R value) {
         return new SimpleResult<>(value, null);
     }
 

@@ -17,6 +17,8 @@ package com.vaadin.flow.data.converter;
 
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -59,7 +61,8 @@ public class StringToUuidConverter implements Converter<String, UUID> {
     }
 
     @Override
-    public Result<UUID> convertToModel(String value, ValueContext context) {
+    public Result<UUID> convertToModel(@Nullable String value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -79,7 +82,8 @@ public class StringToUuidConverter implements Converter<String, UUID> {
     }
 
     @Override
-    public String convertToPresentation(UUID value, ValueContext context) {
+    public @Nullable String convertToPresentation(@Nullable UUID value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

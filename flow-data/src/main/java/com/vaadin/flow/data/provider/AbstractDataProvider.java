@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -45,7 +48,7 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
     private static class DataListenerWrapper implements Serializable {
         private final SerializableConsumer<?> listener;
-        private Registration registration;
+        private @Nullable Registration registration;
 
         public DataListenerWrapper(SerializableConsumer<?> listener) {
             this.listener = listener;
@@ -140,8 +143,8 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
         if (event instanceof DataChangeEvent<?>) {
             DataChangeEvent<?> dataEvent = (DataChangeEvent<?>) event;
 
-            dataEvent
-                    .setUnregisterListenerCommand(wrapper.registration::remove);
+            Registration reg = Objects.requireNonNull(wrapper.registration);
+            dataEvent.setUnregisterListenerCommand(reg::remove);
             Consumer consumer = wrapper.listener;
             try {
                 consumer.accept(event);

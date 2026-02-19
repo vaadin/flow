@@ -21,6 +21,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -61,7 +63,7 @@ public class StringToBigIntegerConverter
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    public StringToBigIntegerConverter(BigInteger emptyValue,
+    public StringToBigIntegerConverter(@Nullable BigInteger emptyValue,
             String errorMessage) {
         super(emptyValue, errorMessage);
     }
@@ -88,13 +90,13 @@ public class StringToBigIntegerConverter
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToBigIntegerConverter(BigInteger emptyValue,
+    public StringToBigIntegerConverter(@Nullable BigInteger emptyValue,
             ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
 
     @Override
-    protected NumberFormat getFormat(Locale locale) {
+    protected NumberFormat getFormat(@Nullable Locale locale) {
         NumberFormat numberFormat = super.getFormat(locale);
         if (numberFormat instanceof DecimalFormat) {
             ((DecimalFormat) numberFormat).setParseBigDecimal(true);
@@ -104,7 +106,8 @@ public class StringToBigIntegerConverter
     }
 
     @Override
-    public Result<BigInteger> convertToModel(String value,
+    @SuppressWarnings("NullAway") // Result value can be null for empty input
+    public Result<BigInteger> convertToModel(@Nullable String value,
             ValueContext context) {
         return convertToNumber(value, context).map(number -> {
             if (number == null) {

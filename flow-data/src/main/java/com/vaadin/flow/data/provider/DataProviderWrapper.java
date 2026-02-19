@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -108,7 +110,7 @@ public abstract class DataProviderWrapper<T, F, M>
      *            the current query
      * @return filter for the modified Query
      */
-    protected abstract M getFilter(Query<T, F> query);
+    protected abstract @Nullable M getFilter(Query<T, F> query);
 
     @Override
     public String toString() {

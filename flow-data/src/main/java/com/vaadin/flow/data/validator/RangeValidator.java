@@ -18,6 +18,8 @@ package com.vaadin.flow.data.validator;
 import java.util.Comparator;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -31,8 +33,8 @@ import com.vaadin.flow.data.binder.ValueContext;
  */
 public class RangeValidator<T> extends AbstractValidator<T> {
 
-    private T minValue = null;
-    private T maxValue = null;
+    private @Nullable T minValue = null;
+    private @Nullable T maxValue = null;
     private boolean minValueIncluded = true;
     private boolean maxValueIncluded = true;
     private final Comparator<? super T> comparator;
@@ -54,7 +56,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      *            the greatest value of the accepted range or null for no limit
      */
     public RangeValidator(String errorMessage, Comparator<? super T> comparator,
-            T minValue, T maxValue) {
+            @Nullable T minValue, @Nullable T maxValue) {
         super(errorMessage);
         Objects.requireNonNull(comparator, "comparator cannot be null");
 
@@ -86,7 +88,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * @return the new validator
      */
     public static <C extends Comparable<? super C>> RangeValidator<C> of(
-            String errorMessage, C minValue, C maxValue) {
+            String errorMessage, @Nullable C minValue, @Nullable C maxValue) {
         return new RangeValidator<>(errorMessage,
                 Comparator.nullsFirst(Comparator.naturalOrder()), minValue,
                 maxValue);
@@ -147,7 +149,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      *
      * @return the minimum value
      */
-    public T getMinValue() {
+    public @Nullable T getMinValue() {
         return minValue;
     }
 
@@ -159,7 +161,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * @param minValue
      *            the minimum value
      */
-    public void setMinValue(T minValue) {
+    public void setMinValue(@Nullable T minValue) {
         this.minValue = minValue;
     }
 
@@ -168,7 +170,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      *
      * @return the maximum value
      */
-    public T getMaxValue() {
+    public @Nullable T getMaxValue() {
         return maxValue;
     }
 
@@ -180,7 +182,7 @@ public class RangeValidator<T> extends AbstractValidator<T> {
      * @param maxValue
      *            the maximum value
      */
-    public void setMaxValue(T maxValue) {
+    public void setMaxValue(@Nullable T maxValue) {
         this.maxValue = maxValue;
     }
 

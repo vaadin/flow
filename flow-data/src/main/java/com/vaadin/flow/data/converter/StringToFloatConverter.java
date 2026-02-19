@@ -18,6 +18,8 @@ package com.vaadin.flow.data.converter;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -58,7 +60,8 @@ public class StringToFloatConverter
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    public StringToFloatConverter(Float emptyValue, String errorMessage) {
+    public StringToFloatConverter(@Nullable Float emptyValue,
+            String errorMessage) {
         super(emptyValue, errorMessage);
     }
 
@@ -83,13 +86,15 @@ public class StringToFloatConverter
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToFloatConverter(Float emptyValue,
+    public StringToFloatConverter(@Nullable Float emptyValue,
             ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
 
     @Override
-    public Result<Float> convertToModel(String value, ValueContext context) {
+    @SuppressWarnings("NullAway") // Result value can be null for empty input
+    public Result<Float> convertToModel(@Nullable String value,
+            ValueContext context) {
         Result<Number> n = convertToNumber(value, context);
 
         return n.map(number -> {

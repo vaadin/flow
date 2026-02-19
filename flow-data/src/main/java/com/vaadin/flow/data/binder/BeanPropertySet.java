@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -33,6 +34,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.BeanUtil;
@@ -75,7 +78,9 @@ public class BeanPropertySet<T> implements PropertySet<T> {
              */
             return get(instanceKey.type, instanceKey.checkNestedDefinitions,
                     new PropertyFilterDefinition(instanceKey.depth,
-                            instanceKey.ignorePackageNames));
+                            instanceKey.ignorePackageNames != null
+                                    ? instanceKey.ignorePackageNames
+                                    : Collections.emptyList()));
         }
     }
 
@@ -156,7 +161,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         }
 
         @Override
-        public PropertyDefinition<T, ?> getParent() {
+        public @Nullable PropertyDefinition<T, ?> getParent() {
             return null;
         }
     }
@@ -262,11 +267,12 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         private Class<T> type;
         private boolean checkNestedDefinitions;
         private int depth;
-        private List<String> ignorePackageNames;
+        private @Nullable List<String> ignorePackageNames;
         private final boolean isRecord;
 
         public InstanceKey(Class<T> type, boolean checkNestedDefinitions,
-                int depth, List<String> ignorePackageNames, boolean isRecord) {
+                int depth, @Nullable List<String> ignorePackageNames,
+                boolean isRecord) {
             this.type = type;
             this.checkNestedDefinitions = checkNestedDefinitions;
             this.depth = depth;
@@ -413,8 +419,10 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                             + descriptor.getName();
                     PropertyDescriptor subDescriptor = BeanUtil
                             .getPropertyDescriptor(instanceKey.type, name);
-                    moreProps.put(name, new NestedBeanPropertyDefinition<>(this,
-                            parentProperty, subDescriptor));
+                    moreProps.put(name,
+                            new NestedBeanPropertyDefinition<>(this,
+                                    parentProperty,
+                                    Objects.requireNonNull(subDescriptor)));
 
                 }
             } catch (IntrospectionException e) {

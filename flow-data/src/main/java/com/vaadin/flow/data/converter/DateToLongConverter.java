@@ -17,6 +17,8 @@ package com.vaadin.flow.data.converter;
 
 import java.util.Date;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -29,7 +31,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class DateToLongConverter implements Converter<Date, Long> {
 
     @Override
-    public Result<Long> convertToModel(Date value, ValueContext context) {
+    public Result<Long> convertToModel(@Nullable Date value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -38,7 +41,8 @@ public class DateToLongConverter implements Converter<Date, Long> {
     }
 
     @Override
-    public Date convertToPresentation(Long value, ValueContext context) {
+    public @Nullable Date convertToPresentation(@Nullable Long value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

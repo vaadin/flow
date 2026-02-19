@@ -17,6 +17,8 @@ package com.vaadin.flow.data.converter;
 
 import java.util.Date;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -33,7 +35,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {
 
     @Override
-    public Result<java.sql.Date> convertToModel(Date value,
+    public Result<java.sql.Date> convertToModel(@Nullable Date value,
             ValueContext context) {
         if (value == null) {
             return Result.ok(null);
@@ -43,7 +45,7 @@ public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {
     }
 
     @Override
-    public Date convertToPresentation(java.sql.Date value,
+    public @Nullable Date convertToPresentation(java.sql.@Nullable Date value,
             ValueContext context) {
         if (value == null) {
             return null;

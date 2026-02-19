@@ -17,6 +17,8 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -55,6 +57,7 @@ public interface DataKeyMapper<T> extends Serializable {
      *            key of a data object
      * @return identified data object; <code>null</code> if invalid key
      */
+    @Nullable
     T get(String key);
 
     /**

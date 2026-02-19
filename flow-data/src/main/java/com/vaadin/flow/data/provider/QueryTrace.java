@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.util.Comparator;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()},
  * {@link Query#getPage()} and {@link Query#getPageSize()} method calls.
@@ -40,7 +42,7 @@ class QueryTrace<T, F> extends Query<T, F> {
      * {@inheritDoc}
      */
     QueryTrace(int offset, int limit, List<QuerySortOrder> sortOrders,
-            Comparator<T> inMemorySorting, F filter) {
+            @Nullable Comparator<T> inMemorySorting, @Nullable F filter) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
     }
 

@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -79,7 +82,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      */
     @Override
     public T getItem(int index) {
-        return getDataCommunicator().getItem(index);
+        return Objects.requireNonNull(getDataCommunicator().getItem(index));
     }
 
     /**
@@ -188,7 +191,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * @return the item index provider. May be null.
      */
     @SuppressWarnings("unchecked")
-    protected ItemIndexProvider<T, ?> getItemIndexProvider() {
+    protected @Nullable ItemIndexProvider<T, ?> getItemIndexProvider() {
         return (ItemIndexProvider<T, ?>) ComponentUtil.getData(component,
                 ItemIndexProvider.class);
     }

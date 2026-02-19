@@ -19,6 +19,8 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -41,7 +43,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
         implements Converter<String, T> {
 
     private final ErrorMessageProvider errorMessageProvider;
-    private T emptyValue;
+    private @Nullable T emptyValue;
 
     /**
      * Creates a new converter instance with the given presentation value for
@@ -53,7 +55,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    protected AbstractStringToNumberConverter(T emptyValue,
+    protected AbstractStringToNumberConverter(@Nullable T emptyValue,
             ErrorMessageProvider errorMessageProvider) {
         this.emptyValue = emptyValue;
         this.errorMessageProvider = errorMessageProvider;
@@ -69,7 +71,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
      * @param errorMessage
      *            the error message to use if conversion fails
      */
-    protected AbstractStringToNumberConverter(T emptyValue,
+    protected AbstractStringToNumberConverter(@Nullable T emptyValue,
             String errorMessage) {
         this(emptyValue, ctx -> errorMessage);
     }
@@ -83,7 +85,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
      *            The locale to use
      * @return A NumberFormat instance
      */
-    protected NumberFormat getFormat(Locale locale) {
+    protected NumberFormat getFormat(@Nullable Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
@@ -101,7 +103,7 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
      *            The value context for conversion
      * @return The converted value
      */
-    protected Result<Number> convertToNumber(String value,
+    protected Result<Number> convertToNumber(@Nullable String value,
             ValueContext context) {
         if (value == null) {
             return Result.ok(null);
@@ -139,7 +141,8 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
     }
 
     @Override
-    public String convertToPresentation(T value, ValueContext context) {
+    public @Nullable String convertToPresentation(@Nullable T value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

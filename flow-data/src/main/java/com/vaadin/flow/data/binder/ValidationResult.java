@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents the result of a validation. A result may be either successful or
  * contain an error message in case of a failure.
@@ -41,10 +43,11 @@ public interface ValidationResult extends Serializable {
      */
     class SimpleValidationResult implements ValidationResult {
 
-        private final String error;
-        private final ErrorLevel errorLevel;
+        private final @Nullable String error;
+        private final @Nullable ErrorLevel errorLevel;
 
-        SimpleValidationResult(String error, ErrorLevel errorLevel) {
+        SimpleValidationResult(@Nullable String error,
+                @Nullable ErrorLevel errorLevel) {
             if (error != null && errorLevel == null) {
                 throw new IllegalStateException("ValidationResult has an "
                         + "error message, but no ErrorLevel is provided.");

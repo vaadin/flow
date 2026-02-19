@@ -17,6 +17,8 @@ package com.vaadin.flow.data.value;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -47,6 +49,7 @@ public interface HasValueChangeMode extends Serializable {
      * @return current value change mode of the component, or {@code null} if
      *         the value is not synchronized
      */
+    @Nullable
     ValueChangeMode getValueChangeMode();
 
     /**
@@ -56,7 +59,7 @@ public interface HasValueChangeMode extends Serializable {
      *            new value change mode, or {@code null} to disable the value
      *            synchronization
      */
-    void setValueChangeMode(ValueChangeMode valueChangeMode);
+    void setValueChangeMode(@Nullable ValueChangeMode valueChangeMode);
 
     /**
      * Sets how often {@link ValueChangeEvent}s are triggered when the

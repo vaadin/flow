@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -110,17 +111,17 @@ public class DataCommunicator<T> implements Serializable {
 
     private DataProvider<T, ?> dataProvider = new EmptyDataProvider<>();
 
-    private Filter<?> filter;
-    private SerializableComparator<T> inMemorySorting;
+    private @Nullable Filter<?> filter;
+    private @Nullable SerializableComparator<T> inMemorySorting;
 
-    private Registration dataProviderUpdateRegistration;
+    private @Nullable Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
-    private FlushRequest flushRequest;
-    private FlushRequest flushUpdatedDataRequest;
+    private @Nullable FlushRequest flushRequest;
+    private @Nullable FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
 
-    private CallbackDataProvider.CountCallback<T, ?> countCallback;
+    private CallbackDataProvider.@Nullable CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
     private int itemCountEstimateIncrease = -1;
     private boolean definedSize = true;
@@ -133,8 +134,8 @@ public class DataCommunicator<T> implements Serializable {
 
     private boolean fetchEnabled;
 
-    private transient Executor executor = null;
-    private transient CompletableFuture<Activation> future;
+    private transient @Nullable Executor executor = null;
+    private transient @Nullable CompletableFuture<Activation> future;
 
     /**
      * In-memory data provider with no items.
@@ -398,7 +399,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param executor
      *            The Executor used for async updates.
      */
-    public void enablePushUpdates(Executor executor) {
+    public void enablePushUpdates(@Nullable Executor executor) {
         if (this.executor != null && future != null) {
             future.cancel(true);
             future = null;
@@ -497,7 +498,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return a consumer that accepts a new filter value to use
      */
     public <F> SerializableConsumer<Filter<F>> setDataProvider(
-            DataProvider<T, F> dataProvider, F initialFilter,
+            DataProvider<T, F> dataProvider, @Nullable F initialFilter,
             boolean notifiesOnChange) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
 
@@ -557,7 +558,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return a consumer that accepts a new filter value to use
      */
     public <F> SerializableConsumer<F> setDataProvider(
-            DataProvider<T, F> dataProvider, F initialFilter) {
+            DataProvider<T, F> dataProvider, @Nullable F initialFilter) {
         SerializableConsumer<Filter<F>> filterConsumer = setDataProvider(
                 dataProvider, initialFilter, true);
         return newFilter -> filterConsumer.accept(new Filter<>(newFilter));
@@ -610,7 +611,7 @@ public class DataCommunicator<T> implements Serializable {
      *             set
      */
     @SuppressWarnings("unchecked")
-    public T getItem(int index) {
+    public @Nullable T getItem(int index) {
         if (index < 0) {
             throw new IndexOutOfBoundsException("Index must be non-negative");
         }
@@ -861,7 +862,8 @@ public class DataCommunicator<T> implements Serializable {
      * @param comparator
      *            comparator used to sort data
      */
-    public void setInMemorySorting(SerializableComparator<T> comparator) {
+    public void setInMemorySorting(
+            @Nullable SerializableComparator<T> comparator) {
         inMemorySorting = comparator;
         reset();
     }
@@ -871,7 +873,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return comparator used to sort data
      */
-    public SerializableComparator<T> getInMemorySorting() {
+    public @Nullable SerializableComparator<T> getInMemorySorting() {
         return inMemorySorting;
     }
 
@@ -998,7 +1000,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return the filter object of this data communicator
      */
-    protected Object getFilter() {
+    protected @Nullable Object getFilter() {
         return filter != null ? filter.getFilterObject() : null;
     }
 
@@ -1565,7 +1567,7 @@ public class DataCommunicator<T> implements Serializable {
                 MAXIMUM_ALLOWED_PAGES * pageSize);
     }
 
-    private UI getUI() {
+    private @Nullable UI getUI() {
         NodeOwner owner = stateNode.getOwner();
         if (owner instanceof StateTree) {
             return ((StateTree) owner).getUI();
@@ -1597,7 +1599,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private static class FlushRequest implements Serializable {
 
-        private NodeOwner owner;
+        private @Nullable NodeOwner owner;
         private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,

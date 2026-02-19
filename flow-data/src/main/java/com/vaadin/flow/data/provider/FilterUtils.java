@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 
@@ -51,8 +53,8 @@ public final class FilterUtils {
      *            the configurable filter type
      */
     public static <F, Q, C> F combineFilters(
-            SerializableBiFunction<Q, C, F> filterCombiner, Q queryFilter,
-            C configuredFilter) {
+            SerializableBiFunction<Q, C, F> filterCombiner,
+            @Nullable Q queryFilter, @Nullable C configuredFilter) {
         return filterCombiner.apply(queryFilter, configuredFilter);
     }
 
@@ -77,7 +79,7 @@ public final class FilterUtils {
      * @param <F>
      *            the filter type of data provider
      */
-    public static <T, C, F> F convertFilter(
+    public static <T, C, F> @Nullable F convertFilter(
             SerializableFunction<C, F> filterConverter, Query<T, C> query) {
         return query.getFilter().map(filterConverter).orElse(null);
     }

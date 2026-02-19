@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -324,7 +326,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @see #addFilter(SerializablePredicate)
      * @see #removeFilters()
      */
-    V setFilter(SerializablePredicate<T> filter);
+    V setFilter(@Nullable SerializablePredicate<T> filter);
 
     /**
      * Adds a filter to be applied to all queries. The filter will be used in
@@ -381,7 +383,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *
      * @see #addSortComparator(SerializableComparator)
      */
-    V setSortComparator(SerializableComparator<T> sortComparator);
+    V setSortComparator(@Nullable SerializableComparator<T> sortComparator);
 
     /**
      * Adds a comparator to the data default sorting. If no default sorting has

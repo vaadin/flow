@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collections;
 import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -83,7 +86,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentFilter(Component component,
-            SerializablePredicate<T> filter) {
+            @Nullable SerializablePredicate<T> filter) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_FILTER_KEY,
                 filter);
     }
@@ -102,7 +105,7 @@ public final class DataViewUtils {
      *            items type
      */
     public static <T> void setComponentSortComparator(Component component,
-            SerializableComparator<T> sortComparator) {
+            @Nullable SerializableComparator<T> sortComparator) {
         ComponentUtil.setData(component, COMPONENT_IN_MEMORY_SORTING_KEY,
                 sortComparator);
     }
@@ -155,7 +158,7 @@ public final class DataViewUtils {
                 ? DataViewUtils.getComponentSortComparator(component)
                 : Optional.empty();
 
-        return new Query(0, Integer.MAX_VALUE, null, sorting.orElse(null),
-                filter.orElse(null));
+        return new Query(0, Integer.MAX_VALUE, Collections.emptyList(),
+                sorting.orElse(null), filter.orElse(null));
     }
 }

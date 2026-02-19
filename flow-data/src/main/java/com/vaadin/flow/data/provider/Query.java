@@ -21,6 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Immutable query object used to request data from a backend. Contains index
  * limits, sorting and filtering information.
@@ -36,9 +38,9 @@ public class Query<T, F> implements Serializable {
     private final int offset;
     private final int limit;
     private final List<QuerySortOrder> sortOrders;
-    private final Comparator<T> inMemorySorting;
-    private final F filter;
-    private Integer pageSize;
+    private final @Nullable Comparator<T> inMemorySorting;
+    private final @Nullable F filter;
+    private @Nullable Integer pageSize;
 
     /**
      * Constructs a Query for all rows from 0 to {@link Integer#MAX_VALUE}
@@ -60,7 +62,7 @@ public class Query<T, F> implements Serializable {
      *            back end filter of a suitable type for the data provider; can
      *            be null
      */
-    public Query(F filter) {
+    public Query(@Nullable F filter) {
         offset = 0;
         limit = Integer.MAX_VALUE;
         sortOrders = Collections.emptyList();
@@ -84,7 +86,7 @@ public class Query<T, F> implements Serializable {
      *            filtering for fetching; can be null
      */
     public Query(int offset, int limit, List<QuerySortOrder> sortOrders,
-            Comparator<T> inMemorySorting, F filter) {
+            @Nullable Comparator<T> inMemorySorting, @Nullable F filter) {
         this.offset = offset;
         this.limit = limit;
         this.sortOrders = sortOrders;
@@ -208,7 +210,7 @@ public class Query<T, F> implements Serializable {
      *
      * @return sorting comparator
      */
-    public Comparator<T> getInMemorySorting() {
+    public @Nullable Comparator<T> getInMemorySorting() {
         return inMemorySorting;
     }
 

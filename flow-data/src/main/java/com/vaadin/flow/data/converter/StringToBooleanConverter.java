@@ -17,6 +17,8 @@ package com.vaadin.flow.data.converter;
 
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
@@ -99,7 +101,8 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     }
 
     @Override
-    public Result<Boolean> convertToModel(String value, ValueContext context) {
+    public Result<Boolean> convertToModel(@Nullable String value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -120,7 +123,8 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     }
 
     @Override
-    public String convertToPresentation(Boolean value, ValueContext context) {
+    public @Nullable String convertToPresentation(@Nullable Boolean value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }
@@ -140,7 +144,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      *            to be used
      * @return the string representation for false
      */
-    protected String getFalseString(Locale locale) {
+    protected String getFalseString(@Nullable Locale locale) {
         return falseString;
     }
 
@@ -152,7 +156,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      *            to be used
      * @return the string representation for true
      */
-    protected String getTrueString(Locale locale) {
+    protected String getTrueString(@Nullable Locale locale) {
         return trueString;
     }
 

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A configurable data provider that wraps another data provider by combining
  * any filter from the component with the configured filter and passing that to
@@ -36,7 +38,7 @@ public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
         extends DataProviderWrapper<T, Q, F>
         implements ConfigurableFilterDataProvider<T, Q, C> {
 
-    private C configuredFilter;
+    private @Nullable C configuredFilter;
 
     /**
      * Creates a new configurable filter data provider by wrapping an existing
@@ -51,7 +53,8 @@ public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
     }
 
     @Override
-    protected F getFilter(Query<T, Q> query) {
+    protected @Nullable F getFilter(Query<T, Q> query) {
+        @Nullable
         Q queryFilter = query.getFilter().orElse(null);
         if (configuredFilter == null && queryFilter == null) {
             return null;
@@ -75,10 +78,11 @@ public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
      *         <code>null</code> to not pass any filter to the wrapped data
      *         provider
      */
-    protected abstract F combineFilters(Q queryFilter, C configuredFilter);
+    protected abstract @Nullable F combineFilters(@Nullable Q queryFilter,
+            @Nullable C configuredFilter);
 
     @Override
-    public void setFilter(C filter) {
+    public void setFilter(@Nullable C filter) {
         this.configuredFilter = filter;
         refreshAll();
     }

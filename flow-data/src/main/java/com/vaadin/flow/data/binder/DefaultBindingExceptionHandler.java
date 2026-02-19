@@ -17,6 +17,8 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
@@ -85,7 +87,7 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
         return Optional.empty();
     }
 
-    private UI getUI(Element element) {
+    private @Nullable UI getUI(Element element) {
         NodeOwner owner = element.getNode().getOwner();
         UI ui = null;
         if (element.getNode().isAttached()) {
@@ -98,7 +100,7 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
     }
 
     private void appendProperty(StringBuilder builder, String name,
-            String value) {
+            @Nullable String value) {
         if (builder.length() > 0) {
             builder.append(", ");
         }

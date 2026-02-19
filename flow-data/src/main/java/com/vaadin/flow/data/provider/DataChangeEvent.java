@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.util.EventObject;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.Command;
 
 /**
@@ -33,7 +35,7 @@ import com.vaadin.flow.server.Command;
  */
 public class DataChangeEvent<T> extends EventObject {
 
-    private Command unregisterListenerCommand = null;
+    private @Nullable Command unregisterListenerCommand = null;
 
     /**
      * An event fired when a single item of a {@code DataProvider} has been
@@ -125,7 +127,8 @@ public class DataChangeEvent<T> extends EventObject {
      * @param unregisterListenerCommand
      *            the unregister command
      */
-    void setUnregisterListenerCommand(Command unregisterListenerCommand) {
+    void setUnregisterListenerCommand(
+            @Nullable Command unregisterListenerCommand) {
         this.unregisterListenerCommand = unregisterListenerCommand;
     }
 

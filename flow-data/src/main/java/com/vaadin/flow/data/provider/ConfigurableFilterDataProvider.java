@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A data provider that supports programmatically setting a filter that will be
  * applied to all queries.
@@ -39,6 +41,6 @@ public interface ConfigurableFilterDataProvider<T, Q, C>
      *            the filter to set, or <code>null</code> to clear any
      *            previously set filter
      */
-    void setFilter(C filter);
+    void setFilter(@Nullable C filter);
 
 }

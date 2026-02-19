@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.converter;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -24,7 +26,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class IntegerToLongConverter implements Converter<Integer, Long> {
 
     @Override
-    public Result<Long> convertToModel(Integer value, ValueContext context) {
+    public Result<Long> convertToModel(@Nullable Integer value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -32,7 +35,8 @@ public class IntegerToLongConverter implements Converter<Integer, Long> {
     }
 
     @Override
-    public Integer convertToPresentation(Long value, ValueContext context) {
+    public @Nullable Integer convertToPresentation(@Nullable Long value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }

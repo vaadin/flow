@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -114,7 +116,7 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
      * @return the object with the key.
      */
     @Override
-    public V get(String key) {
+    public @Nullable V get(String key) {
         return keyObjectMap.get(key);
     }
 

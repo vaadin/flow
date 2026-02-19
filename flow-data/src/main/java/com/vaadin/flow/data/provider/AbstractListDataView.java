@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
@@ -46,7 +48,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private static final String NULL_COLLECTION_ERROR_MESSAGE = "Items collection cannot be null";
 
-    private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback;
+    private final SerializableBiConsumer<@Nullable SerializablePredicate<T>, @Nullable SerializableComparator<T>> filterOrSortingChangedCallback;
 
     /**
      * Creates a new instance of {@link AbstractListDataView} subclass and
@@ -64,7 +66,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component,
-            SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback) {
+            SerializableBiConsumer<@Nullable SerializablePredicate<T>, @Nullable SerializableComparator<T>> filterOrSortingChangedCallback) {
         super(dataProviderSupplier, component);
         Objects.requireNonNull(filterOrSortingChangedCallback,
                 "Filter or Sorting Change Callback cannot be empty");
@@ -80,7 +82,9 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public T getItem(int index) {
         validateItemIndex(index);
-        return getItems().skip(index).findFirst().orElse(null);
+        return getItems().skip(index).findFirst().orElseThrow(
+                () -> new IndexOutOfBoundsException("Requested index " + index
+                        + " but no item was found at that position"));
     }
 
     @SuppressWarnings("unchecked")
@@ -124,7 +128,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @SuppressWarnings("unchecked")
     @Override
-    public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
+    public AbstractListDataView<T> setFilter(
+            @Nullable SerializablePredicate<T> filter) {
         DataViewUtils.setComponentFilter(component, filter);
         fireFilteringOrSortingChangeEvent(filter,
                 (SerializableComparator<T>) DataViewUtils
@@ -136,7 +141,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     public AbstractListDataView<T> setSortComparator(
-            SerializableComparator<T> sortComparator) {
+            @Nullable SerializableComparator<T> sortComparator) {
         DataViewUtils.setComponentSortComparator(component, sortComparator);
         fireFilteringOrSortingChangeEvent(
                 (SerializablePredicate<T>) DataViewUtils
@@ -412,8 +417,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     private void fireFilteringOrSortingChangeEvent(
-            SerializablePredicate<T> filter,
-            SerializableComparator<T> sortComparator) {
+            @Nullable SerializablePredicate<T> filter,
+            @Nullable SerializableComparator<T> sortComparator) {
         filterOrSortingChangedCallback.accept(filter, sortComparator);
     }
 }

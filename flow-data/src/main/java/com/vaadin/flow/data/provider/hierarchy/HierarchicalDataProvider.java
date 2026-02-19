@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.FilterUtils;
 import com.vaadin.flow.data.provider.Query;
@@ -327,7 +329,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @throws UnsupportedOperationException
      *             if not implemented
      */
-    default T getParent(T item) {
+    default @Nullable T getParent(T item) {
         throw new UnsupportedOperationException(
                 "The getParent method is not implemented for this data provider");
     }
@@ -399,7 +401,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
         return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(
                 this) {
             @Override
-            protected F combineFilters(Q queryFilter, C configuredFilter) {
+            protected @Nullable F combineFilters(@Nullable Q queryFilter,
+                    @Nullable C configuredFilter) {
                 return FilterUtils.combineFilters(filterCombiner, queryFilter,
                         configuredFilter);
             }
@@ -412,7 +415,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
             SerializableFunction<C, F> filterConverter) {
         return new HierarchicalFilterDataProviderWrapper<T, C, F>(this) {
             @Override
-            protected F getFilter(Query<T, C> query) {
+            protected @Nullable F getFilter(Query<T, C> query) {
                 return FilterUtils.convertFilter(filterConverter, query);
             }
         };

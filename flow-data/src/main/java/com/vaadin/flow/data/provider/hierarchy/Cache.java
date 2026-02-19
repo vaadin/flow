@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableSupplier;
 
 /**
@@ -42,8 +44,8 @@ import com.vaadin.flow.function.SerializableSupplier;
  */
 class Cache<T> implements Serializable {
     private final RootCache<T> rootCache;
-    private final Cache<T> parentCache;
-    private final T parentItem;
+    private final @Nullable Cache<T> parentCache;
+    private final @Nullable T parentItem;
     private int size;
 
     private final Map<Object, T> itemIdToItem = new HashMap<>();
@@ -61,7 +63,8 @@ class Cache<T> implements Serializable {
      * @param size
      *            the size of this cache
      */
-    protected Cache(Cache<T> parentCache, T parentItem, int size) {
+    protected Cache(@Nullable Cache<T> parentCache, @Nullable T parentItem,
+            int size) {
         this.rootCache = parentCache != null ? parentCache.rootCache
                 : (RootCache<T>) this;
         this.parentCache = parentCache;
@@ -74,7 +77,7 @@ class Cache<T> implements Serializable {
      *
      * @return the parent item or {@code null} if this is the root cache
      */
-    public T getParentItem() {
+    public @Nullable T getParentItem() {
         return parentItem;
     }
 
@@ -122,7 +125,7 @@ class Cache<T> implements Serializable {
      *            the index of the item to retrieve
      * @return the item at the specified index, or {@code null} if not found
      */
-    public T getItem(int index) {
+    public @Nullable T getItem(int index) {
         var itemId = indexToItemId.get(index);
         return itemIdToItem.get(itemId);
     }
@@ -136,7 +139,9 @@ class Cache<T> implements Serializable {
     public void removeItem(int index) {
         var itemId = indexToItemId.remove(index);
         var item = itemIdToItem.remove(itemId);
-        rootCache.onItemRemoved(item);
+        if (item != null) {
+            rootCache.onItemRemoved(item);
+        }
     }
 
     /**
@@ -181,7 +186,10 @@ class Cache<T> implements Serializable {
         indexToCache.clear();
 
         indexToItemId.values().forEach(itemId -> {
-            rootCache.onItemRemoved(itemIdToItem.get(itemId));
+            T item = itemIdToItem.get(itemId);
+            if (item != null) {
+                rootCache.onItemRemoved(item);
+            }
         });
         indexToItemId.clear();
 
@@ -207,7 +215,7 @@ class Cache<T> implements Serializable {
      * @return the sub-cache at the specified index, or {@code null} if not
      *         found
      */
-    public Cache<T> getSubCache(int index) {
+    public @Nullable Cache<T> getSubCache(int index) {
         return indexToCache.get(index);
     }
 
