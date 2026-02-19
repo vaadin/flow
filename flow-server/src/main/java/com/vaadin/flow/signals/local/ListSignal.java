@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 
@@ -65,7 +66,7 @@ public class ListSignal<T>
         assertLockHeld();
         super.checkPreconditions();
 
-        if (Transaction.inTransaction()) {
+        if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
                     "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
         }
@@ -186,6 +187,12 @@ public class ListSignal<T>
         } finally {
             unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }

@@ -36,8 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasEnabled;
@@ -52,7 +51,10 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
-public class HtmlComponentSmokeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HtmlComponentSmokeTest {
 
     // Custom logic for components without a no-args constructor
     private static final Map<Class<? extends HtmlComponent>, Supplier<HtmlComponent>> customConstructors = new HashMap<>();
@@ -105,9 +107,9 @@ public class HtmlComponentSmokeTest {
     }
 
     @Test
-    public void testAllHtmlComponents() throws IOException {
+    void testAllHtmlComponents() throws IOException {
         URL divClassLocationLocation = Div.class.getResource("Div.class");
-        Assert.assertEquals(divClassLocationLocation.getProtocol(), "file");
+        assertEquals(divClassLocationLocation.getProtocol(), "file");
 
         Path componentClassesLocation = new File(
                 divClassLocationLocation.getPath()).getParentFile().toPath();
@@ -158,13 +160,13 @@ public class HtmlComponentSmokeTest {
             HtmlComponent instance = constructor.newInstance(parameterValue);
 
             if (clazz.getAnnotation(Tag.class) == null) {
-                Assert.assertEquals(constructor
-                        + " should set the tag for a class without @Tag",
-                        parameterValue, instance.getElement().getTag());
+                assertEquals(parameterValue, instance.getElement().getTag(),
+                        constructor
+                                + " should set the tag for a class without @Tag");
             } else {
-                Assert.assertEquals(constructor
-                        + " should set the text content for a class with @Tag",
-                        parameterValue, instance.getElement().getText());
+                assertEquals(parameterValue, instance.getElement().getText(),
+                        constructor
+                                + " should set the text content for a class with @Tag");
             }
         } catch (NoSuchMethodException e) {
             // No constructor to test
@@ -289,8 +291,8 @@ public class HtmlComponentSmokeTest {
             getterType = (Class<?>) ((ParameterizedType) gen)
                     .getActualTypeArguments()[0];
         }
-        Assert.assertEquals(setter + " should have the same type as its getter",
-                propertyType, getterType);
+        assertEquals(propertyType, getterType,
+                setter + " should have the same type as its getter");
 
         Map<Class<?>, Object> specialValueMap = specialTestValues
                 .get(instance.getClass());
@@ -330,9 +332,8 @@ public class HtmlComponentSmokeTest {
 
             // Might have to add a blacklist for this logic at some point
             if (!testValue.equals(originalGetterValue)) {
-                Assert.assertTrue(
-                        setter + " should update the underlying state node",
-                        hasPendingChanges(elementNode));
+                assertTrue(hasPendingChanges(elementNode),
+                        setter + " should update the underlying state node");
             }
 
             Object getterValue = getter.invoke(instance);
@@ -340,8 +341,8 @@ public class HtmlComponentSmokeTest {
                 getterValue = ((Optional<?>) getterValue).get();
             }
 
-            AssertUtils.assertEquals(getter + " should return the set value",
-                    testValue, getterValue);
+            AssertUtils.assertEquals(testValue, getterValue,
+                    getter + " should return the set value");
 
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {

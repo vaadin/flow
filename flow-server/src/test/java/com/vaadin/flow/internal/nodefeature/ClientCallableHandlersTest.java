@@ -19,8 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -29,7 +28,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
-public class ClientCallableHandlersTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ClientCallableHandlersTest {
 
     @Tag("div")
     static class NonTemplateComponentWithoutEventHandler extends Component {
@@ -45,19 +46,19 @@ public class ClientCallableHandlersTest {
     }
 
     @Test
-    public void attach_noFeature() {
+    void attach_noFeature() {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
-    public void attach_noComponent() {
+    void attach_noComponent() {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
@@ -65,12 +66,12 @@ public class ClientCallableHandlersTest {
                 ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0,
+        assertEquals(0,
                 stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
-    public void nonTemplateComponentWithEventHandler() {
+    void nonTemplateComponentWithEventHandler() {
         UI ui = new UI();
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
@@ -81,7 +82,7 @@ public class ClientCallableHandlersTest {
     }
 
     @Test
-    public void nonTemplateComponentWithoutEventHandler() {
+    void nonTemplateComponentWithoutEventHandler() {
         UI ui = new UI();
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
@@ -93,9 +94,9 @@ public class ClientCallableHandlersTest {
 
     private void assertListFeature(SerializableNodeList<String> feature,
             String... expected) {
-        Assert.assertEquals(expected.length, feature.size());
+        assertEquals(expected.length, feature.size());
         for (int i = 0; i < expected.length; i++) {
-            Assert.assertEquals(expected[i], feature.get(i));
+            assertEquals(expected[i], feature.get(i));
         }
 
     }

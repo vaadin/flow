@@ -429,6 +429,58 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void transactions_peekSignalInTransaction_throws() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Signal.runInTransaction(() -> {
+                signal.peek();
+            });
+        });
+    }
+
+    @Test
+    void transactions_replaceSignalInTransaction_throws() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Signal.runInTransaction(() -> {
+                signal.replace("initial", "update");
+            });
+        });
+    }
+
+    @Test
+    void transactions_updateSignalInTransaction_throws() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Signal.runInTransaction(() -> {
+                signal.update(x -> "update");
+            });
+        });
+    }
+
+    @Test
+    void transactions_modifySignalInTransaction_throws() {
+        ValueSignal<String[]> signal = new ValueSignal<>(
+                new String[] { "initial" });
+
+        assertThrows(IllegalStateException.class, () -> {
+            Signal.runInTransaction(() -> {
+                signal.modify(x -> x[0] = "update");
+            });
+        });
+    }
+
+    @Test
+    void toString_includesValue() {
+        ValueSignal<String> signal = new ValueSignal<>("signal value");
+
+        assertEquals("ValueSignal[signal value]", signal.toString());
+    }
+
+    @Test
     void threadSafety_modifyWithSessionLock_noException() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
 
