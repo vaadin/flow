@@ -88,7 +88,7 @@ public class DefaultInstantiator implements Instantiator {
      * @return a stream of service init listeners
      */
     public static Stream<VaadinServiceInitListener> getServiceLoaderListeners(
-            ClassLoader classloader) {
+            @Nullable ClassLoader classloader) {
         ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
                 .load(VaadinServiceInitListener.class, classloader);
         return StreamSupport.stream(loader.spliterator(), false);

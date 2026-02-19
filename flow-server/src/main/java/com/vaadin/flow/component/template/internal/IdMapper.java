@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.Id;
@@ -73,8 +75,8 @@ public class IdMapper implements Serializable {
      *            a callback invoked before assigning the element/component to
      *            the field
      */
-    public void mapComponentOrElement(Field field, String id, String tag,
-            Consumer<Element> beforeInject) {
+    public void mapComponentOrElement(Field field, String id,
+            @Nullable String tag, Consumer<Element> beforeInject) {
         injectClientSideElement(tag, id, field, beforeInject);
     }
 
@@ -82,8 +84,8 @@ public class IdMapper implements Serializable {
         return template.getClass();
     }
 
-    private void injectClientSideElement(String tagName, String id, Field field,
-            Consumer<Element> beforeInject) {
+    private void injectClientSideElement(@Nullable String tagName, String id,
+            Field field, Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
@@ -137,7 +139,7 @@ public class IdMapper implements Serializable {
      *            a callback invoked before assigning the element/component to
      *            the field
      */
-    private void attachExistingElementById(String tagName, String id,
+    private void attachExistingElementById(@Nullable String tagName, String id,
             Field field, Consumer<Element> beforeInject) {
         if (tagName == null) {
             throw new IllegalArgumentException(

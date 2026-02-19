@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.Id;
@@ -44,9 +45,9 @@ public class IdCollector {
     private final Map<String, String> tagById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
     private final Map<String, Map<String, String>> attributesById = new HashMap<>();
-    private Element templateRoot;
+    private @Nullable Element templateRoot;
     private Class<?> templateClass;
-    private String templateFile;
+    private @Nullable String templateFile;
 
     /**
      * Creates a collector the the given template.
@@ -60,8 +61,8 @@ public class IdCollector {
      *            The root element of the template or <code>null</code> if not
      *            available
      */
-    public IdCollector(Class<?> templateClass, String templateFile,
-            Element templateRoot) {
+    public IdCollector(Class<?> templateClass, @Nullable String templateFile,
+            @Nullable Element templateRoot) {
         this.templateClass = templateClass;
         this.templateFile = templateFile;
         this.templateRoot = templateRoot;

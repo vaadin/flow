@@ -293,7 +293,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      *            the property name to synchronize, or <code>null</code> to
      *            disable property synchronization
      */
-    protected void setSynchronizedEvent(String synchronizedEvent) {
+    protected void setSynchronizedEvent(@Nullable String synchronizedEvent) {
         doSetSynchronizedEvent(synchronizedEvent);
     }
 
@@ -312,7 +312,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
 
     // Delegated method so that constructor doesn't have to call protected
     // method
-    private void doSetSynchronizedEvent(String propChangeEvent) {
+    private void doSetSynchronizedEvent(@Nullable String propChangeEvent) {
         if (synchronizationRegistration != null) {
             synchronizationRegistration.remove();
         }

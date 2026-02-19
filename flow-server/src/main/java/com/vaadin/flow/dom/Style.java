@@ -499,7 +499,7 @@ public interface Style extends Serializable {
      *            will be removed)
      * @return this style instance
      */
-    default Style setDisplay(Display value) {
+    default Style setDisplay(@Nullable Display value) {
         return applyOrErase(STYLE_DISPLAY, value);
     }
 
@@ -1267,7 +1267,7 @@ public interface Style extends Serializable {
         return set(STYLE_FLEX_BASIS, value);
     }
 
-    private Style applyOrErase(String propertyName, Enum value) {
+    private Style applyOrErase(String propertyName, @Nullable Enum value) {
         if (value == null) {
             return remove(propertyName);
         } else {
@@ -1276,7 +1276,7 @@ public interface Style extends Serializable {
         }
     }
 
-    private Style applyOrErase(String propertyName, Object value) {
+    private Style applyOrErase(String propertyName, @Nullable Object value) {
         if (value == null) {
             return remove(propertyName);
         } else {
