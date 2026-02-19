@@ -128,6 +128,23 @@ public class StylesheetContentHashUtilTest {
     }
 
     @Test
+    public void getContentHash_servletContextFails_fallsBackToClasspath() {
+        // Simulates Spring Boot packaged jar where
+        // servletContext.getResourceAsStream() can't find resources in
+        // static/, but the classloader can.
+        Mockito.when(service.getResourceAsStream("classpath-test.css"))
+                .thenReturn(null);
+        Mockito.when(service.getResourceAsStream("/classpath-test.css"))
+                .thenReturn(null);
+
+        String hash = StylesheetContentHashUtil.getContentHash(service,
+                "classpath-test.css");
+        Assert.assertNotNull(
+                "Should find resource via classpath static/ fallback", hash);
+        Assert.assertEquals(8, hash.length());
+    }
+
+    @Test
     public void appendHashToUrl_withHash_appendsQueryParam() {
         String result = StylesheetContentHashUtil.appendHashToUrl("/styles.css",
                 "abcd1234");
