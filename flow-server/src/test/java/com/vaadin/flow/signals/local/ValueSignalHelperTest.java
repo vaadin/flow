@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.local;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.signals.SignalTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -152,60 +153,73 @@ public class ValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
-    void modifier_callbackModifiesSignalInPlace() {
+    void modifier_callbackModifiesSignalInPlace() throws Exception {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
         SerializableConsumer<String> callback = signal
                 .modifier(MutablePerson::setName);
 
-        callback.accept("Bob");
+        new MockVaadinSession().runWithLock(() -> {
+            callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().getName());
-        assertEquals(30, signal.get().getAge());
-        assertEquals(person, signal.get());
+            assertEquals("Bob", signal.get().getName());
+            assertEquals(30, signal.get().getAge());
+            assertEquals(person, signal.get());
+            return null;
+        });
     }
 
     @Test
-    void modifier_multipleCallbackInvocations_modifiesSignalEachTime() {
+    void modifier_multipleCallbackInvocations_modifiesSignalEachTime()
+            throws Exception {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
         SerializableConsumer<String> callback = signal
                 .modifier(MutablePerson::setName);
 
-        callback.accept("Bob");
-        assertEquals("Bob", signal.get().getName());
+        new MockVaadinSession().runWithLock(() -> {
+            callback.accept("Bob");
+            assertEquals("Bob", signal.get().getName());
 
-        callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().getName());
+            callback.accept("Charlie");
+            assertEquals("Charlie", signal.get().getName());
 
-        callback.accept("Diana");
-        assertEquals("Diana", signal.get().getName());
+            callback.accept("Diana");
+            assertEquals("Diana", signal.get().getName());
+            return null;
+        });
     }
 
     @Test
-    void modifier_preservesOtherFields() {
+    void modifier_preservesOtherFields() throws Exception {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
         SerializableConsumer<String> nameCallback = signal
                 .modifier(MutablePerson::setName);
 
-        nameCallback.accept("Bob");
+        new MockVaadinSession().runWithLock(() -> {
+            nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().getName());
-        assertEquals(30, signal.get().getAge());
+            assertEquals("Bob", signal.get().getName());
+            assertEquals(30, signal.get().getAge());
+            return null;
+        });
     }
 
     @Test
-    void modifier_withNullValue_works() {
+    void modifier_withNullValue_works() throws Exception {
         MutablePerson person = new MutablePerson("Alice", 30);
         ValueSignal<MutablePerson> signal = new ValueSignal<>(person);
         SerializableConsumer<String> callback = signal
                 .modifier(MutablePerson::setName);
 
-        callback.accept(null);
+        new MockVaadinSession().runWithLock(() -> {
+            callback.accept(null);
 
-        assertNull(signal.get().getName());
-        assertEquals(30, signal.get().getAge());
+            assertNull(signal.get().getName());
+            assertEquals(30, signal.get().getAge());
+            return null;
+        });
     }
 
 }

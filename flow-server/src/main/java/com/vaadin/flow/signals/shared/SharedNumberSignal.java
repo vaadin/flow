@@ -21,11 +21,11 @@ import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
-import com.vaadin.flow.signals.function.IntMapper;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -96,12 +96,28 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     @Override
     public Double get() {
         Double value = super.get();
-
         if (value == null) {
             return Double.valueOf(0);
-        } else {
-            return value;
         }
+        return value;
+    }
+
+    @Override
+    public Double peek() {
+        Double value = super.peek();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
+    }
+
+    @Override
+    public Double peekConfirmed() {
+        Double value = super.peekConfirmed();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
     }
 
     /**
@@ -176,7 +192,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    public <C> Signal<C> mapIntValue(IntMapper<C> mapper) {
+    public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
         return map(doubleValue -> {
             if (doubleValue == null) {
                 return null;

@@ -23,6 +23,7 @@ import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -110,17 +111,20 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void modify_modifiesValue_valueModified() {
+    void modify_modifiesValue_valueModified() throws Exception {
         String[] holder = new String[] { "initial" };
         ValueSignal<String[]> signal = new ValueSignal<>(holder);
 
-        signal.modify(value -> {
-            assertSame(holder, value);
-            holder[0] = "update";
-        });
+        new MockVaadinSession().runWithLock(() -> {
+            signal.modify(value -> {
+                assertSame(holder, value);
+                holder[0] = "update";
+            });
 
-        assertEquals("update", holder[0]);
-        assertSame(holder, signal.get());
+            assertEquals("update", holder[0]);
+            assertSame(holder, signal.get());
+            return null;
+        });
     }
 
     @Test
@@ -422,6 +426,57 @@ public class ValueSignalTest extends SignalTestBase {
                 signal.set("update");
             });
         });
+    }
+
+    @Test
+    void toString_includesValue() {
+        ValueSignal<String> signal = new ValueSignal<>("signal value");
+
+        assertEquals("ValueSignal[signal value]", signal.toString());
+    }
+
+    @Test
+    void threadSafety_modifyWithSessionLock_noException() throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+
+        ValueSignal<String[]> signal = new ValueSignal<>(
+                new String[] { "initial" });
+
+        session.runWithLock(() -> {
+            signal.modify(value -> value[0] = "modified");
+            signal.get();
+            signal.set(new String[] { "new" });
+            return null;
+        });
+    }
+
+    @Test
+    void threadSafety_modifyWithSessionThenAccessWithoutLock_throws()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+
+        ValueSignal<String[]> signal = new ValueSignal<>(
+                new String[] { "initial" });
+
+        session.runWithLock(() -> {
+            signal.modify(value -> value[0] = "modified");
+            return null;
+        });
+
+        Thread other = Thread.startVirtualThread(() -> {
+            assertThrows(IllegalStateException.class, () -> signal.get());
+        });
+        other.join();
+    }
+
+    @Test
+    void threadSafety_modifyWithoutSessionThenAccess_throws() {
+        ValueSignal<String[]> signal = new ValueSignal<>(
+                new String[] { "initial" });
+
+        signal.modify(value -> value[0] = "modified");
+
+        assertThrows(IllegalStateException.class, () -> signal.get());
     }
 
     private static void assertEventually(BooleanSupplier test) {

@@ -23,10 +23,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
@@ -55,7 +55,7 @@ public class EffectTest extends SignalTestBase {
 
         Signal.unboundEffect(() -> {
             count.incrementAndGet();
-        }).cleanup();
+        }).remove();
 
         assertEquals(1, count.get());
     }
@@ -328,11 +328,11 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
 
-        CleanupCallback closer = Signal.unboundEffect(() -> {
+        Registration closer = Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
 
-        closer.cleanup();
+        closer.remove();
         signal.set("update");
 
         assertEquals(List.of(""), invocations);
@@ -366,7 +366,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
 
-        CleanupCallback closer = Signal.unboundEffect(() -> {
+        Registration closer = Signal.unboundEffect(() -> {
             invocations.add(signal.get());
         });
         dispatcher.runPendingTasks();
@@ -375,7 +375,7 @@ public class EffectTest extends SignalTestBase {
         signal.set("update");
         assertEquals(List.of("initial"), invocations);
 
-        closer.cleanup();
+        closer.remove();
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
     }
@@ -563,7 +563,7 @@ public class EffectTest extends SignalTestBase {
                     }
 
                     @Override
-                    public CleanupCallback onNextChange(
+                    public Registration onNextChange(
                             TransientListener listener) {
                         /*
                          * Emulate race condition by injecting an unrelated
