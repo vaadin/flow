@@ -28,12 +28,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * Integration test that verifies @StyleSheet URLs get content-hash
- * cache-busting parameters (?v=<hash>) in production mode.
+ * cache-busting parameters (?v-c=<hash>) in production mode.
  */
 public class StylesheetCacheBustingIT extends ChromeBrowserTest {
 
     private static final Pattern HASH_PARAM_PATTERN = Pattern
-            .compile("[?&]v=[0-9a-f]{8}");
+            .compile("[?&]v-c=[0-9a-f]{8}");
 
     @Test
     public void stylesheetLinksHaveCacheBustingHash() {
@@ -89,7 +89,7 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
 
             Assert.assertTrue(
                     "AppShell stylesheet link '" + dataId
-                            + "' should have ?v=<hash> but href was: " + href,
+                            + "' should have ?v-c=<hash> but href was: " + href,
                     HASH_PARAM_PATTERN.matcher(href).find());
         }
     }
@@ -100,7 +100,7 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
         String href = link.getAttribute("href");
         Assert.assertTrue(
                 "@StyleSheet link '" + dataId
-                        + "' should contain ?v=<hash> but was: " + href,
+                        + "' should contain ?v-c=<hash> but was: " + href,
                 HASH_PARAM_PATTERN.matcher(href).find());
     }
 }

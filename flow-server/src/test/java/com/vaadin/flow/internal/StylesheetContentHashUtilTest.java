@@ -148,14 +148,14 @@ public class StylesheetContentHashUtilTest {
     public void appendHashToUrl_withHash_appendsQueryParam() {
         String result = StylesheetContentHashUtil.appendHashToUrl("/styles.css",
                 "abcd1234");
-        Assert.assertEquals("/styles.css?v=abcd1234", result);
+        Assert.assertEquals("/styles.css?v-c=abcd1234", result);
     }
 
     @Test
     public void appendHashToUrl_urlWithExistingQueryParam_usesAmpersand() {
         String result = StylesheetContentHashUtil
                 .appendHashToUrl("/styles.css?theme=dark", "abcd1234");
-        Assert.assertEquals("/styles.css?theme=dark&v=abcd1234", result);
+        Assert.assertEquals("/styles.css?theme=dark&v-c=abcd1234", result);
     }
 
     @Test

@@ -579,8 +579,8 @@ public class StaticFileServer implements StaticFileHandler {
         String cacheControl;
         if (!deploymentConfiguration.isProductionMode()) {
             cacheControl = "no-cache";
-        } else if (request != null && request.getParameter("v") != null) {
-            cacheControl = "max-age=31536000";
+        } else if (request != null && request.getParameter("v-c") != null) {
+            cacheControl = "max-age=31536000, immutable";
         } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;
         } else {

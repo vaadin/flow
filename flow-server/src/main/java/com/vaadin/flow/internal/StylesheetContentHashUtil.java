@@ -26,7 +26,7 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * Computes and caches content-based hashes for stylesheet resources, enabling
- * cache-busting by appending {@code ?v=<hash>} to stylesheet URLs. The hash
+ * cache-busting by appending {@code ?v-c=<hash>} to stylesheet URLs. The hash
  * changes only when file content changes, allowing aggressive browser caching.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -79,7 +79,7 @@ public class StylesheetContentHashUtil {
                         "Could not compute cache-busting hash for '{}': "
                                 + "resource not found. Tried via {} "
                                 + "(service class: {}). The stylesheet URL "
-                                + "will not have a ?v=<hash> parameter.",
+                                + "will not have a ?v-c=<hash> parameter.",
                         resourceUrl, describeAttempts(resourceUrl),
                         service.getClass().getName());
                 return null;
@@ -182,14 +182,14 @@ public class StylesheetContentHashUtil {
      *            the original URL
      * @param hash
      *            the content hash, or {@code null}
-     * @return the URL with {@code ?v=<hash>} or {@code &v=<hash>} appended, or
-     *         the original URL if hash is {@code null}
+     * @return the URL with {@code ?v-c=<hash>} or {@code &v-c=<hash>} appended,
+     *         or the original URL if hash is {@code null}
      */
     public static String appendHashToUrl(String url, String hash) {
         if (hash == null) {
             return url;
         }
         char separator = url.contains("?") ? '&' : '?';
-        return url + separator + "v=" + hash;
+        return url + separator + "v-c=" + hash;
     }
 }
