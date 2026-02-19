@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +99,7 @@ public final class BundleLitParser {
      *            source js to get template element from
      * @return template element or {code null} if not found
      */
-    public static Element parseLitTemplateElement(String fileName,
+    public static @Nullable Element parseLitTemplateElement(String fileName,
             String source) {
         Document templateDocument = null;
         String content = StringUtil.removeComments(source);

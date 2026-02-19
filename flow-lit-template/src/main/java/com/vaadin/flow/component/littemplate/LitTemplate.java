@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -77,7 +78,8 @@ public abstract class LitTemplate extends Component
      * @see Instantiator#getOrCreate(Class)
      */
     protected LitTemplate() {
-        this(getParser(VaadinService.getCurrent()), VaadinService.getCurrent());
+        this(getParser(Objects.requireNonNull(VaadinService.getCurrent())),
+                Objects.requireNonNull(VaadinService.getCurrent()));
     }
 
     /**

@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.littemplate;
 
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.littemplate.internal.LitTemplateParserImpl;
 import com.vaadin.flow.di.Instantiator;
@@ -118,6 +119,7 @@ public interface LitTemplateParser {
      *
      * @return the template data, may be {@code null}
      */
+    @Nullable
     TemplateData getTemplateContent(Class<? extends LitTemplate> clazz,
             String tag, VaadinService service);
 }

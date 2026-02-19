@@ -25,9 +25,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +83,9 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     }
 
     @Override
-    public TemplateData getTemplateContent(Class<? extends LitTemplate> clazz,
-            String tag, VaadinService service) {
+    public @Nullable TemplateData getTemplateContent(
+            Class<? extends LitTemplate> clazz, String tag,
+            VaadinService service) {
 
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
@@ -117,20 +120,19 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
         }
 
-        Element templateElement = null;
         if (chosenDep != null) {
-            templateElement = BundleLitParser.parseLitTemplateElement(
+            Element templateElement = BundleLitParser.parseLitTemplateElement(
                     chosenDep.getFirst().getUrl(), chosenDep.getSecond());
-        }
-        if (templateElement != null) {
-            // Template needs to be wrapped in an element with id, to look
-            // like a P2 template
-            Element parent = new Element(tag);
-            parent.attr("id", tag);
-            templateElement.appendTo(parent);
+            if (templateElement != null) {
+                // Template needs to be wrapped in an element with id, to look
+                // like a P2 template
+                Element parent = new Element(tag);
+                parent.attr("id", tag);
+                templateElement.appendTo(parent);
 
-            return new TemplateData(chosenDep.getFirst().getUrl(),
-                    templateElement);
+                return new TemplateData(chosenDep.getFirst().getUrl(),
+                        templateElement);
+            }
         }
 
         getLogger().info("Couldn't find the "
@@ -158,7 +160,9 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
-        String url = FileIOUtils.removeExtension(dependency.getUrl())
+        String url = Objects
+                .requireNonNull(
+                        FileIOUtils.removeExtension(dependency.getUrl()))
                 .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
@@ -179,8 +183,8 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
-    protected String getSourcesFromTemplate(VaadinService service, String tag,
-            String url) {
+    protected @Nullable String getSourcesFromTemplate(VaadinService service,
+            String tag, String url) {
         InputStream content = getResourceStream(service, url);
         if (content == null) {
             // Attempt to get the sources from dev server, if available
@@ -221,9 +225,11 @@ public class LitTemplateParserImpl implements LitTemplateParser {
         return null;
     }
 
-    private InputStream getResourceStream(VaadinService service, String url) {
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+    private @Nullable InputStream getResourceStream(VaadinService service,
+            String url) {
+        ResourceProvider resourceProvider = Objects.requireNonNull(Objects
+                .requireNonNull(service.getContext().getAttribute(Lookup.class))
+                .lookup(ResourceProvider.class));
         URL resourceUrl = resourceProvider.getApplicationResource(url);
         if (resourceUrl != null) {
             try {
