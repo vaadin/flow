@@ -176,15 +176,6 @@ public class StagedTransaction extends Transaction {
             }
         } else {
             commitTwoPhase(resultHandler);
-
-            for (SignalTree tree : openTrees.keySet()) {
-                CommandsAndHandlers staged = openTrees.get(tree).staged;
-
-                TransactionCommand command = new SignalCommand.TransactionCommand(
-                        Id.random(), staged.getCommands());
-
-                outer.include(tree, command, null, false);
-            }
         }
     }
 
@@ -211,6 +202,18 @@ public class StagedTransaction extends Transaction {
 
             if (pendingCommits.stream().allMatch(PendingCommit::canCommit)) {
                 pendingCommits.forEach(PendingCommit::applyChanges);
+
+                // Update outer transaction's read revision before publishing
+                // changes so that change observers can read the updated value
+                for (SignalTree tree : openTrees.keySet()) {
+                    CommandsAndHandlers staged = openTrees.get(tree).staged;
+                    if (!staged.isEmpty()) {
+                        TransactionCommand command = new SignalCommand.TransactionCommand(
+                                Id.random(), staged.getCommands());
+                        outer.include(tree, command, null, false);
+                    }
+                }
+
                 pendingCommits.forEach(PendingCommit::publishChanges);
             } else {
                 pendingCommits.forEach(PendingCommit::markAsAborted);
