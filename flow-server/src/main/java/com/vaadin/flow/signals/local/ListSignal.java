@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 
@@ -186,6 +187,12 @@ public class ListSignal<T>
         } finally {
             unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }

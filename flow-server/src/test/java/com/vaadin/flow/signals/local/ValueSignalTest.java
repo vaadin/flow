@@ -429,6 +429,13 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void toString_includesValue() {
+        ValueSignal<String> signal = new ValueSignal<>("signal value");
+
+        assertEquals("ValueSignal[signal value]", signal.toString());
+    }
+
+    @Test
     void threadSafety_modifyWithSessionLock_noException() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
 

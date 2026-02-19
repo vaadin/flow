@@ -376,6 +376,15 @@ public class ListSignalTest extends SignalTestBase {
         assertEquals(1, count.intValue());
     }
 
+    @Test
+    void toString_includesValue() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        assertEquals("ListSignal[one, two]", signal.toString());
+    }
+
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
         List<String> values = signal.get().stream().map(ValueSignal::get)
