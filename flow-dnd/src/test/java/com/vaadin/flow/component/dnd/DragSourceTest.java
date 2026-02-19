@@ -54,7 +54,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         component.addDragEndListener(endEventCapture::set);
 
         DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals(startEvent, startEventCapture.get());
@@ -63,7 +63,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertTrue(startEvent.isFromClient());
 
         DragEndEvent<TestComponent> endEvent = new DragEndEvent<TestComponent>(
-                component, false, DropEffect.MOVE.name().toLowerCase());
+                component, false, DropEffect.MOVE.name().toLowerCase(), 0, 0);
         ComponentUtil.fireEvent(component, endEvent);
 
         DragEndEvent<TestComponent> endEvent2 = endEventCapture.get();
@@ -89,14 +89,14 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertNull(component.getDragData());
 
         DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals("Drag data not set from event", dragData,
                 component.getDragData());
 
         ComponentUtil.fireEvent(component,
-                new DragEndEvent<>(component, true, "none"));
+                new DragEndEvent<>(component, true, "none", 0, 0));
 
         Assert.assertNull(component.getDragData());
     }
@@ -148,7 +148,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         dragSource.addDragEndListener(endEventCapture::set);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals(startEvent, startEventCapture.get());
@@ -157,7 +157,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertTrue(startEvent.isFromClient());
 
         DragEndEvent<RouterLink> endEvent = new DragEndEvent<RouterLink>(
-                component, false, DropEffect.MOVE.name().toLowerCase());
+                component, false, DropEffect.MOVE.name().toLowerCase(), 0, 0);
         ComponentUtil.fireEvent(component, endEvent);
 
         DragEndEvent<RouterLink> endEvent2 = endEventCapture.get();
@@ -167,7 +167,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertTrue(endEvent2.isSuccessful());
         Assert.assertFalse(endEvent2.isFromClient());
 
-        endEvent = new DragEndEvent<RouterLink>(component, true, "None");
+        endEvent = new DragEndEvent<RouterLink>(component, true, "None", 0, 0);
         ComponentUtil.fireEvent(component, endEvent);
 
         endEvent2 = endEventCapture.get();
@@ -184,7 +184,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
     }
 
@@ -195,7 +195,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
         Assert.assertEquals(component, ui.getActiveDragSourceComponent());
 
@@ -203,7 +203,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         ui.remove(component);
 
         DragEndEvent<RouterLink> endEvent = new DragEndEvent<>(component, true,
-                "move");
+                "move", 0, 0);
         // should not throw for removing the active drag source
         ComponentUtil.fireEvent(component, endEvent);
 
