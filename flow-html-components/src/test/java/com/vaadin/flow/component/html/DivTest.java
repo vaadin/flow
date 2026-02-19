@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DivTest extends ComponentTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class DivTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -29,13 +30,13 @@ public class DivTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         super.testHasOrderedComponents();
     }
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
+    protected void testHasAriaLabelIsNotImplemented() {
         // Don't use aria-label or aria-labelledby on a span or div unless
         // its given a role. When aria-label or aria-labelledby are on
         // interactive roles (such as a link or button) or an img role,
@@ -46,7 +47,7 @@ public class DivTest extends ComponentTest {
     }
 
     @Test
-    public void testNonDefaultConstructor() {
-        Assert.assertEquals("text", new Div("text").getText());
+    void testNonDefaultConstructor() {
+        assertEquals("text", new Div("text").getText());
     }
 }

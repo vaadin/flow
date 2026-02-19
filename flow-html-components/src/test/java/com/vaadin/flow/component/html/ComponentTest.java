@@ -29,9 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -39,15 +38,21 @@ import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
 
-public abstract class ComponentTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+abstract class ComponentTest {
 
     private Component component;
     private List<ComponentProperty> properties = new ArrayList<>();
 
     private Set<String> WHITE_LIST = new HashSet<>();
 
-    @Before
-    public void setup() throws IntrospectionException, InstantiationException,
+    @BeforeEach
+    void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
         component = createComponent();
@@ -136,69 +141,71 @@ public abstract class ComponentTest {
 
     protected void testHasOrderedComponents() {
         if (!(component instanceof HasOrderedComponents)) {
-            Assert.fail("Component " + component.getClass()
+            fail("Component " + component.getClass()
                     + " did not implement HasOrderedComponents anymore.");
         }
 
         HasOrderedComponents component = (HasOrderedComponents) this.component;
-        Assert.assertEquals(0, component.getComponentCount());
+        assertEquals(0, component.getComponentCount());
 
         Paragraph firstChildren = new Paragraph("first children");
         component.add(firstChildren);
-        Assert.assertEquals(firstChildren, component.getComponentAt(0));
+        assertEquals(firstChildren, component.getComponentAt(0));
 
         Paragraph newFirstChildren = new Paragraph("new first children");
         component.addComponentAtIndex(0, newFirstChildren);
-        Assert.assertEquals(newFirstChildren, component.getComponentAt(0));
+        assertEquals(newFirstChildren, component.getComponentAt(0));
 
-        Assert.assertEquals(1, component.indexOf(firstChildren));
+        assertEquals(1, component.indexOf(firstChildren));
     }
 
     protected void testHasAriaLabelIsImplemented() {
         if (!(component instanceof HasAriaLabel)) {
-            Assert.fail("Component " + component.getClass()
+            fail("Component " + component.getClass()
                     + " did not implement HasAriaLabel anymore.");
         }
     }
 
     protected void testHasAriaLabelIsNotImplemented() {
         if (component instanceof HasAriaLabel) {
-            Assert.fail("Component " + component.getClass()
+            fail("Component " + component.getClass()
                     + " implemented HasAriaLabel. This is not valid."
                     + " See test case for more information.");
         }
     }
 
     @Test
-    public void setAriaLabel() {
+    void setAriaLabel() {
         if (!(component instanceof HasAriaLabel)) {
             return; // test should only run for components that implement
                     // HasAriaLabel
         }
 
         HasAriaLabel component = (HasAriaLabel) this.component;
-        Assert.assertFalse(component.getAriaLabel().isPresent());
+        assertFalse(component.getAriaLabel().isPresent());
 
         component.setAriaLabel("new AriaLabel");
-        Assert.assertEquals("new AriaLabel", component.getAriaLabel().get());
+        assertEquals("new AriaLabel", component.getAriaLabel().get());
     }
 
     @Test
-    public void testSetterGetterTypes() throws Exception {
+    void testSetterGetterTypes() throws Exception {
         for (ComponentProperty property : properties) {
             Class<?> getterType = property.getGetter().getReturnType();
             if (property.optional) {
                 String message = "Getter for " + property.name
                         + " should return Optional<"
                         + property.type.getSimpleName() + ">";
-                Assert.assertEquals(message, Optional.class, getterType);
-                Assert.assertEquals(message, property.type, getOptionalType(
-                        property.getGetter().getGenericReturnType()));
+                assertEquals(Optional.class, getterType, message);
+                assertEquals(property.type,
+                        getOptionalType(
+                                property.getGetter().getGenericReturnType()),
+                        message);
             } else {
-                Assert.assertEquals(property.type, getterType);
+                assertEquals(property.type, getterType);
             }
 
-            Assert.assertEquals(property.type,
+            assertEquals(property.type,
                     property.getSetter().getParameterTypes()[0]);
         }
     }
@@ -209,25 +216,25 @@ public abstract class ComponentTest {
     }
 
     @Test
-    public void testDefaultValues() throws Exception {
+    void testDefaultValues() throws Exception {
         setDefaultValues();
     }
 
     @Test
-    public void testNonDefaultValues() throws Exception {
+    void testNonDefaultValues() throws Exception {
         setNonDefaultValues();
         assertNonDefaultValues();
     }
 
     @Test
-    public void setAndResetValues() throws Exception {
+    void setAndResetValues() throws Exception {
         setNonDefaultValues();
         setDefaultValues();
         assertDefaultValues();
     }
 
     @Test
-    public void testNullForOptionalNonStringProperties() {
+    void testNullForOptionalNonStringProperties() {
         Stream<ComponentProperty> optionalNonStringProperties = properties
                 .stream().filter(ComponentProperty::isOptional)
                 .filter(p -> p.type != String.class);
@@ -237,19 +244,19 @@ public abstract class ComponentTest {
     }
 
     @Test
-    public void testNullForOptionalStringProperties() {
+    void testNullForOptionalStringProperties() {
         getOptionalStringProperties()
                 .forEach(this::testNullForOptionalStringProperty);
     }
 
     @Test
-    public void testEmptyStringForOptionalStringProperties() {
+    void testEmptyStringForOptionalStringProperties() {
         getOptionalStringProperties()
                 .forEach(this::testEmptyStringForOptionalStringProperty);
     }
 
     @Test
-    public void testNullForStringPropertiesWithEmptyStringDefault() {
+    void testNullForStringPropertiesWithEmptyStringDefault() {
         properties.stream().filter(p -> !p.isOptional())
                 .filter(p -> p.type == String.class)
                 .forEach(p -> testNullForStringPropertyWithEmptyStringDefault(
@@ -257,32 +264,32 @@ public abstract class ComponentTest {
     }
 
     @Test
-    public void setTitle() {
+    void setTitle() {
         if (!(component instanceof HtmlComponent)) {
             return;
         }
 
         HtmlComponent component = (HtmlComponent) this.component;
-        Assert.assertFalse(component.getTitle().isPresent());
+        assertFalse(component.getTitle().isPresent());
 
         component.setTitle("myTitle");
 
-        Assert.assertEquals("myTitle",
-                component.getElement().getAttribute("title"));
-        Assert.assertEquals("myTitle", component.getTitle().orElse(null));
-        Assert.assertFalse(component.getElement().hasProperty("title"));
+        assertEquals("myTitle", component.getElement().getAttribute("title"));
+        assertEquals("myTitle", component.getTitle().orElse(null));
+        assertFalse(component.getElement().hasProperty("title"));
 
         component.setTitle("");
-        Assert.assertFalse(component.getTitle().isPresent());
+        assertFalse(component.getTitle().isPresent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void setTitle_nullDisallowed() {
+    @Test
+    void setTitle_nullDisallowed() {
         if (!(component instanceof HtmlComponent)) {
-            throw new IllegalArgumentException();
+            return;
         }
 
-        ((HtmlComponent) component).setTitle(null);
+        assertThrows(IllegalArgumentException.class,
+                () -> ((HtmlComponent) component).setTitle(null));
     }
 
     private Stream<ComponentProperty> getOptionalStringProperties() {
@@ -294,11 +301,11 @@ public abstract class ComponentTest {
             ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.fail("Setting '" + p.name
+            fail("Setting '" + p.name
                     + "' with \"\" default to null should throw an exception");
         } catch (InvocationTargetException e) {
             // OK, should throw
-            Assert.assertEquals(IllegalArgumentException.class,
+            assertEquals(IllegalArgumentException.class,
                     e.getCause().getClass());
         } catch (IllegalAccessException | IllegalArgumentException
                 | NoSuchMethodException | SecurityException e) {
@@ -309,9 +316,9 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals("The getter for '" + p.name
-                    + "' should return an empty optional after setting \"\"",
-                    Optional.empty(), p.getUsingGetter(component));
+            assertEquals(Optional.empty(), p.getUsingGetter(component),
+                    "The getter for '" + p.name
+                            + "' should return an empty optional after setting \"\"");
         } catch (Exception e) {
             throw new AssertionError(e);
         }
@@ -320,9 +327,9 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals("Setting the property " + p.name
-                    + " to null should cause an empty optional to be returned by the getter",
-                    Optional.empty(), p.getUsingGetter(component));
+            assertEquals(Optional.empty(), p.getUsingGetter(component),
+                    "Setting the property " + p.name
+                            + " to null should cause an empty optional to be returned by the getter");
         } catch (Exception e) {
             throw new AssertionError(
                     "The optional property '" + p.name
@@ -335,10 +342,9 @@ public abstract class ComponentTest {
     private void testNullForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.fail(
-                    "Setting an optional String attribute to null should throw an exception");
+            fail("Setting an optional String attribute to null should throw an exception");
         } catch (InvocationTargetException e) {
-            Assert.assertEquals(IllegalArgumentException.class,
+            assertEquals(IllegalArgumentException.class,
                     e.getCause().getClass());
         } catch (IllegalAccessException | IllegalArgumentException
                 | NoSuchMethodException | SecurityException e) {
@@ -358,10 +364,10 @@ public abstract class ComponentTest {
             if (property.optional) {
                 String message = "Default value for " + property.name
                         + " should be an empty Optional";
-                Assert.assertEquals(message, Optional.empty(),
-                        property.getUsingGetter(component));
+                assertEquals(Optional.empty(),
+                        property.getUsingGetter(component), message);
             } else {
-                Assert.assertEquals(property.defaultValue,
+                assertEquals(property.defaultValue,
                         property.getUsingGetter(component));
             }
             if (property.removeDefault) {
@@ -376,13 +382,13 @@ public abstract class ComponentTest {
         for (ComponentProperty property : properties) {
             if (property.optional) {
                 AssertUtils.assertEquals(
+                        Optional.ofNullable(property.otherValue),
+                        property.getUsingGetter(component),
                         "Getter for " + property.name
                                 + " should return Optional<"
-                                + property.type.getSimpleName() + ">",
-                        Optional.ofNullable(property.otherValue),
-                        property.getUsingGetter(component));
+                                + property.type.getSimpleName() + ">");
             } else {
-                Assert.assertEquals(property.otherValue,
+                assertEquals(property.otherValue,
                         property.getUsingGetter(component));
             }
             assertPropertyOrAttribute(component,
@@ -396,16 +402,14 @@ public abstract class ComponentTest {
 
     private static void assertProperty(Component component, String property,
             boolean present) {
-        Assert.assertEquals(present,
-                component.getElement().hasProperty(property));
+        assertEquals(present, component.getElement().hasProperty(property));
     }
 
     private static void assertAttribute(Component component, String attribute,
             boolean present) {
-        Assert.assertEquals(
+        assertEquals(present, component.getElement().hasAttribute(attribute),
                 "Component should " + (present ? "" : "not ")
-                        + "have the attribute " + attribute,
-                present, component.getElement().hasAttribute(attribute));
+                        + "have the attribute " + attribute);
     }
 
     private static void assertNoPropertyOrAttribute(Component component,
@@ -424,11 +428,12 @@ public abstract class ComponentTest {
     private static void assertPropertyOrAttribute(Component component,
             String propertyOrAttribute) {
         Element element = component.getElement();
-        Assert.assertNotEquals(propertyOrAttribute + ": attribute="
-                + element.hasAttribute(propertyOrAttribute) + ", property="
-                + element.hasProperty(propertyOrAttribute),
-                element.hasAttribute(propertyOrAttribute),
-                element.hasProperty(propertyOrAttribute));
+        assertNotEquals(element.hasAttribute(propertyOrAttribute),
+                element.hasProperty(propertyOrAttribute),
+                propertyOrAttribute + ": attribute="
+                        + element.hasAttribute(propertyOrAttribute)
+                        + ", property="
+                        + element.hasProperty(propertyOrAttribute));
     }
 
     private void assertProperty(PropertyDescriptor descriptor) {
