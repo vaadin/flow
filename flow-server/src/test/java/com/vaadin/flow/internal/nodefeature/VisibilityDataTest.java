@@ -15,41 +15,44 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class VisibilityDataTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class VisibilityDataTest {
 
     @Test
-    public void setVisible() {
+    void setVisible() {
         StateNode node = new StateNode(ElementData.class);
         ElementData data = node.getFeature(ElementData.class);
 
-        Assert.assertNull(data.get(NodeProperties.VISIBLE));
-        Assert.assertTrue(data.isVisible());
+        assertNull(data.get(NodeProperties.VISIBLE));
+        assertTrue(data.isVisible());
 
         data.put(NodeProperties.VISIBLE, true);
-        Assert.assertTrue(data.isVisible());
+        assertTrue(data.isVisible());
 
         data.put(NodeProperties.VISIBLE, false);
-        Assert.assertFalse(data.isVisible());
+        assertFalse(data.isVisible());
     }
 
     @Test
-    public void allowsChanges_delegateToIsVisible() {
+    void allowsChanges_delegateToIsVisible() {
         ElementData data = Mockito.mock(ElementData.class);
 
         Mockito.doCallRealMethod().when(data).allowsChanges();
 
         Mockito.when(data.isVisible()).thenReturn(true);
 
-        Assert.assertTrue(data.allowsChanges());
+        assertTrue(data.allowsChanges());
 
         Mockito.when(data.isVisible()).thenReturn(false);
 
-        Assert.assertFalse(data.allowsChanges());
+        assertFalse(data.allowsChanges());
     }
 }

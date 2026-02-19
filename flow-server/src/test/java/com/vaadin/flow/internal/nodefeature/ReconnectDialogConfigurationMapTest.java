@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class ReconnectDialogConfigurationMapTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ReconnectDialogConfigurationMapTest
         extends AbstractMapFeatureTest<ReconnectDialogConfigurationMap> {
 
     private StateNode node = new StateNode(
@@ -29,40 +30,38 @@ public class ReconnectDialogConfigurationMapTest
             node);
 
     @Test
-    public void defaults() {
-        Assert.assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
+    void defaults() {
+        assertEquals(ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT,
                 map.getDialogText());
-        Assert.assertEquals(
+        assertEquals(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT,
                 map.getDialogTextGaveUp());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT,
+        assertEquals(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT,
                 map.getReconnectAttempts());
-        Assert.assertEquals(
-                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
+        assertEquals(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT,
                 map.getReconnectInterval());
     }
 
     @Test
-    public void setGetDialogText() {
+    void setGetDialogText() {
         testString(map, ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY,
                 map::setDialogText, map::getDialogText);
     }
 
     @Test
-    public void setGetDialogTextGaveUp() {
+    void setGetDialogTextGaveUp() {
         testString(map, ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY,
                 map::setDialogTextGaveUp, map::getDialogTextGaveUp);
     }
 
     @Test
-    public void setGetReconnectAttempts() {
+    void setGetReconnectAttempts() {
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY,
                 map::setReconnectAttempts, map::getReconnectAttempts);
     }
 
     @Test
-    public void setGetReconnectInterval() {
+    void setGetReconnectInterval() {
         testInt(map, ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY,
                 map::setReconnectInterval, map::getReconnectInterval);
     }
