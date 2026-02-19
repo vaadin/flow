@@ -18,6 +18,8 @@ package com.vaadin.flow.component.html;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -72,7 +74,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
-    private ValueChangeMode currentMode;
+    private @Nullable ValueChangeMode currentMode;
 
     /**
      * Creates a new slider, with {@link ValueChangeMode#ON_CHANGE ON_CHANGE}
@@ -96,12 +98,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     @Override
-    public ValueChangeMode getValueChangeMode() {
+    public @Nullable ValueChangeMode getValueChangeMode() {
         return currentMode;
     }
 
     @Override
-    public void setValueChangeMode(ValueChangeMode valueChangeMode) {
+    public void setValueChangeMode(@Nullable ValueChangeMode valueChangeMode) {
         currentMode = valueChangeMode;
         setSynchronizedEvent(
                 ValueChangeMode.eventForMode(valueChangeMode, "input"));
@@ -176,7 +178,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      */
     public void bindMin(SharedNumberSignal minSignal) {
         Objects.requireNonNull(minSignal, "Signal cannot be null");
-        getElement().bindAttribute("min", minSignal.map(Object::toString));
+        // Signal value is always non-null for NumberSignal
+        @SuppressWarnings("NullAway")
+        var mapped = minSignal.map(Object::toString);
+        getElement().bindAttribute("min", mapped);
     }
 
     /**
@@ -226,7 +231,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      */
     public void bindMax(SharedNumberSignal maxSignal) {
         Objects.requireNonNull(maxSignal, "Signal cannot be null");
-        getElement().bindAttribute("max", maxSignal.map(Object::toString));
+        // Signal value is always non-null for NumberSignal
+        @SuppressWarnings("NullAway")
+        var mapped = maxSignal.map(Object::toString);
+        getElement().bindAttribute("max", mapped);
     }
 
     /**
@@ -245,7 +253,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      *
      * @return the current step value, defaults to 1.
      */
-    public Double getStep() {
+    public @Nullable Double getStep() {
         final String step = get(stepDescriptor);
         return "any".equals(step) ? null : Double.parseDouble(step);
     }
@@ -267,7 +275,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * @param step
      *            the new step value, may be null.
      */
-    public void setStep(Double step) {
+    public void setStep(@Nullable Double step) {
         set(stepDescriptor, step == null ? "any" : "" + step);
     }
 

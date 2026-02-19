@@ -17,6 +17,8 @@ package com.vaadin.flow.component.html;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -59,7 +61,7 @@ public class NativeDetails extends HtmlComponent
     }
 
     private final Summary summary;
-    private Component content;
+    private @Nullable Component content;
 
     /**
      * Creates a new details with an empty summary.
@@ -235,7 +237,7 @@ public class NativeDetails extends HtmlComponent
      *
      * @return the content of the details, can be <code>null</code>.
      */
-    public Component getContent() {
+    public @Nullable Component getContent() {
         return content;
     }
 

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -46,7 +48,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
 
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
-    private ValueChangeMode currentMode;
+    private @Nullable ValueChangeMode currentMode;
 
     /**
      * Creates a new input without any specific type, with
@@ -100,12 +102,12 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     }
 
     @Override
-    public ValueChangeMode getValueChangeMode() {
+    public @Nullable ValueChangeMode getValueChangeMode() {
         return currentMode;
     }
 
     @Override
-    public void setValueChangeMode(ValueChangeMode valueChangeMode) {
+    public void setValueChangeMode(@Nullable ValueChangeMode valueChangeMode) {
         currentMode = valueChangeMode;
         setSynchronizedEvent(
                 ValueChangeMode.eventForMode(valueChangeMode, "input"));

@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -51,7 +53,7 @@ public class Anchor extends HtmlContainer
                     AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
-    private Serializable href;
+    private @Nullable Serializable href;
 
     /**
      * Creates a new empty anchor component.
