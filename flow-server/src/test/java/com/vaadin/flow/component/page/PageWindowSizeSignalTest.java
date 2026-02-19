@@ -25,8 +25,8 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 public class PageWindowSizeSignalTest {
@@ -37,7 +37,7 @@ public class PageWindowSizeSignalTest {
         Signal<WindowSize> signal = page.windowSizeSignal();
         Assert.assertFalse(
                 "windowSizeSignal() should return a read-only signal",
-                signal instanceof WritableSignal);
+                signal instanceof ValueSignal);
     }
 
     @Test
@@ -46,16 +46,16 @@ public class PageWindowSizeSignalTest {
         Page page = new Page(ui);
 
         Signal<WindowSize> signal = page.windowSizeSignal();
-        Assert.assertEquals(new WindowSize(0, 0), signal.value());
+        Assert.assertEquals(new WindowSize(0, 0), signal.get());
 
         fireResizeEvent(ui, 1024, 768);
-        Assert.assertEquals(new WindowSize(1024, 768), signal.value());
+        Assert.assertEquals(new WindowSize(1024, 768), signal.get());
 
         fireResizeEvent(ui, 1920, 1080);
-        Assert.assertEquals(new WindowSize(1920, 1080), signal.value());
+        Assert.assertEquals(new WindowSize(1920, 1080), signal.get());
 
         fireResizeEvent(ui, 800, 600);
-        Assert.assertEquals(new WindowSize(800, 600), signal.value());
+        Assert.assertEquals(new WindowSize(800, 600), signal.get());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class PageWindowSizeSignalTest {
         Assert.assertNotNull(listenerEvent.get());
         Assert.assertEquals(1280, listenerEvent.get().getWidth());
         Assert.assertEquals(720, listenerEvent.get().getHeight());
-        Assert.assertEquals(new WindowSize(1280, 720), signal.value());
+        Assert.assertEquals(new WindowSize(1280, 720), signal.get());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class PageWindowSizeSignalTest {
         // Both should be updated by a single resize event
         fireResizeEvent(ui, 1920, 1080);
 
-        Assert.assertEquals(new WindowSize(1920, 1080), signal.value());
+        Assert.assertEquals(new WindowSize(1920, 1080), signal.get());
         Assert.assertNotNull(listenerEvent.get());
         Assert.assertEquals(1920, listenerEvent.get().getWidth());
         Assert.assertEquals(1080, listenerEvent.get().getHeight());

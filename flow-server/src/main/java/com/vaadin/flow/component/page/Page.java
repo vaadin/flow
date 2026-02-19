@@ -40,8 +40,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -399,20 +399,30 @@ public class Page implements Serializable {
      * @return a read-only signal with the current window size
      */
     public Signal<WindowSize> windowSizeSignal() {
-        if (windowSizeSignal == null) {
-            ExtendedClientDetails details = getExtendedClientDetails();
-            int width = details.getWindowInnerWidth();
-            int height = details.getWindowInnerHeight();
-            if (width < 0) {
-                width = 0;
-            }
-            if (height < 0) {
-                height = 0;
-            }
-            windowSizeSignal = new ValueSignal<>(new WindowSize(width, height));
-            ensureResizeListener();
-        }
+        ensureWindowSizeSignal();
         return windowSizeSignal.asReadonly();
+    }
+
+    /**
+     * Sets the window size in the signal. Used by {@link ExtendedClientDetails}
+     * to feed bootstrap data into the signal.
+     *
+     * @param width
+     *            the window inner width
+     * @param height
+     *            the window inner height
+     */
+    void setWindowSize(int width, int height) {
+        ensureWindowSizeSignal();
+        windowSizeSignal
+                .set(new WindowSize(Math.max(width, 0), Math.max(height, 0)));
+    }
+
+    private void ensureWindowSizeSignal() {
+        if (windowSizeSignal == null) {
+            windowSizeSignal = new ValueSignal<>(new WindowSize(0, 0));
+        }
+        ensureResizeListener();
     }
 
     /**
@@ -455,7 +465,7 @@ public class Page implements Serializable {
                         int w = e.getEventData().get("event.w").intValue();
                         int h = e.getEventData().get("event.h").intValue();
                         if (windowSizeSignal != null) {
-                            windowSizeSignal.value(new WindowSize(w, h));
+                            windowSizeSignal.set(new WindowSize(w, h));
                         }
                         if (resizeListeners != null) {
                             var evt = new BrowserWindowResizeEvent(this, w, h);

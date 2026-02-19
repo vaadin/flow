@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
+
 /**
  * Represents the size of the browser window.
  *
@@ -25,5 +27,5 @@ package com.vaadin.flow.component.page;
  *
  * @author Vaadin Ltd
  */
-public record WindowSize(int width, int height) {
+public record WindowSize(int width, int height) implements Serializable {
 }
