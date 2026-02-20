@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.Id;
@@ -610,6 +611,33 @@ public class StagedTransactionTest {
                 TestUtil.readTransactionRootValue(a1);
             });
         });
+    }
+
+    @Test
+    void commit_withRepeatableReadFallback_changeObserverSeesUpdatedValue() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        Transaction fallback = Transaction.createWriteThrough();
+        Transaction.setTransactionFallback(() -> fallback);
+
+        try {
+            AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
+
+            tree.observeNextChange(Id.ZERO, immediate -> {
+                valueInObserver.set(TestUtil.readTransactionRootValue(tree));
+                return false;
+            });
+
+            Transaction.runInTransaction(() -> {
+                Transaction.getCurrent().include(tree,
+                        TestUtil.writeRootValueCommand("updated"), null);
+            });
+
+            assertNotNull(valueInObserver.get(),
+                    "Change observer should see updated value via outer transaction");
+        } finally {
+            Transaction.setTransactionFallback(null);
+        }
     }
 
     @Test
