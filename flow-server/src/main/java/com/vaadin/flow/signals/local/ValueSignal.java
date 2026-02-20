@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
@@ -57,6 +58,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
     private transient boolean usedWithoutSessionLock = false;
+    private final SerializableBiPredicate<T, T> equalityChecker;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -65,7 +67,29 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the initial value, may be <code>null</code>
      */
     public ValueSignal(@Nullable T initialValue) {
+        this(initialValue, Objects::equals);
+    }
+
+    /**
+     * Creates a new value signal with the given initial value and a custom
+     * equality checker.
+     * <p>
+     * The equality checker is used to determine if a new value is equal to the
+     * current value. If the equality checker returns {@code true}, the value
+     * update is skipped, and no change notification is triggered, i.e., no
+     * dependent effect function is triggered.
+     *
+     * @param initialValue
+     *            the initial value, may be <code>null</code>
+     * @param equalityChecker
+     *            the predicate used to compare values for equality, not
+     *            <code>null</code>
+     */
+    public ValueSignal(@Nullable T initialValue,
+            SerializableBiPredicate<T, T> equalityChecker) {
         super(initialValue);
+        this.equalityChecker = Objects.requireNonNull(equalityChecker,
+                "Equality checker must not be null");
     }
 
     @Override
@@ -105,7 +129,10 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * Sets the value of this signal.
      * <p>
      * Setting a new value will trigger effect functions that have reads from
-     * this signal.
+     * this signal. If the new value is equal to the current value (compared
+     * using the equality checker provided in the constructor, which defaults to
+     * {@link Objects#equals(Object, Object)}), effect function is not
+     * triggered.
      *
      * @param value
      *            the value to set
@@ -115,7 +142,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
         try {
             checkPreconditions();
 
-            setSignalValue(value);
+            if (!equalityChecker.test(value, getSignalValue())) {
+                setSignalValue(value);
+            }
         } finally {
             unlock();
         }
@@ -164,6 +193,10 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * would occur after the original transaction has already been committed.
      * For this reason, the whole operation completely bypasses all transaction
      * handling.
+     * <p>
+     * If the new value is equal to the current value (compared using the
+     * equality checker provided in the constructor), no effect function is
+     * triggered.
      *
      * @param updater
      *            the value update callback, not <code>null</code>
@@ -177,7 +210,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
 
             T oldValue = getSignalValue();
             T newValue = updater.update(oldValue);
-            if (newValue != oldValue) {
+            if (!equalityChecker.test(newValue, oldValue)) {
                 setSignalValue(newValue);
             }
 
