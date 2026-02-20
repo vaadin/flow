@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SpringVaadinServiceExecutorTest {
+class SpringVaadinServiceExecutorTest {
 
     static final String CUSTOM_EXECUTOR_VIA_INIT_LISTENER = "CUSTOM_EXECUTOR_VIA_INIT_LISTENER";
     static final String CUSTOM_NAMED_EXECUTOR = "CUSTOM_NAMED_EXECUTOR";
@@ -209,7 +209,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_noSpringExecutor_returnsDefaultExecutor() {
+    void getExecutor_noSpringExecutor_returnsDefaultExecutor() {
         contextRunner.run(context -> {
             VaadinService service = SpringInstantiatorTest.getService(context,
                     new Properties());
@@ -222,7 +222,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_springAsyncEnabled_returnsSpringDefaultExecutor() {
+    void getExecutor_springAsyncEnabled_returnsSpringDefaultExecutor() {
         contextRunner.withUserConfiguration(AsyncConfig.class).run(context -> {
             VaadinService service = SpringInstantiatorTest.getService(context,
                     new Properties());
@@ -232,7 +232,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_multipleSpringExecutors_returnsSpringDefaultApplicationTaskExecutor() {
+    void getExecutor_multipleSpringExecutors_returnsSpringDefaultApplicationTaskExecutor() {
         contextRunner.withUserConfiguration(AsyncAndSchedulingConfig.class)
                 .run(context -> {
                     VaadinService service = SpringInstantiatorTest
@@ -245,7 +245,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_springDefaultAndCustomNamedExecutorBean_returnsCustomTaskExecutor() {
+    void getExecutor_springDefaultAndCustomNamedExecutorBean_returnsCustomTaskExecutor() {
         contextRunner
                 .withUserConfiguration(AsyncConfigWithNamedExecutorConfig.class)
                 .run(context -> {
@@ -259,7 +259,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_springDefaultAndCustomAnnotatedExecutorBean_returnsCustomTaskExecutor() {
+    void getExecutor_springDefaultAndCustomAnnotatedExecutorBean_returnsCustomTaskExecutor() {
         contextRunner
                 .withUserConfiguration(
                         AsyncConfigWithAnnotatedExecutorConfig.class)
@@ -274,7 +274,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_springDefaultAndCustomExecutorBean_returnsCustomTaskExecutor() {
+    void getExecutor_springDefaultAndCustomExecutorBean_returnsCustomTaskExecutor() {
         contextRunner
                 .withUserConfiguration(
                         AsyncConfigWithCustomExecutorConfig.class)
@@ -289,7 +289,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customExecutorBean_returnsCustomTaskExecutor() {
+    void getExecutor_customExecutorBean_returnsCustomTaskExecutor() {
         contextRunner.withUserConfiguration(CustomExecutorBeanConfig.class)
                 .run(context -> {
                     VaadinService service = SpringInstantiatorTest
@@ -302,7 +302,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customSchedulerBean_returnsCustomTaskScheduler() {
+    void getExecutor_customSchedulerBean_returnsCustomTaskScheduler() {
         contextRunner.withUserConfiguration(CustomSchedulerConfig.class)
                 .run(context -> {
                     VaadinService service = SpringInstantiatorTest
@@ -315,7 +315,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customExecutorAndSchedulerBeans_returnsCustomTaskExecutor() {
+    void getExecutor_customExecutorAndSchedulerBeans_returnsCustomTaskExecutor() {
         contextRunner
                 .withUserConfiguration(CustomExecutorAndSchedulerConfig.class)
                 .run(context -> {
@@ -329,7 +329,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customExecutorNamedBean_returnsCustomTaskExecutorNamedInstance() {
+    void getExecutor_customExecutorNamedBean_returnsCustomTaskExecutorNamedInstance() {
         contextRunner.withUserConfiguration(CustomExecutorBeanConfig.class,
                 CustomExecutorNamedBeanConfig.class).run(context -> {
                     VaadinService service = SpringInstantiatorTest
@@ -343,7 +343,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customExecutorAnnotatedBean_returnsCustomTaskExecutorNamedInstance() {
+    void getExecutor_customExecutorAnnotatedBean_returnsCustomTaskExecutorNamedInstance() {
         contextRunner
                 .withUserConfiguration(CustomExecutorBeanConfig.class,
                         CustomExecutorAnnotatedBeanConfig.class)
@@ -359,7 +359,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_asyncEnabledAndCustomExecutorNamedBean_returnsCustomTaskExecutorNamedInstance() {
+    void getExecutor_asyncEnabledAndCustomExecutorNamedBean_returnsCustomTaskExecutorNamedInstance() {
         contextRunner.withUserConfiguration(AsyncConfig.class,
                 CustomExecutorNamedBeanConfig.class).run(context -> {
                     VaadinService service = SpringInstantiatorTest
@@ -373,7 +373,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_customExecutorViaInitListener_returnsCustomTaskExecutor() {
+    void getExecutor_customExecutorViaInitListener_returnsCustomTaskExecutor() {
         contextRunner
                 .withUserConfiguration(
                         CustomExecutorViaInitListenerConfig.class)
@@ -389,7 +389,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void init_multipleUnnamedTaskExecutors_executorAccessed_throws() {
+    void init_multipleUnnamedTaskExecutors_executorAccessed_throws() {
         contextRunner.withUserConfiguration(MultipleExecutorsConfig.class)
                 .run(context -> {
                     IllegalStateException error = assertThrows(
@@ -408,7 +408,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void init_multipleNamedTaskExecutors_executorAccessed_throws() {
+    void init_multipleNamedTaskExecutors_executorAccessed_throws() {
         contextRunner.withUserConfiguration(MultipleNamedExecutorsConfig.class)
                 .run(context -> {
                     IllegalStateException error = assertThrows(
@@ -427,7 +427,7 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void getExecutor_invalidAnnotatedType_doesNotThrow() {
+    void getExecutor_invalidAnnotatedType_doesNotThrow() {
         contextRunner.withUserConfiguration(InvalidTypeAnnodatedConfig.class)
                 .run(context -> {
                     VaadinService service = SpringInstantiatorTest

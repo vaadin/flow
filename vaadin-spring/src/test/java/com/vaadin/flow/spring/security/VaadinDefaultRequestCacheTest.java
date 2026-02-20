@@ -21,9 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,17 +32,23 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest()
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
-public class VaadinDefaultRequestCacheTest {
+class VaadinDefaultRequestCacheTest {
 
     @Autowired
     VaadinDefaultRequestCache cache;
@@ -51,128 +56,128 @@ public class VaadinDefaultRequestCacheTest {
     RequestUtil requestUtil;
 
     @Test
-    public void normalRouteRequestSaved() {
+    void normalRouteRequestSaved() {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
 
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
         cache.saveRequest(request, response);
-        Assert.assertNotNull(cache.getRequest(request, response));
+        assertNotNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void internalRequestsNotSaved() {
+    void internalRequestsNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest(null,
                 RequestType.INIT);
         HttpServletResponse response = createResponse();
-        Assert.assertTrue(requestUtil.isFrameworkInternalRequest(request));
+        assertTrue(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void serviceWorkerRequestNotSaved() {
+    void serviceWorkerRequestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("", null,
                 Collections.singletonMap("Referer",
                         "https://labs.vaadin.com/business/sw.js"));
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void dotWellKnownPath_requestNotSaved() {
+    void dotWellKnownPath_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest(
                 "/.well-known/appspecific/com.chrome.devtools.json", null);
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void favicon_requestNotSaved() {
+    void favicon_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/favicon.ico", null);
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void xhr_requestNotSaved() {
+    void xhr_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("/", null,
                 Collections.singletonMap("X-Requested-With", "XMLHttpRequest"));
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void jsonRequest_requestNotSaved() {
+    void jsonRequest_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("/", null,
                 Collections.singletonMap(HttpHeaders.ACCEPT,
                         "application/json"));
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void imageRequest_requestNotSaved() {
+    void imageRequest_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("/", null,
                 Map.of(HttpHeaders.ACCEPT,
                         "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                         "Sec-Fetch-Dest", "image", "Sec-Fetch-Mode",
                         "no-cors"));
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void scriptRequest_requestNotSaved() {
+    void scriptRequest_requestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("/", null,
                 Map.of(HttpHeaders.ACCEPT,
                         "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
                         "Sec-Fetch-Dest", "script", "Sec-Fetch-Mode",
                         "no-cors"));
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void customMatchers_requestNotSaved() {
+    void customMatchers_requestNotSaved() {
         cache.ignoreRequests(PathPatternRequestMatcher.withDefaults()
                 .matcher("/dont-save/**"));
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/dont-save/me", null);
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void errorRequestNotSaved() {
+    void errorRequestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("error",
                 null);
         HttpServletResponse response = createResponse();
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
+        assertNull(cache.getRequest(request, response));
     }
 
     @Test
-    public void getRequest_uses_delegateRequestCache() throws Exception {
+    void getRequest_uses_delegateRequestCache() throws Exception {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
@@ -184,14 +189,13 @@ public class VaadinDefaultRequestCacheTest {
 
         SavedRequest actualSavedRequest = cache.getRequest(request, response);
         Mockito.verify(delegateRequestCache).getRequest(request, response);
-        Assert.assertEquals(expectedSavedRequest, actualSavedRequest);
+        assertEquals(expectedSavedRequest, actualSavedRequest);
 
         cache.setDelegateRequestCache(new HttpSessionRequestCache());
     }
 
     @Test
-    public void getMatchingRequest_uses_delegateRequestCache()
-            throws Exception {
+    void getMatchingRequest_uses_delegateRequestCache() throws Exception {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
@@ -206,13 +210,13 @@ public class VaadinDefaultRequestCacheTest {
                 .getMatchingRequest(request, response);
         Mockito.verify(delegateRequestCache).getMatchingRequest(request,
                 response);
-        Assert.assertEquals(expectedMachingRequest, actualMatchingRequest);
+        assertEquals(expectedMachingRequest, actualMatchingRequest);
 
         cache.setDelegateRequestCache(new HttpSessionRequestCache());
     }
 
     @Test
-    public void saveRequest_uses_delegateRequestCache() throws Exception {
+    void saveRequest_uses_delegateRequestCache() throws Exception {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
@@ -226,7 +230,7 @@ public class VaadinDefaultRequestCacheTest {
     }
 
     @Test
-    public void removeRequest_uses_delegateRequestCache() throws Exception {
+    void removeRequest_uses_delegateRequestCache() throws Exception {
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
