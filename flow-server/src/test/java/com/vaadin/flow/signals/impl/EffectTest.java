@@ -41,7 +41,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_noSignalUsage_throws() {
-        assertThrows(UsageDetector.MissingSignalUsageException.class, () -> {
+        assertThrows(UsageTracker.MissingSignalUsageException.class, () -> {
             Signal.unboundEffect(() -> {
                 // no-op - action doesn't read any signals
             });

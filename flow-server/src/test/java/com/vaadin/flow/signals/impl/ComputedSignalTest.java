@@ -60,7 +60,7 @@ public class ComputedSignalTest extends SignalTestBase {
     void value_constantCallback_throws() {
         Signal<String> signal = Signal.computed(() -> "const");
 
-        assertThrows(UsageDetector.MissingSignalUsageException.class,
+        assertThrows(UsageTracker.MissingSignalUsageException.class,
                 signal::get);
     }
 

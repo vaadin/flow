@@ -22,7 +22,6 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.impl.UsageDetector;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.operations.SignalOperation.Result;
@@ -105,11 +104,12 @@ public class TestUtil {
      */
     public static UsageTracker.Usage runAndTrackUsage(
             SerializableRunnable task) {
-        UsageDetector usageDetector = UsageDetector.createCollecting();
-        UsageTracker.tracked(() -> {
-            task.run();
-            return null;
-        }, usageDetector).supply();
-        return usageDetector.dependencies();
+        UsageTracker.TrackedSupplier<Void> trackedTask = UsageTracker
+                .tracked(() -> {
+                    task.run();
+                    return null;
+                });
+        trackedTask.supply();
+        return trackedTask.dependencies();
     }
 }

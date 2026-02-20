@@ -117,28 +117,24 @@ public class Effect implements Serializable {
 
         activeEffects.get().add(this);
         try {
-            UsageDetector usageDetector = UsageDetector
-                    .createNecessary("Effect action must use signals.");
-
-            // Register listeners immediately as signals are read, using the
-            // original pattern to detect synchronous writes (infinite loops)
-            UsageTracker.tracked(action, usage -> {
-                // Register with detector for validation
-                usageDetector.register(usage);
-
-                // avoid lambda to allow proper deserialization
-                TransientListener usageListener = new TransientListener() {
-                    @Override
-                    public boolean invoke(boolean immediate) {
-                        return onDependencyChange(immediate);
-                    }
-                };
-                registrations.add(usage.onNextChange(usageListener));
-            }).supply();
-
-            // This will throw MissingSignalUsageException if no signals were
-            // read
-            usageDetector.dependencies();
+            // avoid lambda to allow proper deserialization
+            TransientListener usageListener = new TransientListener() {
+                @Override
+                public boolean invoke(boolean immediate) {
+                    return onDependencyChange(immediate);
+                }
+            };
+            // avoid lambda to allow proper deserialization
+            UsageRegistrar usageRegistrar = new UsageRegistrar() {
+                @Override
+                public void register(UsageTracker.Usage usage) {
+                    registrations.add(usage.onNextChange(usageListener));
+                }
+            };
+            UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                    .tracked(action).withUsageListener(usageRegistrar);
+            trackedSupplier.supply();
+            trackedSupplier.assertHasUsage("Effect action must use signals.");
         } finally {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
