@@ -54,6 +54,7 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     private static final String DIV_BG_COLOR_BEFORE_DELETE = "rgba(0, 255, 0, 1)";
 
     private Path resourcesPath;
+    private Path sourceResourcesPath;
     private Path updatedImagePath;
 
     @Before
@@ -67,6 +68,14 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         resourcesPath = Paths.get(markerUrl.toURI()).getParent();
         updatedImagePath = resourcesPath
                 .resolve(Paths.get("css", "images", "vaadin-logo.png"));
+
+        // The file watcher monitors the source directory, not the build
+        // output. Derive the source path from the target path:
+        // target/classes/META-INF/resources -> project root
+        Path projectDir = resourcesPath.getParent().getParent().getParent()
+                .getParent();
+        sourceResourcesPath = projectDir
+                .resolve("src/main/resources/META-INF/resources");
     }
 
     @After
@@ -186,12 +195,11 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
 
     private void triggerReload(String divId, ThrowingConsumer<Path> updater)
             throws IOException {
-        TestBenchElement button = $("button").id("reload-" + divId);
-        String resourceRelativePath = button
+        TestBenchElement div = $("div").id(divId);
+        String resourceRelativePath = div
                 .getDomAttribute("test-resource-file-path");
         Assert.assertNotNull(
-                "No test-resource-file-path attribute found for button "
-                        + button,
+                "No test-resource-file-path attribute found for div " + divId,
                 resourceRelativePath);
 
         Path resourcePath = resourcesPath
@@ -206,7 +214,15 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         // Make sure the servlet container returns the updated content
         waitUntilContentMatches(
                 getRootURL() + "/context/" + resourceRelativePath, content);
-        button.click();
+
+        // Also update the source file so the file watcher detects the
+        // change and triggers a live CSS reload via the debug connection
+        Path sourcePath = sourceResourcesPath
+                .resolve(resourceRelativePath.replace('/', File.separatorChar));
+        if (Files.exists(sourcePath)) {
+            styleSheetRestore.put(sourcePath, Files.readAllBytes(sourcePath));
+            updater.accept(sourcePath);
+        }
     }
 
     private void triggerReloadImage(String styledDivID) throws IOException {
@@ -218,12 +234,12 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     }
 
     private void triggerDelete() throws IOException {
-        TestBenchElement button = $("button").id("delete-view-style-deleted");
-        String resourceRelativePath = button
+        TestBenchElement div = $("div").id("view-style-deleted");
+        String resourceRelativePath = div
                 .getDomAttribute("test-resource-file-path");
         Assert.assertNotNull(
-                "No test-resource-file-path attribute found for button "
-                        + button,
+                "No test-resource-file-path attribute found for div "
+                        + "view-style-deleted",
                 resourceRelativePath);
 
         Path resourcePath = resourcesPath
@@ -235,7 +251,15 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         Files.delete(resourcePath);
 
         waitUntil(driver -> !Files.exists(resourcePath));
-        button.click();
+
+        // Also delete the source file so the file watcher detects the
+        // change and triggers a live CSS reload via the debug connection
+        Path sourcePath = sourceResourcesPath
+                .resolve(resourceRelativePath.replace('/', File.separatorChar));
+        if (Files.exists(sourcePath)) {
+            styleSheetRestore.put(sourcePath, Files.readAllBytes(sourcePath));
+            Files.delete(sourcePath);
+        }
     }
 
     private void waitUntilContentMatches(String url, byte[] expectedContent) {
