@@ -23,10 +23,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -34,16 +32,21 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class FileWatcherTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class FileWatcherTest {
+
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void fileWatcherTriggeredForModification() throws Exception {
+    void fileWatcherTriggeredForModification() throws Exception {
         AtomicReference<File> changed = new AtomicReference<>();
 
-        File dir = temporaryFolder.newFolder("watched");
+        File dir = new File(temporaryFolder, "watched");
+
+        dir.mkdirs();
         FileWatcher watcher = new FileWatcher(file -> {
             changed.set(file);
         }, dir);
@@ -56,16 +59,17 @@ public class FileWatcherTest {
 
             Thread.sleep(50); // The watcher is supposed to be triggered
                               // immediately
-            Assert.assertEquals(newFile, changed.get());
+            assertEquals(newFile, changed.get());
         } finally {
             watcher.stop();
         }
     }
 
     @Test
-    public void externalDependencyWatcher_setViaParameter_TriggeredForModification()
+    void externalDependencyWatcher_setViaParameter_TriggeredForModification()
             throws Exception {
-        File projectFolder = temporaryFolder.newFolder("projectFolder");
+        File projectFolder = new File(temporaryFolder, "projectFolder");
+        projectFolder.mkdirs();
 
         String metaInf = "/src/main/resources/META-INF/";
         String rootProjectResourceFrontend = projectFolder.getAbsolutePath()
@@ -76,8 +80,9 @@ public class FileWatcherTest {
         new File(rootProjectResourceFrontend).mkdirs();
         new File(subProjectLegacyFrontend).mkdirs();
 
-        File jarFrontendResources = temporaryFolder
-                .newFolder("jarFrontendResources");
+        File jarFrontendResources = new File(temporaryFolder,
+                "jarFrontendResources");
+        jarFrontendResources.mkdirs();
 
         VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
         ApplicationConfiguration config = Mockito
@@ -106,18 +111,19 @@ public class FileWatcherTest {
                 List<String> frontendFiles = Arrays
                         .stream(jarFrontendResources.listFiles())
                         .map(File::getName).toList();
-                Assert.assertTrue("No 'somestyles.css' file found",
-                        frontendFiles.contains("somestyles.css"));
-                Assert.assertTrue("No 'somejs.js' file found",
-                        frontendFiles.contains("somejs.js"));
+                assertTrue(frontendFiles.contains("somestyles.css"),
+                        "No 'somestyles.css' file found");
+                assertTrue(frontendFiles.contains("somejs.js"),
+                        "No 'somejs.js' file found");
             }
         }
     }
 
     @Test
-    public void externalDependencyWatcher_setAsDefaultForRunnerProjectButNotSubProject_TriggeredForModification()
+    void externalDependencyWatcher_setAsDefaultForRunnerProjectButNotSubProject_TriggeredForModification()
             throws Exception {
-        File projectFolder = temporaryFolder.newFolder("projectFolder");
+        File projectFolder = new File(temporaryFolder, "projectFolder");
+        projectFolder.mkdirs();
 
         String metaInf = "/src/main/resources/META-INF/";
         String rootPorjectResourceFrontend = projectFolder.getAbsolutePath()
@@ -128,8 +134,9 @@ public class FileWatcherTest {
         new File(rootPorjectResourceFrontend).mkdirs();
         new File(subProjectLegacyFrontend).mkdirs();
 
-        File jarFrontendResources = temporaryFolder
-                .newFolder("jarFrontendResources");
+        File jarFrontendResources = new File(temporaryFolder,
+                "jarFrontendResources");
+        jarFrontendResources.mkdirs();
 
         VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
         ApplicationConfiguration config = Mockito
@@ -154,7 +161,7 @@ public class FileWatcherTest {
                 createFile(subProjectLegacyFrontend + "/somejs.js");
                 assertFileCountFound(jarFrontendResources, 1);
 
-                Assert.assertEquals("somestyles.css",
+                assertEquals("somestyles.css",
                         jarFrontendResources.listFiles()[0].getName());
             }
         }
@@ -162,11 +169,10 @@ public class FileWatcherTest {
 
     private void assertFileCountFound(File directory, int count) {
         Awaitility.await().untilAsserted(directory::listFiles, files -> {
-            Assert.assertEquals(
+            assertEquals(count, files.length,
                     "Wrong amount of copied files found when there should be "
                             + count + ". Current files were: "
-                            + Arrays.toString(files),
-                    count, files.length);
+                            + Arrays.toString(files));
         });
 
     }

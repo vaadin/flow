@@ -15,14 +15,14 @@
  */
 package com.vaadin.base.devserver.hotswap;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -41,7 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 
-public class HotswapperResourcesTest {
+class HotswapperResourcesTest {
 
     private MockVaadinServletService service;
     private BrowserLiveReload liveReload;
@@ -49,11 +49,11 @@ public class HotswapperResourcesTest {
     private VaadinHotswapper flowHotswapper;
     private VaadinHotswapper hillaHotswapper;
 
-    @Rule
-    public TemporaryFolder tempProjectDir = new TemporaryFolder();
+    @TempDir
+    File tempProjectDir;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         service = new MockVaadinServletService();
 
         // Wire BrowserLiveReload into Lookup via BrowserLiveReloadAccessor
@@ -82,8 +82,7 @@ public class HotswapperResourcesTest {
     }
 
     @Test
-    public void resourceChange_noLiveReloadAvailable_noCrash()
-            throws IOException {
+    void resourceChange_noLiveReloadAvailable_noCrash() throws IOException {
         // Simulate no live reload
         liveReload = null;
         hotswapper = new Hotswapper(service);
@@ -103,7 +102,7 @@ public class HotswapperResourcesTest {
     }
 
     @Test
-    public void onResourceHotswap_hotswapperRequestsReload_liveReloadTriggered()
+    void onResourceHotswap_hotswapperRequestsReload_liveReloadTriggered()
             throws ServiceException {
         Mockito.doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
@@ -129,7 +128,7 @@ public class HotswapperResourcesTest {
     }
 
     @Test
-    public void onResourceHotswap_hotswapperRequestsRefresh_refreshTriggered()
+    void onResourceHotswap_hotswapperRequestsRefresh_refreshTriggered()
             throws ServiceException {
         Mockito.doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
@@ -149,7 +148,7 @@ public class HotswapperResourcesTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_hotswapperRequestsRefresh_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_hotswapperRequestsRefresh_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession(service);
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -171,7 +170,7 @@ public class HotswapperResourcesTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_hotswapperRequestRefresh_allUIsRefreshed()
+    void onHotswap_pushEnabled_hotswapperRequestRefresh_allUIsRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession(service);
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
