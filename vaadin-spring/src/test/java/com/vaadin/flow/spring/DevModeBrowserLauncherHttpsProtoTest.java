@@ -21,11 +21,11 @@ import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1235",
         "server.ssl.enabled = true" })
-public class DevModeBrowserLauncherHttpsProtoTest
+class DevModeBrowserLauncherHttpsProtoTest
         extends AbstractDevModeBrowserLauncherTest {
 
     @Test
-    public void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {
+    void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {
         String url = DevModeBrowserLauncher.getUrl(app);
         Assertions.assertEquals("https://localhost:1235/", url);
     }

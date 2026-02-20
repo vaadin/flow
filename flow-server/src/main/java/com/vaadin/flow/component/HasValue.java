@@ -342,4 +342,38 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
                 "Binding read only state to a Signal is not supported by "
                         + getClass().getSimpleName());
     }
+
+    /**
+     * Binds a {@link Signal}'s value to the required indicator visible state of
+     * this component and keeps the state synchronized with the signal value
+     * while the component is in attached state. When the component is in
+     * detached state, signal value changes have no effect.
+     * <p>
+     * While a Signal is bound to the required indicator visible state, any
+     * attempt to set the state manually with
+     * {@link #setRequiredIndicatorVisible(boolean)} throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Input component = new Input();
+     * add(component);
+     * component.bindRequiredIndicatorVisible(signal);
+     * signal.set(true); // The required indicator becomes visible
+     * </pre>
+     *
+     * @param requiredSignal
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setRequiredIndicatorVisible(boolean)
+     */
+    default void bindRequiredIndicatorVisible(Signal<Boolean> requiredSignal) {
+        throw new UnsupportedOperationException(
+                "Binding required indicator visible state to a Signal is not supported by "
+                        + getClass().getSimpleName());
+    }
 }
