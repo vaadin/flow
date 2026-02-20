@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -341,7 +341,7 @@ public class SharedListSignalTest extends SignalTestBase {
     void usageTracking_changeDifferentValues_onlyListChangeDetected() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 

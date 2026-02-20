@@ -196,21 +196,23 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
-            @Nullable
-            Object[] holder = new @Nullable Object[2];
-            Usage dependencies = UsageTracker.track(() -> {
-                try {
-                    holder[0] = computation.compute();
-                } catch (RuntimeException e) {
-                    holder[1] = e;
-                }
-            });
-            @Nullable
-            Object value = holder[0];
-            @Nullable
-            RuntimeException exception = (RuntimeException) holder[1];
+            var trackedComputation = UsageTracker.tracked(computation);
 
-            state = new ComputedState(value, exception, dependencies);
+            @Nullable
+            Object value = null;
+            @Nullable
+            RuntimeException exception = null;
+            try {
+                value = trackedComputation.supply();
+            } catch (RuntimeException e) {
+                exception = e;
+            }
+
+            trackedComputation.assertHasUsage(
+                    "Signal computation must use other signals.");
+
+            state = new ComputedState(value, exception,
+                    trackedComputation.dependencies());
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
                     new ComputedPOJONode(state)));

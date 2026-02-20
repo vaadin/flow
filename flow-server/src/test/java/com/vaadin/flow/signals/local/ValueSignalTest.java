@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 
@@ -148,7 +149,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_setNewValue_changeDetected() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -171,7 +172,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_updateSameValue_noChangeDetected() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -192,7 +193,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_listenToChangedUsage_initialFlagSet() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -212,7 +213,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_keepListening_listenerKept() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -237,7 +238,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_stopAfterInitial_stopped() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -259,7 +260,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_stopAfterSubsequent_stopped() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -280,7 +281,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_anyModify_detectedAsAChange() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -293,7 +294,7 @@ public class ValueSignalTest extends SignalTestBase {
     void usageTracker_peek_noUsageDetected() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.peek();
         });
 

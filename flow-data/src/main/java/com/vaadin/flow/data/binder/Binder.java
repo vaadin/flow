@@ -64,6 +64,7 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.function.TrackableSupplier;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -393,7 +394,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link Binder#validate()} will still work.
          * <p>
          * <b>Example - Cross-field validation:</b>
-         * 
+         *
          * <pre>
          * {@code
          * Binder<UserRegistration> binder = new Binder<>(
@@ -1511,8 +1512,8 @@ public class Binder<BEAN> implements Serializable {
         private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
 
         private transient Registration signalRegistration;
-
-        private transient ValueSignal<Boolean> internalValidationTriggerSignal;
+        private final ValueSignal<Void> allowEffectSignal = new ValueSignal<>(
+                null);
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1608,7 +1609,6 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration != null) {
                 signalRegistration.remove();
                 signalRegistration = null;
-                internalValidationTriggerSignal = null;
             }
 
             field = null;
@@ -1711,6 +1711,8 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
                 signalRegistration = Signal.effect(component, () -> {
+                    // bypass at least one signal usage requirement
+                    allowEffectSignal.get();
                     if (valueInit) {
                         // start to track signal usage
                         doConversion();
@@ -1742,12 +1744,6 @@ public class Binder<BEAN> implements Serializable {
                 removeFromChangedBindingsIfReverted(
                         getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
-                if (internalValidationTriggerSignal != null) {
-                    // Trigger re-validation signal to notify validators using
-                    // value()
-                    internalValidationTriggerSignal
-                            .set(!internalValidationTriggerSignal.peek());
-                }
             }
         }
 
@@ -1982,16 +1978,7 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public TARGET value() {
             HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
-            trackUsageOfInternalValidationSignal();
             return field.getValue();
-        }
-
-        private void trackUsageOfInternalValidationSignal() {
-            if (internalValidationTriggerSignal == null) {
-                internalValidationTriggerSignal = new ValueSignal<>(false);
-            }
-            // registers tracking
-            internalValidationTriggerSignal.get();
         }
 
     }
@@ -2120,15 +2107,6 @@ public class Binder<BEAN> implements Serializable {
     private boolean changeDetectionEnabled = false;
 
     private ValueSignal<BinderValidationStatus<BEAN>> binderValidationStatusSignal;
-
-    /**
-     * Error thrown when a signal is used incorrectly.
-     */
-    public static class InvalidSignalUsageError extends Error {
-        public InvalidSignalUsageError(String message) {
-            super(message);
-        }
-    }
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -3127,7 +3105,7 @@ public class Binder<BEAN> implements Serializable {
      * @param validator
      *            the validator to add, not null
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws UsageTracker.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(Validator<? super BEAN> validator) {
@@ -3136,16 +3114,24 @@ public class Binder<BEAN> implements Serializable {
             if (isValidatorsDisabled()) {
                 return ValidationResult.ok();
             } else {
-                // Track Signal usage and throw exception to help to detect
-                // attempt to use signals reactively without an active effect.
-                return UsageTracker.track(() -> validator.apply(value, context),
-                        usage -> {
-                            throw new InvalidSignalUsageError(
-                                    "Detected Signal.get() call inside a bean level validator. "
-                                            + "This is not supported since bean level validators "
-                                            + "are not run inside a reactive effect. "
-                                            + "Use of Signal.get() is only supported in field level validators.");
-                        });
+                // Track Signal usage and throw to help detect attempt to use
+                // signals reactively without an active effect.
+                UsageTracker.TrackedSupplier<ValidationResult> trackedValidator = UsageTracker
+                        .tracked(
+                                // avoid lambda to allow proper deserialization
+                                new TrackableSupplier<ValidationResult>() {
+                                    @Override
+                                    public ValidationResult supply() {
+                                        return validator.apply(value, context);
+                                    }
+                                });
+                var result = trackedValidator.supply();
+                trackedValidator.assertNoUsage(
+                        "Detected Signal.get() call inside a bean level validator. "
+                                + "This is not supported since bean level validators "
+                                + "are not run inside a reactive effect. "
+                                + "Use of Signal.get() is only supported in field level validators.");
+                return result;
             }
         });
         validators.add(wrappedValidator);
@@ -3170,7 +3156,7 @@ public class Binder<BEAN> implements Serializable {
      * @param message
      *            the error message to report in case validation failure
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws UsageTracker.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
@@ -3197,7 +3183,7 @@ public class Binder<BEAN> implements Serializable {
      * @param errorMessageProvider
      *            the provider to generate error messages, not null
      * @return this binder, for chaining
-     * @throws InvalidSignalUsageError
+     * @throws UsageTracker.DeniedSignalUsageException
      *             if a {@link Signal} is used incorrectly inside the validator
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,

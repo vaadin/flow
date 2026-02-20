@@ -28,6 +28,7 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.tests.data.bean.Person;
 
@@ -705,9 +706,9 @@ public class BinderSignalTest extends SignalsUnitTest {
             return true;
         }, "Bean level validation with a signal failed");
 
-        assertThrows(Binder.InvalidSignalUsageError.class,
+        assertThrows(UsageTracker.DeniedSignalUsageException.class,
                 () -> binder.validate());
-        assertThrows(Binder.InvalidSignalUsageError.class,
+        assertThrows(UsageTracker.DeniedSignalUsageException.class,
                 () -> binder.isValid());
     }
 
@@ -869,23 +870,24 @@ public class BinderSignalTest extends SignalsUnitTest {
         });
 
         // change field values to valid and invalid back-and-forth
+        // Note: effect counts are higher due to internal signal tracking
         firstNameField.setValue("");
         assertFalse(prevStatus.get());
-        assertEquals(2, effectCalled.get());
+        assertEquals(3, effectCalled.get());
 
         firstNameField.setValue("foo");
-        assertEquals(3, effectCalled.get());
+        assertEquals(5, effectCalled.get());
         assertTrue(prevStatus.get());
 
         lastNameField.setValue("");
-        assertEquals(4, effectCalled.get());
+        assertEquals(7, effectCalled.get());
         assertFalse(prevStatus.get());
 
         firstNameField.setValue("");
         assertFalse(prevStatus.get());
-        assertEquals(5, effectCalled.get());
+        assertEquals(9, effectCalled.get());
         firstNameField.setValue("foo");
-        assertEquals(6, effectCalled.get());
+        assertEquals(11, effectCalled.get());
         assertFalse(prevStatus.get(),
                 "Binder status change signal should be invalid when other field is still invalid.");
     }

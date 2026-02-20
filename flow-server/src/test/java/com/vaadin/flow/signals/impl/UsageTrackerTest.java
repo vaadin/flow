@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.Registration;
@@ -28,9 +29,12 @@ import com.vaadin.flow.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UsageTrackerTest extends SignalTestBase {
@@ -38,9 +42,13 @@ public class UsageTrackerTest extends SignalTestBase {
     void hasChanges_runInTransaction_readsFromTransaction() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            signal.get();
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    signal.get();
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         Signal.runInTransaction(() -> {
             signal.set("changed");
@@ -54,9 +62,13 @@ public class UsageTrackerTest extends SignalTestBase {
     }
 
     @Test
-    void track_noUsage_noChnages() {
-        Usage usage = UsageTracker.track(() -> {
-        });
+    void track_noUsage_noChanges() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         assertFalse(usage.hasChanges());
     }
@@ -65,9 +77,13 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_readValueInCallback_tracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            signal.get();
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    signal.get();
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         signal.set("update");
         assertTrue(usage.hasChanges());
@@ -77,9 +93,13 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekInCallback_notTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            signal.peek();
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    signal.peek();
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -89,9 +109,13 @@ public class UsageTrackerTest extends SignalTestBase {
     void track_peekConfirmedInCallback_notTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            signal.peekConfirmed();
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    signal.peekConfirmed();
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -101,12 +125,16 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_useValue_notRegistered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            Signal.untracked(() -> {
-                signal.get();
-                return null;
-            });
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    Signal.untracked(() -> {
+                        signal.get();
+                        return null;
+                    });
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         signal.set("update");
         assertFalse(usage.hasChanges());
@@ -116,12 +144,16 @@ public class UsageTrackerTest extends SignalTestBase {
     void untracked_writeInCallback_allowedNoUsageTracked() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        Usage usage = UsageTracker.track(() -> {
-            Signal.untracked(() -> {
-                signal.set("update");
-                return null;
-            });
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    Signal.untracked(() -> {
+                        signal.set("update");
+                        return null;
+                    });
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         signal.set("another");
         assertFalse(usage.hasChanges());
@@ -129,33 +161,43 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_multipleUsages_combinedUsage() {
-        Usage usage = UsageTracker.track(() -> {
-            UsageTracker.registerUsage(new TestUsage());
-            UsageTracker.registerUsage(new TestUsage());
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         assertInstanceOf(CombinedUsage.class, usage);
     }
 
     @Test
     void track_singleUsage_notCombinedUsage() {
-        Usage usage = UsageTracker.track(() -> {
-            UsageTracker.registerUsage(new TestUsage());
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+        Usage usage = trackedSupplier.dependencies();
 
         assertFalse(usage instanceof CombinedUsage);
     }
 
     @Test
     void isActive_activeInsideTrackerInactiveOutsdide() {
-        UsageTracker.track(() -> {
-            assertTrue(UsageTracker.isActive());
-
-            Signal.untracked(() -> {
-                assertFalse(UsageTracker.isActive());
-                return null;
-            });
-        });
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    assertTrue(UsageTracker.isActive());
+                    Signal.untracked(() -> {
+                        assertFalse(UsageTracker.isActive());
+                        return null;
+                    });
+                    return null;
+                });
+        trackedSupplier.supply();
 
         assertFalse(UsageTracker.isActive());
     }
@@ -288,6 +330,171 @@ public class UsageTrackerTest extends SignalTestBase {
         assertEquals(1, b.listeners.size());
     }
 
+    @Test
+    void trackedSupplier_returnsValue() {
+        var testValue = new Object();
+
+        UsageTracker.TrackedSupplier<Object> trackedSupplier = UsageTracker
+                .tracked(() -> testValue);
+
+        assertEquals(testValue, trackedSupplier.supply());
+    }
+
+    @Test
+    void trackedSupplier_noUsage_returnsNoUsage() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    // No signal reads
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        assertSame(UsageTracker.NO_USAGE, trackedSupplier.dependencies());
+    }
+
+    @Test
+    void trackedSupplier_singleUsage_returnsUsage() {
+        TestUsage testUsage = new TestUsage();
+
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(testUsage);
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        Usage result = trackedSupplier.dependencies();
+        assertEquals(result, testUsage);
+    }
+
+    @Test
+    void trackedSupplier_multipleUsages_returnsCombinedUsage() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        assertInstanceOf(CombinedUsage.class, trackedSupplier.dependencies());
+    }
+
+    @Test
+    void trackedSupplier_dependenciesCalledTwice_returnsSameResult() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        // Call dependencies() twice
+        Usage first = trackedSupplier.dependencies();
+        Usage second = trackedSupplier.dependencies();
+
+        // Should return the same cached result
+        assertSame(first, second);
+    }
+
+    @Test
+    void assertHasUsage_noUsage_throwsMissingSignalUsageException() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    // No signal reads
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        UsageTracker.MissingSignalUsageException exception = assertThrows(
+                UsageTracker.MissingSignalUsageException.class,
+                () -> trackedSupplier
+                        .assertHasUsage("Custom context message."));
+        assertTrue(exception.getMessage().contains("Custom context message."));
+    }
+
+    @Test
+    void missingSignalUsageException_messageFormat() {
+        UsageTracker.MissingSignalUsageException exception = new UsageTracker.MissingSignalUsageException(
+                "Test reason.");
+
+        assertTrue(exception.getMessage().contains("Test reason."));
+        assertTrue(exception.getMessage()
+                .contains("Expected at least one signal value read"));
+    }
+
+    @Test
+    void assertHasUsage_withUsage_returnsUsage() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        assertDoesNotThrow(
+                () -> trackedSupplier.assertHasUsage("Failed test."));
+    }
+
+    @Test
+    void assertNoUsage_registerUsage_throwsDeniedSignalUsageException() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        UsageTracker.DeniedSignalUsageException exception = assertThrows(
+                UsageTracker.DeniedSignalUsageException.class,
+                () -> trackedSupplier
+                        .assertNoUsage("Signal access not allowed here."));
+        assertTrue(exception.getMessage()
+                .contains("Signal access not allowed here."));
+    }
+
+    @Test
+    void assertNoUsage_neverRegistered_returnsNoUsage() {
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .tracked(() -> {
+                    // Never call register
+                    return null;
+                });
+        trackedSupplier.supply();
+
+        assertDoesNotThrow(() -> trackedSupplier.assertNoUsage("Failed test."));
+    }
+
+    @Test
+    void deniedSignalUsageException_messageFormat() {
+        UsageTracker.DeniedSignalUsageException exception = new UsageTracker.DeniedSignalUsageException(
+                "Custom context.");
+
+        assertTrue(exception.getMessage().contains("Custom context."));
+        assertTrue(exception.getMessage()
+                .contains("Using signals is denied in this context"));
+    }
+
+    @Test
+    void trackedSupplier_withUsageListener_invokesListener() {
+        class TestUsageException extends RuntimeException {
+        }
+        UsageTracker.UsageRegistrar preventPrematureChangeListener = new UsageTracker.UsageRegistrar() {
+            @Override
+            public void register(Usage usage) {
+                throw new TestUsageException();
+            }
+        };
+
+        UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
+                .<Void> tracked(() -> {
+                    UsageTracker.registerUsage(new TestUsage());
+                    return null;
+                }).withUsageListener(preventPrematureChangeListener);
+
+        assertThrows(TestUsageException.class, trackedSupplier::supply);
+    }
+
     private static class TestUsage implements Usage {
         boolean hasChanges;
         List<TransientListener> listeners = new ArrayList<>();
@@ -298,9 +505,9 @@ public class UsageTrackerTest extends SignalTestBase {
         }
 
         @Override
-        public Registration onNextChange(TransientListener listener) {
+        @NonNull
+        public Registration onNextChange(@NonNull TransientListener listener) {
             listeners.add(listener);
-
             return () -> listeners.remove(listener);
         }
     }

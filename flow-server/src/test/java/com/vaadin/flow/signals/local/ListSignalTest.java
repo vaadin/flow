@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
@@ -195,7 +196,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.peek();
         });
 
@@ -225,9 +226,9 @@ public class ListSignalTest extends SignalTestBase {
         AtomicBoolean entry2Changed = new AtomicBoolean(false);
         AtomicBoolean listChanged = new AtomicBoolean(false);
 
-        Usage usage1 = UsageTracker.track(entry1::get);
-        Usage usage2 = UsageTracker.track(entry2::get);
-        Usage listUsage = UsageTracker.track(signal::get);
+        Usage usage1 = TestUtil.runAndTrackUsage(entry1::get);
+        Usage usage2 = TestUtil.runAndTrackUsage(entry2::get);
+        Usage listUsage = TestUtil.runAndTrackUsage(signal::get);
 
         usage1.onNextChange(initial -> {
             entry1Changed.set(true);
@@ -253,7 +254,7 @@ public class ListSignalTest extends SignalTestBase {
     void usageTracker_insertValue_changeDetected() {
         ListSignal<String> signal = new ListSignal<>();
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -277,7 +278,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         ValueSignal<String> entry = signal.insertLast("value");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -293,7 +294,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -309,7 +310,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         ValueSignal<String> entry = signal.insertLast("value");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -323,7 +324,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.peek();
         });
 
@@ -334,7 +335,7 @@ public class ListSignalTest extends SignalTestBase {
     void usageTracker_listener_keepListening() {
         ListSignal<String> signal = new ListSignal<>();
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 
@@ -359,7 +360,7 @@ public class ListSignalTest extends SignalTestBase {
     void usageTracker_listener_stopAfterFirst() {
         ListSignal<String> signal = new ListSignal<>();
 
-        Usage usage = UsageTracker.track(() -> {
+        Usage usage = TestUtil.runAndTrackUsage(() -> {
             signal.get();
         });
 

@@ -114,8 +114,8 @@ public class SignalTestBase {
     }
 
     protected void assertUncaughtException(
-            Class<? extends Throwable> expetedType) {
-        assertUncaughtException(e -> e.getClass() == expetedType);
+            Class<? extends Throwable> expectedType) {
+        assertUncaughtException(expectedType::isInstance);
     }
 
     protected void assertUncaughtException(Predicate<Throwable> predicate) {
