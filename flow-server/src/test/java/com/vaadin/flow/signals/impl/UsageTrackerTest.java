@@ -146,7 +146,10 @@ public class UsageTrackerTest extends SignalTestBase {
 
         UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
                 .tracked(() -> {
-                    signal.set("update");
+                    Signal.untracked(() -> {
+                        signal.set("update");
+                        return null;
+                    });
                     return null;
                 });
         trackedSupplier.supply();

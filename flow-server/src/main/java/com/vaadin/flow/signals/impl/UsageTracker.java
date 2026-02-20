@@ -182,33 +182,27 @@ public class UsageTracker {
     }
 
     /**
-     * Wraps the given task to avoid tracking usage even when a usage tracker is
+     * Runs the given supplier without tracking usage even if a usage tracker is
      * active.
      *
      * @param <T>
-     *            the task result type
+     *            the supplier type
      * @param task
-     *            the task to wrap, not <code>null</code>
-     * @return the wrapped supplier
+     *            the supplier task to run, not <code>null</code>
+     * @return the value returned from the supplier
      */
-    public static <T> ValueSupplier<T> untracked(ValueSupplier<T> task) {
-        // avoid lambda to allow proper deserialization
-        return new ValueSupplier<T>() {
-            @Override
-            public @Nullable T supply() {
-                var previousTracker = currentTracker.get();
-                if (previousTracker == null) {
-                    return task.supply();
-                }
-                try {
-                    currentTracker.remove();
+    public static <T> T untracked(ValueSupplier<T> task) {
+        var previousTracker = currentTracker.get();
+        if (previousTracker == null) {
+            return task.supply();
+        }
+        try {
+            currentTracker.remove();
 
-                    return task.supply();
-                } finally {
-                    currentTracker.set(previousTracker);
-                }
-            }
-        };
+            return task.supply();
+        } finally {
+            currentTracker.set(previousTracker);
+        }
     }
 
     /**

@@ -299,6 +299,6 @@ public interface Signal<T> extends Serializable {
          * Note that there's no Runnable overload since the whole point of
          * untracked is to read values.
          */
-        return UsageTracker.untracked(task).supply();
+        return UsageTracker.untracked(task);
     }
 }

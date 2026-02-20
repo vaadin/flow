@@ -1413,8 +1413,7 @@ public class Binder<BEAN> implements Serializable {
                                 ValueContext context) {
                             return UsageTracker
                                     .untracked(() -> converter.convertToModel(
-                                            presentationValue, context))
-                                    .supply();
+                                            presentationValue, context));
                         }
 
                         @Override
@@ -1422,8 +1421,7 @@ public class Binder<BEAN> implements Serializable {
                                 NEWTARGET modelValue, ValueContext context) {
                             return UsageTracker.untracked(
                                     (() -> converter.convertToPresentation(
-                                            modelValue, context)))
-                                    .supply();
+                                            modelValue, context)));
                         }
                     });
             return (BindingBuilder<BEAN, NEWTARGET>) this;
