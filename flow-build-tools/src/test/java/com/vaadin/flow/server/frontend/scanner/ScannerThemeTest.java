@@ -19,9 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
@@ -40,15 +38,13 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.ThemeExport
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class ScannerThemeTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     void should_takeThemeFromTheView() {
@@ -92,15 +88,16 @@ class ScannerThemeTest {
 
     @Test
     void should_throw_when_MultipleThemes() {
-        exception.expect(IllegalStateException.class);
-        getFrontendDependencies(RootViewWithMultipleTheme.class,
-                FirstView.class);
+        assertThrows(IllegalStateException.class,
+                () -> getFrontendDependencies(RootViewWithMultipleTheme.class,
+                        FirstView.class));
     }
 
     @Test
     void should_throw_when_ThemeAndNoTheme() {
-        exception.expect(IllegalStateException.class);
-        getFrontendDependencies(FirstView.class, RootViewWithoutTheme.class);
+        assertThrows(IllegalStateException.class,
+                () -> getFrontendDependencies(FirstView.class,
+                        RootViewWithoutTheme.class));
     }
 
     @Test

@@ -30,13 +30,11 @@ import java.util.concurrent.TimeUnit;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -86,9 +84,6 @@ class TaskRunNpmInstallTest {
 
     protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected Options options;
 

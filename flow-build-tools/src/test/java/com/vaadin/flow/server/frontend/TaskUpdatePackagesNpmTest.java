@@ -31,11 +31,9 @@ import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,9 +89,6 @@ class TaskUpdatePackagesNpmTest {
     private File versionJsonFile;
 
     private File packageJson;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @BeforeEach
     void setUp() throws IOException {

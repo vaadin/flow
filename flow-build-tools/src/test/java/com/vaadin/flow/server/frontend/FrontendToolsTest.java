@@ -38,12 +38,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
@@ -88,11 +87,11 @@ class FrontendToolsTest {
 
     private String vaadinHomeDir;
 
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    File tmpDir;
 
-    @Rule
-    public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
+    @TempDir
+    File tmpDirWithNpmrc;
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -103,8 +102,10 @@ class FrontendToolsTest {
     void setup() throws Exception {
         // Reset static state to ensure clean test isolation
         resetFrontendToolsNodeCache();
-        baseDir = tmpDir.newFolder().getAbsolutePath();
-        vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
+        baseDir = Files.createTempDirectory(tmpDir.toPath(), "tmp").toFile()
+                .getAbsolutePath();
+        vaadinHomeDir = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile().getAbsolutePath();
         settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);
         tools = new FrontendTools(settings);
         ReflectTools.setJavaFieldValue(tools,
@@ -424,7 +425,9 @@ class FrontendToolsTest {
     @Test
     public synchronized void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnAllProxies()
             throws IOException {
-        File npmrc = new File(tmpDirWithNpmrc.newFolder("test2"), ".npmrc");
+        File test2Dir = new File(tmpDirWithNpmrc, "test2");
+        test2Dir.mkdirs();
+        File npmrc = new File(test2Dir, ".npmrc");
 
         settings.setBaseDir(npmrc.getParent());
         settings.setAlternativeDirGetter(null);
@@ -508,7 +511,9 @@ class FrontendToolsTest {
     @Test
     public synchronized void getProxies_npmrcWithProxySettingNoNoproxy_shouldReturnNullNoproxy()
             throws IOException {
-        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        File test1Dir = new File(tmpDirWithNpmrc, "test1");
+        test1Dir.mkdirs();
+        File npmrc = new File(test1Dir, ".npmrc");
         Properties properties = new Properties();
         properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
@@ -548,7 +553,9 @@ class FrontendToolsTest {
     @Test
     public synchronized void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
             throws IOException {
-        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        File test1Dir = new File(tmpDirWithNpmrc, "test1");
+        test1Dir.mkdirs();
+        File npmrc = new File(test1Dir, ".npmrc");
         Properties properties = new Properties();
         properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
@@ -684,7 +691,8 @@ class FrontendToolsTest {
     @Test
     void getViteExecutable_returnsCorrectPath()
             throws IOException, FrontendUtils.CommandExecutionException {
-        var projectDir = tmpDir.newFolder();
+        var projectDir = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         var packageJson = Files
                 .createFile(projectDir.toPath().resolve("package.json"));
 
@@ -769,7 +777,8 @@ class FrontendToolsTest {
         // Create a custom node folder with node binary and npm
         // createStubNode creates node/ subdirectory, so we need to point to
         // that
-        File customNodeBase = tmpDir.newFolder("custom-node");
+        File customNodeBase = new File(tmpDir, "custom-node");
+        customNodeBase.mkdirs();
         createStubNode(true, true, customNodeBase.getAbsolutePath());
         File customNodeFolder = new File(customNodeBase, "node");
 
@@ -787,7 +796,8 @@ class FrontendToolsTest {
     @Test
     void nodeFolder_invalidFolder_throwsException() throws IOException {
         assertThrows(IllegalStateException.class, () -> {
-            File emptyFolder = tmpDir.newFolder("empty-node-folder");
+            File emptyFolder = new File(tmpDir, "empty-node-folder");
+            emptyFolder.mkdirs();
             settings.setNodeFolder(emptyFolder.getAbsolutePath());
             tools = new FrontendTools(settings);
 
@@ -804,7 +814,8 @@ class FrontendToolsTest {
             // Create only node binary, no npm
             // createStubNode creates node/ subdirectory, so we need to point to
             // that
-            File customNodeBase = tmpDir.newFolder("node-without-npm");
+            File customNodeBase = new File(tmpDir, "node-without-npm");
+            customNodeBase.mkdirs();
             createStubNode(true, false, customNodeBase.getAbsolutePath());
             File customNodeFolder = new File(customNodeBase, "node");
 
@@ -841,7 +852,8 @@ class FrontendToolsTest {
         // Create both a custom folder and vaadin home node
         // createStubNode creates node/ subdirectory, so we need to point to
         // that
-        File customNodeBase = tmpDir.newFolder("custom-precedence");
+        File customNodeBase = new File(tmpDir, "custom-precedence");
+        customNodeBase.mkdirs();
         createStubNode(true, true, customNodeBase.getAbsolutePath());
         File customNodeFolder = new File(customNodeBase, "node");
         createStubNode(true, true, vaadinHomeDir);
