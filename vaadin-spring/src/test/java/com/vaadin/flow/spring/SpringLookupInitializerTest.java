@@ -138,16 +138,16 @@ class SpringLookupInitializerTest {
 
     @Test
     void createLookup_severalBeansAndDefaultServiceImpl_lookupThrows() {
-        assertThrows(IllegalStateException.class, () -> {
-            Map<String, TestSpi> map = new HashMap<>();
-            map.put("foo", new TestSpi());
-            map.put("bar", new TestSpi());
-            Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
-                    .thenReturn(map);
-            Lookup lookup = initializer.createLookup(context,
-                    Collections.singletonMap(TestSpi.class,
-                            Collections.singletonList(ServiceImpl.class)));
+        Map<String, TestSpi> map = new HashMap<>();
+        map.put("foo", new TestSpi());
+        map.put("bar", new TestSpi());
+        Mockito.when(webAppContext.getBeansOfType(TestSpi.class))
+                .thenReturn(map);
+        Lookup lookup = initializer.createLookup(context,
+                Collections.singletonMap(TestSpi.class,
+                        Collections.singletonList(ServiceImpl.class)));
 
+        assertThrows(IllegalStateException.class, () -> {
             lookup.lookup(TestSpi.class);
         });
     }
@@ -181,13 +181,13 @@ class SpringLookupInitializerTest {
 
     @Test
     void createLookup_oneBeanAndOneServiceImpl_lookupThrows() {
-        assertThrows(IllegalStateException.class, () -> {
-            Mockito.when(webAppContext.getBeansOfType(List.class)).thenReturn(
-                    Collections.singletonMap("foo", new LinkedList()));
-            Lookup lookup = initializer.createLookup(context,
-                    Collections.singletonMap(List.class,
-                            Collections.singletonList(ArrayList.class)));
+        Mockito.when(webAppContext.getBeansOfType(List.class))
+                .thenReturn(Collections.singletonMap("foo", new LinkedList()));
+        Lookup lookup = initializer.createLookup(context,
+                Collections.singletonMap(List.class,
+                        Collections.singletonList(ArrayList.class)));
 
+        assertThrows(IllegalStateException.class, () -> {
             lookup.lookup(List.class);
         });
     }

@@ -70,18 +70,18 @@ abstract class AbstractScopeTest {
 
     @Test
     void get_noCurrentSession_throwException() {
-        assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
+        Scope scope = getScope();
 
+        assertThrows(IllegalStateException.class, () -> {
             scope.get("foo", Mockito.mock(ObjectFactory.class));
         });
     }
 
     @Test
     void registerDestructionCallback_noCurrentSession_throwException() {
-        assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
+        Scope scope = getScope();
 
+        assertThrows(IllegalStateException.class, () -> {
             scope.registerDestructionCallback("foo",
                     Mockito.mock(Runnable.class));
         });
@@ -89,9 +89,9 @@ abstract class AbstractScopeTest {
 
     @Test
     void remove_noCurrentSession_throwException() {
-        assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
+        Scope scope = getScope();
 
+        assertThrows(IllegalStateException.class, () -> {
             scope.remove("foo");
         });
     }

@@ -64,20 +64,20 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @Test
     void get_noCurrentUI_throwException() {
-        assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
-            mockSession();
+        Scope scope = getScope();
+        mockSession();
 
+        assertThrows(IllegalStateException.class, () -> {
             scope.get("foo", Mockito.mock(ObjectFactory.class));
         });
     }
 
     @Test
     void registerDestructionCallback_noCurrentUI_throwException() {
-        assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
-            mockSession();
+        Scope scope = getScope();
+        mockSession();
 
+        assertThrows(IllegalStateException.class, () -> {
             scope.registerDestructionCallback("foo",
                     Mockito.mock(Runnable.class));
         });
@@ -85,11 +85,10 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
 
     @Test
     void remove_noCurrentUI_throwException() {
+        Scope scope = getScope();
+        mockSession();
+
         assertThrows(IllegalStateException.class, () -> {
-            Scope scope = getScope();
-
-            mockSession();
-
             scope.remove("foo");
         });
     }
