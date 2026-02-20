@@ -262,6 +262,7 @@ class JacksonSerializerTest {
         private Set<Integer> setOfIntegers;
         private LinkedList<Boolean> linkedListOfBooleans;
         private List<Double> arrayListOfDoubles;
+        private String[] arrayOfStrings;
 
         public List<String> getListOfStrings() {
             return listOfStrings;
@@ -294,6 +295,14 @@ class JacksonSerializerTest {
 
         public void setArrayListOfDoubles(List<Double> arrayListOfDoubles) {
             this.arrayListOfDoubles = arrayListOfDoubles;
+        }
+
+        public String[] getArrayOfStrings() {
+            return arrayOfStrings;
+        }
+
+        public void setArrayOfStrings(String[] arrayOfStrings) {
+            this.arrayOfStrings = arrayOfStrings;
         }
     }
 
@@ -645,6 +654,8 @@ class JacksonSerializerTest {
         assertTrue(jsonObject.get("linkedListOfBooleans") instanceof NullNode);
         assertTrue(jsonObject.has("arrayListOfDoubles"));
         assertTrue(jsonObject.get("arrayListOfDoubles") instanceof NullNode);
+        assertTrue(jsonObject.has("arrayOfStrings"));
+        assertTrue(jsonObject.get("arrayOfStrings") instanceof NullNode);
 
         bean = JacksonSerializer.toObject(ObjectWithBasicCollections.class,
                 json);
@@ -665,6 +676,7 @@ class JacksonSerializerTest {
         bean.setLinkedListOfBooleans(
                 new LinkedList<>(Arrays.asList(true, false)));
         bean.setArrayListOfDoubles(new ArrayList<>(Arrays.asList(5.0, 6.0)));
+        bean.setArrayOfStrings(new String[] { "string3", "string4" });
 
         JsonNode json = JacksonSerializer.toJson(bean);
 
@@ -688,6 +700,10 @@ class JacksonSerializerTest {
         assertEquals(5, array.get(0).doubleValue(), PRECISION);
         assertEquals(6, array.get(1).doubleValue(), PRECISION);
 
+        array = (ArrayNode) jsonObject.get("arrayOfStrings");
+        assertEquals("string3", array.get(0).asString());
+        assertEquals("string4", array.get(1).asString());
+
         bean = JacksonSerializer.toObject(ObjectWithBasicCollections.class,
                 json);
 
@@ -698,6 +714,8 @@ class JacksonSerializerTest {
         assertCollectionItemsAreEqual(bean.getLinkedListOfBooleans(), true,
                 false);
         assertCollectionItemsAreEqual(bean.getArrayListOfDoubles(), 5.0, 6.0);
+        assertCollectionItemsAreEqual(List.of(bean.getArrayOfStrings()),
+                "string3", "string4");
     }
 
     @Test
