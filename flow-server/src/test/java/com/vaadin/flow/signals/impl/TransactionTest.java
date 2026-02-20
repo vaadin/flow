@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
@@ -50,6 +53,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TransactionTest {
+    private static final ThreadLocal<SerializableSupplier<Transaction>> currentFallback = new ThreadLocal<>();
+
+    @BeforeAll
+    static void setupFallback() {
+        Transaction.setTransactionFallback(() -> {
+            SerializableSupplier<Transaction> supplier = currentFallback.get();
+            return supplier != null ? supplier.get() : null;
+        });
+    }
+
+    @AfterAll
+    static void teardownFallback() {
+        Transaction.setTransactionFallback(null);
+    }
+
     @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
@@ -345,7 +363,7 @@ public class TransactionTest {
 
     @AfterEach
     void cleanupFallback() {
-        Transaction.setTransactionFallback(null);
+        currentFallback.remove();
     }
 
     @Test
@@ -353,7 +371,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
 
@@ -381,7 +399,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "Fallback should make inTransaction() return true");
@@ -404,7 +422,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction());
 
@@ -425,7 +443,7 @@ public class TransactionTest {
 
         assertFalse(Transaction.inTransaction());
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "inTransaction should return true when fallback is active");
@@ -436,6 +454,11 @@ public class TransactionTest {
         });
 
         assertTrue(Transaction.inTransaction());
+    }
+
+    private void useTransactionFallback(
+            SerializableSupplier<Transaction> supplier) {
+        currentFallback.set(supplier);
     }
 
     private static TransactionTask dummyTask() {
