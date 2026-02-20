@@ -412,4 +412,18 @@ public class UsageTracker {
             }
         }
     }
+
+    /**
+     * Receives notifications about signal usage events.
+     */
+    @FunctionalInterface
+    public static interface UsageRegistrar extends Serializable {
+        /**
+         * Called when a usage event occurs.
+         *
+         * @param usage
+         *            the usage instance, not <code>null</code>
+         */
+        void register(Usage usage);
+    }
 }

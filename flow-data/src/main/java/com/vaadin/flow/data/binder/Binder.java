@@ -1514,6 +1514,8 @@ public class Binder<BEAN> implements Serializable {
         private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
 
         private transient Registration signalRegistration;
+        private final ValueSignal<Void> allowEffectSignal = new ValueSignal<>(
+                null);
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1711,6 +1713,8 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
                 signalRegistration = Signal.effect(component, () -> {
+                    // bypass at least one signal usage requirement
+                    allowEffectSignal.get();
                     if (valueInit) {
                         // start to track signal usage
                         doConversion();

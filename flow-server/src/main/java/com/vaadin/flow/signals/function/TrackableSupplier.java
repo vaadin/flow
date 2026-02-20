@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.signals.impl.UsageRegistrar;
 import com.vaadin.flow.signals.impl.UsageTracker;
 
 /**
@@ -29,7 +28,7 @@ import com.vaadin.flow.signals.impl.UsageTracker;
  * @param <T>
  *            the type of the supplied value
  * @see ValueSupplier#supply()
- * @see UsageTracker#tracked(TrackableSupplier, UsageRegistrar)
+ * @see UsageTracker#tracked(TrackableSupplier, UsageTracker.UsageRegistrar)
  */
 @FunctionalInterface
 public interface TrackableSupplier<T> extends Serializable {

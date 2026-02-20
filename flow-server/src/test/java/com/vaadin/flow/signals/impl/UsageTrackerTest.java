@@ -476,7 +476,7 @@ public class UsageTrackerTest extends SignalTestBase {
     void trackedSupplier_withUsageListener_invokesListener() {
         class TestUsageException extends RuntimeException {
         }
-        UsageRegistrar preventPrematureChangeListener = new UsageRegistrar() {
+        UsageTracker.UsageRegistrar preventPrematureChangeListener = new UsageTracker.UsageRegistrar() {
             @Override
             public void register(Usage usage) {
                 throw new TestUsageException();

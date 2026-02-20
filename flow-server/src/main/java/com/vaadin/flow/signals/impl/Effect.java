@@ -125,7 +125,7 @@ public class Effect implements Serializable {
                 }
             };
             // avoid lambda to allow proper deserialization
-            UsageRegistrar usageRegistrar = new UsageRegistrar() {
+            UsageTracker.UsageRegistrar usageRegistrar = new UsageTracker.UsageRegistrar() {
                 @Override
                 public void register(UsageTracker.Usage usage) {
                     registrations.add(usage.onNextChange(usageListener));
