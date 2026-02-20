@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,11 +26,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -43,58 +42,62 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskInstallFrontendBuildPluginsTest {
+class TaskInstallFrontendBuildPluginsTest {
 
     public static final String BUILD_DIRECTORY = TARGET;
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private File rootFolder;
 
     private TaskInstallFrontendBuildPlugins task;
 
-    @Before
-    public void init() throws IOException {
-        rootFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void init() throws IOException {
+        rootFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
+                .toFile();
         Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
                 .withBuildDirectory(TARGET);
         task = new TaskInstallFrontendBuildPlugins(options);
     }
 
     @Test
-    public void getPluginsReturnsExpectedList() {
+    void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
                 "rollup-plugin-postcss-lit-custom",
                 "react-function-location-plugin", "rollup-plugin-vaadin-i18n",
                 "vite-plugin-service-worker" };
         final List<String> plugins = FrontendPluginsUtil.getPlugins();
-        Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
-                expectedPlugins.length, plugins.size());
+        assertEquals(expectedPlugins.length, plugins.size(),
+                "Unexpected number of plugins in 'plugins.json'");
 
         for (String plugin : expectedPlugins) {
-            Assert.assertTrue("'plugins.json' didn't contain '" + plugin + "'",
-                    plugins.contains(plugin));
+            assertTrue(plugins.contains(plugin),
+                    "'plugins.json' didn't contain '" + plugin + "'");
         }
     }
 
     @Test
-    public void webpackPluginsAreCopied() throws IOException {
+    void webpackPluginsAreCopied() throws IOException {
         task.execute();
 
         assertPlugins();
     }
 
     @Test
-    public void pluginsDefineAllScriptFiles() throws IOException {
+    void pluginsDefineAllScriptFiles() throws IOException {
         for (String plugin : FrontendPluginsUtil.getPlugins()) {
             verifyPluginScriptFilesAreDefined(plugin);
         }
     }
 
     @Test
-    public void pluginsNotAddedToPackageJson() throws IOException {
+    void pluginsNotAddedToPackageJson() throws IOException {
         Options options = new MockOptions(rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
         NodeUpdater nodeUpdater = new NodeUpdater(
@@ -110,15 +113,16 @@ public class TaskInstallFrontendBuildPluginsTest {
 
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
         for (String plugin : FrontendPluginsUtil.getPlugins()) {
-            Assert.assertFalse("Plugin " + plugin + " added to packageJson",
-                    devDependencies.has("@vaadin/" + plugin));
+            assertFalse(devDependencies.has("@vaadin/" + plugin),
+                    "Plugin " + plugin + " added to packageJson");
         }
     }
 
     private void assertPlugins() throws IOException {
-        Assert.assertTrue("No @vaadin folder created",
+        assertTrue(
                 Paths.get(rootFolder.toString(), BUILD_DIRECTORY, PLUGIN_TARGET)
-                        .toFile().exists());
+                        .toFile().exists(),
+                "No @vaadin folder created");
         for (String plugin : FrontendPluginsUtil.getPlugins()) {
             assertPlugin(plugin);
         }
@@ -129,10 +133,10 @@ public class TaskInstallFrontendBuildPluginsTest {
 
         final ArrayNode files = getPluginFiles(pluginFolder);
         for (int i = 0; i < files.size(); i++) {
-            Assert.assertTrue(
+            assertTrue(
+                    new File(pluginFolder, files.get(i).textValue()).exists(),
                     "Missing plugin file " + files.get(i).textValue() + " for "
-                            + plugin,
-                    new File(pluginFolder, files.get(i).textValue()).exists());
+                            + plugin);
         }
     }
 
@@ -144,10 +148,10 @@ public class TaskInstallFrontendBuildPluginsTest {
         final ArrayNode files = getPluginFiles(pluginFolder);
         List<String> fileNames = new ArrayList<>(files.size());
         for (int i = 0; i < files.size(); i++) {
-            Assert.assertTrue(
+            assertTrue(
+                    new File(pluginFolder, files.get(i).textValue()).exists(),
                     "Missing plugin file " + files.get(i).textValue() + " for "
-                            + plugin,
-                    new File(pluginFolder, files.get(i).textValue()).exists());
+                            + plugin);
             fileNames.add(files.get(i).textValue());
         }
         final List<String> pluginFiles = Arrays
@@ -155,9 +159,9 @@ public class TaskInstallFrontendBuildPluginsTest {
                         .getExtension(name).equals("js")))
                 .map(file -> file.getName()).collect(Collectors.toList());
         for (String fileName : pluginFiles) {
-            Assert.assertTrue(String.format(
+            assertTrue(fileNames.contains(fileName), String.format(
                     "Plugin '%s' doesn't define script file '%s' in package.json files",
-                    plugin, fileName), fileNames.contains(fileName));
+                    plugin, fileName));
         }
     }
 
@@ -180,10 +184,10 @@ public class TaskInstallFrontendBuildPluginsTest {
                 .get(BUILD_DIRECTORY, PLUGIN_TARGET, plugin).toString();
         final File pluginFolder = new File(rootFolder, pluginString);
 
-        Assert.assertTrue("Missing plugin folder for " + plugin,
-                pluginFolder.exists());
-        Assert.assertTrue("Missing package.json for " + plugin,
-                new File(pluginFolder, "package.json").exists());
+        assertTrue(pluginFolder.exists(),
+                "Missing plugin folder for " + plugin);
+        assertTrue(new File(pluginFolder, "package.json").exists(),
+                "Missing package.json for " + plugin);
         return pluginFolder;
     }
 

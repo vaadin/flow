@@ -26,30 +26,32 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class DefaultArchiveExtractorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DefaultArchiveExtractorTest {
 
     public static final String ROOT_FILE = "root.file";
     public static final String SUBFOLDER_FILE = "subfolder/folder.file";
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    File tmpDir;
 
     private String baseDir;
     private File targetDir;
 
-    @Before
-    public void setup() {
-        baseDir = tmpDir.getRoot().getAbsolutePath();
+    @BeforeEach
+    void setup() {
+        baseDir = tmpDir.getAbsolutePath();
         targetDir = new File(baseDir + "/extract");
     }
 
     @Test
-    public void extractZip_contentsAreExtracted()
+    void extractZip_contentsAreExtracted()
             throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.zip");
         archiveFile.createNewFile();
@@ -65,14 +67,14 @@ public class DefaultArchiveExtractorTest {
 
         new DefaultArchiveExtractor().extract(archiveFile, targetDir);
 
-        Assert.assertTrue("Archive root.file was not extracted",
-                new File(targetDir, ROOT_FILE).exists());
-        Assert.assertTrue("Archive subfolder/folder.file was not extracted",
-                new File(targetDir, SUBFOLDER_FILE).exists());
+        assertTrue(new File(targetDir, ROOT_FILE).exists(),
+                "Archive root.file was not extracted");
+        assertTrue(new File(targetDir, SUBFOLDER_FILE).exists(),
+                "Archive subfolder/folder.file was not extracted");
     }
 
     @Test
-    public void extractTarGz_contentsAreExtracted()
+    void extractTarGz_contentsAreExtracted()
             throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.tar.gz");
         archiveFile.createNewFile();
@@ -91,33 +93,34 @@ public class DefaultArchiveExtractorTest {
 
         new DefaultArchiveExtractor().extract(archiveFile, targetDir);
 
-        Assert.assertTrue("Archive root.file was not extracted",
-                new File(targetDir, ROOT_FILE).exists());
-        Assert.assertTrue("Archive subfolder/folder.file was not extracted",
-                new File(targetDir, SUBFOLDER_FILE).exists());
-    }
-
-    @Test(expected = ArchiveExtractionException.class)
-    public void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
-            throws IOException, ArchiveExtractionException {
-        File archiveFile = new File(baseDir, "archive.zip");
-        archiveFile.createNewFile();
-        Path tempArchive = archiveFile.toPath();
-
-        try (OutputStream fo = Files.newOutputStream(tempArchive);
-                OutputStream gzo = new GzipCompressorOutputStream(fo);
-                ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-            o.putArchiveEntry(
-                    o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
-            o.closeArchiveEntry();
-        }
-
-        new DefaultArchiveExtractor().extract(archiveFile, targetDir);
-
+        assertTrue(new File(targetDir, ROOT_FILE).exists(),
+                "Archive root.file was not extracted");
+        assertTrue(new File(targetDir, SUBFOLDER_FILE).exists(),
+                "Archive subfolder/folder.file was not extracted");
     }
 
     @Test
-    public void zipArchive_containsBadZipFilePath()
+    void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
+            throws IOException, ArchiveExtractionException {
+        assertThrows(ArchiveExtractionException.class, () -> {
+            File archiveFile = new File(baseDir, "archive.zip");
+            archiveFile.createNewFile();
+            Path tempArchive = archiveFile.toPath();
+
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+                o.putArchiveEntry(
+                        o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
+                o.closeArchiveEntry();
+            }
+
+            new DefaultArchiveExtractor().extract(archiveFile, targetDir);
+        });
+    }
+
+    @Test
+    void zipArchive_containsBadZipFilePath()
             throws IOException, ArchiveExtractionException {
         File archiveFile = new File(baseDir, "archive.zip");
         archiveFile.createNewFile();
@@ -131,12 +134,12 @@ public class DefaultArchiveExtractorTest {
             zipOutputStream.closeEntry();
         }
 
-        ArchiveExtractionException archiveExtractionException = Assert
-                .assertThrows(ArchiveExtractionException.class,
-                        () -> new DefaultArchiveExtractor().extract(archiveFile,
-                                targetDir));
+        ArchiveExtractionException archiveExtractionException = assertThrows(
+                ArchiveExtractionException.class,
+                () -> new DefaultArchiveExtractor().extract(archiveFile,
+                        targetDir));
 
-        Assert.assertEquals("Entry is outside of the target dir: ../root.file",
+        assertEquals("Entry is outside of the target dir: ../root.file",
                 archiveExtractionException.getCause().getMessage());
     }
 

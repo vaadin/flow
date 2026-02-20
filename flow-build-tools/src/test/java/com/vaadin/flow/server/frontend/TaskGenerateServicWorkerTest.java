@@ -21,91 +21,90 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateServicWorkerTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateServicWorkerTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendFolder;
     private File outputFolder;
     private TaskGenerateServiceWorker taskGenerateServiceWorker;
 
-    @Before
-    public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
-        outputFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        frontendFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
+        outputFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         Options options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withFrontendDirectory(frontendFolder)
+                temporaryFolder).withFrontendDirectory(frontendFolder)
                 .withBuildDirectory(outputFolder.getName());
         taskGenerateServiceWorker = new TaskGenerateServiceWorker(options);
     }
 
     @Test
-    public void should_loadCorrectContentOfDefaultFile() throws Exception {
+    void should_loadCorrectContentOfDefaultFile() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(SERVICE_WORKER_SRC),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Should load correct default content from sw.ts",
-                defaultContent, taskGenerateServiceWorker.getFileContent());
+        assertEquals(defaultContent, taskGenerateServiceWorker.getFileContent(),
+                "Should load correct default content from sw.ts");
     }
 
     @Test
-    public void should_notGenerateServiceWorker_ServiceWorkerExists()
+    void should_notGenerateServiceWorker_ServiceWorkerExists()
             throws Exception {
         Files.createFile(new File(frontendFolder, SERVICE_WORKER_SRC).toPath());
         taskGenerateServiceWorker.execute();
-        Assert.assertFalse(
+        assertFalse(taskGenerateServiceWorker.shouldGenerate(),
                 "Should not generate sw.ts while it exists in"
-                        + " the frontend folder",
-                taskGenerateServiceWorker.shouldGenerate());
-        Assert.assertFalse("The generated file should not exists",
-                taskGenerateServiceWorker.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertFalse(taskGenerateServiceWorker.getGeneratedFile().exists(),
+                "The generated file should not exists");
     }
 
     @Test
-    public void should_notGenerateServiceWorker_ServiceWorkerJsExists()
+    void should_notGenerateServiceWorker_ServiceWorkerJsExists()
             throws Exception {
         Files.createFile(
                 new File(frontendFolder, SERVICE_WORKER_SRC_JS).toPath());
         taskGenerateServiceWorker.execute();
-        Assert.assertFalse(
+        assertFalse(taskGenerateServiceWorker.shouldGenerate(),
                 "Should not generate sw.ts while sw.js exists in"
-                        + " the frontend folder",
-                taskGenerateServiceWorker.shouldGenerate());
-        Assert.assertFalse("The generated file should not exists",
-                taskGenerateServiceWorker.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertFalse(taskGenerateServiceWorker.getGeneratedFile().exists(),
+                "The generated file should not exists");
     }
 
     @Test
-    public void should_generateServiceWorker_ServiceWorkerNotExist()
-            throws Exception {
+    void should_generateServiceWorker_ServiceWorkerNotExist() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(SERVICE_WORKER_SRC),
                 StandardCharsets.UTF_8);
         taskGenerateServiceWorker.execute();
-        Assert.assertTrue(
+        assertTrue(taskGenerateServiceWorker.shouldGenerate(),
                 "Should generate sw.ts when it doesn't exists in"
-                        + " the frontend folder",
-                taskGenerateServiceWorker.shouldGenerate());
-        Assert.assertTrue("The generated file should exists",
-                taskGenerateServiceWorker.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertTrue(taskGenerateServiceWorker.getGeneratedFile().exists(),
+                "The generated file should exists");
 
-        Assert.assertEquals("Should have default content of sw.ts",
-                defaultContent,
+        assertEquals(defaultContent,
                 IOUtils.toString(
                         taskGenerateServiceWorker.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "Should have default content of sw.ts");
     }
 }

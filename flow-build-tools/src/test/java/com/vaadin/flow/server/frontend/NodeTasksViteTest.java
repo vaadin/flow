@@ -18,16 +18,15 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -47,16 +46,16 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
-public class NodeTasksViteTest {
+class NodeTasksViteTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private static final String USER_DIR = "user.dir";
 
@@ -66,28 +65,28 @@ public class NodeTasksViteTest {
     private String userDir;
     private File npmFolder;
 
-    @Before
-    public void setup() {
-        userDir = temporaryFolder.getRoot().getAbsolutePath();
+    @BeforeEach
+    void setup() {
+        userDir = temporaryFolder.getAbsolutePath();
         npmFolder = new File(userDir);
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
         globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFeatureDisabled()
+    void should_ExcludeExperimentalComponent_WhenFeatureDisabled()
             throws Exception {
         Class<?>[] classes = { FlagView.class,
                 ExampleExperimentalComponent.class };
@@ -120,12 +119,13 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_IncludeExperimentalComponent_WhenFeatureEnabled()
+    void should_IncludeExperimentalComponent_WhenFeatureEnabled()
             throws Exception {
         Class<?>[] classes = { FlagView.class,
                 ExampleExperimentalComponent.class };
 
-        File propertiesDir = temporaryFolder.newFolder();
+        File propertiesDir = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
                 "com.vaadin.experimental.exampleFeatureFlag=true\n",
@@ -157,7 +157,7 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_UseDefaultFolders() throws Exception {
+    void should_UseDefaultFolders() throws Exception {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
@@ -169,18 +169,17 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
-                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+        assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(Paths.get(userDir, DEFAULT_FRONTEND_DIR,
+        assertTrue(Paths.get(userDir, DEFAULT_FRONTEND_DIR,
                 FrontendUtils.GENERATED, "flow", IMPORTS_NAME).toFile()
                 .exists());
     }
 
     @Test
-    public void should_generateServiceWorkerWhenPwa() throws Exception {
+    void should_generateServiceWorkerWhenPwa() throws Exception {
         Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
@@ -192,17 +191,16 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
-                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+        assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(FrontendUtils
-                .getFlowGeneratedImports(getFrontendFolder()).exists());
+        assertTrue(FrontendUtils.getFlowGeneratedImports(getFrontendFolder())
+                .exists());
     }
 
     @Test
-    public void should_BeAbleToCustomizeFolders() throws Exception {
+    void should_BeAbleToCustomizeFolders() throws Exception {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
 
         Lookup mockedLookup = mock(Lookup.class);
@@ -216,12 +214,12 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withBuildResultFolders(npmFolder, npmFolder);
 
-        Assert.assertEquals(
+        assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
                 options.getFrontendDirectory().getAbsolutePath());
 
         new NodeTasks(options).execute();
-        Assert.assertTrue(new File(userDir,
+        assertTrue(new File(userDir,
                 "my_custom_sources_folder/generated/flow/" + IMPORTS_NAME)
                 .exists());
     }
@@ -235,7 +233,7 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
+    void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
             throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
@@ -249,12 +247,12 @@ public class NodeTasksViteTest {
                 .withBuildResultFolders(npmFolder, npmFolder);
         new NodeTasks(options).execute();
 
-        Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
-        Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+        assertTrue(new File(userDir, "tsconfig.json").exists());
+        assertTrue(new File(userDir, "types.d.ts").exists());
     }
 
     @Test
-    public void should_copyPackageLockJson_When_frontendHotdeploy()
+    void should_copyPackageLockJson_When_frontendHotdeploy()
             throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(

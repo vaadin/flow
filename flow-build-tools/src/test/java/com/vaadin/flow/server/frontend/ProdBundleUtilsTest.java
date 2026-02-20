@@ -21,22 +21,24 @@ import java.nio.file.Files;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.StringUtil;
 
-public class ProdBundleUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class ProdBundleUtilsTest {
+
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void compressProdBundle_decompressProdBundle_filesHasSameHash()
+    void compressProdBundle_decompressProdBundle_filesHasSameHash()
             throws IOException {
-        File projectBase = temporaryFolder.getRoot();
+        File projectBase = temporaryFolder;
         File prodFolder = new File(projectBase,
                 "target/classes/META-INF/VAADIN");
         prodFolder.mkdirs();
@@ -53,22 +55,23 @@ public class ProdBundleUtilsTest {
 
         ProdBundleUtils.compressBundle(projectBase, prodFolder);
 
-        Assert.assertTrue("Compressed bundle should have been created",
-                new File(projectBase, "src/main/bundles/prod.bundle").exists());
+        assertTrue(
+                new File(projectBase, "src/main/bundles/prod.bundle").exists(),
+                "Compressed bundle should have been created");
         FileUtils.deleteDirectory(prodFolder);
 
-        Assert.assertFalse("Prod folder not deleted!", prodFolder.exists());
+        assertFalse(prodFolder.exists(), "Prod folder not deleted!");
 
         ProdBundleUtils.unpackBundle(projectBase, prodFolder);
 
-        Assert.assertTrue("Prod folder not created!", prodFolder.exists());
-        Assert.assertTrue("Config folder not created!", configFolder.exists());
-        Assert.assertTrue("stats file not created!", stats.exists());
-        Assert.assertTrue("packages file not created!", index.exists());
+        assertTrue(prodFolder.exists(), "Prod folder not created!");
+        assertTrue(configFolder.exists(), "Config folder not created!");
+        assertTrue(stats.exists(), "stats file not created!");
+        assertTrue(index.exists(), "packages file not created!");
 
-        Assert.assertEquals(statsHash,
+        assertEquals(statsHash,
                 StringUtil.getHash(Files.readString(stats.toPath())));
-        Assert.assertEquals(indexHash,
+        assertEquals(indexHash,
                 StringUtil.getHash(Files.readString(index.toPath())));
     }
 }

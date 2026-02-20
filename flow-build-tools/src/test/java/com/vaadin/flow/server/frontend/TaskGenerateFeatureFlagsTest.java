@@ -17,11 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
@@ -32,23 +30,26 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateFeatureFlagsTest {
+class TaskGenerateFeatureFlagsTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private TaskGenerateFeatureFlags taskGenerateFeatureFlags;
     private FeatureFlags featureFlags;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
-        File frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        File frontendFolder = new File(temporaryFolder, FRONTEND);
+
+        frontendFolder.mkdirs();
         featureFlags = FeatureFlags.get(context);
         Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
@@ -57,26 +58,23 @@ public class TaskGenerateFeatureFlagsTest {
     }
 
     @Test
-    public void should_disableTypeChecksForGlobals()
-            throws ExecutionFailedException {
+    void should_disableTypeChecksForGlobals() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-        Assert.assertTrue(content.startsWith("// @ts-nocheck"));
+        assertTrue(content.startsWith("// @ts-nocheck"));
     }
 
     @Test
-    public void should_setupFeatureFlagsGlobal()
-            throws ExecutionFailedException {
+    void should_setupFeatureFlagsGlobal() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-        Assert.assertTrue(
-                content.contains("window.Vaadin = window.Vaadin || {};"));
-        Assert.assertTrue(content.contains(
+        assertTrue(content.contains("window.Vaadin = window.Vaadin || {};"));
+        assertTrue(content.contains(
                 "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};"));
     }
 
     @Test
-    public void should_defineAllFeatureFlags() throws ExecutionFailedException {
+    void should_defineAllFeatureFlags() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
 
@@ -86,24 +84,24 @@ public class TaskGenerateFeatureFlagsTest {
     }
 
     @Test
-    public void should_callFeatureFlagsUpdaterFunction()
+    void should_callFeatureFlagsUpdaterFunction()
             throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-        Assert.assertTrue(content.contains(
+        assertTrue(content.contains(
                 "window.Vaadin.featureFlagsUpdaters.forEach(updater => updater(activator))"));
     }
 
     @Test
-    public void should_containEmptyExport() throws ExecutionFailedException {
+    void should_containEmptyExport() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-        Assert.assertTrue(content.contains("export {};"));
+        assertTrue(content.contains("export {};"));
     }
 
     private static void assertFeatureFlagGlobal(String content, Feature feature,
             boolean enabled) {
-        Assert.assertTrue(content
+        assertTrue(content
                 .contains(String.format("window.Vaadin.featureFlags.%s = %s",
                         feature.getId(), enabled)));
     }

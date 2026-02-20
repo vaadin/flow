@@ -22,10 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -34,21 +32,23 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BundleBuildUtilsTest {
+class BundleBuildUtilsTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void packageLockExists_nothingIsCopied() throws IOException {
+    void packageLockExists_nothingIsCopied() throws IOException {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
         Options options = new Options(Mockito.mock(Lookup.class), finder,
-                temporaryFolder.getRoot()).withBuildDirectory("target");
+                temporaryFolder).withBuildDirectory("target");
 
-        File packageLockFile = temporaryFolder
-                .newFile(Constants.PACKAGE_LOCK_JSON);
+        File packageLockFile = new File(temporaryFolder,
+                Constants.PACKAGE_LOCK_JSON);
+        packageLockFile.createNewFile();
         File devBundleFolder = new File(
                 new File(options.getNpmFolder(),
                         options.getBuildDirectoryName()),
@@ -67,14 +67,14 @@ public class BundleBuildUtilsTest {
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Existing file should not be overwritten",
-                existingLockFile, packageLockContents);
+        assertEquals(existingLockFile, packageLockContents,
+                "Existing file should not be overwritten");
     }
 
     @Test
-    public void noPackageLockExists_devBundleLockIsCopied_notJarLock()
+    void noPackageLockExists_devBundleLockIsCopied_notJarLock()
             throws IOException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
@@ -102,14 +102,14 @@ public class BundleBuildUtilsTest {
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("dev-bundle file should be used",
-                packageLockContent, packageLockContents);
+        assertEquals(packageLockContent, packageLockContents,
+                "dev-bundle file should be used");
     }
 
     @Test
-    public void noPackageLockExists_jarDevBundleLockIsCopied()
+    void noPackageLockExists_jarDevBundleLockIsCopied()
             throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
@@ -137,14 +137,14 @@ public class BundleBuildUtilsTest {
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarPackageLockContent, packageLockContents);
+        assertEquals(jarPackageLockContent, packageLockContents,
+                "File should be gotten from jar on classpath");
     }
 
     @Test
-    public void noPackageLockExists_hillaUsed_jarHybridDevBundleLockIsCopied()
+    void noPackageLockExists_hillaUsed_jarHybridDevBundleLockIsCopied()
             throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
 
         Path dummyView = options.getFrontendDirectory().toPath()
@@ -177,14 +177,14 @@ public class BundleBuildUtilsTest {
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarHybridPackageLockContent, packageLockContents);
+        assertEquals(jarHybridPackageLockContent, packageLockContents,
+                "File should be gotten from jar on classpath");
     }
 
     @Test
-    public void noPackageLockExists_hillaUsed_hybridPackageLockNotPresentInJar_jarDevBundleIsCopied()
+    void noPackageLockExists_hillaUsed_hybridPackageLockNotPresentInJar_jarDevBundleIsCopied()
             throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target");
 
         Path dummyView = options.getFrontendDirectory().toPath()
@@ -212,14 +212,14 @@ public class BundleBuildUtilsTest {
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarPackageLockContent, packageLockContents);
+        assertEquals(jarPackageLockContent, packageLockContents,
+                "File should be gotten from jar on classpath");
     }
 
     @Test
-    public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
+    void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
             throws IOException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withBuildDirectory("target").withEnablePnpm(true);
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
@@ -250,20 +250,21 @@ public class BundleBuildUtilsTest {
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("dev-bundle file should be used",
-                packageLockContent, packageLockContents);
+        assertEquals(packageLockContent, packageLockContents,
+                "dev-bundle file should be used");
     }
 
     @Test
-    public void pnpm_packageLockExists_nothingIsCopied() throws IOException {
+    void pnpm_packageLockExists_nothingIsCopied() throws IOException {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
         Options options = new Options(Mockito.mock(Lookup.class), finder,
-                temporaryFolder.getRoot()).withBuildDirectory("target")
+                temporaryFolder).withBuildDirectory("target")
                 .withEnablePnpm(true);
 
-        File packageLockFile = temporaryFolder
-                .newFile(Constants.PACKAGE_LOCK_YAML);
+        File packageLockFile = new File(temporaryFolder,
+                Constants.PACKAGE_LOCK_YAML);
+        packageLockFile.createNewFile();
         File devBundleFolder = new File(
                 new File(options.getNpmFolder(),
                         options.getBuildDirectoryName()),
@@ -282,8 +283,8 @@ public class BundleBuildUtilsTest {
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Existing file should not be overwritten",
-                existingLockFile, packageLockContents);
+        assertEquals(existingLockFile, packageLockContents,
+                "Existing file should not be overwritten");
     }
 
 }

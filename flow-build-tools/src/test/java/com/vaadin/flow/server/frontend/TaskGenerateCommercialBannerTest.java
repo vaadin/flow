@@ -21,28 +21,30 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
 import static com.vaadin.flow.internal.FrontendUtils.COMMERCIAL_BANNER_JS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateCommercialBannerTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateCommercialBannerTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendFolder;
     private TaskGenerateCommercialBanner task;
     private Options options;
 
-    @Before
-    public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        frontendFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder);
         options.withProductionMode(true);
@@ -52,49 +54,45 @@ public class TaskGenerateCommercialBannerTest {
     }
 
     @Test
-    public void execute_commercialBannerBuild_commercialBannerComponentGenerated()
+    void execute_commercialBannerBuild_commercialBannerComponentGenerated()
             throws Exception {
         task.execute();
-        Assert.assertTrue(
-                "The generated file should exists only for bundle builds",
-                task.getGeneratedFile().exists());
-        Assert.assertEquals(
-                "Should load correct default content from commercial-banner.js",
+        assertTrue(task.getGeneratedFile().exists(),
+                "The generated file should exists only for bundle builds");
+        assertEquals(
                 IOUtils.toString(
                         getClass().getResourceAsStream(COMMERCIAL_BANNER_JS),
                         StandardCharsets.UTF_8),
                 Files.readString(task.getGeneratedFile().toPath(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "Should load correct default content from commercial-banner.js");
     }
 
     @Test
-    public void execute_developmentMode_commercialBannerComponentNotGenerated()
+    void execute_developmentMode_commercialBannerComponentNotGenerated()
             throws Exception {
         options.withProductionMode(false);
         task.execute();
-        Assert.assertFalse(
-                "The generated file should exists in development mode",
-                task.getGeneratedFile().exists());
+        assertFalse(task.getGeneratedFile().exists(),
+                "The generated file should exists in development mode");
     }
 
     @Test
-    public void execute_notBundleBuild_commercialBannerComponentNotGenerated()
+    void execute_notBundleBuild_commercialBannerComponentNotGenerated()
             throws Exception {
         options.withBundleBuild(false);
         task.execute();
-        Assert.assertFalse(
-                "The generated file should exists only for bundle builds",
-                task.getGeneratedFile().exists());
+        assertFalse(task.getGeneratedFile().exists(),
+                "The generated file should exists only for bundle builds");
     }
 
     @Test
-    public void execute_notCommercialBannerBuild_commercialBannerComponentNotGenerated()
+    void execute_notCommercialBannerBuild_commercialBannerComponentNotGenerated()
             throws Exception {
         options.withCommercialBanner(false);
         task.execute();
-        Assert.assertFalse(
-                "The generated file should exists only for bundle builds",
-                task.getGeneratedFile().exists());
+        assertFalse(task.getGeneratedFile().exists(),
+                "The generated file should exists only for bundle builds");
     }
 
 }
