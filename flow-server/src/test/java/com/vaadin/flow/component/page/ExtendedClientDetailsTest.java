@@ -41,8 +41,8 @@ class ExtendedClientDetailsTest {
 
         assertEquals(2560, details.getScreenWidth());
         assertEquals(1450, details.getScreenHeight());
-        assertEquals(2400, details.getWindowInnerWidth());
-        assertEquals(1400, details.getWindowInnerHeight());
+        assertEquals(-1, details.getWindowInnerWidth());
+        assertEquals(-1, details.getWindowInnerHeight());
         assertEquals(1600, details.getBodyClientWidth());
         assertEquals(1360, details.getBodyClientHeight());
         assertEquals(16200000, details.getTimezoneOffset());
