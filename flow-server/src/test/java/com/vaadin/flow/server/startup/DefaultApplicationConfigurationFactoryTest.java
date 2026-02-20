@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
@@ -52,7 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultApplicationConfigurationFactoryTest {
 
-    @Rule
     @TempDir
     Path temporaryFolder;
 

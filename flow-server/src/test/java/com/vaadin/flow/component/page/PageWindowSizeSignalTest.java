@@ -17,8 +17,7 @@ package com.vaadin.flow.component.page;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.DomEvent;
@@ -29,37 +28,40 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-public class PageWindowSizeSignalTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class PageWindowSizeSignalTest {
 
     @Test
-    public void windowSizeSignal_isReadOnly() {
+    void windowSizeSignal_isReadOnly() {
         Page page = new Page(new MockUI());
         Signal<WindowSize> signal = page.windowSizeSignal();
-        Assert.assertFalse(
-                "windowSizeSignal() should return a read-only signal",
-                signal instanceof ValueSignal);
+        assertFalse(signal instanceof ValueSignal,
+                "windowSizeSignal() should return a read-only signal");
     }
 
     @Test
-    public void windowSizeSignal_multipleResizes_tracksLatest() {
+    void windowSizeSignal_multipleResizes_tracksLatest() {
         MockUI ui = new MockUI();
         Page page = new Page(ui);
 
         Signal<WindowSize> signal = page.windowSizeSignal();
-        Assert.assertEquals(new WindowSize(0, 0), signal.peek());
+        assertEquals(new WindowSize(0, 0), signal.peek());
 
         fireResizeEvent(ui, 1024, 768);
-        Assert.assertEquals(new WindowSize(1024, 768), signal.peek());
+        assertEquals(new WindowSize(1024, 768), signal.peek());
 
         fireResizeEvent(ui, 1920, 1080);
-        Assert.assertEquals(new WindowSize(1920, 1080), signal.peek());
+        assertEquals(new WindowSize(1920, 1080), signal.peek());
 
         fireResizeEvent(ui, 800, 600);
-        Assert.assertEquals(new WindowSize(800, 600), signal.peek());
+        assertEquals(new WindowSize(800, 600), signal.peek());
     }
 
     @Test
-    public void addBrowserWindowResizeListener_andWindowSizeSignal_shareJsSetup() {
+    void addBrowserWindowResizeListener_andWindowSizeSignal_shareJsSetup() {
         MockUI ui = new MockUI();
         Page page = new Page(ui);
 
@@ -73,14 +75,14 @@ public class PageWindowSizeSignalTest {
         // Both should be updated by a single resize event
         fireResizeEvent(ui, 1280, 720);
 
-        Assert.assertNotNull(listenerEvent.get());
-        Assert.assertEquals(1280, listenerEvent.get().getWidth());
-        Assert.assertEquals(720, listenerEvent.get().getHeight());
-        Assert.assertEquals(new WindowSize(1280, 720), signal.peek());
+        assertNotNull(listenerEvent.get());
+        assertEquals(1280, listenerEvent.get().getWidth());
+        assertEquals(720, listenerEvent.get().getHeight());
+        assertEquals(new WindowSize(1280, 720), signal.peek());
     }
 
     @Test
-    public void windowSizeSignal_thenAddBrowserWindowResizeListener_shareJsSetup() {
+    void windowSizeSignal_thenAddBrowserWindowResizeListener_shareJsSetup() {
         MockUI ui = new MockUI();
         Page page = new Page(ui);
 
@@ -94,10 +96,10 @@ public class PageWindowSizeSignalTest {
         // Both should be updated by a single resize event
         fireResizeEvent(ui, 1920, 1080);
 
-        Assert.assertEquals(new WindowSize(1920, 1080), signal.peek());
-        Assert.assertNotNull(listenerEvent.get());
-        Assert.assertEquals(1920, listenerEvent.get().getWidth());
-        Assert.assertEquals(1080, listenerEvent.get().getHeight());
+        assertEquals(new WindowSize(1920, 1080), signal.peek());
+        assertNotNull(listenerEvent.get());
+        assertEquals(1920, listenerEvent.get().getWidth());
+        assertEquals(1080, listenerEvent.get().getHeight());
     }
 
     private void fireResizeEvent(MockUI ui, int width, int height) {
