@@ -20,7 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.impl.UsageTracker;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,6 +35,13 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(null);
     }
 
+    private static <T> T getTracked(Signal<T> signal) {
+        @SuppressWarnings("unchecked")
+        T[] holder = (T[]) new Object[1];
+        UsageTracker.track(() -> holder[0] = signal.get());
+        return holder[0];
+    }
+
     // ValueSignal - same session
 
     @Test
@@ -41,9 +50,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(session);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.peek();
 
-        assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
     }
 
     @Test
@@ -54,7 +62,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
         assertDoesNotThrow(() -> signal.peek());
-        assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
         assertDoesNotThrow(() -> signal.update(v -> v));
@@ -77,7 +85,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         // All operations should throw when accessed from different session
         assertThrows(IllegalStateException.class, () -> signal.peek());
-        assertThrows(IllegalStateException.class, () -> signal.peek());
+        assertThrows(IllegalStateException.class, () -> getTracked(signal));
         assertThrows(IllegalStateException.class, () -> signal.set("world"));
         assertThrows(IllegalStateException.class,
                 () -> signal.replace("hello", "world"));
@@ -93,7 +101,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
         assertDoesNotThrow(() -> signal.peek());
-        assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
         assertDoesNotThrow(() -> signal.update(v -> v));
@@ -132,7 +140,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
 
         assertDoesNotThrow(() -> signal.peek());
-        assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
 
         ValueSignal<String> entry = signal.insertFirst("first");
         assertDoesNotThrow(() -> signal.insertLast("last"));
@@ -193,7 +201,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
 
         assertDoesNotThrow(() -> signal.peek());
-        assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
 
         ValueSignal<String> entry = signal.insertFirst("first");
         assertDoesNotThrow(() -> signal.insertLast("last"));
