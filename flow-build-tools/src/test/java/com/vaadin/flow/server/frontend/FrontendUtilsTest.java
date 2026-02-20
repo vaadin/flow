@@ -29,11 +29,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,15 +51,18 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-public class FrontendUtilsTest {
+class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
 
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    File tmpDir;
 
     private static final String ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES = """
                 import {serverSideRoutes} from "Frontend/generated/flow/Flow";
@@ -218,7 +218,7 @@ public class FrontendUtilsTest {
             """;
 
     @Test
-    public void parseValidVersions() {
+    void parseValidVersions() {
         FrontendVersion sixPointO = new FrontendVersion(6, 0);
 
         FrontendVersion requiredVersionTen = new FrontendVersion(10, 0);
@@ -233,23 +233,22 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void parseValidToolVersions() throws IOException {
-        Assert.assertEquals("10.11.12",
-                FrontendUtils.parseVersionString("v10.11.12"));
-        Assert.assertEquals("8.0.0",
-                FrontendUtils.parseVersionString("v8.0.0"));
-        Assert.assertEquals("8.0.0", FrontendUtils.parseVersionString("8.0.0"));
-        Assert.assertEquals("6.9.0", FrontendUtils
+    void parseValidToolVersions() throws IOException {
+        assertEquals("10.11.12", FrontendUtils.parseVersionString("v10.11.12"));
+        assertEquals("8.0.0", FrontendUtils.parseVersionString("v8.0.0"));
+        assertEquals("8.0.0", FrontendUtils.parseVersionString("8.0.0"));
+        assertEquals("6.9.0", FrontendUtils
                 .parseVersionString("Aktive Codepage: 1252\n6.9.0\n"));
     }
 
-    @Test(expected = IOException.class)
-    public void parseEmptyToolVersions() throws IOException {
-        FrontendUtils.parseVersionString(" \n");
+    @Test
+    void parseEmptyToolVersions() throws IOException {
+        assertThrows(IOException.class,
+                () -> FrontendUtils.parseVersionString(" \n"));
     }
 
     @Test
-    public void should_getUnixRelativePath_when_givenTwoPaths() {
+    void should_getUnixRelativePath_when_givenTwoPaths() {
         Path sourcePath = Mockito.mock(Path.class);
         Path relativePath = Mockito.mock(Path.class);
         Mockito.when(sourcePath.relativize(Mockito.any()))
@@ -258,24 +257,22 @@ public class FrontendUtilsTest {
                 .thenReturn("this\\is\\windows\\path");
 
         String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
-                tmpDir.getRoot().toPath());
-        Assert.assertEquals(
-                "Should replace windows path separator with unix path separator",
-                "this/is/windows/path", relativeUnixPath);
+                tmpDir.toPath());
+        assertEquals("this/is/windows/path", relativeUnixPath,
+                "Should replace windows path separator with unix path separator");
         Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
 
         relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
-                tmpDir.getRoot().toPath());
-        Assert.assertEquals(
-                "Should keep the same path when it uses unix path separator",
-                "this/is/unix/path", relativeUnixPath);
+                tmpDir.toPath());
+        assertEquals("this/is/unix/path", relativeUnixPath,
+                "Should keep the same path when it uses unix path separator");
     }
 
     @Test
     public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
             throws IOException {
         String originalHome = System.getProperty(USER_HOME);
-        File home = tmpDir.newFolder();
+        File home = Files.createTempDirectory(tmpDir.toPath(), "tmp").toFile();
         System.setProperty(USER_HOME, home.getPath());
         try {
             File vaadinDir = new File(home, ".vaadin");
@@ -283,43 +280,46 @@ public class FrontendUtilsTest {
                 FileUtils.deleteDirectory(vaadinDir);
             }
             File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
-            Assert.assertTrue(vaadinHomeDirectory.exists());
-            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+            assertTrue(vaadinHomeDirectory.exists());
+            assertTrue(vaadinHomeDirectory.isDirectory());
 
             // access it one more time
             vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
-            Assert.assertEquals(".vaadin", vaadinDir.getName());
-        } finally {
-            System.setProperty(USER_HOME, originalHome);
-        }
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
-            throws IOException {
-        String originalHome = System.getProperty(USER_HOME);
-        File home = tmpDir.newFolder();
-        System.setProperty(USER_HOME, home.getPath());
-        try {
-            File vaadinDir = new File(home, ".vaadin");
-            if (vaadinDir.exists()) {
-                FileUtils.deleteDirectory(vaadinDir);
-            }
-            vaadinDir.createNewFile();
-            FrontendUtils.getVaadinHomeDirectory();
+            assertEquals(".vaadin", vaadinDir.getName());
         } finally {
             System.setProperty(USER_HOME, originalHome);
         }
     }
 
     @Test
-    public void commandToString_longCommand_resultIsWrapped() {
+    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+            throws IOException {
+        assertThrows(IllegalStateException.class, () -> {
+            String originalHome = System.getProperty(USER_HOME);
+            File home = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                    .toFile();
+            System.setProperty(USER_HOME, home.getPath());
+            try {
+                File vaadinDir = new File(home, ".vaadin");
+                if (vaadinDir.exists()) {
+                    FileUtils.deleteDirectory(vaadinDir);
+                }
+                vaadinDir.createNewFile();
+                FrontendUtils.getVaadinHomeDirectory();
+            } finally {
+                System.setProperty(USER_HOME, originalHome);
+            }
+        });
+    }
+
+    @Test
+    void commandToString_longCommand_resultIsWrapped() {
         List<String> command = Arrays.asList("./node/node",
                 "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
                 "--config", "./webpack.config.js", "--port 57799",
                 "--env watchDogPort=57798", "-d", "--inline=false");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
-        Assert.assertEquals(
+        assertEquals(
                 """
 
                         ./node/node \\\s
@@ -331,12 +331,12 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
+    void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
         List<String> command = Arrays.asList("./node/node",
                 "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
         String wrappedCommand = FrontendUtils
                 .commandToString("/somewhere/not/disclosable", command);
-        Assert.assertEquals(
+        assertEquals(
                 """
 
                         ./node/node \\\s
@@ -346,33 +346,34 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void deleteNodeModules_nopIfNotExists() throws IOException {
-        File nodeModules = new File(tmpDir.getRoot(), "node_modules");
+    void deleteNodeModules_nopIfNotExists() throws IOException {
+        File nodeModules = new File(tmpDir, "node_modules");
         FrontendUtils.deleteNodeModules(nodeModules);
     }
 
-    @Test(expected = IOException.class)
-    public void deleteNodeModules_throwsIfNotNamedNodeModules()
-            throws IOException {
-        File myModules = new File(tmpDir.getRoot(), "my_modules");
-        myModules.mkdirs();
-        FrontendUtils.deleteNodeModules(myModules);
+    @Test
+    void deleteNodeModules_throwsIfNotNamedNodeModules() throws IOException {
+        assertThrows(IOException.class, () -> {
+            File myModules = new File(tmpDir, "my_modules");
+            myModules.mkdirs();
+            FrontendUtils.deleteNodeModules(myModules);
+        });
     }
 
     @Test
-    public void deleteNodeModules_canDeleteSymlinksAndNotFollowThem()
+    void deleteNodeModules_canDeleteSymlinksAndNotFollowThem()
             throws IOException {
 
         // Test fails on Windows due to UAC FileSystemException
-        Assume.assumeFalse(FrontendUtils.isWindows());
+        assumeFalse(FrontendUtils.isWindows());
 
-        File externalDir = new File(tmpDir.getRoot(), "external");
+        File externalDir = new File(tmpDir, "external");
         File externalLicense = new File(externalDir, "LICENSE");
 
         externalLicense.getParentFile().mkdirs();
         externalLicense.createNewFile();
 
-        File nodeModules = new File(tmpDir.getRoot(), "node_modules");
+        File nodeModules = new File(tmpDir, "node_modules");
         File containing = new File(nodeModules, ".pnpm/a/node_modules/dep");
         containing.mkdirs();
         File license = new File(containing, "LICENSE");
@@ -388,21 +389,22 @@ public class FrontendUtilsTest {
         Files.createSymbolicLink(linkingExternal.toPath(),
                 new File("../../../../external").toPath());
 
-        Assert.assertTrue(nodeModules.exists());
-        Assert.assertTrue(linking.exists());
-        Assert.assertTrue(new File(linking, "LICENSE").exists());
-        Assert.assertTrue(new File(linkingExternal, "LICENSE").exists());
+        assertTrue(nodeModules.exists());
+        assertTrue(linking.exists());
+        assertTrue(new File(linking, "LICENSE").exists());
+        assertTrue(new File(linkingExternal, "LICENSE").exists());
 
         FrontendUtils.deleteNodeModules(nodeModules);
 
-        Assert.assertFalse(nodeModules.exists());
-        Assert.assertTrue(externalLicense.exists());
+        assertFalse(nodeModules.exists());
+        assertTrue(externalLicense.exists());
     }
 
     @Test
-    public void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles()
+    void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles()
             throws IOException, ExecutionFailedException {
-        File npmFolder = tmpDir.newFolder();
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
 
         File symbolic = new File(npmFolder, "symbolic");
         symbolic.mkdir();
@@ -443,51 +445,51 @@ public class FrontendUtilsTest {
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
-        Assert.assertTrue("Linked folder contents should not be removed.",
-                linkFolderFile.exists());
+        assertTrue(linkFolderFile.exists(),
+                "Linked folder contents should not be removed.");
     }
 
     @Test
-    public void consumeProcessStreams_streamsConsumed() throws Exception {
+    void consumeProcessStreams_streamsConsumed() throws Exception {
 
         Pair<String, String> streams = executeExternalProcess("STDOUT", "Test",
                 "text");
         String stdOut = streams.getFirst();
         String stdErr = streams.getSecond();
-        Assert.assertTrue("Unexpected STDOUT contents: " + stdOut,
-                stdOut.contains("STDOUT, Test, text"));
-        Assert.assertTrue("Expected STDERR to be empty, but was " + stdErr,
-                stdErr.isBlank());
+        assertTrue(stdOut.contains("STDOUT, Test, text"),
+                "Unexpected STDOUT contents: " + stdOut);
+        assertTrue(stdErr.isBlank(),
+                "Expected STDERR to be empty, but was " + stdErr);
 
         streams = executeExternalProcess("STDERR", "Test", "text");
         stdOut = streams.getFirst();
         stdErr = streams.getSecond();
-        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
-                stdOut.isBlank());
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
-                stdErr.contains("STDERR, Test, text"));
+        assertTrue(stdOut.isBlank(),
+                "Expected STDOUT to be empty, but was " + stdOut);
+        assertTrue(stdErr.contains("STDERR, Test, text"),
+                "Unexpected STDERR contents: " + stdErr);
 
         streams = executeExternalProcess("BOTH", "Test", "text");
         stdOut = streams.getFirst();
         stdErr = streams.getSecond();
-        Assert.assertTrue("Unexpected STDERR contents: " + stdOut,
-                stdOut.contains("STDOUT: BOTH, Test, text"));
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
-                stdErr.contains("STDERR: BOTH, Test, text"));
+        assertTrue(stdOut.contains("STDOUT: BOTH, Test, text"),
+                "Unexpected STDERR contents: " + stdOut);
+        assertTrue(stdErr.contains("STDERR: BOTH, Test, text"),
+                "Unexpected STDERR contents: " + stdErr);
 
         streams = executeExternalProcess("THROW EXCEPTION");
         stdOut = streams.getFirst();
         stdErr = streams.getSecond();
-        Assert.assertTrue("Expected STDOUT to be empty, but was " + stdOut,
-                stdOut.isBlank());
-        Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
+        assertTrue(stdOut.isBlank(),
+                "Expected STDOUT to be empty, but was " + stdOut);
+        assertTrue(
                 stdErr.contains("RuntimeException")
-                        && stdErr.contains("Invalid stream THROW EXCEPTION"));
+                        && stdErr.contains("Invalid stream THROW EXCEPTION"),
+                "Unexpected STDERR contents: " + stdErr);
     }
 
     @Test
-    public void isReactRouterRequired_importsVaadinRouter_false()
-            throws IOException {
+    void isReactRouterRequired_importsVaadinRouter_false() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
                 """
                             import { Router } from '@vaadin/router';
@@ -496,12 +498,12 @@ public class FrontendUtilsTest {
                             export const router = new Router(document.querySelector('#outlet'));
                             router.setRoutes(routes);
                         """);
-        Assert.assertFalse("vaadin-router expected when it imported",
-                FrontendUtils.isReactRouterRequired(frontend));
+        assertFalse(FrontendUtils.isReactRouterRequired(frontend),
+                "vaadin-router expected when it imported");
     }
 
     @Test
-    public void isReactRouterRequired_doesntImportVaadinRouter_true()
+    void isReactRouterRequired_doesntImportVaadinRouter_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
                 """
@@ -511,155 +513,148 @@ public class FrontendUtilsTest {
 
                             createRoot(document.getElementById("outlet")!).render(createElement(App));
                         """);
-        Assert.assertTrue(
-                "react-router expected when no vaadin-router imported",
-                FrontendUtils.isReactRouterRequired(frontend));
+        assertTrue(FrontendUtils.isReactRouterRequired(frontend),
+                "react-router expected when no vaadin-router imported");
     }
 
     @Test
-    public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
-        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
-        Assert.assertTrue("react-router expected when index.ts isn't there",
-                FrontendUtils.isReactRouterRequired(frontend));
+    void isReactRouterRequired_noIndexTsFile_true() throws IOException {
+        File frontend = new File(tmpDir, FrontendUtils.DEFAULT_FRONTEND_DIR);
+        frontend.mkdirs();
+        assertTrue(FrontendUtils.isReactRouterRequired(frontend),
+                "react-router expected when index.ts isn't there");
     }
 
     @Test
-    public void isHillaViewsUsed_onlyServerSideRoutesTs_false()
-            throws IOException {
+    void isHillaViewsUsed_onlyServerSideRoutesTs_false() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
                 ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES);
-        Assert.assertFalse("hilla-views are not expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertFalse(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are not expected");
     }
 
     @Test
-    public void isHillaViewsUsed_onlyServerSideRoutesTsx_false()
-            throws IOException {
+    void isHillaViewsUsed_onlyServerSideRoutesTsx_false() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES);
-        Assert.assertFalse("hilla-views are not expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertFalse(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are not expected");
     }
 
     @Test
-    public void isHillaViewsUsed_onlyClientSideRoutesTs_true()
-            throws IOException {
+    void isHillaViewsUsed_onlyClientSideRoutesTs_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
                 ROUTES_CONTENT_WITH_ONLY_CLIENTSIDE_ROUTES);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_onlyClientSideRoutesTsx_true()
-            throws IOException {
+    void isHillaViewsUsed_onlyClientSideRoutesTsx_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_ONLY_CLIENTSIDE_ROUTES);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTs1_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTs1_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_1);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTsx1_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTsx1_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_1);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTs2_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTs2_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTsx2_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTsx2_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTs3_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTs3_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_3);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesTsx3_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesTsx3_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_3);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_clientAndServerSideRoutesMainLayoutTsx_true()
+    void isHillaViewsUsed_clientAndServerSideRoutesMainLayoutTsx_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_serverSideRoutesMainLayoutTsx_true()
+    void isHillaViewsUsed_serverSideRoutesMainLayoutTsx_true()
             throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected");
     }
 
     @Test
-    public void isHillaViewsUsed_withFileRoutes_true() throws IOException {
+    void isHillaViewsUsed_withFileRoutes_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_WITH_FILE_ROUTES);
-        Assert.assertTrue("hilla-views are expected, as withFileRoutes is used",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected, as withFileRoutes is used");
     }
 
     @Test
-    public void isHillaViewsUsed_withReactRoutes_true() throws IOException {
+    void isHillaViewsUsed_withReactRoutes_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_WITH_REACT_ROUTES);
-        Assert.assertTrue(
-                "hilla-views are expected, as withReactRoutes is used",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                "hilla-views are expected, as withReactRoutes is used");
     }
 
     @Test
-    public void isHillaViewsUsed_nonEmptyHillaViewInViews_true()
-            throws IOException {
+    void isHillaViewsUsed_nonEmptyHillaViewInViews_true() throws IOException {
         File frontend = null;
         for (String ext : Arrays.asList(".js", ".jsx", ".ts", ".tsx")) {
             try {
                 frontend = prepareFrontendForRoutesFile(
                         FrontendUtils.HILLA_VIEWS_PATH + "/HillaView" + ext,
                         HILLA_VIEW_TSX);
-                Assert.assertTrue(
-                        "hilla view is present, thus Hilla is expected",
-                        FrontendUtils.isHillaViewsUsed(frontend));
+                assertTrue(FrontendUtils.isHillaViewsUsed(frontend),
+                        "hilla view is present, thus Hilla is expected");
             } finally {
                 if (frontend != null && frontend.exists()) {
                     FileUtils.deleteQuietly(frontend);
@@ -669,25 +664,25 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void isHillaViewsUsed_emptyHillaViewContent_false()
-            throws IOException {
+    void isHillaViewsUsed_emptyHillaViewContent_false() throws IOException {
         File frontend = prepareFrontendForRoutesFile(
                 FrontendUtils.HILLA_VIEWS_PATH + "/HillaView.ts", "//comment");
-        Assert.assertFalse("empty Hilla view, Hilla not expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertFalse(FrontendUtils.isHillaViewsUsed(frontend),
+                "empty Hilla view, Hilla not expected");
     }
 
     @Test
-    public void isHillaViewsUsed_noViews_false() throws IOException {
+    void isHillaViewsUsed_noViews_false() throws IOException {
         File frontend = prepareFrontendForRoutesFile(
                 FrontendUtils.HILLA_VIEWS_PATH + "/foo.css", "some css");
-        Assert.assertFalse("no Hilla views, Hilla not expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
+        assertFalse(FrontendUtils.isHillaViewsUsed(frontend),
+                "no Hilla views, Hilla not expected");
     }
 
     @Test
-    public void platformVersion_returnsExpectedVersion() throws IOException {
-        File npmFolder = tmpDir.newFolder();
+    void platformVersion_returnsExpectedVersion() throws IOException {
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -704,10 +699,9 @@ public class FrontendUtilsTest {
         Optional<String> vaadinVersion = FrontendBuildUtils
                 .getVaadinVersion(finder);
 
-        Assert.assertTrue("versions.json should have had the platform field",
-                vaadinVersion.isPresent());
-        Assert.assertEquals("Received faulty version", "21.0.0",
-                vaadinVersion.get());
+        assertTrue(vaadinVersion.isPresent(),
+                "versions.json should have had the platform field");
+        assertEquals("21.0.0", vaadinVersion.get(), "Received faulty version");
 
         //@formatter:off
         versionJsonString = "{"
@@ -717,13 +711,14 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
         vaadinVersion = FrontendBuildUtils.getVaadinVersion(finder);
 
-        Assert.assertFalse("versions.json should not contain platform version",
-                vaadinVersion.isPresent());
+        assertFalse(vaadinVersion.isPresent(),
+                "versions.json should not contain platform version");
     }
 
     @Test
-    public void noVersionsJson_getVersionsDoesntThrow() throws IOException {
-        File npmFolder = tmpDir.newFolder();
+    void noVersionsJson_getVersionsDoesntThrow() throws IOException {
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -735,14 +730,15 @@ public class FrontendUtilsTest {
         Optional<String> vaadinVersion = FrontendBuildUtils
                 .getVaadinVersion(finder);
 
-        Assert.assertFalse("versions.json should not contain platform version",
-                vaadinVersion.isPresent());
+        assertFalse(vaadinVersion.isPresent(),
+                "versions.json should not contain platform version");
     }
 
     @Test
-    public void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inNodeModulesVersion()
+    void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inNodeModulesVersion()
             throws IOException {
-        File npmFolder = tmpDir.newFolder();
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -768,9 +764,10 @@ public class FrontendUtilsTest {
         Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        assertFalse(
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder));
+                        npmFolder, nodeModules, npmFolder),
+                "Change in minor version should return false");
 
         //@formatter:off
         versionJsonString = "{"
@@ -780,15 +777,17 @@ public class FrontendUtilsTest {
         Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertTrue("Change in major version should return true",
+        assertTrue(
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder));
+                        npmFolder, nodeModules, npmFolder),
+                "Change in major version should return true");
     }
 
     @Test
-    public void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inBundleVersion()
+    void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inBundleVersion()
             throws IOException {
-        File npmFolder = tmpDir.newFolder();
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -816,9 +815,10 @@ public class FrontendUtilsTest {
         Files.writeString(bundleVaadinJson.toPath(), bundleVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        assertFalse(
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder));
+                        npmFolder, nodeModules, buildFolder),
+                "Change in minor version should return false");
 
         //@formatter:off
         versionJsonString = "{"
@@ -828,15 +828,17 @@ public class FrontendUtilsTest {
         Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertTrue("Change in major version should return true",
+        assertTrue(
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder));
+                        npmFolder, nodeModules, buildFolder),
+                "Change in major version should return true");
     }
 
     @Test
-    public void platformMajorVersionVersionUpdated_bundleVersionIsCheckedOverNodeModulesVersion()
+    void platformMajorVersionVersionUpdated_bundleVersionIsCheckedOverNodeModulesVersion()
             throws IOException {
-        File npmFolder = tmpDir.newFolder();
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         File versionJsonFile = new File(npmFolder, "versions.json");
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -875,22 +877,23 @@ public class FrontendUtilsTest {
         Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        assertFalse(
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder));
+                        npmFolder, nodeModules, buildFolder),
+                "Change in minor version should return false");
     }
 
     @Test
-    public void isTailwindCssEnabled_withOptions() throws IOException {
+    void isTailwindCssEnabled_withOptions() throws IOException {
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         Mockito.doReturn(true).when(featureFlags)
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
-        File npmFolder = tmpDir.newFolder();
+        File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
+                .toFile();
         Options options = new MockOptions(npmFolder)
                 .withFeatureFlags(featureFlags);
-        Assert.assertTrue(
-                "Expected TailwindCSS to be enabled when feature flag is set in Node tasks options",
-                FrontendBuildUtils.isTailwindCssEnabled(options));
+        assertTrue(FrontendBuildUtils.isTailwindCssEnabled(options),
+                "Expected TailwindCSS to be enabled when feature flag is set in Node tasks options");
     }
 
     private File prepareFrontendForRoutesFile(String fileName, String content)
@@ -900,7 +903,8 @@ public class FrontendUtilsTest {
 
     private File prepareFrontendForRoutesFile(String fileName, String content,
             boolean generateDummyFSView) throws IOException {
-        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontend = new File(tmpDir, FrontendUtils.DEFAULT_FRONTEND_DIR);
+        frontend.mkdirs();
         FileUtils.write(new File(frontend, fileName), content,
                 StandardCharsets.UTF_8);
         if (generateDummyFSView) {

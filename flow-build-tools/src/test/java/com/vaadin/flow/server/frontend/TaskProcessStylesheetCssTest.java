@@ -23,28 +23,31 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-public class TaskProcessStylesheetCssTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskProcessStylesheetCssTest {
+
+    @TempDir
+    File temporaryFolder;
 
     private File metaInfResources;
     private Options options;
     private ClassFinder classFinder;
 
-    @Before
-    public void setup() throws IOException {
-        File buildOutput = temporaryFolder.newFolder("target", "classes");
+    @BeforeEach
+    void setup() throws IOException {
+        File buildOutput = new File(new File(temporaryFolder, "target"),
+                "classes");
+        buildOutput.mkdirs();
         File metaInf = new File(buildOutput, "META-INF");
         metaInfResources = new File(metaInf, "resources");
         metaInfResources.mkdirs();
@@ -77,7 +80,7 @@ public class TaskProcessStylesheetCssTest {
     }
 
     @Test
-    public void execute_processesAndMinifiesCssFiles()
+    void execute_processesAndMinifiesCssFiles()
             throws ExecutionFailedException, IOException {
         // Setup mock to return our test class
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
@@ -97,12 +100,11 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(".class{color: red}", processedCss);
+        assertEquals(".class{color: red}", processedCss);
     }
 
     @Test
-    public void execute_inlinesImports()
-            throws ExecutionFailedException, IOException {
+    void execute_inlinesImports() throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
@@ -120,12 +122,12 @@ public class TaskProcessStylesheetCssTest {
 
         String processedCss = Files.readString(mainFile.toPath());
         // Should contain both rules, minified
-        Assert.assertTrue(processedCss.contains(".other{color: blue}"));
-        Assert.assertTrue(processedCss.contains(".main{color: red}"));
+        assertTrue(processedCss.contains(".other{color: blue}"));
+        assertTrue(processedCss.contains(".main{color: red}"));
     }
 
     @Test
-    public void execute_processesNestedDirectories()
+    void execute_processesNestedDirectories()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithNestedStyleSheet.class));
@@ -141,11 +143,11 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(".nested{color: green}", processedCss);
+        assertEquals(".nested{color: green}", processedCss);
     }
 
     @Test
-    public void execute_skipsNonProductionMode()
+    void execute_skipsNonProductionMode()
             throws ExecutionFailedException, IOException {
         Mockito.when(options.isProductionMode()).thenReturn(false);
 
@@ -159,11 +161,11 @@ public class TaskProcessStylesheetCssTest {
 
         // File should remain unchanged
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(originalCss, processedCss);
+        assertEquals(originalCss, processedCss);
     }
 
     @Test
-    public void execute_skipsExternalStylesheets()
+    void execute_skipsExternalStylesheets()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithExternalStyleSheet.class));
@@ -179,11 +181,11 @@ public class TaskProcessStylesheetCssTest {
 
         // File should remain unchanged since only external URL is referenced
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(originalCss, processedCss);
+        assertEquals(originalCss, processedCss);
     }
 
     @Test
-    public void execute_skipsUnreferencedCssFiles()
+    void execute_skipsUnreferencedCssFiles()
             throws ExecutionFailedException, IOException {
         // Only styles.css is referenced
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
@@ -206,15 +208,15 @@ public class TaskProcessStylesheetCssTest {
         // Unreferenced file should remain unchanged
         String unreferencedProcessed = Files
                 .readString(unreferencedCss.toPath());
-        Assert.assertEquals(unreferencedOriginal, unreferencedProcessed);
+        assertEquals(unreferencedOriginal, unreferencedProcessed);
 
         // Referenced file should be processed
         String referencedProcessed = Files.readString(referencedCss.toPath());
-        Assert.assertEquals(".ref{}", referencedProcessed);
+        assertEquals(".ref{}", referencedProcessed);
     }
 
     @Test
-    public void execute_handlesNoAnnotations()
+    void execute_handlesNoAnnotations()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Collections.emptySet());
@@ -229,11 +231,11 @@ public class TaskProcessStylesheetCssTest {
 
         // File should remain unchanged since no annotations found
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(originalCss, processedCss);
+        assertEquals(originalCss, processedCss);
     }
 
     @Test
-    public void execute_handlesNullClassFinder()
+    void execute_handlesNullClassFinder()
             throws ExecutionFailedException, IOException {
         Mockito.when(options.getClassFinder()).thenReturn(null);
 
@@ -247,11 +249,11 @@ public class TaskProcessStylesheetCssTest {
 
         // File should remain unchanged
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(originalCss, processedCss);
+        assertEquals(originalCss, processedCss);
     }
 
     @Test
-    public void execute_handlesMissingDirectory()
+    void execute_handlesMissingDirectory()
             throws ExecutionFailedException, IOException {
         FileUtils.deleteDirectory(metaInfResources);
 
@@ -260,7 +262,7 @@ public class TaskProcessStylesheetCssTest {
     }
 
     @Test
-    public void execute_handlesNullResourceOutputDirectory()
+    void execute_handlesNullResourceOutputDirectory()
             throws ExecutionFailedException {
         Mockito.when(options.getResourceOutputDirectory()).thenReturn(null);
 
@@ -269,13 +271,14 @@ public class TaskProcessStylesheetCssTest {
     }
 
     @Test
-    public void execute_inlinesNodeModulesImports()
+    void execute_inlinesNodeModulesImports()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         // Create node_modules structure
-        File nodeModules = temporaryFolder.newFolder("node_modules");
+        File nodeModules = new File(temporaryFolder, "node_modules");
+        nodeModules.mkdirs();
         File packageDir = new File(nodeModules, "some-package");
         packageDir.mkdirs();
 
@@ -295,14 +298,14 @@ public class TaskProcessStylesheetCssTest {
 
         String processedCss = Files.readString(mainFile.toPath());
         // Should contain minified node_modules CSS
-        Assert.assertTrue("Should contain inlined node_modules CSS",
-                processedCss.contains(".from-node-modules{color: blue}"));
-        Assert.assertTrue("Should contain main CSS",
-                processedCss.contains(".main{color: red}"));
+        assertTrue(processedCss.contains(".from-node-modules{color: blue}"),
+                "Should contain inlined node_modules CSS");
+        assertTrue(processedCss.contains(".main{color: red}"),
+                "Should contain main CSS");
     }
 
     @Test
-    public void execute_processesMultipleAnnotatedClasses()
+    void execute_processesMultipleAnnotatedClasses()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class,
@@ -323,12 +326,12 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         // Both files should be processed
-        Assert.assertEquals(".styles{}", Files.readString(stylesFile.toPath()));
-        Assert.assertEquals(".nested{}", Files.readString(nestedFile.toPath()));
+        assertEquals(".styles{}", Files.readString(stylesFile.toPath()));
+        assertEquals(".nested{}", Files.readString(nestedFile.toPath()));
     }
 
     @Test
-    public void execute_handlesRepeatedAnnotations()
+    void execute_handlesRepeatedAnnotations()
             throws ExecutionFailedException, IOException {
         Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithMultipleStyleSheets.class));
@@ -346,7 +349,7 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         // Both files should be processed
-        Assert.assertEquals(".styles{}", Files.readString(stylesFile.toPath()));
-        Assert.assertEquals(".other{}", Files.readString(otherFile.toPath()));
+        assertEquals(".styles{}", Files.readString(stylesFile.toPath()));
+        assertEquals(".other{}", Files.readString(otherFile.toPath()));
     }
 }

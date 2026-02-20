@@ -17,77 +17,76 @@ package com.vaadin.flow.server.frontend;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ImportExtractorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ImportExtractorTest {
 
     @Test
-    public void removeComments_blockCommentsAreRemoved() {
+    void removeComments_blockCommentsAreRemoved() {
         ImportExtractor extractor = new ImportExtractor(
                 "/* comment \n sdf \n \n */import 'foo.js';");
 
-        Assert.assertEquals("import 'foo.js';", extractor.removeComments());
+        assertEquals("import 'foo.js';", extractor.removeComments());
     }
 
     @Test
-    public void removeComments_lineCommentsAreRemoved() {
+    void removeComments_lineCommentsAreRemoved() {
         ImportExtractor extractor = new ImportExtractor(
                 "// sdfdsf \nimport from 'foo.js';\n //xxxxx \nimport {A}  from bar.js;");
-        Assert.assertEquals(
+        assertEquals(
                 "\nimport from 'foo.js';\n" + " \n"
                         + "import {A}  from bar.js;",
                 extractor.removeComments());
     }
 
     @Test
-    public void removeComments_blockCommentInsideImport() {
+    void removeComments_blockCommentInsideImport() {
         ImportExtractor extractor = new ImportExtractor(
                 "import from /*fdg \n */'foo.js';");
-        Assert.assertEquals("import from 'foo.js';",
-                extractor.removeComments());
+        assertEquals("import from 'foo.js';", extractor.removeComments());
     }
 
     @Test
-    public void removeComments_lineCommentInsideImport() {
+    void removeComments_lineCommentInsideImport() {
         ImportExtractor extractor = new ImportExtractor(
                 "import from // xcvxcvcx\n//vcbcvbcv\n 'foo.js';");
-        Assert.assertEquals("import from \n\n 'foo.js';",
-                extractor.removeComments());
+        assertEquals("import from \n\n 'foo.js';", extractor.removeComments());
     }
 
     @Test
-    public void getImportsWithBlockComment() {
+    void getImportsWithBlockComment() {
         ImportExtractor extractor = new ImportExtractor(
                 "/* comment \n sdf \n \n */ import /* ddddddd*/'foo.js';");
         List<String> importedPaths = extractor.getImportedPaths();
-        Assert.assertEquals(1, importedPaths.size());
-        Assert.assertEquals("foo.js", importedPaths.get(0));
+        assertEquals(1, importedPaths.size());
+        assertEquals("foo.js", importedPaths.get(0));
     }
 
     @Test
-    public void getImportsWithLineComments() {
+    void getImportsWithLineComments() {
         ImportExtractor extractor = new ImportExtractor(
                 "// sdfdsf \n  import from 'foo.js';\n //xxxxx \n import {A} // sdfsf\n from bar.js;");
         List<String> importedPaths = extractor.getImportedPaths();
-        Assert.assertEquals(2, importedPaths.size());
-        Assert.assertEquals("foo.js", importedPaths.get(0));
-        Assert.assertEquals("bar.js", importedPaths.get(1));
+        assertEquals(2, importedPaths.size());
+        assertEquals("foo.js", importedPaths.get(0));
+        assertEquals("bar.js", importedPaths.get(1));
     }
 
     @Test
-    public void getImport_lineHasNoSemicolon() {
+    void getImport_lineHasNoSemicolon() {
         ImportExtractor extractor = new ImportExtractor(
                 "import {A} from 'foo.js'; import from 'bar.js'\n import from 'baz.js'");
         List<String> importedPaths = extractor.getImportedPaths();
-        Assert.assertEquals(3, importedPaths.size());
-        Assert.assertEquals("foo.js", importedPaths.get(0));
-        Assert.assertEquals("bar.js", importedPaths.get(1));
-        Assert.assertEquals("baz.js", importedPaths.get(2));
+        assertEquals(3, importedPaths.size());
+        assertEquals("foo.js", importedPaths.get(0));
+        assertEquals("bar.js", importedPaths.get(1));
+        assertEquals("baz.js", importedPaths.get(2));
     }
 
     @Test
-    public void getImports_thereAreNoImportsAtAll_noImportsFound() {
+    void getImports_thereAreNoImportsAtAll_noImportsFound() {
         ImportExtractor extractor = new ImportExtractor(
                 "const container = document.createElement('template');\n" + "\n"
                         + "        container.innerHTML = `\n"
@@ -100,16 +99,16 @@ public class ImportExtractorTest {
                         + "            </dom-module>`;\n"
                         + "        document.head.appendChild(container.content);");
 
-        Assert.assertEquals(0, extractor.getImportedPaths().size());
+        assertEquals(0, extractor.getImportedPaths().size());
     }
 
     @Test
-    public void getImports_onlyImportAsFirstStatementsAreCounted() {
+    void getImports_onlyImportAsFirstStatementsAreCounted() {
         ImportExtractor extractor = new ImportExtractor(
                 "import {A} from 'foo.js'; \n some text  \n  import from 'ignored.js';");
 
         List<String> importedPaths = extractor.getImportedPaths();
-        Assert.assertEquals(1, importedPaths.size());
-        Assert.assertEquals("foo.js", importedPaths.get(0));
+        assertEquals(1, importedPaths.size());
+        assertEquals("foo.js", importedPaths.get(0));
     }
 }

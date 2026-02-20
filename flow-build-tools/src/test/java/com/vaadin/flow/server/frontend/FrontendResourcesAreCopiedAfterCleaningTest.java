@@ -22,11 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -35,25 +33,26 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FrontendResourcesAreCopiedAfterCleaningTest {
+class FrontendResourcesAreCopiedAfterCleaningTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private File npmFolder;
 
     private File testJar = TestUtils
             .getTestJar("jar-with-frontend-resources.jar");
 
-    @Before
-    public void setup() throws IOException, ExecutionFailedException {
-        npmFolder = temporaryFolder.getRoot();
+    @BeforeEach
+    void setup() throws IOException, ExecutionFailedException {
+        npmFolder = temporaryFolder;
 
     }
 
     @Test
-    public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
+    void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
             throws IOException, ExecutionFailedException {
         copyResources();
         assertCopiedFrontendFileAmount(17);
@@ -71,8 +70,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
-        Assert.assertEquals("Should have frontend files", fileCount,
-                files.size());
+        assertEquals(fileCount, files.size(), "Should have frontend files");
     }
 
     private File getJarFrontendResourcesFolder() {

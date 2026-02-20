@@ -19,40 +19,39 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.tests.util.MockOptions;
 
-public class TaskCopyLocalFrontendFilesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskCopyLocalFrontendFilesTest {
+
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void directoryWithReadOnlyFile_copyIsNotReadOnly()
-            throws IOException {
+    void directoryWithReadOnlyFile_copyIsNotReadOnly() throws IOException {
         final File sourceFolder = createReadOnlySource();
 
-        final File outFolder = temporaryFolder.newFolder("out");
+        final File outFolder = new File(temporaryFolder, "out");
 
         TaskCopyLocalFrontendFiles.copyLocalResources(sourceFolder, outFolder);
 
         final File copiedReadOnly = new File(outFolder, "readOnly.txt");
-        Assert.assertTrue(
-                "Copied files should be writable even when source is readOnly",
-                copiedReadOnly.canWrite());
+        assertTrue(copiedReadOnly.canWrite(),
+                "Copied files should be writable even when source is readOnly");
 
     }
 
     @Test
-    public void directoryWithReadOnlyFile_canCopyMultipleTimesToSource()
+    void directoryWithReadOnlyFile_canCopyMultipleTimesToSource()
             throws IOException {
         final File sourceFolder = createReadOnlySource();
 
-        final File outFolder = temporaryFolder.newFolder("out");
+        final File outFolder = new File(temporaryFolder, "out");
 
         TaskCopyLocalFrontendFiles.copyLocalResources(sourceFolder, outFolder);
 
@@ -60,12 +59,12 @@ public class TaskCopyLocalFrontendFilesTest {
     }
 
     @Test
-    public void execute_copiedFilesAreTracked() throws IOException {
+    void execute_copiedFilesAreTracked() throws IOException {
         final File sourceFolder = createReadOnlySource();
 
-        final File outFolder = temporaryFolder.newFolder("out");
+        final File outFolder = new File(temporaryFolder, "out");
 
-        Options options = new MockOptions(temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder)
                 .withJarFrontendResourcesFolder(outFolder)
                 .copyLocalResources(sourceFolder);
 
@@ -76,21 +75,19 @@ public class TaskCopyLocalFrontendFilesTest {
         task.execute();
 
         final File copiedReadOnly = new File(outFolder, "readOnly.txt");
-        Assert.assertTrue(
-                "Copied files should be writable even when source is readOnly",
-                copiedReadOnly.canWrite());
+        assertTrue(copiedReadOnly.canWrite(),
+                "Copied files should be writable even when source is readOnly");
 
-        Assert.assertEquals("Copied files should have been tracked",
-                Set.of(copiedReadOnly.toPath()),
-                generatedFileSupport.getFiles());
+        assertEquals(Set.of(copiedReadOnly.toPath()),
+                generatedFileSupport.getFiles(),
+                "Copied files should have been tracked");
     }
 
     private File createReadOnlySource() throws IOException {
-        final File sourceFolder = temporaryFolder.newFolder("source");
+        final File sourceFolder = new File(temporaryFolder, "source");
         File readOnly = new File(sourceFolder, "readOnly.txt");
         readOnly.createNewFile();
-        Assert.assertTrue("Could not make file read-only",
-                readOnly.setReadOnly());
+        assertTrue(readOnly.setReadOnly(), "Could not make file read-only");
 
         return sourceFolder;
     }

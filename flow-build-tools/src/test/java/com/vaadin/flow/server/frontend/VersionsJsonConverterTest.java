@@ -15,25 +15,27 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class VersionsJsonConverterTest {
+class VersionsJsonConverterTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void convertPlatformVersions() throws IOException {
+    void convertPlatformVersions() throws IOException {
         // @formatter:off
         String json = "{\"core\": {"+
                             "\"flow\": { "
@@ -66,25 +68,25 @@ public class VersionsJsonConverterTest {
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), false, false);
         JsonNode convertedJson = convert.getConvertedJson();
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
 
-        Assert.assertEquals("1.1.2",
+        assertEquals("1.1.2",
                 convertedJson.get("@vaadin/vaadin-progress-bar").textValue());
-        Assert.assertEquals("4.2.2",
+        assertEquals("4.2.2",
                 convertedJson.get("@vaadin/vaadin-upload").textValue());
-        Assert.assertEquals("3.0.2",
+        assertEquals("3.0.2",
                 convertedJson.get("@polymer/iron-list").textValue());
     }
 
     @Test
-    public void reactRouterInUse_reactComponentsAreAdded() {
+    void reactRouterInUse_reactComponentsAreAdded() {
         String json = """
                 {
                   "core": {
@@ -129,35 +131,35 @@ public class VersionsJsonConverterTest {
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), true, true);
         JsonNode convertedJson = convert.getConvertedJson();
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertTrue(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertTrue(convertedJson.has("@vaadin/react-components"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertTrue(convertedJson.has("@vaadin/react-components-pro"));
+        assertTrue(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
 
-        Assert.assertEquals("1.1.2",
+        assertEquals("1.1.2",
                 convertedJson.get("@vaadin/vaadin-progress-bar").textValue());
-        Assert.assertEquals("4.2.2",
+        assertEquals("4.2.2",
                 convertedJson.get("@vaadin/vaadin-upload").textValue());
-        Assert.assertEquals("3.0.2",
+        assertEquals("3.0.2",
                 convertedJson.get("@polymer/iron-list").textValue());
-        Assert.assertEquals("24.4.0-alpha7",
+        assertEquals("24.4.0-alpha7",
                 convertedJson.get("@vaadin/react-components").textValue());
-        Assert.assertEquals("24.4.0-alpha7",
+        assertEquals("24.4.0-alpha7",
                 convertedJson.get("@vaadin/react-components-pro").textValue());
     }
 
     @Test
-    public void reactRouterNotUsed_reactComponentsIgnored() {
+    void reactRouterNotUsed_reactComponentsIgnored() {
         String json = """
                 {
                   "core": {
@@ -204,31 +206,31 @@ public class VersionsJsonConverterTest {
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), false, true);
         JsonNode convertedJson = convert.getConvertedJson();
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertFalse(convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
 
-        Assert.assertEquals("1.1.2",
+        assertEquals("1.1.2",
                 convertedJson.get("@vaadin/vaadin-progress-bar").textValue());
-        Assert.assertEquals("4.2.2",
+        assertEquals("4.2.2",
                 convertedJson.get("@vaadin/vaadin-upload").textValue());
-        Assert.assertEquals("3.0.2",
+        assertEquals("3.0.2",
                 convertedJson.get("@polymer/iron-list").textValue());
     }
 
     @Test
-    public void reactRouterUsed_noVaadinRouterAdded() {
+    void reactRouterUsed_noVaadinRouterAdded() {
         String json = """
                 {
                   "core": {
@@ -255,15 +257,14 @@ public class VersionsJsonConverterTest {
                 JacksonUtils.readTree(json), true, false);
         JsonNode convertedJson = convert.getConvertedJson();
 
-        Assert.assertFalse(
-                "Found @vaadin/router even though it should not be in use.",
-                convertedJson.has("@vaadin/router"));
-        Assert.assertTrue("Missing react-components",
-                convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("@vaadin/router"),
+                "Found @vaadin/router even though it should not be in use.");
+        assertTrue(convertedJson.has("@vaadin/react-components"),
+                "Missing react-components");
     }
 
     @Test
-    public void testModeProperty() {
+    void testModeProperty() {
         String json = """
                 {
                   "core": {
@@ -314,80 +315,80 @@ public class VersionsJsonConverterTest {
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), true, false);
         JsonNode convertedJson = convert.getConvertedJson();
-        Assert.assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertTrue(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertTrue(convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertTrue(convertedJson.has("@vaadin/react-components-pro"));
+        assertTrue(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
 
         // react enabled, exclude web components
         convert = new VersionsJsonConverter(JacksonUtils.readTree(json), true,
                 true);
         convertedJson = convert.getConvertedJson();
-        Assert.assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertFalse(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
 
         // react disabled
         convert = new VersionsJsonConverter(JacksonUtils.readTree(json), false,
                 false);
         convertedJson = convert.getConvertedJson();
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertFalse(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
 
         // react disabled, exclude web components
         convert = new VersionsJsonConverter(JacksonUtils.readTree(json), false,
                 true);
         convertedJson = convert.getConvertedJson();
-        Assert.assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertFalse(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
     }
 
     @Test
-    public void testExclusionsArrayProperty() {
+    void testExclusionsArrayProperty() {
         String json = """
                 {
                   "core": {
@@ -444,38 +445,38 @@ public class VersionsJsonConverterTest {
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 JacksonUtils.readTree(json), true, false);
         JsonNode convertedJson = convert.getConvertedJson();
-        Assert.assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertFalse(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertFalse(convertedJson.has("@polymer/iron-list"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertTrue(convertedJson.has("@vaadin/react-components"));
+        assertFalse(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertFalse(convertedJson.has("@vaadin/vaadin-upload"));
+        assertFalse(convertedJson.has("@polymer/iron-list"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertTrue(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
 
         // react disabled
         convert = new VersionsJsonConverter(JacksonUtils.readTree(json), false,
                 false);
         convertedJson = convert.getConvertedJson();
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(convertedJson.has("@polymer/iron-list"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components-pro"));
-        Assert.assertFalse(convertedJson.has("@vaadin/react-components"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(convertedJson.has("@vaadin/vaadin-upload"));
+        assertTrue(convertedJson.has("@polymer/iron-list"));
+        assertFalse(convertedJson.has("@vaadin/react-components-pro"));
+        assertFalse(convertedJson.has("@vaadin/react-components"));
 
-        Assert.assertFalse(convertedJson.has("flow"));
-        Assert.assertFalse(convertedJson.has("core"));
-        Assert.assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
-        Assert.assertFalse(convertedJson.has("platform"));
-        Assert.assertFalse(convertedJson.has("react"));
-        Assert.assertFalse(convertedJson.has("react-pro"));
-        Assert.assertFalse(convertedJson.has("react-components"));
-        Assert.assertFalse(convertedJson.has("react-components-pro"));
+        assertFalse(convertedJson.has("flow"));
+        assertFalse(convertedJson.has("core"));
+        assertFalse(convertedJson.has(VAADIN_CORE_NPM_PACKAGE));
+        assertFalse(convertedJson.has("platform"));
+        assertFalse(convertedJson.has("react"));
+        assertFalse(convertedJson.has("react-pro"));
+        assertFalse(convertedJson.has("react-components"));
+        assertFalse(convertedJson.has("react-components-pro"));
     }
 }

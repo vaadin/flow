@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -36,7 +35,11 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 
-public class VersionsJsonFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class VersionsJsonFilterTest {
 
     private static final ObjectNode TEST_VERSION_JSON;
 
@@ -54,45 +57,45 @@ public class VersionsJsonFilterTest {
     }
 
     @Test
-    public void filterPlatformVersions_dependencies() throws IOException {
+    void filterPlatformVersions_dependencies() throws IOException {
         assertFilterPlatformVersions(NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    public void filterPlatformVersions_devDependencies() throws IOException {
+    void filterPlatformVersions_devDependencies() throws IOException {
         assertFilterPlatformVersions(NodeUpdater.DEV_DEPENDENCIES);
     }
 
     @Test
-    public void filterPlatformDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPlatformDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
         assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    public void filterPlatformDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPlatformDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
         assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEV_DEPENDENCIES);
     }
 
     @Test
-    public void missingVaadinDependencies_allDependenciesShouldBeUserHandled()
+    void missingVaadinDependencies_allDependenciesShouldBeUserHandled()
             throws IOException {
         assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
                 NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    public void missingVaadinDevDependencies_allDependenciesSholdBeUserHandled()
+    void missingVaadinDevDependencies_allDependenciesSholdBeUserHandled()
             throws IOException {
         assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
                 NodeUpdater.DEV_DEPENDENCIES);
     }
 
     @Test
-    public void testGetFilteredVersions_whenErrorHappens_versionOriginParameterIsUsedInErrorLogs()
+    void testGetFilteredVersions_whenErrorHappens_versionOriginParameterIsUsedInErrorLogs()
             throws IOException {
         String pkgJson = IOUtils.toString(
                 Objects.requireNonNull(
@@ -152,11 +155,11 @@ public class VersionsJsonFilterTest {
                 JacksonUtils.readTree(pkgJson), depKey);
         JsonNode filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
                 "versions/versions.json");
-        Assert.assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(filteredJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(filteredJson.has("@polymer/iron-list"));
+        assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(filteredJson.has("@vaadin/vaadin-upload"));
+        assertTrue(filteredJson.has("@polymer/iron-list"));
 
-        Assert.assertEquals("1.1.2",
+        assertEquals("1.1.2",
                 filteredJson.get("@vaadin/vaadin-progress-bar").asString());
     }
 
@@ -180,16 +183,14 @@ public class VersionsJsonFilterTest {
                 "@vaadin/vaadin-split-layout", "@vaadin/vaadin-tabs");
 
         for (String key : expectedKeys) {
-            Assert.assertTrue(
-                    String.format("Key '%s' was expected, but not found", key),
-                    filteredJson.has(key));
+            assertTrue(filteredJson.has(key),
+                    String.format("Key '%s' was expected, but not found", key));
         }
 
         List<String> droppedKeys = Arrays.asList("flow", "core", "platform");
         for (String key : droppedKeys) {
-            Assert.assertFalse(
-                    String.format("User managed key '%s' was found.", key),
-                    filteredJson.has(key));
+            assertFalse(filteredJson.has(key),
+                    String.format("User managed key '%s' was found.", key));
         }
 
         Map<String, String> expectedValues = new HashMap<>();
@@ -200,7 +201,7 @@ public class VersionsJsonFilterTest {
         expectedValues.put("@vaadin/vaadin-tabs", "3.0.5");
 
         for (Map.Entry<String, String> entry : expectedValues.entrySet()) {
-            Assert.assertEquals(
+            assertEquals(
                     String.format("Got wrong version for '%s'", entry.getKey()),
                     entry.getValue(),
                     filteredJson.get(entry.getKey()).asString());
@@ -218,22 +219,20 @@ public class VersionsJsonFilterTest {
                 JacksonUtils.readTree(pkgJson), depKey);
         JsonNode filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
                 "versions/versions.json");
-        Assert.assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(filteredJson.has("@vaadin/vaadin-upload"));
-        Assert.assertTrue(filteredJson.has("@polymer/iron-list"));
+        assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
+        assertTrue(filteredJson.has("@vaadin/vaadin-upload"));
+        assertTrue(filteredJson.has("@polymer/iron-list"));
 
-        Assert.assertEquals(
-                "'progress-bar' should be the same in package and versions",
-                "1.1.2",
-                filteredJson.get("@vaadin/vaadin-progress-bar").asString());
-        Assert.assertEquals(
-                "'upload' should be the same in package and versions", "4.2.2",
-                filteredJson.get("@vaadin/vaadin-upload").asString());
-        Assert.assertEquals(
-                "'enforced' version should come from platform (upgrade)",
-                "1.5.0", filteredJson.get("enforced").asString());
-        Assert.assertEquals(
-                "'iron-list' version should come from platform (downgrade)",
-                "2.0.19", filteredJson.get("@polymer/iron-list").asString());
+        assertEquals("1.1.2",
+                filteredJson.get("@vaadin/vaadin-progress-bar").asString(),
+                "'progress-bar' should be the same in package and versions");
+        assertEquals("4.2.2",
+                filteredJson.get("@vaadin/vaadin-upload").asString(),
+                "'upload' should be the same in package and versions");
+        assertEquals("1.5.0", filteredJson.get("enforced").asString(),
+                "'enforced' version should come from platform (upgrade)");
+        assertEquals("2.0.19",
+                filteredJson.get("@polymer/iron-list").asString(),
+                "'iron-list' version should come from platform (downgrade)");
     }
 }

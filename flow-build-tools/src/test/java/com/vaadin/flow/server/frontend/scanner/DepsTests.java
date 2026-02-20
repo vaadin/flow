@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DepsTests {
 
@@ -45,7 +46,7 @@ public class DepsTests {
     public static void assertImports(Map<ChunkInfo, List<String>> actualUrls,
             String... expectedUrls) {
         List<String> actual = merge(actualUrls);
-        Assert.assertEquals(List.of(expectedUrls), actual);
+        assertEquals(List.of(expectedUrls), actual);
     }
 
     public static void assertImportsExcludingUI(
@@ -59,7 +60,7 @@ public class DepsTests {
     public static void assertImportsWithFilter(
             Map<ChunkInfo, List<String>> actualUrls, Predicate<String> filter,
             String... expectedUrls) {
-        Assert.assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
+        assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
                 .filter(filter).collect(Collectors.toList()));
     }
 
@@ -70,18 +71,18 @@ public class DepsTests {
     public static void assertHasImports(Map<ChunkInfo, List<String>> modules,
             String... urls) {
         List<String> all = merge(modules);
-        Assert.assertTrue(all.containsAll(List.of(urls)));
+        assertTrue(all.containsAll(List.of(urls)));
     }
 
     static void assertCss(Map<ChunkInfo, List<CssData>> actual,
             List<CssData> expected) {
         Collection<CssData> all = merge(actual);
-        Assert.assertEquals(expected, all);
+        assertEquals(expected, all);
     }
 
     public static <T> void assertImportCount(int expected,
             Map<ChunkInfo, List<T>> imports) {
-        Assert.assertEquals(expected, merge(imports).size());
+        assertEquals(expected, merge(imports).size());
     }
 
 }
