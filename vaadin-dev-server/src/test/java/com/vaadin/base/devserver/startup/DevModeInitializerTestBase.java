@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -70,14 +70,15 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
 
-    @Rule
-    public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
+    @TempDir
+    File javaSourceFolder;
 
     public static class VaadinServletSubClass extends VaadinServlet {
 
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @BeforeEach
     @Override
     public void setup() throws Exception {
         super.setup();
@@ -174,7 +175,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     }
 
     @Override
-    public void teardown() {
+    void teardown() {
         super.teardown();
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
@@ -184,13 +185,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         mainPackageFile.delete();
     }
 
-    public void process() throws Exception {
+    void process() throws Exception {
         devModeStartupListener.process(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
     }
 
-    public void runDestroy() throws Exception {
+    void runDestroy() throws Exception {
         ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
         Mockito.when(event.getServletContext()).thenReturn(servletContext);
         devModeStartupListener.contextDestroyed(event);

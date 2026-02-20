@@ -20,33 +20,33 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.testutil.TestUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ProjectHelpersTest {
+class ProjectHelpersTest {
 
     private String userHome;
 
-    @Before
-    public void saveUserHome() {
+    @BeforeEach
+    void saveUserHome() {
         userHome = System.getProperty("user.home");
     }
 
-    @After
-    public void restoreUserHome() {
+    @AfterEach
+    void restoreUserHome() {
         System.setProperty("user.home", userHome);
     }
 
     @Test
-    public void readUserKey() throws IOException {
+    void readUserKey() throws IOException {
         System.setProperty("user.home",
                 TestUtils.getTestFolder("stats-data").toPath().toString());
 
@@ -65,8 +65,8 @@ public class ProjectHelpersTest {
         assertNotNull(newKey);
         assertNotSame(keyString, newKey);
         File userKeyFile = new File(vaadinHome, "userKey");
-        Assert.assertTrue("userKey should be created automatically",
-                userKeyFile.exists());
+        assertTrue(userKeyFile.exists(),
+                "userKey should be created automatically");
     }
 
     private File createTempDir() throws IOException {
@@ -76,25 +76,25 @@ public class ProjectHelpersTest {
     }
 
     @Test
-    public void writeAndReadUserKey() throws IOException {
+    void writeAndReadUserKey() throws IOException {
         System.setProperty("user.home", createTempDir().getAbsolutePath());
 
         // Write file
         String userKey = ProjectHelpers.getUserKey();
-        Assert.assertNotNull(userKey);
+        assertNotNull(userKey);
 
         // Check file
         File userFile = new File(System.getProperty("user.home"),
                 ".vaadin/userKey");
         String fromFile = Files.readString(userFile.toPath(),
                 StandardCharsets.UTF_8);
-        Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
+        assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
 
-        Assert.assertEquals(userKey, ProjectHelpers.getUserKey());
+        assertEquals(userKey, ProjectHelpers.getUserKey());
     }
 
     @Test
-    public void readProKey() {
+    void readProKey() {
         System.setProperty("user.home",
                 TestUtils.getTestFolder("stats-data").toPath().toString());
 

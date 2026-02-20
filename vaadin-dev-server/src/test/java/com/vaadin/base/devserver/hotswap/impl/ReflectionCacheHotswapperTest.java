@@ -17,14 +17,16 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.MockVaadinServletService;
 
-public class ReflectionCacheHotswapperTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class ReflectionCacheHotswapperTest {
 
     private MockVaadinServletService service = new MockVaadinServletService(
             false);
@@ -33,28 +35,26 @@ public class ReflectionCacheHotswapperTest {
             CacheValue::new);
 
     @Test
-    public void onClassesChange_classCached_clearCache() {
+    void onClassesChange_classCached_clearCache() {
         cache.get(CacheKey.class).value = "BASE";
         cache.get(CacheSubKey.class).value = "SUBCLASS";
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(CacheKey.class), true));
 
-        Assert.assertNull("Should have clean cache for cached class change",
-                cache.get(CacheKey.class).value);
-        Assert.assertEquals(
-                "Should not have cleared cache for other cached class",
-                "SUBCLASS", cache.get(CacheSubKey.class).value);
+        assertNull(cache.get(CacheKey.class).value,
+                "Should have clean cache for cached class change");
+        assertEquals("SUBCLASS", cache.get(CacheSubKey.class).value,
+                "Should not have cleared cache for other cached class");
     }
 
     @Test
-    public void onClassesChange_classNotCached_doNotClearCache() {
+    void onClassesChange_classNotCached_doNotClearCache() {
         cache.get(CacheKey.class).value = "BEFORE";
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(String.class), true));
 
-        Assert.assertEquals(
-                "Should not have cleared cache for non cached class change",
-                "BEFORE", cache.get(CacheKey.class).value);
+        assertEquals("BEFORE", cache.get(CacheKey.class).value,
+                "Should not have cleared cache for non cached class change");
     }
 
     static class CacheKey {

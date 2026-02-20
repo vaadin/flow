@@ -22,8 +22,7 @@ import java.util.Map;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -36,15 +35,20 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.times;
 
-public class DebugWindowConnectionTest {
+class DebugWindowConnectionTest {
 
     private final DebugWindowConnection reload = new DebugWindowConnection(
             getMockContext());
 
     @Test
-    public void onConnect_suspend_sayHello() {
+    void onConnect_suspend_sayHello() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         createMockRequestWithToken(resource, DevToolsToken.getToken());
 
@@ -53,14 +57,14 @@ public class DebugWindowConnectionTest {
 
         reload.onConnect(resource);
 
-        Assert.assertTrue(reload.isLiveReload(resource));
+        assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource).suspend(-1);
         Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
                 resource);
     }
 
     @Test
-    public void onconnect_should_allow_connection_if_valid_token_is_present() {
+    void onconnect_should_allow_connection_if_valid_token_is_present() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         createMockRequestWithToken(resource, DevToolsToken.getToken());
 
@@ -69,14 +73,14 @@ public class DebugWindowConnectionTest {
 
         reload.onConnect(resource);
 
-        Assert.assertTrue(reload.isLiveReload(resource));
+        assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource, times(1)).suspend(-1);
         Mockito.verify(broadcaster, times(1))
                 .broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
-    public void onconnect_should_prevent_connection_if_invalid_token_is_present() {
+    void onconnect_should_prevent_connection_if_invalid_token_is_present() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         createMockRequestWithToken(resource, "invalidToken");
 
@@ -85,7 +89,7 @@ public class DebugWindowConnectionTest {
 
         reload.onConnect(resource);
 
-        Assert.assertFalse(reload.isLiveReload(resource));
+        assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
         Mockito.verify(broadcaster, times(0))
                 .broadcast("{\"command\": \"hello\"}", resource);
@@ -93,7 +97,7 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
-    public void onconnect_should_prevent_connection_if_no_token_at_all() {
+    void onconnect_should_prevent_connection_if_no_token_at_all() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = createMockRequestWithToken(resource, "");
 
@@ -102,7 +106,7 @@ public class DebugWindowConnectionTest {
 
         reload.onConnect(resource);
 
-        Assert.assertFalse(reload.isLiveReload(resource));
+        assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
         Mockito.verify(broadcaster, times(0))
                 .broadcast("{\"command\": \"hello\"}", resource);
@@ -111,14 +115,14 @@ public class DebugWindowConnectionTest {
 
         reload.onConnect(resource);
 
-        Assert.assertFalse(reload.isLiveReload(resource));
+        assertFalse(reload.isLiveReload(resource));
         Mockito.verify(resource, times(0)).suspend(-1);
         Mockito.verify(broadcaster, times(0))
                 .broadcast("{\"command\": \"hello\"}", resource);
     }
 
     @Test
-    public void reload_twoConnections_sendReloadCommand() {
+    void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
         createMockRequestWithToken(resource1, DevToolsToken.getToken());
 
@@ -130,8 +134,8 @@ public class DebugWindowConnectionTest {
         Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
         reload.onConnect(resource1);
         reload.onConnect(resource2);
-        Assert.assertTrue(reload.isLiveReload(resource1));
-        Assert.assertTrue(reload.isLiveReload(resource2));
+        assertTrue(reload.isLiveReload(resource1));
+        assertTrue(reload.isLiveReload(resource2));
 
         reload.reload();
 
@@ -143,7 +147,7 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
-    public void requestDevToolsInterface_alwaysReturnsEqualingInterfaceForResource() {
+    void requestDevToolsInterface_alwaysReturnsEqualingInterfaceForResource() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
 
@@ -152,30 +156,26 @@ public class DebugWindowConnectionTest {
         DevToolsInterface devToolsInterface2 = reload
                 .getDevToolsInterface(resource2);
 
-        Assert.assertNotEquals(
-                "DevTollsInterface for different resources should not be equal",
-                devToolsInterface, devToolsInterface2);
-        Assert.assertEquals(devToolsInterface,
-                reload.getDevToolsInterface(resource1));
-        Assert.assertEquals(devToolsInterface2,
+        assertNotEquals(devToolsInterface, devToolsInterface2,
+                "DevTollsInterface for different resources should not be equal");
+        assertEquals(devToolsInterface, reload.getDevToolsInterface(resource1));
+        assertEquals(devToolsInterface2,
                 reload.getDevToolsInterface(resource2));
 
         Map<DevToolsInterface, String> map = new HashMap<>();
         map.put(devToolsInterface, "one");
         map.put(devToolsInterface2, "two");
 
-        Assert.assertEquals("one",
-                map.get(reload.getDevToolsInterface(resource1)));
-        Assert.assertEquals("two",
-                map.get(reload.getDevToolsInterface(resource2)));
+        assertEquals("one", map.get(reload.getDevToolsInterface(resource1)));
+        assertEquals("two", map.get(reload.getDevToolsInterface(resource2)));
     }
 
     @Test
-    public void reload_resourceIsNotSet_reloadCommandIsNotSent() {
+    void reload_resourceIsNotSet_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-        Assert.assertFalse(reload.isLiveReload(resource));
+        assertFalse(reload.isLiveReload(resource));
 
         reload.reload();
 
@@ -183,17 +183,17 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
-    public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
+    void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         createMockRequestWithToken(resource, DevToolsToken.getToken());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         reload.onConnect(resource);
-        Assert.assertTrue(reload.isLiveReload(resource));
+        assertTrue(reload.isLiveReload(resource));
         Mockito.reset(broadcaster);
         reload.onDisconnect(resource);
-        Assert.assertFalse(reload.isLiveReload(resource));
+        assertFalse(reload.isLiveReload(resource));
 
         reload.reload();
 
@@ -201,7 +201,7 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
-    public void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
+    void getBackend_JRebelClassEventListenerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
         DebugWindowConnection connection = new DebugWindowConnection(
@@ -217,12 +217,11 @@ public class DebugWindowConnectionTest {
                         }
                     }
                 }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
-                connection.getBackend());
+        assertEquals(BrowserLiveReload.Backend.JREBEL, connection.getBackend());
     }
 
     @Test
-    public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
+    void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
         DebugWindowConnection connection = new DebugWindowConnection(
@@ -238,12 +237,12 @@ public class DebugWindowConnectionTest {
                         }
                     }
                 }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
+        assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
                 connection.getBackend());
     }
 
     @Test
-    public void getBackend_SpringBootDevtoolsClassesLoaded_returnsSPRING_BOOT_DEVTOOLS() {
+    void getBackend_SpringBootDevtoolsClassesLoaded_returnsSPRING_BOOT_DEVTOOLS() {
         class SpringServlet {
         }
         class LiveReloadServer {
@@ -263,12 +262,12 @@ public class DebugWindowConnectionTest {
                         }
                     }
                 }, getMockContext());
-        Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
+        assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 connection.getBackend());
     }
 
     @Test
-    public void backwardsCompatibilityClassExists() {
+    void backwardsCompatibilityClassExists() {
         // JRebel and HotswapAgent live reload triggering only works if
         // com.vaadin.flow.internal.BrowserLiveReloadAccessor exists on
         // classpath.
@@ -283,7 +282,7 @@ public class DebugWindowConnectionTest {
                 | InstantiationException | IllegalAccessException
                 | InvocationTargetException e) {
             e.printStackTrace();
-            Assert.fail(className
+            fail(className
                     + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
                     + methodName + " accepting a VaadinService");
         }
