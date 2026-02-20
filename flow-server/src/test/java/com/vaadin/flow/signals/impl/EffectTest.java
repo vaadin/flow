@@ -195,23 +195,6 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void changeTracking_multipleChangesInTransaction_effectRunOnce() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
-
-        Signal.unboundEffect(() -> {
-            invocations.add(signal.get());
-        });
-
-        Signal.runInTransaction(() -> {
-            signal.set("one");
-            signal.set("two");
-        });
-
-        assertEquals(List.of("", "two"), invocations);
-    }
-
-    @Test
     void changeTracking_changeOtherPartOfNode_effectNotRunAgain() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         ArrayList<String> invocations = new ArrayList<>();

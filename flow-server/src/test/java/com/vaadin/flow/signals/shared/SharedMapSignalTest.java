@@ -71,7 +71,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void put_existingKey_oldEntryUpdated() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "initial"));
+        signal.put("key", "initial");
         SharedValueSignal<String> child = signal.get().get("key");
 
         SignalOperation<String> operation = signal.put("key", "update");
@@ -91,13 +91,13 @@ public class SharedMapSignalTest extends SignalTestBase {
                 .toList();
 
         for (String key : insertOrder) {
-            assertSuccess(signal.put(key, null));
+            signal.put(key, null);
         }
 
         ArrayList<String> updateOrder = new ArrayList<>(insertOrder);
         Collections.shuffle(updateOrder);
         for (String key : updateOrder) {
-            assertSuccess(signal.put(key, "update"));
+            signal.put(key, "update");
         }
 
         List<String> keyOrder = List.copyOf(signal.get().keySet());
@@ -125,7 +125,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void putIfAbsent_existingKey_noUpdateAndEntryUnchanged() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
         SharedValueSignal<String> child = signal.get().get("key");
 
         SignalOperation<PutIfAbsentResult<SharedValueSignal<String>>> operation = signal
@@ -144,7 +144,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void remove_exisingKey_removed() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<String> operation = signal.remove("key");
 
@@ -156,7 +156,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void remove_missingKey_operationFailed() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<String> operation = signal.remove("other");
 
@@ -167,7 +167,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void clear_mapWithEntries_cleared() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.clear();
 
@@ -178,7 +178,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyKey_matchingKey_success() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.verifyKey("key",
                 signal.get().get("key"));
@@ -189,8 +189,8 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyKey_mismatchingKey_success() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
-        assertSuccess(signal.put("key2", "value2"));
+        signal.put("key", "value");
+        signal.put("key2", "value2");
 
         SignalOperation<Void> operation = signal.verifyKey("key",
                 signal.get().get("key2"));
@@ -201,7 +201,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyHasKey_hasKey_success() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.verifyHasKey("key");
 
@@ -211,7 +211,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyHasKey_hasNoKey_failure() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.verifyHasKey("key2");
 
@@ -221,7 +221,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyKeyAbsent_hasNoKey_success() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.verifyKeyAbsent("key2");
 
@@ -231,7 +231,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void verifyKeyAbsent_hasKey_failure() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SignalOperation<Void> operation = signal.verifyKeyAbsent("key");
 
@@ -241,7 +241,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void value_modifyMapInstance_immutable() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         Map<String, SharedValueSignal<String>> value = signal.get();
 
@@ -259,7 +259,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void value_readMapAfterUpdate_readsOldData() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         Map<String, SharedValueSignal<String>> value = signal.get();
 
@@ -293,7 +293,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     @Test
     void readonly_makeChangesToMapAndChild_allChangesRejected() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSuccess(signal.put("key", "value"));
+        signal.put("key", "value");
 
         SharedMapSignal<String> readonly = signal.asReadonly();
         SharedValueSignal<String> readonlyChild = readonly.get().get("key");

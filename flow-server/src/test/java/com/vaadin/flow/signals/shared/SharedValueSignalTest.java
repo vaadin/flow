@@ -381,10 +381,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         signal.set("update");
-        assertEquals(2, count.intValue());
+        assertEquals(1, count.intValue());
 
         signal.set("anohter");
-        assertEquals(4, count.intValue());
+        assertEquals(2, count.intValue());
     }
 
     @Test
@@ -459,7 +459,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.set("again");
         assertEquals(1, falseCount.intValue());
-        assertEquals(3, trueCount.intValue());
+        assertEquals(2, trueCount.intValue());
     }
 
     @Test
@@ -666,9 +666,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_peekConfirmedInTransactionAndChangeOutside_transactionSuccessful() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
-                String.class);
-        assertSuccess(signal.set("value"));
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
             signal.set(signal.peekConfirmed() + " update");

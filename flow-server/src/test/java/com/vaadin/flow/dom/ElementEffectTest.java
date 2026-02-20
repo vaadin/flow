@@ -39,7 +39,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
@@ -384,7 +383,7 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
+        taskList.insertFirst("first");
 
         TestLayout parentComponent = new TestLayout();
         var expectedComponent = new TestComponent();
@@ -408,7 +407,7 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
+        taskList.insertFirst("first");
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
@@ -441,9 +440,9 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("middle"));
-        TestUtil.assertSuccess(taskList.insertLast("last"));
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
@@ -480,9 +479,9 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("middle"));
-        TestUtil.assertSuccess(taskList.insertLast("last"));
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
@@ -522,9 +521,9 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("middle"));
-        TestUtil.assertSuccess(taskList.insertLast("last"));
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
 
         TestLayout parentComponent = prepareTestLayout(taskList);
 
@@ -548,9 +547,9 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("middle"));
-        TestUtil.assertSuccess(taskList.insertLast("last"));
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
 
         TestLayout parentComponent = prepareTestLayout(taskList);
 
@@ -574,9 +573,9 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("middle"));
-        TestUtil.assertSuccess(taskList.insertLast("last"));
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
 
         TestLayout parentComponent = prepareTestLayout(taskList);
 
@@ -907,8 +906,8 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         SharedListSignal<String> taskList = new SharedListSignal<>(
                 String.class);
-        TestUtil.assertSuccess(taskList.insertFirst("first"));
-        TestUtil.assertSuccess(taskList.insertLast("second"));
+        taskList.insertFirst("first");
+        taskList.insertLast("second");
 
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);

@@ -299,7 +299,7 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void transaction_readInAbortedTransaction_notCoumptedAgainAfterTransaction() {
+    void transaction_readInAbortedTransaction_valueRestoredAfterRejection() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
@@ -308,19 +308,24 @@ public class ComputedSignalTest extends SignalTestBase {
             return source.get();
         });
 
-        signal.get();
+        assertEquals("value", signal.get());
         assertEquals(1, count.get());
 
         Transaction.runInTransaction(() -> {
             source.set("update");
 
-            signal.get();
+            assertEquals("update", signal.get());
             assertEquals(2, count.get());
 
             source.verifyValue("other");
         });
 
-        signal.get();
+        /*
+         * With async trees, the optimistic publish triggers recomputation even
+         * though the transaction is ultimately rejected. The final value is
+         * still correct.
+         */
+        assertEquals("value", signal.get());
         assertEquals(3, count.get());
     }
 

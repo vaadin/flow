@@ -23,8 +23,8 @@ import com.vaadin.flow.signals.SignalEnvironment;
 /**
  * An asynchronous signal tree for single-JVM use that dispatches
  * {@link #confirm(List)} using the default effect dispatcher from
- * {@link SignalEnvironment}. This makes the behavior consistent with future
- * clustered implementations where confirmation happens asynchronously.
+ * {@link SignalEnvironment}. This makes the behavior consistent with clustered
+ * implementations where confirmation happens asynchronously.
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 

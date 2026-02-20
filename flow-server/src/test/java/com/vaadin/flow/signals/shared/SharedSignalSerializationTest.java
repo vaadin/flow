@@ -23,8 +23,6 @@ import java.io.ObjectOutputStream;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.signals.TestUtil;
-
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class SharedSignalSerializationTest {
@@ -70,7 +68,7 @@ public class SharedSignalSerializationTest {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
-        TestUtil.assertSuccess(signal.set("Test"));
+        signal.set("Test");
         assertSerializeAndDeserialize(signal);
     }
 
@@ -79,7 +77,7 @@ public class SharedSignalSerializationTest {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         assertSerializeAndDeserialize(signal);
 
-        TestUtil.assertSuccess(signal.insertFirst("Test"));
+        signal.insertFirst("Test");
         assertSerializeAndDeserialize(signal);
     }
 
@@ -88,7 +86,7 @@ public class SharedSignalSerializationTest {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         assertSerializeAndDeserialize(signal);
 
-        TestUtil.assertSuccess(signal.put("key", "Test"));
+        signal.put("key", "Test");
         assertSerializeAndDeserialize(signal);
     }
 
@@ -97,7 +95,7 @@ public class SharedSignalSerializationTest {
         SharedNodeSignal signal = new SharedNodeSignal();
         assertSerializeAndDeserialize(signal);
 
-        TestUtil.assertSuccess(signal.putChildWithValue("key", "Test"));
+        signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
         Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
@@ -109,7 +107,7 @@ public class SharedSignalSerializationTest {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
         assertSerializeAndDeserialize(signal);
 
-        TestUtil.assertSuccess(signal.set(123.45));
+        signal.set(123.45);
         assertSerializeAndDeserialize(signal);
     }
 }

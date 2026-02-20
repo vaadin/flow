@@ -20,14 +20,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalCommand;
+import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.shared.impl.SignalTree.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LocalAsynchronousSignalTreeTest {
+public class LocalAsynchronousSignalTreeTest extends SignalTestBase {
 
     @Test
     void type_isAsynchronous() {
@@ -74,5 +76,20 @@ public class LocalAsynchronousSignalTreeTest {
                     TestUtil.writeRootValueCommand("value" + i), result::set);
             assertTrue(result.get().accepted());
         }
+    }
+
+    @Test
+    void submit_withAsyncDispatcher_confirmedOnlyAfterDispatch() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        assertNotNull(TestUtil.readSubmittedRootValue(tree));
+        assertNull(TestUtil.readConfirmedRootValue(tree));
+
+        dispatcher.runPendingTasks();
+
+        assertNotNull(TestUtil.readConfirmedRootValue(tree));
     }
 }
