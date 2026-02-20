@@ -199,7 +199,7 @@ public class UITest {
             }
 
             @Override
-            Logger getLogger() {
+            public Logger getLogger() {
                 return mockLogger;
             }
         };
