@@ -75,14 +75,13 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             /*
              * Check if the confirmed commands were at the head of
-             * unconfirmedCommands and all were accepted. If so, submitted
-             * doesn't change and we can skip re-applying and notifying
-             * observers. Rejected commands must still trigger a rebuild since
-             * the submitted snapshot has the optimistic changes that need to be
-             * rolled back.
+             * unconfirmedCommands. If so, the same commands were already
+             * applied during latency compensation with the same results, so
+             * submitted doesn't change and we can skip re-applying and
+             * notifying observers.
              */
-            boolean confirmedFromHead = allAccepted(results)
-                    && wereAtHead(unconfirmedCommands.getCommands(), commands);
+            boolean confirmedFromHead = wereAtHead(
+                    unconfirmedCommands.getCommands(), commands);
 
             // Remove any pending commands that are now confirmed from the queue
             unconfirmedCommands.removeHandledCommands(results.keySet());
@@ -108,13 +107,6 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             notifyProcessedCommandSubscribers(commands, results);
         });
-    }
-
-    /**
-     * Checks whether all results were accepted.
-     */
-    private static boolean allAccepted(Map<Id, CommandResult> results) {
-        return results.values().stream().allMatch(CommandResult::accepted);
     }
 
     /**

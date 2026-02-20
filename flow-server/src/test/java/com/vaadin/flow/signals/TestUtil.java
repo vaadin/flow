@@ -16,8 +16,6 @@
 package com.vaadin.flow.signals;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
@@ -31,6 +29,7 @@ import com.vaadin.flow.signals.shared.SignalUtils;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestUtil {
     public static SignalCommand writeRootValueCommand(String value) {
@@ -75,13 +74,14 @@ public class TestUtil {
 
     private static <T> ResultOrError<T> assertCompleted(
             SignalOperation<T> operation) {
+        assertTrue(operation.result().isDone());
+
         try {
-            return operation.result().get(5, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            throw new AssertionError("Operation did not complete in time", e);
+            return operation.result().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     /*

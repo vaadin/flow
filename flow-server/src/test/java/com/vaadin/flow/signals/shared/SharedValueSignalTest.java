@@ -491,8 +491,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void result_successfulOperation_resolvedThroughResultNotifier()
-            throws Exception {
+    void result_successfulOperation_resolvedThroughResultNotifier() {
         TestExecutor notifier = useTestResultNotifier();
 
         SharedValueSignal<String> signal = new SharedValueSignal<>(
@@ -500,7 +499,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SignalOperation<String> operation = signal.set("update");
 
         assertFalse(operation.result().isDone());
-        awaitPendingTasks(notifier, 1);
+        assertEquals(1, notifier.countPendingTasks());
 
         notifier.runPendingTasks();
         assertTrue(operation.result().isDone());
@@ -508,8 +507,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void result_failingOperation_resolvedThroughResultNotifier()
-            throws Exception {
+    void result_failingOperation_resolvedThroughResultNotifier() {
         TestExecutor notifier = useTestResultNotifier();
 
         SharedValueSignal<String> signal = new SharedValueSignal<>(
@@ -517,25 +515,11 @@ public class SharedValueSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = signal.replace("other", "update");
 
         assertFalse(operation.result().isDone());
-        awaitPendingTasks(notifier, 1);
+        assertEquals(1, notifier.countPendingTasks());
 
         notifier.runPendingTasks();
         assertTrue(operation.result().isDone());
         assertEquals(0, notifier.countPendingTasks());
-    }
-
-    private void awaitPendingTasks(TestExecutor executor, int expectedCount)
-            throws InterruptedException {
-        long deadline = System.currentTimeMillis() + 5000;
-        while (executor.countPendingTasks() < expectedCount) {
-            if (System.currentTimeMillis() > deadline) {
-                throw new AssertionError(
-                        "Timed out waiting for pending tasks to reach "
-                                + expectedCount);
-            }
-            Thread.sleep(10);
-        }
-        assertEquals(expectedCount, executor.countPendingTasks());
     }
 
     @Test

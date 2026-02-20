@@ -321,9 +321,10 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         /*
-         * With async trees, the optimistic publish triggers recomputation even
-         * though the transaction is ultimately rejected. The final value is
-         * still correct.
+         * Count is 3 because the computed signal's dependency was captured with
+         * the in-transaction value ("update"). After the rejected transaction,
+         * the submitted value is still "value", which differs from the captured
+         * value, so the computed signal must recompute.
          */
         assertEquals("value", signal.get());
         assertEquals(3, count.get());
