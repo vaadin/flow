@@ -18,6 +18,8 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;

@@ -226,8 +226,11 @@ public class ExtendedClientDetails implements Serializable {
      * @return the browser window inner height in pixels, or {@code -1}
      */
     public int getWindowInnerHeight() {
-        return ui == null ? -1
-                : ui.getPage().windowSizeSignal().peek().height();
+        if (ui == null) {
+            return -1;
+        }
+        var size = ui.getPage().windowSizeSignal().peek();
+        return size != null ? size.height() : -1;
     }
 
     /**
@@ -240,7 +243,11 @@ public class ExtendedClientDetails implements Serializable {
      * @return the browser window inner width in pixels, or {@code -1}
      */
     public int getWindowInnerWidth() {
-        return ui == null ? -1 : ui.getPage().windowSizeSignal().peek().width();
+        if (ui == null) {
+            return -1;
+        }
+        var size = ui.getPage().windowSizeSignal().peek();
+        return size != null ? size.width() : -1;
     }
 
     /**

@@ -444,11 +444,10 @@ public class Page implements Serializable {
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
         ensureResizeListener();
-        var listeners = resizeListeners;
-        if (listeners == null) {
-            listeners = new ArrayList<>(1);
-            resizeListeners = listeners;
+        if (resizeListeners == null) {
+            resizeListeners = new ArrayList<>(1);
         }
+        var listeners = resizeListeners;
         listeners.add(resizeListener);
         return () -> listeners.remove(resizeListener);
     }

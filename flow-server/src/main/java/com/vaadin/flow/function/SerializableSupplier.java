@@ -18,6 +18,8 @@ package com.vaadin.flow.function;
 import java.io.Serializable;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A {@link Supplier} that is also {@link Serializable}.
  *
@@ -28,6 +30,7 @@ import java.util.function.Supplier;
  *            the type of the input to the function
  */
 @FunctionalInterface
-public interface SerializableSupplier<T> extends Supplier<T>, Serializable {
+public interface SerializableSupplier<T extends @Nullable Object>
+        extends Supplier<T>, Serializable {
     // Only method inherited from Supplier
 }
