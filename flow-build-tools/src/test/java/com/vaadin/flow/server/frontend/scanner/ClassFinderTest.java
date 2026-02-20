@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -35,12 +33,10 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClassFinderTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private final class FakeClassLoader extends ClassLoader {
         private final ClassLoader realClassLoader;
@@ -68,7 +64,7 @@ class ClassFinderTest {
     }
 
     @Test
-    void should_Fail_when_DifferentClasLoader() throws Exception {
+    void should_Fail_when_DifferentClasLoader() {
         ClassLoader loader = new ClassLoader() {
             @Override
             public Class<?> loadClass(String name)
@@ -77,10 +73,10 @@ class ClassFinderTest {
             }
         };
 
-        exception.expect(ClassNotFoundException.class);
         DefaultClassFinder finder = new DefaultClassFinder(loader,
                 Component1.class);
-        finder.loadClass(Component1.class.getName());
+        assertThrows(ClassNotFoundException.class,
+                () -> finder.loadClass(Component1.class.getName()));
     }
 
     @Test

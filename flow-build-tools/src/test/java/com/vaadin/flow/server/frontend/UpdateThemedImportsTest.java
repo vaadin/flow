@@ -27,11 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -68,9 +66,6 @@ class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
     @TempDir
     File temporaryFolder;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
     private File frontendDirectory;

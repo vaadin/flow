@@ -31,11 +31,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -55,9 +53,6 @@ abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @TempDir
     File temporaryFolder;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
     private File frontendDirectory;

@@ -36,11 +36,9 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
@@ -71,6 +69,7 @@ import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -78,9 +77,6 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @TempDir
     File temporaryFolder;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Route(value = "simplecss")
     @CssImport("./foo.css")
@@ -204,8 +200,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     void importsFilesAreNotFound_throws() {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
-        exception.expect(IllegalStateException.class);
-        updater.run();
+        assertThrows(IllegalStateException.class, () -> updater.run());
     }
 
     @Test
