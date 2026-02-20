@@ -13,16 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testcategory;
+package com.vaadin.flow.component.page;
+
+import java.io.Serializable;
 
 /**
- * Tests which test container implementations should be marked using
- * {@code @Category(ContainerTests.class)}. They are currently excluded by
- * default to speed up testing.
+ * Represents the size of the browser window.
+ *
+ * @param width
+ *            the window width in pixels
+ * @param height
+ *            the window height in pixels
  *
  * @author Vaadin Ltd
- * @since 1.0
  */
-public interface ContainerTests {
-
+public record WindowSize(int width, int height) implements Serializable {
 }

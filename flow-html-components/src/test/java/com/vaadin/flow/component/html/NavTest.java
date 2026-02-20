@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NavTest extends ComponentTest {
+class NavTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,13 +27,13 @@ public class NavTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         super.testHasOrderedComponents();
     }
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 }

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SectionTest extends ComponentTest {
+class SectionTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,13 +27,13 @@ public class SectionTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         // According to this article:
         // https://www.scottohara.me/blog/2021/07/16/section.html
         // aria-label and aria-labelled-by are the best way to provide an
