@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -15,15 +15,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 
-public class BeanModelTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BeanModelTypeTest {
     // Partial overlap with Bean
     public static class DifferentBean {
         private double intValue;
@@ -44,7 +49,7 @@ public class BeanModelTypeTest {
             return intValue;
         }
 
-        public void setIntValue(double intValue) {
+        void setIntValue(double intValue) {
             this.intValue = intValue;
         }
 
@@ -52,11 +57,11 @@ public class BeanModelTypeTest {
             return string;
         }
 
-        public void setString(String string) {
+        void setString(String string) {
             this.string = string;
         }
 
-        public void setDate(Date date) {
+        void setDate(Date date) {
             this.date = date;
         }
 
@@ -106,155 +111,155 @@ public class BeanModelTypeTest {
     }
 
     @Test
-    public void onlyDenyProperty_noAllowedProperties() {
-        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+    void onlyDenyProperty_noAllowedProperties() {
+        assertEquals(0, getClientUpdateAllowedProperties(
                 DeniedPropertyWithGetterModel.class).size());
 
-        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+        assertEquals(0, getClientUpdateAllowedProperties(
                 DeniedPropertyWithGetterModel.class, "name").size());
     }
 
     @Test
-    public void twoWayDatabindingPropertyDeclared_propertyIsNotAllowedIfNotTwoWayDataBinding() {
-        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+    void twoWayDatabindingPropertyDeclared_propertyIsNotAllowedIfNotTwoWayDataBinding() {
+        assertEquals(0, getClientUpdateAllowedProperties(
                 TwoWayBindingPropertyModel.class).size());
 
         // test name property
-        Assert.assertEquals(1, getClientUpdateAllowedProperties(
+        assertEquals(1, getClientUpdateAllowedProperties(
                 TwoWayBindingPropertyModel.class, "name").size());
         // name property has getter
-        Assert.assertTrue(getClientUpdateAllowedProperties(
+        assertTrue(getClientUpdateAllowedProperties(
                 TwoWayBindingPropertyModel.class, "name").get("name"));
 
         // test age property
-        Assert.assertEquals(1, getClientUpdateAllowedProperties(
+        assertEquals(1, getClientUpdateAllowedProperties(
                 TwoWayBindingPropertyModel.class, "age").size());
         // age property has no getter
-        Assert.assertFalse(getClientUpdateAllowedProperties(
+        assertFalse(getClientUpdateAllowedProperties(
                 TwoWayBindingPropertyModel.class, "age").get("age"));
     }
 
     @Test
-    public void allowPropertyDeclared_propertyIsAllowed() {
+    void allowPropertyDeclared_propertyIsAllowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 AllowPropertyModel.class);
-        Assert.assertEquals(2, properties.size());
+        assertEquals(2, properties.size());
 
         // name property has getter
-        Assert.assertTrue(properties.get("name"));
+        assertTrue(properties.get("name"));
 
         // age property has no getter
-        Assert.assertFalse(properties.get("age"));
+        assertFalse(properties.get("age"));
     }
 
     @Test
-    public void allowListSubPropertyDeclared_propertyIsAllowed() {
+    void allowListSubPropertyDeclared_propertyIsAllowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 ListPropertyModel.class, "list.booleanValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(4, properties.size());
+        assertEquals(4, properties.size());
 
         // property has getter
-        Assert.assertTrue(properties.get("list.booleanValue"));
+        assertTrue(properties.get("list.booleanValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("list"));
+        assertTrue(properties.get("list"));
     }
 
     @Test
-    public void denyListSubPropertyDeclared_propertyIsDisallowed() {
+    void denyListSubPropertyDeclared_propertyIsDisallowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 ListPropertyModel.class, "list.intValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(3, properties.size());
+        assertEquals(3, properties.size());
 
-        Assert.assertFalse(properties.containsKey("list.intValue"));
+        assertFalse(properties.containsKey("list.intValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("list"));
+        assertTrue(properties.get("list"));
     }
 
     @Test
-    public void allowListSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
+    void allowListSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 ListPropertyModel.class, "list.doubleValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(4, properties.size());
+        assertEquals(4, properties.size());
 
-        Assert.assertTrue(properties.get("list.doubleValue"));
+        assertTrue(properties.get("list.doubleValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("list"));
+        assertTrue(properties.get("list"));
     }
 
     @Test
-    public void denyListSubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
+    void denyListSubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 ListPropertyModel.class);
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(3, properties.size());
+        assertEquals(3, properties.size());
 
-        Assert.assertFalse(properties.containsKey("list.doubleValue"));
+        assertFalse(properties.containsKey("list.doubleValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("list"));
+        assertTrue(properties.get("list"));
     }
 
     @Test
-    public void allowSubPropertyDeclared_propertyIsAllowed() {
+    void allowSubPropertyDeclared_propertyIsAllowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 SubPropertyModel.class, "bean.booleanValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(4, properties.size());
+        assertEquals(4, properties.size());
 
         // property has getter
-        Assert.assertTrue(properties.get("bean.booleanValue"));
+        assertTrue(properties.get("bean.booleanValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("bean"));
+        assertTrue(properties.get("bean"));
     }
 
     @Test
-    public void denySubPropertyDeclared_propertyIsDisallowed() {
+    void denySubPropertyDeclared_propertyIsDisallowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 SubPropertyModel.class, "bean.intValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(3, properties.size());
+        assertEquals(3, properties.size());
 
-        Assert.assertFalse(properties.containsKey("bean.intValue"));
+        assertFalse(properties.containsKey("bean.intValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("bean"));
+        assertTrue(properties.get("bean"));
     }
 
     @Test
-    public void allowSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
+    void allowSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 SubPropertyModel.class, "bean.doubleValue");
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(4, properties.size());
+        assertEquals(4, properties.size());
 
-        Assert.assertTrue(properties.get("bean.doubleValue"));
+        assertTrue(properties.get("bean.doubleValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("bean"));
+        assertTrue(properties.get("bean"));
     }
 
     @Test
-    public void denySubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
+    void denySubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
         Map<String, Boolean> properties = getClientUpdateAllowedProperties(
                 SubPropertyModel.class);
         // Bean has a couple of explicitly allowed properties
-        Assert.assertEquals(3, properties.size());
+        assertEquals(3, properties.size());
 
-        Assert.assertFalse(properties.containsKey("bean.doubleValue"));
+        assertFalse(properties.containsKey("bean.doubleValue"));
 
         // list property has getter
-        Assert.assertTrue(properties.get("bean"));
+        assertTrue(properties.get("bean"));
     }
 
     @Test
-    public void importBean() {
+    void importBean() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -268,24 +273,22 @@ public class BeanModelTypeTest {
     }
 
     private void assertThreeBean(ElementPropertyMap model) {
-        Assert.assertEquals(7, model.getPropertyNames().count());
+        assertEquals(7, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
-        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
+        assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
+        assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
 
-        Assert.assertEquals(Double.valueOf(3),
-                model.getProperty("doubleValue"));
-        Assert.assertEquals(Double.valueOf(3),
-                model.getProperty("doubleObject"));
+        assertEquals(Double.valueOf(3), model.getProperty("doubleValue"));
+        assertEquals(Double.valueOf(3), model.getProperty("doubleObject"));
 
-        Assert.assertEquals(Boolean.TRUE, model.getProperty("booleanValue"));
-        Assert.assertEquals(Boolean.TRUE, model.getProperty("booleanObject"));
+        assertEquals(Boolean.TRUE, model.getProperty("booleanValue"));
+        assertEquals(Boolean.TRUE, model.getProperty("booleanObject"));
 
-        Assert.assertEquals("3", model.getProperty("string"));
+        assertEquals("3", model.getProperty("string"));
     }
 
     @Test
-    public void importBean_withTypeFilter() {
+    void importBean_withTypeFilter() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 new PropertyFilter(name -> "intValue".equals(name)), false);
 
@@ -295,13 +298,13 @@ public class BeanModelTypeTest {
 
         beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
 
-        Assert.assertEquals(1, model.getPropertyNames().count());
+        assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
+        assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
     }
 
     @Test
-    public void importBean_withImportFilter() {
+    void importBean_withImportFilter() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -312,13 +315,13 @@ public class BeanModelTypeTest {
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> "intObject".equals(name)));
 
-        Assert.assertEquals(1, model.getPropertyNames().count());
+        assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
+        assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
     }
 
     @Test
-    public void importBean_differentBean() {
+    void importBean_differentBean() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -330,27 +333,29 @@ public class BeanModelTypeTest {
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> !"intValue".equals(name)));
 
-        Assert.assertEquals(1, model.getPropertyNames().count());
+        assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals("3", model.getProperty("string"));
+        assertEquals("3", model.getProperty("string"));
 
-        Assert.assertFalse(model.hasProperty("date"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void importBean_incompatibleBean() {
-        BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
-                PropertyFilter.ACCEPT_ALL, false);
-
-        ElementPropertyMap model = createEmptyModel();
-
-        DifferentBean bean = new DifferentBean(3);
-
-        beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
+        assertFalse(model.hasProperty("date"));
     }
 
     @Test
-    public void modelToApplication() {
+    void importBean_incompatibleBean() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
+                    PropertyFilter.ACCEPT_ALL, false);
+
+            ElementPropertyMap model = createEmptyModel();
+
+            DifferentBean bean = new DifferentBean(3);
+
+            beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
+        });
+    }
+
+    @Test
+    void modelToApplication() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -360,13 +365,13 @@ public class BeanModelTypeTest {
 
         Bean bean = beanType.modelToApplication(model.getNode());
 
-        Assert.assertEquals("3", bean.getString());
-        Assert.assertEquals(3, bean.getIntValue());
-        Assert.assertNull(bean.getIntObject());
+        assertEquals("3", bean.getString());
+        assertEquals(3, bean.getIntValue());
+        assertNull(bean.getIntObject());
     }
 
     @Test
-    public void clientValueToApplication() {
+    void clientValueToApplication() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -388,17 +393,17 @@ public class BeanModelTypeTest {
 
         Bean bean = beanType.modelToApplication(model.getNode());
 
-        Assert.assertEquals(3.0, bean.getDoubleValue(), 0);
-        Assert.assertEquals(3.0, bean.getDoubleObject(), 0);
-        Assert.assertEquals(3, bean.getIntValue());
-        Assert.assertEquals(3, bean.getIntObject().intValue());
-        Assert.assertEquals(Boolean.TRUE, bean.getBooleanObject());
-        Assert.assertTrue(bean.isBooleanValue());
-        Assert.assertEquals("3", bean.getString());
+        assertEquals(3.0, bean.getDoubleValue(), 0);
+        assertEquals(3.0, bean.getDoubleObject(), 0);
+        assertEquals(3, bean.getIntValue());
+        assertEquals(3, bean.getIntObject().intValue());
+        assertEquals(Boolean.TRUE, bean.getBooleanObject());
+        assertTrue(bean.isBooleanValue());
+        assertEquals("3", bean.getString());
     }
 
     @Test
-    public void applicationToModel() {
+    void applicationToModel() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL, false);
 
@@ -414,7 +419,7 @@ public class BeanModelTypeTest {
     }
 
     @Test
-    public void applicationToModel_filtered() {
+    void applicationToModel_filtered() {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 new PropertyFilter(name -> !name.equals("intValue")), false);
 
@@ -427,14 +432,14 @@ public class BeanModelTypeTest {
         ElementPropertyMap model = ElementPropertyMap
                 .getModel(applicationToModel);
 
-        Assert.assertEquals(Arrays.asList("string"),
+        assertEquals(Arrays.asList("string"),
                 model.getPropertyNames().collect(Collectors.toList()));
 
-        Assert.assertEquals("3", model.getProperty("string"));
+        assertEquals("3", model.getProperty("string"));
     }
 
     @Test
-    public void clientUpdateModes() {
+    void clientUpdateModes() {
         BeanModelType<BeanContainingBeans> beanType = new BeanModelType<>(
                 BeanContainingBeans.class, PropertyFilter.ACCEPT_ALL, false);
 
@@ -446,28 +451,26 @@ public class BeanModelTypeTest {
         BeanModelType<?> bean3Type = (BeanModelType<?>) beanType
                 .getPropertyType("bean3");
 
-        Assert.assertEquals(ClientUpdateMode.ALLOW, bean1Type
+        assertEquals(ClientUpdateMode.ALLOW, bean1Type
                 .getClientUpdateMode(bean1Type.getExistingProperty("string")));
-        Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean1Type.getClientUpdateMode(
-                        bean1Type.getExistingProperty("booleanObject")));
-        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
+        assertEquals(ClientUpdateMode.ALLOW, bean1Type.getClientUpdateMode(
+                bean1Type.getExistingProperty("booleanObject")));
+        assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
                 bean1Type.getClientUpdateMode(
                         bean1Type.getExistingProperty("intValue")));
 
-        Assert.assertEquals(ClientUpdateMode.ALLOW, bean2Type
+        assertEquals(ClientUpdateMode.ALLOW, bean2Type
                 .getClientUpdateMode(bean2Type.getExistingProperty("string")));
-        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
+        assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
                 bean2Type.getClientUpdateMode(
                         bean2Type.getExistingProperty("booleanObject")));
-        Assert.assertEquals(ClientUpdateMode.ALLOW,
-                bean2Type.getClientUpdateMode(
-                        bean2Type.getExistingProperty("intValue")));
+        assertEquals(ClientUpdateMode.ALLOW, bean2Type.getClientUpdateMode(
+                bean2Type.getExistingProperty("intValue")));
 
-        Assert.assertEquals(ClientUpdateMode.DENY, bean3Type
+        assertEquals(ClientUpdateMode.DENY, bean3Type
                 .getClientUpdateMode(bean3Type.getExistingProperty("denyInt")));
 
-        Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
+        assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
                 bean3Type.getClientUpdateMode(
                         bean3Type.getExistingProperty("doubleObject")));
     }
