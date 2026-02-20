@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 
@@ -383,6 +384,87 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("two");
 
         assertEquals("ListSignal[one, two]", signal.toString());
+    }
+
+    @Test
+    void get_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.get();
+            });
+        });
+    }
+
+    @Test
+    void peek_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.peek();
+            });
+        });
+    }
+
+    @Test
+    void insertFirst_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertFirst("value");
+            });
+        });
+    }
+
+    @Test
+    void insertLast_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertLast("value");
+            });
+        });
+    }
+
+    @Test
+    void insertAt_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertAt(0, "value");
+            });
+        });
+    }
+
+    @Test
+    void remove_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> entry = signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.remove(entry);
+            });
+        });
+    }
+
+    @Test
+    void clear_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.clear();
+            });
+        });
     }
 
     private static void assertValues(ListSignal<String> signal,

@@ -66,7 +66,7 @@ public class ListSignal<T>
         assertLockHeld();
         super.checkPreconditions();
 
-        if (Transaction.inTransaction()) {
+        if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
                     "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
         }

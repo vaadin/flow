@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.vaadin.flow.component.html.AssertUtils.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NativeTableCellTest extends ComponentTest {
+class NativeTableCellTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -29,78 +30,78 @@ public class NativeTableCellTest extends ComponentTest {
         addProperty("rowspan", int.class, 1, 2, false, false);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void colspanMustBeNonNegative() {
+    @Test
+    void colspanMustBeNonNegative() {
         NativeTableCell cell = (NativeTableCell) getComponent();
-        cell.setColspan(-1);
+        assertThrows(IllegalArgumentException.class, () -> cell.setColspan(-1));
     }
 
     @Test
-    public void setColspan() {
+    void setColspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setColspan(2);
-        assertEquals("Colspan should be 2", "2",
-                cell.getElement().getAttribute("colspan"));
+        assertEquals("2", cell.getElement().getAttribute("colspan"),
+                "Colspan should be 2");
     }
 
     @Test
-    public void getDefaultColspan() {
+    void getDefaultColspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         int colspan = cell.getColspan();
-        assertEquals("Default colspan should be 1", 1, colspan);
+        assertEquals(1, colspan, "Default colspan should be 1");
     }
 
     @Test
-    public void getColspan() {
+    void getColspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.getElement().setAttribute("colspan", "2");
-        assertEquals("Colspan should be 2", 2, cell.getColspan());
+        assertEquals(2, cell.getColspan(), "Colspan should be 2");
     }
 
     @Test
-    public void resetColspan() {
+    void resetColspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.getElement().setAttribute("colspan", "2");
         cell.resetColspan();
-        assertNull("Element should not have colspan attribute",
-                cell.getElement().getAttribute("colspan"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rowspanMustNonNegative() {
-        NativeTableCell cell = (NativeTableCell) getComponent();
-        cell.setRowspan(-1);
+        assertNull(cell.getElement().getAttribute("colspan"),
+                "Element should not have colspan attribute");
     }
 
     @Test
-    public void setRowspan() {
+    void rowspanMustNonNegative() {
+        NativeTableCell cell = (NativeTableCell) getComponent();
+        assertThrows(IllegalArgumentException.class, () -> cell.setRowspan(-1));
+    }
+
+    @Test
+    void setRowspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setRowspan(2);
-        assertEquals("Rowspan should be 2", "2",
-                cell.getElement().getAttribute("rowspan"));
+        assertEquals("2", cell.getElement().getAttribute("rowspan"),
+                "Rowspan should be 2");
     }
 
     @Test
-    public void getDefaultRowspan() {
+    void getDefaultRowspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         int rowspan = cell.getRowspan();
-        assertEquals("Default rowspan should be 1", 1, rowspan);
+        assertEquals(1, rowspan, "Default rowspan should be 1");
     }
 
     @Test
-    public void getRowspan() {
+    void getRowspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.getElement().setAttribute("rowspan", "2");
-        assertEquals("Rowspan should be 2", 2, cell.getRowspan());
+        assertEquals(2, cell.getRowspan(), "Rowspan should be 2");
     }
 
     @Test
-    public void resetRowspan() {
+    void resetRowspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setRowspan(2);
         cell.resetRowspan();
-        assertNull("Element should not have rowspan attribute",
-                cell.getElement().getAttribute("rowspan"));
+        assertNull(cell.getElement().getAttribute("rowspan"),
+                "Element should not have rowspan attribute");
     }
 
 }

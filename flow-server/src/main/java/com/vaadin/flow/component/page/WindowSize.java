@@ -13,27 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.html;
+package com.vaadin.flow.component.page;
 
-import org.junit.jupiter.api.Test;
+import java.io.Serializable;
 
-class MainTest extends ComponentTest {
-    // Actual test methods in super class
-
-    @Override
-    protected void addProperties() {
-        // Component defines no new properties
-    }
-
-    @Test
-    @Override
-    protected void testHasOrderedComponents() {
-        super.testHasOrderedComponents();
-    }
-
-    @Test
-    @Override
-    protected void testHasAriaLabelIsImplemented() {
-        super.testHasAriaLabelIsImplemented();
-    }
+/**
+ * Represents the size of the browser window.
+ *
+ * @param width
+ *            the window width in pixels
+ * @param height
+ *            the window height in pixels
+ *
+ * @author Vaadin Ltd
+ */
+public record WindowSize(int width, int height) implements Serializable {
 }
