@@ -88,6 +88,21 @@ public class SharedMapSignal<T>
         this.elementType = Objects.requireNonNull(elementType);
     }
 
+    @Override
+    public Map<String, SharedValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public Map<String, SharedValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
+    @Override
+    public Map<String, SharedValueSignal<T>> peekConfirmed() {
+        return Objects.requireNonNull(super.peekConfirmed());
+    }
+
     private SharedValueSignal<T> child(Id childId) {
         return new SharedValueSignal<T>(tree(), childId, validator(),
                 elementType);

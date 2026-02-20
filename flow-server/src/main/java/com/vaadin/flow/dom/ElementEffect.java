@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -52,12 +51,12 @@ import com.vaadin.flow.signals.impl.Effect;
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
-    private final SerializableRunnable effectFunction;
+    private final EffectAction effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
-    public ElementEffect(Element owner, SerializableRunnable effectFunction) {
+    public ElementEffect(Element owner, EffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -109,7 +108,7 @@ public final class ElementEffect implements Serializable {
      *         function
      */
     public static Registration effect(Element owner,
-            SerializableRunnable effectFunction) {
+            EffectAction effectFunction) {
         ElementEffect effect = new ElementEffect(owner, effectFunction);
         return effect::close;
     }
@@ -164,7 +163,7 @@ public final class ElementEffect implements Serializable {
 
         EffectAction errorHandlingEffectFunction = () -> {
             try {
-                effectFunction.run();
+                effectFunction.execute();
             } catch (Exception e) {
                 ui.getSession().getErrorHandler()
                         .error(new ErrorEvent(e, owner.getNode()));

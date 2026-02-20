@@ -13,16 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.signals.function;
+package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
-import java.util.concurrent.Executor;
 
 /**
- * An {@link Executor} that is also {@link Serializable}.
+ * Represents the size of the browser window.
+ *
+ * @param width
+ *            the window width in pixels
+ * @param height
+ *            the window height in pixels
  *
  * @author Vaadin Ltd
  */
-@FunctionalInterface
-public interface SerializableExecutor extends Executor, Serializable {
+public record WindowSize(int width, int height) implements Serializable {
 }

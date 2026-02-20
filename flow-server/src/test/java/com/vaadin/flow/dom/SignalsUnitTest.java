@@ -27,6 +27,7 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -73,6 +74,7 @@ public abstract class SignalsUnitTest {
 
         var session = new MockVaadinSession(service);
         session.lock();
+        VaadinSession.setCurrent(session);
 
         // UI is set to field to avoid too eager GC due to WeakReference in
         // CurrentInstance.

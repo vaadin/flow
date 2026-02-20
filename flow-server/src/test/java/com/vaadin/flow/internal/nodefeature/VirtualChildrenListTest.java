@@ -21,13 +21,17 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.StateNode;
 
-public class VirtualChildrenListTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class VirtualChildrenListTest {
 
     private StateNode node = new StateNode(VirtualChildrenList.class);
     private VirtualChildrenList list = node
@@ -36,84 +40,83 @@ public class VirtualChildrenListTest {
     private StateNode child = new StateNode(ElementData.class);
 
     @Test
-    public void insert_atIndexWithType_payloadIsSetAndElementIsInserted() {
+    void insert_atIndexWithType_payloadIsSetAndElementIsInserted() {
         list.add(0, child, "foo", (String) null);
 
-        Assert.assertEquals(child, list.get(0));
+        assertEquals(child, list.get(0));
 
         JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertNotNull(payload);
+        assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
+        assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
 
         StateNode anotherChild = new StateNode(ElementData.class);
         list.add(0, anotherChild, "bar", (String) null);
 
-        Assert.assertEquals(anotherChild, list.get(0));
+        assertEquals(anotherChild, list.get(0));
 
         payload = (JsonNode) anotherChild.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertNotNull(payload);
+        assertNotNull(payload);
 
-        Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asString());
+        assertEquals("bar", payload.get(NodeProperties.TYPE).asString());
     }
 
     @Test
-    public void insert_atIndexWithPayload_payloadIsSetAndElementIsInserted() {
+    void insert_atIndexWithPayload_payloadIsSetAndElementIsInserted() {
         list.add(0, child, "foo", "bar");
 
-        Assert.assertEquals(child, list.get(0));
+        assertEquals(child, list.get(0));
 
         JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertNotNull(payload);
+        assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
-        Assert.assertEquals("bar",
-                payload.get(NodeProperties.PAYLOAD).asString());
+        assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
+        assertEquals("bar", payload.get(NodeProperties.PAYLOAD).asString());
     }
 
     @Test
-    public void iteratorAndSize_addTwoItems_methodsReturnCorrectValues() {
+    void iteratorAndSize_addTwoItems_methodsReturnCorrectValues() {
         list.append(child, "foo");
         StateNode anotherChild = new StateNode(ElementData.class);
         list.append(anotherChild, "bar");
 
-        Assert.assertEquals(2, list.size());
+        assertEquals(2, list.size());
 
         Set<StateNode> set = StreamSupport
                 .stream(Spliterators.spliteratorUnknownSize(list.iterator(),
                         Spliterator.ORDERED), false)
                 .collect(Collectors.toSet());
-        Assert.assertEquals(2, set.size());
+        assertEquals(2, set.size());
 
         set.remove(child);
         set.remove(anotherChild);
 
-        Assert.assertEquals(0, set.size());
+        assertEquals(0, set.size());
     }
 
     @Test
-    public void remove_withIndex_removesNodeAndPayload() {
+    void remove_withIndex_removesNodeAndPayload() {
         list.append(child, "foo");
 
-        Assert.assertEquals(child, list.get(0));
+        assertEquals(child, list.get(0));
 
         list.remove(0);
 
-        Assert.assertEquals(0, list.size());
-        Assert.assertEquals(-1, list.indexOf(child));
+        assertEquals(0, list.size());
+        assertEquals(-1, list.indexOf(child));
 
         JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertNull(payload);
+        assertNull(payload);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void clear_throw() {
+    @Test
+    void clear_throw() {
         list.append(child, "foo");
-        list.clear();
+        assertThrows(UnsupportedOperationException.class, () -> list.clear());
     }
 
 }

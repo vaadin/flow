@@ -381,7 +381,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link BindingBuilder#withValidator(Validator)}.
          * <p>
          * The Binder automatically runs validators inside a
-         * {@link Signal#effect(Component, com.vaadin.flow.function.SerializableRunnable)}
+         * {@link Signal#effect(Component, com.vaadin.flow.signals.function.EffectAction)}
          * context. This makes validators reactive to signal changes - when you
          * call {@code value()} on another binding from within a validator, the
          * validator will automatically re-run whenever that other binding's
@@ -435,7 +435,7 @@ public class Binder<BEAN> implements Serializable {
          * @see BindingBuilder#withValidator(Validator)
          * @see com.vaadin.flow.component.HasValue#bindValue
          * @see Signal#effect(Component,
-         *      com.vaadin.flow.function.SerializableRunnable)
+         *      com.vaadin.flow.signals.function.EffectAction)
          *
          * @since 25.1
          */

@@ -13,14 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.i18n;
+package com.vaadin.flow.function;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.Serializable;
+import java.util.function.IntFunction;
 
-@RunWith(Suite.class)
-@NotThreadSafe
-@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
-public class DefaultI18NProviderFactorySuite {
+/**
+ * An {@link IntFunction} that is also {@link Serializable}.
+ *
+ * @author Vaadin Ltd
+ * @param <R>
+ *            the type of the result of the function
+ */
+@FunctionalInterface
+public interface SerializableIntFunction<R>
+        extends IntFunction<R>, Serializable {
 }

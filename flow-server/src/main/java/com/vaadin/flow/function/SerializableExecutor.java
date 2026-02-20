@@ -13,27 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.signals.function;
+package com.vaadin.flow.function;
 
 import java.io.Serializable;
-
-import com.vaadin.flow.signals.Signal;
+import java.util.concurrent.Executor;
 
 /**
- * Represents a cleanup operation that can be invoked to unregister a listener,
- * dispose of resources, or cancel an ongoing operation.
- * <p>
- * This is typically returned from registration methods such as
- * {@link Signal#unboundEffect(EffectAction)} to allow the caller to clean up
- * the registration when it's no longer needed.
+ * An {@link Executor} that is also {@link Serializable}.
  *
- * @see Signal#unboundEffect(EffectAction)
+ * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface CleanupCallback extends Serializable {
-    /**
-     * Performs cleanup operations such as unregistering listeners or disposing
-     * resources.
-     */
-    void cleanup();
+public interface SerializableExecutor extends Executor, Serializable {
 }

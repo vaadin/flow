@@ -69,10 +69,10 @@ public class SharedNumberSignalTest extends SignalTestBase {
     }
 
     @Test
-    void valueAsInt_decimalValue_valueIsTruncated() {
+    void getAsInt_decimalValue_valueIsTruncated() {
         SharedNumberSignal signal = new SharedNumberSignal(2.718);
 
-        assertEquals(2, signal.valueAsInt());
+        assertEquals(2, signal.getAsInt());
     }
 
     @Test
@@ -149,6 +149,27 @@ public class SharedNumberSignalTest extends SignalTestBase {
         SharedNumberSignal signal = new SharedNumberSignal(1);
 
         assertEquals("SharedNumberSignal[1.0]", signal.toString());
+    }
+
+    @Test
+    void get_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.get());
+    }
+
+    @Test
+    void peek_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.peek());
+    }
+
+    @Test
+    void peekConfirmed_returnsZeroAfterSetNull() {
+        SharedNumberSignal signal = new SharedNumberSignal();
+        signal.set(null);
+        assertEquals(0.0, signal.peekConfirmed());
     }
 
 }

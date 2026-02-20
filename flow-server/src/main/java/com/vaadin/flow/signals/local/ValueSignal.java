@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.function.SignalModifier;
 import com.vaadin.flow.signals.function.SignalUpdater;
@@ -54,6 +55,8 @@ import com.vaadin.flow.signals.impl.Transaction;
 public class ValueSignal<T> extends AbstractLocalSignal<T> {
 
     private boolean modifyRunning = false;
+    private transient boolean modifyUsed = false;
+    private transient boolean usedWithoutSessionLock = false;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -75,14 +78,33 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
     @Override
     protected void checkPreconditions() {
         assertLockHeld();
+        super.checkPreconditions();
 
-        if (Transaction.inTransaction()) {
+        if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
-                    "ValueSignal cannot be used inside signal transactions.");
+                    "ValueSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedValueSignal instead.");
         }
 
         if (modifyRunning) {
             throw new ConcurrentModificationException();
+        }
+
+        // Track if the signal has ever been accessed without a locked session
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session == null || !session.hasLock()) {
+            usedWithoutSessionLock = true;
+        }
+
+        if (modifyUsed && usedWithoutSessionLock) {
+            throw new IllegalStateException(
+                    "This ValueSignal instance has been used with modify() "
+                            + "and accessed without holding the session lock. "
+                            + "This is not thread-safe because modify() works "
+                            + "with mutable values without holding a lock while "
+                            + "the modifier callback runs. Use immutable values "
+                            + "with set(), replace(), or update() instead of "
+                            + "modify() when the signal is shared between "
+                            + "threads.");
         }
     }
 
@@ -197,6 +219,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
         try {
             checkPreconditions();
 
+            modifyUsed = true;
             modifyRunning = true;
         } finally {
             unlock();
@@ -316,5 +339,10 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
         Objects.requireNonNull(modifier);
         return newValue -> modify(
                 parentValue -> modifier.modify(parentValue, newValue));
+    }
+
+    @Override
+    public String toString() {
+        return "ValueSignal[" + peek() + "]";
     }
 }
