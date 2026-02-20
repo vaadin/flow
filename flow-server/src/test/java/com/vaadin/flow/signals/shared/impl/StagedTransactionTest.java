@@ -26,9 +26,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
@@ -58,23 +55,6 @@ public class StagedTransactionTest {
      * Note that much of the logic in this test only interacts with API in
      * Transaction and in that way tests logic from StagedTransaction.
      */
-
-    private static final ThreadLocal<Transaction> currentFallback = new ThreadLocal<>();
-
-    @BeforeAll
-    static void setupFallback() {
-        Transaction.setTransactionFallback(currentFallback::get);
-    }
-
-    @AfterAll
-    static void clearFallback() {
-        Transaction.setTransactionFallback(null);
-    }
-
-    @AfterEach
-    void clearThreadLocal() {
-        currentFallback.remove();
-    }
 
     @Test
     void resultCollector_unregisteredDependency_throws() {
@@ -637,22 +617,27 @@ public class StagedTransactionTest {
     void commit_withRepeatableReadFallback_changeObserverSeesUpdatedValue() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        currentFallback.set(Transaction.createWriteThrough());
+        Transaction fallback = Transaction.createWriteThrough();
+        Transaction.setTransactionFallback(() -> fallback);
 
-        AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
+        try {
+            AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
 
-        tree.observeNextChange(Id.ZERO, immediate -> {
-            valueInObserver.set(TestUtil.readTransactionRootValue(tree));
-            return false;
-        });
+            tree.observeNextChange(Id.ZERO, immediate -> {
+                valueInObserver.set(TestUtil.readTransactionRootValue(tree));
+                return false;
+            });
 
-        Transaction.runInTransaction(() -> {
-            Transaction.getCurrent().include(tree,
-                    TestUtil.writeRootValueCommand("updated"), null);
-        });
+            Transaction.runInTransaction(() -> {
+                Transaction.getCurrent().include(tree,
+                        TestUtil.writeRootValueCommand("updated"), null);
+            });
 
-        assertNotNull(valueInObserver.get(),
-                "Change observer should see updated value via outer transaction");
+            assertNotNull(valueInObserver.get(),
+                    "Change observer should see updated value via outer transaction");
+        } finally {
+            Transaction.setTransactionFallback(null);
+        }
     }
 
     @Test
