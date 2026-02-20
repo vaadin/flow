@@ -80,6 +80,14 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
 
     @Override
     public @Nullable T get() {
+        if (!UsageTracker.isGetAllowed()) {
+            throw new IllegalStateException(
+                    "Signal.get() was called outside a reactive context. "
+                            + "Use peek() to read the value without setting up "
+                            + "dependency tracking, or use "
+                            + "Signal.untracked(() -> signal.get()) to "
+                            + "explicitly opt out.");
+        }
         lock.lock();
         try {
             checkPreconditions();

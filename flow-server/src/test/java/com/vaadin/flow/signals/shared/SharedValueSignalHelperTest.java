@@ -61,8 +61,8 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
 
         callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -73,13 +73,13 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
                 .updater(ImmutablePerson::withName);
 
         callback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
+        assertEquals("Bob", signal.peek().name());
 
         callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().name());
+        assertEquals("Charlie", signal.peek().name());
 
         callback.accept("Diana");
-        assertEquals("Diana", signal.get().name());
+        assertEquals("Diana", signal.peek().name());
     }
 
     @Test
@@ -91,8 +91,8 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
 
         nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -104,8 +104,8 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
 
         callback.accept(null);
 
-        assertEquals(null, signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals(null, signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -118,11 +118,11 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
                 .updater(ImmutablePerson::withAge);
 
         nameCallback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(30, signal.peek().age());
 
         ageCallback.accept(35);
-        assertEquals("Bob", signal.get().name());
-        assertEquals(35, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(35, signal.peek().age());
     }
 }

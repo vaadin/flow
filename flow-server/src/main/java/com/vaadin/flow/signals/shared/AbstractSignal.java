@@ -156,6 +156,14 @@ public abstract class AbstractSignal<T> implements Signal<T> {
 
     @Override
     public @Nullable T get() {
+        if (!UsageTracker.isGetAllowed() && !Transaction.inTransaction()) {
+            throw new IllegalStateException(
+                    "Signal.get() was called outside a reactive context. "
+                            + "Use peek() to read the value without setting up "
+                            + "dependency tracking, or use "
+                            + "Signal.untracked(() -> signal.get()) to "
+                            + "explicitly opt out.");
+        }
         Transaction transaction = Transaction.getCurrent();
         Data data = data(transaction);
 

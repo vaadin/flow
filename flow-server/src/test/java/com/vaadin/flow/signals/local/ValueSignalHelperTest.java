@@ -89,8 +89,8 @@ public class ValueSignalHelperTest extends SignalTestBase {
 
         callback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -101,13 +101,13 @@ public class ValueSignalHelperTest extends SignalTestBase {
                 .updater(ImmutablePerson::withName);
 
         callback.accept("Bob");
-        assertEquals("Bob", signal.get().name());
+        assertEquals("Bob", signal.peek().name());
 
         callback.accept("Charlie");
-        assertEquals("Charlie", signal.get().name());
+        assertEquals("Charlie", signal.peek().name());
 
         callback.accept("Diana");
-        assertEquals("Diana", signal.get().name());
+        assertEquals("Diana", signal.peek().name());
     }
 
     @Test
@@ -119,8 +119,8 @@ public class ValueSignalHelperTest extends SignalTestBase {
 
         nameCallback.accept("Bob");
 
-        assertEquals("Bob", signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertEquals("Bob", signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -132,8 +132,8 @@ public class ValueSignalHelperTest extends SignalTestBase {
 
         callback.accept(null);
 
-        assertNull(signal.get().name());
-        assertEquals(30, signal.get().age());
+        assertNull(signal.peek().name());
+        assertEquals(30, signal.peek().age());
     }
 
     @Test
@@ -162,9 +162,9 @@ public class ValueSignalHelperTest extends SignalTestBase {
         new MockVaadinSession().runWithLock(() -> {
             callback.accept("Bob");
 
-            assertEquals("Bob", signal.get().getName());
-            assertEquals(30, signal.get().getAge());
-            assertEquals(person, signal.get());
+            assertEquals("Bob", signal.peek().getName());
+            assertEquals(30, signal.peek().getAge());
+            assertEquals(person, signal.peek());
             return null;
         });
     }
@@ -179,13 +179,13 @@ public class ValueSignalHelperTest extends SignalTestBase {
 
         new MockVaadinSession().runWithLock(() -> {
             callback.accept("Bob");
-            assertEquals("Bob", signal.get().getName());
+            assertEquals("Bob", signal.peek().getName());
 
             callback.accept("Charlie");
-            assertEquals("Charlie", signal.get().getName());
+            assertEquals("Charlie", signal.peek().getName());
 
             callback.accept("Diana");
-            assertEquals("Diana", signal.get().getName());
+            assertEquals("Diana", signal.peek().getName());
             return null;
         });
     }
@@ -200,8 +200,8 @@ public class ValueSignalHelperTest extends SignalTestBase {
         new MockVaadinSession().runWithLock(() -> {
             nameCallback.accept("Bob");
 
-            assertEquals("Bob", signal.get().getName());
-            assertEquals(30, signal.get().getAge());
+            assertEquals("Bob", signal.peek().getName());
+            assertEquals(30, signal.peek().getAge());
             return null;
         });
     }
@@ -216,8 +216,8 @@ public class ValueSignalHelperTest extends SignalTestBase {
         new MockVaadinSession().runWithLock(() -> {
             callback.accept(null);
 
-            assertNull(signal.get().getName());
-            assertEquals(30, signal.get().getAge());
+            assertNull(signal.peek().getName());
+            assertEquals(30, signal.peek().getAge());
             return null;
         });
     }
