@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -10,9 +10,9 @@ package com.vaadin.flow.component;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -21,8 +21,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @NotThreadSafe
-public class CompositeTest {
+class CompositeTest {
 
     @Tag("div")
     public static class MyTemplate extends PolymerTemplate<TemplateModel> {
@@ -49,8 +51,8 @@ public class CompositeTest {
 
     private VaadinService service;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
         DeploymentConfiguration configuration = Mockito
@@ -60,23 +62,25 @@ public class CompositeTest {
                 .thenReturn(configuration);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         VaadinService.setCurrent(null);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void getContent_compositeIsKeyNotifier() {
-        KeyNotifierComposite composite = new KeyNotifierComposite();
-        composite.getContent();
+    @Test
+    void getContent_compositeIsKeyNotifier() {
+        assertThrows(IllegalStateException.class, () -> {
+            KeyNotifierComposite composite = new KeyNotifierComposite();
+            composite.getContent();
+        });
     }
 
     /*
      * This is just a test for #1181.
      */
     @Test
-    // @Ignore("Failing after adding connect client generators")
-    public void templateInsideComposite_compositeCanBeAdded() {
+    // @Disabled("Failing after adding connect client generators")
+    void templateInsideComposite_compositeCanBeAdded() {
         class MyComponent extends Composite<MyTemplate> {
 
         }
