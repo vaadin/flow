@@ -17,6 +17,8 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.signals.Signal;
 
@@ -32,8 +34,10 @@ public class ImmutableEmptyStyle implements Style {
 
     static final String CANT_MODIFY_MESSAGE = "This instance is immutable";
 
+    // Interface Style is not @NullMarked; return is genuinely nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public String get(String name) {
+    public @Nullable String get(String name) {
         return null;
     }
 

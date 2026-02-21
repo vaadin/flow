@@ -18,6 +18,8 @@ package com.vaadin.flow.dom.impl;
 import java.io.ObjectStreamException;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -89,8 +91,11 @@ public class BasicTextElementStateProvider
         node.getFeature(TextNodeMap.class).setText(textContent);
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public Node<?> getParent(StateNode node) {
+    public @Nullable Node<?> getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);
     }
 

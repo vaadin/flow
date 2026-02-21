@@ -17,6 +17,8 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -62,8 +64,11 @@ public abstract class AbstractNodeStateProvider
      */
     protected abstract Class<? extends NodeFeature>[] getProviderFeatures();
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public Node getParent(StateNode node) {
+    public @Nullable Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
         if (parentNode == null) {
             return null;

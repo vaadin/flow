@@ -18,6 +18,8 @@ package com.vaadin.flow.dom.impl;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
@@ -39,8 +41,11 @@ public class StyleAttributeHandler extends CustomAttribute {
         return element.getStyle().getNames().findAny().isPresent();
     }
 
+    // Superclass CustomAttribute is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public String getAttribute(Element element) {
+    public @Nullable String getAttribute(Element element) {
         if (!hasAttribute(element)) {
             return null;
         }

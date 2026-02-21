@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -35,8 +37,11 @@ public class ClassAttributeHandler extends CustomAttribute {
         return !element.getClassList().isEmpty();
     }
 
+    // Superclass CustomAttribute is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public String getAttribute(Element element) {
+    public @Nullable String getAttribute(Element element) {
         Set<String> classList = element.getClassList();
         if (classList.isEmpty()) {
             return null;

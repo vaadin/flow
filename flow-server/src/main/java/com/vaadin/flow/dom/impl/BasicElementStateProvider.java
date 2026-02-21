@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.ClassList;
@@ -207,8 +208,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 signal);
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public String getAttribute(StateNode node, String attribute) {
+    public @Nullable String getAttribute(StateNode node, String attribute) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
@@ -241,8 +245,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 .map(ElementAttributeMap::attributes).orElseGet(Stream::empty);
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public Node getParent(StateNode node) {
+    public @Nullable Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
         if (parentNode == null) {
             return null;
@@ -270,8 +277,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 .asList(BasicElementStateProvider.get().getProviderFeatures()));
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public Serializable getProperty(StateNode node, String name) {
+    public @Nullable Serializable getProperty(StateNode node, String name) {
         assert node != null;
         assert name != null;
 
@@ -385,8 +395,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 listener);
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public StateNode getShadowRoot(StateNode node) {
+    public @Nullable StateNode getShadowRoot(StateNode node) {
         return node.getFeatureIfInitialized(ShadowRootData.class)
                 .map(ShadowRootData::getShadowRoot).orElse(null);
     }

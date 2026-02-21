@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
@@ -68,8 +70,11 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public String getAttribute(StateNode node, String attribute) {
+    public @Nullable String getAttribute(StateNode node, String attribute) {
         return null;
     }
 
@@ -124,8 +129,11 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public Serializable getProperty(StateNode node, String name) {
+    public @Nullable Serializable getProperty(StateNode node, String name) {
         return null;
     }
 
@@ -178,8 +186,11 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    // Interface ElementStateProvider is not @NullMarked; return is genuinely
+    // nullable
+    @SuppressWarnings("NullAway")
     @Override
-    public StateNode getShadowRoot(StateNode node) {
+    public @Nullable StateNode getShadowRoot(StateNode node) {
         return null;
     }
 
