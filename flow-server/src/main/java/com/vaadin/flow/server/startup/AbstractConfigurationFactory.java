@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -259,8 +260,8 @@ public class AbstractConfigurationFactory implements Serializable {
      *            the token file location provider
      * @return the token file location, may be {@code null}
      */
-    protected String getTokenFileContent(
-            Function<String, String> locationProvider) {
+    protected @Nullable String getTokenFileContent(
+            Function<String, @Nullable String> locationProvider) {
         String location = locationProvider
                 .apply(FrontendUtils.PARAM_TOKEN_FILE);
         String json = null;

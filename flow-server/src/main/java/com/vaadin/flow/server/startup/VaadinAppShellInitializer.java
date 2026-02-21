@@ -104,8 +104,14 @@ public class VaadinAppShellInitializer
         }
 
         List<String> offendingAnnotations = new ArrayList<>();
-        AppShellPredicate predicate = context.getAttribute(Lookup.class)
-                .lookup(AppShellPredicate.class);
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup == null) {
+            return;
+        }
+        AppShellPredicate predicate = lookup.lookup(AppShellPredicate.class);
+        if (predicate == null) {
+            return;
+        }
 
         classes.stream()
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))

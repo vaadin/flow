@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -152,13 +153,16 @@ public class DefaultApplicationConfigurationFactory
      * @throws IOException
      *             if I/O fails during access to the token file
      */
-    protected String getTokenFileFromClassloader(VaadinContext context)
-            throws IOException {
+    protected @Nullable String getTokenFileFromClassloader(
+            VaadinContext context) throws IOException {
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
 
         Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = lookup == null ? null
+                : lookup.lookup(ResourceProvider.class);
+        if (resourceProvider == null) {
+            return null;
+        }
 
         List<URL> resources = resourceProvider
                 .getApplicationResources(tokenResource);
@@ -189,11 +193,15 @@ public class DefaultApplicationConfigurationFactory
         Objects.requireNonNull(resources);
 
         Lookup lookup = context.getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = lookup == null ? null
+                : lookup.lookup(ResourceProvider.class);
 
         assert !resources.isEmpty()
                 : "Possible jar resource requires resources to be available.";
+
+        if (resourceProvider == null) {
+            return FrontendUtils.streamToString(resources.get(0).openStream());
+        }
 
         URL viteGenerated = resourceProvider
                 .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG);

@@ -26,6 +26,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -193,7 +194,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      *
      * @return a class that has PWA-annotation.
      */
-    public Class<?> getPwaConfigurationClass() {
+    public @Nullable Class<?> getPwaConfigurationClass() {
         return pwaConfigurationClass.get();
     }
 
@@ -208,7 +209,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
      *            a class that has PWA -annotation, that's to be used in service
      *            initialization.
      */
-    public void setPwaConfigurationClass(Class<?> pwaClass) {
+    public void setPwaConfigurationClass(@Nullable Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
             pwaConfigurationClass.set(pwaClass);
         }

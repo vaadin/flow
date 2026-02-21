@@ -28,6 +28,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -49,7 +51,7 @@ import com.vaadin.flow.server.VaadinContext;
  * @since 1.0
  */
 public abstract class AbstractRouteRegistryInitializer implements Serializable {
-    private Class<?> pwaClass = null;
+    private @Nullable Class<?> pwaClass = null;
 
     /**
      * Validate the potential route classes stream and return them as a set.
@@ -267,7 +269,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return a PWA -annotated class, or null if none exist.
      */
     @SuppressWarnings("unchecked")
-    protected Class<?> validatePwaClass(VaadinContext context,
+    protected @Nullable Class<?> validatePwaClass(VaadinContext context,
             Stream<Class<?>> routeClasses) {
         pwaClass = null;
         routeClasses.forEach(route -> {

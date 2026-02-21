@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class ServletDeployer implements ServletContextListener {
         NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
     }
 
-    private String servletCreationMessage;
+    private @Nullable String servletCreationMessage;
 
     /**
      * Default ServletConfig implementation.
@@ -108,7 +109,7 @@ public class ServletDeployer implements ServletContextListener {
         }
 
         @Override
-        public String getInitParameter(String name) {
+        public @Nullable String getInitParameter(String name) {
             return registration.getInitParameters().get(name);
         }
 
@@ -163,7 +164,8 @@ public class ServletDeployer implements ServletContextListener {
         logServletCreation(servletCreation, productionMode);
     }
 
-    private void logServletCreation(VaadinServletCreation servletCreation,
+    private void logServletCreation(
+            @Nullable VaadinServletCreation servletCreation,
             boolean productionMode) {
         Logger logger = getLogger();
 
@@ -224,7 +226,7 @@ public class ServletDeployer implements ServletContextListener {
     private VaadinServletCreation createServletIfNotExists(
             ServletContext context, String name,
             Class<? extends Servlet> servletClass, String path,
-            Map<String, String> initParams) {
+            @Nullable Map<String, String> initParams) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
         if (existingServlet != null) {
@@ -258,14 +260,15 @@ public class ServletDeployer implements ServletContextListener {
         return VaadinServletCreation.SERVLET_CREATED;
     }
 
-    private ServletRegistration findServletByPathPart(ServletContext context,
-            String path) {
+    private @Nullable ServletRegistration findServletByPathPart(
+            ServletContext context, String path) {
         return context.getServletRegistrations().values().stream().filter(
                 registration -> registration.getMappings().contains(path))
                 .findAny().orElse(null);
     }
 
-    private ServletRegistration findVaadinServlet(ServletContext context) {
+    private @Nullable ServletRegistration findVaadinServlet(
+            ServletContext context) {
         return context.getServletRegistrations().values().stream()
                 .filter(registration -> registration.getClassName() != null)
                 .filter(registration -> isVaadinServlet(
