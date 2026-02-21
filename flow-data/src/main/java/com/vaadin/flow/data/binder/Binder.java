@@ -1564,19 +1564,22 @@ public class Binder<BEAN> implements Serializable {
             return locale;
         }
 
+        private void fireValidationEvents(
+                BindingValidationStatus<TARGET> status) {
+            var statusChange = new BinderValidationStatus<>(getBinder(),
+                    Collections.singletonList(status), Collections.emptyList());
+            getBinder().getValidationStatusHandler().statusChange(statusChange);
+            getBinder().signalStatusChangeFromBinding(status);
+            getBinder().fireStatusChangeEvent(status.isError());
+        }
+
         @Override
         public BindingValidationStatus<TARGET> validate(boolean fireEvent) {
             Objects.requireNonNull(binder,
                     "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
-                var statusChange = new BinderValidationStatus<>(getBinder(),
-                        Collections.singletonList(status),
-                        Collections.emptyList());
-                getBinder().getValidationStatusHandler()
-                        .statusChange(statusChange);
-                getBinder().signalStatusChangeFromBinding(status);
-                getBinder().fireStatusChangeEvent(status.isError());
+                fireValidationEvents(status);
             }
             return status;
         }
@@ -1615,18 +1618,31 @@ public class Binder<BEAN> implements Serializable {
         }
 
         /**
-         * Returns the field value run through all converters and validators,
-         * but doesn't pass the {@link BindingValidationStatus} to any status
-         * handler.
+         * Runs the field value through all converters and validators without
+         * wrapping in {@code untracked()}. This allows signal dependency
+         * tracking when called from the reactive effect in
+         * {@link #initInternalSignalEffectForValidators()}.
          *
          * @return the result of the conversion
          */
-        private Result<TARGET> doConversion() {
+        private Result<TARGET> executeConversionChain() {
             return execute(() -> {
                 FIELDVALUE fieldValue = field.getValue();
                 return converterValidatorChain.convertToModel(fieldValue,
                         createValueContext());
             });
+        }
+
+        /**
+         * Returns the field value run through all converters and validators,
+         * but doesn't pass the {@link BindingValidationStatus} to any status
+         * handler. Always runs inside {@code untracked()} so that callers
+         * outside a reactive context never trigger signal tracking.
+         *
+         * @return the result of the conversion
+         */
+        private Result<TARGET> doConversion() {
+            return UsageTracker.untracked(this::executeConversionChain);
         }
 
         private BindingValidationStatus<TARGET> toValidationStatus(
@@ -1711,11 +1727,12 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
                 signalRegistration = Signal.effect(component, () -> {
-                    if (valueInit) {
-                        // start to track signal usage
-                        doConversion();
-                    } else {
-                        validate();
+                    // Run chain with real tracking to discover signal deps
+                    Result<TARGET> result = executeConversionChain();
+                    if (!valueInit) {
+                        BindingValidationStatus<TARGET> status = toValidationStatus(
+                                result);
+                        fireValidationEvents(status);
                     }
                 });
             }
@@ -1987,6 +2004,9 @@ public class Binder<BEAN> implements Serializable {
         }
 
         private void trackUsageOfInternalValidationSignal() {
+            if (!UsageTracker.isActive()) {
+                return;
+            }
             if (internalValidationTriggerSignal == null) {
                 internalValidationTriggerSignal = new ValueSignal<>(false);
             }
