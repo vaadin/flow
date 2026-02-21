@@ -34,6 +34,8 @@ public class UnsupportedBrowserHandler implements RequestHandler {
     private static final String BROWSER_TOO_OLD_HTML = "browser-too-old.html";
 
     @Override
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // request handling
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         if (!HandlerHelper.isRequestType(request,

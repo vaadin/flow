@@ -37,6 +37,8 @@ public class ServiceContextUriResolver extends VaadinUriResolver
      *            the URI to resolve
      * @return the URI resolved to be relative to the context root
      */
+    @SuppressWarnings("NullAway") // super.resolveVaadinUri returns non-null
+                                  // when uri parameter is non-null
     public String resolveVaadinUri(String uri) {
         return super.resolveVaadinUri(uri, "/");
     }

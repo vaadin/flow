@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Wrapper for {@link HttpServletResponse}.
  *
@@ -90,7 +92,7 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
      * @return the current Vaadin servlet response instance if available,
      *         otherwise <code>null</code>
      */
-    public static VaadinServletResponse getCurrent() {
+    public static @Nullable VaadinServletResponse getCurrent() {
         VaadinResponse currentResponse = VaadinResponse.getCurrent();
         if (currentResponse instanceof VaadinServletResponse) {
             return (VaadinServletResponse) currentResponse;

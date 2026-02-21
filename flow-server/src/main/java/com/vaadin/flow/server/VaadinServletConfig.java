@@ -43,6 +43,8 @@ public class VaadinServletConfig implements VaadinConfig {
     /**
      * Ensures there is a valid instance of {@link ServletConfig}.
      */
+    @SuppressWarnings("NullAway") // VaadinServletService always has a servlet
+                                  // with config
     private void ensureServletConfig() {
         if (config == null
                 && VaadinService.getCurrent() instanceof VaadinServletService) {

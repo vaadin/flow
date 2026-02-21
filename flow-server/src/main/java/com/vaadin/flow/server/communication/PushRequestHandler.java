@@ -78,6 +78,8 @@ public class PushRequestHandler
      * @throws ServiceException
      *             if initialization of Atmosphere fails
      */
+    @SuppressWarnings("NullAway") // getServletConfig() is non-null after
+                                  // servlet initialization
     public PushRequestHandler(VaadinServletService service)
             throws ServiceException {
 

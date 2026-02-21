@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.shared.BrowserDetails;
@@ -35,12 +36,12 @@ import com.vaadin.flow.shared.BrowserDetails;
  */
 public class WebBrowser implements Serializable {
 
-    private String userAgent = null;
-    private Locale locale = null;
-    private String address = null;
+    private @Nullable String userAgent = null;
+    private @Nullable Locale locale = null;
+    private @Nullable String address = null;
     private boolean secureConnection = false;
 
-    private BrowserDetails browserDetails = null;
+    private @Nullable BrowserDetails browserDetails = null;
 
     /**
      * For internal use only. Configures all properties for the initial empty
@@ -71,11 +72,11 @@ public class WebBrowser implements Serializable {
      *
      * @return request User-Agent header
      */
-    public String getUserAgent() {
+    public @Nullable String getUserAgent() {
         return userAgent;
     }
 
-    private BrowserDetails getBrowserDetails() {
+    private @Nullable BrowserDetails getBrowserDetails() {
         if (userAgent != null && browserDetails == null) {
             browserDetails = new BrowserDetails(userAgent) {
                 @Override
@@ -94,7 +95,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use {@link #getUserAgent()} method to get user-agent string
      */
     @Deprecated(since = "25.0")
-    public String getBrowserApplication() {
+    public @Nullable String getBrowserApplication() {
         return userAgent;
     }
 
@@ -104,7 +105,7 @@ public class WebBrowser implements Serializable {
      * @return IP-address in 1.12.123.123 -format or null if the address is not
      *         available
      */
-    public String getAddress() {
+    public @Nullable String getAddress() {
         return address;
     }
 
@@ -113,7 +114,7 @@ public class WebBrowser implements Serializable {
      *
      * @return the browser reported locale
      */
-    public Locale getLocale() {
+    public @Nullable Locale getLocale() {
         return locale;
     }
 
@@ -136,11 +137,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isFirefox() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isFirefox();
+        return details.isFirefox();
     }
 
     /**
@@ -154,11 +156,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isIE() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isIE();
+        return details.isIE();
     }
 
     /**
@@ -171,11 +174,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isEdge() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isEdge();
+        return details.isEdge();
     }
 
     /**
@@ -190,11 +194,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isSafari() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isSafari();
+        return details.isSafari();
     }
 
     /**
@@ -207,11 +212,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isOpera() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isOpera();
+        return details.isOpera();
     }
 
     /**
@@ -224,11 +230,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isChrome() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
 
-        return browserDetails.isChrome();
+        return details.isChrome();
     }
 
     /**
@@ -244,11 +251,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public int getBrowserMajorVersion() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return -1;
         }
 
-        return browserDetails.getBrowserMajorVersion();
+        return details.getBrowserMajorVersion();
     }
 
     /**
@@ -262,11 +270,12 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public int getBrowserMinorVersion() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return -1;
         }
 
-        return browserDetails.getBrowserMinorVersion();
+        return details.getBrowserMinorVersion();
     }
 
     /**
@@ -279,10 +288,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isLinux() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isLinux();
+        return details.isLinux();
     }
 
     /**
@@ -295,10 +305,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isMacOSX() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isMacOSX();
+        return details.isMacOSX();
     }
 
     /**
@@ -311,10 +322,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isWindows() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isWindows();
+        return details.isWindows();
     }
 
     /**
@@ -328,10 +340,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isWindowsPhone() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isWindowsPhone();
+        return details.isWindowsPhone();
     }
 
     /**
@@ -344,10 +357,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isAndroid() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isAndroid();
+        return details.isAndroid();
     }
 
     /**
@@ -374,10 +388,11 @@ public class WebBrowser implements Serializable {
      */
     @Deprecated(since = "25.0")
     public boolean isChromeOS() {
-        if (getBrowserDetails() == null) {
+        BrowserDetails details = getBrowserDetails();
+        if (details == null) {
             return false;
         }
-        return browserDetails.isChromeOS();
+        return details.isChromeOS();
     }
 
 }

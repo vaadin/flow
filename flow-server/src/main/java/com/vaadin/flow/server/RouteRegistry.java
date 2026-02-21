@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Location;
@@ -129,7 +131,7 @@ public interface RouteRegistry extends Serializable {
      * @return list of accessible menu routes available for this registry
      */
     List<RouteData> getRegisteredAccessibleMenuRoutes(
-            VaadinRequest vaadinRequest,
+            @Nullable VaadinRequest vaadinRequest,
             Collection<BeforeEnterListener> accessControls);
 
     /**

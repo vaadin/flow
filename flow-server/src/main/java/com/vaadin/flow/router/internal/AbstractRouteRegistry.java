@@ -215,9 +215,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return getRegisteredRoutes(getConfiguration());
     }
 
+    @SuppressWarnings("NullAway") // getInstantiator() is non-null after service
+                                  // initialization
     @Override
     public List<RouteData> getRegisteredAccessibleMenuRoutes(
-            VaadinRequest vaadinRequest,
+            @Nullable VaadinRequest vaadinRequest,
             Collection<BeforeEnterListener> accessControls) {
         if (vaadinRequest == null) {
             return Collections.emptyList();

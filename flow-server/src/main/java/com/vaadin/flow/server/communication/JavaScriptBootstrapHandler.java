@@ -82,6 +82,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
          *            a callback that is invoked to resolve the context root
          *            from the request
          */
+        @SuppressWarnings("NullAway") // session is always available when
+                                      // constructing BootstrapContext during
+                                      // request handling
         public JavaScriptBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
@@ -125,6 +128,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     /**
      * Creates a new bootstrap handler with default page builder.
      */
+    @SuppressWarnings("NullAway") // PageBuilder is not used in
+                                  // JavaScriptBootstrapHandler
     public JavaScriptBootstrapHandler() {
         super(context -> null);
     }
@@ -150,6 +155,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active request handling
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {

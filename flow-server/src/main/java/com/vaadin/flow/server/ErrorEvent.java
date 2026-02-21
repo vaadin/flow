@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
@@ -31,7 +33,7 @@ import com.vaadin.flow.internal.StateNode;
 public class ErrorEvent implements Serializable {
 
     private final Throwable throwable;
-    private final StateNode componentNode;
+    private final @Nullable StateNode componentNode;
 
     /**
      * Creates an error event which wraps the given throwable.
@@ -101,7 +103,8 @@ public class ErrorEvent implements Serializable {
      *            the active session
      * @return An ErrorHandler for the session or null if none was found
      */
-    public static ErrorHandler findErrorHandler(VaadinSession session) {
+    public static @Nullable ErrorHandler findErrorHandler(
+            @Nullable VaadinSession session) {
         if (session == null) {
             return null;
         }

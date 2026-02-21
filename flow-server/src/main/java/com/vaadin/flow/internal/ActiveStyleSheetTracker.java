@@ -57,6 +57,8 @@ public final class ActiveStyleSheetTracker implements Serializable {
      *            the active {@link VaadinService}
      * @return the tracker instance, never null
      */
+    @SuppressWarnings("NullAway") // getAttribute with a supplier always returns
+                                  // non-null
     public static ActiveStyleSheetTracker get(VaadinService service) {
         Objects.requireNonNull(service, "service cannot be null");
         VaadinContext context = service.getContext();
@@ -72,6 +74,8 @@ public final class ActiveStyleSheetTracker implements Serializable {
      *            the {@link VaadinContext}
      * @return the tracker instance, never null
      */
+    @SuppressWarnings("NullAway") // getAttribute with a supplier always returns
+                                  // non-null
     public static ActiveStyleSheetTracker get(VaadinContext context) {
         Objects.requireNonNull(context, "context cannot be null");
         return context.getAttribute(ActiveStyleSheetTracker.class,

@@ -75,6 +75,8 @@ public abstract class BaseLicenseCheckerServiceInitListener
     }
 
     @Override
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // during service init
     public void serviceInit(ServiceInitEvent event) {
         var service = event.getSource();
         var configuration = service.getDeploymentConfiguration();

@@ -189,6 +189,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      *            current VaadinResponse
      * @return npm response script
      */
+    @SuppressWarnings("NullAway") // request.getService() is non-null during
+                                  // request handling
     protected String generateNPMResponse(String tagName, VaadinRequest request,
             VaadinResponse response) {
         // get the running script

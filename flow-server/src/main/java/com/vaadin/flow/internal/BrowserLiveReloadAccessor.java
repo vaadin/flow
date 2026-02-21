@@ -77,6 +77,8 @@ public interface BrowserLiveReloadAccessor {
      * @return an {@link Optional} containing a {@link BrowserLiveReload}
      *         instance or <code>EMPTY</code> if disabled or in production mode
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is guaranteed to
+                                  // be available after context initialization
     static Optional<BrowserLiveReload> getLiveReloadFromContext(
             VaadinContext context) {
         if (ApplicationConfiguration.get(context).isProductionMode()) {

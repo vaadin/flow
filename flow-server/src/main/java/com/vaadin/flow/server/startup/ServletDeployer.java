@@ -143,6 +143,8 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is always
+                                  // available after context init
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
         Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(

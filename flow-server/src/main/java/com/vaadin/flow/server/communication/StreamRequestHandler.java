@@ -85,6 +85,8 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // session.getResourceRegistry() is non-null
+                                  // during active session
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
 

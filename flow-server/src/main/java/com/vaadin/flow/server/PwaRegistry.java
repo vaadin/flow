@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -83,8 +84,8 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
-    private URL baseImageUrl;
-    private BufferedImage baseImage;
+    private @Nullable URL baseImageUrl;
+    private @Nullable BufferedImage baseImage;
 
     /**
      * Creates a new PwaRegistry instance.
@@ -96,7 +97,7 @@ public class PwaRegistry implements Serializable {
      * @throws IOException
      *             when icon or offline resources are not found.
      */
-    public PwaRegistry(PWA pwa, ServletContext servletContext)
+    public PwaRegistry(@Nullable PWA pwa, ServletContext servletContext)
             throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
@@ -116,6 +117,7 @@ public class PwaRegistry implements Serializable {
     // generation is required at runtime.
     // baseImageUrl is computed during registry initialization and used on to
     // load the image.
+    @Nullable
     BufferedImage getBaseImage() {
         if (baseImage == null && baseImageUrl != null) {
             try {
@@ -351,8 +353,8 @@ public class PwaRegistry implements Serializable {
         }
     }
 
-    private String initializeOfflinePage(PwaConfiguration config, URL resource)
-            throws IOException {
+    private String initializeOfflinePage(PwaConfiguration config,
+            @Nullable URL resource) throws IOException {
         // Use only icons which are cached with service worker
         List<PwaIcon> iconList = getIcons().stream()
                 .filter(PwaIcon::shouldBeCached).collect(Collectors.toList());
@@ -631,6 +633,8 @@ public class PwaRegistry implements Serializable {
         return icons;
     }
 
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() is always
+                                  // available when serving PWA resources
     private boolean shouldCacheRoot() {
         VaadinContext context = VaadinService.getCurrent().getContext();
         ApplicationConfiguration configuration = ApplicationConfiguration

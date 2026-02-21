@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
  * automatically. The session is locked before
@@ -140,7 +142,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      */
     public Optional<ResponseWriter> synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request,
-            VaadinResponse response, String requestBody)
+            VaadinResponse response, @Nullable String requestBody)
             throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }

@@ -70,6 +70,9 @@ public class ThemeUtils {
      *            the vaadin context
      * @return custom theme name or empty optional if no theme is used
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration.get() and
+                                  // getProjectFolder() are non-null in dev mode
+                                  // where this is called
     public static Optional<String> getThemeName(VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
@@ -220,6 +223,8 @@ public class ThemeUtils {
      *            the vaadin context
      * @return a list of active themes, in parent to child order
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration.get() is non-null
+                                  // after initialization
     public static List<String> getActiveThemes(VaadinContext context) {
         Optional<String> applicationTheme = getThemeName(context);
         if (!applicationTheme.isPresent()) {

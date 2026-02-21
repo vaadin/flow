@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -287,16 +289,20 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active session lifecycle
     public VaadinContext getContext() {
         return session.getService().getContext();
     }
 
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active session lifecycle
     private RouteRegistry getParentRegistry() {
         return session.getService().getRouteRegistry();
     }
 
     @Override
-    public Class<? extends RouterLayout> getLayout(String path) {
+    public @Nullable Class<? extends RouterLayout> getLayout(String path) {
         if (super.hasLayout(path)) {
             return super.getLayout(path);
         }

@@ -126,6 +126,9 @@ public class FeatureFlags implements Serializable {
      * @return a feature flags instance for the given context, not
      *         <code>null</code>
      */
+    @SuppressWarnings("NullAway") // getAttribute with a supplier always returns
+                                  // non-null; Lookup is guaranteed present
+                                  // after initialization
     public static FeatureFlags get(final VaadinContext context) {
         assert context != null;
 

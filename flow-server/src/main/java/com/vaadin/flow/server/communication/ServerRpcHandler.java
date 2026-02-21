@@ -92,6 +92,9 @@ public class ServerRpcHandler implements Serializable {
          * @param request
          *            the request through which the JSON was received
          */
+        @SuppressWarnings("NullAway") // request.getService() and
+                                      // getDeploymentConfiguration() are
+                                      // non-null during request handling
         public RpcRequest(String jsonString, VaadinRequest request) {
             this(jsonString, request.getService().getDeploymentConfiguration()
                     .isSyncIdCheckEnabled());

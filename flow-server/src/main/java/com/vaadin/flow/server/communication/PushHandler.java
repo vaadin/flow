@@ -266,6 +266,9 @@ public class PushHandler {
      * @param callback
      *            the push callback to call when a UI is found and locked
      */
+    @SuppressWarnings("NullAway") // null response is intentional for WebSocket
+                                  // push; session is non-null after
+                                  // findVaadinSession
     void callWithUi(final AtmosphereResource resource,
             final PushEventCallback callback) {
         AtmosphereRequest req = resource.getRequest();
@@ -415,6 +418,8 @@ public class PushHandler {
         }
     }
 
+    @SuppressWarnings("NullAway") // session is non-null after findVaadinSession
+                                  // (catch returns early)
     private @Nullable VaadinSession handleConnectionLost(
             @Nullable AtmosphereResourceEvent event) {
         if (event == null) {
@@ -651,6 +656,8 @@ public class PushHandler {
         }
     }
 
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is always
+                                  // available after service init
     private boolean isProductionMode() {
         VaadinContext context = service.getContext();
         ApplicationConfiguration conf = ApplicationConfiguration.get(context);

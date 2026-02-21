@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -84,7 +86,7 @@ public class PropertyDeploymentConfiguration
      * @return String value or null if not found
      */
     @Override
-    protected String getSystemProperty(String parameterName) {
+    protected @Nullable String getSystemProperty(String parameterName) {
         String pkgName;
         final Package pkg = systemPropertyBaseClass.getPackage();
         if (pkg != null) {
@@ -127,7 +129,7 @@ public class PropertyDeploymentConfiguration
      * @return String value or null if not found
      */
     @Override
-    public String getApplicationProperty(String parameterName) {
+    public @Nullable String getApplicationProperty(String parameterName) {
         String val = getApplicationProperty(getProperties()::get,
                 parameterName);
         if (val == null) {
@@ -212,7 +214,7 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public File getOutputResourceFolder() {
+    public @Nullable File getOutputResourceFolder() {
         return super.getOutputResourceFolder();
     }
 

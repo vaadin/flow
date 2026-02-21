@@ -153,6 +153,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         context.setAttribute(registry);
     }
 
+    @SuppressWarnings("NullAway") // Lookup is always available after service
+                                  // init
     private boolean removePreviousRoutes(VaadinContext context,
             ApplicationRouteRegistry registry) {
         Lookup lookup = context.getAttribute(Lookup.class);

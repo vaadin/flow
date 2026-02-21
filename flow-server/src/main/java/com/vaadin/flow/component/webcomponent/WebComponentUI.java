@@ -260,6 +260,8 @@ public class WebComponentUI extends UI {
                 event.getTag(), id);
     }
 
+    @SuppressWarnings("NullAway") // VaadinSession.getCurrent() is guaranteed
+                                  // non-null during request handling
     private SessionEmbeddedComponentRegistry getRegistry() {
         return SessionEmbeddedComponentRegistry
                 .getSessionRegistry(VaadinSession.getCurrent());

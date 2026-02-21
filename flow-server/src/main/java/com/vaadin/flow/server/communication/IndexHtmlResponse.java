@@ -104,6 +104,8 @@ public class IndexHtmlResponse {
      *
      * @return the UI
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     public Optional<UI> getUI() {
         if (!this.vaadinRequest.getService().getDeploymentConfiguration()
                 .isEagerServerLoad()) {

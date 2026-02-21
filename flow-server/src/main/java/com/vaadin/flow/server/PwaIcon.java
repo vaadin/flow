@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Implementation of icons used in PWA resources.
@@ -63,12 +64,12 @@ public class PwaIcon implements Serializable {
     private long fileHash;
     private String baseName;
     private Domain domain;
-    private byte[] data;
+    private byte @Nullable [] data;
 
     private final Map<String, String> attributes = new HashMap<>();
     private String tag = "link";
 
-    private PwaRegistry registry;
+    private @Nullable PwaRegistry registry;
 
     PwaIcon(int width, int height, String baseName) {
         this(width, height, baseName, Domain.HEADER);
@@ -163,7 +164,7 @@ public class PwaIcon implements Serializable {
      *
      * @return value of the {@literal sizes} attribute
      */
-    public String getSizes() {
+    public @Nullable String getSizes() {
         return attributes.get("sizes");
     }
 
@@ -172,7 +173,7 @@ public class PwaIcon implements Serializable {
      *
      * @return value of the {@literal href} attribute
      */
-    public String getHref() {
+    public @Nullable String getHref() {
         return attributes.get("href");
     }
 
@@ -183,6 +184,8 @@ public class PwaIcon implements Serializable {
      *
      * @return href with '/' -prefix and removed possible ?[fileHash]
      */
+    @SuppressWarnings("NullAway") // href is always set via setRelativeName()
+                                  // during construction
     public String getRelHref() {
         String[] split = getHref().split("\\?");
         return "/" + split[0];
@@ -203,7 +206,7 @@ public class PwaIcon implements Serializable {
      *
      * @return value of the {@literal type} attribute
      */
-    public String getType() {
+    public @Nullable String getType() {
         return attributes.get("type");
     }
 
@@ -212,6 +215,7 @@ public class PwaIcon implements Serializable {
      *
      * @return value of the {@literal rel} attribute
      */
+    @Nullable
     String getRel() {
         return attributes.get("rel");
     }
@@ -262,6 +266,8 @@ public class PwaIcon implements Serializable {
      *         {@literal false}.
      * @see #write(OutputStream)
      */
+    @SuppressWarnings("NullAway") // registry is always set via setRegistry()
+                                  // before this is called
     boolean isAvailable() {
         return data != null || registry.getBaseImage() != null;
     }
@@ -288,6 +294,8 @@ public class PwaIcon implements Serializable {
     }
 
     // visible for test
+    @SuppressWarnings("NullAway") // registry is always set via setRegistry()
+                                  // before this is called
     protected BufferedImage getBaseImage() {
         return registry.getBaseImage();
     }

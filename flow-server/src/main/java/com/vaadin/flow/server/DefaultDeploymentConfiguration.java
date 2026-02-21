@@ -123,6 +123,9 @@ public class DefaultDeploymentConfiguration
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
+    @SuppressWarnings("NullAway") // All fields are initialized by the check*
+                                  // methods which always assign values
+                                  // including in catch blocks
     public DefaultDeploymentConfiguration(ApplicationConfiguration parentConfig,
             Class<?> systemPropertyBaseClass, Properties initParameters) {
         super(parentConfig, systemPropertyBaseClass, initParameters);
@@ -345,6 +348,8 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    @SuppressWarnings("NullAway") // getApplicationOrSystemProperty returns
+                                  // non-null when given a non-null default
     private void checkHeartbeatInterval() {
         try {
             heartbeatInterval = getApplicationOrSystemProperty(
@@ -356,6 +361,8 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    @SuppressWarnings("NullAway") // getApplicationOrSystemProperty returns
+                                  // non-null when given a non-null default
     private void checkMaxMessageSuspendTimeout() {
         try {
             maxMessageSuspendTimeout = getApplicationOrSystemProperty(
@@ -370,6 +377,8 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    @SuppressWarnings("NullAway") // getApplicationOrSystemProperty returns
+                                  // non-null when given a non-null default
     private void checkWebComponentDisconnectTimeout() {
         try {
             webComponentDisconnect = getApplicationOrSystemProperty(
@@ -388,6 +397,8 @@ public class DefaultDeploymentConfiguration
                 DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
+    @SuppressWarnings("NullAway") // getApplicationOrSystemProperty returns
+                                  // non-null when given a non-null default
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
@@ -400,6 +411,8 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    @SuppressWarnings("NullAway") // getApplicationOrSystemProperty returns
+                                  // non-null when given a non-null default
     private void checkSessionLockCheckStrategy() {
         try {
             sessionLockCheckStrategy = getApplicationOrSystemProperty(
@@ -414,6 +427,8 @@ public class DefaultDeploymentConfiguration
         }
     }
 
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     private void checkPushServletMapping() {
         pushServletMapping = getStringProperty(
                 InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING, "");

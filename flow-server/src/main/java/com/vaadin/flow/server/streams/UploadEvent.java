@@ -204,6 +204,8 @@ public class UploadEvent {
                 .orElseGet(UI::getCurrent);
     }
 
+    @SuppressWarnings("NullAway") // UI is always available in session during
+                                  // upload event
     private UI getUiFromSession(Component value) {
         try {
             session.lock();

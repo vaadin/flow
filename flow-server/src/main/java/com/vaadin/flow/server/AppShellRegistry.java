@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ public class AppShellRegistry implements Serializable {
     private static final Logger log = LoggerFactory
             .getLogger(AppShellRegistry.class);
 
-    private Class<? extends AppShellConfigurator> appShellClass;
+    private @Nullable Class<? extends AppShellConfigurator> appShellClass;
     private boolean auraAutoLoadWarningLogged = false;
 
     /**
@@ -156,7 +157,7 @@ public class AppShellRegistry implements Serializable {
      *
      * @return the app shell class
      */
-    public Class<? extends AppShellConfigurator> getShell() {
+    public @Nullable Class<? extends AppShellConfigurator> getShell() {
         return appShellClass;
     }
 
@@ -169,7 +170,7 @@ public class AppShellRegistry implements Serializable {
      * @return a string with the error lines if the class has offending
      *         annotations
      */
-    public String validateClass(Class<?> clz) {
+    public @Nullable String validateClass(Class<?> clz) {
         String error = null;
 
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
@@ -269,7 +270,7 @@ public class AppShellRegistry implements Serializable {
         return settings;
     }
 
-    private static String resolveStyleSheetHref(String href,
+    private static @Nullable String resolveStyleSheetHref(String href,
             VaadinRequest request) {
         if (href == null || href.isBlank()) {
             return null;
@@ -304,6 +305,8 @@ public class AppShellRegistry implements Serializable {
                 href = contextProtocol + href;
             }
         }
+        @SuppressWarnings("NullAway") // session parameter is unused in
+                                      // BootstrapUriResolver constructor
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
                 contextPath + "/", null);
         return resolver.resolveVaadinUri(href);
@@ -322,8 +325,7 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings(request);
         if (appShellClass != null) {
-            VaadinService.getCurrent().getInstantiator()
-                    .getOrCreate(appShellClass).configurePage(settings);
+            configureAppShell(appShellClass, settings);
         }
 
         settings.getHeadElements(Position.PREPEND).forEach(
@@ -369,10 +371,22 @@ public class AppShellRegistry implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() and
+                                  // getInstantiator() are always available
+                                  // during request handling
+    private static void configureAppShell(
+            Class<? extends AppShellConfigurator> shellClass,
+            AppShellSettings settings) {
+        VaadinService.getCurrent().getInstantiator().getOrCreate(shellClass)
+                .configurePage(settings);
+    }
+
     private void insertElement(Element elm, Consumer<Element> action) {
         action.accept(elm);
         for (String cssQuery : UNIQUE_ELEMENTS) {
             if (elm.is(cssQuery)) {
+                @SuppressWarnings("NullAway") // elm was just added to a parent
+                                              // via action.accept(elm)
                 Element first = elm.parent().selectFirst(cssQuery);
                 if (first != elm && first != null) {
                     first.replaceWith(elm);
@@ -405,10 +419,16 @@ public class AppShellRegistry implements Serializable {
                 : Arrays.asList(appShellClass.getAnnotationsByType(annotation));
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is always
+                                  // available when handling requests
+    private static DeploymentConfiguration getDeploymentConfig(
+            VaadinRequest request) {
+        return request.getService().getDeploymentConfiguration();
+    }
+
     private static void addStyleSheets(VaadinRequest request,
             Map<String, String> stylesheets, AppShellSettings settings) {
-        DeploymentConfiguration config = request.getService()
-                .getDeploymentConfiguration();
+        DeploymentConfiguration config = getDeploymentConfig(request);
         if (!config.isProductionMode()) {
             stylesheets.replaceAll((resolved, source) -> {
                 if (source.startsWith("/")) {

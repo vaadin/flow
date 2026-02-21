@@ -88,6 +88,8 @@ public class InternalServerError extends Component
                 && !NOPLoggerFactory.class.equals(loggerFactory.getClass());
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     private void reportException(Exception exception, String path,
             String exceptionText, boolean isRootCauseAvailable) {
         if (isRootCauseAvailable) {

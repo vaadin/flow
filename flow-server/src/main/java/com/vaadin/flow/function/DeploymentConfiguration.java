@@ -22,6 +22,8 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -219,6 +221,7 @@ public interface DeploymentConfiguration
      *
      * @return the configured class loader name
      */
+    @Nullable
     String getClassLoaderName();
 
     /**
@@ -232,6 +235,8 @@ public interface DeploymentConfiguration
                 true);
     }
 
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     default String getCompiledWebComponentsPath() {
         return getStringProperty(InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 "vaadin-web-components");
@@ -246,6 +251,8 @@ public interface DeploymentConfiguration
      *
      * @return polyfills to load
      */
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     default List<String> getPolyfills() {
         return Arrays
                 .asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
@@ -270,6 +277,8 @@ public interface DeploymentConfiguration
      *
      * @return external stats.json location
      */
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     default String getExternalStatsUrl() {
         return getStringProperty(Constants.EXTERNAL_STATS_URL,
                 Constants.DEFAULT_EXTERNAL_STATS_URL);
@@ -348,6 +357,8 @@ public interface DeploymentConfiguration
      *
      * @return this application's name
      */
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     default String getApplicationName() {
         return getStringProperty(InitParameters.APPLICATION_IDENTIFIER,
                 "default-project-id");

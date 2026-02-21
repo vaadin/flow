@@ -43,6 +43,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferEvent.getContentLength(), transferEvent.getException());
     }
 
+    @SuppressWarnings("NullAway") // getMimeType handles null fileName
+                                  // gracefully
     protected String getContentType(@Nullable String fileName,
             VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))

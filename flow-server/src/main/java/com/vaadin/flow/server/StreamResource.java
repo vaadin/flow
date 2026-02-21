@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
@@ -59,7 +60,7 @@ public class StreamResource extends AbstractStreamResource {
 
     private ContentTypeResolver resolver = DEFAULT_RESOLVER;
 
-    private Map<String, String> headers;
+    private @Nullable Map<String, String> headers;
 
     private static class DefaultResolver implements ContentTypeResolver {
 

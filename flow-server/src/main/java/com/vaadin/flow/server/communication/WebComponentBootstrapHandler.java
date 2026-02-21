@@ -87,6 +87,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
+        @SuppressWarnings("NullAway") // session is always available when
+                                      // constructing BootstrapContext during
+                                      // request handling
         private WebComponentBootstrapContext(VaadinRequest request,
                 VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
@@ -117,6 +120,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static class WebComponentBootstrapPageBuilder
             extends BootstrapPageBuilder {
         @Override
+        @SuppressWarnings("NullAway") // session.getService() and
+                                      // getDeploymentConfiguration() are
+                                      // non-null during request handling
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
@@ -373,6 +379,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @throws IOException
      *             if writing fails
      */
+    @SuppressWarnings("NullAway") // response.getService() and
+                                  // getDeploymentConfiguration() are non-null
+                                  // during request handling
     protected void writeBootstrapPage(String contentType,
             VaadinResponse response, Element head, String serviceUrl)
             throws IOException {

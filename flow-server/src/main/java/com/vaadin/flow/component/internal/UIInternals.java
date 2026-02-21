@@ -423,6 +423,8 @@ public class UIInternals implements Serializable {
                 .toArray(new Class<?>[0]);
     }
 
+    @SuppressWarnings("NullAway") // getService() is non-null for an active
+                                  // session
     private static @Nullable String getSessionDetails(
             @Nullable VaadinSession session) {
         if (session == null) {

@@ -116,6 +116,8 @@ public class NavigationState implements Serializable {
      *
      * @return the resolved path details
      */
+    @SuppressWarnings("NullAway") // getNavigationTarget() is non-null when
+                                  // resolvedPath needs to be computed
     public @Nullable String getResolvedPath() {
         if (resolvedPath == null) {
             resolvedPath = router.getRegistry()

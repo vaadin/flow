@@ -59,6 +59,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
      * response.
      */
     @Override
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active request handling
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         UI ui = session.getService().findUI(request);

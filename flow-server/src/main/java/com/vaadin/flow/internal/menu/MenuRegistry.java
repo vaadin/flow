@@ -156,6 +156,9 @@ public class MenuRegistry {
      *            {@code true} to filter routes by authentication status
      * @return routes with view information
      */
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() and
+                                  // getDeploymentConfiguration() are non-null
+                                  // during request handling
     public static Map<String, AvailableViewInfo> getMenuItems(
             boolean filterClientViews) {
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -290,6 +293,7 @@ public class MenuRegistry {
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
             boolean filterClientViews, AbstractConfiguration configuration) {
 
+        @Nullable
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
         return collectClientMenuItems(filterClientViews, configuration,
                 vaadinRequest);
@@ -308,6 +312,7 @@ public class MenuRegistry {
     public static List<String> getClientRoutes(boolean filterClientViews,
             AbstractConfiguration configuration) {
 
+        @Nullable
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
         return new ArrayList<>(collectClientMenuItems(filterClientViews,
                 configuration, vaadinRequest).keySet());
@@ -326,7 +331,7 @@ public class MenuRegistry {
      */
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
             boolean filterClientViews, AbstractConfiguration configuration,
-            VaadinRequest vaadinRequest) {
+            @Nullable VaadinRequest vaadinRequest) {
         VaadinService vaadinService = Optional.ofNullable(vaadinRequest)
                 .map(VaadinRequest::getService)
                 .orElseGet(VaadinService::getCurrent);
@@ -463,6 +468,8 @@ public class MenuRegistry {
      *            current application configuration
      * @return URL to json resource
      */
+    @SuppressWarnings("NullAway") // getProjectFolder() is non-null in dev mode
+                                  // where this code path executes
     public static @Nullable URL getViewsJsonAsResource(
             AbstractConfiguration configuration) {
         var isProductionMode = configuration.isProductionMode();
@@ -486,6 +493,9 @@ public class MenuRegistry {
         }
     }
 
+    @SuppressWarnings("NullAway") // getInstantiator() is non-null after service
+                                  // initialization; get() is non-null after
+                                  // containsKey() check
     private static void filterClientViews(
             Map<String, AvailableViewInfo> configurations,
             VaadinService vaadinService) {

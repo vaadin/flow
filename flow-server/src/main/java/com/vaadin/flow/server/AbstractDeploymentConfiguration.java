@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
@@ -41,6 +43,8 @@ public abstract class AbstractDeploymentConfiguration extends
         super(properties);
     }
 
+    @SuppressWarnings("NullAway") // getStringProperty returns non-null when
+                                  // given a non-null default
     @Override
     public String getUIClassName() {
         return getStringProperty(InitParameters.UI_PARAMETER,
@@ -48,7 +52,7 @@ public abstract class AbstractDeploymentConfiguration extends
     }
 
     @Override
-    public String getClassLoaderName() {
+    public @Nullable String getClassLoaderName() {
         return getStringProperty("ClassLoader", null);
     }
 

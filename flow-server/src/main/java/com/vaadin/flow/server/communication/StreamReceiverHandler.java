@@ -430,6 +430,8 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // session.getResourceRegistry() is non-null
+                                  // during active session
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver) {
         session.lock();

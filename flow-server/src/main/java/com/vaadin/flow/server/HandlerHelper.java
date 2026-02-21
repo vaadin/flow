@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -447,7 +449,7 @@ public class HandlerHelper implements Serializable {
      *            if not available
      * @return the found locale
      */
-    public static Locale findLocale(VaadinSession session,
+    public static Locale findLocale(@Nullable VaadinSession session,
             VaadinRequest request) {
 
         if (session == null) {

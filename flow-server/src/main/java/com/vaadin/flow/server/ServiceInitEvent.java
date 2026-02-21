@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 
 /**
@@ -41,7 +43,7 @@ public class ServiceInitEvent extends EventObject {
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
-    private Executor executor;
+    private @Nullable Executor executor;
 
     /**
      * Creates a new service init event for a given {@link VaadinService} and

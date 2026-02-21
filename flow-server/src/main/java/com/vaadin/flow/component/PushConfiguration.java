@@ -208,6 +208,8 @@ class PushConfigurationImpl implements PushConfiguration {
         return getPushConfigurationMap().getPushServletMapping();
     }
 
+    @SuppressWarnings("NullAway") // getService() is non-null for an active
+                                  // session
     @Override
     public void setPushMode(PushMode pushMode) {
         if (pushMode == null) {

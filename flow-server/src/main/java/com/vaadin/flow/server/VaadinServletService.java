@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,11 +77,15 @@ public class VaadinServletService extends VaadinService {
      * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be
      * overridden (or otherwise intercepted) to not return <code>null</code>.
      */
+    @SuppressWarnings("NullAway") // DI frameworks override getServlet() so null
+                                  // assignment is acceptable
     protected VaadinServletService() {
         servlet = null;
     }
 
     @Override
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
@@ -185,11 +190,11 @@ public class VaadinServletService extends VaadinService {
                         .equals(type);
     }
 
-    public static HttpServletRequest getCurrentServletRequest() {
+    public static @Nullable HttpServletRequest getCurrentServletRequest() {
         return VaadinServletRequest.getCurrent();
     }
 
-    public static VaadinServletResponse getCurrentResponse() {
+    public static @Nullable VaadinServletResponse getCurrentResponse() {
         return VaadinServletResponse.getCurrent();
     }
 
@@ -234,7 +239,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected PwaRegistry getPwaRegistry() {
+    protected @Nullable PwaRegistry getPwaRegistry() {
         return Optional.ofNullable(getServlet())
                 // VaadinServlet.getServletConfig can return null if the servlet
                 // is not yet initialized or has been destroyed
@@ -253,7 +258,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getStaticResource(String path) {
+    public @Nullable URL getStaticResource(String path) {
         try {
             return getStaticResource(getServlet().getServletContext(), path);
         } catch (MalformedURLException e) {
@@ -263,7 +268,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getResource(String path) {
+    public @Nullable URL getResource(String path) {
         return getResourceInServletContext(resolveResource(path));
     }
 
@@ -280,7 +285,7 @@ public class VaadinServletService extends VaadinService {
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    public URL getResourceInServletContext(String path) {
+    public @Nullable URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             return servletContext.getResource(path);
@@ -332,8 +337,8 @@ public class VaadinServletService extends VaadinService {
         setClassLoader(getServlet().getServletContext().getClassLoader());
     }
 
-    static URL getStaticResource(ServletContext servletContext, String path)
-            throws MalformedURLException {
+    static @Nullable URL getStaticResource(ServletContext servletContext,
+            String path) throws MalformedURLException {
         URL url = servletContext.getResource(path);
         if (url != null && Optional.ofNullable(servletContext.getServerInfo())
                 .orElse("").contains("jetty/12.")) {

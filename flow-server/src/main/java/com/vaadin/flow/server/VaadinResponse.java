@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.CurrentInstance;
 
 /**
@@ -215,7 +217,7 @@ public interface VaadinResponse {
      * @return the current Vaadin response instance if available, otherwise
      *         <code>null</code>
      */
-    static VaadinResponse getCurrent() {
+    static @Nullable VaadinResponse getCurrent() {
         return CurrentInstance.get(VaadinResponse.class);
     }
 }

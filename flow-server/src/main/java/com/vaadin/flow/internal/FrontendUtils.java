@@ -535,6 +535,8 @@ public class FrontendUtils {
         return getFileContent(service, WEB_COMPONENT_HTML);
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     private static @Nullable String getFileContent(VaadinService service,
             String path) throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
@@ -582,6 +584,8 @@ public class FrontendUtils {
         return null;
     }
 
+    @SuppressWarnings("NullAway") // Lookup is guaranteed present in context
+                                  // after initialization
     private static @Nullable InputStream getFileFromClassPath(
             VaadinService service, String filePath) {
         Lookup lookup = service.getContext().getAttribute(Lookup.class);
@@ -622,6 +626,8 @@ public class FrontendUtils {
      * @return an input stream for reading the file contents; null if there is
      *         no such file or the dev server is not running.
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     public static @Nullable InputStream getFrontendFileFromDevModeHandler(
             VaadinService service, String path) {
         Optional<DevModeHandler> devModeHandler = activeDevModeHandler(service);
@@ -1266,6 +1272,9 @@ public class FrontendUtils {
      *         /* mapping, otherwise always starts with a slash but never ends
      *         with a slash
      */
+    @SuppressWarnings("NullAway") // getFrontendMapping() is non-null when this
+                                  // method is called after frontend
+                                  // initialization
     public static String getFrontendServletPath(ServletContext servletContext) {
         String mapping = VaadinServlet.getFrontendMapping();
         if (mapping.endsWith("/*")) {
@@ -1488,6 +1497,9 @@ public class FrontendUtils {
      *
      * @return a list of available client routes
      */
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() and
+                                  // getDeploymentConfiguration() are non-null
+                                  // during request handling
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());

@@ -91,6 +91,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
+    @SuppressWarnings("NullAway") // session.getService() and
+                                  // getDeploymentConfiguration() are non-null
+                                  // during active request handling
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         if (writeErrorCodeIfRequestLocationIsInvalid(request, response)) {
@@ -247,6 +250,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         "});"));
     }
 
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is always
+                                  // available after service init
     private static void addDevBundleTheme(Document document,
             VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
@@ -430,6 +435,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active request handling
     private void addDevTools(Document indexDocument,
             DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
@@ -656,11 +663,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
+    @SuppressWarnings("NullAway") // getAttribute with supplier always returns
+                                  // non-null
     private static Document getCachedIndexHtmlDocument(VaadinService service) {
         return service.getContext().getAttribute(IndexHtmlHolder.class,
                 () -> new IndexHtmlHolder(service)).getDocument();
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service init
     private static Document getIndexHtmlDocument(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();

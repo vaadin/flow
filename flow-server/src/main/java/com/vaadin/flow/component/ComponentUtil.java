@@ -335,6 +335,9 @@ public class ComponentUtil {
      * @param component
      *            the component detached from a UI
      */
+    @SuppressWarnings("NullAway") // VaadinSession.getCurrent() and
+                                  // VaadinService.getCurrent() are guaranteed
+                                  // non-null during detach/request handling
     public static void onComponentDetach(Component component) {
         if (component instanceof Composite) {
             onComponentDetach(((Composite<?>) component).getContent());
@@ -719,6 +722,8 @@ public class ComponentUtil {
      * @throws IllegalStateException
      *             if no router instance is available
      */
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() is guaranteed
+                                  // non-null during request handling
     public static Router getRouter(HasElement component) {
         Router router = null;
         if (component.getElement().getNode().isAttached()) {

@@ -70,6 +70,8 @@ public class PwaHandler implements RequestHandler {
         this.pwaRegistryGetter = pwaRegistryGetter;
     }
 
+    @SuppressWarnings("NullAway") // PwaIcon always has a type when properly
+                                  // initialized
     private void init(PwaRegistry pwaRegistry) {
         // Icon handling
         for (PwaIcon icon : pwaRegistry.getIcons()) {

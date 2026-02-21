@@ -20,6 +20,8 @@ import jakarta.servlet.ServletContext;
 import java.util.Enumeration;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.di.Lookup;
 
 /**
@@ -65,7 +67,8 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     @Override
-    public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
+    public <T> T getAttribute(Class<T> type,
+            @Nullable Supplier<T> defaultValueSupplier) {
         ensureServletContext();
         synchronized (getContext()) {
             Object result = getContext().getAttribute(type.getName());
@@ -78,7 +81,7 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     @Override
-    public <T> void setAttribute(Class<T> clazz, T value) {
+    public <T> void setAttribute(Class<T> clazz, @Nullable T value) {
         if (value == null) {
             removeAttribute(clazz);
         } else {

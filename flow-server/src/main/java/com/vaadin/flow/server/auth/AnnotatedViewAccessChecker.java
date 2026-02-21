@@ -184,6 +184,8 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is always
+                                  // available after service init
     private boolean isDevelopmentMode(NavigationContext context) {
         VaadinContext vaadinContext = context.getRouter().getRegistry()
                 .getContext();

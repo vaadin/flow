@@ -187,12 +187,15 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
+    @SuppressWarnings("NullAway") // getResourceRegistry() is non-null when a
+                                  // session is active
     private void doSetResource(String attribute,
             AbstractStreamResource resource) {
         final URI targetUri;
-        if (VaadinSession.getCurrent() != null) {
-            final StreamResourceRegistry resourceRegistry = VaadinSession
-                    .getCurrent().getResourceRegistry();
+        VaadinSession currentSession = VaadinSession.getCurrent();
+        if (currentSession != null) {
+            final StreamResourceRegistry resourceRegistry = currentSession
+                    .getResourceRegistry();
             targetUri = resourceRegistry.getTargetURI(resource);
         } else {
             targetUri = StreamResourceRegistry.getURI(resource);

@@ -415,6 +415,8 @@ public class ExtendedClientDetails implements Serializable {
      * @return {@code true} if run on IOS , {@code false} if the user is not
      *         using IOS or if no information from the browser is present
      */
+    @SuppressWarnings("NullAway") // VaadinSession.getCurrent() is guaranteed
+                                  // non-null during request handling
     public boolean isIOS() {
         return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
                 || (navigatorPlatform != null

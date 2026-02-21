@@ -20,6 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
@@ -44,7 +46,8 @@ public abstract class AbstractPropertyConfiguration
     }
 
     @Override
-    public String getStringProperty(String name, String defaultValue) {
+    public @Nullable String getStringProperty(String name,
+            @Nullable String defaultValue) {
         return getApplicationOrSystemProperty(name, defaultValue,
                 Function.identity());
     }
@@ -81,7 +84,7 @@ public abstract class AbstractPropertyConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
-    public String getApplicationProperty(String parameterName) {
+    public @Nullable String getApplicationProperty(String parameterName) {
         return getApplicationProperty(getProperties()::get, parameterName);
     }
 
@@ -111,8 +114,8 @@ public abstract class AbstractPropertyConfiguration
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
+    public <T> @Nullable T getApplicationOrSystemProperty(String propertyName,
+            @Nullable T defaultValue, Function<String, T> converter) {
         // Try system properties
         String val = getSystemProperty(propertyName);
         if (val != null) {
@@ -135,7 +138,7 @@ public abstract class AbstractPropertyConfiguration
      *            the Name or the parameter.
      * @return String value or null if not found
      */
-    protected String getSystemProperty(String parameterName) {
+    protected @Nullable String getSystemProperty(String parameterName) {
         // version prefixed with just "vaadin."
         return System.getProperty(VAADIN_PREFIX + parameterName);
     }
@@ -149,8 +152,9 @@ public abstract class AbstractPropertyConfiguration
      *            the name or the parameter.
      * @return String value or null if not found
      */
-    protected String getApplicationProperty(
-            Function<String, String> valueProvider, String propertyName) {
+    protected @Nullable String getApplicationProperty(
+            Function<String, @Nullable String> valueProvider,
+            String propertyName) {
         String val = valueProvider.apply(propertyName);
         if (val != null) {
             return val;

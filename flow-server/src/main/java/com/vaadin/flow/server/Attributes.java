@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * The {@link Attributes} class represents a set of attributes.
  *
@@ -41,7 +43,7 @@ public class Attributes implements Serializable {
      *            the value to associate with the name, or <code>null</code> to
      *            remove a previous association.
      */
-    public void setAttribute(String name, Object value) {
+    public void setAttribute(String name, @Nullable Object value) {
         if (name == null) {
             throw new IllegalArgumentException("name can not be null");
         }
@@ -72,7 +74,7 @@ public class Attributes implements Serializable {
      *            the value to associate with the type, or <code>null</code> to
      *            remove a previous association.
      */
-    public <T> void setAttribute(Class<T> type, T value) {
+    public <T> void setAttribute(Class<T> type, @Nullable T value) {
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }
@@ -94,7 +96,7 @@ public class Attributes implements Serializable {
      * @return the value, or <code>null</code> if no value has been stored or if
      *         it has been set to null.
      */
-    public Object getAttribute(String name) {
+    public @Nullable Object getAttribute(String name) {
         if (name == null) {
             throw new IllegalArgumentException("name can not be null");
         }
@@ -121,7 +123,7 @@ public class Attributes implements Serializable {
      * @return the value, or <code>null</code> if no value has been stored or if
      *         it has been set to null.
      */
-    public <T> T getAttribute(Class<T> type) {
+    public <T> @Nullable T getAttribute(Class<T> type) {
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }

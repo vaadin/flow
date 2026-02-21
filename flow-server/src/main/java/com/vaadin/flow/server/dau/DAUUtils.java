@@ -80,6 +80,8 @@ public final class DAUUtils {
      * @return {@literal true} if DAU integration is enabled, otherwise
      *         {@literal false}.
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service init
     public static boolean isDauEnabled(VaadinService service) {
         // TODO: force removal of dau.enable system property to check only on
         // flow-build-info?
@@ -316,6 +318,9 @@ public final class DAUUtils {
         return false;
     }
 
+    @SuppressWarnings("NullAway") // service is expected to be non-null or null
+                                  // is intentionally passed to handle both
+                                  // cases
     private static VaadinRequest createVaadinRequest(
             VaadinService defaultVaadinService, HttpServletRequest request) {
         VaadinService service = VaadinService.getCurrent();
@@ -370,6 +375,9 @@ public final class DAUUtils {
      *            the response
      * @return the enforcement result. Never null.
      */
+    @SuppressWarnings("NullAway") // null response is intentional for
+                                  // requestEnd; vaadinResponse may be null if
+                                  // response is null
     public static EnforcementResult trackDAU(VaadinService defaultVaadinService,
             HttpServletRequest request, HttpServletResponse response) {
         assert request != null;

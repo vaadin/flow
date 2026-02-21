@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Used to provide an around-like aspect option around request processing.
  *
@@ -48,7 +50,7 @@ public interface VaadinRequestInterceptor extends Serializable {
      *            exception
      */
     void handleException(VaadinRequest request, VaadinResponse response,
-            VaadinSession vaadinSession, Exception t);
+            @Nullable VaadinSession vaadinSession, Exception t);
 
     /**
      * Called in the finally block of processing a request. Will be called
@@ -62,5 +64,5 @@ public interface VaadinRequestInterceptor extends Serializable {
      *            session
      */
     void requestEnd(VaadinRequest request, VaadinResponse response,
-            VaadinSession session);
+            @Nullable VaadinSession session);
 }

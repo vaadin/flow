@@ -120,9 +120,11 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     @Override
+    @SuppressWarnings("NullAway") // session.getService() is non-null during
+                                  // active request handling
     public Optional<ResponseWriter> synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request,
-            VaadinResponse response, String requestBody)
+            VaadinResponse response, @Nullable String requestBody)
             throws IOException, UnsupportedOperationException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {

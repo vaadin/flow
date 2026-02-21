@@ -510,11 +510,15 @@ public class RouteConfiguration implements Serializable {
 
     /* Private methods */
 
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() is guaranteed
+                                  // non-null during request handling
     private static RouteRegistry getApplicationRegistry() {
         return ApplicationRouteRegistry
                 .getInstance(VaadinService.getCurrent().getContext());
     }
 
+    @SuppressWarnings("NullAway") // VaadinSession.getCurrent() is guaranteed
+                                  // non-null during request handling
     private static RouteRegistry getSessionRegistry() {
         return SessionRouteRegistry
                 .getSessionRegistry(VaadinSession.getCurrent());

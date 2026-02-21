@@ -51,6 +51,7 @@ import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -180,14 +181,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private final VaadinResponse response;
         private final VaadinSession session;
         private final UI ui;
-        private final Class<?> pageConfigurationHolder;
+        private final @Nullable Class<?> pageConfigurationHolder;
         private final ApplicationParameterBuilder parameterBuilder;
         private final Location route;
 
-        private String appId;
-        private PushMode pushMode;
-        private ObjectNode applicationParameters;
-        private BootstrapUriResolver uriResolver;
+        private @Nullable String appId;
+        private @Nullable PushMode pushMode;
+        private @Nullable ObjectNode applicationParameters;
+        private @Nullable BootstrapUriResolver uriResolver;
 
         private boolean initTheme = true;
 
@@ -316,6 +317,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @return the desired push mode
          */
+        @SuppressWarnings("NullAway") // service and deployment config are
+                                      // non-null during request handling
         public PushMode getPushMode() {
             if (pushMode == null) {
 
@@ -382,6 +385,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return <code>true</code> if in production mode, <code>false</code>
          *         otherwise.
          */
+        @SuppressWarnings("NullAway") // service and deployment config are
+                                      // non-null during request handling
         public boolean isProductionMode() {
             return getService().getDeploymentConfiguration().isProductionMode();
         }
@@ -466,6 +471,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @param ui
          *            the ui to resolve for
          */
+        @SuppressWarnings("NullAway") // context root path and session are
+                                      // non-null during request handling
         protected BootstrapUriResolver(UI ui) {
             this(ui.getInternals().getContextRootRelativePath(),
                     ui.getSession());
@@ -502,7 +509,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the URI to resolve
          * @return the resolved URI
          */
-        public String resolveVaadinUri(String uri) {
+        public @Nullable String resolveVaadinUri(String uri) {
             return super.resolveVaadinUri(uri, servletPathToContextRoot);
         }
 
@@ -786,6 +793,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the UI for which the UIDL should be generated
          * @return a JSON object with the initial UIDL message
          */
+        @SuppressWarnings("NullAway") // session is non-null during request
+                                      // handling
         private ObjectNode getInitialUidl(UI ui) {
             ObjectNode json = new UidlWriter().createUidl(ui, false);
 
@@ -871,6 +880,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return result;
         }
 
+        @SuppressWarnings("NullAway") // service and deployment config are
+                                      // non-null during request handling
         private void setupFrameworkLibraries(Element head,
                 ObjectNode initialUIDL, BootstrapContext context) {
 
@@ -901,6 +912,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             appendViteNpmBundle(head, service, context);
         }
 
+        @SuppressWarnings("NullAway") // deployment config is non-null during
+                                      // request handling
         private void appendViteNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
             if (!service.getDeploymentConfiguration().isProductionMode()) {
@@ -952,6 +965,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .collect(Collectors.toList());
         }
 
+        @SuppressWarnings("NullAway") // resolveVaadinUri returns non-null for
+                                      // valid context:// URIs
         private String getClientEngineUrl(BootstrapContext context) {
             // use nocache version of client engine if it
             // has been compiled by SDM or eclipse
@@ -979,6 +994,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .resolveVaadinUri("context://" + clientEngine);
         }
 
+        @SuppressWarnings("NullAway") // session, service, and lookup are
+                                      // non-null during request handling
         private ResourceProvider getResourceProvider(BootstrapContext context) {
             ResourceProvider resourceProvider = context.getSession()
                     .getService().getContext().getAttribute(Lookup.class)
@@ -986,7 +1003,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return resourceProvider;
         }
 
-        private String getClientEngine(ResourceProvider resourceProvider) {
+        private @Nullable String getClientEngine(
+                ResourceProvider resourceProvider) {
             // read client engine file name
             try (InputStream prop = resourceProvider
                     .getClientResourceAsStream("META-INF/resources/"
@@ -1066,18 +1084,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return wrapper;
         }
 
-        protected static Element createJavaScriptElement(String sourceUrl,
-                boolean defer) {
+        protected static Element createJavaScriptElement(
+                @Nullable String sourceUrl, boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        protected static Element createJavaScriptModuleElement(String sourceUrl,
-                boolean defer) {
+        protected static Element createJavaScriptModuleElement(
+                @Nullable String sourceUrl, boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "module");
         }
 
-        protected static Element createJavaScriptElement(String sourceUrl,
-                boolean defer, String type) {
+        protected static Element createJavaScriptElement(
+                @Nullable String sourceUrl, boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
@@ -1124,7 +1142,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependencyElement;
         }
 
-        private Element createStylesheetElement(String url) {
+        private Element createStylesheetElement(@Nullable String url) {
             final Element cssElement;
             if (url != null) {
                 cssElement = new Element(Tag.valueOf("link"), "")
@@ -1224,6 +1242,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            Non-null context to provide application parameters for.
          * @return A non-null {@link ObjectNode} with application parameters.
          */
+        @SuppressWarnings("NullAway") // service is non-null during request
+                                      // handling; systemMessages getters may
+                                      // return null but putValueOrNull handles
+                                      // it
         public ObjectNode getApplicationParameters(BootstrapContext context) {
             VaadinRequest request = context.getRequest();
             VaadinSession session = context.getSession();
@@ -1293,7 +1315,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void putValueOrNull(ObjectNode object, String key,
-                String value) {
+                @Nullable String value) {
             assert object != null;
             assert key != null;
             if (value == null) {
@@ -1325,6 +1347,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return Optional.ofNullable(title);
     }
 
+    @SuppressWarnings("NullAway") // session, service, locale, and deployment
+                                  // config are non-null during request handling
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
@@ -1420,6 +1444,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request
      * @return a new bootstrap context instance
      */
+    @SuppressWarnings("NullAway") // session is non-null during request handling
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
             VaadinResponse response, UI ui,
             Function<VaadinRequest, String> contextPathCallback) {
@@ -1427,6 +1452,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 ui.getInternals().getSession(), ui, contextPathCallback);
     }
 
+    @SuppressWarnings("NullAway") // service is non-null during request handling
     protected void setupPushConnectionFactory(
             PushConfiguration pushConfiguration, BootstrapContext context) {
         VaadinService service = context.getSession().getService();
@@ -1452,6 +1478,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request for the UI
      * @return the UI class for the request
      */
+    @SuppressWarnings("NullAway") // service and deployment config are non-null
+                                  // during request handling
     protected static Class<? extends UI> getUIClass(VaadinRequest request) {
         String uiClassName = request.getService().getDeploymentConfiguration()
                 .getUIClassName();
@@ -1496,6 +1524,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
      */
+    @SuppressWarnings("NullAway") // session is non-null during request handling
     protected static ObjectNode getInitialUidl(UI ui) {
         ObjectNode json = new UidlWriter().createUidl(ui, false);
 
@@ -1539,6 +1568,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
+    @SuppressWarnings("NullAway") // service and deployment config are non-null
+                                  // during request handling
     protected static String getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
@@ -1592,6 +1623,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupPwa(document, service.getPwaRegistry());
     }
 
+    @SuppressWarnings("NullAway") // project folder is non-null when stats are
+                                  // being loaded
     protected static ObjectNode getStatsJson(DeploymentConfiguration config)
             throws IOException {
         String statsJson = DevBundleUtils.findBundleStatsJson(
@@ -1630,6 +1663,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @throws IOException
      *             if theme name cannot be extracted from file
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is non-null when
+                                  // bootstrap is running
     protected static Collection<Element> getStylesheetTags(
             VaadinContext context, String fileName) throws IOException {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
@@ -1677,7 +1712,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return the collection of links to be added to the page
      */
     protected static Collection<String> getStylesheetLinks(
-            VaadinContext context, String fileName, File frontendDirectory) {
+            VaadinContext context, String fileName,
+            @Nullable File frontendDirectory) {
         return ThemeUtils.getActiveThemes(context).stream()
                 .filter(theme -> frontendDirectory == null
                         || ThemeUtils.getThemeFolder(frontendDirectory, theme)
@@ -1720,7 +1756,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return element;
     }
 
-    private static void setupPwa(Document document, PwaRegistry registry) {
+    private static void setupPwa(Document document,
+            @Nullable PwaRegistry registry) {
         if (registry == null) {
             return;
         }

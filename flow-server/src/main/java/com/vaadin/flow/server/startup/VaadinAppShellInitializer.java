@@ -89,7 +89,10 @@ public class VaadinAppShellInitializer
      * @param context
      *            the {@link VaadinContext}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // ApplicationConfiguration
+                                                   // is guaranteed to be
+                                                   // available after context
+                                                   // initialization
     public static void init(Set<Class<?>> classes, VaadinContext context) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 

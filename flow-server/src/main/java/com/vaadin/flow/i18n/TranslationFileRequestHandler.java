@@ -163,6 +163,8 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     private void handleMissingI18NProvider(VaadinService service,
             VaadinResponse response) throws IOException {
         String errorMessage = "Missing I18nProvider implementation, loading translations is not supported.";

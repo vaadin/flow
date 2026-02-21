@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
@@ -62,7 +64,7 @@ public class StreamResourceRegistry implements Serializable {
         }
 
         @Override
-        public AbstractStreamResource getResource() {
+        public @Nullable AbstractStreamResource getResource() {
             Optional<AbstractStreamResource> resource = registry
                     .getResource(getResourceUri());
             return resource.isPresent() ? resource.get() : null;

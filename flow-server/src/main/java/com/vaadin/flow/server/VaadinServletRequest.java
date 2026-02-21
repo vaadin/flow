@@ -19,6 +19,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpSession;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Wrapper for {@link HttpServletRequest}.
  *
@@ -48,12 +50,15 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
     }
 
     @Override
+    @SuppressWarnings("NullAway") // getWrappedSession(true) always creates a
+                                  // session, never returns null
     public WrappedSession getWrappedSession() {
         return getWrappedSession(true);
     }
 
     @Override
-    public WrappedSession getWrappedSession(boolean allowSessionCreation) {
+    public @Nullable WrappedSession getWrappedSession(
+            boolean allowSessionCreation) {
         HttpSession session = getSession(allowSessionCreation);
         if (session != null) {
             return new WrappedHttpSession(session);
@@ -86,7 +91,7 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
      * @return the current Vaadin servlet request instance if available,
      *         otherwise <code>null</code>
      */
-    public static VaadinServletRequest getCurrent() {
+    public static @Nullable VaadinServletRequest getCurrent() {
         VaadinRequest currentRequest = VaadinRequest.getCurrent();
         if (currentRequest instanceof VaadinServletRequest) {
             return (VaadinServletRequest) currentRequest;

@@ -366,6 +366,8 @@ public class UI extends Component
      * way to catch UIs that are to be detached. Instead,
      * {@code #onDetach(DetachEvent)} should be overridden.
      */
+    @SuppressWarnings("NullAway") // getService() is non-null for an active
+                                  // session
     public void close() {
         closing = true;
 
@@ -733,6 +735,8 @@ public class UI extends Component
      * @see #getPushConfiguration()
      *
      */
+    @SuppressWarnings("NullAway") // getService() is non-null for an active
+                                  // session
     public void push() {
         VaadinSession session = getSession();
 

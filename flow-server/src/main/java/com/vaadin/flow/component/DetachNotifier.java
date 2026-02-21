@@ -36,6 +36,8 @@ public interface DetachNotifier extends Serializable {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
+    @SuppressWarnings("NullAway") // VaadinSession.getCurrent() is guaranteed
+                                  // non-null during detach event handling
     default Registration addDetachListener(
             ComponentEventListener<DetachEvent> listener) {
         if (this instanceof Component) {

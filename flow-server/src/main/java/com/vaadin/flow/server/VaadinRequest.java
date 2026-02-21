@@ -26,6 +26,8 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.CurrentInstance;
 
 /**
@@ -169,6 +171,7 @@ public interface VaadinRequest {
      *
      * @return the wrapped session for this request
      */
+    @Nullable
     WrappedSession getWrappedSession(boolean allowSessionCreation);
 
     /**
@@ -480,7 +483,7 @@ public interface VaadinRequest {
      * @return the current Vaadin request instance if available, otherwise
      *         <code>null</code>
      */
-    static VaadinRequest getCurrent() {
+    static @Nullable VaadinRequest getCurrent() {
         return CurrentInstance.get(VaadinRequest.class);
     }
 }

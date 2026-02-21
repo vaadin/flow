@@ -84,6 +84,8 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         }
     }
 
+    @SuppressWarnings("NullAway") // UserIdentityContext accepts nullable
+                                  // session per its contract
     private void trackUser(VaadinRequest request, String trackingHash) {
         VaadinSession vaadinSession = VaadinSession.getCurrent();
         String userIdentity = Optional.ofNullable(userIdentitySupplier)
@@ -95,13 +97,13 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
 
     @Override
     public void handleException(VaadinRequest request, VaadinResponse response,
-            VaadinSession vaadinSession, Exception t) {
+            @Nullable VaadinSession vaadinSession, Exception t) {
         // no-op
     }
 
     @Override
     public void requestEnd(VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+            @Nullable VaadinSession session) {
         request.removeAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY);
     }
 

@@ -66,6 +66,8 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         this.ongoingLocationChangeEvent = ongoingLocationChangeEvent;
     }
 
+    @SuppressWarnings("NullAway") // getResolvedPath() is non-null when a
+                                  // navigation target has been resolved
     @Override
     protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> targetType, Router router) {

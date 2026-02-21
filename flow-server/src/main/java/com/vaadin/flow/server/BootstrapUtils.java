@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -181,6 +183,8 @@ class BootstrapUtils {
         }
     }
 
+    @SuppressWarnings("NullAway") // Lookup and ResourceProvider are guaranteed
+                                  // to be available after initialization
     private static InputStream getInlineResourceStream(VaadinService service,
             String file) {
         ResourceProvider resourceProvider = service.getContext()
@@ -232,7 +236,9 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return ui.getInternals().getRouter()
+        @SuppressWarnings("NullAway") // getNavigationTarget() is non-null for
+                                      // resolved navigation states
+        Optional<Class<?>> result = ui.getInternals().getRouter()
                 .resolveRouteNotFoundNavigationTarget().map(state -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
@@ -248,8 +254,11 @@ class BootstrapUtils {
                         return layouts.get(layouts.size() - 1);
                     }
                 });
+        return result;
     }
 
+    @SuppressWarnings("NullAway") // getNavigationTarget() is non-null for
+                                  // resolved navigation states
     private static Class<?> resolveTopParentLayout(
             NavigationState navigationState) {
         Class<? extends RouterLayout> parentLayout = getTopParentLayout(
@@ -261,7 +270,9 @@ class BootstrapUtils {
         return navigationState.getNavigationTarget();
     }
 
-    private static Class<? extends RouterLayout> getTopParentLayout(
+    @SuppressWarnings("NullAway") // getRouteTarget() is non-null for resolved
+                                  // navigation states
+    private static @Nullable Class<? extends RouterLayout> getTopParentLayout(
             NavigationState navigationState) {
         List<Class<? extends RouterLayout>> routeLayouts = navigationState
                 .getRouteTarget().getParentLayouts();

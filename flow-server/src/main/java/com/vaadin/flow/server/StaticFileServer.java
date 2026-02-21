@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +77,7 @@ public class StaticFileServer implements StaticFileHandler {
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
-    private DevModeHandler devModeHandler;
+    private @Nullable DevModeHandler devModeHandler;
 
     // Matches paths to theme files referenced from link tags (e.g. styles
     // .css or document.css)
@@ -103,6 +104,9 @@ public class StaticFileServer implements StaticFileHandler {
      * @param vaadinService
      *            vaadin service for the deployment, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // VaadinService always has a deployment
+                                  // configuration when StaticFileServer is
+                                  // created
     public StaticFileServer(VaadinService vaadinService) {
         this.vaadinService = vaadinService;
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
@@ -247,6 +251,8 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // getClassLoader() and getProjectFolder() are
+                                  // guaranteed non-null at serving time
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
@@ -386,6 +392,9 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration(),
+                                  // getClassLoader(), and getProjectFolder()
+                                  // are guaranteed non-null at serving time
     private static URL findAssetInFrontendThemesOrDevBundle(
             VaadinService vaadinService, String assetPath) throws IOException {
         DeploymentConfiguration deploymentConfiguration = vaadinService
@@ -462,7 +471,7 @@ public class StaticFileServer implements StaticFileHandler {
      *         not be exposed
      * @see VaadinService#getStaticResource(String)
      */
-    protected URL getStaticResource(String path) {
+    protected @Nullable URL getStaticResource(String path) {
         return vaadinService.getStaticResource(path);
     }
 

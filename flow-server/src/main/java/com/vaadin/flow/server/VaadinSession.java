@@ -41,6 +41,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,8 +89,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Locale value used for serialization. The signal is the runtime source of
      * truth; this field is only used to persist the value across serialization.
      */
-    private Locale locale = Locale.getDefault();
+    private @Nullable Locale locale = Locale.getDefault();
 
+    @SuppressWarnings("NullAway") // locale is initialized with
+                                  // Locale.getDefault() which is non-null
     private transient SharedValueSignal<Locale> localeSignal = new SharedValueSignal<>(
             locale);
 
@@ -113,11 +116,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private VaadinSessionState state = VaadinSessionState.OPEN;
 
-    private transient WrappedSession session;
+    private transient @Nullable WrappedSession session;
 
-    private transient VaadinService service;
+    private transient @Nullable VaadinService service;
 
-    private transient Lock lock;
+    private transient @Nullable Lock lock;
 
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
@@ -136,13 +139,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final Attributes attributes = new Attributes();
 
-    private transient StreamResourceRegistry resourceRegistry;
+    private transient @Nullable StreamResourceRegistry resourceRegistry;
 
     private long lastUnlocked;
 
     private long lastLocked;
 
-    private transient Transaction sessionScopedTransaction;
+    private transient @Nullable Transaction sessionScopedTransaction;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -180,6 +183,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see jakarta.servlet.http.HttpSessionBindingListener#valueUnbound(HttpSessionBindingEvent)
      */
     @Override
+    @SuppressWarnings("NullAway") // service is guaranteed non-null when session
+                                  // is initialized
     public void valueUnbound(HttpSessionBindingEvent event) {
         // The Vaadin session instance may be not yet initialized properly via
         // {@link #refreshTransients(WrappedSession, VaadinService)}. It happens
@@ -216,6 +221,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         } else {
             // We are not in a request related to this session so we can destroy
             // it as soon as we acquire the lock.
+            // Service is guaranteed non-null here because isInitialized()
+            // returned true above
             service.fireSessionDestroy(this);
         }
         // Vaadin session attribute is removed from HTTP session in two cases:
@@ -315,7 +322,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return the wrapped session for this context
      */
-    public WrappedSession getSession() {
+    public @Nullable WrappedSession getSession() {
         /*
          * This is used to fetch the underlying session and there is no need for
          * having a lock when doing this. On the contrary this is sometimes done
@@ -352,6 +359,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Updates the transient session lock from VaadinService.
      */
+    @SuppressWarnings("NullAway") // service and session are guaranteed non-null
+                                  // when refreshLock is called via
+                                  // refreshTransients
     private void refreshLock() {
         assert lock == null || lock == service.getSessionLock(session)
                 : "Cannot change the lock from one instance to another";
@@ -365,6 +375,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return the deployment configuration
      */
+    @SuppressWarnings("NullAway") // service is always available for sessions in
+                                  // use (checkHasLock ensures session is
+                                  // active)
     public DeploymentConfiguration getConfiguration() {
         checkHasLock();
         return service.getDeploymentConfiguration();
@@ -389,7 +402,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return the locale of this session.
      */
-    public Locale getLocale() {
+    public @Nullable Locale getLocale() {
         checkHasLock();
         return localeSignal.peek();
     }
@@ -546,7 +559,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         <code>null</code>
      * @see #setCurrent(VaadinSession)
      */
-    public static VaadinSession getCurrent() {
+    public static @Nullable VaadinSession getCurrent() {
         return CurrentInstance.get(VaadinSession.class);
     }
 
@@ -567,7 +580,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #getCurrent()
      * @see ThreadLocal
      */
-    public static void setCurrent(VaadinSession session) {
+    public static void setCurrent(@Nullable VaadinSession session) {
         CurrentInstance.set(VaadinSession.class, session);
     }
 
@@ -592,7 +605,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            The UI id
      * @return The UI with the given id or null if not found
      */
-    public UI getUIById(int uiId) {
+    public @Nullable UI getUIById(int uiId) {
         checkHasLock();
         return uIs.get(uiId);
     }
@@ -604,8 +617,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return true if the thread has exclusive access, false otherwise
      */
     public boolean hasLock() {
-        ReentrantLock l = ((ReentrantLock) getLockInstance());
-        return l.isHeldByCurrentThread();
+        Lock l = getLockInstance();
+        if (l == null) {
+            return false;
+        }
+        return ((ReentrantLock) l).isHeldByCurrentThread();
     }
 
     /**
@@ -658,8 +674,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     protected static boolean hasLock(VaadinService service,
             WrappedSession session) {
-        ReentrantLock l = (ReentrantLock) service.getSessionLock(session);
-        return l.isHeldByCurrentThread();
+        Lock l = service.getSessionLock(session);
+        if (l == null) {
+            return false;
+        }
+        return ((ReentrantLock) l).isHeldByCurrentThread();
     }
 
     /**
@@ -695,7 +714,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #lock()
      * @see Lock
      */
-    public Lock getLockInstance() {
+    public @Nullable Lock getLockInstance() {
         return lock;
     }
 
@@ -756,6 +775,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #getLockInstance()
      * @see #hasLock()
      */
+    @SuppressWarnings("NullAway") // Lock is always available for sessions in
+                                  // use
     public void lock() {
         getLockInstance().lock();
         lastLocked = System.currentTimeMillis();
@@ -772,6 +793,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #lock()
      * @see UI#push()
      */
+    @SuppressWarnings("NullAway") // Lock and service are always available for
+                                  // sessions in use
     public void unlock() {
         checkHasLock();
         boolean ultimateRelease = false;
@@ -830,7 +853,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            remove a previous association.
      * @see #getAttribute(String)
      */
-    public void setAttribute(String name, Object value) {
+    public void setAttribute(String name, @Nullable Object value) {
         checkHasLock();
         attributes.setAttribute(name, value);
     }
@@ -856,7 +879,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #getAttribute(Class)
      * @see #setAttribute(String, Object)
      */
-    public <T> void setAttribute(Class<T> type, T value) {
+    public <T> void setAttribute(Class<T> type, @Nullable T value) {
         checkHasLock();
         attributes.setAttribute(type, value);
     }
@@ -872,7 +895,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *         it has been set to null.
      * @see #setAttribute(String, Object)
      */
-    public Object getAttribute(String name) {
+    public @Nullable Object getAttribute(String name) {
         checkHasLock();
         return attributes.getAttribute(name);
     }
@@ -897,7 +920,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #setAttribute(Class, Object)
      * @see #getAttribute(String)
      */
-    public <T> T getAttribute(Class<T> type) {
+    public <T> @Nullable T getAttribute(Class<T> type) {
         checkHasLock();
         return attributes.getAttribute(type);
     }
@@ -932,7 +955,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         uIs.put(ui.getUIId(), ui);
     }
 
-    public VaadinService getService() {
+    public @Nullable VaadinService getService() {
         return service;
     }
 
@@ -1086,6 +1109,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #accessSynchronously(Command)
      * @see UI#access(Command)
      */
+    @SuppressWarnings("NullAway") // Service is always available for sessions in
+                                  // use
     public Future<Void> access(Command command) {
         return getService().accessSession(this, command);
     }
@@ -1123,7 +1148,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws ClassNotFoundException
      *             if the class of the stream object could not be found
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // locale may be null from
+                                                   // old serialized sessions;
+                                                   // SharedValueSignal handles
+                                                   // nullable
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
@@ -1147,6 +1175,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is available when
+                                  // service is initialized
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
         Map<Class<?>, CurrentInstance> instanceMap = CurrentInstance
@@ -1207,7 +1237,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return resource registry
      */
-    public StreamResourceRegistry getResourceRegistry() {
+    public @Nullable StreamResourceRegistry getResourceRegistry() {
         return resourceRegistry;
     }
 

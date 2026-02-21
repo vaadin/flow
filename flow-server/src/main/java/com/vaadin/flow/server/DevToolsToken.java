@@ -47,6 +47,8 @@ public class DevToolsToken implements Serializable {
      * @param vaadinService
      *            Vaadin service instance
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
     static synchronized void init(VaadinService vaadinService) {
         File projectFolder = vaadinService.getDeploymentConfiguration()
                 .getProjectFolder();

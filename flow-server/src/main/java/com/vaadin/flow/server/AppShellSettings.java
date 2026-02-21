@@ -30,6 +30,7 @@ import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -52,11 +53,12 @@ public class AppShellSettings {
         private Position position;
         private Wrapping type;
         private TargetElement target;
-        private String content;
-        private String file;
+        private @Nullable String content;
+        private @Nullable String file;
 
         private InlineElement(TargetElement target, Position position,
-                Wrapping type, String file, String content) {
+                Wrapping type, @Nullable String file,
+                @Nullable String content) {
             this.target = target;
             this.position = position;
             this.content = content;
@@ -69,6 +71,8 @@ public class AppShellSettings {
                     null);
         }
 
+        @SuppressWarnings("NullAway") // When content is null, file is always
+                                      // non-null (one of the two is always set)
         private Element element(VaadinService service) {
             if (content == null) {
                 content = BootstrapUtils.getDependencyContents(service, file);
@@ -102,7 +106,7 @@ public class AppShellSettings {
      *
      * @return used request
      */
-    public VaadinRequest getRequest() {
+    public @Nullable VaadinRequest getRequest() {
         return VaadinRequest.getCurrent();
     }
 
@@ -120,6 +124,8 @@ public class AppShellSettings {
      *
      * @return browser information
      */
+    @SuppressWarnings("NullAway") // Session is always available when UI is
+                                  // current
     public Optional<WebBrowser> getBrowser() {
         return getUi().map(ui -> ui.getSession().getBrowser());
     }
@@ -263,7 +269,7 @@ public class AppShellSettings {
     }
 
     private void addInline(TargetElement target, Position position,
-            Wrapping type, String file, String content) {
+            Wrapping type, @Nullable String file, @Nullable String content) {
         inlines.add(new InlineElement(target, position, type, file, content));
     }
 
@@ -435,7 +441,7 @@ public class AppShellSettings {
                 .collect(Collectors.toList());
     }
 
-    private static Element createElement(String tag, String content,
+    private static Element createElement(String tag, @Nullable String content,
             String... attrs) {
         Element elm = new Element(Tag.valueOf(tag), "");
         if (content != null && !content.isEmpty()) {

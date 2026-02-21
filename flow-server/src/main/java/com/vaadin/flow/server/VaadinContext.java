@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Context in which {@link VaadinService} is running.
  *
@@ -47,7 +49,8 @@ public interface VaadinContext extends Serializable {
      *            value already present. May be {@code null}.
      * @return Value of the specified attribute.
      */
-    <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier);
+    <T> @Nullable T getAttribute(Class<T> type,
+            @Nullable Supplier<T> defaultValueSupplier);
 
     /**
      * Returns value of the specified attribute.
@@ -58,7 +61,7 @@ public interface VaadinContext extends Serializable {
      *            Type of the attribute.
      * @return Value of the specified attribute.
      */
-    default <T> T getAttribute(Class<T> type) {
+    default <T> @Nullable T getAttribute(Class<T> type) {
         return getAttribute(type, null);
     }
 
@@ -76,7 +79,7 @@ public interface VaadinContext extends Serializable {
      *            the attribute value to set, or <code>null</code> to remove the
      *            current value
      */
-    <T> void setAttribute(Class<T> clazz, T value);
+    <T> void setAttribute(Class<T> clazz, @Nullable T value);
 
     /**
      * Sets the attribute value, overriding previously existing one. Values are

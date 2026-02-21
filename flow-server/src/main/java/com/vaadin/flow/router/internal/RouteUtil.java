@@ -643,8 +643,10 @@ public class RouteUtil {
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
      */
-    public static void checkForClientRouteCollisions(VaadinService service,
-            String... flowRouteTemplates)
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() is non-null
+                                  // after service initialization
+    public static void checkForClientRouteCollisions(
+            @Nullable VaadinService service, String... flowRouteTemplates)
             throws InvalidRouteConfigurationException {
         if (service == null
                 || service.getDeploymentConfiguration().isProductionMode()

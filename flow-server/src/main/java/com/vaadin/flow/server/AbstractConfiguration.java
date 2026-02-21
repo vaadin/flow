@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -41,6 +43,9 @@ public interface AbstractConfiguration extends Serializable {
      */
     boolean isProductionMode();
 
+    @SuppressWarnings("NullAway") // frontendFolderPath has a non-null default;
+                                  // getProjectFolder is only null in prod mode
+                                  // where this isn't called
     default File getFrontendFolder() {
         String frontendFolderPath = getStringProperty(
                 FrontendUtils.PARAM_FRONTEND_DIR,
@@ -97,7 +102,8 @@ public interface AbstractConfiguration extends Serializable {
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    String getStringProperty(String name, String defaultValue);
+    @Nullable
+    String getStringProperty(String name, @Nullable String defaultValue);
 
     /**
      * Gets a configured property as a boolean.
@@ -179,6 +185,8 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return build folder name, default {@code target}
      */
+    @SuppressWarnings("NullAway") // Non-null default value ensures non-null
+                                  // return
     default String getBuildFolder() {
         return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
     }
@@ -195,7 +203,7 @@ public interface AbstractConfiguration extends Serializable {
      * @return the folder inside build folder where resources are placed, or
      *         {@code null} if the project folder is unknown.
      */
-    default File getOutputResourceFolder() {
+    default @Nullable File getOutputResourceFolder() {
         File projectFolder = getProjectFolder();
         if (projectFolder == null) {
             return null;
@@ -219,7 +227,7 @@ public interface AbstractConfiguration extends Serializable {
      *
      * @return the project root folder, or {@code null} if unknown
      */
-    default File getProjectFolder() {
+    default @Nullable File getProjectFolder() {
         if (isProductionMode()) {
             return null;
         }
@@ -265,6 +273,8 @@ public interface AbstractConfiguration extends Serializable {
      * @return the folder where resources are stored, typically
      *         {@code src/main/resources}.
      */
+    @SuppressWarnings("NullAway") // Non-null defaults; getProjectFolder
+                                  // available in dev mode where this is called
     default File getJavaResourceFolder() {
         File folder = new File(getStringProperty(
                 Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources"));
@@ -282,6 +292,8 @@ public interface AbstractConfiguration extends Serializable {
      * @return the folder where source files are stored, typically
      *         {@code src/main/java}.
      */
+    @SuppressWarnings("NullAway") // Non-null defaults; getProjectFolder
+                                  // available in dev mode where this is called
     default File getJavaSourceFolder() {
         File folder = new File(getStringProperty(
                 Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"));

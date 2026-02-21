@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +67,15 @@ public class VaadinServlet extends HttpServlet {
 
     public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
 
+    @SuppressWarnings("NullAway.Init") // initialized in init(), non-null after
+                                       // initialization
     private VaadinServletService servletService;
+    @SuppressWarnings("NullAway.Init") // initialized in init(), non-null after
+                                       // initialization
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
-    private static String frontendMapping = null;
+    private static @Nullable String frontendMapping = null;
 
     private static List<Runnable> whenFrontendMappingAvailable = new ArrayList<>();
 
@@ -150,6 +155,8 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
+    @SuppressWarnings("NullAway") // getService() is non-null when called from
+                                  // init() after service creation
     private void detectFrontendMapping() {
         synchronized (VaadinServlet.class) {
             if (frontendMapping != null) {
@@ -234,7 +241,7 @@ public class VaadinServlet extends HttpServlet {
     }
 
     @Override
-    public ServletConfig getServletConfig() {
+    public @Nullable ServletConfig getServletConfig() {
         if (isServletInitialized) {
             return super.getServletConfig();
         }
@@ -250,6 +257,9 @@ public class VaadinServlet extends HttpServlet {
      *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // Lookup and StaticFileHandlerFactory are
+                                  // guaranteed to be available after
+                                  // initialization
     protected StaticFileHandler createStaticFileHandler(
             VaadinService vaadinService) {
         Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
@@ -276,7 +286,7 @@ public class VaadinServlet extends HttpServlet {
      *         <code>null</code>
      *
      */
-    public static VaadinServlet getCurrent() {
+    public static @Nullable VaadinServlet getCurrent() {
         VaadinService vaadinService = CurrentInstance.get(VaadinService.class);
         if (vaadinService instanceof VaadinServletService) {
             VaadinServletService vss = (VaadinServletService) vaadinService;
@@ -295,6 +305,8 @@ public class VaadinServlet extends HttpServlet {
      * @throws ServletException
      *             if creating the deployment configuration fails
      */
+    @SuppressWarnings("NullAway") // getServletConfig() is non-null after
+                                  // servlet initialization
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
         return createDeploymentConfiguration(
@@ -312,6 +324,8 @@ public class VaadinServlet extends HttpServlet {
      *            the context-param and init-param values as properties
      * @return the created deployment configuration
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is guaranteed to
+                                  // be available after context initialization
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
         VaadinServletContext context = new VaadinServletContext(
@@ -635,6 +649,8 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
+    @SuppressWarnings("NullAway") // getServletConfig() is non-null, called from
+                                  // init() after super.init()
     private VaadinServletContext initializeContext() {
         ServletContext servletContext = getServletConfig().getServletContext();
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
@@ -658,7 +674,7 @@ public class VaadinServlet extends HttpServlet {
      *
      * @return the vaadin servlet used for frontend files in development mode
      */
-    public static String getFrontendMapping() {
+    public static @Nullable String getFrontendMapping() {
         return frontendMapping;
     }
 

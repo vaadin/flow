@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +37,13 @@ public class Platform implements Serializable {
      * Memoized Hilla version. null if not yet calculated, empty string if Hilla
      * is not present on the classpath.
      */
-    static String hillaVersion = null;
+    static @Nullable String hillaVersion = null;
 
     /**
      * Memoized Vaadin version. null if not yet calculated, empty string if
      * Vaadin is not present on the classpath.
      */
-    static String vaadinVersion = null;
+    static @Nullable String vaadinVersion = null;
 
     /**
      * Returns the platform version string, e.g., {@code "23.0.0"}.

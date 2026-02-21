@@ -17,6 +17,8 @@ package com.vaadin.flow.server.startup;
 
 import java.util.Enumeration;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -45,7 +47,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
      *            the context to get the configuration for
      * @return the application level configuration for the given {@code context}
      */
-    static ApplicationConfiguration get(VaadinContext context) {
+    static @Nullable ApplicationConfiguration get(VaadinContext context) {
         return context.getAttribute(ApplicationConfiguration.class, () -> {
             Lookup lookup = context.getAttribute(Lookup.class);
             if (lookup == null) {

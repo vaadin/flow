@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Contains the system messages used to notify the user about various critical
  * situations that can occur.
@@ -52,25 +54,25 @@ import java.io.Serializable;
  * @since 1.0
  */
 public class SystemMessages implements Serializable {
-    protected String sessionExpiredURL = null;
+    protected @Nullable String sessionExpiredURL = null;
     protected boolean sessionExpiredNotificationEnabled = false;
-    protected String sessionExpiredCaption = "Session Expired";
-    protected String sessionExpiredMessage = "Take note of any unsaved data, and click here or press ESC key to continue.";
+    protected @Nullable String sessionExpiredCaption = "Session Expired";
+    protected @Nullable String sessionExpiredMessage = "Take note of any unsaved data, and click here or press ESC key to continue.";
 
-    protected String internalErrorURL = null;
+    protected @Nullable String internalErrorURL = null;
     protected boolean internalErrorNotificationEnabled = true;
-    protected String internalErrorCaption = "Internal error";
-    protected String internalErrorMessage = "Please notify the administrator. Take note of any unsaved data, and click here or press ESC to continue.";
+    protected @Nullable String internalErrorCaption = "Internal error";
+    protected @Nullable String internalErrorMessage = "Please notify the administrator. Take note of any unsaved data, and click here or press ESC to continue.";
 
-    protected String cookiesDisabledURL = null;
+    protected @Nullable String cookiesDisabledURL = null;
     protected boolean cookiesDisabledNotificationEnabled = true;
-    protected String cookiesDisabledCaption = "Cookies disabled";
-    protected String cookiesDisabledMessage = "This application requires cookies to function. Please enable cookies in your browser and click here or press ESC to try again.";
+    protected @Nullable String cookiesDisabledCaption = "Cookies disabled";
+    protected @Nullable String cookiesDisabledMessage = "This application requires cookies to function. Please enable cookies in your browser and click here or press ESC to try again.";
 
-    protected String syncErrorURL = null;
+    protected @Nullable String syncErrorURL = null;
     protected boolean syncErrorNotificationEnabled = true;
-    protected String syncErrorCaption = "Synchronization Error";
-    protected String syncErrorMessage = "Your session needs to be refreshed. Click here or press ESC to reload and restore your last saved state.";
+    protected @Nullable String syncErrorCaption = "Synchronization Error";
+    protected @Nullable String syncErrorMessage = "Your session needs to be refreshed. Click here or press ESC to reload and restore your last saved state.";
 
     /**
      * Private constructor
@@ -87,7 +89,7 @@ public class SystemMessages implements Serializable {
      *
      * @return the URL to redirect to, or null to refresh the page
      */
-    public String getSessionExpiredURL() {
+    public @Nullable String getSessionExpiredURL() {
         return sessionExpiredURL;
     }
 
@@ -113,7 +115,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The caption to show or {@code null} to show no caption.
      */
-    public String getSessionExpiredCaption() {
+    public @Nullable String getSessionExpiredCaption() {
         return (sessionExpiredNotificationEnabled ? sessionExpiredCaption
                 : null);
     }
@@ -126,7 +128,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The message to show or {@code null} to show no message.
      */
-    public String getSessionExpiredMessage() {
+    public @Nullable String getSessionExpiredMessage() {
         return (sessionExpiredNotificationEnabled ? sessionExpiredMessage
                 : null);
     }
@@ -139,7 +141,7 @@ public class SystemMessages implements Serializable {
      *
      * @return the URL to redirect to, or null to refresh the page
      */
-    public String getInternalErrorURL() {
+    public @Nullable String getInternalErrorURL() {
         return internalErrorURL;
     }
 
@@ -164,7 +166,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The caption to show or {@code null} to show no caption.
      */
-    public String getInternalErrorCaption() {
+    public @Nullable String getInternalErrorCaption() {
         return (internalErrorNotificationEnabled ? internalErrorCaption : null);
     }
 
@@ -175,7 +177,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The message to show or {@code null} to show no message.
      */
-    public String getInternalErrorMessage() {
+    public @Nullable String getInternalErrorMessage() {
         return (internalErrorNotificationEnabled ? internalErrorMessage : null);
     }
 
@@ -187,7 +189,7 @@ public class SystemMessages implements Serializable {
      *
      * @return the URL to redirect to, or null to refresh the page
      */
-    public String getCookiesDisabledURL() {
+    public @Nullable String getCookiesDisabledURL() {
         return cookiesDisabledURL;
     }
 
@@ -213,7 +215,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The caption to show or {@code null} to show no caption.
      */
-    public String getCookiesDisabledCaption() {
+    public @Nullable String getCookiesDisabledCaption() {
         return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption
                 : null);
     }
@@ -226,7 +228,7 @@ public class SystemMessages implements Serializable {
      *
      * @return The message to show or {@code null} to show no message.
      */
-    public String getCookiesDisabledMessage() {
+    public @Nullable String getCookiesDisabledMessage() {
         return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage
                 : null);
     }
@@ -240,7 +242,7 @@ public class SystemMessages implements Serializable {
      * @return the URL to redirect to, or null to refresh the page
      * @since 25.1
      */
-    public String getSyncErrorURL() {
+    public @Nullable String getSyncErrorURL() {
         return syncErrorURL;
     }
 
@@ -272,7 +274,7 @@ public class SystemMessages implements Serializable {
      * @return The caption to show or {@code null} to show no caption.
      * @since 25.1
      */
-    public String getSyncErrorCaption() {
+    public @Nullable String getSyncErrorCaption() {
         return (syncErrorNotificationEnabled ? syncErrorCaption : null);
     }
 
@@ -285,7 +287,7 @@ public class SystemMessages implements Serializable {
      * @return The message to show or {@code null} to show no message.
      * @since 25.1
      */
-    public String getSyncErrorMessage() {
+    public @Nullable String getSyncErrorMessage() {
         return (syncErrorNotificationEnabled ? syncErrorMessage : null);
     }
 

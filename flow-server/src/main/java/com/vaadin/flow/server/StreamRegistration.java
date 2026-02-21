@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.net.URI;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Stream registration result.
  * <p>
@@ -59,5 +61,6 @@ public interface StreamRegistration extends Serializable {
      *
      * @return resource, or null if resource has been already unregistered
      */
+    @Nullable
     AbstractStreamResource getResource();
 }

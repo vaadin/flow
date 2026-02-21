@@ -48,6 +48,8 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is guaranteed to
+                                  // be available after context initialization
     public DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new DefaultDeploymentConfiguration(
@@ -67,6 +69,8 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
      */
+    @SuppressWarnings("NullAway") // ApplicationConfiguration is guaranteed to
+                                  // be available after context initialization
     public DeploymentConfiguration createPropertyDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new PropertyDeploymentConfiguration(

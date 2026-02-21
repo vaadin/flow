@@ -137,6 +137,8 @@ public final class ErrorHandlerUtil {
                     routeTarget, parentLayouts);
 
             // Build before enter event for setErrorParameter
+            @SuppressWarnings("NullAway") // getRouter() is non-null when error
+                                          // navigation targets are resolved
             NavigationEvent navigationEvent = new NavigationEvent(
                     internals.getRouter(), internals.getActiveViewLocation(),
                     ui, NavigationTrigger.PROGRAMMATIC);
@@ -154,6 +156,8 @@ public final class ErrorHandlerUtil {
         return false;
     }
 
+    @SuppressWarnings("NullAway") // null event is acceptable, createRouteTarget
+                                  // delegates to getOrCreate which ignores it
     private static <T extends HasElement> T getRouteTarget(
             Class<T> routeTargetType, UI ui) {
         Optional<HasElement> currentInstance = ui.getInternals()
