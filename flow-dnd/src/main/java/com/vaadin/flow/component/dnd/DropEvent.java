@@ -17,6 +17,8 @@ package com.vaadin.flow.component.dnd;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
@@ -39,8 +41,8 @@ import com.vaadin.flow.component.dnd.internal.DndUtil;
 public class DropEvent<T extends Component> extends ComponentEvent<T> {
 
     private final EffectAllowed effectAllowed;
-    private final String dropEffect;
-    private final Component dragSourceComponent;
+    private final @Nullable String dropEffect;
+    private final @Nullable Component dragSourceComponent;
 
     /**
      * Creates a server side drop event.
@@ -89,7 +91,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      * @return the drop effect set to the drop target, or null if nothing set
      * @see DropTarget#setDropEffect(DropEffect)
      */
-    public DropEffect getDropEffect() {
+    public @Nullable DropEffect getDropEffect() {
         return dropEffect == null ? null : DropEffect.fromString(dropEffect);
     }
 

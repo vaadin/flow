@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.dnd;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
@@ -67,7 +69,7 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
      * @see DropEvent#getDragData()
      * @see DragEndEvent#clearDragData()
      */
-    public void setDragData(Object data) {
+    public void setDragData(@Nullable Object data) {
         DragSource.configure(getComponent()).setDragData(data);
     }
 }

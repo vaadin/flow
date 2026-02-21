@@ -18,6 +18,8 @@ package com.vaadin.flow.component.dnd;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
@@ -183,7 +185,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#drageffects">
      *      MDN web docs</a> for more information.
      */
-    default void setDropEffect(DropEffect dropEffect) {
+    default void setDropEffect(@Nullable DropEffect dropEffect) {
         if (!Objects.equals(getDropEffect(), dropEffect)) {
             if (dropEffect == null) {
                 getElement()
@@ -201,7 +203,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @return The drop effect of this drop target or {@code null} if none set
      * @see #setDropEffect(DropEffect)
      */
-    default DropEffect getDropEffect() {
+    default @Nullable DropEffect getDropEffect() {
         String dropEffect = getElement()
                 .getProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY, null);
         return dropEffect == null ? null : DropEffect.fromString(dropEffect);

@@ -17,6 +17,7 @@ package com.vaadin.flow.component.dnd;
 
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -241,7 +242,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see DragStartEvent#setDragData(Object)
      * @see DragEndEvent#clearDragData()
      */
-    default void setDragData(Object data) {
+    default void setDragData(@Nullable Object data) {
         ComponentUtil.setData(getDragSourceComponent(),
                 DndUtil.DRAG_SOURCE_DATA_KEY, data);
     }
@@ -253,7 +254,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *
      * @return Server side drag data if set, otherwise {@literal null}.
      */
-    default Object getDragData() {
+    default @Nullable Object getDragData() {
         return ComponentUtil.getData(getDragSourceComponent(),
                 DndUtil.DRAG_SOURCE_DATA_KEY);
     }
@@ -321,7 +322,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @param dragImage
      *            the image to be used as drag image or null to remove it
      */
-    default void setDragImage(Component dragImage) {
+    default void setDragImage(@Nullable Component dragImage) {
         setDragImage(dragImage, 0, 0);
     }
 
@@ -346,7 +347,8 @@ public interface DragSource<T extends Component> extends HasElement {
      * @param offsetY
      *            the y-offset of the drag image
      */
-    default void setDragImage(Component dragImage, int offsetX, int offsetY) {
+    default void setDragImage(@Nullable Component dragImage, int offsetX,
+            int offsetY) {
         if (dragImage != null && !dragImage.isVisible()) {
             throw new IllegalStateException(
                     "Drag image element is not visible and will not show.\nMake element visible to use as drag image!");
@@ -406,7 +408,7 @@ public interface DragSource<T extends Component> extends HasElement {
      *
      * @return Server side drag image if set, otherwise {@literal null}.
      */
-    default Component getDragImage() {
+    default @Nullable Component getDragImage() {
         return (Component) ComponentUtil.getData(getDragSourceComponent(),
                 DndUtil.DRAG_SOURCE_IMAGE);
     }
