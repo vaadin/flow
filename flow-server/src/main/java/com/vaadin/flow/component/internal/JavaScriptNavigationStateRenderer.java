@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +46,9 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     static final String NOT_SUPPORT_REROUTE = "BeforeEvent.rerouteTo() with a client side route is not supported";
 
-    private String clientForwardRoute;
+    private @Nullable String clientForwardRoute;
 
-    private ContinueNavigationAction continueNavigationAction;
+    private @Nullable ContinueNavigationAction continueNavigationAction;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -65,7 +66,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
      *
      * @return the client forward route.
      */
-    public String getClientForwardRoute() {
+    public @Nullable String getClientForwardRoute() {
         return clientForwardRoute;
     }
 
@@ -100,6 +101,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     }
 
     @Override
+    @SuppressWarnings("NullAway") // session is always set during navigation
     protected boolean shouldPushHistoryState(NavigationEvent event) {
         if (event.getUI().getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled()) {

@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.AbstractConfiguration;
@@ -60,7 +62,7 @@ public class ComponentTracker {
     private static final AtomicLong createOrdinal = new AtomicLong(0);
     private static final AtomicLong attachOrdinal = new AtomicLong(0);
 
-    private static Boolean disabled = null;
+    private static @Nullable Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
@@ -77,29 +79,29 @@ public class ComponentTracker {
     public static class Location implements Serializable {
         private static final Pattern MAYBE_INNER_CLASS = Pattern
                 .compile("(.*\\.[^$.]+)\\$[^.]+$");
-        private final String className;
-        private final String filename;
-        private final String methodName;
+        private final @Nullable String className;
+        private final @Nullable String filename;
+        private final @Nullable String methodName;
         private final int lineNumber;
         private long ordinal;
 
-        public Location(String className, String filename, String methodName,
-                int lineNumber) {
+        public Location(@Nullable String className, @Nullable String filename,
+                @Nullable String methodName, int lineNumber) {
             this.className = className;
             this.filename = filename;
             this.methodName = methodName;
             this.lineNumber = lineNumber;
         }
 
-        public String className() {
+        public @Nullable String className() {
             return className;
         }
 
-        public String filename() {
+        public @Nullable String filename() {
             return filename;
         }
 
-        public String methodName() {
+        public @Nullable String methodName() {
             return methodName;
         }
 
@@ -146,15 +148,20 @@ public class ComponentTracker {
          *            the application configuration
          * @return the source file the location refers to, or {@code null}
          */
-        public File findSourceFile(AbstractConfiguration configuration) {
+        public @Nullable File findSourceFile(
+                AbstractConfiguration configuration) {
             String cls = className();
-            int indexOfExt = filename().lastIndexOf(".");
-            String ext = filename().substring(indexOfExt);
+            String fn = filename();
+            if (cls == null || fn == null) {
+                return null;
+            }
+            int indexOfExt = fn.lastIndexOf(".");
+            String ext = fn.substring(indexOfExt);
             if (!ext.equals(".java") && !ext.equals(".kt")) {
                 return null;
             }
 
-            String filenameNoExt = filename().substring(0, indexOfExt);
+            String filenameNoExt = fn.substring(0, indexOfExt);
 
             if (!cls.endsWith(filenameNoExt)) {
                 // Check for inner class
@@ -194,7 +201,7 @@ public class ComponentTracker {
      *            the component to find
      * @return the location where the component was created
      */
-    public static Location findCreate(Component component) {
+    public static @Nullable Location findCreate(Component component) {
         return computeFilteredLocation(component, createLocation,
                 createThrowable, null, createOrdinal);
     }
@@ -207,7 +214,8 @@ public class ComponentTracker {
      *            the component to find
      * @return the locations involved in creating the component
      */
-    public static Location[] findCreateLocations(Component component) {
+    public static Location @Nullable [] findCreateLocations(
+            Component component) {
         return computeAllLocations(component, createLocations, createThrowable,
                 createOrdinal);
     }
@@ -239,7 +247,7 @@ public class ComponentTracker {
      *            the component to find
      * @return the location where the component was attached
      */
-    public static Location findAttach(Component component) {
+    public static @Nullable Location findAttach(Component component) {
         return computeFilteredLocation(component, attachLocation,
                 attachThrowable, findCreate(component), attachOrdinal);
     }
@@ -252,7 +260,8 @@ public class ComponentTracker {
      *            the component to find
      * @return the locations involved in creating the component
      */
-    public static Location[] findAttachLocations(Component component) {
+    public static Location @Nullable [] findAttachLocations(
+            Component component) {
         return computeAllLocations(component, attachLocations, attachThrowable,
                 attachOrdinal);
     }
@@ -327,7 +336,7 @@ public class ComponentTracker {
         Map<Component, Location> updatedLocations = new HashMap<>();
         for (Component c : targetRef.keySet()) {
             Location l = targetRef.get(c);
-            if (needsUpdate(l, referenceLocation)) {
+            if (l != null && needsUpdate(l, referenceLocation)) {
                 updatedLocations.put(c, updateLocation(l, offset));
             }
         }
@@ -340,6 +349,9 @@ public class ComponentTracker {
         Map<Component, Location[]> updatedLocations = new HashMap<>();
         for (Component c : targetRef.keySet()) {
             Location[] locations = targetRef.get(c);
+            if (locations == null) {
+                continue;
+            }
 
             for (int i = 0; i < locations.length; i++) {
                 if (needsUpdate(locations[i], referenceLocation)) {
@@ -351,15 +363,19 @@ public class ComponentTracker {
         targetRef.putAll(updatedLocations);
     }
 
-    private static boolean isNavigatorCreate(Location location) {
-        return location.className()
-                .equals(AbstractNavigationStateRenderer.class.getName());
+    private static boolean isNavigatorCreate(@Nullable Location location) {
+        return location != null && AbstractNavigationStateRenderer.class
+                .getName().equals(location.className());
     }
 
     private static Location[] findRelevantLocations(Location[] locations) {
         return Stream.of(locations).filter(location -> {
+            String cn = location.className();
+            if (cn == null) {
+                return true;
+            }
             for (String prefixToSkip : prefixesToSkip) {
-                if (location.className().startsWith(prefixToSkip)) {
+                if (cn.startsWith(prefixToSkip)) {
                     return false;
                 }
             }
@@ -367,15 +383,19 @@ public class ComponentTracker {
         }).toArray(Location[]::new);
     }
 
-    private static Location findRelevantLocation(
-            Class<? extends Component> excludeClass, Location[] locations,
-            Location preferredClass) {
+    private static @Nullable Location findRelevantLocation(
+            @Nullable Class<? extends Component> excludeClass,
+            Location[] locations, @Nullable Location preferredClass) {
         List<Location> candidates = Arrays.stream(locations)
                 .filter(location -> excludeClass == null
-                        || !location.className().equals(excludeClass.getName()))
+                        || !excludeClass.getName().equals(location.className()))
                 .filter(location -> {
+                    String cn = location.className();
+                    if (cn == null) {
+                        return true;
+                    }
                     for (String prefixToSkip : prefixesToSkip) {
-                        if (location.className().startsWith(prefixToSkip)) {
+                        if (cn.startsWith(prefixToSkip)) {
                             return false;
                         }
                     }
@@ -383,8 +403,8 @@ public class ComponentTracker {
                 }).collect(Collectors.toList());
         if (preferredClass != null) {
             Optional<Location> preferredCandidate = candidates.stream()
-                    .filter(location -> location.className()
-                            .equals(preferredClass.className()))
+                    .filter(location -> Objects.equals(location.className(),
+                            preferredClass.className()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
                 return preferredCandidate.get();
@@ -450,9 +470,10 @@ public class ComponentTracker {
      *            reference location for filtering (or null)
      * @return the computed location or null
      */
-    private static Location computeFilteredLocation(Component component,
-            Map<Component, Location> locationCache,
-            Map<Component, Throwable> throwableMap, Location referenceLocation,
+    private static @Nullable Location computeFilteredLocation(
+            Component component, Map<Component, Location> locationCache,
+            Map<Component, Throwable> throwableMap,
+            @Nullable Location referenceLocation,
             AtomicLong ordinalRefCounter) {
         // Check cache first
         Location cached = locationCache.get(component);
@@ -477,7 +498,9 @@ public class ComponentTracker {
                     : findRelevantLocation(null, relevantLocations, null);
         }
         setAndIncrementOrdinal(location, ordinalRefCounter);
-        locationCache.put(component, location);
+        if (location != null) {
+            locationCache.put(component, location);
+        }
         return location;
     }
 
@@ -492,8 +515,8 @@ public class ComponentTracker {
      *            the map containing Throwables
      * @return array of all locations or null
      */
-    private static Location[] computeAllLocations(Component component,
-            Map<Component, Location[]> locationsCache,
+    private static Location @Nullable [] computeAllLocations(
+            Component component, Map<Component, Location[]> locationsCache,
             Map<Component, Throwable> throwableMap,
             AtomicLong ordinalRefCounter) {
         // Check cache first
@@ -516,7 +539,7 @@ public class ComponentTracker {
         return locations;
     }
 
-    private static void setAndIncrementOrdinal(Location location,
+    private static void setAndIncrementOrdinal(@Nullable Location location,
             AtomicLong ordinalRefCounter) {
         if (location == null) {
             return;
@@ -524,7 +547,8 @@ public class ComponentTracker {
         location.ordinal = ordinalRefCounter.getAndIncrement();
     }
 
-    private static Location toLocation(StackTraceElement stackTraceElement) {
+    private static @Nullable Location toLocation(
+            @Nullable StackTraceElement stackTraceElement) {
         if (stackTraceElement == null) {
             return null;
         }

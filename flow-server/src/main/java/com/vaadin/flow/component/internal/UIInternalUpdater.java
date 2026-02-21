@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -41,7 +43,8 @@ public interface UIInternalUpdater extends Serializable {
      * @param newRoot
      *            the new root to be added
      */
-    default void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
+    default void updateRoot(UI ui, @Nullable HasElement oldRoot,
+            HasElement newRoot) {
 
         Element wrapperElement = ui.getInternals().getWrapperElement();
         // server-side routing

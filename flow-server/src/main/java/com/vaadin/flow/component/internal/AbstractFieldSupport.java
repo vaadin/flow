@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
@@ -61,7 +63,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
 
     private boolean presentationUpdateInProgress;
     private boolean valueSetFromPresentationUpdate;
-    private T pendingValueFromPresentation;
+    private @Nullable T pendingValueFromPresentation;
 
     private boolean valueSetFromSignal;
 
@@ -237,6 +239,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         }
     }
 
+    @SuppressWarnings("NullAway") // pendingValueFromPresentation is always set
+                                  // when pendingInternalUpdated is true
     private void setValue(T newValue, boolean fromInternal,
             boolean fromClient) {
         if (fromClient && component.isReadOnly()) {

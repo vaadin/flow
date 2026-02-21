@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -105,7 +106,8 @@ public class UIInternals implements Serializable {
     private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
             .newKeySet();
 
-    private static Set<String> bundledImports = BundleUtils.loadBundleImports();
+    private static @Nullable Set<String> bundledImports = BundleUtils
+            .loadBundleImports();
 
     /**
      * A {@link Page#executeJs(String, Object...)} invocation that has not yet
@@ -168,7 +170,7 @@ public class UIInternals implements Serializable {
 
     private final StateTree stateTree;
 
-    private PushConnection pushConnection = null;
+    private @Nullable PushConnection pushConnection = null;
 
     /**
      * Timestamp for keeping track of the last heartbeat of the related UI.
@@ -188,27 +190,27 @@ public class UIInternals implements Serializable {
 
     private final UIInternalUpdater internalsHandler;
 
-    private String title;
+    private @Nullable String title;
 
-    private String appShellTitle;
+    private @Nullable String appShellTitle;
 
-    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
+    private @Nullable PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
-    private Location lastHandledNavigation = null;
+    private @Nullable Location lastHandledNavigation = null;
 
-    private Location locationForRefresh = null;
+    private @Nullable Location locationForRefresh = null;
 
-    private ContinueNavigationAction continueNavigationAction = null;
+    private @Nullable ContinueNavigationAction continueNavigationAction = null;
 
     /**
      * The Vaadin session to which the related UI belongs.
      */
-    private volatile VaadinSession session;
+    private volatile @Nullable VaadinSession session;
 
     private final DependencyList dependencyList = new DependencyList();
 
@@ -216,23 +218,23 @@ public class UIInternals implements Serializable {
 
     private final ConstantPool constantPool = new ConstantPool();
 
-    private byte[] lastProcessedMessageHash = null;
+    private byte @Nullable [] lastProcessedMessageHash = null;
 
-    private String lastRequestResponse;
+    private @Nullable String lastRequestResponse;
 
-    private String contextRootRelativePath;
+    private @Nullable String contextRootRelativePath;
 
-    private String appId;
+    private @Nullable String appId;
 
-    private String fullAppId;
+    private @Nullable String fullAppId;
 
-    private Component activeDragSourceComponent;
+    private @Nullable Component activeDragSourceComponent;
 
-    private ExtendedClientDetails extendedClientDetails = null;
+    private @Nullable ExtendedClientDetails extendedClientDetails = null;
 
-    private ArrayDeque<Component> modalComponentStack;
+    private @Nullable ArrayDeque<Component> modalComponentStack;
 
-    private Element wrapperElement;
+    private @Nullable Element wrapperElement;
 
     /**
      * Creates a new instance for the given UI.
@@ -291,7 +293,7 @@ public class UIInternals implements Serializable {
      * @return the hash as a byte array, or <code>null</code> if no hash has
      *         been set
      */
-    public byte[] getLastProcessedMessageHash() {
+    public byte @Nullable [] getLastProcessedMessageHash() {
         return lastProcessedMessageHash;
     }
 
@@ -307,7 +309,7 @@ public class UIInternals implements Serializable {
      */
     public void setLastProcessedClientToServerId(
             int lastProcessedClientToServerId,
-            byte[] lastProcessedMessageHash) {
+            byte @Nullable [] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
     }
@@ -318,7 +320,7 @@ public class UIInternals implements Serializable {
      * @param lastRequestResponse
      *            The request that was sent for the last UIDL request.
      */
-    public void setLastRequestResponse(String lastRequestResponse) {
+    public void setLastRequestResponse(@Nullable String lastRequestResponse) {
         this.lastRequestResponse = lastRequestResponse;
     }
 
@@ -327,7 +329,7 @@ public class UIInternals implements Serializable {
      *
      * @return The request that was sent for the last UIDL request.
      */
-    public String getLastRequestResponse() {
+    public @Nullable String getLastRequestResponse() {
         return lastRequestResponse;
     }
 
@@ -421,7 +423,8 @@ public class UIInternals implements Serializable {
                 .toArray(new Class<?>[0]);
     }
 
-    private static String getSessionDetails(VaadinSession session) {
+    private static @Nullable String getSessionDetails(
+            @Nullable VaadinSession session) {
         if (session == null) {
             return null;
         } else {
@@ -441,7 +444,7 @@ public class UIInternals implements Serializable {
      *             if the session has already been set
      * @see #getSession()
      */
-    public void setSession(VaadinSession session) {
+    public void setSession(@Nullable VaadinSession session) {
         if (session == null && this.session == null) {
             throw new IllegalStateException(
                     "Session should never be set to null when UI.session is already null");
@@ -483,7 +486,7 @@ public class UIInternals implements Serializable {
      * @return the push connection used by the UI, or {@code null} if push is
      *         not available.
      */
-    public PushConnection getPushConnection() {
+    public @Nullable PushConnection getPushConnection() {
         assert !(ui.getPushConfiguration().getPushMode().isEnabled()
                 && pushConnection == null);
         return pushConnection;
@@ -499,7 +502,7 @@ public class UIInternals implements Serializable {
      * @param pushConnection
      *            the push connection to use for the UI
      */
-    public void setPushConnection(PushConnection pushConnection) {
+    public void setPushConnection(@Nullable PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
         assert (pushConnection == null)
@@ -556,6 +559,8 @@ public class UIInternals implements Serializable {
         return addListener(HeartbeatListener.class, listener);
     }
 
+    @SuppressWarnings("NullAway") // session is always set when listeners are
+                                  // added
     private <E> Registration addListener(Class<E> handler, E listener) {
         session.checkHasLock();
         List<E> list = (List<E>) listeners.computeIfAbsent(handler,
@@ -608,6 +613,8 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add
      */
+    @SuppressWarnings("NullAway") // session is always set when adding
+                                  // invocations
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
@@ -621,6 +628,8 @@ public class UIInternals implements Serializable {
      *
      * @return a list of pending JavaScript invocations
      */
+    @SuppressWarnings("NullAway") // session is set; partitioningBy guarantees
+                                  // both keys
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         session.checkHasLock();
         pendingTitleUpdateCanceler = null;
@@ -666,7 +675,7 @@ public class UIInternals implements Serializable {
     private class PendingJavaScriptInvocationDetachListener implements Command {
         private final Set<PendingJavaScriptInvocation> invocationList = new HashSet<>();
 
-        private Registration registration;
+        private @Nullable Registration registration;
 
         @Override
         public void execute() {
@@ -678,6 +687,8 @@ public class UIInternals implements Serializable {
             }
         }
 
+        @SuppressWarnings("NullAway") // session is always set during invocation
+                                      // lifecycle
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
             session.checkHasLock();
@@ -702,6 +713,8 @@ public class UIInternals implements Serializable {
      * @return the pending javascript invocations, never <code>null</code>
      */
     // Non-private for testing purposes
+    @SuppressWarnings("NullAway") // session is always set when getting
+                                  // invocations
     Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
         session.checkHasLock();
         return pendingJsInvocations.stream()
@@ -742,6 +755,8 @@ public class UIInternals implements Serializable {
         this.title = title;
     }
 
+    @SuppressWarnings("NullAway") // session is always set when generating title
+                                  // script
     private String generateTitleScript() {
         String setTitleScript = """
                     document.title = $0;
@@ -767,7 +782,7 @@ public class UIInternals implements Serializable {
      * @param appShellTitle
      *            the appShellTitle to set
      */
-    public void setAppShellTitle(String appShellTitle) {
+    public void setAppShellTitle(@Nullable String appShellTitle) {
         this.appShellTitle = appShellTitle;
     }
 
@@ -781,7 +796,7 @@ public class UIInternals implements Serializable {
      *
      * @return the page title
      */
-    public String getTitle() {
+    public @Nullable String getTitle() {
         return title;
     }
 
@@ -792,7 +807,7 @@ public class UIInternals implements Serializable {
      *
      * @return the app shell title
      */
-    public String getAppShellTitle() {
+    public @Nullable String getAppShellTitle() {
         return appShellTitle;
     }
 
@@ -838,6 +853,8 @@ public class UIInternals implements Serializable {
      * @param layouts
      *            the parent layouts
      */
+    @SuppressWarnings("NullAway") // session and router are always set during
+                                  // route navigation
     public void showRouteTarget(Location viewLocation, Component target,
             List<RouterLayout> layouts) {
         assert target != null;
@@ -979,7 +996,7 @@ public class UIInternals implements Serializable {
      *
      * @return the VaadinSession to which the related UI is attached
      */
-    public VaadinSession getSession() {
+    public @Nullable VaadinSession getSession() {
         return session;
     }
 
@@ -1037,6 +1054,8 @@ public class UIInternals implements Serializable {
      * @param componentClass
      *            the component class to read annotations from
      */
+    @SuppressWarnings("NullAway") // session is always set when adding
+                                  // dependencies
     public void addComponentDependencies(
             Class<? extends Component> componentClass) {
         Page page = ui.getPage();
@@ -1153,7 +1172,7 @@ public class UIInternals implements Serializable {
      *
      * @return location if navigated during active navigation or {@code null}
      */
-    public Location getLastHandledLocation() {
+    public @Nullable Location getLastHandledLocation() {
         return lastHandledNavigation;
     }
 
@@ -1163,7 +1182,7 @@ public class UIInternals implements Serializable {
      * @param location
      *            last location navigated to
      */
-    public void setLastHandledNavigation(Location location) {
+    public void setLastHandledNavigation(@Nullable Location location) {
         lastHandledNavigation = location;
         if (location != null) {
             setLocationForRefresh(location);
@@ -1194,6 +1213,7 @@ public class UIInternals implements Serializable {
      *            {@code true} to refresh all layouts in the route chain,
      *            {@code false} to only refresh the route instance
      */
+    @SuppressWarnings("NullAway") // router is always set when refreshing routes
     public void refreshCurrentRoute(boolean refreshRouteChain) {
         if (locationForRefresh == null) {
             getLogger().warn("Latest navigation location is not set. "
@@ -1242,7 +1262,7 @@ public class UIInternals implements Serializable {
      *
      * @return continue navigation action object
      */
-    public ContinueNavigationAction getContinueNavigationAction() {
+    public @Nullable ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;
     }
 
@@ -1253,7 +1273,7 @@ public class UIInternals implements Serializable {
      *            continue navigation action to store or null
      */
     public void setContinueNavigationAction(
-            ContinueNavigationAction continueNavigationAction) {
+            @Nullable ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
     }
 
@@ -1276,7 +1296,7 @@ public class UIInternals implements Serializable {
      *
      * @return the id of the application tied with this UI
      */
-    public String getAppId() {
+    public @Nullable String getAppId() {
         return appId;
     }
 
@@ -1287,7 +1307,7 @@ public class UIInternals implements Serializable {
      *
      * @return the full app id
      */
-    public String getFullAppId() {
+    public @Nullable String getFullAppId() {
         return fullAppId;
     }
 
@@ -1298,7 +1318,9 @@ public class UIInternals implements Serializable {
      * @return the router used for this UI, or <code>null</code> if there is no
      *         router or the UI doesn't support navigation.
      */
-    public Router getRouter() {
+    @SuppressWarnings("NullAway") // session is always set when checking
+                                  // navigation
+    public @Nullable Router getRouter() {
         return ui.isNavigationSupported()
                 ? getSession().getService().getRouter()
                 : null;
@@ -1330,7 +1352,7 @@ public class UIInternals implements Serializable {
      *
      * @return the relative path from servlet to context root
      */
-    public String getContextRootRelativePath() {
+    public @Nullable String getContextRootRelativePath() {
         return contextRootRelativePath;
     }
 
@@ -1342,7 +1364,7 @@ public class UIInternals implements Serializable {
      * @since 2.0
      */
     public void setActiveDragSourceComponent(
-            Component activeDragSourceComponent) {
+            @Nullable Component activeDragSourceComponent) {
         this.activeDragSourceComponent = activeDragSourceComponent;
     }
 
@@ -1353,7 +1375,7 @@ public class UIInternals implements Serializable {
      *         active and originated from this UI, {@literal null} otherwise.
      * @since 2.0
      */
-    public Component getActiveDragSourceComponent() {
+    public @Nullable Component getActiveDragSourceComponent() {
         return activeDragSourceComponent;
     }
 
@@ -1408,8 +1430,8 @@ public class UIInternals implements Serializable {
      *
      * @return the current active modal component
      */
-    public Component getActiveModalComponent() {
-        if (hasModalComponent()) {
+    public @Nullable Component getActiveModalComponent() {
+        if (modalComponentStack != null && !modalComponentStack.isEmpty()) {
             return modalComponentStack.peek();
         }
         return null;
@@ -1490,8 +1512,9 @@ public class UIInternals implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // modalComponentStack null-checked by callers
+                                  // before this
     private boolean isTopMostModal(Component child) {
-        // null has been checked in calling code before this
         return !modalComponentStack.isEmpty()
                 && modalComponentStack.peek() == child;
     }
@@ -1515,6 +1538,8 @@ public class UIInternals implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // fullAppId is always set before getting
+                                  // container tag
     public String getContainerTag() {
         return "flow-container-" + getFullAppId().toLowerCase(Locale.ENGLISH);
 
@@ -1525,6 +1550,8 @@ public class UIInternals implements Serializable {
      *
      * @return The Deployment Configuration
      */
+    @SuppressWarnings("NullAway") // session is always set when getting
+                                  // deployment config
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
     }
@@ -1544,7 +1571,7 @@ public class UIInternals implements Serializable {
      * 
      * @return wrapperElement if set else {@code null}
      */
-    public Element getWrapperElement() {
+    public @Nullable Element getWrapperElement() {
         return wrapperElement;
     }
 }

@@ -19,6 +19,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.Key;
@@ -34,7 +36,7 @@ import com.vaadin.flow.component.KeyModifier;
 public abstract class KeyboardEvent extends ComponentEvent<Component> {
 
     private final Key key;
-    private final Key code;
+    private final @Nullable Key code;
     private final KeyLocation location;
 
     private final boolean repeat;
@@ -77,8 +79,8 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            composition session
      */
     public KeyboardEvent(Component source, boolean fromClient, String key,
-            String code, int location, boolean ctrlKey, boolean shiftKey,
-            boolean altKey, boolean metaKey, boolean repeat,
+            @Nullable String code, int location, boolean ctrlKey,
+            boolean shiftKey, boolean altKey, boolean metaKey, boolean repeat,
             boolean composing) {
         super(source, fromClient);
         this.key = Key.of(key);

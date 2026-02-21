@@ -18,6 +18,8 @@ package com.vaadin.flow.component.internal;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 
@@ -30,7 +32,7 @@ import com.vaadin.flow.component.ComponentEvent;
 public abstract class CompositionEvent extends ComponentEvent<Component> {
 
     private final String data;
-    private final Locale locale;
+    private final @Nullable Locale locale;
 
     /**
      * Creates a new composition event.

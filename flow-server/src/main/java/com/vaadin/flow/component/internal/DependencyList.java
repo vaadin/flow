@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,7 +166,8 @@ public class DependencyList implements Serializable {
      *            the type of the dependency
      * @return the dependency, or null if not found
      */
-    public Dependency getDependencyByUrl(String url, Dependency.Type type) {
+    public @Nullable Dependency getDependencyByUrl(String url,
+            Dependency.Type type) {
         Dependency dep = urlToLoadedDependency.get(url);
         if (dep != null && dep.getType() == type) {
             return dep;

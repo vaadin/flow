@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -233,7 +235,7 @@ public class ComponentMetaData {
         return infos.values();
     }
 
-    private static void collectSynchronizedProperties(Class<?> clazz,
+    private static void collectSynchronizedProperties(@Nullable Class<?> clazz,
             Map<String, SynchronizedPropertyInfo> infos) {
         if (clazz == null || clazz.equals(Object.class)) {
             return;

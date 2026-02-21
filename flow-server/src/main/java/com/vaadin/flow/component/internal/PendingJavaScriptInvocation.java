@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -38,8 +39,8 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private final JavaScriptInvocation invocation;
     private final StateNode owner;
 
-    private SerializableConsumer<JsonNode> successHandler;
-    private SerializableConsumer<String> errorHandler;
+    private @Nullable SerializableConsumer<JsonNode> successHandler;
+    private @Nullable SerializableConsumer<String> errorHandler;
 
     private boolean sentToBrowser = false;
     private boolean canceled = false;
@@ -91,8 +92,9 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      */
     public void complete(JsonNode value) {
         assert isSubscribed();
-
-        successHandler.accept(value);
+        if (successHandler != null) {
+            successHandler.accept(value);
+        }
     }
 
     /**
@@ -141,7 +143,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     @Override
     public void then(SerializableConsumer<JsonNode> successHandler,
-            SerializableConsumer<String> errorHandler) {
+            @Nullable SerializableConsumer<String> errorHandler) {
         if (successHandler == null) {
             throw new IllegalArgumentException(
                     "Success handler cannot be null");
@@ -165,8 +167,9 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
     }
 
-    private static <T> SerializableConsumer<T> combineHandlers(
-            SerializableConsumer<T> first, SerializableConsumer<T> second) {
+    private static <T> @Nullable SerializableConsumer<T> combineHandlers(
+            @Nullable SerializableConsumer<T> first,
+            @Nullable SerializableConsumer<T> second) {
         if (first == null) {
             return second;
         } else if (second == null) {

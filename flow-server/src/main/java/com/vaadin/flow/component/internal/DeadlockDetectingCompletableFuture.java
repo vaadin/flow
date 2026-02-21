@@ -20,6 +20,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -42,7 +44,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class DeadlockDetectingCompletableFuture<T>
         extends CompletableFuture<T> {
-    private final VaadinSession session;
+    private final @Nullable VaadinSession session;
 
     /**
      * Creates a new deadlock detecting completable future tied to the given
@@ -52,7 +54,7 @@ public class DeadlockDetectingCompletableFuture<T>
      *            the session to use, or <code>null</code> to not do any
      *            deadlock checking
      */
-    public DeadlockDetectingCompletableFuture(VaadinSession session) {
+    public DeadlockDetectingCompletableFuture(@Nullable VaadinSession session) {
         this.session = session;
     }
 
