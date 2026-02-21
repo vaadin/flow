@@ -20,7 +20,9 @@ import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
@@ -131,7 +133,14 @@ public abstract class AbstractDevModeTest {
 
     protected void setupMockResourceProvider(
             ResourceProvider mockResourceProvider) throws IOException {
-
+        // Expose actual META-INF/frontend resources from the classpath so
+        // that @JsModule files on UI (e.g. page-visibility.js) can be found
+        // during frontend scanning.
+        List<URL> frontendUrls = Collections.list(getClass().getClassLoader()
+                .getResources(Constants.RESOURCES_FRONTEND_DEFAULT));
+        Mockito.when(mockResourceProvider
+                .getApplicationResources(Constants.RESOURCES_FRONTEND_DEFAULT))
+                .thenReturn(frontendUrls);
     }
 
     private void mockApplicationConfiguration(
