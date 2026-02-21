@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
@@ -34,7 +36,7 @@ public class RangeInputElement extends TestBenchElement {
      * @param value
      *            the value to set
      */
-    public void setValue(Double value) {
+    public void setValue(@Nullable Double value) {
         setProperty("value", value);
     }
 
