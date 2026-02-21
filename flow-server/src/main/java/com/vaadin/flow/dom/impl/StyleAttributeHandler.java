@@ -41,9 +41,6 @@ public class StyleAttributeHandler extends CustomAttribute {
         return element.getStyle().getNames().findAny().isPresent();
     }
 
-    // Superclass CustomAttribute is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable String getAttribute(Element element) {
         if (!hasAttribute(element)) {

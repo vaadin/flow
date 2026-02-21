@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -109,7 +111,8 @@ public class ElementUtil {
         }
     }
 
-    private static String getInvalidStylePropertyNameError(String name) {
+    private static @Nullable String getInvalidStylePropertyNameError(
+            String name) {
         if (name == null || name.trim().isEmpty()) {
             return "A style property name cannot be null or empty";
         }
@@ -166,7 +169,8 @@ public class ElementUtil {
         }
     }
 
-    private static String getInvalidStylePropertyValueError(String value) {
+    private static @Nullable String getInvalidStylePropertyValueError(
+            String value) {
         if (value.endsWith(";")) {
             return "A style value cannot end in semicolon";
         }
@@ -226,14 +230,19 @@ public class ElementUtil {
         org.jsoup.nodes.Element target = document
                 .createElement(element.getTag());
         if (element.hasProperty("innerHTML")) {
-            target.html((String) element.getPropertyRaw("innerHTML"));
+            @Nullable
+            Serializable rawInnerHtml = element.getPropertyRaw("innerHTML");
+            if (rawInnerHtml != null) {
+                target.html((String) rawInnerHtml);
+            }
         }
 
         element.getAttributeNames().forEach(name -> {
+            @Nullable
             String attributeValue = element.getAttribute(name);
             if ("".equals(attributeValue)) {
                 target.attr(name, true);
-            } else {
+            } else if (attributeValue != null) {
                 target.attr(name, attributeValue);
             }
         });

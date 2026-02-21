@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -86,7 +88,7 @@ public abstract class CustomAttribute implements Serializable {
      *            the element to check, not <code>null</code>
      * @return the attribute value
      */
-    public abstract String getAttribute(Element element);
+    public abstract @Nullable String getAttribute(Element element);
 
     /**
      * Sets the value when {@link Element#setAttribute(String, String)} is

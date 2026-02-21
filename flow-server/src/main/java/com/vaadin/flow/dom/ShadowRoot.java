@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
@@ -65,10 +67,12 @@ public class ShadowRoot extends Node<ShadowRoot> {
     }
 
     @Override
-    public Node<?> getParentNode() {
+    public @Nullable Node<?> getParentNode() {
         return null;
     }
 
+    // A shadow root always has a host element as its parent
+    @SuppressWarnings("NullAway")
     public Element getHost() {
         Node<?> parent = getStateProvider().getParent(getNode());
         assert parent instanceof Element;

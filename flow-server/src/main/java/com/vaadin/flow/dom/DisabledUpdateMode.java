@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasEnabled;
 
 /**
@@ -52,8 +54,9 @@ public enum DisabledUpdateMode {
      * @return the most permissive mode, or <code>null</code> if both parameters
      *         are <code>null</code>
      */
-    public static DisabledUpdateMode mostPermissive(DisabledUpdateMode mode1,
-            DisabledUpdateMode mode2) {
+    public static @Nullable DisabledUpdateMode mostPermissive(
+            @Nullable DisabledUpdateMode mode1,
+            @Nullable DisabledUpdateMode mode2) {
         if (mode1 == ALWAYS || mode2 == ALWAYS) {
             return ALWAYS;
         } else if (mode1 == ONLY_WHEN_ENABLED || mode2 == ONLY_WHEN_ENABLED) {

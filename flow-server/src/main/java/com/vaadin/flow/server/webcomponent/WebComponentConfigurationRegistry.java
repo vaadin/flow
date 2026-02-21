@@ -383,8 +383,12 @@ public class WebComponentConfigurationRegistry implements Serializable {
         Element copyElement = Element.get(copyNode);
 
         // copy relevant attributes
-        rootElement.getAttributeNames().forEach(name -> copyElement
-                .setAttribute(name, rootElement.getAttribute(name)));
+        rootElement.getAttributeNames().forEach(name -> {
+            String value = rootElement.getAttribute(name);
+            if (value != null) {
+                copyElement.setAttribute(name, value);
+            }
+        });
         rootElement.getChildren().forEach(
                 child -> copyElement.appendChild(copyElementTree(child)));
 

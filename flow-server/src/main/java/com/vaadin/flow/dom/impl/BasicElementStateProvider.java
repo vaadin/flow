@@ -208,9 +208,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 signal);
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable String getAttribute(StateNode node, String attribute) {
         assert attribute != null;
@@ -245,9 +242,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 .map(ElementAttributeMap::attributes).orElseGet(Stream::empty);
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
@@ -277,9 +271,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 .asList(BasicElementStateProvider.get().getProviderFeatures()));
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable Serializable getProperty(StateNode node, String name) {
         assert node != null;
@@ -308,7 +299,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+            @Nullable SerializableConsumer<?> writeCallback) {
         assert owner != null;
         assert name != null;
 
@@ -395,9 +386,6 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 listener);
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable StateNode getShadowRoot(StateNode node) {
         return node.getFeatureIfInitialized(ShadowRootData.class)

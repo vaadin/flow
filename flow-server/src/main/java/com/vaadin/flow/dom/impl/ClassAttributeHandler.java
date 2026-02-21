@@ -37,9 +37,6 @@ public class ClassAttributeHandler extends CustomAttribute {
         return !element.getClassList().isEmpty();
     }
 
-    // Superclass CustomAttribute is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable String getAttribute(Element element) {
         Set<String> classList = element.getClassList();

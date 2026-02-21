@@ -91,9 +91,6 @@ public class BasicTextElementStateProvider
         node.getFeature(TextNodeMap.class).setText(textContent);
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable Node<?> getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);

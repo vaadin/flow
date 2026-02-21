@@ -118,6 +118,7 @@ public interface Style extends Serializable {
      *         property has not been set
      * @see #bind(String, Signal)
      */
+    @Nullable
     String get(String name);
 
     /**
@@ -137,7 +138,7 @@ public interface Style extends Serializable {
      * @return this style instance
      * @see #bind(String, Signal)
      */
-    Style set(String name, String value);
+    Style set(String name, @Nullable String value);
 
     /**
      * Removes the given style property if it has been set.

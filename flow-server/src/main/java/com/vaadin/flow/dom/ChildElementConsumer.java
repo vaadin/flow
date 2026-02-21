@@ -18,6 +18,8 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Callback which allows to handle request to map a client side DOM element to
  * the server {@link Element} instance.
@@ -55,7 +57,8 @@ public interface ChildElementConsumer extends Consumer<Element>, Serializable {
      *            the previous sibling element for the requested element, may be
      *            {@code null}
      */
-    default void onError(Node<?> parent, String tag, Element previousSibling) {
+    default void onError(Node<?> parent, String tag,
+            @Nullable Element previousSibling) {
         if (previousSibling == null) {
             throw new IllegalStateException(String.format(
                     "The element with the tag name '%s' "

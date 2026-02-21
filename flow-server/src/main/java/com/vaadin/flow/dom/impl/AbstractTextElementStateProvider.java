@@ -70,9 +70,6 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable String getAttribute(StateNode node, String attribute) {
         return null;
@@ -129,9 +126,6 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable Serializable getProperty(StateNode node, String name) {
         return null;
@@ -145,7 +139,7 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+            @Nullable SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 
@@ -186,9 +180,6 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable StateNode getShadowRoot(StateNode node) {
         return null;
@@ -201,13 +192,13 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback) {
+            @Nullable Element previousSibling, ChildElementConsumer callback) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void appendVirtualChild(StateNode node, Element child, String type,
-            String payload) {
+            @Nullable String payload) {
         throw new UnsupportedOperationException();
     }
 

@@ -18,6 +18,8 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.EventObject;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * An event fired when the value of a property changes.
  *
@@ -29,8 +31,8 @@ public class PropertyChangeEvent extends EventObject {
 
     private final String propertyName;
 
-    private final Serializable oldValue;
-    private final Serializable value;
+    private final @Nullable Serializable oldValue;
+    private final @Nullable Serializable value;
 
     /**
      * Creates a new {@code PropertyChangeEvent} event containing the current
@@ -47,7 +49,7 @@ public class PropertyChangeEvent extends EventObject {
      *            {@code false} otherwise.
      */
     public PropertyChangeEvent(Element element, String propertyName,
-            Serializable oldValue, boolean userOriginated) {
+            @Nullable Serializable oldValue, boolean userOriginated) {
         super(element);
         this.propertyName = propertyName;
         this.oldValue = oldValue;
@@ -60,7 +62,7 @@ public class PropertyChangeEvent extends EventObject {
      *
      * @return the value previously held by the source of this event
      */
-    public Serializable getOldValue() {
+    public @Nullable Serializable getOldValue() {
         return oldValue;
     }
 
@@ -69,7 +71,7 @@ public class PropertyChangeEvent extends EventObject {
      *
      * @return the new value
      */
-    public Serializable getValue() {
+    public @Nullable Serializable getValue() {
         return value;
     }
 

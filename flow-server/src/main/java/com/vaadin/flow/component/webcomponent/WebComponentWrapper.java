@@ -148,7 +148,10 @@ public class WebComponentWrapper extends Component {
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
                             Element element = getElement();
-                            element.getParent().removeVirtualChild(element);
+                            Element parent = element.getParent();
+                            if (parent != null) {
+                                parent.removeVirtualChild(element);
+                            }
                             var reg = disconnectRegistration;
                             if (reg != null) {
                                 reg.remove();

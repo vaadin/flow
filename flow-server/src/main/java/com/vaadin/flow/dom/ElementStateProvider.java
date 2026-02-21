@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -105,6 +107,7 @@ public interface ElementStateProvider extends Serializable {
      *            the attribute name, not null
      * @return the attribute value or null if the attribute has not been set
      */
+    @Nullable
     String getAttribute(StateNode node, String attribute);
 
     /**
@@ -145,6 +148,7 @@ public interface ElementStateProvider extends Serializable {
      * @return the parent element or null if the element has no parent
      */
     @SuppressWarnings("rawtypes")
+    @Nullable
     Node getParent(StateNode node);
 
     /**
@@ -231,6 +235,7 @@ public interface ElementStateProvider extends Serializable {
      * @return the property value, or <code>null</code> if the property has not
      *         been set
      */
+    @Nullable
     Serializable getProperty(StateNode node, String name);
 
     /**
@@ -282,7 +287,7 @@ public interface ElementStateProvider extends Serializable {
      *             given property
      */
     void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback);
+            @Nullable SerializableConsumer<?> writeCallback);
 
     /**
      * Checks if the given property has been set.
@@ -403,6 +408,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node having a shadow root, not {@code null}
      * @return the shadow root of the {@code node}, may be null
      */
+    @Nullable
     StateNode getShadowRoot(StateNode node);
 
     /**
@@ -433,7 +439,7 @@ public interface ElementStateProvider extends Serializable {
      *            instance or an error will be reported, not {@code null}
      */
     void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback);
+            @Nullable Element previousSibling, ChildElementConsumer callback);
 
     /**
      * Append the given element as a virtual child.
@@ -448,7 +454,7 @@ public interface ElementStateProvider extends Serializable {
      *            the additional payload data
      */
     void appendVirtualChild(StateNode node, Element child, String type,
-            String payload);
+            @Nullable String payload);
 
     /**
      * Visit the {@code node} applying {@code visitor} to it and its descendants

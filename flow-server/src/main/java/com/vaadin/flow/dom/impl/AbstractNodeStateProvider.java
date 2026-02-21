@@ -64,9 +64,6 @@ public abstract class AbstractNodeStateProvider
      */
     protected abstract Class<? extends NodeFeature>[] getProviderFeatures();
 
-    // Interface ElementStateProvider is not @NullMarked; return is genuinely
-    // nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
@@ -141,7 +138,7 @@ public abstract class AbstractNodeStateProvider
 
     @Override
     public void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback) {
+            @Nullable Element previousSibling, ChildElementConsumer callback) {
         if (tagName == null) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
@@ -159,8 +156,11 @@ public abstract class AbstractNodeStateProvider
         StateNode proposedNode = BasicElementStateProvider
                 .createStateNode(tagName);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
+        // previousSibling is @Nullable and intentionally passed as null
+        // to JS when there is no previous sibling
+        @SuppressWarnings("NullAway")
+        Runnable attach = () -> node.runWhenAttached(ui -> ui.getInternals()
+                .getStateTree().beforeClientResponse(node, context -> {
                     node.getFeature(AttachExistingElementFeature.class)
                             .register(getNode(node), previousSibling,
                                     proposedNode, callback);
@@ -169,12 +169,13 @@ public abstract class AbstractNodeStateProvider
                             getNode(node), previousSibling, tagName,
                             proposedNode.getId());
                 }));
+        attach.run();
 
     }
 
     @Override
     public void appendVirtualChild(StateNode node, Element child, String type,
-            String payload) {
+            @Nullable String payload) {
         if (node.hasFeature(VirtualChildrenList.class)) {
             node.getFeature(VirtualChildrenList.class).append(child.getNode(),
                     type, payload);

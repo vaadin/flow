@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
@@ -85,7 +86,7 @@ public interface DomListenerRegistration extends Registration {
      *            clear the filter
      * @return this registration, for chaining
      */
-    DomListenerRegistration setFilter(String filter);
+    DomListenerRegistration setFilter(@Nullable String filter);
 
     /**
      * Gets the currently set filter expression.
@@ -95,6 +96,7 @@ public interface DomListenerRegistration extends Registration {
      * @return the current filter expression, or <code>null</code> if no filter
      *         is in use
      */
+    @Nullable
     String getFilter();
 
     /**
@@ -485,7 +487,8 @@ public interface DomListenerRegistration extends Registration {
      *            the type reference to extract from
      * @return the raw class, or null if it cannot be extracted
      */
-    private static Class<?> extractRawType(TypeReference<?> typeReference) {
+    private static @Nullable Class<?> extractRawType(
+            TypeReference<?> typeReference) {
         if (typeReference.getType() instanceof Class) {
             return (Class<?>) typeReference.getType();
         } else if (typeReference

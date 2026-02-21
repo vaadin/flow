@@ -17,6 +17,8 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
@@ -48,7 +50,7 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public Style set(String name, String value) {
+    public Style set(String name, @Nullable String value) {
         ElementUtil.validateStylePropertyName(name);
         String attribute = StyleUtil.stylePropertyToAttribute(name);
         if (propertyMap.hasSignal(attribute)) {

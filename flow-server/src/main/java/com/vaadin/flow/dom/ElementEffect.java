@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -53,8 +55,8 @@ import com.vaadin.flow.signals.impl.Effect;
 public final class ElementEffect implements Serializable {
     private final EffectAction effectFunction;
     private boolean closed = false;
-    private Effect effect = null;
-    private Registration detachRegistration;
+    private @Nullable Effect effect = null;
+    private @Nullable Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
@@ -66,8 +68,10 @@ public final class ElementEffect implements Serializable {
 
             detachRegistration = owner.addDetachListener(detach -> {
                 disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
+                if (detachRegistration != null) {
+                    detachRegistration.remove();
+                    detachRegistration = null;
+                }
             });
         });
 
@@ -76,8 +80,10 @@ public final class ElementEffect implements Serializable {
 
             detachRegistration = owner.addDetachListener(detach -> {
                 disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
+                if (detachRegistration != null) {
+                    detachRegistration.remove();
+                    detachRegistration = null;
+                }
             });
         }
     }
@@ -257,10 +263,14 @@ public final class ElementEffect implements Serializable {
         // effect runs due to signal changes.
         HashMap<S, Element> valueSignalToChildCache = new HashMap<>();
 
-        return new ElementEffect(parentElement,
+        // Signal.get() is @Nullable per the signals API, but a list signal
+        // always contains a non-null List value.
+        @SuppressWarnings("NullAway")
+        ElementEffect elementEffect = new ElementEffect(parentElement,
                 () -> runEffect(new BindChildrenEffectContext<T, S>(
                         parentElement, list.get(), childFactory,
-                        valueSignalToChildCache)))::close;
+                        valueSignalToChildCache)));
+        return elementEffect::close;
     }
 
     private static <T, S extends Signal<T>> void runEffect(

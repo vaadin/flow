@@ -34,15 +34,13 @@ public class ImmutableEmptyStyle implements Style {
 
     static final String CANT_MODIFY_MESSAGE = "This instance is immutable";
 
-    // Interface Style is not @NullMarked; return is genuinely nullable
-    @SuppressWarnings("NullAway")
     @Override
     public @Nullable String get(String name) {
         return null;
     }
 
     @Override
-    public Style set(String name, String value) {
+    public Style set(String name, @Nullable String value) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 

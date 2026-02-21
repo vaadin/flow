@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -218,7 +219,7 @@ public class Element extends Node<Element> {
      *            empty string
      * @return an element representing the text node, never <code>null</code>
      */
-    public static Element createText(String text) {
+    public static Element createText(@Nullable String text) {
         if (text == null) {
             text = "";
         }
@@ -460,7 +461,7 @@ public class Element extends Node<Element> {
      * @return the value of the attribute or null if the attribute has not been
      *         set
      */
-    public String getAttribute(String attribute) {
+    public @Nullable String getAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -656,7 +657,7 @@ public class Element extends Node<Element> {
      * @return the parent element or null if this element does not have a parent
      *         or the parent is not an element
      */
-    public Element getParent() {
+    public @Nullable Element getParent() {
         Node<?> parent = getParentNode();
         if (parent instanceof Element) {
             return (Element) parent;
@@ -900,7 +901,7 @@ public class Element extends Node<Element> {
      * @see #setProperty(String, String)
      */
     public <T> void bindProperty(String name, Signal<T> signal,
-            SerializableConsumer<T> writeCallback) {
+            @Nullable SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
         getStateProvider().bindPropertySignal(this, name, signal,
@@ -1002,7 +1003,8 @@ public class Element extends Node<Element> {
      *            value is <code>null</code>
      * @return the property value
      */
-    public String getProperty(String name, String defaultValue) {
+    public @Nullable String getProperty(String name,
+            @Nullable String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
             return defaultValue;
@@ -1029,7 +1031,7 @@ public class Element extends Node<Element> {
      *            the property name, not <code>null</code>
      * @return the property value, or <code>null</code> if no value is set
      */
-    public String getProperty(String name) {
+    public @Nullable String getProperty(String name) {
         return getProperty(name, null);
     }
 
@@ -1141,7 +1143,7 @@ public class Element extends Node<Element> {
      *            the property name, not null
      * @return the raw property value, or <code>null</code>
      */
-    public Serializable getPropertyRaw(String name) {
+    public @Nullable Serializable getPropertyRaw(String name) {
         return getStateProvider().getProperty(getNode(), name);
     }
 
@@ -1172,7 +1174,7 @@ public class Element extends Node<Element> {
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
      */
-    public <T> T getPropertyBean(String name, Class<T> type) {
+    public <T> @Nullable T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1211,7 +1213,8 @@ public class Element extends Node<Element> {
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
      */
-    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+    public <T> @Nullable T getPropertyBean(String name,
+            TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1291,7 +1294,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             if a binding has been set on the text content of this element
      */
-    public Element setText(String textContent) {
+    public Element setText(@Nullable String textContent) {
         getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
             if (feature.hasBinding()) {
                 throw new BindingActiveException(
@@ -1303,7 +1306,7 @@ public class Element extends Node<Element> {
         return this;
     }
 
-    private void setTextContent(String textContent) {
+    private void setTextContent(@Nullable String textContent) {
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
@@ -2032,7 +2035,7 @@ public class Element extends Node<Element> {
      * @return the element
      */
     @Deprecated(since = "25.0", forRemoval = true)
-    public Element scrollIntoView(ScrollOptions scrollOptions) {
+    public Element scrollIntoView(@Nullable ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element
         String options = scrollOptions == null ? "" : scrollOptions.toJson();

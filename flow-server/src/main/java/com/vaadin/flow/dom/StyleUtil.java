@@ -40,6 +40,8 @@ public class StyleUtil {
      *            the attribute style
      * @return the property style
      */
+    // SharedUtil methods are @Nullable but never return null for non-null input
+    @SuppressWarnings("NullAway")
     public static String styleAttributeToProperty(String attributeStyle) {
         String propertyStyle;
         if (attributeStyle.startsWith("-")) {
@@ -60,6 +62,8 @@ public class StyleUtil {
      *            the property style
      * @return the attribute style
      */
+    // SharedUtil methods are @Nullable but never return null for non-null input
+    @SuppressWarnings("NullAway")
     public static String stylePropertyToAttribute(String propertyStyle) {
         String attributeStyle = SharedUtil
                 .camelCaseToDashSeparated(propertyStyle);

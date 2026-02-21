@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -46,7 +47,7 @@ public class DomEvent extends EventObject {
 
     private final DebouncePhase phase;
 
-    private final Element eventTarget;
+    private final @Nullable Element eventTarget;
 
     /**
      * Creates a new DOM event.
@@ -84,13 +85,13 @@ public class DomEvent extends EventObject {
         }
     }
 
-    private static Element extractEventTarget(JsonNode eventData,
+    private static @Nullable Element extractEventTarget(JsonNode eventData,
             Element currentTarget) {
         return extractElement(eventData, currentTarget,
                 JsonConstants.MAP_STATE_NODE_EVENT_DATA, false);
     }
 
-    static Element extractElement(JsonNode eventData, Element source,
+    static @Nullable Element extractElement(JsonNode eventData, Element source,
             String key, boolean lookUnderUI) {
         assert key.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
         if (!eventData.has(key)) {
@@ -304,7 +305,7 @@ public class DomEvent extends EventObject {
      *         <code>null</code> if event detail is not present or is null
      * @see DomListenerRegistration#addEventDetail()
      */
-    public <T> T getEventDetail(Class<T> type) {
+    public <T> @Nullable T getEventDetail(Class<T> type) {
         JsonNode detailNode = getDetailNode();
         if (detailNode == null) {
             return null;
@@ -341,7 +342,7 @@ public class DomEvent extends EventObject {
      *         <code>null</code> if event detail is not present or is null
      * @see DomListenerRegistration#addEventDetail()
      */
-    public <T> T getEventDetail(TypeReference<T> typeReference) {
+    public <T> @Nullable T getEventDetail(TypeReference<T> typeReference) {
         JsonNode detailNode = getDetailNode();
         if (detailNode == null) {
             return null;
@@ -360,7 +361,7 @@ public class DomEvent extends EventObject {
      *
      * @return the detail node, or null if no detail data is present
      */
-    private JsonNode getDetailNode() {
+    private @Nullable JsonNode getDetailNode() {
         JsonNode detailNode = eventData.get("event.detail");
         if (detailNode != null && !detailNode.isNull()) {
             // Case 1: event.detail sent as a complete object

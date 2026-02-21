@@ -19,6 +19,8 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -149,7 +151,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+            @Nullable SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 

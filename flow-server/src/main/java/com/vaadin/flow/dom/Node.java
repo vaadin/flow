@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -216,7 +218,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                                 + "be added as a virtual child");
             }
             getStateProvider().appendVirtualChild(getNode(), child,
-                    NodeProperties.IN_MEMORY_CHILD, null);
+                    NodeProperties.IN_MEMORY_CHILD, /* payload */ null);
             ensureChildHasParent(child, true);
         }
 
@@ -527,7 +529,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @return the parent node or null if this element does not have a parent
      */
     @SuppressWarnings("rawtypes")
-    public Node getParentNode() {
+    public @Nullable Node getParentNode() {
         return getStateProvider().getParent(getNode());
     }
 
@@ -557,7 +559,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
