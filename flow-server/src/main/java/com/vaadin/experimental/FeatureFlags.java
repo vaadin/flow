@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,11 +66,12 @@ public class FeatureFlags implements Serializable {
 
     private List<Feature> features = new ArrayList<>();
 
+    @Nullable
     File propertiesFolder = null;
 
     private final Lookup lookup;
 
-    private ApplicationConfiguration configuration;
+    private @Nullable ApplicationConfiguration configuration;
 
     private boolean isPropertiesFileChecked = false;
 
@@ -324,7 +326,7 @@ public class FeatureFlags implements Serializable {
         getLogger().info("Set feature {} to {}", featureId, enabled);
     }
 
-    private File getFeatureFlagFile() {
+    private @Nullable File getFeatureFlagFile() {
         if (propertiesFolder == null) {
             if (configuration == null) {
                 return null;

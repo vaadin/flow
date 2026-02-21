@@ -18,6 +18,8 @@ package com.vaadin.experimental;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.UsageStatistics;
 
 /**
@@ -29,7 +31,7 @@ public final class Feature implements Serializable {
     private final String id;
     private final String moreInfoLink;
     private final boolean requiresServerRestart;
-    private final String componentClassName;
+    private final @Nullable String componentClassName;
     private boolean enabled;
 
     /**
@@ -48,7 +50,8 @@ public final class Feature implements Serializable {
      *            otherwise null
      */
     public Feature(String title, String id, String moreInfoLink,
-            boolean requiresServerRestart, String componentClassName) {
+            boolean requiresServerRestart,
+            @Nullable String componentClassName) {
         this.title = Objects.requireNonNull(title);
         this.id = Objects.requireNonNull(id);
         this.moreInfoLink = moreInfoLink;
@@ -83,7 +86,7 @@ public final class Feature implements Serializable {
         return moreInfoLink;
     }
 
-    public String getComponentClassName() {
+    public @Nullable String getComponentClassName() {
         return componentClassName;
     }
 
