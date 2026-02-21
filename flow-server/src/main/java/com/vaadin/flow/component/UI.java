@@ -109,6 +109,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 @JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 @JsModule("./geolocation.js")
+@JsModule("./page-visibility.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
