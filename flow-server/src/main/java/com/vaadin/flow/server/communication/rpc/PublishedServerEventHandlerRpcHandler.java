@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -293,7 +294,7 @@ public class PublishedServerEventHandlerRpcHandler
         return result;
     }
 
-    private static Object decodeArg(Component instance, Method method,
+    private static Object decodeArg(@Nullable Component instance, Method method,
             Class<?> type, int index, JsonNode argValue) {
         // come up with method to know that it's an id and should be gotten from
         // the model
