@@ -340,6 +340,8 @@ public class ServerRpcHandler implements Serializable {
      *             If the received security key does not match the one stored in
      *             the session.
      */
+    @SuppressWarnings("NullAway") // ui.getSession() is non-null during RPC
+                                  // handling as the session lock is held
     public void handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
@@ -570,12 +572,15 @@ public class ServerRpcHandler implements Serializable {
      *            JSON containing all information needed to execute all
      *            requested RPC calls.
      */
+    @SuppressWarnings("NullAway") // MapSync handler is always registered during
+                                  // initialization
     private void handleInvocations(UI ui, ArrayNode invocationsData) {
         List<JsonNode> data = new ArrayList<>(invocationsData.size());
         List<Runnable> pendingChangeEvents = new ArrayList<>();
 
         RpcInvocationHandler mapSyncHandler = getInvocationHandlers()
                 .get(JsonConstants.RPC_TYPE_MAP_SYNC);
+        assert mapSyncHandler != null : "MapSync handler must be registered";
 
         for (int i = 0; i < invocationsData.size(); i++) {
             JsonNode invocationJson = invocationsData.get(i);
@@ -600,6 +605,8 @@ public class ServerRpcHandler implements Serializable {
         data.forEach(json -> handleInvocationData(ui, json));
     }
 
+    @SuppressWarnings("NullAway") // ui.getSession() is non-null during RPC
+                                  // handling as the session lock is held
     private void runMapSyncTask(UI ui, Runnable runnable) {
         try {
             runnable.run();
@@ -625,6 +632,8 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // ui.getSession() is non-null during RPC
+                                  // handling as the session lock is held
     private static void callErrorHandler(UI ui, JsonNode invocationJson,
             Throwable throwable) {
         StateNode node = ui.getInternals().getStateTree().getNodeById(

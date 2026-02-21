@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -161,8 +162,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
+        @Nullable
+        String pushMapping = BootstrapHandlerHelper
+                .determinePushServletMapping(session);
+        if (pushMapping != null) {
+            pushConfiguration.setPushServletMapping(pushMapping);
+        }
 
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());

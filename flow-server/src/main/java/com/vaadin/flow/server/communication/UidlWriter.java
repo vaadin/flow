@@ -115,6 +115,8 @@ public class UidlWriter implements Serializable {
      *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
      */
+    @SuppressWarnings("NullAway") // ui.getSession() is non-null during UIDL
+                                  // creation as the session lock is held
     public ObjectNode createUidl(UI ui, boolean async, boolean resync) {
         ObjectNode response = JacksonUtils.createObjectNode();
 
@@ -434,6 +436,8 @@ public class UidlWriter implements Serializable {
      * Adds the performance timing data (used by TestBench 3) to the UIDL
      * response.
      */
+    @SuppressWarnings("NullAway") // ui.getSession() is non-null during UIDL
+                                  // creation as the session lock is held
     private ArrayNode createPerformanceData(UI ui) {
         ArrayNode timings = JacksonUtils.createArrayNode();
         timings.add(ui.getSession().getCumulativeRequestDuration());

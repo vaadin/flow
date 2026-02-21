@@ -34,6 +34,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -120,8 +121,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             VaadinService service = context.getSession().getService();
 
             try {
-                Document document = Jsoup.parse(
-                        FrontendUtils.getWebComponentHtmlContent(service));
+                String htmlContent = FrontendUtils
+                        .getWebComponentHtmlContent(service);
+                if (htmlContent == null) {
+                    throw new IOException("Unable to find web-component.html");
+                }
+                Document document = Jsoup.parse(htmlContent);
                 Element head = document.head();
 
                 DeploymentConfiguration deploymentConfiguration = service
@@ -143,8 +148,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                 // Specify the application ID for scripts of the
                 // web-component.html
-                head.select("script[src]").attr("data-app-id",
-                        context.getUI().getInternals().getAppId());
+                String appId = context.getUI().getInternals().getAppId();
+                if (appId != null) {
+                    head.select("script[src]").attr("data-app-id", appId);
+                }
 
                 // Add `crossorigin` to fix basic auth in Safari #6560
                 head.select("script[src], link[href]").attr("crossorigin",
@@ -267,8 +274,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
+        String pushMapping = BootstrapHandlerHelper
+                .determinePushServletMapping(session);
+        if (pushMapping != null) {
+            pushConfiguration.setPushServletMapping(pushMapping);
+        }
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
@@ -451,7 +461,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .setShadowDomElements(elementsForShadows);
     }
 
-    private static String getVaadinFilenameIfVaadinScript(Element element) {
+    private static @Nullable String getVaadinFilenameIfVaadinScript(
+            Element element) {
         if (!"script".equalsIgnoreCase(element.tagName())) {
             return null;
         }
@@ -554,9 +565,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     private String checkURL(String url) {
-        if (url == null) {
-            return null;
-        }
         if (url.contains("\"")) {
             throw new IllegalStateException(
                     "URL '" + url + "' may not contain double quotes");
@@ -637,8 +645,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
-        json.put(ApplicationConstants.UIDL_PUSH_ID,
-                context.getUI().getSession().getPushId());
+        @SuppressWarnings("NullAway") // session is guaranteed non-null during
+                                      // request handling
+        String pushId = context.getUI().getSession().getPushId();
+        json.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
         String responseString = json.toString();
 
         try {

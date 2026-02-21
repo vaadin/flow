@@ -28,6 +28,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
 import org.atmosphere.util.Version;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -50,9 +51,9 @@ public class AtmospherePushConnection
 
     private UI ui;
     private transient State state = State.DISCONNECTED;
-    private transient AtmosphereResource resource;
-    private transient FragmentedMessage incomingMessage;
-    private transient Future<Object> outgoingMessage;
+    private transient @Nullable AtmosphereResource resource;
+    private transient @Nullable FragmentedMessage incomingMessage;
+    private transient @Nullable Future<Object> outgoingMessage;
     private transient Object lock = new Object();
     private volatile boolean disconnecting;
 
@@ -164,7 +165,7 @@ public class AtmospherePushConnection
      *
      * @return the Atmosphere version in use or null if Atmosphere was not found
      */
-    public static String getAtmosphereVersion() {
+    public static @Nullable String getAtmosphereVersion() {
         try {
             String v = Version.getRawVersion();
             assert v != null;
@@ -219,6 +220,8 @@ public class AtmospherePushConnection
      * @param message
      *            The message to send
      */
+    @SuppressWarnings("NullAway") // resource is guaranteed non-null when
+                                  // isConnected() is true
     protected void sendMessage(String message) {
         assert (isConnected());
         // "Broadcast" the changes to the single client only
@@ -245,8 +248,9 @@ public class AtmospherePushConnection
      * @throws IOException
      *             if an IO error occurred
      */
-    protected static Reader receiveMessage(AtmosphereResource resource,
-            Reader reader, FragmentedMessageHolder holder) throws IOException {
+    protected static @Nullable Reader receiveMessage(
+            AtmosphereResource resource, Reader reader,
+            FragmentedMessageHolder holder) throws IOException {
 
         if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
             return reader;
@@ -315,7 +319,7 @@ public class AtmospherePushConnection
      * @return The AtmosphereResource associated with this connection or null if
      *         connection not open.
      */
-    protected AtmosphereResource getResource() {
+    protected @Nullable AtmosphereResource getResource() {
         return resource;
     }
 

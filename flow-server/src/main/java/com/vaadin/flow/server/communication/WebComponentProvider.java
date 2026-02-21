@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -63,7 +64,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     // tag name -> generated html
-    private ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
+    private @Nullable ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -103,7 +104,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        if (componentInfo.getTag() == null) {
+        String tag = componentInfo.getTag();
+        if (tag == null) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for non-custom element with request path {}",
                     pathInfo);
@@ -122,7 +124,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 .getInstance(request.getService().getContext());
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration = registry
-                .getConfiguration(componentInfo.tag);
+                .getConfiguration(tag);
 
         if (optionalWebComponentConfiguration.isPresent()) {
             WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
@@ -270,8 +272,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     }
 
     private static class ComponentInfo implements Serializable {
-        final String tag;
-        final String extension;
+        final @Nullable String tag;
+        final @Nullable String extension;
 
         private ComponentInfo(String pathInfo) {
             Matcher matcher = TAG_PATTERN.matcher(pathInfo);
@@ -288,6 +290,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             }
         }
 
+        @Nullable
         String getTag() {
             return tag;
         }

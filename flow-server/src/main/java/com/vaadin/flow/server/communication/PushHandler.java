@@ -31,6 +31,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -106,6 +107,9 @@ public class PushHandler {
      * open by calling resource.suspend(). If there is a pending push, send it
      * now.
      */
+    @SuppressWarnings("NullAway") // session and connection are guaranteed
+                                  // non-null; UI has session lock held by
+                                  // callWithUi
     private final PushEventCallback establishCallback = (resource, ui) -> {
         getLogger().debug(
                 "New push connection for resource {} with transport {}",
@@ -140,6 +144,8 @@ public class PushHandler {
      * the request and send changed UI state via the push channel (we do not
      * respond to the request directly.)
      */
+    @SuppressWarnings("NullAway") // connection is guaranteed non-null; UI must
+                                  // have a push connection to receive messages
     private final PushEventCallback receiveCallback = (resource, ui) -> {
         getLogger().debug("Received message from resource {}", resource.uuid());
 
@@ -322,8 +328,11 @@ public class PushHandler {
                     // Otherwise we will write the response to the wrong request
                     // when using streaming (the client -> server request
                     // instead of the opened push channel)
-                    errorResource = ((AtmospherePushConnection) ui
+                    AtmosphereResource pushResource = ((AtmospherePushConnection) ui
                             .getInternals().getPushConnection()).getResource();
+                    if (pushResource != null) {
+                        errorResource = pushResource;
+                    }
                 }
 
                 sendNotificationAndDisconnect(errorResource,
@@ -375,7 +384,8 @@ public class PushHandler {
         session.getErrorHandler().error(new ErrorEvent(e));
     }
 
-    private static AtmospherePushConnection getConnectionForUI(UI ui) {
+    private static @Nullable AtmospherePushConnection getConnectionForUI(
+            UI ui) {
         PushConnection pushConnection = ui.getInternals().getPushConnection();
         if (pushConnection instanceof AtmospherePushConnection) {
             return (AtmospherePushConnection) pushConnection;
@@ -405,7 +415,8 @@ public class PushHandler {
         }
     }
 
-    private VaadinSession handleConnectionLost(AtmosphereResourceEvent event) {
+    private @Nullable VaadinSession handleConnectionLost(
+            @Nullable AtmosphereResourceEvent event) {
         if (event == null) {
             getLogger().error("Could not get event. This should never happen.");
             return null;
@@ -529,7 +540,7 @@ public class PushHandler {
         return session;
     }
 
-    private static UI findUiUsingResource(AtmosphereResource resource,
+    private static @Nullable UI findUiUsingResource(AtmosphereResource resource,
             Collection<UI> uIs) {
         for (UI ui : uIs) {
             PushConnection pushConnection = ui.getInternals()
@@ -604,7 +615,7 @@ public class PushHandler {
      * @return {@code true} if the id is valid, {@code false} otherwise
      */
     private static boolean isPushIdValid(VaadinSession session,
-            String requestPushId) {
+            @Nullable String requestPushId) {
 
         String sessionPushId = session.getPushId();
         if (requestPushId == null || !MessageDigest.isEqual(

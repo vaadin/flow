@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
@@ -227,6 +228,9 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return true;
     }
 
+    @SuppressWarnings("NullAway") // AtomicReference.get() returns @Nullable but
+                                  // is guaranteed non-null after
+                                  // compareAndSet
     private ServerRpcHandler getRpcHandler() {
         ServerRpcHandler handler = rpcHandler.get();
         if (handler == null) {
@@ -314,7 +318,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
     }
 
-    private String removeHashInV7Uidl(ObjectNode json) {
+    private @Nullable String removeHashInV7Uidl(ObjectNode json) {
         String removed = null;
         ArrayNode changes = (ArrayNode) json.get(CHANGES);
         for (int i = 0; i < changes.size(); i++) {
@@ -333,7 +337,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return removed;
     }
 
-    private String removeHashInChange(ArrayNode change) {
+    private @Nullable String removeHashInChange(ArrayNode change) {
         if (change.size() < 3
                 || !change.get(2).getNodeType().equals(JsonNodeType.ARRAY)) {
             return null;
@@ -356,7 +360,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return null;
     }
 
-    private String removeHashInRpc(ArrayNode rpc) {
+    private @Nullable String removeHashInRpc(ArrayNode rpc) {
         if (rpc.size() != 4
                 || !rpc.get(1).getNodeType().equals(JsonNodeType.STRING)
                 || !rpc.get(2).getNodeType().equals(JsonNodeType.STRING)

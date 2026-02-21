@@ -31,6 +31,7 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -388,7 +389,7 @@ public class StreamReceiverHandler implements Serializable {
         return DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS;
     }
 
-    static void tryToCloseStream(OutputStream out) {
+    static void tryToCloseStream(@Nullable OutputStream out) {
         try {
             // try to close output stream (e.g. file handle)
             if (out != null) {
@@ -530,7 +531,8 @@ public class StreamReceiverHandler implements Serializable {
 
     private void onStreamingFailed(VaadinSession session, String filename,
             String type, long contentLength, StreamVariable streamVariable,
-            OutputStream out, long totalBytes, final Exception exception) {
+            @Nullable OutputStream out, long totalBytes,
+            final Exception exception) {
         tryToCloseStream(out);
         session.lock();
         try {

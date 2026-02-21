@@ -34,6 +34,7 @@ import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -119,13 +120,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-            UI ui = UI.getCurrent();
+            UI ui = UI.getCurrentOrThrow();
             var flowContainerElement = new Element(
                     ui.getInternals().getContainerTag());
-            flowContainerElement.attr("id", ui.getInternals().getAppId());
+            String appId = ui.getInternals().getAppId();
+            if (appId != null) {
+                flowContainerElement.attr("id", appId);
+            }
             Elements outlet = indexDocument.body().select("#outlet");
             if (!outlet.isEmpty()) {
-                outlet.first().appendChild(flowContainerElement);
+                Element outletElement = outlet.first();
+                if (outletElement == null) {
+                    indexDocument.body().appendChild(flowContainerElement);
+                } else {
+                    outletElement.appendChild(flowContainerElement);
+                }
             } else {
                 indexDocument.body().appendChild(flowContainerElement);
             }
@@ -267,16 +276,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         .value();
                 String themeValue = colorSchemeValue.getThemeValue();
                 if (!themeValue.isEmpty() && !themeValue.equals("normal")) {
-                    Element html = indexDocument.head().parent();
-                    html.attr("theme", themeValue);
-                    String colorSchemeStyle = "color-scheme: "
-                            + colorSchemeValue.getValue() + ";";
-                    String existingStyle = html.attr("style");
-                    if (existingStyle != null && !existingStyle.isBlank()) {
-                        html.attr("style",
-                                existingStyle.trim() + " " + colorSchemeStyle);
-                    } else {
-                        html.attr("style", colorSchemeStyle);
+                    Element html = indexDocument.getElementsByTag("html")
+                            .first();
+                    if (html != null) {
+                        html.attr("theme", themeValue);
+                        String colorSchemeStyle = "color-scheme: "
+                                + colorSchemeValue.getValue() + ";";
+                        String existingStyle = html.attr("style");
+                        if (!existingStyle.isBlank()) {
+                            html.attr("style", existingStyle.trim() + " "
+                                    + colorSchemeStyle);
+                        } else {
+                            html.attr("style", colorSchemeStyle);
+                        }
                     }
                 }
             }
@@ -287,7 +299,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
-                indexDocument.head().parent().attr("theme", variant);
+                Element htmlEl = indexDocument.getElementsByTag("html").first();
+                if (htmlEl != null) {
+                    htmlEl.attr("theme", variant);
+                }
             }
         });
     }
@@ -541,8 +556,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     }
 
-    private static boolean isAllowedDevToolsHost(String remoteAddress,
-            String hostsAllowed, boolean allowLocal) {
+    private static boolean isAllowedDevToolsHost(@Nullable String remoteAddress,
+            @Nullable String hostsAllowed, boolean allowLocal) {
         if (remoteAddress == null || remoteAddress.isBlank()
                 || (hostsAllowed == null && !allowLocal)) {
             // No check needed if the remote address is not available
@@ -608,7 +623,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
         if (context.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(context.getRequest())) {
-            ui.getInternals().getRouter().initializeUI(ui, context.getRoute());
+            var router = ui.getInternals().getRouter();
+            if (router != null) {
+                router.initializeUI(ui, context.getRoute());
+            }
         }
     }
 
@@ -631,7 +649,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (base.isEmpty()) {
             indexDocument.head().prependElement("base").attr("href", baseHref);
         } else {
-            base.first().attr("href", baseHref);
+            Element baseElement = base.first();
+            if (baseElement != null) {
+                baseElement.attr("href", baseHref);
+            }
         }
     }
 

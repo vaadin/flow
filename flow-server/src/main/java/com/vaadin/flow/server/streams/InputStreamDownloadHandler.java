@@ -100,6 +100,10 @@ public class InputStreamDownloadHandler
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
+            if (inputStream == null) {
+                throw new IOException(
+                        "Download callback returned null InputStream");
+            }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {

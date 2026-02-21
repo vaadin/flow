@@ -22,6 +22,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -65,18 +66,21 @@ public class MetadataWriter implements Serializable {
             meta.put(JsonConstants.META_ASYNC, true);
         }
 
-        VaadinSessionState state = ui.getSession().getState();
+        VaadinSession uiSession = ui.getSession();
+        VaadinSessionState state = uiSession != null ? uiSession.getState()
+                : null;
         if (state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0) {
             meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         }
 
         // meta instruction for client to enable auto-forward to
         // sessionExpiredURL after timer expires.
-        if (messages != null && messages.getSessionExpiredMessage() == null
+        if (messages != null && uiSession != null
+                && messages.getSessionExpiredMessage() == null
                 && messages.getSessionExpiredCaption() == null
                 && messages.isSessionExpiredNotificationEnabled()
-                && ui.getSession().getSession() != null) {
-            int newTimeoutInterval = ui.getSession().getSession()
+                && uiSession.getSession() != null) {
+            int newTimeoutInterval = uiSession.getSession()
                     .getMaxInactiveInterval();
             if (repaintAll || (timeoutInterval != newTimeoutInterval)) {
                 String url = messages.getSessionExpiredURL();

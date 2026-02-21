@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,12 +178,17 @@ public final class TransferUtil {
 
                         handleUploadRequest(handler, event);
 
+                        String partFileName = event.getFileName() != null
+                                ? event.getFileName()
+                                : "unknown";
                         if (event.isRejected()) {
+                            String reason = event.getRejectionMessage() != null
+                                    ? event.getRejectionMessage()
+                                    : "";
                             rejectedFiles.add(new UploadResult.RejectedFile(
-                                    event.getFileName(),
-                                    event.getRejectionMessage()));
+                                    partFileName, reason));
                         } else {
-                            acceptedFiles.add(event.getFileName());
+                            acceptedFiles.add(partFileName);
                         }
                     }
                     handler.responseHandled(new UploadResult(true, response,
@@ -202,11 +208,17 @@ public final class TransferUtil {
 
                 handleUploadRequest(handler, event);
 
+                String xhrFileName = event.getFileName() != null
+                        ? event.getFileName()
+                        : "unknown";
                 if (event.isRejected()) {
-                    rejectedFiles.add(new UploadResult.RejectedFile(
-                            event.getFileName(), event.getRejectionMessage()));
+                    String reason = event.getRejectionMessage() != null
+                            ? event.getRejectionMessage()
+                            : "";
+                    rejectedFiles.add(
+                            new UploadResult.RejectedFile(xhrFileName, reason));
                 } else {
-                    acceptedFiles.add(event.getFileName());
+                    acceptedFiles.add(xhrFileName);
                 }
                 handler.responseHandled(new UploadResult(true, response, null,
                         acceptedFiles, rejectedFiles));
@@ -371,12 +383,17 @@ public final class TransferUtil {
      */
     private static void handleUploadRequest(UploadHandler handler,
             UploadEvent event) throws IOException {
+        @Nullable
         Component owner = event.getOwningComponent();
         try {
-            ComponentUtil.fireEvent(owner, new UploadStartEvent(owner));
+            if (owner != null) {
+                ComponentUtil.fireEvent(owner, new UploadStartEvent(owner));
+            }
             handler.handleUploadRequest(event);
         } finally {
-            ComponentUtil.fireEvent(owner, new UploadCompleteEvent(owner));
+            if (owner != null) {
+                ComponentUtil.fireEvent(owner, new UploadCompleteEvent(owner));
+            }
         }
     }
 }

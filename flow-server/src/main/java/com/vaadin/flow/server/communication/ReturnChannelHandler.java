@@ -83,6 +83,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
     protected boolean allowInert(UI ui, JsonNode invocationJson) {
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
+        if (node == null) {
+            return false;
+        }
         // Allow calls if a return channel has been registered for the node.
         return node.getFeatureIfInitialized(ReturnChannelMap.class)
                 .map(ReturnChannelMap::hasChannels).orElse(false);

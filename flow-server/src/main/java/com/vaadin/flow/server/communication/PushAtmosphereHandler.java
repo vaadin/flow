@@ -23,6 +23,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceEventListenerAdapter;
 import org.atmosphere.handler.AbstractReflectorAtmosphereHandler;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
         implements Serializable {
 
-    private PushHandler pushHandler = null;
+    private @Nullable PushHandler pushHandler = null;
 
     public void setPushHandler(PushHandler pushHandler) {
         this.pushHandler = pushHandler;
@@ -86,6 +87,8 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
      * @param resource
      *            the resource through which the message arrived
      */
+    @SuppressWarnings("NullAway") // pushHandler is guaranteed non-null; only
+                                  // called from onRequest after null check
     private void onMessage(AtmosphereResource resource) {
         pushHandler.onMessage(resource);
     }
@@ -97,6 +100,8 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
      * @param resource
      *            the resource which was connected
      */
+    @SuppressWarnings("NullAway") // pushHandler is guaranteed non-null; only
+                                  // called from onRequest after null check
     private void onConnect(AtmosphereResource resource) {
         resource.addEventListener(new AtmosphereResourceListener());
 
@@ -110,7 +115,10 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
         public void onDisconnect(AtmosphereResourceEvent event) {
             // Log event on trace level
             super.onDisconnect(event);
-            pushHandler.connectionLost(event);
+            PushHandler handler = pushHandler;
+            if (handler != null) {
+                handler.connectionLost(event);
+            }
         }
 
         @Override
@@ -123,7 +131,10 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
             } else {
                 getLogger().error("Exception in push connection", throwable);
             }
-            pushHandler.connectionLost(event);
+            PushHandler handler = pushHandler;
+            if (handler != null) {
+                handler.connectionLost(event);
+            }
         }
     }
 }

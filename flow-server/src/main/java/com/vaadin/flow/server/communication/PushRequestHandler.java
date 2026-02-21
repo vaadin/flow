@@ -33,6 +33,7 @@ import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.util.VoidAnnotationProcessor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +88,9 @@ public class PushRequestHandler
 
         pushHandler = createPushHandler(service);
 
-        atmosphere = getPreInitializedAtmosphere(vaadinServletConfig);
-        if (atmosphere == null) {
+        AtmosphereFramework preInitialized = getPreInitializedAtmosphere(
+                vaadinServletConfig);
+        if (preInitialized == null) {
             // Not initialized by JSR356WebsocketInitializer
             getLogger().debug("Initializing Atmosphere for servlet {}",
                     vaadinServletConfig.getServletName());
@@ -104,6 +106,7 @@ public class PushRequestHandler
         } else {
             getLogger().debug("Using pre-initialized Atmosphere for servlet {}",
                     vaadinServletConfig.getServletName());
+            atmosphere = preInitialized;
         }
         String timeout = service.getDeploymentConfiguration().getStringProperty(
                 InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
@@ -153,7 +156,7 @@ public class PushRequestHandler
      * servlet context init phase by {@link JSR356WebsocketInitializer}, if such
      * exists.
      */
-    private AtmosphereFramework getPreInitializedAtmosphere(
+    private @Nullable AtmosphereFramework getPreInitializedAtmosphere(
             ServletConfig vaadinServletConfig) {
         String attributeName = JSR356WebsocketInitializer
                 .getAttributeName(vaadinServletConfig.getServletName());
@@ -310,6 +313,10 @@ public class PushRequestHandler
         atmosphere.destroy();
     }
 
+    @SuppressWarnings("NullAway") // Deliberately passing null session for
+                                  // expired session handling, accepted by
+                                  // handleRequest from non-@NullMarked
+                                  // RequestHandler interface
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
