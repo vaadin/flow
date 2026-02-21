@@ -385,6 +385,8 @@ public class StateTree implements NodeOwner {
      * {@link #beforeClientResponse(StateNode, SerializableConsumer)} are
      * evaluated and executed if able.
      */
+    @SuppressWarnings("NullAway") // session is always available when processing
+                                  // client responses
     public void runExecutionsBeforeClientResponse() {
         while (true) {
             List<StateTree.BeforeClientResponseEntry> callbacks = flushCallbacks();

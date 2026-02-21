@@ -408,6 +408,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
         return AccessDeniedException.class;
     }
 
+    @SuppressWarnings("NullAway") // session is always available during
+                                  // navigation
     private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
         return beforeEnterEvent.getUI().getSession().getConfiguration()
                 .isProductionMode();

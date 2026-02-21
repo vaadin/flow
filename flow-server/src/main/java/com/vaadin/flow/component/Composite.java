@@ -21,6 +21,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
@@ -48,7 +49,7 @@ import com.vaadin.flow.internal.ReflectTools;
  *            the type of the content
  */
 public abstract class Composite<T extends Component> extends Component {
-    private T content;
+    private @Nullable T content;
 
     // Will deserialize as the default value for boolean, i.e. false
     private transient boolean contentIsInitializing = false;
@@ -114,6 +115,8 @@ public abstract class Composite<T extends Component> extends Component {
      *
      * @return the content for the composite, never {@code null}
      */
+    @SuppressWarnings("NullAway") // content is always set by setContent before
+                                  // returning
     public T getContent() {
         if (content == null) {
             try {

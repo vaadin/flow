@@ -139,6 +139,9 @@ public class WebComponentWrapper extends Component {
             disconnect = System.currentTimeMillis();
             disconnectRegistration = uiOptional.get().getInternals()
                     .addHeartbeatListener(event -> {
+                        @SuppressWarnings("NullAway") // session is always
+                                                      // available during
+                                                      // heartbeat
                         int disconnectTimeout = event.getSource().getSession()
                                 .getConfiguration().getWebComponentDisconnect();
 

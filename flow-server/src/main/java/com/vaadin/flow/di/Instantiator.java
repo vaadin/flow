@@ -192,6 +192,8 @@ public interface Instantiator extends Serializable {
      *            <code>null</code>
      * @return the instantiator, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // session is always available when
+                                  // Instantiator is accessed
     static Instantiator get(UI ui) {
         assert ui != null;
 

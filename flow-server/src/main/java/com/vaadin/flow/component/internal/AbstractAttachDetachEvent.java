@@ -55,6 +55,8 @@ public abstract class AbstractAttachDetachEvent
      *
      * @return the session this component is attached to
      */
+    @SuppressWarnings("NullAway") // session is always available during
+                                  // attach/detach events
     public VaadinSession getSession() {
         return getUI().getSession();
     }

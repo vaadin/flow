@@ -314,6 +314,8 @@ public class ElementAttributeMap extends NodeMap {
         resource.ifPresent(res -> deferRegistration(attribute, res));
     }
 
+    @SuppressWarnings("NullAway") // session is always available when element
+                                  // attribute maps are used
     private VaadinSession getSession() {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;

@@ -279,6 +279,8 @@ public class CurrentInstance implements Serializable {
      * @return A map containing the old values of the instances that this method
      *         updated.
      */
+    @SuppressWarnings("NullAway") // session is always available when setting
+                                  // current UI
     public static Map<Class<?>, CurrentInstance> setCurrent(UI ui) {
         Map<Class<?>, CurrentInstance> old = setCurrent(ui.getSession());
         old.put(UI.class, doSet(UI.class, ui));

@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.EventObject;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.Command;
 
 /**
@@ -33,7 +35,7 @@ import com.vaadin.flow.server.Command;
 public class ComponentEvent<T extends Component> extends EventObject {
 
     private boolean fromClient = false;
-    private Command unregisterListenerCommand = null;
+    private @Nullable Command unregisterListenerCommand = null;
 
     /**
      * Creates a new event using the given source and indicator whether the
@@ -74,7 +76,8 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @param unregisterListenerCommand
      *            the unregister command
      */
-    void setUnregisterListenerCommand(Command unregisterListenerCommand) {
+    void setUnregisterListenerCommand(
+            @Nullable Command unregisterListenerCommand) {
         this.unregisterListenerCommand = unregisterListenerCommand;
     }
 

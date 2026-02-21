@@ -18,6 +18,8 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -71,11 +73,11 @@ public class SignalPropertySupport<T> implements Serializable {
 
     private final Component owner;
 
-    private Registration registration;
+    private @Nullable Registration registration;
 
-    private Signal<T> signal;
+    private @Nullable Signal<T> signal;
 
-    private T value;
+    private @Nullable T value;
 
     private SignalPropertySupport(Component owner,
             SerializableConsumer<T> valueChangeConsumer) {
@@ -141,7 +143,7 @@ public class SignalPropertySupport<T> implements Serializable {
      *
      * @return the current value
      */
-    public T get() {
+    public @Nullable T get() {
         return value;
     }
 

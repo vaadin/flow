@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -72,17 +74,17 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
     private Set<Key> modifiers = new HashSet<>(2);
-    private Key primaryKey = null;
+    private @Nullable Key primaryKey = null;
 
-    private StateTree.ExecutionRegistration executionRegistration;
+    private StateTree.@Nullable ExecutionRegistration executionRegistration;
     // lifecycle owner
     // usually lifecycleRegistration == listenerRegistration
-    private CompoundRegistration lifecycleRegistration;
-    private Component lifecycleOwner;
+    private @Nullable CompoundRegistration lifecycleRegistration;
+    private @Nullable Component lifecycleOwner;
     // event listener owner
-    private CompoundRegistration[] listenOnAttachListenerRegistrations;
-    private CompoundRegistration[] shortcutListenerRegistrations;
-    private Component[] listenOnComponents;
+    private CompoundRegistration @Nullable [] listenOnAttachListenerRegistrations;
+    private CompoundRegistration @Nullable [] shortcutListenerRegistrations;
+    private Component @Nullable [] listenOnComponents;
 
     private boolean shortcutActive = false;
 
@@ -91,7 +93,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     // used to determine, if we need to do something before client response
     private AtomicBoolean isDirty = new AtomicBoolean(false);
 
-    private ShortcutEventListener eventListener;
+    private @Nullable ShortcutEventListener eventListener;
 
     private List<Registration> registrations = new ArrayList<>();
 
@@ -100,6 +102,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     // beforeClientResponse callback
     // needs to be an anonymous class to prevent deserialization issues
     // see #17201
+    @SuppressWarnings("NullAway") // fields are always initialized when this
+                                  // callback executes
     private final SerializableConsumer<ExecutionContext> beforeClientResponseConsumer = new SerializableConsumer<>() {
         @Override
         public void accept(ExecutionContext executionContext) {
@@ -382,7 +386,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return Primary key
      */
-    public Key getKey() {
+    public @Nullable Key getKey() {
         return primaryKey;
     }
 
@@ -496,7 +500,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return Component
      * @see #isShortcutActive()
      */
-    public Component getLifecycleOwner() {
+    public @Nullable Component getLifecycleOwner() {
         return lifecycleOwner;
     }
 
@@ -596,11 +600,16 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // primaryKey is always set when filterText is
+                                  // called
     private String filterText() {
         return generateEventKeyFilter(primaryKey) + " && "
                 + generateEventModifierFilter(modifiers);
     }
 
+    @SuppressWarnings("NullAway") // listenOnComponents and
+                                  // shortcutListenerRegistrations are
+                                  // initialized before this is called
     private void updateHandlerListenerRegistration(int listenOnIndex) {
         final Component component = getComponentEventSource(listenOnIndex);
 
@@ -628,6 +637,8 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // listenOnComponents and lifecycleOwner are
+                                  // always initialized when this is called
     private Component getComponentEventSource(int listenOnIndex) {
         Component component = listenOnComponents[listenOnIndex];
         assert component != null;
@@ -674,6 +685,8 @@ public class ShortcutRegistration implements Registration, Serializable {
         return true;
     }
 
+    @SuppressWarnings("NullAway") // shortcutListenerRegistrations is
+                                  // initialized before this is called
     private void configureHandlerListenerRegistration(int listenOnIndex) {
         if (shortcutListenerRegistrations[listenOnIndex] != null) {
             Optional<Registration> registration = shortcutListenerRegistrations[listenOnIndex].registrations
@@ -704,6 +717,9 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway") // lifecycleOwner, primaryKey, and
+                                  // eventListener are always set when this is
+                                  // called
     private void invokeShortcutEventListener(Component component) {
         // construct the event
         final ShortcutEvent event = new ShortcutEvent(component, lifecycleOwner,
@@ -928,7 +944,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      */
     private static class HashableKey implements Key {
         private Key key;
-        private Integer hashcode;
+        private @Nullable Integer hashcode;
 
         HashableKey(Key key) {
             assert key != null;
@@ -992,6 +1008,8 @@ public class ShortcutRegistration implements Registration, Serializable {
         listenOnComponents = registerOwnerListeners();
     }
 
+    @SuppressWarnings("NullAway") // listenOnComponents is initialized before
+                                  // this is called
     private void addListenOnDetachListeners() {
         if (!registrations.isEmpty()) {
             return;
@@ -1008,14 +1026,14 @@ public class ShortcutRegistration implements Registration, Serializable {
      * used to group registrations that need to be created and removed together.
      */
     private static class CompoundRegistration implements Registration {
-        private Set<Registration> registrations;
+        private @Nullable Set<Registration> registrations;
 
         CompoundRegistration(Registration... registrations) {
             this.registrations = new HashSet<>(Arrays.asList(registrations));
         }
 
         void addRegistration(Registration registration) {
-            if (registration != null)
+            if (registration != null && registrations != null)
                 registrations.add(registration);
         }
 

@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.template.Id;
@@ -67,6 +69,7 @@ public abstract class Component
      * existing element.
      */
     static class MapToExistingElement implements Serializable {
+        @Nullable
         Element element = null;
         private boolean mapElementToComponent = false;
 
@@ -91,13 +94,14 @@ public abstract class Component
      */
     static ThreadLocal<MapToExistingElement> elementToMapTo = new ThreadLocal<>();
 
-    private Element element;
+    private @Nullable Element element;
 
     // Manipulated through ComponentUtil to avoid polluting the regular
     // Component API
+    @Nullable
     Attributes attributes;
 
-    private ComponentEventBus eventBus = null;
+    private @Nullable ComponentEventBus eventBus = null;
 
     private final boolean templateMapped;
 
@@ -148,7 +152,7 @@ public abstract class Component
      * @param element
      *            the root element for the component
      */
-    protected Component(Element element) {
+    protected Component(@Nullable Element element) {
         ComponentTracker.trackCreate(this);
         if (elementToMapTo.get() != null) {
             mapToElement(element == null ? null : element.getTag());
@@ -170,6 +174,8 @@ public abstract class Component
                 .forEach(this::addSynchronizedProperty);
     }
 
+    @SuppressWarnings("NullAway") // element is always set before synchronized
+                                  // properties are configured
     private void addSynchronizedProperty(
             ComponentMetaData.SynchronizedPropertyInfo info) {
         if (info.getUpdateMode() == null) {
@@ -191,7 +197,9 @@ public abstract class Component
         });
     }
 
-    private void mapToElement(String tagName) {
+    @SuppressWarnings("NullAway") // wrapData and wrapData.element are always
+                                  // set when elementToMapTo is populated
+    private void mapToElement(@Nullable String tagName) {
         MapToExistingElement wrapData = elementToMapTo.get();
         assert wrapData != null;
 
@@ -232,6 +240,8 @@ public abstract class Component
      *
      * @return the root element of this component
      */
+    @SuppressWarnings("NullAway") // element is always set during component
+                                  // initialization
     @Override
     public Element getElement() {
         assert element != null
@@ -896,7 +906,7 @@ public abstract class Component
      * @param <T>
      *            the type of the ancestor component to return
      */
-    public <T> T findAncestor(Class<T> componentType) {
+    public <T> @Nullable T findAncestor(Class<T> componentType) {
         Optional<Component> optionalParent = getParent();
         while (optionalParent.isPresent()) {
             Component parent = optionalParent.get();

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
@@ -37,7 +39,7 @@ public interface HasPlaceholder extends HasElement {
      * @param placeholder
      *            the placeholder text, may be null.
      */
-    default void setPlaceholder(String placeholder) {
+    default void setPlaceholder(@Nullable String placeholder) {
         getElement().setProperty("placeholder",
                 placeholder == null ? "" : placeholder);
     }
@@ -49,7 +51,7 @@ public interface HasPlaceholder extends HasElement {
      * @return the {@code placeholder} property from the web component. May be
      *         null if not yet set.
      */
-    default String getPlaceholder() {
+    default @Nullable String getPlaceholder() {
         return getElement().getProperty("placeholder");
     }
 

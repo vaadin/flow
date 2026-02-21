@@ -20,6 +20,8 @@ import java.util.EventListener;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
@@ -141,7 +143,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *
      * @return empty value
      */
-    default V getEmptyValue() {
+    default @Nullable V getEmptyValue() {
         return null;
     }
 
@@ -178,6 +180,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * @see #setValue(Object)
      * @see #getEmptyValue()
      */
+    @SuppressWarnings("NullAway") // empty value may be null by design; setValue
+                                  // implementations handle this
     default void clear() {
         setValue(getEmptyValue());
     }

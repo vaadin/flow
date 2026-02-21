@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -47,7 +48,7 @@ public interface ScrollIntoViewOption extends Serializable {
      * @return an ObjectNode with the scrollIntoView options, or null if no
      *         options are provided
      */
-    static ObjectNode buildOptions(ScrollIntoViewOption... options) {
+    static @Nullable ObjectNode buildOptions(ScrollIntoViewOption... options) {
         // Extract options from varargs
         Behavior behavior = null;
         Block block = null;

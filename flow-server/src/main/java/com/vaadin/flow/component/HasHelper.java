@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
@@ -48,7 +50,7 @@ public interface HasHelper extends HasElement {
      *
      * @return the {@code helperText} property from the web component
      */
-    default String getHelperText() {
+    default @Nullable String getHelperText() {
         return getElement().getProperty("helperText");
     }
 
@@ -115,7 +117,7 @@ public interface HasHelper extends HasElement {
      *
      * @see #setHelperText(String)
      */
-    default void setHelperComponent(Component component) {
+    default void setHelperComponent(@Nullable Component component) {
         getElement().getChildren()
                 .filter(child -> "helper".equals(child.getAttribute("slot")))
                 .findAny().ifPresent(getElement()::removeChild);
@@ -133,7 +135,7 @@ public interface HasHelper extends HasElement {
      *         component has been set
      * @see #setHelperComponent(Component)
      */
-    default Component getHelperComponent() {
+    default @Nullable Component getHelperComponent() {
         Optional<Component> component = getElement().getChildren()
                 .filter(child -> "helper".equals(child.getAttribute("slot")))
                 .map(Element::getComponent).findFirst()

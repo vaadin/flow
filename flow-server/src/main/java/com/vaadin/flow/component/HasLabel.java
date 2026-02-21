@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ElementConstants;
 
 /**
@@ -45,8 +47,13 @@ public interface HasLabel extends HasElement {
      * @param label
      *            the label text to set or {@code null} to clear
      */
-    default void setLabel(String label) {
-        getElement().setProperty(ElementConstants.LABEL_PROPERTY_NAME, label);
+    default void setLabel(@Nullable String label) {
+        if (label == null) {
+            getElement().removeProperty(ElementConstants.LABEL_PROPERTY_NAME);
+        } else {
+            getElement().setProperty(ElementConstants.LABEL_PROPERTY_NAME,
+                    label);
+        }
     }
 
     /**
@@ -55,7 +62,7 @@ public interface HasLabel extends HasElement {
      * @return the label of the component or {@code null} if no label has been
      *         set
      */
-    default String getLabel() {
+    default @Nullable String getLabel() {
         return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME,
                 null);
     }

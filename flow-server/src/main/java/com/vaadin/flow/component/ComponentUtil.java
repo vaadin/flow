@@ -26,6 +26,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component.MapToExistingElement;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -225,7 +227,8 @@ public class ComponentUtil {
      *            the element from which to begin the search
      * @return optional of the component, empty if no component is found
      */
-    public static Optional<Component> findParentComponent(Element element) {
+    public static Optional<Component> findParentComponent(
+            @Nullable Element element) {
         Element mappedElement = element;
         while (mappedElement != null
                 && !mappedElement.getComponent().isPresent()) {
@@ -595,8 +598,11 @@ public class ComponentUtil {
                 .getDependencyInfo(service);
     }
 
+    @SuppressWarnings("NullAway") // setAttribute handles null values by
+                                  // removing the attribute
     private static <T, U> void setData(Component component,
-            SerializableTriConsumer<Attributes, T, U> setter, T key, U value) {
+            SerializableTriConsumer<Attributes, T, U> setter, T key,
+            @Nullable U value) {
         Attributes attributes = component.attributes;
         if (attributes == null) {
             if (value == null) {
@@ -628,7 +634,8 @@ public class ComponentUtil {
      *            the data to set, or <code>null</code> to remove data
      *            previously set with the same key
      */
-    public static void setData(Component component, String key, Object value) {
+    public static void setData(Component component, String key,
+            @Nullable Object value) {
         setData(component, Attributes::setAttribute, key, value);
     }
 
@@ -649,11 +656,11 @@ public class ComponentUtil {
      *            previously set with the same type
      */
     public static <T> void setData(Component component, Class<T> type,
-            T value) {
+            @Nullable T value) {
         setData(component, Attributes::setAttribute, type, value);
     }
 
-    private static <T, U> U getData(Component component,
+    private static <T, U> @Nullable U getData(Component component,
             BiFunction<Attributes, T, U> getter, T key) {
         Attributes attributes = component.attributes;
         if (attributes == null) {
@@ -675,7 +682,7 @@ public class ComponentUtil {
      * @return the data instance, or <code>null</code> if no instance has been
      *         set using the given key
      */
-    public static Object getData(Component component, String key) {
+    public static @Nullable Object getData(Component component, String key) {
         return getData(component, Attributes::getAttribute, key);
     }
 
@@ -694,7 +701,7 @@ public class ComponentUtil {
      * @return the data instance, or <code>null</code> if no instance has been
      *         set using the given type
      */
-    public static <T> T getData(Component component, Class<T> type) {
+    public static <T> @Nullable T getData(Component component, Class<T> type) {
         return getData(component,
                 (attributes, ignore) -> attributes.getAttribute(type), type);
     }

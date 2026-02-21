@@ -18,6 +18,8 @@ package com.vaadin.flow.component;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.server.Constants;
@@ -51,8 +53,12 @@ public interface HasSize extends HasElement {
      * @param width
      *            the width to set, may be {@code null}
      */
-    default void setWidth(String width) {
-        getElement().getStyle().setWidth(width);
+    default void setWidth(@Nullable String width) {
+        if (width == null) {
+            getElement().getStyle().remove("width");
+        } else {
+            getElement().getStyle().setWidth(width);
+        }
         getElement().removeAttribute(Constants.ATTRIBUTE_WIDTH_FULL);
     }
 
@@ -85,7 +91,7 @@ public interface HasSize extends HasElement {
      *            the min-width value (if <code>null</code>, the property will
      *            be removed)
      */
-    default void setMinWidth(String minWidth) {
+    default void setMinWidth(@Nullable String minWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_WIDTH, minWidth);
     }
 
@@ -118,7 +124,7 @@ public interface HasSize extends HasElement {
      *            the max-width value (if <code>null</code>, the property will
      *            be removed)
      */
-    default void setMaxWidth(String maxWidth) {
+    default void setMaxWidth(@Nullable String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
     }
 
@@ -147,7 +153,7 @@ public interface HasSize extends HasElement {
      *
      * @return the width which has been set for the component
      */
-    default String getWidth() {
+    default @Nullable String getWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_WIDTH);
     }
 
@@ -160,7 +166,7 @@ public interface HasSize extends HasElement {
      *
      * @return the min-width which has been set for the component
      */
-    default String getMinWidth() {
+    default @Nullable String getMinWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_MIN_WIDTH);
     }
 
@@ -173,7 +179,7 @@ public interface HasSize extends HasElement {
      *
      * @return the max-width which has been set for the component
      */
-    default String getMaxWidth() {
+    default @Nullable String getMaxWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_MAX_WIDTH);
     }
 
@@ -183,6 +189,7 @@ public interface HasSize extends HasElement {
      * @return an optional width unit for the component, or an empty optional if
      *         no width unit has been set
      */
+    @SuppressWarnings("NullAway") // Unit.getUnit handles null gracefully
     default Optional<Unit> getWidthUnit() {
         return Unit.getUnit(getWidth());
     }
@@ -199,8 +206,12 @@ public interface HasSize extends HasElement {
      * @param height
      *            the height to set, may be {@code null}
      */
-    default void setHeight(String height) {
-        getElement().getStyle().setHeight(height);
+    default void setHeight(@Nullable String height) {
+        if (height == null) {
+            getElement().getStyle().remove("height");
+        } else {
+            getElement().getStyle().setHeight(height);
+        }
         getElement().removeAttribute(Constants.ATTRIBUTE_HEIGHT_FULL);
     }
 
@@ -233,7 +244,7 @@ public interface HasSize extends HasElement {
      *            the min-height value (if <code>null</code>, the property will
      *            be removed)
      */
-    default void setMinHeight(String minHeight) {
+    default void setMinHeight(@Nullable String minHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT,
                 minHeight);
     }
@@ -267,7 +278,7 @@ public interface HasSize extends HasElement {
      *            the max-height value (if <code>null</code>, the property will
      *            be removed)
      */
-    default void setMaxHeight(String maxHeight) {
+    default void setMaxHeight(@Nullable String maxHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT,
                 maxHeight);
     }
@@ -296,7 +307,7 @@ public interface HasSize extends HasElement {
      *
      * @return the height which has been set for the component
      */
-    default String getHeight() {
+    default @Nullable String getHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_HEIGHT);
     }
 
@@ -308,7 +319,7 @@ public interface HasSize extends HasElement {
      *
      * @return the min-height which has been set for the component
      */
-    default String getMinHeight() {
+    default @Nullable String getMinHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_MIN_HEIGHT);
     }
 
@@ -320,7 +331,7 @@ public interface HasSize extends HasElement {
      *
      * @return the max-height which has been set for the component
      */
-    default String getMaxHeight() {
+    default @Nullable String getMaxHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_MAX_HEIGHT);
     }
 
@@ -330,6 +341,7 @@ public interface HasSize extends HasElement {
      * @return an optional height unit for the component, or an empty optional
      *         if no height unit has been set
      */
+    @SuppressWarnings("NullAway") // Unit.getUnit handles null gracefully
     default Optional<Unit> getHeightUnit() {
         return Unit.getUnit(getHeight());
     }
@@ -501,7 +513,7 @@ public interface HasSize extends HasElement {
      *            Unit
      * @return Css format size string
      */
-    static String getCssSize(float size, Unit unit) {
+    static @Nullable String getCssSize(float size, Unit unit) {
         if (size < 0) {
             return null;
         }

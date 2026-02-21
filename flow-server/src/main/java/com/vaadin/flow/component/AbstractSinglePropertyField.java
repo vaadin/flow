@@ -66,6 +66,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @FunctionalInterface
     // Helper since Java has no TriFunction
     private interface ElementGetter<T> extends Serializable {
+        @Nullable
         T getValue(Element element, String propertyName, T defaultValue);
     }
 
@@ -80,8 +81,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         private final ElementSetter<P> setter;
         private final SerializableBiFunction<Element, String, P> getter;
 
+        @SuppressWarnings("NullAway") // typeDefault may be null for JSON types;
+                                      // getter handles it
         private TypeHandler(ElementSetter<P> setter, ElementGetter<P> getter,
-                P typeDefault) {
+                @Nullable P typeDefault) {
             this.setter = setter;
             this.getter = (element, propertyName) -> getter.getValue(element,
                     propertyName, typeDefault);
@@ -139,7 +142,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     private final SerializableBiFunction<C, T, T> propertyReader;
     private final String propertyName;
 
-    private DomListenerRegistration synchronizationRegistration;
+    private @Nullable DomListenerRegistration synchronizationRegistration;
 
     /**
      * Creates a new field that uses a property value without any conversion.
@@ -215,8 +218,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      * @param <P>
      *            the property type
      */
+    @SuppressWarnings("NullAway") // elementPropertyType is nullable for
+                                  // internal use
     public <P> AbstractSinglePropertyField(String propertyName, T defaultValue,
-            Class<P> elementPropertyType,
+            @Nullable Class<P> elementPropertyType,
             SerializableBiFunction<C, P, T> presentationToModel,
             SerializableBiFunction<C, T, P> modelToPresentation) {
         super(defaultValue);
@@ -272,7 +277,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> findElementPropertyTypeFromTypeParameter(
+    private static <T> @Nullable Class<T> findElementPropertyTypeFromTypeParameter(
             Class<?> hasValueClass) {
         return (Class<T>) GenericTypeReflector
                 .erase(GenericTypeReflector.getTypeParameter(hasValueClass,
@@ -307,7 +312,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      *         property value, or <code>null</code> if property synchronization
      *         is disabled
      */
-    protected DomListenerRegistration getSynchronizationRegistration() {
+    protected @Nullable DomListenerRegistration getSynchronizationRegistration() {
         return synchronizationRegistration;
     }
 
@@ -370,6 +375,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         propertyWriter.accept((C) this, newPresentationValue);
     }
 
+    @SuppressWarnings("NullAway") // encodeWithoutTypeInfo handles null values
     private static <P extends BaseJsonNode> TypeHandler<P> getJsonHandler(
             Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {

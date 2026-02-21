@@ -316,6 +316,8 @@ public class PublishedServerEventHandlerRpcHandler
                     throw new IllegalStateException(
                             "Rpc handler may not be called for a detached component");
                 }
+                @SuppressWarnings("NullAway") // session is always available
+                                              // during RPC handling
                 VaadinContext context = ui.get().getSession().getService()
                         .getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context

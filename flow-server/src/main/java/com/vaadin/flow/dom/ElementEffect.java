@@ -158,6 +158,8 @@ public final class ElementEffect implements Serializable {
         });
     }
 
+    @SuppressWarnings("NullAway") // session is always available when effects
+                                  // are enabled
     private void enableEffect(Element owner) {
         if (closed) {
             return;

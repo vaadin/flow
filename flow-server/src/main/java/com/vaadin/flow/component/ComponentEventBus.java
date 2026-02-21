@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.DebouncePhase;
@@ -67,7 +68,7 @@ public class ComponentEventBus implements Serializable {
             implements Serializable {
 
         private ComponentEventListener<T> listener;
-        private DomListenerRegistration domRegistration;
+        private @Nullable DomListenerRegistration domRegistration;
 
         public ListenerWrapper(ComponentEventListener<T> listener) {
             this.listener = listener;
@@ -143,7 +144,7 @@ public class ComponentEventBus implements Serializable {
 
     private <T extends ComponentEvent<?>> Registration addListenerInternal(
             Class<T> eventType, ComponentEventListener<T> listener,
-            Consumer<DomListenerRegistration> domListenerConsumer) {
+            @Nullable Consumer<DomListenerRegistration> domListenerConsumer) {
 
         if (listener == null) {
             throw new IllegalArgumentException(
@@ -379,8 +380,9 @@ public class ComponentEventBus implements Serializable {
         return eventDataObjects;
     }
 
-    private Object parseStateNodeIdToComponentReference(DomEvent event,
-            Class<?> expectedEventDataType, String eventDataExpression) {
+    private @Nullable Object parseStateNodeIdToComponentReference(
+            DomEvent event, Class<?> expectedEventDataType,
+            String eventDataExpression) {
         assert Component.class.isAssignableFrom(expectedEventDataType)
                 || Element.class == expectedEventDataType;
 

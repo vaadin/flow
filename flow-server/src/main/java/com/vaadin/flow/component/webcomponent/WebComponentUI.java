@@ -322,6 +322,8 @@ public class WebComponentUI extends UI {
         getPage().executeJs(builder.toString());
     }
 
+    @SuppressWarnings("NullAway") // session is always available when
+                                  // configuration registry is accessed
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
                 .getInstance(getSession().getService().getContext());

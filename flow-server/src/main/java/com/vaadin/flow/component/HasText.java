@@ -19,6 +19,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -103,7 +105,7 @@ public interface HasText extends HasElement {
             return name().toLowerCase(Locale.ENGLISH).replace('_', '-');
         }
 
-        public static WhiteSpace forString(String value) {
+        public static @Nullable WhiteSpace forString(String value) {
             return Stream.of(values())
                     .filter(whiteSpace -> whiteSpace.toString().equals(value))
                     .findFirst().orElse(null);
@@ -155,7 +157,7 @@ public interface HasText extends HasElement {
      *
      * @return the {@code "white-space"} style value, may be {@code null}
      */
-    default WhiteSpace getWhiteSpace() {
+    default @Nullable WhiteSpace getWhiteSpace() {
         String value = getElement().getStyle().get("white-space");
         if (value == null) {
             return WhiteSpace.NORMAL;

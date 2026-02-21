@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -124,6 +125,8 @@ public abstract class WebComponentExporter<C extends Component>
         }
     }
 
+    @SuppressWarnings("NullAway") // getComponentClass is validated non-null in
+                                  // constructor
     private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
             String name, Class<P> type, P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
@@ -315,8 +318,10 @@ public abstract class WebComponentExporter<C extends Component>
             return immutablePropertyMap.containsKey(propertyName);
         }
 
+        @SuppressWarnings("NullAway") // Map.get is non-null when hasProperty
+                                      // returns true
         @Override
-        public Class<? extends Serializable> getPropertyType(
+        public @Nullable Class<? extends Serializable> getPropertyType(
                 String propertyName) {
             if (hasProperty(propertyName)) {
                 return immutablePropertyMap.get(propertyName).getPropertyData()
@@ -326,6 +331,8 @@ public abstract class WebComponentExporter<C extends Component>
             }
         }
 
+        @SuppressWarnings("NullAway") // component class is validated non-null
+                                      // in exporter constructor
         @Override
         public Class<C> getComponentClass() {
             return this.exporter.getComponentClass();
@@ -430,6 +437,8 @@ public abstract class WebComponentExporter<C extends Component>
             return Objects.hash(objs);
         }
 
+        @SuppressWarnings("NullAway") // Map.get is non-null for keys from own
+                                      // keySet
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof WebComponentConfigurationImpl) {
@@ -444,6 +453,7 @@ public abstract class WebComponentExporter<C extends Component>
                     return false;
                 }
 
+                @Nullable
                 PropertyConfiguration<?, ?> otherConf;
                 for (String key : immutablePropertyMap.keySet()) {
                     otherConf = other.immutablePropertyMap.get(key);
@@ -464,7 +474,7 @@ public abstract class WebComponentExporter<C extends Component>
      *
      * @return component class
      */
-    protected Class<C> getComponentClass() {
+    protected @Nullable Class<C> getComponentClass() {
         return (Class<C>) ReflectTools.getGenericInterfaceType(this.getClass(),
                 WebComponentExporter.class);
     }

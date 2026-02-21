@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.signals.Signal;
@@ -75,7 +77,7 @@ public interface HasTheme extends HasElement {
      *         are no theme names or <code>null</code> if attribute (theme) is
      *         not set at all
      */
-    default String getThemeName() {
+    default @Nullable String getThemeName() {
         return getElement().getAttribute("theme");
     }
 

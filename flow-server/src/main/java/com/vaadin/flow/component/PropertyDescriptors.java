@@ -125,6 +125,8 @@ public final class PropertyDescriptors {
      *
      * @return a property descriptor, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // getProperty may return null; nullToDefault
+                                  // handles it
     public static PropertyDescriptor<String, String> propertyWithDefault(
             String name, String defaultValue) {
         return new PropertyDescriptorImpl<>(name, defaultValue,
@@ -287,6 +289,8 @@ public final class PropertyDescriptors {
      *            value and the default value
      * @return a property descriptor, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // getAttribute may return null; returnWrapper
+                                  // handles it
     private static <T> PropertyDescriptor<String, T> attribute(String name,
             String defaultValue, boolean removeDefault,
             BiFunction<String, String, T> returnWrapper) {

@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -47,7 +48,7 @@ public interface FocusOption extends Serializable {
      * @return an ObjectNode with the focus options, or null if all options are
      *         default
      */
-    static ObjectNode buildOptions(FocusOption... options) {
+    static @Nullable ObjectNode buildOptions(FocusOption... options) {
         // Extract options from varargs
         FocusVisible focusVisible = FocusVisible.DEFAULT;
         PreventScroll preventScroll = PreventScroll.DEFAULT;

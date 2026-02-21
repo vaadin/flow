@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -183,7 +184,7 @@ public class UI extends Component
      * @return the parent application of the component or <code>null</code>.
      * @see #onAttach(AttachEvent)
      */
-    public VaadinSession getSession() {
+    public @Nullable VaadinSession getSession() {
         return internals.getSession();
     }
 
@@ -221,6 +222,8 @@ public class UI extends Component
      *
      * @see #getUIId()
      */
+    @SuppressWarnings("NullAway") // wrapper element is created and available
+                                  // within this method
     public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
             String message = "This UI instance is already initialized (as UI id "
@@ -299,7 +302,7 @@ public class UI extends Component
      * @see #getCurrent()
      * @see ThreadLocal
      */
-    public static void setCurrent(UI ui) {
+    public static void setCurrent(@Nullable UI ui) {
         CurrentInstance.set(UI.class, ui);
     }
 
@@ -315,7 +318,7 @@ public class UI extends Component
      *
      * @see #setCurrent(UI)
      */
-    public static UI getCurrent() {
+    public static @Nullable UI getCurrent() {
         return CurrentInstance.get(UI.class);
     }
 
@@ -464,7 +467,8 @@ public class UI extends Component
         accessSynchronously(command, null);
     }
 
-    private static void handleAccessDetach(SerializableRunnable detachHandler) {
+    private static void handleAccessDetach(
+            @Nullable SerializableRunnable detachHandler) {
         if (detachHandler != null) {
             detachHandler.run();
         } else {
@@ -478,7 +482,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private void accessSynchronously(Command command,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
 
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -549,7 +553,7 @@ public class UI extends Component
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
-    public Future<Void> access(final Command command) {
+    public @Nullable Future<Void> access(final Command command) {
         // null detach handler -> throw UIDetachEvent
         return access(command, null);
     }
@@ -559,8 +563,8 @@ public class UI extends Component
      * is done for this internal method since it helps preserve old APIs as-is
      * while allowing new APIs to use newer conventions.
      */
-    private Future<Void> access(Command command,
-            SerializableRunnable detachHandler) {
+    private @Nullable Future<Void> access(Command command,
+            @Nullable SerializableRunnable detachHandler) {
         VaadinSession session = getSession();
 
         if (session == null) {
@@ -632,7 +636,7 @@ public class UI extends Component
      *         handler, possibly asynchronously
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
         return () -> access(accessTask::run, detachHandler);
@@ -662,7 +666,7 @@ public class UI extends Component
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
         return value -> access(() -> accessTask.accept(value), detachHandler);
@@ -742,7 +746,9 @@ public class UI extends Component
         }
 
         PushConnection pushConnection = getInternals().getPushConnection();
-        assert pushConnection != null;
+        if (pushConnection == null) {
+            return;
+        }
 
         /*
          * Purge the pending access queue as it might mark a connector as dirty
@@ -806,6 +812,8 @@ public class UI extends Component
      *
      * @return the locale in use, not <code>null</code>
      */
+    @SuppressWarnings("NullAway") // locale signal is always initialized with a
+                                  // non-null Locale
     @Override
     public Locale getLocale() {
         return localeSignal.peek();
@@ -1022,6 +1030,8 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
+    @SuppressWarnings("NullAway") // router is always available when navigation
+                                  // is supported
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
@@ -1100,7 +1110,9 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // router is always available
+                                                   // when navigation is
+                                                   // supported
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
             Class<? extends C> navigationTarget, T parameter,
             QueryParameters queryParameters) {
@@ -1149,7 +1161,9 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // router is always available
+                                                   // when navigation is
+                                                   // supported
     public <C extends Component> Optional<C> navigate(
             Class<? extends C> navigationTarget, RouteParameters routeParameter,
             QueryParameters queryParameters) {
@@ -1184,7 +1198,9 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // router is always available
+                                                   // when navigation is
+                                                   // supported
     public <T extends Component> Optional<T> navigate(
             Class<? extends T> navigationTarget,
             QueryParameters queryParameters) {
@@ -1237,6 +1253,8 @@ public class UI extends Component
      * @throws NullPointerException
      *             if the location or queryParameters are null.
      */
+    @SuppressWarnings("NullAway") // router and last handled location are
+                                  // available during navigation
     public void navigate(String locationString,
             QueryParameters queryParameters) {
         Objects.requireNonNull(locationString, "Location must not be null");
@@ -1567,7 +1585,7 @@ public class UI extends Component
      *         active and originated from this UI, {@literal null} otherwise.
      * @since 2.0
      */
-    public Component getActiveDragSourceComponent() {
+    public @Nullable Component getActiveDragSourceComponent() {
         return getInternals().getActiveDragSourceComponent();
     }
 
@@ -1689,7 +1707,7 @@ public class UI extends Component
                     .getActiveModalComponent();
             if (activeModalComponent instanceof HasComponents) {
                 ((HasComponents) activeModalComponent).add(component);
-            } else {
+            } else if (activeModalComponent != null) {
                 activeModalComponent.getElement()
                         .appendChild(component.getElement());
             }
@@ -1743,10 +1761,10 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
-    private NavigationState clientViewNavigationState;
+    private @Nullable NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
-    private String forwardToClientUrl = null;
+    private @Nullable String forwardToClientUrl = null;
 
     private boolean firstNavigation = true;
 
@@ -1755,7 +1773,7 @@ public class UI extends Component
      *
      * @return the new forward url
      */
-    public String getForwardToClientUrl() {
+    public @Nullable String getForwardToClientUrl() {
         return forwardToClientUrl;
     }
 
@@ -1877,6 +1895,8 @@ public class UI extends Component
      * @param event
      *            the event from the browser
      */
+    @SuppressWarnings("NullAway") // handler, session, and router are available
+                                  // during browser navigation
     public void browserNavigate(BrowserNavigateEvent event) {
 
         if (event.appShellTitle != null && !event.appShellTitle.isEmpty()) {
@@ -1988,14 +2008,20 @@ public class UI extends Component
         serverConnected(true);
     }
 
+    @SuppressWarnings("NullAway") // wrapper element is always available when
+                                  // server-client communication is active
     private void serverPaused() {
         internals.getWrapperElement().executeJs("this.serverPaused()");
     }
 
+    @SuppressWarnings("NullAway") // wrapper element is always available when
+                                  // server-client communication is active
     private void serverConnected(boolean cancel) {
         internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
     }
 
+    @SuppressWarnings("NullAway") // router is always available during
+                                  // navigation
     private void navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
@@ -2008,6 +2034,7 @@ public class UI extends Component
                 NavigationTrigger.CLIENT_SIDE);
     }
 
+    @SuppressWarnings("NullAway") // router is always available during rendering
     private void renderViewForRoute(Location location,
             NavigationTrigger trigger) {
         if (!shouldHandleNavigation(location)) {
@@ -2038,6 +2065,8 @@ public class UI extends Component
         }
     }
 
+    @SuppressWarnings("NullAway") // getLastHandledLocation is non-null when
+                                  // hasLastHandledLocation is true
     private boolean shouldHandleNavigation(Location location) {
         return !getInternals().hasLastHandledLocation()
                 || !sameLocation(getInternals().getLastHandledLocation(),
@@ -2050,6 +2079,8 @@ public class UI extends Component
                         .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
+    @SuppressWarnings("NullAway") // router is always available during
+                                  // navigation
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
         NavigationEvent navigationEvent = new NavigationEvent(
@@ -2081,6 +2112,8 @@ public class UI extends Component
         }
     }
 
+    @SuppressWarnings("NullAway") // router is always available during
+                                  // navigation
     private NavigationState getDefaultNavigationError() {
         return new NavigationStateBuilder(getInternals().getRouter())
                 .withTarget(RouteNotFoundError.class).build();

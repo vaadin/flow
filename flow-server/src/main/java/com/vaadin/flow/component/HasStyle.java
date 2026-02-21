@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
@@ -80,7 +82,7 @@ public interface HasStyle extends HasElement {
      * @return a space-separated string of class names, or <code>null</code> if
      *         there are no class names
      */
-    default String getClassName() {
+    default @Nullable String getClassName() {
         return getElement().getAttribute("class");
     }
 
