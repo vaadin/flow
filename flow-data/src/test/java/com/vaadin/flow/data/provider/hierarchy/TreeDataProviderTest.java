@@ -348,6 +348,7 @@ class TreeDataProviderTest
         assertNull(getDataProvider().getParent(itemNotPresentInProvider));
     }
 
+    @Test
     @Override
     public void filteringListDataProvider_convertFilter() {
         HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
@@ -370,6 +371,7 @@ class TreeDataProviderTest
                 "No items should've been filtered out");
     }
 
+    @Test
     @Override
     public void filteringListDataProvider_configurableFilter() {
         HierarchicalConfigurableFilterDataProvider<StrBean, Void, SerializablePredicate<StrBean>> configurableFilterDataProvider = getDataProvider()
@@ -408,6 +410,7 @@ class TreeDataProviderTest
                 "No items should've been filtered out");
     }
 
+    @Test
     @Override
     public void filteringListDataProvider_defaultFilterType() {
         assertEquals(1,
@@ -424,6 +427,7 @@ class TreeDataProviderTest
                 "Unexpected number of matches for 'Foo'");
     }
 
+    @Test
     @Override
     public void testDefaultSortWithSpecifiedPostSort() {
         Comparator<StrBean> comp = Comparator.comparing(StrBean::getValue)
@@ -459,6 +463,7 @@ class TreeDataProviderTest
         }
     }
 
+    @Test
     @Override
     public void testDefaultSortWithFunction() {
         setSortOrder(QuerySortOrder.asc("value").build(),
@@ -480,11 +485,13 @@ class TreeDataProviderTest
         }
     }
 
+    @Test
     @Override
     public void testListContainsAllData() {
         assertHierarchyCorrect();
     }
 
+    @Test
     @Override
     public void testSortByComparatorListsDiffer() {
         Comparator<StrBean> comp = Comparator.comparing(StrBean::getValue)
