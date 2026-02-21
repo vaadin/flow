@@ -31,6 +31,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -65,44 +67,44 @@ final class RouteSegment implements Serializable {
     /**
      * Parameter details.
      */
-    private ParameterInfo info;
+    private @Nullable ParameterInfo info;
 
     /**
      * Parameter matching regex.
      */
-    private Pattern pattern;
+    private @Nullable Pattern pattern;
 
     /**
      * Target.
      */
-    private RouteTarget target;
+    private @Nullable RouteTarget target;
 
     /**
      * Mapping next segments in the routes by the segment template.
      */
-    private Map<String, RouteSegment> staticSegments;
+    private @Nullable Map<String, RouteSegment> staticSegments;
 
     /**
      * Mapping next parameter segments in the routes by the segment template.
      */
-    private Map<String, RouteSegment> parameterSegments;
+    private @Nullable Map<String, RouteSegment> parameterSegments;
 
     /**
      * Mapping next optional parameter segments in the routes by the segment
      * template.
      */
-    private Map<String, RouteSegment> optionalSegments;
+    private @Nullable Map<String, RouteSegment> optionalSegments;
 
     /**
      * Mapping varargs parameter segments in the routes by the segment template.
      */
-    private Map<String, RouteSegment> varargsSegments;
+    private @Nullable Map<String, RouteSegment> varargsSegments;
 
     /**
      * Track the mapping of all segment types in the routes by the segment
      * template.
      */
-    private Map<String, RouteSegment> allSegments;
+    private @Nullable Map<String, RouteSegment> allSegments;
 
     private final boolean isRoot;
 
@@ -173,6 +175,7 @@ final class RouteSegment implements Serializable {
         return target != null;
     }
 
+    @Nullable
     RouteTarget getTarget() {
         return target;
     }
@@ -182,15 +185,15 @@ final class RouteSegment implements Serializable {
     }
 
     Optional<String> getRegex() {
-        return isParameter() ? info.getRegex() : Optional.empty();
+        return info != null ? info.getRegex() : Optional.empty();
     }
 
     boolean isOptional() {
-        return isParameter() && info.isOptional();
+        return info != null && info.isOptional();
     }
 
     boolean isVarargs() {
-        return isParameter() && info.isVarargs();
+        return info != null && info.isVarargs();
     }
 
     boolean isMandatory() {
@@ -278,16 +281,20 @@ final class RouteSegment implements Serializable {
      *         the <code>url</code> argument according with the route
      *         configuration.
      */
-    NavigationRouteTarget getNavigationRouteTarget(String url) {
+    NavigationRouteTarget getNavigationRouteTarget(@Nullable String url) {
 
         Map<String, String> parameters = new HashMap<>();
 
+        @Nullable
         List<String> segments = url == null ? null
                 : PathUtil.getSegmentsList(url);
+        @Nullable
         List<String> decodedSegments = url == null ? null
                 : PathUtil.getSegmentsListWithDecoding(url);
 
-        RouteTarget routeTarget = segments == null ? null
+        @Nullable
+        RouteTarget routeTarget = segments == null || decodedSegments == null
+                ? null
                 : findRouteTarget(segments, decodedSegments, parameters);
 
         return new NavigationRouteTarget(url, routeTarget, parameters);
@@ -302,7 +309,8 @@ final class RouteSegment implements Serializable {
      *            the parameter format function.
      * @return the simple template.
      */
-    String formatTemplate(String template,
+    @Nullable
+    String formatTemplate(@Nullable String template,
             Function<RouteSegment, String> parameterFormat) {
         if (template == null) {
             return null;
@@ -391,20 +399,21 @@ final class RouteSegment implements Serializable {
     }
 
     private void removeSubRoute(List<String> segmentPatterns) {
-        RouteSegment routeSegment;
-        String segmentPattern = null;
-        Map<String, RouteSegment> children = null;
-
         if (segmentPatterns.isEmpty()) {
             // This should happen only on root.
-            routeSegment = this;
-
-        } else {
-            segmentPattern = segmentPatterns.get(0);
-
-            children = getChildren(segmentPattern);
-            routeSegment = children.get(segmentPattern);
+            if (segmentPatterns.size() > 1) {
+                this.removeSubRoute(
+                        segmentPatterns.subList(1, segmentPatterns.size()));
+            } else {
+                this.target = null;
+            }
+            return;
         }
+
+        String segmentPattern = segmentPatterns.get(0);
+        Map<String, RouteSegment> children = getChildren(segmentPattern);
+        @Nullable
+        RouteSegment routeSegment = children.get(segmentPattern);
 
         if (routeSegment != null) {
 
@@ -415,7 +424,7 @@ final class RouteSegment implements Serializable {
                 routeSegment.target = null;
             }
 
-            if (routeSegment.isEmpty() && routeSegment != this) {
+            if (routeSegment.isEmpty()) {
                 removeSegment(segmentPattern, children);
             }
         }
@@ -425,39 +434,43 @@ final class RouteSegment implements Serializable {
         boolean isMainRoute = isEmpty() && isRoot;
 
         RouteSegment routeSegment;
-        String segmentPattern = null;
-        Map<String, RouteSegment> children = null;
 
         if (segmentPatterns.isEmpty()) {
             // This should happen only on root.
             routeSegment = this;
 
         } else {
-            segmentPattern = segmentPatterns.get(0);
+            String segmentPattern = segmentPatterns.get(0);
 
-            children = getChildren(segmentPattern);
-            routeSegment = children.get(segmentPattern);
-        }
+            Map<String, RouteSegment> children = getChildren(segmentPattern);
+            @Nullable
+            RouteSegment found = children.get(segmentPattern);
 
-        if (routeSegment == null) {
+            if (found == null) {
 
-            // We reject any route where varargs is not the last segment.
-            if (RouteFormat.isVarargsParameter(segmentPattern)
-                    && segmentPatterns.size() > 1) {
-                throw new IllegalArgumentException(
-                        "A varargs url parameter can be defined only as the last path segment");
+                // We reject any route where varargs is not the last segment.
+                if (RouteFormat.isVarargsParameter(segmentPattern)
+                        && segmentPatterns.size() > 1) {
+                    throw new IllegalArgumentException(
+                            "A varargs url parameter can be defined only as the last path segment");
+                }
+
+                // We reject any route where the last segment is an optional
+                // parameter while there's already a target set for the same
+                // route without the optional parameter.
+                @Nullable
+                RouteTarget existingTarget = getTarget();
+                if (RouteFormat.isOptionalParameter(segmentPattern)
+                        && segmentPatterns.size() == 1
+                        && existingTarget != null) {
+                    throw ambigousOptionalTarget(target.getTarget(),
+                            existingTarget.getTarget());
+                }
+
+                found = addSegment(segmentPattern, children);
             }
 
-            // We reject any route where the last segment is an optional
-            // parameter while there's already a target set for the same
-            // route without the optional parameter.
-            if (RouteFormat.isOptionalParameter(segmentPattern)
-                    && segmentPatterns.size() == 1 && hasTarget()) {
-                throw ambigousOptionalTarget(target.getTarget(),
-                        getTarget().getTarget());
-            }
-
-            routeSegment = addSegment(segmentPattern, children);
+            routeSegment = found;
         }
 
         routeSegment.setRouteTarget(segmentPatterns, target);
@@ -481,9 +494,12 @@ final class RouteSegment implements Serializable {
                 // for the same route with an optional.
                 RouteSegment optional = getOptionalParameterWithTarget();
                 if (optional != null) {
-                    throw optional.ambigousOptionalTarget(
-                            optional.getTarget().getTarget(),
-                            target.getTarget());
+                    @Nullable
+                    RouteTarget optionalTarget = optional.getTarget();
+                    if (optionalTarget != null) {
+                        throw optional.ambigousOptionalTarget(
+                                optionalTarget.getTarget(), target.getTarget());
+                    }
                 }
 
                 this.target = target;
@@ -510,18 +526,20 @@ final class RouteSegment implements Serializable {
      *            input segment values.
      * @return the {@link RouteTarget} found.
      */
-    private RouteTarget findRouteTarget(List<String> segments,
+    private @Nullable RouteTarget findRouteTarget(List<String> segments,
             List<String> decodedSegments, Map<String, String> parameters) {
 
         // First try with a static segment (non a parameter). An empty
         // segments list should happen only on root, so this instance should
         // resemble only the root.
         // Use decoded segments for static route matching
+        @Nullable
         RouteSegment routeSegment = decodedSegments.isEmpty() ? this
                 : getStaticSegments().get(decodedSegments.get(0));
 
         // Static segments
         if (routeSegment != null) {
+            @Nullable
             RouteTarget foundTarget = routeSegment
                     .getRouteTargetMatchingParameter(segments, decodedSegments,
                             parameters);
@@ -534,6 +552,7 @@ final class RouteSegment implements Serializable {
         // parameters.
         if (!segments.isEmpty()) {
 
+            @Nullable
             RouteTarget foundTarget;
 
             // Mandatory parameters
@@ -568,8 +587,10 @@ final class RouteSegment implements Serializable {
         return null;
     }
 
-    private RouteTarget findRouteTargetInOptionals(List<String> segments,
-            List<String> decodedSegments, Map<String, String> parameters) {
+    private @Nullable RouteTarget findRouteTargetInOptionals(
+            List<String> segments, List<String> decodedSegments,
+            Map<String, String> parameters) {
+        @Nullable
         RouteTarget foundTarget;
         for (RouteSegment parameter : getOptionalSegments().values()) {
             // Try ignoring the parameter if optional and look into its
@@ -586,10 +607,11 @@ final class RouteSegment implements Serializable {
         return null;
     }
 
-    private RouteTarget findRouteTarget(List<String> segments,
+    private @Nullable RouteTarget findRouteTarget(List<String> segments,
             List<String> decodedSegments, Map<String, String> parameters,
             Map<String, RouteSegment> children) {
         for (RouteSegment segment : children.values()) {
+            @Nullable
             RouteTarget foundTarget = segment.getRouteTargetMatchingParameter(
                     segments, decodedSegments, parameters);
             if (foundTarget != null) {
@@ -599,8 +621,9 @@ final class RouteSegment implements Serializable {
         return null;
     }
 
-    private RouteTarget getRouteTargetMatchingParameter(List<String> segments,
-            List<String> decodedSegments, Map<String, String> parameters) {
+    private @Nullable RouteTarget getRouteTargetMatchingParameter(
+            List<String> segments, List<String> decodedSegments,
+            Map<String, String> parameters) {
 
         Map<String, String> outputParameters = new HashMap<>();
 
@@ -642,6 +665,7 @@ final class RouteSegment implements Serializable {
         decodedSegments = decodedSegments.size() <= 1 ? Collections.emptyList()
                 : decodedSegments.subList(1, decodedSegments.size());
 
+        @Nullable
         RouteTarget foundTarget = getRouteTarget(segments, decodedSegments,
                 outputParameters);
 
@@ -652,9 +676,10 @@ final class RouteSegment implements Serializable {
         return foundTarget;
     }
 
-    private RouteTarget getRouteTarget(List<String> segments,
+    private @Nullable RouteTarget getRouteTarget(List<String> segments,
             List<String> decodedSegments,
             Map<String, String> outputParameters) {
+        @Nullable
         RouteTarget foundTarget;
         if (!segments.isEmpty()) {
             // Continue looking if there any more segments.
@@ -667,6 +692,7 @@ final class RouteSegment implements Serializable {
 
         } else {
             // Look for target in optional children.
+            @Nullable
             RouteSegment optionalChild = getAnyOptionalOrVarargsParameterWithTarget();
             if (optionalChild != null) {
                 foundTarget = optionalChild.getTarget();
@@ -678,16 +704,16 @@ final class RouteSegment implements Serializable {
     }
 
     void matchSegmentTemplates(String template,
-            Consumer<RouteSegment> segmentProcessor,
-            Consumer<RouteSegment> targetSegmentProcessor) {
+            @Nullable Consumer<RouteSegment> segmentProcessor,
+            @Nullable Consumer<RouteSegment> targetSegmentProcessor) {
         matchSegmentTemplates(template, PathUtil.getSegmentsList(template),
                 segmentProcessor, targetSegmentProcessor);
     }
 
     private void matchSegmentTemplates(final String template,
             List<String> segmentTemplates,
-            Consumer<RouteSegment> segmentProcessor,
-            Consumer<RouteSegment> targetSegmentProcessor) {
+            @Nullable Consumer<RouteSegment> segmentProcessor,
+            @Nullable Consumer<RouteSegment> targetSegmentProcessor) {
         if (segmentTemplates.isEmpty()) {
             return;
         }
@@ -720,8 +746,8 @@ final class RouteSegment implements Serializable {
 
     void matchSegmentTemplatesWithParameters(String template,
             RouteParameters parameters,
-            Consumer<RouteSegmentValue> segmentProcessor,
-            Consumer<RouteSegment> targetSegmentProcessor) {
+            @Nullable Consumer<RouteSegmentValue> segmentProcessor,
+            @Nullable Consumer<RouteSegment> targetSegmentProcessor) {
 
         final List<String> segmentTemplates = PathUtil
                 .getSegmentsList(template);
@@ -766,7 +792,8 @@ final class RouteSegment implements Serializable {
      * targeted segment we use the target from the optional child. The search is
      * performed recursively on this segment.
      */
-    private RouteSegment getAnyOptionalOrVarargsParameterWithTarget() {
+    private @Nullable RouteSegment getAnyOptionalOrVarargsParameterWithTarget() {
+        @Nullable
         RouteSegment optionalParameter = getOptionalParameterWithTarget();
         if (optionalParameter != null) {
             return optionalParameter;
@@ -790,7 +817,7 @@ final class RouteSegment implements Serializable {
     /**
      * Returns a child optional parameter with target.
      */
-    private RouteSegment getOptionalParameterWithTarget() {
+    private @Nullable RouteSegment getOptionalParameterWithTarget() {
         for (RouteSegment parameter : getOptionalSegments().values()) {
             if (parameter.hasTarget()) {
                 return parameter;
@@ -809,6 +836,8 @@ final class RouteSegment implements Serializable {
         throw ambigousException(message);
     }
 
+    @SuppressWarnings("NullAway") // getTarget() known non-null; only called
+                                  // when hasTarget() is true
     private RuntimeException ambigousTarget(Class<? extends Component> target) {
 
         String messageFormat;
@@ -823,6 +852,8 @@ final class RouteSegment implements Serializable {
         throw ambigousException(message);
     }
 
+    @SuppressWarnings("NullAway") // getTarget() known non-null; only called
+                                  // when hasTarget() is true
     private RuntimeException ambigousException(String message) {
         throw new AmbiguousRouteConfigurationException(message,
                 getTarget().getTarget());

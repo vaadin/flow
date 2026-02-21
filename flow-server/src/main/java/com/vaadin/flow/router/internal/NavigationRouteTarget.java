@@ -18,6 +18,8 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.router.RouteParameters;
 
 /**
@@ -33,16 +35,16 @@ import com.vaadin.flow.router.RouteParameters;
 public class NavigationRouteTarget implements Serializable {
 
     // Processed path.
-    private final String path;
+    private final @Nullable String path;
 
     // Target found for the specified path.
-    private final RouteTarget routeTarget;
+    private final @Nullable RouteTarget routeTarget;
 
     // Parameters found in the path.
     private final RouteParameters parameters;
 
-    public NavigationRouteTarget(String path, RouteTarget routeTarget,
-            Map<String, String> parameters) {
+    public NavigationRouteTarget(@Nullable String path,
+            @Nullable RouteTarget routeTarget, Map<String, String> parameters) {
         this.path = path;
         this.routeTarget = routeTarget;
         this.parameters = new RouteParameters(parameters);
@@ -63,7 +65,7 @@ public class NavigationRouteTarget implements Serializable {
      *
      * @return the input path for the search.
      */
-    public String getPath() {
+    public @Nullable String getPath() {
         return path;
     }
 
@@ -72,7 +74,7 @@ public class NavigationRouteTarget implements Serializable {
      *
      * @return the route target.
      */
-    public RouteTarget getRouteTarget() {
+    public @Nullable RouteTarget getRouteTarget() {
         return routeTarget;
     }
 

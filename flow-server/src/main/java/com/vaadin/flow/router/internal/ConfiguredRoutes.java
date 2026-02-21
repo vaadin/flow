@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameterData;
@@ -205,8 +207,8 @@ public class ConfiguredRoutes implements Serializable {
      * @return the {@link RouteTarget} instance matching the given target
      *         component and route parameters.
      */
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
+    public @Nullable RouteTarget getRouteTarget(
+            Class<? extends Component> target, RouteParameters parameters) {
         return iterateTemplates(target, template -> {
             try {
                 return getRouteModel().getRouteTarget(template, parameters);
@@ -225,8 +227,9 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Optional<Class<? extends Component>> getTarget(String url) {
         final NavigationRouteTarget result = getNavigationRouteTarget(url);
-        if (result.hasTarget()) {
-            final RouteTarget routeTarget = result.getRouteTarget();
+        @Nullable
+        final RouteTarget routeTarget = result.getRouteTarget();
+        if (routeTarget != null) {
             return Optional.ofNullable(routeTarget.getTarget());
         } else {
             return Optional.empty();
@@ -298,7 +301,8 @@ public class ConfiguredRoutes implements Serializable {
      *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
-    public String getTargetRoute(Class<? extends Component> navigationTarget) {
+    public @Nullable String getTargetRoute(
+            Class<? extends Component> navigationTarget) {
         return getTemplate(navigationTarget);
     }
 
@@ -309,7 +313,8 @@ public class ConfiguredRoutes implements Serializable {
      *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
-    public String getTemplate(Class<? extends Component> navigationTarget) {
+    public @Nullable String getTemplate(
+            Class<? extends Component> navigationTarget) {
         return getTargetRoutes().get(navigationTarget);
     }
 
@@ -327,7 +332,8 @@ public class ConfiguredRoutes implements Serializable {
      *            unformatted template will be provided.
      * @return base route string if target class found
      */
-    public String getTemplate(Class<? extends Component> navigationTarget,
+    public @Nullable String getTemplate(
+            Class<? extends Component> navigationTarget,
             Set<RouteParameterFormatOption> format) {
         final String template = getTemplate(navigationTarget);
         if (template == null) {
@@ -344,7 +350,8 @@ public class ConfiguredRoutes implements Serializable {
      *            navigationTarget to get registered route for
      * @return route string if target class found
      */
-    public String getTargetUrl(Class<? extends Component> navigationTarget) {
+    public @Nullable String getTargetUrl(
+            Class<? extends Component> navigationTarget) {
         return iterateTemplates(navigationTarget, template -> {
             if (RouteFormat.hasRequiredParameter(template)) {
                 return null;
@@ -371,7 +378,8 @@ public class ConfiguredRoutes implements Serializable {
      * @return url String populated with parameters for the given
      *         navigationTarget
      */
-    public String getTargetUrl(Class<? extends Component> navigationTarget,
+    public @Nullable String getTargetUrl(
+            Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         return iterateTemplates(navigationTarget, template -> {
             try {
@@ -389,7 +397,7 @@ public class ConfiguredRoutes implements Serializable {
      *            exception class to get exception handler for
      * @return exception handler if found
      */
-    public Class<? extends Component> getExceptionHandlerByClass(
+    public @Nullable Class<? extends Component> getExceptionHandlerByClass(
             Class<?> exceptionClass) {
         return getExceptionHandlers().get(exceptionClass);
     }
@@ -423,12 +431,13 @@ public class ConfiguredRoutes implements Serializable {
      * @return route target for template, <code>null</code> if nothing
      *         registered
      */
-    protected RouteTarget getRouteTarget(String template) {
+    protected @Nullable RouteTarget getRouteTarget(String template) {
         return getRoutesMap().get(template);
     }
 
-    private <T> T iterateTemplates(Class<? extends Component> navigationTarget,
-            Function<String, T> templateOutput) {
+    private <T> @Nullable T iterateTemplates(
+            Class<? extends Component> navigationTarget,
+            Function<String, @Nullable T> templateOutput) {
 
         final RouteModel model = getTargetRouteModelMap().get(navigationTarget);
         if (model == null) {

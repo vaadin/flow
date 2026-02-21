@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -40,8 +41,10 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
  */
 public class DefaultRouteResolver implements RouteResolver {
 
+    // RouteResolver.resolve is in a non-@NullMarked package
+    @SuppressWarnings("NullAway")
     @Override
-    public NavigationState resolve(ResolveRequest request) {
+    public @Nullable NavigationState resolve(ResolveRequest request) {
         RouteRegistry registry = request.getRouter().getRegistry();
 
         final String path = request.getLocation().getPath();

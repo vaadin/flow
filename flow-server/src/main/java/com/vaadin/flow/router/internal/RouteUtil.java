@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,7 +202,8 @@ public class RouteUtil {
     }
 
     private static List<String> getRoutePrefixes(Class<?> component,
-            final Class<? extends RouterLayout> layout, final String value) {
+            final @Nullable Class<? extends RouterLayout> layout,
+            final String value) {
         List<String> parentRoutePrefixes = getParentRoutePrefixes(component,
                 () -> layout);
         Collections.reverse(parentRoutePrefixes);
@@ -213,7 +215,7 @@ public class RouteUtil {
     }
 
     private static List<String> getParentRoutePrefixes(Class<?> component,
-            Supplier<Class<? extends RouterLayout>> routerLayoutSupplier) {
+            Supplier<@Nullable Class<? extends RouterLayout>> routerLayoutSupplier) {
         List<String> list = new ArrayList<>();
 
         Optional<ParentLayout> parentLayout = AnnotationReader
@@ -228,6 +230,7 @@ public class RouteUtil {
             return list;
         }
 
+        @Nullable
         Class<? extends RouterLayout> routerLayout = routerLayoutSupplier.get();
         if (routerLayout != null && !routerLayout.equals(UI.class)) {
             list.addAll(getParentRoutePrefixes(routerLayout, () -> null));
@@ -305,9 +308,9 @@ public class RouteUtil {
      *            to handle or null for error views.
      * @return top parent layout for target or null if none found
      */
-    public static Class<? extends RouterLayout> getTopParentLayout(
+    public static @Nullable Class<? extends RouterLayout> getTopParentLayout(
             VaadinContext context, final Class<?> component,
-            final String path) {
+            final @Nullable String path) {
         if (path == null) {
             Optional<ParentLayout> parentLayout = AnnotationReader
                     .getAnnotationFor(component, ParentLayout.class);
@@ -717,11 +720,14 @@ public class RouteUtil {
                         routeData.getNavigationTarget(), null, path);
                 path = String.join("/", parentRoutePrefixes);
             }
-            return RouteUtil
-                    .isAutolayoutEnabled(routeData.getNavigationTarget(), path)
-                    && registry.hasLayout(path)
-                    && collectRouteParentLayouts(registry.getLayout(path))
-                            .stream().anyMatch(layouts::contains);
+            if (!RouteUtil.isAutolayoutEnabled(routeData.getNavigationTarget(),
+                    path) || !registry.hasLayout(path)) {
+                return false;
+            }
+            @Nullable
+            Class<? extends RouterLayout> layout = registry.getLayout(path);
+            return layout != null && collectRouteParentLayouts(layout).stream()
+                    .anyMatch(layouts::contains);
         });
     }
 

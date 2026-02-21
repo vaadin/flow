@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -227,7 +229,7 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static void checkMandatoryParameter(
             Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+            @Nullable RouteParameters parameters) {
         if (hasUrlParameter(navigationTarget)
                 && hasMandatoryParameter(navigationTarget)
                 && (parameters == null

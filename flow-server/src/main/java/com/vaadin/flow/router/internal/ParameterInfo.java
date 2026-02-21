@@ -18,6 +18,8 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Define a route url parameter details.
  * <p>
@@ -33,7 +35,7 @@ public class ParameterInfo implements Serializable {
 
     private final boolean varargs;
 
-    private final String regex;
+    private final @Nullable String regex;
 
     public ParameterInfo(String template) {
         this.template = template;

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -84,28 +85,31 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         assert event instanceof ErrorNavigationEvent
                 : "Error handling needs ErrorNavigationEvent";
 
-        ExceptionsTrace trace = ComponentUtil.getData(event.getUI(),
+        @Nullable
+        ExceptionsTrace existingTrace = ComponentUtil.getData(event.getUI(),
                 ExceptionsTrace.class);
-        boolean isFirstCall = trace == null;
         Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
                 .getCaughtException();
-        if (isFirstCall) {
+        final ExceptionsTrace trace;
+        if (existingTrace == null) {
             trace = new ExceptionsTrace(exception);
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
-        } else if (trace.hasException(exception)) {
-            LoggerFactory.getLogger(ErrorStateRenderer.class)
-                    .error("The same exception {} "
+        } else if (existingTrace.hasException(exception)) {
+            LoggerFactory.getLogger(ErrorStateRenderer.class).error(
+                    "The same exception {} "
                             + "has been thrown several times during navigation. "
                             + "Can't use any {} view for this error.",
-                            exception.getClass().getName(),
-                            HasErrorParameter.class.getSimpleName(), trace);
-            throw trace;
+                    exception.getClass().getName(),
+                    HasErrorParameter.class.getSimpleName(), existingTrace);
+            throw existingTrace;
+        } else {
+            trace = existingTrace;
         }
         trace.addException(exception);
         try {
             return super.handle(event);
         } finally {
-            if (isFirstCall) {
+            if (existingTrace == null) {
                 ComponentUtil.setData(event.getUI(), ExceptionsTrace.class,
                         null);
             }

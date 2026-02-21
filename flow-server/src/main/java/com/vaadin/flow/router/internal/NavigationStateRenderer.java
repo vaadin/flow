@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -46,7 +48,7 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
-    private LocationChangeEvent ongoingLocationChangeEvent;
+    private @Nullable LocationChangeEvent ongoingLocationChangeEvent;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -60,7 +62,7 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     }
 
     void setOngoingLocationChangeEvent(
-            LocationChangeEvent ongoingLocationChangeEvent) {
+            @Nullable LocationChangeEvent ongoingLocationChangeEvent) {
         this.ongoingLocationChangeEvent = ongoingLocationChangeEvent;
     }
 
@@ -74,9 +76,13 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         NavigationRouteTarget target = router.getRegistry()
                 .getNavigationRouteTarget(navigationState.getResolvedPath());
 
-        if (target.hasTarget()) {
-            return getTargetParentLayouts(target.getRouteTarget(),
-                    router.getRegistry(), target.getPath());
+        @Nullable
+        RouteTarget routeTarget = target.getRouteTarget();
+        @Nullable
+        String path = target.getPath();
+        if (routeTarget != null && path != null) {
+            return getTargetParentLayouts(routeTarget, router.getRegistry(),
+                    path);
         } else {
             return Collections.emptyList();
         }

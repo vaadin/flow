@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -85,11 +86,11 @@ public abstract class AbstractNavigationStateRenderer
 
     private final NavigationState navigationState;
 
-    private List<Class<? extends RouterLayout>> routeLayoutTypes;
+    private @Nullable List<Class<? extends RouterLayout>> routeLayoutTypes;
 
-    private Postpone postponed = null;
+    private @Nullable Postpone postponed = null;
 
-    private LocationChangeEvent locationChangeEvent = null;
+    private @Nullable LocationChangeEvent locationChangeEvent = null;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -153,6 +154,8 @@ public abstract class AbstractNavigationStateRenderer
                 .stream().filter(isRouteTargetType).findAny();
     }
 
+    @SuppressWarnings("NullAway") // routeTarget, getRouter(), getSession()
+                                  // known non-null during navigation
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
@@ -161,7 +164,8 @@ public abstract class AbstractNavigationStateRenderer
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
         final RouteParameters parameters = navigationState.getRouteParameters();
-        final RouteTarget routeTarget = navigationState.getRouteTarget();
+        final @Nullable RouteTarget routeTarget = navigationState
+                .getRouteTarget();
 
         routeLayoutTypes = routeTarget != null
                 ? getTargetParentLayouts(routeTarget,
@@ -259,6 +263,8 @@ public abstract class AbstractNavigationStateRenderer
      * @return {@code true} if additional client data requested, else
      *         {@code false}
      */
+    @SuppressWarnings("NullAway") // getSession(), routeLayoutTypes known
+                                  // non-null during navigation
     private boolean populateChain(ArrayList<HasElement> chain,
             boolean preserveOnRefreshTarget, NavigationEvent event) {
         if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
@@ -405,8 +411,13 @@ public abstract class AbstractNavigationStateRenderer
     private boolean isClientHandled(String route) {
         // If navigation target is Hilla route, terminate Flow navigation logic
         // here.
-        return MenuRegistry.hasClientRoute(route, true)
-                && !MenuRegistry.getClientRoutes(true).get(route).flowLayout();
+        if (!MenuRegistry.hasClientRoute(route, true)) {
+            return false;
+        }
+        @Nullable
+        AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(true)
+                .get(route);
+        return viewInfo != null && !viewInfo.flowLayout();
     }
 
     /**
@@ -437,6 +448,9 @@ public abstract class AbstractNavigationStateRenderer
      *            request path
      * @return List of parent layouts
      */
+    @SuppressWarnings("NullAway") // registry.getLayout non-null after
+                                  // hasLayout check; getSession() known
+                                  // non-null
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
         if (routeTarget.getParentLayouts().isEmpty()
@@ -448,6 +462,8 @@ public abstract class AbstractNavigationStateRenderer
         return routeTarget.getParentLayouts();
     }
 
+    @SuppressWarnings("NullAway") // getSession() known non-null during
+                                  // navigation
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
@@ -553,7 +569,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void storeContinueNavigationAction(UI ui,
-            ContinueNavigationAction currentAction) {
+            @Nullable ContinueNavigationAction currentAction) {
         ContinueNavigationAction previousAction = ui.getInternals()
                 .getContinueNavigationAction();
         if (previousAction != null && previousAction != currentAction) {
@@ -741,9 +757,13 @@ public abstract class AbstractNavigationStateRenderer
      */
     private Optional<Integer> sendBeforeEnterEvent(
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
-            BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
+            BeforeEnterEvent beforeNavigation,
+            @Nullable List<HasElement> chain) {
 
-        Component componentInstance = null;
+        @Nullable
+        Component resolvedComponent = null;
+        @Nullable
+        LocationChangeEvent resolvedLocationChangeEvent = null;
         boolean notifyNavigationTarget = false;
 
         if (chain != null) {
@@ -753,11 +773,12 @@ public abstract class AbstractNavigationStateRenderer
             chain = new ArrayList<>(chain);
             Collections.reverse(chain);
 
-            componentInstance = (Component) chain.get(0);
+            resolvedComponent = (Component) chain.get(0);
 
-            locationChangeEvent = new LocationChangeEvent(event.getSource(),
-                    event.getUI(), event.getTrigger(), event.getLocation(),
-                    chain);
+            resolvedLocationChangeEvent = new LocationChangeEvent(
+                    event.getSource(), event.getUI(), event.getTrigger(),
+                    event.getLocation(), chain);
+            locationChangeEvent = resolvedLocationChangeEvent;
 
             notifyNavigationTarget = true;
         }
@@ -767,13 +788,14 @@ public abstract class AbstractNavigationStateRenderer
             // Notify the target itself, i.e. with the url parameter, before
             // sending the event to the navigation target or any of its
             // children.
-            if (notifyNavigationTarget
+            if (notifyNavigationTarget && resolvedComponent != null
+                    && resolvedLocationChangeEvent != null
                     && (isComponentElementEqualsOrChild(eventHandler,
-                            componentInstance))) {
+                            resolvedComponent))) {
 
                 Optional<Integer> result = notifyNavigationTarget(event,
-                        beforeNavigation, locationChangeEvent,
-                        componentInstance);
+                        beforeNavigation, resolvedLocationChangeEvent,
+                        resolvedComponent);
                 if (result.isPresent()) {
                     return result;
                 }
@@ -789,10 +811,12 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         // Make sure notifyNavigationTarget is executed.
-        if (notifyNavigationTarget) {
+        if (notifyNavigationTarget && resolvedComponent != null
+                && resolvedLocationChangeEvent != null) {
 
             Optional<Integer> result = notifyNavigationTarget(event,
-                    beforeNavigation, locationChangeEvent, componentInstance);
+                    beforeNavigation, resolvedLocationChangeEvent,
+                    resolvedComponent);
             if (result.isPresent()) {
                 return result;
             }
@@ -997,6 +1021,8 @@ public abstract class AbstractNavigationStateRenderer
      * If the chain is missing and needs to be created this method returns an
      * {@link Optional} wrapping an empty {@link ArrayList}.
      */
+    @SuppressWarnings("NullAway") // getSession() known non-null during
+                                  // navigation
     private Optional<ArrayList<HasElement>> getPreservedChain(
             NavigationEvent event) {
         final Location location = event.getLocation();
@@ -1053,6 +1079,8 @@ public abstract class AbstractNavigationStateRenderer
      * Invoke this method with the chain that needs to be preserved after
      * {@link #handle(NavigationEvent)} method created it.
      */
+    @SuppressWarnings("NullAway") // getSession() and getWindowName() known
+                                  // non-null during navigation
     private void setPreservedChain(ArrayList<HasElement> chain,
             NavigationEvent event) {
 
@@ -1106,6 +1134,8 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
+    @SuppressWarnings("NullAway") // getSession() known non-null during
+                                  // navigation
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route) {
         Instantiator instantiator = navigationEvent.getUI().getSession()
@@ -1210,6 +1240,8 @@ public abstract class AbstractNavigationStateRenderer
         session.setAttribute(PreservedComponentCache.class, cache);
     }
 
+    @SuppressWarnings("NullAway") // getSession() known non-null during
+                                  // navigation
     private static void clearAllPreservedChains(UI ui) {
         final VaadinSession session = ui.getSession();
         // Note that this check is always false if @PreserveOnRefresh has not
@@ -1235,6 +1267,8 @@ public abstract class AbstractNavigationStateRenderer
      * @throws IllegalStateException
      *             if the UI is not in closing state
      */
+    @SuppressWarnings("NullAway") // getSession() known non-null since UI is
+                                  // still associated with a session
     public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
         if (!inactiveUI.isClosing()) {
             throw new IllegalStateException(

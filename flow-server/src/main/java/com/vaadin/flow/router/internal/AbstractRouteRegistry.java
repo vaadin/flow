@@ -30,6 +30,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -98,7 +100,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * through {@link #configure(Configuration)} for concurrency reasons.
      */
     private volatile ConfiguredRoutes configuredRoutes = new ConfiguredRoutes();
-    private volatile ConfigureRoutes editing = null;
+    private volatile @Nullable ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
 
@@ -453,9 +455,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return getConfiguration().getNavigationRouteTarget(url);
     }
 
+    @SuppressWarnings("NullAway") // cross-package override: RouteRegistry is
+                                  // not @NullMarked
     @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
+    public @Nullable RouteTarget getRouteTarget(
+            Class<? extends Component> target, RouteParameters parameters) {
         return getConfiguration().getRouteTarget(target, parameters);
     }
 
@@ -488,8 +492,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     protected void addErrorTarget(Class<? extends Component> target,
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        Class<? extends Exception> exceptionType = ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class)
+        @Nullable
+        Class<?> genericType = ReflectTools.getGenericInterfaceType(target,
+                HasErrorParameter.class);
+        if (genericType == null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Could not determine the exception type for '%s'",
+                    target.getName()));
+        }
+        Class<? extends Exception> exceptionType = genericType
                 .asSubclass(Exception.class);
 
         if (exceptionTargetsMap.containsKey(exceptionType)) {
@@ -522,8 +533,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
             Class<? extends Component> target,
             Class<? extends Exception> exceptionType) {
+        @Nullable
         Class<? extends Component> registered = exceptionTargetsMap
                 .get(exceptionType);
+        if (registered == null) {
+            exceptionTargetsMap.put(exceptionType, target);
+            return;
+        }
 
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
@@ -623,8 +639,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Set.copyOf(layouts.values());
     }
 
+    // RouteRegistry.getLayout is in a non-@NullMarked package
+    @SuppressWarnings("NullAway")
     @Override
-    public Class<? extends RouterLayout> getLayout(String path) {
+    public @Nullable Class<? extends RouterLayout> getLayout(String path) {
         Optional<String> first = layouts.keySet().stream()
                 .sorted(pathSortComparator())
                 .filter(key -> pathMatches(path, key)).findFirst();

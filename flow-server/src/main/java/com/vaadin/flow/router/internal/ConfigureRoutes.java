@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -165,7 +167,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     public void setRoute(String template,
             Class<? extends Component> navigationTarget,
-            List<Class<? extends RouterLayout>> parentChain) {
+            @Nullable List<Class<? extends RouterLayout>> parentChain) {
 
         template = PathUtil.trimPath(template);
 
@@ -232,11 +234,14 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         // Remove target route from class-to-string map
         getTargetRoutes().remove(target);
 
-        getTargetRouteModelMap().remove(target).getRoutes().keySet()
-                .forEach(template -> {
-                    getRouteModel().removeRoute(template);
-                    getRoutesMap().remove(template);
-                });
+        @Nullable
+        RouteModel removedModel = getTargetRouteModelMap().remove(target);
+        if (removedModel != null) {
+            removedModel.getRoutes().keySet().forEach(template -> {
+                getRouteModel().removeRoute(template);
+                getRoutesMap().remove(template);
+            });
+        }
     }
 
     /**
@@ -255,19 +260,23 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             return;
         }
 
+        @Nullable
         RouteTarget removedRoute = getRoutesMap().remove(template);
         if (removedRoute != null) {
             final Class<? extends Component> target = removedRoute.getTarget();
 
-            final RouteModel targetRouteModel = getTargetRouteModelMap()
+            final @Nullable RouteModel targetRouteModel = getTargetRouteModelMap()
                     .get(target);
+            if (targetRouteModel == null) {
+                return;
+            }
             targetRouteModel.removeRoute(template);
 
             if (targetRouteModel.isEmpty()) {
                 getTargetRouteModelMap().remove(target);
             }
 
-            final String mainTemplate = getTargetRoutes().get(target);
+            final @Nullable String mainTemplate = getTargetRoutes().get(target);
             if (Objects.equals(template, mainTemplate)) {
                 if (targetRouteModel.isEmpty()) {
                     getTargetRoutes().remove(target);
@@ -291,8 +300,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     public void removeRoute(String template,
             Class<? extends Component> targetRoute) {
-        if (!hasTemplate(template)
-                || !getRoutesMap().get(template).containsTarget(targetRoute)) {
+        @Nullable
+        RouteTarget routeTarget = getRoutesMap().get(template);
+        if (routeTarget == null || !routeTarget.containsTarget(targetRoute)) {
             return;
         }
 

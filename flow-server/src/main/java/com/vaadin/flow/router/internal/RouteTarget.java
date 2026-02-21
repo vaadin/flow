@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
@@ -51,7 +53,7 @@ public class RouteTarget implements Serializable {
      *            parent layout chain
      */
     public RouteTarget(Class<? extends Component> target,
-            List<Class<? extends RouterLayout>> parents) {
+            @Nullable List<Class<? extends RouterLayout>> parents) {
         this.target = target;
         this.parentLayouts = parents != null
                 ? Collections.unmodifiableList(new ArrayList<>(parents))

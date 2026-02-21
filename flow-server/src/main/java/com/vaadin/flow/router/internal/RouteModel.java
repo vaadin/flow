@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameters;
@@ -158,8 +160,9 @@ class RouteModel implements Serializable {
      *             in case template is not registered or the parameters do not
      *             match with the template.
      */
+    @Nullable
     RouteTarget getRouteTarget(String template, RouteParameters parameters) {
-        AtomicReference<RouteTarget> target = new AtomicReference<>();
+        AtomicReference<@Nullable RouteTarget> target = new AtomicReference<>();
         root.matchSegmentTemplatesWithParameters(template, parameters, null,
                 routeSegment -> target.set(routeSegment.getTarget()));
         return target.get();
@@ -214,7 +217,8 @@ class RouteModel implements Serializable {
      *             in case template is not registered or the parameters do not
      *             match with the template.
      */
-    String formatTemplate(String template,
+    @Nullable
+    String formatTemplate(@Nullable String template,
             Set<RouteParameterFormatOption> format) {
 
         if (format.contains(RouteParameterFormatOption.NAME)
