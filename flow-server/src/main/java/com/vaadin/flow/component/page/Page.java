@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -59,6 +60,8 @@ public class Page implements Serializable {
     private ValueSignal<WindowSize> windowSizeSignal;
     private ValueSignal<PageVisibility> pageVisibilitySignal;
     private DomListenerRegistration visibilityReceiver;
+    private DomListenerRegistration fullscreenReceiver;
+    private ArrayList<FullscreenChangeListener> fullscreenListeners;
 
     /**
      * Creates a page instance for the given UI.
@@ -760,5 +763,105 @@ public class Page implements Serializable {
                 .filter(direction -> direction.getClientName()
                         .equals(directionClientName))
                 .findFirst().orElse(Direction.LEFT_TO_RIGHT);
+    }
+
+    /**
+     * Requests that the browser display the entire page in fullscreen mode.
+     * <p>
+     * This calls {@code document.documentElement.requestFullscreen()} which
+     * fullscreens the entire page. Themes and overlay components (such as
+     * Notification and ComboBox popups) work correctly in this mode.
+     * <p>
+     * Note that browsers require transient user activation (e.g., a button
+     * click) to enter fullscreen mode. Calling this method from a server push
+     * or view constructor will likely not work.
+     *
+     * @see Component#requestFullscreen()
+     * @see #exitFullscreen()
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API">MDN
+     *      Fullscreen API</a>
+     */
+    public void requestFullscreen() {
+        executeJs("window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
+    }
+
+    /**
+     * Exits fullscreen mode if the page is currently in fullscreen.
+     * <p>
+     * This calls {@code document.exitFullscreen()} on the browser. If a
+     * component was previously fullscreened via
+     * {@link Component#requestFullscreen()}, it will be automatically restored
+     * to its original position.
+     *
+     * @see #requestFullscreen()
+     * @see Component#requestFullscreen()
+     */
+    public void exitFullscreen() {
+        executeJs("document.exitFullscreen()");
+    }
+
+    /**
+     * Checks if the browser supports fullscreen mode.
+     * <p>
+     * Returns a {@link PendingJavaScriptResult} that resolves to a boolean. Use
+     * it like:
+     *
+     * <pre>
+     * page.isFullscreenEnabled().then(Boolean.class, enabled -&gt; {
+     *     if (enabled) {
+     *         page.requestFullscreen();
+     *     }
+     * });
+     * </pre>
+     *
+     * @return a pending result that resolves to {@code true} if fullscreen is
+     *         supported
+     */
+    public PendingJavaScriptResult isFullscreenEnabled() {
+        return executeJs("return document.fullscreenEnabled === true");
+    }
+
+    /**
+     * Adds a listener that is notified when the fullscreen state changes.
+     * <p>
+     * The listener is called when the page enters or exits fullscreen mode,
+     * whether triggered programmatically or by the user (e.g., pressing
+     * Escape).
+     *
+     * @param listener
+     *            the listener to add, not {@code null}
+     * @return a registration object for removing the listener
+     *
+     * @see FullscreenChangeListener#fullscreenChanged(FullscreenChangeEvent)
+     * @see Registration
+     */
+    public Registration addFullscreenChangeListener(
+            FullscreenChangeListener listener) {
+        Objects.requireNonNull(listener);
+        ensureFullscreenChangeListener();
+        if (fullscreenListeners == null) {
+            fullscreenListeners = new ArrayList<>(1);
+        }
+        fullscreenListeners.add(listener);
+        return () -> fullscreenListeners.remove(listener);
+    }
+
+    private void ensureFullscreenChangeListener() {
+        if (fullscreenReceiver == null) {
+            ui.getElement().executeJs(
+                    "window.Vaadin.Flow.fullscreen.setupFullscreenChangeListener(this)");
+            fullscreenReceiver = ui.getElement()
+                    .addEventListener("flow-fullscreenchange", e -> {
+                        boolean fullscreen = e.getEventData()
+                                .get("event.fullscreen").asBoolean();
+                        if (fullscreenListeners != null) {
+                            var evt = new FullscreenChangeEvent(this,
+                                    fullscreen);
+                            new ArrayList<>(fullscreenListeners)
+                                    .forEach(l -> l.fullscreenChanged(evt));
+                        }
+                    }).addEventData("event.fullscreen").allowInert();
+        }
     }
 }

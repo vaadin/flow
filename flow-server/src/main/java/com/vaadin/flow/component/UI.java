@@ -111,6 +111,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 @JsModule("./geolocation.js")
 @JsModule("./page-visibility.js")
 @JsModule("./clipboard.js")
+@JsModule("./fullscreenConnector.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
