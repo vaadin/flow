@@ -17,6 +17,8 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Composite;
@@ -33,7 +35,7 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class ComponentMapping extends ServerSideFeature {
 
-    private Component component = null;
+    private @Nullable Component component = null;
 
     /**
      * Creates an instance of this node feature.

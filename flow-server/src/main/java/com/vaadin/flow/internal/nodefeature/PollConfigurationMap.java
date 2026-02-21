@@ -58,11 +58,7 @@ public class PollConfigurationMap extends NodeMap {
      * @return the poll interval
      */
     public int getPollInterval() {
-        if (!contains(POLL_INTERVAL_KEY)) {
-            return -1;
-        }
-        return (int) get(POLL_INTERVAL_KEY);
-
+        return getOrDefault(POLL_INTERVAL_KEY, -1);
     }
 
 }

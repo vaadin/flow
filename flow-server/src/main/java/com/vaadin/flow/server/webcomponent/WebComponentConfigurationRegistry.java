@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -376,8 +377,14 @@ public class WebComponentConfigurationRegistry implements Serializable {
         ElementData originalData = rootElement.getNode()
                 .getFeature(ElementData.class);
         ElementData copyData = copyNode.getFeature(ElementData.class);
-        copyData.setTag(originalData.getTag());
-        copyData.setPayload(originalData.getPayload());
+        String tag = originalData.getTag();
+        if (tag != null) {
+            copyData.setTag(tag);
+        }
+        BaseJsonNode payload = originalData.getPayload();
+        if (payload != null) {
+            copyData.setPayload(payload);
+        }
         copyData.setVisible(originalData.isVisible());
 
         Element copyElement = Element.get(copyNode);

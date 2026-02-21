@@ -17,6 +17,8 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -56,7 +58,7 @@ public class BasicTypeValue extends NodeValue<Serializable> {
      *            the value to set
      */
     @Override
-    public void setValue(Serializable value) {
+    public void setValue(@Nullable Serializable value) {
         super.setValue(value);
     }
 
@@ -66,7 +68,7 @@ public class BasicTypeValue extends NodeValue<Serializable> {
      * @return the value
      */
     @Override
-    public Serializable getValue() {
+    public @Nullable Serializable getValue() {
         return super.getValue();
     }
 }

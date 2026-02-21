@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
 import com.vaadin.flow.internal.change.EmptyChange;
@@ -51,8 +53,14 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private final class NodeListIterator implements Iterator<T> {
         private int index = -1;
-        private T current;
-        private Iterator<T> arrayIterator = values.iterator();
+        private @Nullable T current;
+        private final Iterator<T> arrayIterator;
+
+        @SuppressWarnings("NullAway") // values is guaranteed non-null when
+                                      // NodeListIterator is created
+        NodeListIterator() {
+            arrayIterator = values.iterator();
+        }
 
         @Override
         public boolean hasNext() {
@@ -67,6 +75,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
 
         @Override
+        @SuppressWarnings("NullAway") // current is always set by next() before
+                                      // remove() can be called
         public void remove() {
             arrayIterator.remove();
             addChange(new ListRemoveChange<>(NodeList.this, index, current));
@@ -139,7 +149,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
     }
 
-    private List<T> values;
+    private @Nullable List<T> values;
 
     private boolean isRemoveAllCalled;
 
@@ -196,6 +206,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @param item
      *            the item to add
      */
+    @SuppressWarnings("NullAway") // ensureValues() guarantees values is
+                                  // non-null
     protected void add(T item) {
         ensureValues();
         add(values.size(), item);
@@ -207,6 +219,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @param items
      *            a collection of items to add, not null
      */
+    @SuppressWarnings("NullAway") // ensureValues() guarantees values is
+                                  // non-null
     protected void addAll(Collection<? extends T> items) {
         assert items != null;
         if (items.isEmpty()) {
@@ -232,6 +246,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @param item
      *            the item to insert
      */
+    @SuppressWarnings("NullAway") // ensureValues() guarantees values is
+                                  // non-null
     protected void add(int index, T item) {
         ensureValues();
         values.add(index, item);

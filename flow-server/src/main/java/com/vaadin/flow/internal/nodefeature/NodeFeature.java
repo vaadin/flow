@@ -18,6 +18,8 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.NodeChange;
@@ -73,7 +75,7 @@ public abstract class NodeFeature implements Serializable {
      * @param child
      *            the instance to maybe attach
      */
-    protected void attachPotentialChild(Object child) {
+    protected void attachPotentialChild(@Nullable Object child) {
         if (child instanceof StateNode) {
             StateNode childNode = (StateNode) child;
             childNode.setParent(getNode());
@@ -86,7 +88,7 @@ public abstract class NodeFeature implements Serializable {
      * @param child
      *            the instance to maybe detach
      */
-    protected void detatchPotentialChild(Object child) {
+    protected void detatchPotentialChild(@Nullable Object child) {
         if (child instanceof StateNode) {
             StateNode childNode = (StateNode) child;
 

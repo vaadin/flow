@@ -17,6 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
@@ -46,7 +47,7 @@ public class ElementData extends NodeMap {
     }
 
     @Override
-    protected Serializable get(String key) {
+    protected @Nullable Serializable get(String key) {
         Serializable value = super.get(key);
         if (value instanceof SignalBinding) {
             return ((SignalBinding) value).value();
@@ -70,7 +71,7 @@ public class ElementData extends NodeMap {
      *
      * @return the tag name
      */
-    public String getTag() {
+    public @Nullable String getTag() {
         return getOrDefault(NodeProperties.TAG, null);
     }
 
@@ -89,7 +90,7 @@ public class ElementData extends NodeMap {
      *
      * @return namespace
      */
-    public String getNamespace() {
+    public @Nullable String getNamespace() {
         return getOrDefault(NodeProperties.NAMESPACE, null);
     }
 
@@ -131,7 +132,7 @@ public class ElementData extends NodeMap {
      *
      * @return the payload data of the element
      */
-    public BaseJsonNode getPayload() {
+    public @Nullable BaseJsonNode getPayload() {
         Serializable value = get(NodeProperties.PAYLOAD);
         return value == null ? null : (BaseJsonNode) value;
     }
@@ -145,8 +146,8 @@ public class ElementData extends NodeMap {
         put(NodeProperties.JAVA_CLASS, componentClass.getName());
     }
 
-    public String getJavaClass() {
-        return getOrDefault(NodeProperties.JAVA_CLASS, (String) null);
+    public @Nullable String getJavaClass() {
+        return getOrDefault(NodeProperties.JAVA_CLASS, null);
     }
 
     /**
@@ -165,10 +166,10 @@ public class ElementData extends NodeMap {
                 (element, value) -> putVisibleSignalValue(value), null);
     }
 
-    private void putVisibleSignalValue(Boolean value) {
+    private void putVisibleSignalValue(@Nullable Boolean value) {
         boolean booleanValue = (value != null) ? value : Boolean.FALSE;
-        if (hasSignal(NodeProperties.VISIBLE)) {
-            SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
+        if (hasSignal(NodeProperties.VISIBLE) && super.get(
+                NodeProperties.VISIBLE) instanceof SignalBinding b) {
             put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
                     b.registration(), booleanValue, null));
         } else {

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -65,7 +66,7 @@ public class ElementListenerMap extends NodeMap {
             .of(DebouncePhase.LEADING);
 
     // Server-side only data
-    private Map<String, List<DomEventListenerWrapper>> listeners;
+    private @Nullable Map<String, List<DomEventListenerWrapper>> listeners;
 
     private static class ExpressionSettings implements Serializable {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
@@ -109,12 +110,12 @@ public class ElementListenerMap extends NodeMap {
         private final ElementListenerMap listenerMap;
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
-        private Set<String> eventDataExpressions;
-        private String filter;
+        private @Nullable Set<String> eventDataExpressions;
+        private @Nullable String filter;
 
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
-        private List<SerializableRunnable> unregisterHandlers;
+        private @Nullable List<SerializableRunnable> unregisterHandlers;
         private boolean allowInert;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
@@ -185,7 +186,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration setFilter(String filter) {
+        public DomListenerRegistration setFilter(@Nullable String filter) {
             this.filter = filter;
 
             listenerMap.updateEventSettings(type);
@@ -194,11 +195,11 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public String getFilter() {
+        public @Nullable String getFilter() {
             return filter;
         }
 
-        boolean matchesFilter(JsonNode eventData) {
+        boolean matchesFilter(@Nullable JsonNode eventData) {
             if (filter == null) {
                 // No filter: always matches
                 return true;
@@ -321,7 +322,17 @@ public class ElementListenerMap extends NodeMap {
         DomEventListenerWrapper listenerWrapper = new DomEventListenerWrapper(
                 this, eventType, listener);
 
-        listeners.get(eventType).add(listenerWrapper);
+        // listeners and list for eventType are guaranteed non-null by the block
+        // above
+        if (listeners == null) {
+            throw new IllegalStateException("listeners must be non-null");
+        }
+        List<DomEventListenerWrapper> eventListeners = listeners.get(eventType);
+        if (eventListeners == null) {
+            throw new IllegalStateException(
+                    "event listeners for " + eventType + " must be non-null");
+        }
+        eventListeners.add(listenerWrapper);
 
         updateEventSettings(eventType);
 
@@ -524,7 +535,7 @@ public class ElementListenerMap extends NodeMap {
      * @return the most permissive update mode, or <code>null</code> if
      *         synchronization is not configured for the given property
      */
-    public DisabledUpdateMode getPropertySynchronizationMode(
+    public @Nullable DisabledUpdateMode getPropertySynchronizationMode(
             String propertyName) {
         assert propertyName != null;
 

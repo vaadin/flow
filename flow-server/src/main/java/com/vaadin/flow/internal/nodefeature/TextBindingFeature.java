@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -35,8 +37,8 @@ public class TextBindingFeature extends ServerSideFeature {
         super(node);
     }
 
-    private Registration registration;
-    private Signal<String> textSignal;
+    private @Nullable Registration registration;
+    private @Nullable Signal<String> textSignal;
 
     public void setBinding(Registration registration,
             Signal<String> textSignal) {

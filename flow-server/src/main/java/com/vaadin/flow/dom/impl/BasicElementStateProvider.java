@@ -140,6 +140,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return node.getFeature(ElementData.class).getTag() != null;
     }
 
+    // Tag is guaranteed non-null by supports() check before getTag() is called
+    @SuppressWarnings("NullAway")
     @Override
     public String getTag(StateNode node) {
         return getDataFeature(node).getTag();

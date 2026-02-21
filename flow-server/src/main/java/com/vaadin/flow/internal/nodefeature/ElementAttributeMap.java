@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -50,9 +51,9 @@ import com.vaadin.flow.signals.Signal;
  */
 public class ElementAttributeMap extends NodeMap {
 
-    private Map<String, StreamRegistration> resourceRegistrations;
+    private @Nullable Map<String, StreamRegistration> resourceRegistrations;
 
-    private Map<String, Registration> pendingRegistrations;
+    private @Nullable Map<String, Registration> pendingRegistrations;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -109,8 +110,8 @@ public class ElementAttributeMap extends NodeMap {
      */
     public boolean has(String attribute) {
         if (contains(attribute)) {
-            if (hasSignal(attribute)) {
-                SignalBinding binding = (SignalBinding) super.get(attribute);
+            if (hasSignal(attribute)
+                    && super.get(attribute) instanceof SignalBinding binding) {
                 return binding.value() != null;
             }
             return true;
@@ -125,7 +126,7 @@ public class ElementAttributeMap extends NodeMap {
      *            the name of the attribute to remove
      */
     @Override
-    public Serializable remove(String attribute) {
+    public @Nullable Serializable remove(String attribute) {
         if (hasSignal(attribute)) {
             throw new BindingActiveException(
                     "removeAttribute is not allowed while a binding for the given attribute exists.");
@@ -143,7 +144,7 @@ public class ElementAttributeMap extends NodeMap {
      *         been set
      */
     @Override
-    public String get(String attribute) {
+    public @Nullable String get(String attribute) {
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
             return (String) value;
@@ -215,6 +216,7 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
+    @SuppressWarnings("NullAway") // ensure methods guarantee non-null
     private void unregisterResource(String attribute) {
         ensureResourceRegistrations();
         ensurePendingRegistrations();
@@ -236,6 +238,8 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
+    @SuppressWarnings("NullAway") // ensurePendingRegistrations() guarantees
+                                  // non-null
     private void deferRegistration(String attribute,
             AbstractStreamResource resource) {
         ensurePendingRegistrations();
@@ -256,6 +260,7 @@ public class ElementAttributeMap extends NodeMap {
         pendingRegistrations.put(attribute, handle);
     }
 
+    @SuppressWarnings("NullAway") // ensure methods guarantee non-null
     private void registerResource(String attribute,
             AbstractStreamResource resource) {
         ensureResourceRegistrations();
@@ -283,10 +288,10 @@ public class ElementAttributeMap extends NodeMap {
                 }));
     }
 
-    private void doSet(String attribute, Serializable value) {
+    private void doSet(String attribute, @Nullable Serializable value) {
         unregisterResource(attribute);
-        if (hasSignal(attribute)) {
-            SignalBinding binding = (SignalBinding) super.get(attribute);
+        if (hasSignal(attribute)
+                && super.get(attribute) instanceof SignalBinding binding) {
             put(attribute, new SignalBinding(binding.signal(),
                     binding.registration(), (String) value, null));
         } else if (value == null) {
@@ -296,6 +301,8 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
+    @SuppressWarnings("NullAway") // ensureResourceRegistrations() guarantees
+                                  // non-null
     private void unsetResource(String attribute) {
         ensureResourceRegistrations();
         StreamRegistration registration = resourceRegistrations.get(attribute);

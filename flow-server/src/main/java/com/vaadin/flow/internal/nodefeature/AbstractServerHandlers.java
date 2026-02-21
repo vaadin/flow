@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
@@ -51,7 +52,7 @@ import com.vaadin.flow.internal.StateNode;
 public abstract class AbstractServerHandlers<T>
         extends SerializableNodeList<String> {
 
-    private Map<String, DisabledUpdateMode> disabledRpcModes;
+    private @Nullable Map<String, DisabledUpdateMode> disabledRpcModes;
 
     /**
      * Creates a new meta information list for the given state node.

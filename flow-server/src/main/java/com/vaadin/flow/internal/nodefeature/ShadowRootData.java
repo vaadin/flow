@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -49,7 +51,7 @@ public class ShadowRootData extends NodeValue<StateNode> {
         node.setParent(getNode());
     }
 
-    public StateNode getShadowRoot() {
+    public @Nullable StateNode getShadowRoot() {
         return getValue();
     }
 

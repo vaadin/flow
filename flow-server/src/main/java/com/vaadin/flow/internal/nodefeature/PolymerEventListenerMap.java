@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -45,7 +47,7 @@ public class PolymerEventListenerMap extends NodeMap {
      */
     private static final ArrayList<String> emptyArrayList = new ArrayList<>(0);
 
-    private Map<String, List<String>> typeToExpressions;
+    private @Nullable Map<String, List<String>> typeToExpressions;
 
     /**
      * Creates a new map feature for the given node.
@@ -107,7 +109,9 @@ public class PolymerEventListenerMap extends NodeMap {
     }
 
     private void removeListener(String eventType) {
-        typeToExpressions.remove(eventType);
+        if (typeToExpressions != null) {
+            typeToExpressions.remove(eventType);
+        }
         remove(eventType);
     }
 

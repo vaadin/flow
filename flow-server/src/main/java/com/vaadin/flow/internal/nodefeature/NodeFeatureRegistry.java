@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -190,6 +192,8 @@ public class NodeFeatureRegistry {
         return Collections.unmodifiableCollection(nodeFeatures.keySet());
     }
 
+    // Asserts guarantee non-null: feature must be registered
+    @SuppressWarnings("NullAway")
     private static NodeFeatureData getData(
             Class<? extends NodeFeature> nodeFeature) {
         assert nodeFeature != null;
@@ -210,7 +214,8 @@ public class NodeFeatureRegistry {
      *
      * @return the node feature type
      */
-    public static Class<? extends NodeFeature> getFeature(int featureId) {
+    public static @Nullable Class<? extends NodeFeature> getFeature(
+            int featureId) {
         return idToFeature.get(featureId);
     }
 }

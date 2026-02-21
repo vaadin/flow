@@ -83,6 +83,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
         }
     }
 
+    // get() is guaranteed non-null after the put above
+    @SuppressWarnings("NullAway")
     private NodeMap getParameters() {
         if (!contains(PARAMETERS_KEY)) {
             put(PARAMETERS_KEY,
@@ -93,6 +95,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
                 .getFeature(PushConfigurationParametersMap.class);
     }
 
+    // Overrides non-@NullMarked interface method that can return null
+    @SuppressWarnings("NullAway")
     @Override
     public Transport getTransport() {
         if (!getParameters().contains(TRANSPORT_KEY)) {
@@ -118,6 +122,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
                 fallbackTransport.getIdentifier());
     }
 
+    // Overrides non-@NullMarked interface method that can return null
+    @SuppressWarnings("NullAway")
     @Override
     public Transport getFallbackTransport() {
         if (!getParameters().contains(FALLBACK_TRANSPORT_KEY)) {
@@ -133,6 +139,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
         put(PUSH_SERVLET_MAPPING_KEY, pushServletMapping);
     }
 
+    // Overrides non-@NullMarked interface method that can return null
+    @SuppressWarnings("NullAway")
     @Override
     public String getPushServletMapping() {
         return getOrDefault(PUSH_SERVLET_MAPPING_KEY, null);
@@ -143,11 +151,15 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
         put(PUSHMODE_KEY, pushMode.name());
     }
 
+    // Overrides non-@NullMarked interface method; push mode is always set
+    @SuppressWarnings("NullAway")
     @Override
     public PushMode getPushMode() {
         return PushMode.valueOf(get(PUSHMODE_KEY).toString());
     }
 
+    // Overrides non-@NullMarked interface method that can return null
+    @SuppressWarnings("NullAway")
     @Override
     public String getParameter(String key) {
         return (String) getParameters().get(key);

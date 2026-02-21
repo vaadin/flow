@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -57,9 +58,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     private static final Set<String> ALWAYS_GENERATE_CHANGE_PROPERTIES = Collections
             .singleton("innerHTML");
 
-    private Map<String, List<PropertyChangeListener>> listeners;
+    private @Nullable Map<String, List<PropertyChangeListener>> listeners;
 
-    private SerializablePredicate<String> updateFromClientFilter = null;
+    private @Nullable SerializablePredicate<String> updateFromClientFilter = null;
 
     private enum AllowUpdate {
         EXPLICITLY_ALLOW, EXPLICITLY_DISALLOW, NO_EXPLICIT_STATUS
@@ -121,7 +122,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected Serializable get(String key) {
+    protected @Nullable Serializable get(String key) {
+        @Nullable
         Serializable value = super.get(key);
         if (value instanceof SignalBinding) {
             return ((SignalBinding) value).value();
@@ -131,7 +133,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    public void setPropertyFromSignal(String name, Object value) {
+    public void setPropertyFromSignal(String name, @Nullable Object value) {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;
 
@@ -187,7 +189,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected Serializable put(String key, Serializable value,
+    protected @Nullable Serializable put(String key, Serializable value,
             boolean emitChange) {
         PutResult result = putWithDeferredChangeEvent(key, value, emitChange);
 
@@ -198,11 +200,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     private class PutResult implements Runnable {
-        private final Serializable oldValue;
-        private final PropertyChangeEvent eventToFire;
+        private final @Nullable Serializable oldValue;
+        private final @Nullable PropertyChangeEvent eventToFire;
 
-        public PutResult(Serializable oldValue,
-                PropertyChangeEvent eventToFire) {
+        public PutResult(@Nullable Serializable oldValue,
+                @Nullable PropertyChangeEvent eventToFire) {
             this.oldValue = oldValue;
             this.eventToFire = eventToFire;
         }
@@ -232,7 +234,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected Serializable remove(String key) {
+    protected @Nullable Serializable remove(String key) {
         Serializable oldValue = super.remove(key);
 
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
@@ -361,7 +363,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            filter
      */
     public void setUpdateFromClientFilter(
-            SerializablePredicate<String> updateFromClientFilter) {
+            @Nullable SerializablePredicate<String> updateFromClientFilter) {
         this.updateFromClientFilter = updateFromClientFilter;
     }
 
@@ -611,31 +613,38 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         }
 
+        @Nullable
         PutResult putResult = null;
         if (hasSignal(key)) {
-            SignalBinding binding = (SignalBinding) super.get(key);
-
-            AtomicReference<Serializable> putValue = new AtomicReference<>(
-                    value);
-
-            // use new SignalBindingFeature instance to update the signal value
-            SignalBindingFeature feat = new SignalBindingFeature(getNode());
-            feat.setBinding(SignalBindingFeature.VALUE, binding.registration(),
-                    binding.signal(), binding.writeCallback());
-            feat.updateSignalByWriteCallback(SignalBindingFeature.VALUE,
-                    get(key), value, Objects::equals, putValue::set);
-            // never trigger change event here since the change event will be
-            // triggered by the signal update
-            Serializable oldValue = super.put(key,
-                    new SignalBinding(binding.signal(), binding.registration(),
-                            putValue.get(), binding.writeCallback()),
-                    false);
-            putResult = new PutResult(oldValue, null);
-
+            putResult = doDeferredUpdateFromClientWithSignal(key, value);
         } else {
             putResult = putWithDeferredChangeEvent(key, value, false);
         }
 
         return putResult;
+    }
+
+    // hasSignal() guarantees non-null SignalBinding with non-null signal and
+    // registration
+    @SuppressWarnings("NullAway")
+    private PutResult doDeferredUpdateFromClientWithSignal(String key,
+            Serializable value) {
+        SignalBinding binding = (SignalBinding) super.get(key);
+
+        AtomicReference<Serializable> putValue = new AtomicReference<>(value);
+
+        // use new SignalBindingFeature instance to update the signal value
+        SignalBindingFeature feat = new SignalBindingFeature(getNode());
+        feat.setBinding(SignalBindingFeature.VALUE, binding.registration(),
+                binding.signal(), binding.writeCallback());
+        feat.updateSignalByWriteCallback(SignalBindingFeature.VALUE, get(key),
+                value, Objects::equals, putValue::set);
+        // never trigger change event here since the change event will be
+        // triggered by the signal update
+        Serializable oldValue = super.put(key,
+                new SignalBinding(binding.signal(), binding.registration(),
+                        putValue.get(), binding.writeCallback()),
+                false);
+        return new PutResult(oldValue, null);
     }
 }

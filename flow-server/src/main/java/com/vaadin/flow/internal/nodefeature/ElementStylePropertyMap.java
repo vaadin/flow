@@ -18,6 +18,8 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStyle;
@@ -52,7 +54,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    public void setPropertyFromSignal(String name, Object value) {
+    public void setPropertyFromSignal(String name, @Nullable Object value) {
         Serializable currentRaw = super.get(name);
         Serializable currentEffective;
         if (currentRaw instanceof SignalBinding binding) {
@@ -80,7 +82,8 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected Serializable get(String key) {
+    protected @Nullable Serializable get(String key) {
+        @Nullable
         Serializable value = super.get(key);
         if (value instanceof SignalBinding binding) {
             Serializable signalValue = binding.value();

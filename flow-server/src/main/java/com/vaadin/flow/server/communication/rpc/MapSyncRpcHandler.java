@@ -208,9 +208,12 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
                     .getFeature(ElementPropertyMap.class);
             ElementPropertyMap copyProperties = copy
                     .getFeature(ElementPropertyMap.class);
-            originalProperties.getPropertyNames()
-                    .forEach(property -> copyProperties.setProperty(property,
-                            originalProperties.getProperty(property)));
+            originalProperties.getPropertyNames().forEach(property -> {
+                Serializable value = originalProperties.getProperty(property);
+                if (value != null) {
+                    copyProperties.setProperty(property, value);
+                }
+            });
             return copy;
         }
         if (isProperty(node)) {

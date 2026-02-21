@@ -17,6 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -59,7 +60,8 @@ public class VirtualChildrenList extends StateNodeNodeList {
      * @param payload
      *            the payload data
      */
-    public void add(int index, StateNode node, String type, String payload) {
+    public void add(int index, StateNode node, String type,
+            @Nullable String payload) {
         add(index, node, type,
                 payload == null ? null : JacksonUtils.writeValue(payload));
     }
@@ -78,7 +80,8 @@ public class VirtualChildrenList extends StateNodeNodeList {
      * @param payload
      *            the payload data
      */
-    public void add(int index, StateNode node, String type, JsonNode payload) {
+    public void add(int index, StateNode node, String type,
+            @Nullable JsonNode payload) {
         assert node != null;
 
         ObjectNode payloadObject = JacksonUtils.createObjectNode();
@@ -116,7 +119,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
      * @param payload
      *            the payload data
      */
-    public void append(StateNode node, String type, String payload) {
+    public void append(StateNode node, String type, @Nullable String payload) {
         add(size(), node, type, payload);
     }
 
@@ -130,7 +133,8 @@ public class VirtualChildrenList extends StateNodeNodeList {
      * @param payload
      *            the payload data
      */
-    public void append(StateNode node, String type, JsonNode payload) {
+    public void append(StateNode node, String type,
+            @Nullable JsonNode payload) {
         add(size(), node, type, payload);
     }
 

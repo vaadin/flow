@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -42,7 +44,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
         // empty
     };
 
-    private T value;
+    private @Nullable T value;
 
     private boolean isPopulated;
 
@@ -75,7 +77,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
      * @param value
      *            the value to set
      */
-    protected void setValue(T value) {
+    protected void setValue(@Nullable T value) {
         if (!Objects.equals(value, this.value)) {
             markAsDirty();
 
@@ -97,7 +99,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
      *
      * @return the previously set value
      */
-    protected T getValue() {
+    protected @Nullable T getValue() {
         return value;
     }
 
@@ -111,7 +113,11 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
         }
 
         if (!Objects.equals(originalValue, this.value)) {
-            collector.accept(new MapPutChange(this, getKey(), value));
+            // MapPutChange is in a non-@NullMarked package and handles null
+            // values
+            @SuppressWarnings("NullAway")
+            MapPutChange change = new MapPutChange(this, getKey(), value);
+            collector.accept(change);
         } else if (!isPopulated) {
             collector.accept(new EmptyChange(this));
         }

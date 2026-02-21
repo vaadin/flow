@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -44,7 +46,7 @@ public class ShadowRootHost extends ServerSideFeature {
      *
      * @return the host element node
      */
-    public StateNode getHost() {
+    public @Nullable StateNode getHost() {
         return getNode().getParent();
     }
 }

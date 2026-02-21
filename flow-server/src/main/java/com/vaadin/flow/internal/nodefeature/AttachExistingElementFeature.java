@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -39,9 +41,9 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class AttachExistingElementFeature extends ServerSideFeature {
 
-    private Map<StateNode, ChildElementConsumer> callbacks;
-    private Map<StateNode, Node<?>> parentNodes;
-    private Map<StateNode, Element> siblings;
+    private @Nullable Map<StateNode, ChildElementConsumer> callbacks;
+    private @Nullable Map<StateNode, Node<?>> parentNodes;
+    private @Nullable Map<StateNode, Element> siblings;
 
     /**
      * Creates a new instance for the given node.
@@ -91,7 +93,10 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      * @return the registered callback for the {@code node}
      */
-    public ChildElementConsumer getCallback(StateNode node) {
+    public @Nullable ChildElementConsumer getCallback(StateNode node) {
+        if (callbacks == null) {
+            return null;
+        }
         return callbacks.remove(node);
     }
 
@@ -102,7 +107,10 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      * @return the registered parent for the {@code node}
      */
-    public Node<?> getParent(StateNode node) {
+    public @Nullable Node<?> getParent(StateNode node) {
+        if (parentNodes == null) {
+            return null;
+        }
         return parentNodes.get(node);
     }
 
@@ -113,7 +121,10 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      * @return the registered previous sibling for the {@code node}
      */
-    public Element getPreviousSibling(StateNode node) {
+    public @Nullable Element getPreviousSibling(StateNode node) {
+        if (siblings == null) {
+            return null;
+        }
         return siblings.get(node);
     }
 
@@ -124,9 +135,15 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      */
     public void unregister(StateNode node) {
-        callbacks.remove(node);
-        parentNodes.remove(node);
-        siblings.remove(node);
+        if (callbacks != null) {
+            callbacks.remove(node);
+        }
+        if (parentNodes != null) {
+            parentNodes.remove(node);
+        }
+        if (siblings != null) {
+            siblings.remove(node);
+        }
         node.setParent(null);
     }
 

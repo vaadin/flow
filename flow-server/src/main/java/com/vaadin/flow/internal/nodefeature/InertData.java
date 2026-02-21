@@ -20,6 +20,8 @@ import java.util.Deque;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.util.UniqueSerializable;
@@ -61,7 +63,7 @@ public class InertData extends ServerSideFeature {
      * code that changes the inert state for a node in a request could cause
      * unwanted RPC handler executions to occur.
      */
-    private Boolean cachedInert;
+    private @Nullable Boolean cachedInert;
 
     /**
      * Creates a new feature for the given node.
@@ -157,7 +159,8 @@ public class InertData extends ServerSideFeature {
         }
     }
 
-    private void updateInertAndCascadeToChildren(Boolean resolvedParentInert) {
+    private void updateInertAndCascadeToChildren(
+            @Nullable Boolean resolvedParentInert) {
         boolean newInert = resolveInert(resolvedParentInert);
         if (cachedInert != null && cachedInert == newInert) {
             return;
@@ -187,7 +190,7 @@ public class InertData extends ServerSideFeature {
         cachedInert = newInert;
     }
 
-    private boolean resolveInert(Boolean resolvedParentInert) {
+    private boolean resolveInert(@Nullable Boolean resolvedParentInert) {
         StateNode parent = getNode().getParent();
         if (inertSelf || ignoreParentInert || parent == null) {
             return inertSelf;

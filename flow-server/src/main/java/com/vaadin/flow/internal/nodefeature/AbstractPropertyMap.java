@@ -18,6 +18,8 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -63,9 +65,10 @@ public abstract class AbstractPropertyMap extends NodeMap {
         assert isValidValueType(value);
 
         if (hasSignal(name)) {
-            SignalBinding b = (SignalBinding) super.get(name);
-            put(name, new SignalBinding(b.signal(), b.registration(), value,
-                    b.writeCallback()), emitChange);
+            if (super.get(name) instanceof SignalBinding b) {
+                put(name, new SignalBinding(b.signal(), b.registration(), value,
+                        b.writeCallback()), emitChange);
+            }
         } else {
             put(name, value, emitChange);
         }
@@ -109,7 +112,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @return the property value; <code>null</code> if there is no property or
      *         if the value is explicitly set to null
      */
-    public Serializable getProperty(String name) {
+    public @Nullable Serializable getProperty(String name) {
         return get(name);
     }
 
@@ -130,7 +133,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @return <code>true</code> if the type is supported, <code>false</code>
      *         otherwise
      */
-    public static boolean isValidValueType(Serializable value) {
+    public static boolean isValidValueType(@Nullable Serializable value) {
         if (value == null) {
             return true;
         }
@@ -142,9 +145,10 @@ public abstract class AbstractPropertyMap extends NodeMap {
     @Override
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {
-            SignalBinding b = (SignalBinding) super.get(key);
-            super.updateFromClient(key, new SignalBinding(b.signal(),
-                    b.registration(), value, b.writeCallback()));
+            if (super.get(key) instanceof SignalBinding b) {
+                super.updateFromClient(key, new SignalBinding(b.signal(),
+                        b.registration(), value, b.writeCallback()));
+            }
         } else {
             super.updateFromClient(key, value);
         }
@@ -167,7 +171,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *             given property
      */
     public void bindSignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+            @Nullable SerializableConsumer<?> writeCallback) {
         super.bindSignal(owner, name, signal,
                 (element, value) -> setPropertyFromSignal(name, value),
                 writeCallback);
@@ -184,5 +188,6 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *            the client but keeps the binding and last-applied value as
      *            <code>null</code>
      */
-    protected abstract void setPropertyFromSignal(String name, Object value);
+    protected abstract void setPropertyFromSignal(String name,
+            @Nullable Object value);
 }

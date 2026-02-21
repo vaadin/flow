@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -55,6 +57,7 @@ public abstract class NodeMap extends NodeFeature {
     private interface Values extends Serializable {
         int size();
 
+        @Nullable
         Serializable get(String key);
 
         Set<String> keySet();
@@ -90,7 +93,7 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         @Override
-        public Serializable get(String key) {
+        public @Nullable Serializable get(String key) {
             if (containsKey(key)) {
                 return value;
             } else {
@@ -132,7 +135,7 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         @Override
-        public Serializable get(String key) {
+        public @Nullable Serializable get(String key) {
             return super.get(key);
         }
 
@@ -152,12 +155,14 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    public record SignalBinding(Signal<?> signal, Registration registration,
-            Serializable value,
-            SerializableConsumer<?> writeCallback) implements Serializable {
+    public record SignalBinding(@Nullable Signal<?> signal,
+            @Nullable Registration registration, @Nullable Serializable value,
+            @Nullable SerializableConsumer<?> writeCallback)
+            implements
+                Serializable {
     }
 
-    private Values values;
+    private @Nullable Values values;
 
     private boolean isPopulated;
 
@@ -198,8 +203,9 @@ public abstract class NodeMap extends NodeFeature {
      * @return the previous value, or <code>null</code> if there was no previous
      *         value
      */
-    protected Serializable put(String key, Serializable value,
+    protected @Nullable Serializable put(String key, Serializable value,
             boolean emitChange) {
+        @Nullable
         Serializable oldValue = get(key);
         if (!producePutChange(key, contains(key), value)) {
             return oldValue;
@@ -235,11 +241,11 @@ public abstract class NodeMap extends NodeFeature {
      * @return the value corresponding to the key; <code>null</code> if there is
      *         no value stored, or if <code>null</code> is stored as a value
      */
-    protected Serializable get(String key) {
+    protected @Nullable Serializable get(String key) {
         return doGet(key);
     }
 
-    private Serializable doGet(String key) {
+    private @Nullable Serializable doGet(String key) {
         setAccessed(key);
         if (values == null) {
             return null;
@@ -259,7 +265,8 @@ public abstract class NodeMap extends NodeFeature {
      *         {@code defaultValue} if no value is stored for the key or the
      *         stored value is null
      */
-    protected String getOrDefault(String key, String defaultValue) {
+    protected @Nullable String getOrDefault(String key,
+            @Nullable String defaultValue) {
         if (contains(key)) {
             Object value = get(key);
             if (value == null) {
@@ -354,8 +361,9 @@ public abstract class NodeMap extends NodeFeature {
      *            the key for which to remove the value
      * @return the removed value, <code>null</code> if no value was removed
      */
-    protected Serializable remove(String key) {
+    protected @Nullable Serializable remove(String key) {
         setChanged(key);
+        @Nullable
         Serializable oldValue;
 
         if (values == null) {
@@ -436,14 +444,18 @@ public abstract class NodeMap extends NodeFeature {
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
                 hasChanges = true;
-            } else if (containsNow
+            } else if (containsNow && values != null
                     && producePutChange(key, containedEarlier, value)) {
+                @Nullable
                 Object currentValue = values.get(key);
                 if (currentValue instanceof SignalBinding binding) {
                     currentValue = binding.value();
                 }
-                // New or changed value
-                collector.accept(new MapPutChange(this, key, currentValue));
+                // MapPutChange is in a non-@NullMarked package and handles null
+                // values
+                @SuppressWarnings("NullAway")
+                MapPutChange change = new MapPutChange(this, key, currentValue);
+                collector.accept(change);
                 hasChanges = true;
             }
         }
@@ -534,7 +546,8 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
             Serializable newValue) {
-        return !hadValueEarlier || !Objects.equals(newValue, values.get(key));
+        return !hadValueEarlier || (values != null
+                && !Objects.equals(newValue, values.get(key)));
     }
 
     // Exposed for testing purposes
@@ -567,7 +580,7 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter,
-            SerializableConsumer<?> writeCallback) {
+            @Nullable SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBinding previousSignalBinding;
         if (doGet(key) instanceof SignalBinding binding) {

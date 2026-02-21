@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -39,10 +41,13 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
 
-    private Map<String, SignalBinding> values;
+    private @Nullable Map<String, SignalBinding> values;
 
-    private record SignalBinding(Signal<?> signal, Registration registration,
-            SerializableConsumer<?> writeCallback) implements Serializable {
+    private record SignalBinding(@Nullable Signal<?> signal,
+            @Nullable Registration registration,
+            @Nullable SerializableConsumer<?> writeCallback)
+            implements
+                Serializable {
     }
 
     /**
@@ -83,8 +88,10 @@ public class SignalBindingFeature extends ServerSideFeature {
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
      */
+    @SuppressWarnings("NullAway") // ensureValues() guarantees values is
+                                  // non-null
     public void setBinding(String key, Registration registration,
-            Signal<?> signal, SerializableConsumer<?> writeCallback) {
+            Signal<?> signal, @Nullable SerializableConsumer<?> writeCallback) {
         ensureValues();
         values.put(key, new SignalBinding(signal, registration, writeCallback));
     }
@@ -156,7 +163,7 @@ public class SignalBindingFeature extends ServerSideFeature {
      *         set
      */
     @SuppressWarnings("unchecked")
-    public <T> SerializableConsumer<T> getWriteCallback(String key) {
+    public <T> @Nullable SerializableConsumer<T> getWriteCallback(String key) {
         if (values == null) {
             return null;
         }
@@ -174,12 +181,13 @@ public class SignalBindingFeature extends ServerSideFeature {
      *            the type of the signal value
      * @return the signal bound to the given key, or null if no signal is bound
      */
-    public <T> Signal<T> getSignal(String key) {
+    @SuppressWarnings("unchecked")
+    public <T> @Nullable Signal<T> getSignal(String key) {
         if (values == null) {
             return null;
         }
         SignalBinding binding = values.get(key);
-        return binding != null ? (Signal<T>) values.get(key).signal : null;
+        return binding != null ? (Signal<T>) binding.signal : null;
     }
 
     /**
@@ -214,6 +222,10 @@ public class SignalBindingFeature extends ServerSideFeature {
         SerializableConsumer<T> callback = getWriteCallback(key);
         Signal<T> signal = getSignal(key);
         if (callback != null) {
+            if (signal == null) {
+                throw new IllegalStateException(
+                        "Signal must be set when write callback is set");
+            }
             callback.accept(newValue);
             // Re-consult the signal after the callback
             T signalValue = signal.peek();

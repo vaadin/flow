@@ -77,9 +77,11 @@ public class AttachExistingElementRpcHandler
             assert index == -1;
 
             ChildElementConsumer callback = feature.getCallback(requestedNode);
-            assert callback != null;
-            callback.onError(feature.getParent(requestedNode), tag,
-                    feature.getPreviousSibling(requestedNode));
+            Node<?> parent = feature.getParent(requestedNode);
+            if (callback != null && parent != null) {
+                callback.onError(parent, tag,
+                        feature.getPreviousSibling(requestedNode));
+            }
 
             feature.unregister(requestedNode);
         } else {
@@ -100,7 +102,7 @@ public class AttachExistingElementRpcHandler
             Node<?> parent = feature.getParent(node);
             feature.unregister(node);
 
-            if (insertChild) {
+            if (insertChild && parent != null) {
                 parent.insertChild(index, element);
             }
             callback.accept(element);

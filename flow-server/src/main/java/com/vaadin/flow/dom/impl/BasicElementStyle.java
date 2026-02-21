@@ -86,7 +86,7 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public String get(String name) {
+    public @Nullable String get(String name) {
         ElementUtil.validateStylePropertyName(name);
 
         return (String) propertyMap

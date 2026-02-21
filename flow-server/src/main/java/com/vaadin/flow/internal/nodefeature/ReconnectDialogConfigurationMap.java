@@ -48,6 +48,9 @@ public class ReconnectDialogConfigurationMap extends NodeMap
         super(node);
     }
 
+    // Overrides non-@NullMarked interface method; default value guarantees
+    // non-null return
+    @SuppressWarnings("NullAway")
     @Override
     public String getDialogText() {
         return getOrDefault(DIALOG_TEXT_KEY, DIALOG_TEXT_DEFAULT);
@@ -59,6 +62,9 @@ public class ReconnectDialogConfigurationMap extends NodeMap
 
     }
 
+    // Overrides non-@NullMarked interface method; default value guarantees
+    // non-null return
+    @SuppressWarnings("NullAway")
     @Override
     public String getDialogTextGaveUp() {
         return getOrDefault(DIALOG_TEXT_GAVE_UP_KEY,

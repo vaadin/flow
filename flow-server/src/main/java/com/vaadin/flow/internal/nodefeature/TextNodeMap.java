@@ -59,10 +59,11 @@ public class TextNodeMap extends NodeValue<String> {
      *
      * @return the text, not null
      */
+    // Text is always set upon creation, before first use
+    @SuppressWarnings("NullAway")
     public String getText() {
         String value = getValue();
 
-        // Text should be set upon creation, before first use
         assert value != null;
 
         return value;

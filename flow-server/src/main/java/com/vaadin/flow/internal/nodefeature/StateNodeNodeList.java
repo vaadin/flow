@@ -71,14 +71,13 @@ public abstract class StateNodeNodeList extends NodeList<StateNode> {
     @Override
     protected void clear() {
         int size = size();
-        List<StateNode> children = null;
         if (size > 0) {
-            children = new ArrayList<>(size);
+            List<StateNode> children = new ArrayList<>(size);
             forEachChild(children::add);
-        }
-        super.clear();
-        if (size > 0) {
+            super.clear();
             children.forEach(this::detatchPotentialChild);
+        } else {
+            super.clear();
         }
     }
 

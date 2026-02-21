@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -160,7 +161,7 @@ public class ReturnChannelMap extends ServerSideFeature {
      * @return a return channel registration, or <code>null</code> if no
      *         registration exists for the given id
      */
-    public ReturnChannelRegistration get(int channelId) {
+    public @Nullable ReturnChannelRegistration get(int channelId) {
         return channels.get(Integer.valueOf(channelId));
     }
 
