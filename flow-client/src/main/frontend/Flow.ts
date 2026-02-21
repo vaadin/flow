@@ -6,6 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
+import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -544,6 +545,11 @@ export class Flow {
     params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
     /* Page visibility — initial state of document.hidden / document.hasFocus() */
     params['v-pv'] = currentVisibility();
+
+    /* Screen orientation — initial state of screen.orientation, empty
+       when the Screen Orientation API is unavailable. */
+    params['v-so'] = currentScreenOrientationType();
+    params['v-soa'] = currentScreenOrientationAngle();
 
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);

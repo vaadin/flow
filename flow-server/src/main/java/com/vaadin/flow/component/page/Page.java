@@ -66,6 +66,10 @@ public class Page implements Serializable {
             PageVisibility.UNKNOWN);
     private final Signal<PageVisibility> pageVisibilityReadOnly = pageVisibilitySignal
             .asReadonly();
+    private final ValueSignal<ScreenOrientationData> screenOrientationSignal = new ValueSignal<>(
+            new ScreenOrientationData(ScreenOrientation.UNKNOWN, 0));
+    private final Signal<ScreenOrientationData> screenOrientationReadOnly = screenOrientationSignal
+            .asReadonly();
 
     /**
      * Creates a page instance for the given UI.
@@ -80,6 +84,14 @@ public class Page implements Serializable {
                 .addEventListener("vaadin-page-visibility-change",
                         e -> setPageVisibility(e.getEventDetail(String.class)))
                 .addEventDetail().debounce(100).allowInert();
+        ui.getElement().addEventListener("vaadin-screen-orientation-change",
+                e -> setScreenOrientation(
+                        e.getEventDetail(ScreenOrientationDetail.class)))
+                .addEventDetail().allowInert();
+    }
+
+    private record ScreenOrientationDetail(String type,
+            int angle) implements Serializable {
     }
 
     /**
@@ -487,6 +499,102 @@ public class Page implements Serializable {
                         }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
+        }
+    }
+
+    /**
+     * Returns a read-only signal that tracks the current screen orientation and
+     * its rotation angle.
+     * <p>
+     * The signal is seeded from the initial client bootstrap, so user code
+     * always sees a real value when the browser supports the <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Orientation_API">Screen
+     * Orientation API</a>. On browsers that do not implement the API (or until
+     * the first bootstrap arrives) the value is
+     * {@link ScreenOrientation#UNKNOWN} with angle 0; once a real value has
+     * arrived, the signal never returns to {@code UNKNOWN}.
+     * <p>
+     * Subscribe with {@code Signal.effect(owner, ...)} to react to changes;
+     * call {@code screenOrientationSignal().peek()} for a snapshot outside a
+     * reactive context, and {@code .get()} inside one.
+     *
+     * @return the read-only screen orientation signal
+     */
+    public Signal<ScreenOrientationData> screenOrientationSignal() {
+        return screenOrientationReadOnly;
+    }
+
+    /**
+     * Locks the screen orientation to the given type for as long as the user
+     * remains on the current page. Most browsers require the document to be in
+     * fullscreen mode, and locking is generally only honored on devices where a
+     * physical orientation actually exists (mobile, tablet).
+     * <p>
+     * The returned result resolves when the lock succeeds, or completes
+     * exceptionally if the browser denies the request.
+     *
+     * @param orientation
+     *            the orientation to lock to, not {@code null} and not
+     *            {@link ScreenOrientation#UNKNOWN}
+     * @return a pending result that resolves when the lock is applied
+     */
+    public PendingJavaScriptResult lockOrientation(
+            ScreenOrientation orientation) {
+        Objects.requireNonNull(orientation);
+        if (orientation == ScreenOrientation.UNKNOWN) {
+            throw new IllegalArgumentException(
+                    "Cannot lock to ScreenOrientation.UNKNOWN");
+        }
+        return executeJs("return window.Vaadin.Flow.screenOrientation.lock($0)",
+                orientation.getClientValue());
+    }
+
+    /**
+     * Releases a previous {@link #lockOrientation(ScreenOrientation) lock},
+     * allowing the screen to follow the device orientation again.
+     */
+    public void unlockOrientation() {
+        executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
+    }
+
+    /**
+     * Sets the screen orientation from raw client-side values (e.g. from the
+     * bootstrap parameters). {@code null} or empty type means the browser does
+     * not implement the Screen Orientation API and the previous value is
+     * preserved. Unknown type values are logged at debug level so a
+     * forward-compatible client value does not silently disappear.
+     *
+     * @param type
+     *            the raw orientation type from the client, or {@code null}
+     * @param angle
+     *            the raw orientation angle from the client, or {@code null}
+     */
+    void setScreenOrientation(String type, String angle) {
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+        try {
+            int angleValue = angle == null ? 0 : Integer.parseInt(angle);
+            screenOrientationSignal.set(new ScreenOrientationData(
+                    ScreenOrientation.fromClientValue(type), angleValue));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown screen orientation value from client: "
+                    + "type={} angle={}", type, angle);
+        }
+    }
+
+    private void setScreenOrientation(ScreenOrientationDetail detail) {
+        if (detail == null || detail.type() == null
+                || detail.type().isEmpty()) {
+            return;
+        }
+        try {
+            screenOrientationSignal.set(new ScreenOrientationData(
+                    ScreenOrientation.fromClientValue(detail.type()),
+                    detail.angle()));
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Unknown screen orientation value from client: {}",
+                    detail.type());
         }
     }
 
