@@ -19,9 +19,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,7 +28,11 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
 
-public class HierarchicalDataCommunicatorDataRefreshTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HierarchicalDataCommunicatorDataRefreshTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -39,8 +42,8 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     private HierarchicalDataCommunicator<Item> dataCommunicator;
     private DataKeyMapper<Item> keyMapper;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         super.init();
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
@@ -57,7 +60,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItemThroughDataProvider_refreshMethodCalled() {
+    void refreshItemThroughDataProvider_refreshMethodCalled() {
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
 
         // Set data provider again to ensure spied DataCommunicator
@@ -94,7 +97,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshRootItems_updatedRangeSent() {
+    void refreshRootItems_updatedRangeSent() {
         populateTreeData(treeData, 4);
         dataCommunicator.expand(treeData.getRootItems());
         dataCommunicator.setViewportRange(0, 4);
@@ -129,7 +132,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshNestedItems_updatedRangeSent() {
+    void refreshNestedItems_updatedRangeSent() {
         populateTreeData(treeData, 2, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
@@ -164,7 +167,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItemsOutOfViewport_updatedRangeSentOnlyAfterItemEntersViewport() {
+    void refreshItemsOutOfViewport_updatedRangeSentOnlyAfterItemEntersViewport() {
         populateTreeData(treeData, 50, 1);
         dataCommunicator.expand(new Item("Item 49"));
         dataCommunicator.setViewportRange(0, 3);
@@ -191,7 +194,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItems_dataGeneratorRefreshItemCalled() {
+    void refreshItems_dataGeneratorRefreshItemCalled() {
         populateTreeData(treeData, 2, 1, 1);
 
         var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
@@ -208,7 +211,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItems_itemRefreshedInKeyMapper() {
+    void refreshItems_itemRefreshedInKeyMapper() {
         populateTreeData(treeData, 2, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
@@ -217,10 +220,10 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         var keys = captureArrayUpdateItems().values().stream()
                 .map((item) -> item.get("key").asString()).toList();
-        Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(1)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(2)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(3)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(0)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(1)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(2)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(3)).getState());
 
         Item item0_0 = new Item("Item 0-0", "refreshed");
         dataCommunicator.refresh(item0_0);
@@ -228,14 +231,14 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         Item item0_0_0 = new Item("Item 0-0-0", "refreshed");
         dataCommunicator.refresh(item0_0_0);
 
-        Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
-        Assert.assertEquals("refreshed", keyMapper.get(keys.get(1)).getState());
-        Assert.assertEquals("refreshed", keyMapper.get(keys.get(2)).getState());
-        Assert.assertEquals("initial", keyMapper.get(keys.get(3)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(0)).getState());
+        assertEquals("refreshed", keyMapper.get(keys.get(1)).getState());
+        assertEquals("refreshed", keyMapper.get(keys.get(2)).getState());
+        assertEquals("initial", keyMapper.get(keys.get(3)).getState());
     }
 
     @Test
-    public void refreshItemsWithChildren_updatedRangeSent() {
+    void refreshItemsWithChildren_updatedRangeSent() {
         populateTreeData(treeData, 2, 1, 1);
         dataCommunicator
                 .expand(Arrays.asList(new Item("Item 0"), new Item("Item 0-0"),
@@ -289,7 +292,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItemsWithChildren_childrenRemovedFromKeyMapper() {
+    void refreshItemsWithChildren_childrenRemovedFromKeyMapper() {
         populateTreeData(treeData, 1, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
@@ -298,13 +301,13 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         dataCommunicator.refresh(new Item("Item 0"), true);
 
-        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
+        assertTrue(keyMapper.has(new Item("Item 0")));
+        assertFalse(keyMapper.has(new Item("Item 0-0")));
+        assertFalse(keyMapper.has(new Item("Item 0-0-0")));
     }
 
     @Test
-    public void refreshAllItems_updatedRangeSent() {
+    void refreshAllItems_updatedRangeSent() {
         populateTreeData(treeData, 6, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));
@@ -351,7 +354,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshAllItems_allItemsRemovedFromKeyMapper() {
+    void refreshAllItems_allItemsRemovedFromKeyMapper() {
         populateTreeData(treeData, 1, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
@@ -359,13 +362,13 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         fakeClientCommunication();
 
         dataCommunicator.reset();
-        Assert.assertFalse(keyMapper.has(new Item("Item 0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
-        Assert.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
+        assertFalse(keyMapper.has(new Item("Item 0")));
+        assertFalse(keyMapper.has(new Item("Item 0-0")));
+        assertFalse(keyMapper.has(new Item("Item 0-0-0")));
     }
 
     @Test
-    public void refreshViewport_updatedRangeSent() {
+    void refreshViewport_updatedRangeSent() {
         populateTreeData(treeData, 6, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));

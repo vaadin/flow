@@ -16,8 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,13 +27,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -59,7 +53,16 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
-@RunWith(Parameterized.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class DataCommunicatorTest {
     /**
      * Test item that uses id for identity.
@@ -98,9 +101,6 @@ public class DataCommunicatorTest {
         }
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private DataCommunicator<Item> dataCommunicator;
 
     @Mock
@@ -118,20 +118,10 @@ public class DataCommunicatorTest {
     public int lastUpdateId = -1;
     private int pageSize;
 
-    private final boolean dataProviderWithParallelStream;
+    private boolean dataProviderWithParallelStream;
 
-    public DataCommunicatorTest(boolean dataProviderWithParallelStream) {
-        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Boolean> testParameters() {
-        // Runs tests with both sequential and parallel data provider streams
-        return Arrays.asList(false, true);
-    }
-
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         element = new Element("div");
@@ -168,87 +158,99 @@ public class DataCommunicatorTest {
         pageSize = dataCommunicator.getPageSize();
     }
 
-    @Test
-    public void communicator_with_0_items_should_not_refresh_all() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void communicator_with_0_items_should_not_refresh_all(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
-        Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. This may make us loop.",
-                lastClear);
+        assertEquals(Range.withLength(0, 0), lastSet);
+        assertNull(lastClear,
+                "Only requestAll should clear items. This may make us loop.");
 
         dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
-        Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. Which would make us loop.",
-                lastClear);
+        assertEquals(Range.withLength(0, 0), lastSet);
+        assertNull(lastClear,
+                "Only requestAll should clear items. Which would make us loop.");
     }
 
-    @Test
-    public void communicator_with_items_should_send_updates_but_not_refresh_all() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void communicator_with_items_should_send_updates_but_not_refresh_all(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
 
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "Expected request range for 50 items on first request.",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected request range for 50 items on first request.");
 
         dataCommunicator.setViewportRange(0, 70);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected request range for 20 new items.",
-                Range.withLength(50, 20), lastSet);
+        assertEquals(Range.withLength(50, 20), lastSet,
+                "Expected request range for 20 new items.");
     }
 
-    @Test
-    public void reattach_different_roundtrip_refresh_all() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void reattach_different_roundtrip_refresh_all(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no during reattach.", lastSet);
+        assertNull(lastSet, "Expected no during reattach.");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset after reattach");
     }
 
-    @Test
-    public void reattach_same_roundtrip_refresh_nothing() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void reattach_same_roundtrip_refresh_nothing(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
 
-        Assert.assertNull("Expected no communication during reattach", lastSet);
+        assertNull(lastSet, "Expected no communication during reattach");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no communication after reattach", lastSet);
+        assertNull(lastSet, "Expected no communication after reattach");
     }
 
-    @Test
-    public void refreshViewport_updatedRangeSent() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void refreshViewport_updatedRangeSent(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         var compositeDataGenerator = new CompositeDataGenerator<Item>();
         dataCommunicator = new DataCommunicator<>(compositeDataGenerator,
                 arrayUpdater, data -> {
@@ -266,24 +268,27 @@ public class DataCommunicatorTest {
         });
 
         fakeClientCommunication();
-        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        assertEquals(Range.withLength(0, 6), lastSet);
         lastSet = null;
 
         dataCommunicator.refreshViewport();
         fakeClientCommunication();
-        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        assertEquals(Range.withLength(0, 6), lastSet);
     }
 
-    @Test
-    public void setFlushRequest_remove_setFlushRequest_reattach_noEndlessFlushLoop() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setFlushRequest_remove_setFlushRequest_reattach_noEndlessFlushLoop(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode()) {
             @Override
             public void reset() {
-                Assert.assertTrue("Should not fall into endless reset loop",
-                        listenerInvocationCounter.incrementAndGet() < 5);
+                assertTrue(listenerInvocationCounter.incrementAndGet() < 5,
+                        "Should not fall into endless reset loop");
                 super.reset();
             }
         };
@@ -301,22 +306,27 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
     }
 
-    @Test
-    public void setDataProvider_keyMapperIsReset() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setDataProvider_keyMapperIsReset(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
+        assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
 
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertNull(
-                "The KeyMapper should be reset when a new DataProvider is set",
-                dataCommunicator.getKeyMapper().get("1"));
+        assertNull(dataCommunicator.getKeyMapper().get("1"),
+                "The KeyMapper should be reset when a new DataProvider is set");
     }
 
-    @Test
-    public void dataProviderBreaksContract_limitOrPageSizeAreNotCalled_throw() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void dataProviderBreaksContract_limitOrPageSizeAreNotCalled_throw(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -325,15 +335,19 @@ public class DataCommunicatorTest {
                 .fromCallbacks(query -> items.stream(), query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit() or "
-                        + "getPageSize()"));
-        dataCommunicator.fetchFromProvider(0, 1);
+        var ex = assertThrows(IllegalStateException.class,
+                () -> dataCommunicator.fetchFromProvider(0, 1));
+        assertThat(ex.getMessage(),
+                CoreMatchers.containsString(
+                        "The data provider hasn't ever called getLimit() or "
+                                + "getPageSize()"));
     }
 
-    @Test
-    public void dataProviderBreaksContract_offsetOrPageAreNotCalled_throw() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void dataProviderBreaksContract_offsetOrPageAreNotCalled_throw(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -345,14 +359,17 @@ public class DataCommunicatorTest {
                 }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
+        var ex = assertThrows(IllegalStateException.class,
+                () -> dataCommunicator.fetchFromProvider(1, 1));
+        assertThat(ex.getMessage(), CoreMatchers.containsString(
                 "The data provider hasn't ever called getOffset() or getPage()"));
-        dataCommunicator.fetchFromProvider(1, 1);
     }
 
-    @Test
-    public void dataProviderContract_pageAndPageSizeAreCalled_itemsFetched() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void dataProviderContract_pageAndPageSizeAreCalled_itemsFetched(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -364,12 +381,14 @@ public class DataCommunicatorTest {
                     return items.stream();
                 }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
-        Assert.assertEquals(2,
-                dataCommunicator.fetchFromProvider(1, 1).count());
+        assertEquals(2, dataCommunicator.fetchFromProvider(1, 1).count());
     }
 
-    @Test
-    public void dataProviderBreaksContract_tooManyItems_throw() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void dataProviderBreaksContract_tooManyItems_throw(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             items.add(new Item(i));
@@ -387,16 +406,18 @@ public class DataCommunicatorTest {
         // 4 items, which is incorrect
         Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 3);
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
+        var ex = assertThrows(IllegalStateException.class,
+                () -> stream.forEach(item -> {
+                }));
+        assertThat(ex.getMessage(), CoreMatchers.containsString(
                 "exceeds the limit specified by the query (4)."));
-
-        stream.forEach(item -> {
-        });
     }
 
-    @Test
-    public void sameKeyDifferentInstance_latestInstanceUsed() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void sameKeyDifferentInstance_latestInstanceUsed(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -411,8 +432,7 @@ public class DataCommunicatorTest {
         Item originalItem = items.get(0);
         String key = dataCommunicator.getKeyMapper().key(originalItem);
 
-        Assert.assertSame(originalItem,
-                dataCommunicator.getKeyMapper().get(key));
+        assertSame(originalItem, dataCommunicator.getKeyMapper().get(key));
 
         Item updatedItem = new Item(originalItem.id, "Updated");
         items.set(0, updatedItem);
@@ -420,12 +440,14 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertSame(updatedItem,
-                dataCommunicator.getKeyMapper().get(key));
+        assertSame(updatedItem, dataCommunicator.getKeyMapper().get(key));
     }
 
-    @Test
-    public void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProviderThatChangesSize(
                 50, 10);
         dataProvider = Mockito.spy(dataProvider);
@@ -437,21 +459,24 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(40, lastSet.getEnd());
+        assertEquals(40, lastSet.getEnd());
         // Assert takes into acount the inital size query for setting
         // dataprovider.
         Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
     }
 
-    @Test
-    public void setSizeCallback_usedForDataSize() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setSizeCallback_usedForDataSize(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setViewportRange(0, 50);
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
@@ -460,14 +485,13 @@ public class DataCommunicatorTest {
             sizeCallbackCall.set(true);
             return 100;
         });
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertTrue("SizeCallback not called",
-                sizeCallbackCall.getAndSet(false));
-        Assert.assertEquals("Size not used", 100,
-                dataCommunicator.getItemCount());
+        assertTrue(sizeCallbackCall.getAndSet(false),
+                "SizeCallback not called");
+        assertEquals(100, dataCommunicator.getItemCount(), "Size not used");
 
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
@@ -479,18 +503,25 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
 
-        Assert.assertFalse("SizeCallback called when should not have",
-                sizeCallbackCall.get());
+        assertFalse(sizeCallbackCall.get(),
+                "SizeCallback called when should not have");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void setSizeCallback_null_throws() {
-        dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setCountCallback(null);
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setSizeCallback_null_throws(boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        assertThrows(IllegalArgumentException.class, () -> {
+            dataCommunicator.setDataProvider(createDataProvider(), null);
+            dataCommunicator.setCountCallback(null);
+        });
     }
 
-    @Test
-    public void setCountCallback_itemCountEstimatesWereSet_overridesItemCountEstimates() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setCountCallback_itemCountEstimatesWereSet_overridesItemCountEstimates(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
         dataProvider = Mockito.spy(dataProvider);
@@ -502,13 +533,13 @@ public class DataCommunicatorTest {
         dataCommunicator
                 .setItemCountEstimateIncrease(itemCountEstimateIncrease);
         dataCommunicator.setViewportRange(150, 50);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial estimate+increase not used",
-                itemCountEstimate + itemCountEstimateIncrease,
-                dataCommunicator.getItemCount());
+        assertEquals(itemCountEstimate + itemCountEstimateIncrease,
+                dataCommunicator.getItemCount(),
+                "initial estimate+increase not used");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -518,18 +549,21 @@ public class DataCommunicatorTest {
             sizeCallbackCall.set(true);
             return exactSize;
         });
-        Assert.assertTrue(dataCommunicator.isDefinedSize());
+        assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertTrue("SizeCallback not called",
-                sizeCallbackCall.getAndSet(false));
-        Assert.assertEquals("Size not used", exactSize,
-                dataCommunicator.getItemCount());
+        assertTrue(sizeCallbackCall.getAndSet(false),
+                "SizeCallback not called");
+        assertEquals(exactSize, dataCommunicator.getItemCount(),
+                "Size not used");
     }
 
-    @Test
-    public void setInitialCountEstimate_usedInitiallyThenDiscarded() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialCountEstimate_usedInitiallyThenDiscarded(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
         dataProvider = Mockito.spy(dataProvider);
@@ -538,12 +572,12 @@ public class DataCommunicatorTest {
         final int initialCountEstimate = 100;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
         dataCommunicator.setViewportRange(0, 50);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial size estimate not used",
-                initialCountEstimate, dataCommunicator.getItemCount());
+        assertEquals(initialCountEstimate, dataCommunicator.getItemCount(),
+                "initial size estimate not used");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -551,15 +585,18 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertEquals("initial size estimate was not discarded",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "initial size estimate was not discarded");
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
     }
 
-    @Test
-    public void setInitialCountEstimate_lessThanCurrentFetchedSize_discarded() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialCountEstimate_lessThanCurrentFetchedSize_discarded(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
 
@@ -570,19 +607,21 @@ public class DataCommunicatorTest {
 
         final int initialCountEstimate = 111;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
-        Assert.assertFalse(dataCommunicator.isDefinedSize());
+        assertFalse(dataCommunicator.isDefinedSize());
 
         dataCommunicator.setViewportRange(50, 100);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "too small initial size estimate should not be applied",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "too small initial size estimate should not be applied");
     }
 
-    @Test
-    public void setInitialCountEstimate_lessThanRequestedRange_sizeIsIncreasedAutomatically() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialCountEstimate_lessThanRequestedRange_sizeIsIncreasedAutomatically(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
         dataProvider = Mockito.spy(dataProvider);
@@ -594,14 +633,16 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
 
         fakeClientCommunication();
-        Assert.assertEquals(
-                "Size should be automatically adjusted for too small estimate",
-                initialCountEstimate + getPageSizeIncrease(),
-                dataCommunicator.getItemCount());
+        assertEquals(initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount(),
+                "Size should be automatically adjusted for too small estimate");
     }
 
-    @Test
-    public void setInitialItemCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialItemCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
         dataProvider = Mockito.spy(dataProvider);
@@ -616,14 +657,16 @@ public class DataCommunicatorTest {
                 .setItemCountEstimateIncrease(itemCountEstimateIncrease);
 
         fakeClientCommunication();
-        Assert.assertEquals(
-                "Size should be automatically adjusted for too small estimate",
-                initialCountEstimate + (3 * itemCountEstimateIncrease),
-                dataCommunicator.getItemCount());
+        assertEquals(initialCountEstimate + (3 * itemCountEstimateIncrease),
+                dataCommunicator.getItemCount(),
+                "Size should be automatically adjusted for too small estimate");
     }
 
-    @Test
-    public void setInitialItemCountEstimateAndIncrease_requestedItemsMuchHigherThanExactCount_exactCountIsResolvedOnServer() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialItemCountEstimateAndIncrease_requestedItemsMuchHigherThanExactCount_exactCountIsResolvedOnServer(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final int exactSize = 200;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 exactSize);
@@ -635,7 +678,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(itemCountEstimate, dataCommunicator.getItemCount());
+        assertEquals(itemCountEstimate, dataCommunicator.getItemCount());
 
         // if the user scrolls far from the exact size of the backend,
         // the exact size is resolved on the server side without causing a new
@@ -645,7 +688,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(900, 100);
         fakeClientCommunication();
 
-        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         // 1. initial call 0-50, 2. then: 900-950, 800-850, ... ,
         // 200-250, 100-150, 150-200.
@@ -656,8 +699,11 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(11)).fetch(Mockito.any());
     }
 
-    @Test
-    public void setInitialItemCountEstimateAndIncrease_backendEmpty_noEndlessFlushLoop() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialItemCountEstimateAndIncrease_backendEmpty_noEndlessFlushLoop(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final int exactSize = 0;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 exactSize);
@@ -669,67 +715,79 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void setInitialCountEstimate_lessThanOne_throws() {
-        dataCommunicator.setItemCountEstimate(0);
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setInitialCountEstimate_lessThanOne_throws(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        assertThrows(IllegalArgumentException.class,
+                () -> dataCommunicator.setItemCountEstimate(0));
     }
 
-    @Test
-    public void getActiveItemOnIndex_activeRangeChanges_itemsReturned() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getActiveItemOnIndex_activeRangeChanges_itemsReturned(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(300), null);
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
-        Assert.assertEquals("Wrong active item", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Wrong active item", new Item(49),
-                dataCommunicator.getItem(49));
+        assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Wrong active item");
+        assertEquals(new Item(49), dataCommunicator.getItem(49),
+                "Wrong active item");
 
         dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Wrong active item", new Item(50),
-                dataCommunicator.getItem(50));
-        Assert.assertEquals("Wrong active item", new Item(69),
-                dataCommunicator.getItem(69));
-        Assert.assertEquals("Wrong active item", new Item(99),
-                dataCommunicator.getItem(99));
+        assertEquals(new Item(50), dataCommunicator.getItem(50),
+                "Wrong active item");
+        assertEquals(new Item(69), dataCommunicator.getItem(69),
+                "Wrong active item");
+        assertEquals(new Item(99), dataCommunicator.getItem(99),
+                "Wrong active item");
     }
 
-    @Test
-    public void isItemActive_newItems() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void isItemActive_newItems(boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
 
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(0)));
+        assertFalse(dataCommunicator.isItemActive(new Item(0)),
+                "Item should not be active");
 
         fakeClientCommunication();
 
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(0)));
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(49)));
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(50)));
+        assertTrue(dataCommunicator.isItemActive(new Item(0)),
+                "Item should be active");
+        assertTrue(dataCommunicator.isItemActive(new Item(49)),
+                "Item should be active");
+        assertFalse(dataCommunicator.isItemActive(new Item(50)),
+                "Item should not be active");
 
         dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(50)));
-        Assert.assertTrue("Item should be active",
-                dataCommunicator.isItemActive(new Item(99)));
-        Assert.assertFalse("Item should not be active",
-                dataCommunicator.isItemActive(new Item(100)));
+        assertTrue(dataCommunicator.isItemActive(new Item(50)),
+                "Item should be active");
+        assertTrue(dataCommunicator.isItemActive(new Item(99)),
+                "Item should be active");
+        assertFalse(dataCommunicator.isItemActive(new Item(100)),
+                "Item should not be active");
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndCorrectIndex() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndCorrectIndex(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -740,8 +798,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request the item within the active range
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
 
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.range(0, 300).mapToObj(Item::new)
@@ -751,14 +809,15 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request an item outside the active range
-        Assert.assertEquals("Invalid item on index 260", new Item(260),
-                dataCommunicator.getItem(260));
+        assertEquals(new Item(260), dataCommunicator.getItem(260),
+                "Invalid item on index 260");
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndNegativeIndex() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Index must be non-negative");
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndNegativeIndex(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -767,13 +826,16 @@ public class DataCommunicatorTest {
         }, query -> 1), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(-1);
+        var ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(-1));
+        assertTrue(ex.getMessage().contains("Index must be non-negative"));
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndEmptyDataset() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Requested index 0 on empty data.");
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndEmptyDataset(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -782,14 +844,17 @@ public class DataCommunicatorTest {
         }, query -> 0), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(0);
+        var ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(0));
+        assertTrue(
+                ex.getMessage().contains("Requested index 0 on empty data."));
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndIndexOutsideOfRange() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage(
-                "Given index 3 is outside of the accepted range '0 - 2'");
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndIndexOutsideOfRange(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -798,11 +863,17 @@ public class DataCommunicatorTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        dataCommunicator.getItem(3);
+        var ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(3));
+        assertTrue(ex.getMessage().contains(
+                "Given index 3 is outside of the accepted range '0 - 2'"));
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndFiltering() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndFiltering(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final Item initialFilter = new Item(1); // filters all except 2nd item
         final Item newFilter = new Item(2); // filters all except 3rd item
 
@@ -816,18 +887,21 @@ public class DataCommunicatorTest {
                 }, query -> 1), initialFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataCommunicator.getItem(0));
+        assertEquals(initialFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
 
         newFilterProvider.accept(newFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataCommunicator.getItem(0));
+        assertEquals(newFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
     }
 
-    @Test
-    public void getItem_withDefinedSizeAndSorting() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withDefinedSizeAndSorting(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -840,27 +914,30 @@ public class DataCommunicatorTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(1),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(2),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(0),
-                dataCommunicator.getItem(2));
+        assertEquals(new Item(1), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        assertEquals(new Item(2), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        assertEquals(new Item(0), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
 
         dataCommunicator
                 .setInMemorySorting((i1, i2) -> Integer.compare(i1.id, i2.id));
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(2),
-                dataCommunicator.getItem(2));
+        assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        assertEquals(new Item(2), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndCorrectIndex() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndCorrectIndex(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2).mapToObj(Item::new)
@@ -871,10 +948,10 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Request the item within the active range
-        Assert.assertEquals("Wrong item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Wrong item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Wrong item on index 0");
+        assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Wrong item on index 1");
 
         dataCommunicator.setViewportRange(100, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
@@ -889,17 +966,20 @@ public class DataCommunicatorTest {
 
         // Request the item outside the active range, but within the
         // estimation (and present in the backend)
-        Assert.assertEquals("Wrong item on index 375", new Item(375),
-                dataCommunicator.getItem(375));
+        assertEquals(new Item(375), dataCommunicator.getItem(375),
+                "Wrong item on index 375");
 
         // Request the item outside the active range, and outside the
         // estimation (and present in the backend)
-        Assert.assertEquals("Wrong item on index 450", new Item(450),
-                dataCommunicator.getItem(450));
+        assertEquals(new Item(450), dataCommunicator.getItem(450),
+                "Wrong item on index 450");
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndEmptyDataset() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndEmptyDataset(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2).mapToObj(Item::new)
@@ -909,8 +989,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
         // This checks the situation when the fetch actions has not happened
         // yet but the data set contains the requested item
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
+        assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
 
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -922,12 +1002,15 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         // This checks the situation when the fetch actions has happened
         // but the data set is empty
-        Assert.assertNull("Item on index 0 supposed to be null",
-                dataCommunicator.getItem(0));
+        assertNull(dataCommunicator.getItem(0),
+                "Item on index 0 supposed to be null");
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndIndexOutsideOfRange() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndIndexOutsideOfRange(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2, 3, 4).mapToObj(Item::new)
@@ -939,18 +1022,19 @@ public class DataCommunicatorTest {
 
         // Index 3 is outside of estimation but the requested item is in
         // backend anyway
-        Assert.assertEquals("Invalid item on index 3", new Item(3),
-                dataCommunicator.getItem(3));
+        assertEquals(new Item(3), dataCommunicator.getItem(3),
+                "Invalid item on index 3");
 
         // Index 5 is outside of estimation and not in the backend
-        Assert.assertNull("Item on index 5 supposed to be null",
-                dataCommunicator.getItem(5));
+        assertNull(dataCommunicator.getItem(5),
+                "Item on index 5 supposed to be null");
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndNegativeIndex() {
-        expectedException.expect(IndexOutOfBoundsException.class);
-        expectedException.expectMessage("Index must be non-negative");
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndNegativeIndex(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -960,11 +1044,16 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setItemCountEstimate(1);
         fakeClientCommunication();
-        dataCommunicator.getItem(-1);
+        var ex = assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.getItem(-1));
+        assertTrue(ex.getMessage().contains("Index must be non-negative"));
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndFiltering() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndFiltering(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final Item initialFilter = new Item(1); // filters all except 2nd item
         final Item newFilter = new Item(2); // filters all except 3rd item
 
@@ -980,18 +1069,21 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataCommunicator.getItem(0));
+        assertEquals(initialFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
 
         newFilterProvider.accept(newFilter);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataCommunicator.getItem(0));
+        assertEquals(newFilter, dataCommunicator.getItem(0),
+                "Invalid item on index 0");
     }
 
-    @Test
-    public void getItem_withUndefinedSizeAndSorting() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_withUndefinedSizeAndSorting(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -1006,27 +1098,29 @@ public class DataCommunicatorTest {
         dataCommunicator.setItemCountEstimate(5);
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(1),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(2),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(0),
-                dataCommunicator.getItem(2));
+        assertEquals(new Item(1), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        assertEquals(new Item(2), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        assertEquals(new Item(0), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
 
         dataCommunicator
                 .setInMemorySorting((i1, i2) -> Integer.compare(i1.id, i2.id));
 
         fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", new Item(0),
-                dataCommunicator.getItem(0));
-        Assert.assertEquals("Invalid item on index 1", new Item(1),
-                dataCommunicator.getItem(1));
-        Assert.assertEquals("Invalid item on index 2", new Item(2),
-                dataCommunicator.getItem(2));
+        assertEquals(new Item(0), dataCommunicator.getItem(0),
+                "Invalid item on index 0");
+        assertEquals(new Item(1), dataCommunicator.getItem(1),
+                "Invalid item on index 1");
+        assertEquals(new Item(2), dataCommunicator.getItem(2),
+                "Invalid item on index 2");
     }
 
-    @Test
-    public void getItem_streamIsClosed() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void getItem_streamIsClosed(boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
                 null);
@@ -1034,22 +1128,24 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         dataCommunicator.getItem(0);
 
-        Assert.assertTrue(streamIsClosed.get());
+        assertTrue(streamIsClosed.get());
     }
 
-    @Test
-    public void itemCountEstimateAndStep_defaults() {
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
-                pageSize * 4);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void itemCountEstimateAndStep_defaults(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        assertEquals(dataCommunicator.getItemCountEstimate(), pageSize * 4);
+        assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 pageSize * 4);
 
         int customPageSize = 100;
         dataCommunicator.setPageSize(customPageSize);
 
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+        assertEquals(dataCommunicator.getItemCountEstimate(),
                 customPageSize * 4);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+        assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customPageSize * 4);
 
         int customItemCountEstimate = 123;
@@ -1058,14 +1154,17 @@ public class DataCommunicatorTest {
         dataCommunicator
                 .setItemCountEstimateIncrease(customItemCountEstimateStep);
 
-        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+        assertEquals(dataCommunicator.getItemCountEstimate(),
                 customItemCountEstimate);
-        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+        assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customItemCountEstimateStep);
     }
 
-    @Test
-    public void itemCountChangeEvent_exactSize_correctCountAndIsCountEstimated() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void itemCountChangeEvent_exactSize_correctCountAndIsCountEstimated(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final TestComponent component = new TestComponent();
         ui.add(component);
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
@@ -1074,7 +1173,7 @@ public class DataCommunicatorTest {
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
+                    assertNull(cachedEvent.get());
                     cachedEvent.set((ItemCountChangeEvent<?>) event);
                 }));
         int exactCount = 500;
@@ -1085,19 +1184,19 @@ public class DataCommunicatorTest {
 
         ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
 
-        Assert.assertEquals("Invalid count provided", exactCount,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        assertEquals(exactCount, event.getItemCount(),
+                "Invalid count provided");
+        assertFalse(event.isItemCountEstimated());
         // no new event fired
         dataCommunicator.setViewportRange(450, 50);
         fakeClientCommunication();
-        Assert.assertNull(cachedEvent.get());
+        assertNull(cachedEvent.get());
 
         // creating a new data provider with same exact size -> no new event
         // fired
         dataCommunicator.setDataProvider(createDataProvider(500), null);
         fakeClientCommunication();
-        Assert.assertNull(cachedEvent.get());
+        assertNull(cachedEvent.get());
 
         // new data provider with different size
         dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000),
@@ -1105,13 +1204,16 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         event = cachedEvent.getAndSet(null);
 
-        Assert.assertEquals("Invalid count provided", exactCount,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        assertEquals(exactCount, event.getItemCount(),
+                "Invalid count provided");
+        assertFalse(event.isItemCountEstimated());
     }
 
-    @Test
-    public void itemCountChangeEvent_estimatedCount_estimateUsedUntilEndReached() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void itemCountChangeEvent_estimatedCount_estimateUsedUntilEndReached(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final TestComponent component = new TestComponent();
         ui.add(component);
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
@@ -1120,7 +1222,7 @@ public class DataCommunicatorTest {
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
+                    assertNull(cachedEvent.get());
                     cachedEvent.set((ItemCountChangeEvent<?>) event);
                 }));
         int exactCount = 500;
@@ -1131,38 +1233,37 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 200,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        assertEquals(200, event.getItemCount(), "Invalid count provided");
+        assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(150, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 400,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        assertEquals(400, event.getItemCount(), "Invalid count provided");
+        assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(350, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 600,
-                event.getItemCount());
-        Assert.assertTrue(event.isItemCountEstimated());
+        assertEquals(600, event.getItemCount(), "Invalid count provided");
+        assertTrue(event.isItemCountEstimated());
 
         dataCommunicator.setViewportRange(550, 50);
         fakeClientCommunication();
 
         // reaching exact size
         event = cachedEvent.getAndSet(null);
-        Assert.assertEquals("Invalid count provided", 500,
-                event.getItemCount());
-        Assert.assertFalse(event.isItemCountEstimated());
+        assertEquals(500, event.getItemCount(), "Invalid count provided");
+        assertFalse(event.isItemCountEstimated());
     }
 
-    @Test
-    public void setDefinedSize_rangeEndEqualsAssumedSize_flushRequested() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setDefinedSize_rangeEndEqualsAssumedSize_flushRequested(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         // trigger client communication in order to initialise it and avoid
         // infinite loop inside 'requestFlush()'
         fakeClientCommunication();
@@ -1190,20 +1291,26 @@ public class DataCommunicatorTest {
         Mockito.verify(stateNode).runWhenAttached(Mockito.any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
-        Assert.assertEquals(300, dataCommunicator.getItemCount());
+        assertEquals(300, dataCommunicator.getItemCount());
     }
 
-    @Test
-    public void pageSize_defaultPageSizeUsed_returnsItemNormally() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void pageSize_defaultPageSizeUsed_returnsItemNormally(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(DataProvider.ofItems(new Item(0)),
                 null);
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(0, 100);
-        Assert.assertNotNull(itemStream);
-        Assert.assertEquals(1, itemStream.count());
+        assertNotNull(itemStream);
+        assertEquals(1, itemStream.count());
     }
 
-    @Test
-    public void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
         dataProvider = Mockito.spy(dataProvider);
@@ -1220,31 +1327,31 @@ public class DataCommunicatorTest {
                 .fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(30, items.size());
+        assertEquals(30, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
+        assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
-        Assert.assertEquals(3, allQueries.size());
+        assertEquals(3, allQueries.size());
 
         Query query = allQueries.get(0);
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        assertEquals(0, query.getOffset());
+        assertEquals(10, query.getLimit());
+        assertEquals(0, query.getPage());
+        assertEquals(10, query.getPageSize());
 
         query = allQueries.get(1);
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(1, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        assertEquals(10, query.getOffset());
+        assertEquals(10, query.getLimit());
+        assertEquals(1, query.getPage());
+        assertEquals(10, query.getPageSize());
 
         query = allQueries.get(2);
-        Assert.assertEquals(20, query.getOffset());
-        Assert.assertEquals(10, query.getLimit());
-        Assert.assertEquals(2, query.getPage());
-        Assert.assertEquals(10, query.getPageSize());
+        assertEquals(20, query.getOffset());
+        assertEquals(10, query.getLimit());
+        assertEquals(2, query.getPage());
+        assertEquals(10, query.getPageSize());
 
         Mockito.reset(dataProvider);
         // Use a limit value so that it's multiple by page size
@@ -1253,8 +1360,11 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
-    @Test
-    public void fetchFromProvider_limitEqualsPageSize_singleQuery() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_limitEqualsPageSize_singleQuery(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
         dataProvider = Mockito.spy(dataProvider);
@@ -1268,20 +1378,23 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(50, items.size());
+        assertEquals(50, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
+        assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(50, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(50, query.getPageSize());
+        assertEquals(0, query.getOffset());
+        assertEquals(50, query.getLimit());
+        assertEquals(0, query.getPage());
+        assertEquals(50, query.getPageSize());
     }
 
-    @Test
-    public void fetchFromProvider_limitLessThanPageSize_singleQuery_fetchedLessThanPage() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_limitLessThanPageSize_singleQuery_fetchedLessThanPage(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
         dataProvider = Mockito.spy(dataProvider);
@@ -1295,20 +1408,23 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(42, items.size());
+        assertEquals(42, items.size());
 
-        Assert.assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
+        assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
-        Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(42, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(42, query.getPageSize());
+        assertEquals(10, query.getOffset());
+        assertEquals(42, query.getLimit());
+        assertEquals(0, query.getPage());
+        assertEquals(42, query.getPageSize());
     }
 
-    @Test
-    public void fetchFromProvider_disablePaging_singleQueryWithLimit() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_disablePaging_singleQueryWithLimit(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 200);
         dataProvider = Mockito.spy(dataProvider);
@@ -1324,23 +1440,26 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(123, items.size());
+        assertEquals(123, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
+        assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
-        Assert.assertEquals(1, allQueries.size());
+        assertEquals(1, allQueries.size());
 
         Query query = allQueries.get(0);
-        Assert.assertEquals(0, query.getOffset());
-        Assert.assertEquals(123, query.getLimit());
-        Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(123, query.getPageSize());
+        assertEquals(0, query.getOffset());
+        assertEquals(123, query.getLimit());
+        assertEquals(0, query.getPage());
+        assertEquals(123, query.getPageSize());
     }
 
-    @Test
-    public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_maxLimitValue_pagesCalculatedProperly(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 42);
         dataProvider = Mockito.spy(dataProvider);
@@ -1355,8 +1474,11 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
-    @Test
-    public void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 42);
         dataProvider = Mockito.spy(dataProvider);
@@ -1369,8 +1491,11 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
-    @Test
-    public void fetchFromProvider_itemCountLessThanTwoPages_correctItemsReturned() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_itemCountLessThanTwoPages_correctItemsReturned(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 1; i <= 113; i++) {
             items.add(new Item(i));
@@ -1393,13 +1518,16 @@ public class DataCommunicatorTest {
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(100, 13);
         List<Item> itemList = itemStream.toList();
 
-        Assert.assertEquals(13, itemList.size());
-        Assert.assertEquals(new Item(101), itemList.get(0));
+        assertEquals(13, itemList.size());
+        assertEquals(new Item(101), itemList.get(0));
 
     }
 
-    @Test
-    public void fetchFromProvider_itemCountLessThanTwoPages_getPageNotUsed_correctItemsReturned() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_itemCountLessThanTwoPages_getPageNotUsed_correctItemsReturned(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         List<Item> items = new ArrayList<>();
         for (int i = 1; i <= 27; i++) {
             items.add(new Item(i));
@@ -1421,13 +1549,16 @@ public class DataCommunicatorTest {
         Stream<Item> itemStream = dataCommunicator.fetchFromProvider(20, 7);
         List<Item> itemList = itemStream.toList();
 
-        Assert.assertEquals(7, itemList.size());
-        Assert.assertEquals(new Item(21), itemList.get(0));
+        assertEquals(7, itemList.size());
+        assertEquals(new Item(21), itemList.get(0));
 
     }
 
-    @Test
-    public void fetchFromProvider_streamIsClosed() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchFromProvider_streamIsClosed(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
                 null);
@@ -1435,30 +1566,39 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertTrue(streamIsClosed.get());
+        assertTrue(streamIsClosed.get());
     }
 
-    @Test
-    public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchEnabled_getItemCount_stillReturnsItemsCount(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setFetchEnabled(false);
-        Assert.assertEquals(0, dataCommunicator.getItemCount());
+        assertEquals(0, dataCommunicator.getItemCount());
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertEquals(100, dataCommunicator.getItemCount());
+        assertEquals(100, dataCommunicator.getItemCount());
     }
 
-    @Test
-    public void fetchEnabled_getItem_stillReturnsItem() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchEnabled_getItem_stillReturnsItem(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setFetchEnabled(false);
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertNotNull(dataCommunicator.getItem(42));
+        assertNotNull(dataCommunicator.getItem(42));
     }
 
-    @Test
-    public void fetchEnabled_requestRange_fetchIgnored() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fetchEnabled_requestRange_fetchIgnored(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {
                 }, element.getNode(), false);
@@ -1486,31 +1626,37 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).size(Mockito.any(Query.class));
     }
 
-    @Test
-    public void setPageSize_setIncorrectPageSize_throws() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException
-                .expectMessage("Page size cannot be less than 1, got 0");
-        dataCommunicator.setPageSize(0);
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setPageSize_setIncorrectPageSize_throws(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> dataCommunicator.setPageSize(0));
+        assertTrue(ex.getMessage()
+                .contains("Page size cannot be less than 1, got 0"));
     }
 
-    @Test
-    public void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void filter_setFilterThroughFilterConsumer_shouldRetainFilterBetweenRequests(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1);
 
-        Assert.assertNotNull("Expected initial filter to be set",
-                dataCommunicator.getFilter());
+        assertNotNull(dataCommunicator.getFilter(),
+                "Expected initial filter to be set");
 
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull("Filter should be retained after data request",
-                dataCommunicator.getFilter());
+        assertNotNull(dataCommunicator.getFilter(),
+                "Filter should be retained after data request");
 
-        Assert.assertEquals("Unexpected items count", 2,
-                dataCommunicator.getItemCount());
+        assertEquals(2, dataCommunicator.getItemCount(),
+                "Unexpected items count");
 
         // Check that the filter change works properly
         filterConsumer.accept(item -> item.id > 2);
@@ -1518,23 +1664,25 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotNull("Filter should be retained after data request",
-                dataCommunicator.getFilter());
+        assertNotNull(dataCommunicator.getFilter(),
+                "Filter should be retained after data request");
 
-        Assert.assertEquals("Unexpected items count", 1,
-                dataCommunicator.getItemCount());
+        assertEquals(1, dataCommunicator.getItemCount(),
+                "Unexpected items count");
     }
 
-    @Test
-    public void filter_setNotifyOnFilterChange_firesItemChangeEvent() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void filter_setNotifyOnFilterChange_firesItemChangeEvent(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         TestComponent testComponent = new TestComponent(element);
 
         AtomicBoolean eventTriggered = new AtomicBoolean(false);
 
         testComponent.addItemChangeListener(event -> {
             eventTriggered.set(true);
-            Assert.assertEquals("Unexpected item count", 2,
-                    event.getItemCount());
+            assertEquals(2, event.getItemCount(), "Unexpected item count");
         });
 
         dataCommunicator.setDataProvider(
@@ -1544,16 +1692,18 @@ public class DataCommunicatorTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertTrue("Expected event to be triggered",
-                eventTriggered.get());
+        assertTrue(eventTriggered.get(), "Expected event to be triggered");
     }
 
-    @Test
-    public void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void filter_skipNotifyOnFilterChange_doesNotFireItemChangeEvent(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         TestComponent testComponent = new TestComponent(element);
 
         testComponent.addItemChangeListener(
-                event -> Assert.fail("Event triggering not expected"));
+                event -> fail("Event triggering not expected"));
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
@@ -1563,8 +1713,11 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
     }
 
-    @Test
-    public void setDataProvider_setNewDataProvider_filteringAndSortingRemoved() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setDataProvider_setNewDataProvider_filteringAndSortingRemoved(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
                 null);
@@ -1575,31 +1728,37 @@ public class DataCommunicatorTest {
                 }) {
         };
 
-        Assert.assertEquals("Unexpected items count before filter", 3,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order before sorting",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
+        assertEquals(3, listDataView.getItems().count(),
+                "Unexpected items count before filter");
+        assertEquals(new Item(0),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order before sorting");
 
         listDataView.setFilter(item -> item.id < 2);
         listDataView.setSortOrder(item -> item.id, SortDirection.DESCENDING);
 
-        Assert.assertEquals("Unexpected items count after filter", 2,
-                listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after sorting", new Item(1),
-                listDataView.getItems().findFirst().orElse(null));
+        assertEquals(2, listDataView.getItems().count(),
+                "Unexpected items count after filter");
+        assertEquals(new Item(1),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order after sorting");
 
         dataCommunicator.setDataProvider(
                 DataProvider.ofItems(new Item(0), new Item(1), new Item(2)),
                 null);
 
-        Assert.assertEquals("Unexpected items count after data provider reset",
-                3, listDataView.getItems().count());
-        Assert.assertEquals("Unexpected items order after data provider reset",
-                new Item(0), listDataView.getItems().findFirst().orElse(null));
+        assertEquals(3, listDataView.getItems().count(),
+                "Unexpected items count after data provider reset");
+        assertEquals(new Item(0),
+                listDataView.getItems().findFirst().orElse(null),
+                "Unexpected items order after data provider reset");
     }
 
-    @Test // for https://github.com/vaadin/flow/issues/9988
-    public void lazyLoadingFiltering_filterAppliedAfterScrolling_requestedRangeResolvedProperly() {
+    @ParameterizedTest // for https://github.com/vaadin/flow/issues/9988
+    @ValueSource(booleans = { true, false })
+    void lazyLoadingFiltering_filterAppliedAfterScrolling_requestedRangeResolvedProperly(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         final AtomicReference<Item> filter = new AtomicReference<>(null);
 
         final DataProvider<Item, ?> dataProvider = DataProvider.fromCallbacks(
@@ -1610,7 +1769,7 @@ public class DataCommunicatorTest {
                                 || filter.get().equals(item))
                         .limit(query.getLimit()).skip(query.getOffset()),
                 query -> {
-                    Assert.fail("Count query is not expected in this test.");
+                    fail("Count query is not expected in this test.");
                     return 0;
                 });
 
@@ -1632,14 +1791,17 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Check the filtered item
-        Assert.assertEquals("Expected 1 item after the filtering", 1,
-                dataCommunicator.getItemCount());
-        Assert.assertEquals("Expected the item with value 42", filter.get(),
-                dataCommunicator.getItem(0));
+        assertEquals(1, dataCommunicator.getItemCount(),
+                "Expected 1 item after the filtering");
+        assertEquals(filter.get(), dataCommunicator.getItem(0),
+                "Expected the item with value 42");
     }
 
-    @Test
-    public void handleAttach_componentAttached_oldDataProviderListenerRemoved() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void handleAttach_componentAttached_oldDataProviderListenerRemoved(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         // given
         AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
 
@@ -1661,10 +1823,9 @@ public class DataCommunicatorTest {
         ui.add(componentWithDataProvider);
         fakeClientCommunication();
 
-        Assert.assertEquals(
+        assertEquals(2, listenerInvocationCounter.get(),
                 "Expected two DataCommunicator::reset() invocations: upon "
-                        + "setting the data provider and component attaching",
-                2, listenerInvocationCounter.get());
+                        + "setting the data provider and component attaching");
 
         // when
         // the data is being refreshed -> data provider's listeners are being
@@ -1673,14 +1834,16 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // then
-        Assert.assertEquals(
+        assertEquals(3, listenerInvocationCounter.get(),
                 "Expected only one reset() invocation, because the old "
-                        + "listener was removed and then only one listener is stored",
-                3, listenerInvocationCounter.get());
+                        + "listener was removed and then only one listener is stored");
     }
 
-    @Test
-    public void setViewportRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setViewportRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         DataProvider<Item, Object> dataProvider = Mockito
                 .spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1695,14 +1858,16 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(queryCaptor.capture());
 
-        Assert.assertEquals(
+        assertEquals(500, queryCaptor.getValue().getLimit(),
                 "Expected the requested items count to be limited"
-                        + " to allowed threshold",
-                500, queryCaptor.getValue().getLimit());
+                        + " to allowed threshold");
     }
 
-    @Test
-    public void setSmallPageSize_fetchMaximumItemsLowerLimit() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setSmallPageSize_fetchMaximumItemsLowerLimit(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         DataProvider<Item, Object> dataProvider = Mockito
                 .spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1717,8 +1882,11 @@ public class DataCommunicatorTest {
                 .fetch(queryCaptor.capture());
     }
 
-    @Test
-    public void setViewportRange_customPageSize_customPageSizeConsidered_itemsRequested() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void setViewportRange_customPageSize_customPageSizeConsidered_itemsRequested(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);
 
@@ -1736,17 +1904,19 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(queryCaptor.capture());
 
-        Assert.assertEquals(
+        assertEquals(600, queryCaptor.getValue().getLimit(),
                 "Expected two pages with page size = 300 to be "
-                        + "requested and not limited",
-                600, queryCaptor.getValue().getLimit());
+                        + "requested and not limited");
     }
 
     // Simulates a flush request enqueued during a page reload with
     // @PreserveOnRefresh
     // see https://github.com/vaadin/flow/issues/14067
-    @Test
-    public void reattach_differentUI_requestFlushExecuted() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void reattach_differentUI_requestFlushExecuted(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
 
@@ -1758,8 +1928,8 @@ public class DataCommunicatorTest {
         ui = newUI;
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
     }
 
     @Tag("test-component")

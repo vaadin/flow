@@ -15,34 +15,34 @@
  */
 package com.vaadin.flow.data.validator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EmailValidatorTest extends ValidatorTestBase {
+class EmailValidatorTest extends ValidatorTestBase {
 
     @Test
-    public void testNullStringFails() {
+    void testNullStringFails() {
         assertPasses(null, shouldNotFail());
     }
 
     @Test
-    public void testEmptyStringFails() {
+    void testEmptyStringFails() {
         assertFails("", validator("empty string not allowed"));
     }
 
     @Test
-    public void testStringWithoutAtSignFails() {
+    void testStringWithoutAtSignFails() {
         assertFails("johannesd.vaadin", validator("@ is required"));
     }
 
     @Test
-    public void testMissingLocalPartFails() {
+    void testMissingLocalPartFails() {
         RegexpValidator v = validator("local part is required");
         assertFails("@localhost", v);
         assertFails(" @localhost", v);
     }
 
     @Test
-    public void testNonAsciiEmailFails() {
+    void testNonAsciiEmailFails() {
         RegexpValidator v = validator("accented letters not allowed");
         assertFails("jöhännes@vaadin.com", v);
         assertFails("johannes@váádìn.com", v);
@@ -50,7 +50,7 @@ public class EmailValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testLocalPartWithPunctuationPasses() {
+    void testLocalPartWithPunctuationPasses() {
         RegexpValidator v = shouldNotFail();
         assertPasses("johannesd+test@vaadin.com", v);
         assertPasses("johannes.dahlstrom@vaadin.com", v);
@@ -58,65 +58,65 @@ public class EmailValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testEmailWithoutDomainPartFails() {
+    void testEmailWithoutDomainPartFails() {
         assertFails("johannesd@", validator("domain part is required"));
     }
 
     @Test
-    public void testComplexDomainPasses() {
+    void testComplexDomainPasses() {
         assertPasses("johannesd@foo.bar.baz.vaadin.com", shouldNotFail());
     }
 
     @Test
-    public void testDomainWithPunctuationPasses() {
+    void testDomainWithPunctuationPasses() {
         assertPasses("johannesd@vaadin-dev.com", shouldNotFail());
     }
 
     @Test
-    public void testMissingTldFails() {
+    void testMissingTldFails() {
         assertFails("johannesd@localhost", validator("tld is required"));
     }
 
     @Test
-    public void testOneLetterTldFails() {
+    void testOneLetterTldFails() {
         assertFails("johannesd@vaadin.f",
                 validator("one-letter tld not allowed"));
     }
 
     @Test
-    public void testLongTldPasses() {
+    void testLongTldPasses() {
         assertPasses("joonas@vaadin.management", shouldNotFail());
     }
 
     @Test
-    public void testIdnTldPasses() {
+    void testIdnTldPasses() {
         assertPasses("leif@vaadin.XN--VERMGENSBERATER-CTB", shouldNotFail());
     }
 
     @Test
-    public void testYelledEmailPasses() {
+    void testYelledEmailPasses() {
         assertPasses("JOHANNESD@VAADIN.COM", shouldNotFail());
     }
 
     @Test
-    public void testEmailWithDigitsPasses() {
+    void testEmailWithDigitsPasses() {
         assertPasses("johannes84@v44d1n.com", shouldNotFail());
     }
 
     @Test
-    public void emptyString_validatorAcceptsEmptyValue_passesValidation() {
+    void emptyString_validatorAcceptsEmptyValue_passesValidation() {
         assertPasses("", new EmailValidator("this should not fail", true));
     }
 
     @Test
-    public void emptyString_validatorDoesNotAcceptsEmptyValue_validationFails() {
+    void emptyString_validatorDoesNotAcceptsEmptyValue_validationFails() {
         assertFails("", new EmailValidator(
                 "explcitily disallowed empty value should not be accepted",
                 false));
     }
 
     @Test
-    public void testDomainWithDotDotFails() {
+    void testDomainWithDotDotFails() {
         EmailValidator v = validator("domains containing dot dot should fail");
         assertFails("hello@sample..com", v);
         assertFails("hello@samp..le..com", v);

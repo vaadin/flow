@@ -17,8 +17,8 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicator;
 
-public class HierarchicalDataCommunicatorViewportTest
+class HierarchicalDataCommunicatorViewportTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -34,8 +34,8 @@ public class HierarchicalDataCommunicatorViewportTest
 
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         super.init();
 
         var compositeDataGenerator = new CompositeDataGenerator<Item>();
@@ -50,7 +50,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_flush_requestedRangeSent() {
+    void setViewportRange_flush_requestedRangeSent() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
@@ -80,7 +80,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_flush_setOverlappingRange_partialRangeSent() {
+    void setViewportRange_flush_setOverlappingRange_partialRangeSent() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
@@ -130,7 +130,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRangeMultipleTimes_flush_onlyLastRangeSent() {
+    void setViewportRangeMultipleTimes_flush_onlyLastRangeSent() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 10);
         dataCommunicator.setViewportRange(50, 2);
@@ -144,7 +144,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_toggleItems_rangeItemsUpdated() {
+    void setViewportRange_toggleItems_rangeItemsUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 6);
 
@@ -208,7 +208,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_toggleItemWithPreExpandedChildren_rangeItemsUpdated() {
+    void setViewportRange_toggleItemWithPreExpandedChildren_rangeItemsUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 6);
         dataCommunicator.expand(new Item("Item 0-0"));
@@ -256,7 +256,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_toggleItemOutsideViewport_flatSizeNotUpdated() {
+    void setViewportRange_toggleItemOutsideViewport_flatSizeNotUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 10);
         fakeClientCommunication();
@@ -275,7 +275,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_expandItemOutsideViewport_moveItemIntoViewport_flatSizeUpdated() {
+    void setViewportRange_expandItemOutsideViewport_moveItemIntoViewport_flatSizeUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
@@ -294,7 +294,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_expandItem_moveItemOutOfViewport_collapseItem_flatSizeUpdated() {
+    void setViewportRange_expandItem_moveItemOutOfViewport_collapseItem_flatSizeUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 6);
@@ -316,7 +316,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRangeWithStartBeyondFlatSize_rangeReset() {
+    void setViewportRangeWithStartBeyondFlatSize_rangeReset() {
         populateTreeData(treeData, 100, 10);
         dataCommunicator.expand(new Item("Item 99"));
 
@@ -327,7 +327,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRangeWithEndBeyondFlatSize_rangeAdjusted() {
+    void setViewportRangeWithEndBeyondFlatSize_rangeAdjusted() {
         populateTreeData(treeData, 100, 10);
         dataCommunicator.expand(new Item("Item 99"));
 
@@ -338,7 +338,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setTooLargeViewportRange_warningLogged() {
+    void setTooLargeViewportRange_warningLogged() {
         populateTreeData(treeData, 100, 100);
         dataCommunicator.expand(treeData.getRootItems());
 
@@ -370,7 +370,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setTooLargeViewportRange_onlyMaxAllowedRangeSent() {
+    void setTooLargeViewportRange_onlyMaxAllowedRangeSent() {
         populateTreeData(treeData, 100, 100);
         dataCommunicator.expand(treeData.getRootItems());
 

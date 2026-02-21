@@ -18,19 +18,20 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
-public class HierarchicalDataCommunicatorIndexPathResolutionTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         super.init();
 
         var treeData = new TreeData<Item>();
@@ -47,101 +48,98 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
     }
 
     @Test
-    public void positiveIndexes_resolveIndexPath_correctFlatIndexReturned() {
+    void positiveIndexes_resolveIndexPath_correctFlatIndexReturned() {
         dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                 new Item("Item 1"), new Item("Item 1-1")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(0));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(0, dataCommunicator.resolveIndexPath(0));
+        assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(0, 0));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(1, dataCommunicator.resolveIndexPath(0, 0));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(3, dataCommunicator.resolveIndexPath(1));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(3, dataCommunicator.resolveIndexPath(1));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(1, 0));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(4, dataCommunicator.resolveIndexPath(1, 0));
+        assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5, dataCommunicator.resolveIndexPath(1, 1));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(5, dataCommunicator.resolveIndexPath(1, 1));
+        assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(6, dataCommunicator.resolveIndexPath(1, 1, 0));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(6, dataCommunicator.resolveIndexPath(1, 1, 0));
+        assertEquals(8, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(7, dataCommunicator.resolveIndexPath(2));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(7, dataCommunicator.resolveIndexPath(2));
+        assertEquals(8, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
-    public void negativeIndexes_resolveIndexPath_correctFlatIndexReturned() {
+    void negativeIndexes_resolveIndexPath_correctFlatIndexReturned() {
         dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
                 new Item("Item 1"), new Item("Item 1-1")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-3));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(0, dataCommunicator.resolveIndexPath(-3));
+        assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(-3, -2));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(1, dataCommunicator.resolveIndexPath(-3, -2));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(3, dataCommunicator.resolveIndexPath(-2));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(3, dataCommunicator.resolveIndexPath(-2));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(-2, -2));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(4, dataCommunicator.resolveIndexPath(-2, -2));
+        assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5, dataCommunicator.resolveIndexPath(-2, -1));
-        Assert.assertEquals(7, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(5, dataCommunicator.resolveIndexPath(-2, -1));
+        assertEquals(7, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(6, dataCommunicator.resolveIndexPath(-2, -1, -1));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(6, dataCommunicator.resolveIndexPath(-2, -1, -1));
+        assertEquals(8, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(7, dataCommunicator.resolveIndexPath(-1));
-        Assert.assertEquals(8, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(7, dataCommunicator.resolveIndexPath(-1));
+        assertEquals(8, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
-    public void exceedingPositiveIndexes_resolveIndexPath_indexesClamped() {
+    void exceedingPositiveIndexes_resolveIndexPath_indexesClamped() {
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 2"), new Item("Item 2-1")));
 
-        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(2, dataCommunicator.resolveIndexPath(100));
+        assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(100, 100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(4, dataCommunicator.resolveIndexPath(100, 100));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5,
-                dataCommunicator.resolveIndexPath(100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(5, dataCommunicator.resolveIndexPath(100, 100, 100));
+        assertEquals(6, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(5,
-                dataCommunicator.resolveIndexPath(100, 100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(5, dataCommunicator.resolveIndexPath(100, 100, 100, 100));
+        assertEquals(6, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
-    public void exceedingNegativeIndexes_resolveIndexPath_indexesClamped() {
+    void exceedingNegativeIndexes_resolveIndexPath_indexesClamped() {
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(0, dataCommunicator.resolveIndexPath(-100));
+        assertEquals(3, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(-100, -100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(1, dataCommunicator.resolveIndexPath(-100, -100));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(2,
-                dataCommunicator.resolveIndexPath(-100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(2, dataCommunicator.resolveIndexPath(-100, -100, -100));
+        assertEquals(6, dataCommunicator.rootCache.getFlatSize());
 
-        Assert.assertEquals(2,
+        assertEquals(2,
                 dataCommunicator.resolveIndexPath(-100, -100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        assertEquals(6, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
-    public void setViewportRange_resolveIndexPage_entireRangeSentWhenSizeChanged() {
+    void setViewportRange_resolveIndexPage_entireRangeSentWhenSizeChanged() {
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(2, 1);
         fakeClientCommunication();

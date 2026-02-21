@@ -20,14 +20,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A base class for {@code Binder} unit tests.
@@ -69,18 +72,17 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
     }
 
     void assertInvalidField(String expectedErrorMessage, HasValidation field) {
-        Assert.assertEquals(
-                "The field should contain same error message as binder",
-                expectedErrorMessage, field.getErrorMessage());
-        Assert.assertTrue("The field should be invalid", field.isInvalid());
+        assertEquals(expectedErrorMessage, field.getErrorMessage(),
+                "The field should contain same error message as binder");
+        assertTrue(field.isInvalid(), "The field should be invalid");
     }
 
     void assertValidField(HasValidation field) {
-        Assert.assertFalse("The field should be valid", field.isInvalid());
+        assertFalse(field.isInvalid(), "The field should be valid");
     }
 
-    @Before
-    public void setUpBase() {
+    @BeforeEach
+    void setUpBase() {
         UI ui = new UI() {
             @Override
             public Locale getLocale() {
@@ -93,8 +95,8 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
         ui.add(nameField, ageField);
     }
 
-    @After
-    public void testBinderSerialization() {
+    @AfterEach
+    void testBinderSerialization() {
         testSerialization(binder);
     }
 }
