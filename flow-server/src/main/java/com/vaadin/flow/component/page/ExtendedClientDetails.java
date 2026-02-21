@@ -60,6 +60,7 @@ public class ExtendedClientDetails implements Serializable {
     private String navigatorPlatform;
     private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
     private String themeName;
+    private boolean webShareSupported;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -104,6 +105,8 @@ public class ExtendedClientDetails implements Serializable {
      *            the current color scheme
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
+     * @param webShareSupported
+     *            whether the browser supports the Web Share API
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -111,7 +114,8 @@ public class ExtendedClientDetails implements Serializable {
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform, String colorScheme, String themeName) {
+            String navigatorPlatform, String colorScheme, String themeName,
+            String webShareSupported) {
         this.ui = ui;
         if (screenWidth != null) {
             try {
@@ -190,6 +194,9 @@ public class ExtendedClientDetails implements Serializable {
         this.navigatorPlatform = navigatorPlatform;
         setColorScheme(ColorScheme.Value.fromString(colorScheme));
         this.themeName = themeName;
+        if (webShareSupported != null) {
+            this.webShareSupported = Boolean.parseBoolean(webShareSupported);
+        }
     }
 
     /**
@@ -430,6 +437,16 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns whether the browser supports the Web Share API
+     * ({@code navigator.share}).
+     *
+     * @return {@code true} if the browser supports the Web Share API
+     */
+    public boolean isWebShareSupported() {
+        return webShareSupported;
+    }
+
+    /**
      * Updates the color scheme. For internal use only.
      *
      * @param colorScheme
@@ -491,7 +508,8 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-wn"),
                 getStringElseNull.apply("v-np"),
                 getStringElseNull.apply("v-cs"),
-                getStringElseNull.apply("v-tn"));
+                getStringElseNull.apply("v-tn"),
+                getStringElseNull.apply("v-ns"));
     }
 
     /**

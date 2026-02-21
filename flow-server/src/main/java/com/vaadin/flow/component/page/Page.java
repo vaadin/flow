@@ -674,6 +674,45 @@ public class Page implements Serializable {
         });
     }
 
+    /**
+     * Returns whether the browser supports the
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API">
+     * Web Share API</a> ({@code navigator.share}).
+     *
+     * @return {@code true} if the browser supports the Web Share API
+     */
+    public boolean isShareSupported() {
+        return getExtendedClientDetails().isWebShareSupported();
+    }
+
+    /**
+     * Invokes the browser's native share dialog using the <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share"> Web
+     * Share API</a>.
+     *
+     * @param title
+     *            the title to share
+     * @param text
+     *            the text to share
+     * @param url
+     *            the URL to share
+     * @return a pending result that resolves when the share completes or
+     *         rejects if the user cancels or sharing fails
+     * @throws UnsupportedOperationException
+     *             if the browser does not support the Web Share API
+     */
+    public PendingJavaScriptResult share(String title, String text,
+            String url) {
+        if (!isShareSupported()) {
+            throw new UnsupportedOperationException(
+                    "The browser does not support the Web Share API. "
+                            + "Check isShareSupported() before calling share().");
+        }
+        return executeJs(
+                "return navigator.share({title: $0, text: $1, url: $2})", title,
+                text, url);
+    }
+
     private Direction getDirectionByClientName(String directionClientName) {
         return Arrays.stream(Direction.values())
                 .filter(direction -> direction.getClientName()
