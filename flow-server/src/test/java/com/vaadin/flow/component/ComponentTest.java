@@ -2059,6 +2059,22 @@ public class ComponentTest {
                 ex.getMessage());
     }
 
+    @Test
+    public void requestFullscreen_attachedComponent_executesJs() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.requestFullscreen();
+
+        assertPendingJs(
+                "window.Vaadin.Flow.fullscreen.requestComponentFullscreen");
+    }
+
+    @Test
+    public void requestFullscreen_detachedComponent_throws() {
+        EnabledDiv div = new EnabledDiv();
+        assertThrows(IllegalStateException.class, div::requestFullscreen);
+    }
+
     private void resetComponentTrackerProductionMode() throws Exception {
         Field disabled = ComponentTracker.class.getDeclaredField("disabled");
         disabled.setAccessible(true);
