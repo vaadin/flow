@@ -61,11 +61,14 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
         }
 
         UI ui = getUI(element);
-        if (majorProperties.length() == 0 && ui != null
+        @SuppressWarnings("NullAway") // session.getService() non-null for
+                                      // active session
+        boolean showDetails = majorProperties.length() == 0 && ui != null
                 && ui.getSession() != null
                 && !ApplicationConfiguration
                         .get(ui.getSession().getService().getContext())
-                        .isProductionMode()) {
+                        .isProductionMode();
+        if (showDetails) {
             element.getAttributeNames()
                     .forEach(attribute -> appendProperty(majorProperties,
                             attribute, element.getAttribute(attribute)));

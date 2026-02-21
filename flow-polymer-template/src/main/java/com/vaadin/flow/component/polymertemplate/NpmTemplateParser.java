@@ -180,6 +180,8 @@ public class NpmTemplateParser implements TemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() non-null after
+                                  // service init
     protected @Nullable String getSourcesFromTemplate(VaadinService service,
             String tag, String url) {
         InputStream content = getResourceStream(service, url);

@@ -83,6 +83,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * @param service
      *            the related service instance
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() non-null after
+                                  // service init
     protected PolymerTemplate(TemplateParser parser, VaadinService service) {
         if (service == null) {
             throw new IllegalStateException(VaadinService.class.getSimpleName()
@@ -115,6 +117,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * Creates the component that is responsible for Polymer template
      * functionality.
      */
+    @SuppressWarnings("NullAway") // VaadinService.getCurrent() non-null during
+                                  // component creation
     public PolymerTemplate() {
         this(Objects.requireNonNull(VaadinService.getCurrent())
                 .getInstantiator()

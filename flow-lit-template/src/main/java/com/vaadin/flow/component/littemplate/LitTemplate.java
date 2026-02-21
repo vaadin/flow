@@ -110,6 +110,8 @@ public abstract class LitTemplate extends Component
         return super.getChildren();
     }
 
+    @SuppressWarnings("NullAway") // getInstantiator() non-null after service
+                                  // init
     static LitTemplateParser getParser(VaadinService service) {
         LitTemplateParserFactory factory = service.getInstantiator()
                 .getOrCreate(LitTemplateParserFactory.class);

@@ -73,6 +73,8 @@ public class LitTemplateInitializer {
      * @param service
      *            the related service
      */
+    @SuppressWarnings("NullAway") // getDeploymentConfiguration() non-null after
+                                  // service init
     LitTemplateInitializer(LitTemplate template, LitTemplateParser parser,
             VaadinService service) {
         this.template = template;

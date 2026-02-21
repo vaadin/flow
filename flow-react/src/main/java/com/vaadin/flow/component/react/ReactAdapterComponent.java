@@ -225,6 +225,8 @@ public abstract class ReactAdapterComponent extends Component {
         }
     }
 
+    @SuppressWarnings("NullAway") // event.getValue() non-null for state change
+                                  // events
     private <T> DomListenerRegistration addJsonReaderStateChangeListener(
             String stateName, SerializableFunction<JsonNode, T> jsonReader,
             SerializableConsumer<T> listener) {

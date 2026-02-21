@@ -69,7 +69,10 @@ public class TemplateInitializer {
      * @param service
      *            the related service
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "NullAway" }) // NullAway:
+                                                   // getDeploymentConfiguration()
+                                                   // non-null after service
+                                                   // init
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser, VaadinService service) {
         this.template = template;

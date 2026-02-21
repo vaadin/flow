@@ -70,8 +70,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
         setValueChangeMode(valueChangeMode);
     }
 
-    public void setPlaceholder(String placeholder) {
-        set(placeholderDescriptor, placeholder);
+    public void setPlaceholder(@Nullable String placeholder) {
+        set(placeholderDescriptor, placeholder == null ? "" : placeholder);
     }
 
     public String getPlaceholder() {
