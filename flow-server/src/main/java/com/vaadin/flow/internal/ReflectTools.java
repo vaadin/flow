@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -404,6 +405,8 @@ public class ReflectTools implements Serializable {
      *            the method to parse
      * @return the name of the property
      */
+    @SuppressWarnings("NullAway") // firstToLower returns non-null for non-null
+                                  // input
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
         assert isGetter(method) || isSetter(method)
@@ -584,7 +587,10 @@ public class ReflectTools implements Serializable {
             }
 
             @Override
-            public Type getOwnerType() {
+            @SuppressWarnings("NullAway") // ParameterizedType.getOwnerType() is
+                                          // specified to return null for
+                                          // top-level types
+            public @Nullable Type getOwnerType() {
                 return null;
             }
 
@@ -605,7 +611,7 @@ public class ReflectTools implements Serializable {
      *            class type of interface to get generic for
      * @return Class if found else {@code null}
      */
-    public static Class<?> getGenericInterfaceType(Class<?> clazz,
+    public static @Nullable Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
         Type type = GenericTypeReflector.getTypeParameter(clazz,
                 interfaceType.getTypeParameters()[0]);

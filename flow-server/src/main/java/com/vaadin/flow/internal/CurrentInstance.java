@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,7 @@ public class CurrentInstance implements Serializable {
      * @return the current instance or the provided type, or <code>null</code>
      *         if there is no current instance.
      */
-    public static <T> T get(Class<T> type) {
+    public static <T> @Nullable T get(Class<T> type) {
         Map<Class<?>, CurrentInstance> map = instances.get();
         if (map == null) {
             return null;
@@ -139,7 +140,8 @@ public class CurrentInstance implements Serializable {
      * @param instance
      *            the actual instance
      */
-    public static <T> void set(Class<T> type, T instance) {
+    @SuppressWarnings("NullAway") // Intentionally allows null to clear instance
+    public static <T> void set(Class<T> type, @Nullable T instance) {
         doSet(type, instance);
     }
 
@@ -155,7 +157,8 @@ public class CurrentInstance implements Serializable {
      *            the actual instance
      * @return previous CurrentInstance wrapper
      */
-    private static <T> CurrentInstance doSet(Class<T> type, T instance) {
+    private static <T> CurrentInstance doSet(Class<T> type,
+            @Nullable T instance) {
         Map<Class<?>, CurrentInstance> map = instances.get();
         CurrentInstance previousInstance = null;
         if (instance == null) {

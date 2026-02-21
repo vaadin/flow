@@ -63,10 +63,15 @@ public class AttachTemplateChildRpcHandler
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
+        if (requestedNode == null) {
+            throw new IllegalStateException(
+                    "No node found for requested id " + requestedId);
+        }
 
-        StateNode parent = tree.getNodeById(requestedId).getParent();
+        StateNode parent = requestedNode.getParent();
         JsonNode id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
         String tag = requestedNode.getFeature(ElementData.class).getTag();
+        int parentId = parent != null ? parent.getId() : -1;
 
         Logger logger = LoggerFactory
                 .getLogger(AttachTemplateChildRpcHandler.class.getName());
@@ -78,12 +83,12 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, parent.getId()));
+                        tag, parentId));
             } else {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, id.toString(), parent.getId()));
+                        tag, id.toString(), parentId));
             }
         } else if (requestedId != assignedId) {
             logger.error("Attach existing element has failed because "
@@ -92,12 +97,12 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' is already "
                                 + "attached to the parent with id='%d'",
-                        tag, parent.getId()));
+                        tag, parentId));
             } else {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' is "
                                 + "already attached to the parent with id='%d'",
-                        tag, id.toString(), parent.getId()));
+                        tag, id.toString(), parentId));
             }
         } else {
             logger.error("Attach existing element request succeeded. "

@@ -35,6 +35,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -149,17 +151,17 @@ public class StateNode implements Serializable {
     /**
      * Node feature instances for this node, or a single item.
      */
-    private Serializable features;
+    private @Nullable Serializable features;
 
-    private Map<Class<? extends NodeFeature>, Serializable> changes;
+    private @Nullable Map<Class<? extends NodeFeature>, Serializable> changes;
 
-    private List<Command> attachListeners;
+    private @Nullable List<Command> attachListeners;
 
-    private List<Command> detachListeners;
+    private @Nullable List<Command> detachListeners;
 
     private NodeOwner owner = NullOwner.get();
 
-    private StateNode parent;
+    private @Nullable StateNode parent;
 
     private int id = -1;
 
@@ -175,7 +177,7 @@ public class StateNode implements Serializable {
 
     private boolean isInitialChanges = true;
 
-    private ArrayList<StateTree.BeforeClientResponseEntry> beforeClientResponseEntries;
+    private @Nullable ArrayList<StateTree.BeforeClientResponseEntry> beforeClientResponseEntries;
     private boolean enabled = true;
 
     /**
@@ -242,7 +244,7 @@ public class StateNode implements Serializable {
      *         attached to a parent node, or if this node is the root of a state
      *         tree.
      */
-    public StateNode getParent() {
+    public @Nullable StateNode getParent() {
         return parent;
     }
 
@@ -255,7 +257,7 @@ public class StateNode implements Serializable {
      *            the new parent of this node; or <code>null</code> if this node
      *            is not attached to another node
      */
-    public void setParent(StateNode parent) {
+    public void setParent(@Nullable StateNode parent) {
         if (hasDetached()) {
             this.parent = null;
             return;
@@ -700,7 +702,9 @@ public class StateNode implements Serializable {
             Stream<NodeFeature> features) {
         features.filter(this::hasChangeTracker).forEach(feature -> {
             feature.collectChanges(collector);
-            changes.remove(feature.getClass());
+            if (changes != null) {
+                changes.remove(feature.getClass());
+            }
         });
         isInitialChanges = false;
         if (changes != null && changes.isEmpty()) {
@@ -904,7 +908,9 @@ public class StateNode implements Serializable {
     }
 
     private void removeAttachListener(Command attachListener) {
-        assert attachListener != null;
+        if (attachListeners == null) {
+            return;
+        }
 
         attachListeners.remove(attachListener);
 
@@ -914,7 +920,9 @@ public class StateNode implements Serializable {
     }
 
     private void removeDetachListener(Command detachListener) {
-        assert detachListener != null;
+        if (detachListeners == null) {
+            return;
+        }
 
         detachListeners.remove(detachListener);
 
@@ -1053,12 +1061,14 @@ public class StateNode implements Serializable {
     public boolean isVisible() {
         if (hasFeature(ElementData.class)) {
             boolean isVisibleSelf = getFeature(ElementData.class).isVisible();
-            if (!isVisibleSelf || getParent() == null) {
+            StateNode parentNode = getParent();
+            if (!isVisibleSelf || parentNode == null) {
                 return isVisibleSelf;
             }
-            return parent.isVisible();
+            return parentNode.isVisible();
         }
-        return getParent() == null || parent.isVisible();
+        StateNode parentNode = getParent();
+        return parentNode == null || parentNode.isVisible();
     }
 
     /**
@@ -1173,7 +1183,8 @@ public class StateNode implements Serializable {
 
         beforeClientResponseEntries = null;
 
-        return !entries.isEmpty() ? entries : Collections.emptyList();
+        return entries != null && !entries.isEmpty() ? entries
+                : Collections.emptyList();
     }
 
     /**

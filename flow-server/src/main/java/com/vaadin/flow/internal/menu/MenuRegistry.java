@@ -463,7 +463,7 @@ public class MenuRegistry {
      *            current application configuration
      * @return URL to json resource
      */
-    public static URL getViewsJsonAsResource(
+    public static @Nullable URL getViewsJsonAsResource(
             AbstractConfiguration configuration) {
         var isProductionMode = configuration.isProductionMode();
         if (isProductionMode) {

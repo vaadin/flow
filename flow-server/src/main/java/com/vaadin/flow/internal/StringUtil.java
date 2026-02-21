@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Utility class for special string handling.
  * <p>
@@ -227,7 +229,7 @@ public final class StringUtil {
      *         returns empty String.
      */
     public static String getHash(String content, Charset charset) {
-        return getHash(content, null, charset);
+        return getHash(content, (byte @Nullable []) null, charset);
     }
 
     /**
@@ -243,7 +245,8 @@ public final class StringUtil {
      * @return hash String for given content. In case content is null or empty *
      *         returns empty String.
      */
-    public static String getHash(String content, byte[] salt, Charset charset) {
+    public static String getHash(String content, byte @Nullable [] salt,
+            Charset charset) {
         if (content == null || content.isEmpty()) {
             return "";
         }

@@ -19,6 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Platform contains information about system architecture and OS.
  * <p>
@@ -112,7 +114,7 @@ public class Platform {
 
     private final OS os;
     private final Architecture architecture;
-    private final String classifier;
+    private final @Nullable String classifier;
 
     // Node.js supports Apple silicon from v16.0.0
     private static final int NODE_VERSION_THRESHOLD_MAC_ARM64 = 16;
@@ -130,7 +132,8 @@ public class Platform {
         this(os, architecture, null);
     }
 
-    public Platform(OS os, Architecture architecture, String classifier) {
+    public Platform(OS os, Architecture architecture,
+            @Nullable String classifier) {
         this.os = os;
         this.architecture = architecture;
         this.classifier = classifier;

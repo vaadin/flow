@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +50,8 @@ public class DevBundleUtils {
      * @throws IOException
      *             if an I/O error occurs
      */
-    public static URL findBundleFile(File projectDir, String buildFolder,
-            String filename) throws IOException {
+    public static @Nullable URL findBundleFile(File projectDir,
+            String buildFolder, String filename) throws IOException {
         File devBundleFolder = getDevBundleFolder(projectDir, buildFolder);
         if (devBundleFolder.exists()) {
             // Has an application bundle
@@ -88,7 +89,7 @@ public class DevBundleUtils {
      * @throws IOException
      *             if an I/O exception occurs.
      */
-    public static String findBundleStatsJson(File projectDir,
+    public static @Nullable String findBundleStatsJson(File projectDir,
             String buildFolder) throws IOException {
         URL statsJson = findBundleFile(projectDir, buildFolder,
                 "config/stats.json");

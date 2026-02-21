@@ -262,7 +262,8 @@ public class PublishedServerEventHandlerRpcHandler
                 throw new IllegalArgumentException(msg);
             }
         }
-        List<Object> decoded = new ArrayList<>(method.getParameterCount());
+        List<@Nullable Object> decoded = new ArrayList<>(
+                method.getParameterCount());
         Class<?>[] methodParameterTypes = method.getParameterTypes();
         for (int i = 0; i < argValues.size(); i++) {
             Class<?> type = methodParameterTypes[i];
@@ -294,8 +295,8 @@ public class PublishedServerEventHandlerRpcHandler
         return result;
     }
 
-    private static Object decodeArg(@Nullable Component instance, Method method,
-            Class<?> type, int index, JsonNode argValue) {
+    private static @Nullable Object decodeArg(@Nullable Component instance,
+            Method method, Class<?> type, int index, JsonNode argValue) {
         // come up with method to know that it's an id and should be gotten from
         // the model
         assert argValue != null;

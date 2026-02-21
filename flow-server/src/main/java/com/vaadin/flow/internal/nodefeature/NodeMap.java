@@ -72,16 +72,16 @@ public abstract class NodeMap extends NodeFeature {
 
         // Named set instead of put to avoid incompatibility with HashMap where
         // put returns the previous value
-        void set(String key, Serializable value);
+        void set(String key, @Nullable Serializable value);
     }
 
     private static class SingleValue implements Values {
 
         private final String key;
 
-        private Serializable value;
+        private @Nullable Serializable value;
 
-        public SingleValue(String key, Serializable value) {
+        public SingleValue(String key, @Nullable Serializable value) {
             assert key != null;
             this.key = key;
             this.value = value;
@@ -117,7 +117,7 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         @Override
-        public void set(String key, Serializable value) {
+        public void set(String key, @Nullable Serializable value) {
             assert key.equals(this.key);
             this.value = value;
         }
@@ -140,7 +140,7 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         @Override
-        public void set(String key, Serializable value) {
+        public void set(String key, @Nullable Serializable value) {
             super.put(key, value);
         }
 
@@ -203,8 +203,8 @@ public abstract class NodeMap extends NodeFeature {
      * @return the previous value, or <code>null</code> if there was no previous
      *         value
      */
-    protected @Nullable Serializable put(String key, Serializable value,
-            boolean emitChange) {
+    protected @Nullable Serializable put(String key,
+            @Nullable Serializable value, boolean emitChange) {
         @Nullable
         Serializable oldValue = get(key);
         if (!producePutChange(key, contains(key), value)) {
@@ -545,7 +545,7 @@ public abstract class NodeMap extends NodeFeature {
      *         otherwise
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
-            Serializable newValue) {
+            @Nullable Serializable newValue) {
         return !hadValueEarlier || (values != null
                 && !Objects.equals(newValue, values.get(key)));
     }

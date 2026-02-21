@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,12 +117,12 @@ public class FileIOUtils {
      *             if an I/O error occurs
      */
     public static void copyDirectory(File source, File target,
-            FileFilter filter) throws IOException {
+            @Nullable FileFilter filter) throws IOException {
         copyDirectory(source.toPath(), target.toPath(), filter);
     }
 
     private static void copyDirectory(Path source, Path target,
-            FileFilter filter) throws IOException {
+            @Nullable FileFilter filter) throws IOException {
         Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir,
@@ -256,7 +257,7 @@ public class FileIOUtils {
      * @param closeable
      *            the resource to close
      */
-    public static void closeQuietly(AutoCloseable closeable) {
+    public static void closeQuietly(@Nullable AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -273,7 +274,7 @@ public class FileIOUtils {
      *            the filename
      * @return the filename without extension
      */
-    public static String removeExtension(String filename) {
+    public static @Nullable String removeExtension(@Nullable String filename) {
         if (filename == null) {
             return null;
         }
@@ -374,7 +375,8 @@ public class FileIOUtils {
         return LoggerFactory.getLogger(FileIOUtils.class);
     }
 
-    private static String getExistingFileContent(File file) throws IOException {
+    private static @Nullable String getExistingFileContent(File file)
+            throws IOException {
         if (!file.exists()) {
             return null;
         }
@@ -387,7 +389,7 @@ public class FileIOUtils {
      * @return A file referring to the project folder or null if the folder
      *         could not be determined
      */
-    public static File getProjectFolderFromClasspath() {
+    public static @Nullable File getProjectFolderFromClasspath() {
         try {
             URL url = FileIOUtils.class.getClassLoader().getResource(".");
             if (url != null && url.getProtocol().equals("file")) {
@@ -400,13 +402,21 @@ public class FileIOUtils {
 
     }
 
-    static File getProjectFolderFromClasspath(URL rootFolder)
+    static @Nullable File getProjectFolderFromClasspath(URL rootFolder)
             throws URISyntaxException {
         // URI decodes the path so that e.g. " " works correctly
         // Path.of makes windows paths work correctly
         Path path = Path.of(rootFolder.toURI());
         if (path.endsWith(Path.of("target", "classes"))) {
-            return path.getParent().getParent().toFile();
+            Path parent = path.getParent();
+            if (parent == null) {
+                return null;
+            }
+            Path grandParent = parent.getParent();
+            if (grandParent == null) {
+                return null;
+            }
+            return grandParent.toFile();
         }
 
         return null;

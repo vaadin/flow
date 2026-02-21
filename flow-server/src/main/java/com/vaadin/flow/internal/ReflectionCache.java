@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
@@ -191,7 +193,7 @@ public class ReflectionCache<C, T> {
      * Clears mappings for give type from all reflection caches and related
      * resources.
      */
-    public static void clearAll(Class<?> type) {
+    public static void clearAll(@Nullable Class<?> type) {
         clearAllActions.forEach(action -> action.accept(type));
     }
 

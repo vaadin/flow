@@ -180,7 +180,7 @@ public class DomEvent extends EventObject {
      * @return the event data deserialized as the given type
      * @see DomListenerRegistration#addEventData(String)
      */
-    public <T> T getEventData(Class<T> type) {
+    public <T> @Nullable T getEventData(Class<T> type) {
         return JacksonCodec.decodeAs(eventData, type);
     }
 
@@ -206,7 +206,7 @@ public class DomEvent extends EventObject {
      * @return the event data deserialized as the given type
      * @see DomListenerRegistration#addEventData(String)
      */
-    public <T> T getEventData(TypeReference<T> typeReference) {
+    public <T> @Nullable T getEventData(TypeReference<T> typeReference) {
         return JacksonCodec.decodeAs(eventData, typeReference);
     }
 

@@ -26,6 +26,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Utility class for compression and decompression of folders and files.
  * <p>
@@ -167,8 +169,8 @@ public class CompressUtil {
      * @throws IOException
      *             if an I/O error occurs
      */
-    public static String readFileContentFromZip(File zip, String filename)
-            throws IOException {
+    public static @Nullable String readFileContentFromZip(File zip,
+            String filename) throws IOException {
         try (ZipFile zipFile = new ZipFile(zip)) {
             ZipEntry entry = zipFile.getEntry(filename);
             if (entry == null) {

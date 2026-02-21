@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,8 +127,11 @@ public class ResponseWriter implements Serializable {
             throws IOException {
         writeContentType(filenameWithPath, request, response);
 
+        @Nullable
         URL url = null;
+        @Nullable
         URLConnection connection = null;
+        @Nullable
         InputStream dataStream = null;
 
         if (brotliEnabled && acceptsBrotliResource(request)) {
@@ -177,8 +181,16 @@ public class ResponseWriter implements Serializable {
             if (range != null) {
                 closeStream(dataStream);
                 dataStream = null;
+                if (url == null) {
+                    throw new IllegalStateException(
+                            "URL should be set at this point");
+                }
                 writeRangeContents(range, response, url);
             } else {
+                if (connection == null) {
+                    throw new IllegalStateException(
+                            "Connection should be set at this point");
+                }
                 final long contentLength = connection.getContentLengthLong();
                 if (0 <= contentLength) {
                     setContentLength(response, contentLength);

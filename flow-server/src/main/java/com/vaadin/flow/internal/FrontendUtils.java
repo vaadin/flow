@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -507,7 +508,7 @@ public class FrontendUtils {
      * @throws IOException
      *             on error when reading file
      */
-    public static String getIndexHtmlContent(VaadinService service)
+    public static @Nullable String getIndexHtmlContent(VaadinService service)
             throws IOException {
         return getFileContent(service, INDEX_HTML);
     }
@@ -529,13 +530,13 @@ public class FrontendUtils {
      * @throws IOException
      *             on error when reading file
      */
-    public static String getWebComponentHtmlContent(VaadinService service)
-            throws IOException {
+    public static @Nullable String getWebComponentHtmlContent(
+            VaadinService service) throws IOException {
         return getFileContent(service, WEB_COMPONENT_HTML);
     }
 
-    private static String getFileContent(VaadinService service, String path)
-            throws IOException {
+    private static @Nullable String getFileContent(VaadinService service,
+            String path) throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
@@ -568,7 +569,7 @@ public class FrontendUtils {
                 .filter(d -> d.getPort() >= 0);
     }
 
-    private static InputStream getFileFromFrontendDir(
+    private static @Nullable InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
         File file = new File(getProjectFrontendDir(config), path);
         if (file.exists()) {
@@ -581,10 +582,17 @@ public class FrontendUtils {
         return null;
     }
 
-    private static InputStream getFileFromClassPath(VaadinService service,
-            String filePath) {
-        final URL resource = service.getContext().getAttribute(Lookup.class)
-                .lookup(ResourceProvider.class)
+    private static @Nullable InputStream getFileFromClassPath(
+            VaadinService service, String filePath) {
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        assert lookup != null;
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        if (resourceProvider == null) {
+            getLogger().error("No ResourceProvider found via Lookup");
+            return null;
+        }
+        final URL resource = resourceProvider
                 .getApplicationResource(VAADIN_WEBAPP_RESOURCES + filePath);
         if (resource == null) {
             getLogger().error("Cannot get the '{}' from the classpath",
@@ -614,7 +622,7 @@ public class FrontendUtils {
      * @return an input stream for reading the file contents; null if there is
      *         no such file or the dev server is not running.
      */
-    public static InputStream getFrontendFileFromDevModeHandler(
+    public static @Nullable InputStream getFrontendFileFromDevModeHandler(
             VaadinService service, String path) {
         Optional<DevModeHandler> devModeHandler = activeDevModeHandler(service);
         if (devModeHandler.isPresent()) {
@@ -645,7 +653,7 @@ public class FrontendUtils {
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot,
+    public static @Nullable File resolveFrontendPath(File projectRoot,
             DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
                 deploymentConfiguration.getFrontendFolder());
@@ -709,8 +717,8 @@ public class FrontendUtils {
      *            the frontend directory.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path,
-            File frontendDirectory) {
+    public static @Nullable File resolveFrontendPath(File projectRoot,
+            String path, File frontendDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
         File addonsFolder = getJarResourcesFolder(frontendDirectory);
         List<File> candidateParents = path.startsWith("./")
@@ -937,7 +945,8 @@ public class FrontendUtils {
             }
             return outputs.getFirst();
         } catch (ExecutionException e) {
-            throw new CommandExecutionException(e.getCause());
+            Throwable cause = e.getCause();
+            throw new CommandExecutionException(cause != null ? cause : e);
         } catch (IOException | InterruptedException e) {
             throw new CommandExecutionException(e);
         }
@@ -1094,8 +1103,8 @@ public class FrontendUtils {
      *            origin of the version (like a file), used in error message
      * @return the frontend version the package or {@code null}
      */
-    public static FrontendVersion getPackageVersionFromJson(JsonNode sourceJson,
-            String pkg, String versionOrigin) {
+    public static @Nullable FrontendVersion getPackageVersionFromJson(
+            JsonNode sourceJson, String pkg, String versionOrigin) {
         if (!sourceJson.has(pkg)) {
             return null;
         }

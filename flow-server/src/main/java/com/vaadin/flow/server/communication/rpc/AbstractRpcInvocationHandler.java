@@ -200,7 +200,7 @@ public abstract class AbstractRpcInvocationHandler
         // Polling events should target only the root component in a UI:
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
-        return node.equals(ui.getElement().getNode());
+        return node != null && node.equals(ui.getElement().getNode());
     }
 
     /**

@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Version object for frontend versions comparison and handling.
  * <p>
@@ -139,7 +141,7 @@ public class FrontendVersion
      * @param version
      *            version string as "major.minor.revision[.build]"
      */
-    public FrontendVersion(String name, String version) {
+    public FrontendVersion(@Nullable String name, String version) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
             throw new NumberFormatException(
@@ -368,7 +370,8 @@ public class FrontendVersion
         return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
     }
 
-    private String getInvalidVersionMessage(String name, String version) {
+    private String getInvalidVersionMessage(@Nullable String name,
+            String version) {
         if (name != null) {
             return String.format("'%s' is not a valid version for '%s'!",
                     version, name);

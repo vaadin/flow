@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -70,5 +71,6 @@ public interface RpcDecoder extends Serializable {
      * @throws RpcDecodeException
      *             if the {@code value} cannot be converted to the {@code type}
      */
-    <T> T decode(JsonNode value, Class<T> type) throws RpcDecodeException;
+    <T> @Nullable T decode(JsonNode value, Class<T> type)
+            throws RpcDecodeException;
 }

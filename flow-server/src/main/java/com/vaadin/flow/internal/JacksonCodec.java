@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -182,7 +183,8 @@ public class JacksonCodec {
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(BaseJsonNode json) {
+    public static @Nullable Serializable decodeWithoutTypeInfo(
+            BaseJsonNode json) {
         assert json != null;
         switch (json.getNodeType()) {
         case BOOLEAN:
@@ -216,7 +218,7 @@ public class JacksonCodec {
      * @throws IllegalArgumentException
      *             if the type was unsupported or deserialization failed
      */
-    public static <T> T decodeAs(JsonNode json, Class<T> type) {
+    public static <T> @Nullable T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
         if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
             return null;
@@ -261,7 +263,7 @@ public class JacksonCodec {
      * @throws IllegalArgumentException
      *             if deserialization failed
      */
-    public static <T> T decodeAs(JsonNode json,
+    public static <T> @Nullable T decodeAs(JsonNode json,
             TypeReference<T> typeReference) {
         assert json != null;
         assert typeReference != null;

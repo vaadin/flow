@@ -20,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Utility class for common {@link MessageDigest} operations.
  * <p>
@@ -73,7 +75,8 @@ public class MessageDigestUtil {
      *            the charset to use for encoding the string
      * @return 32 bytes making up the hash
      */
-    public static byte[] sha256(String string, byte[] salt, Charset charset) {
+    public static byte[] sha256(String string, byte @Nullable [] salt,
+            Charset charset) {
         return getSha256(salt).digest(string.getBytes(charset));
     }
 
@@ -98,7 +101,7 @@ public class MessageDigestUtil {
      *            salt to be added to the calculation
      * @return sha256 hash string
      */
-    public static String sha256Hex(byte[] content, byte[] salt) {
+    public static String sha256Hex(byte[] content, byte @Nullable [] salt) {
         byte[] digest = getSha256(salt).digest(content);
         final StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < digest.length; i++) {
@@ -110,7 +113,7 @@ public class MessageDigestUtil {
         return hexString.toString();
     }
 
-    private static MessageDigest getSha256(byte[] salt) {
+    private static MessageDigest getSha256(byte @Nullable [] salt) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             assert digest.getDigestLength() == 32;

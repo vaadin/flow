@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
@@ -185,13 +186,14 @@ public final class JacksonSerializer {
      * @return the deserialized object, or <code>null</code> if the input json
      *         is <code>null</code>
      */
-    public static <T> T toObject(Class<T> type, JsonNode json) {
+    public static <T> @Nullable T toObject(Class<T> type,
+            @Nullable JsonNode json) {
         return toObject(type, null, json);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T toObject(Class<T> type, Type genericType,
-            JsonNode json) {
+    private static <T> @Nullable T toObject(Class<T> type,
+            @Nullable Type genericType, @Nullable JsonNode json) {
         if (json == null || json instanceof NullNode) {
             return null;
         }
@@ -272,7 +274,8 @@ public final class JacksonSerializer {
         try {
             RecordComponent[] components = type.getRecordComponents();
             Class<?>[] componentTypes = new Class<?>[components.length];
-            Object[] values = new Object[components.length];
+            @Nullable
+            Object[] values = new @Nullable Object[components.length];
 
             for (int i = 0; i < components.length; i++) {
                 componentTypes[i] = components[i].getType();
@@ -290,8 +293,9 @@ public final class JacksonSerializer {
         }
     }
 
-    private static <T> T toCollection(Class<T> type, Type genericType,
-            JsonNode json) {
+    @SuppressWarnings("unchecked")
+    private static <T> @Nullable T toCollection(Class<T> type,
+            @Nullable Type genericType, JsonNode json) {
         if (json.getNodeType() != JsonNodeType.ARRAY) {
             return null;
         }
@@ -314,7 +318,8 @@ public final class JacksonSerializer {
         return (T) collection;
     }
 
-    private static <T> T toArray(Class<T> type, JsonNode json) {
+    @SuppressWarnings("unchecked")
+    private static <T> @Nullable T toArray(Class<T> type, JsonNode json) {
         if (json.getNodeType() != JsonNodeType.ARRAY) {
             return null;
         }

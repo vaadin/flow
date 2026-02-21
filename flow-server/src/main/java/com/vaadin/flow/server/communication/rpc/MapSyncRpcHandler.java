@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -141,6 +142,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     private Optional<Runnable> enqueuePropertyUpdate(StateNode node,
             JsonNode invocationJson, String property) {
+        @Nullable
         Serializable value = JacksonCodec
                 .decodeWithoutTypeInfo((BaseJsonNode) invocationJson
                         .get(JsonConstants.RPC_PROPERTY_VALUE));
@@ -156,13 +158,13 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         }
     }
 
-    private boolean hasElement(StateNode node) {
+    private boolean hasElement(@Nullable StateNode node) {
         return node != null && node.hasFeature(ElementData.class);
     }
 
-    private String getVetoPropertyUpdateMessage(StateNode node,
+    private String getVetoPropertyUpdateMessage(@Nullable StateNode node,
             String property) {
-        if (hasElement(node)) {
+        if (node != null && hasElement(node)) {
             Element element = Element.get(node);
             String tag = element.getTag();
             Optional<Component> component = element.getComponent();
@@ -182,7 +184,8 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         return "";
     }
 
-    private Serializable tryConvert(Serializable value, StateNode context) {
+    private @Nullable Serializable tryConvert(@Nullable Serializable value,
+            StateNode context) {
         if (value instanceof ObjectNode) {
             ObjectNode json = (ObjectNode) value;
             if (json.has("nodeId")) {
@@ -195,7 +198,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         return value;
     }
 
-    private Serializable tryCopyStateNode(StateNode node,
+    private Serializable tryCopyStateNode(@Nullable StateNode node,
             ObjectNode properties) {
         if (node == null) {
             return properties;
@@ -224,7 +227,9 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     private boolean isProperty(StateNode node) {
         StateNode parent = node.getParent();
-        assert parent != null;
+        if (parent == null) {
+            return false;
+        }
         if (parent.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap map = parent
                     .getFeature(ElementPropertyMap.class);
@@ -236,7 +241,9 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     private boolean isInList(StateNode node) {
         StateNode parent = node.getParent();
-        assert parent != null;
+        if (parent == null) {
+            return false;
+        }
         if (parent.hasFeature(ModelList.class)
                 && parent.getFeature(ModelList.class).contains(node)) {
             return true;

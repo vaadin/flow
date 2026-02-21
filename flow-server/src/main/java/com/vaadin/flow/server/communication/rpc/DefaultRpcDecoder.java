@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonCodec;
@@ -44,7 +45,7 @@ public class DefaultRpcDecoder implements RpcDecoder {
     }
 
     @Override
-    public <T> T decode(JsonNode value, Class<T> type)
+    public <T> @Nullable T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
         return JacksonCodec.decodeAs(value, type);
     }

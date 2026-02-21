@@ -75,7 +75,7 @@ public abstract class AbstractNodeStateProvider
             return ShadowRoot.get(parentNode);
         }
 
-        return Element.get(node.getParent());
+        return Element.get(parentNode);
     }
 
     @Override

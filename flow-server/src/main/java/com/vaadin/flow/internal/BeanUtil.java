@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -137,7 +138,7 @@ public final class BeanUtil implements Serializable {
      * @throws IntrospectionException
      *             if the introspection fails
      */
-    public static Class<?> getPropertyType(Class<?> beanType,
+    public static @Nullable Class<?> getPropertyType(Class<?> beanType,
             String propertyName) throws IntrospectionException {
         PropertyDescriptor descriptor = getPropertyDescriptor(beanType,
                 propertyName);
@@ -163,12 +164,16 @@ public final class BeanUtil implements Serializable {
      * @throws IntrospectionException
      *             if the introspection fails
      */
-    public static PropertyDescriptor getPropertyDescriptor(Class<?> beanType,
-            String propertyName) throws IntrospectionException {
+    public static @Nullable PropertyDescriptor getPropertyDescriptor(
+            Class<?> beanType, String propertyName)
+            throws IntrospectionException {
         if (propertyName.contains(".")) {
             String[] parts = propertyName.split("\\.", 2);
             // Get the type of the field in the bean class
             Class<?> propertyBean = getPropertyType(beanType, parts[0]);
+            if (propertyBean == null) {
+                return null;
+            }
             // Find the rest from the sub type
             return getPropertyDescriptor(propertyBean, parts[1]);
         } else {
@@ -336,8 +341,8 @@ public final class BeanUtil implements Serializable {
      * Return declared method for which {@code bridgeMethod} is generated. If
      * {@code bridgeMethod} is not a bridge method then return null.
      */
-    private static Method getMethodFromBridge(Method bridgeMethod)
-            throws SecurityException {
+    private static @Nullable Method getMethodFromBridge(
+            @Nullable Method bridgeMethod) throws SecurityException {
         if (bridgeMethod == null) {
             return null;
         }
@@ -350,8 +355,9 @@ public final class BeanUtil implements Serializable {
      * its {@code paramTypes}. If {@code bridgeMethod} is not a bridge method
      * then return null.
      */
-    private static Method getMethodFromBridge(Method bridgeMethod,
-            Class<?>... paramTypes) throws SecurityException {
+    private static @Nullable Method getMethodFromBridge(
+            @Nullable Method bridgeMethod, Class<?>... paramTypes)
+            throws SecurityException {
         if (bridgeMethod == null || !bridgeMethod.isBridge()) {
             return null;
         }

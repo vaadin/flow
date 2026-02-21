@@ -17,6 +17,8 @@ package com.vaadin.flow.internal;
 
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Utilities related to various case operations.
  *
@@ -46,15 +48,21 @@ public final class CaseUtil {
      *            The input string in UPPER_CASE_UNDERSCORE format
      * @return A human friendly version of the input
      */
-    public static String upperCaseUnderscoreToHumanFriendly(
-            String upperCaseUnderscoreString) {
+    public static @Nullable String upperCaseUnderscoreToHumanFriendly(
+            @Nullable String upperCaseUnderscoreString) {
         if (upperCaseUnderscoreString == null) {
             return null;
         }
         String[] parts = upperCaseUnderscoreString.replaceFirst("^_*", "")
                 .split("_");
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = capitalize(parts[i].toLowerCase(Locale.ROOT));
+            String lower = parts[i].toLowerCase(Locale.ROOT);
+            if (lower.length() <= 1) {
+                parts[i] = lower.toUpperCase(Locale.ROOT);
+            } else {
+                parts[i] = lower.substring(0, 1).toUpperCase(Locale.ROOT)
+                        + lower.substring(1);
+            }
         }
         return String.join(" ", parts);
     }
@@ -67,7 +75,7 @@ public final class CaseUtil {
      *            The string to capitalize
      * @return The capitalized string
      */
-    public static String capitalize(String string) {
+    public static @Nullable String capitalize(@Nullable String string) {
         if (string == null) {
             return null;
         }

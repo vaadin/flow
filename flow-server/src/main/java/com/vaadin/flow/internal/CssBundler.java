@@ -27,6 +27,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -108,7 +109,7 @@ public class CssBundler {
      *             if filesystem resources can not be read.
      */
     public static String inlineImportsForThemes(File themeFolder, File cssFile,
-            JsonNode themeJson) throws IOException {
+            @Nullable JsonNode themeJson) throws IOException {
         return inlineImports(themeFolder, cssFile,
                 getThemeAssetsAliases(themeJson), BundleFor.THEMES, null, null);
     }
@@ -141,8 +142,9 @@ public class CssBundler {
      * @throws IOException
      *             if filesystem resources can not be read.
      */
-    public static String inlineImports(File themeFolder, File cssFile,
-            JsonNode themeJson, File nodeModulesFolder) throws IOException {
+    public static String inlineImports(@Nullable File themeFolder, File cssFile,
+            @Nullable JsonNode themeJson, @Nullable File nodeModulesFolder)
+            throws IOException {
         return inlineImports(themeFolder, cssFile,
                 getThemeAssetsAliases(themeJson), null, "", nodeModulesFolder);
     }
@@ -188,9 +190,10 @@ public class CssBundler {
      *            the node_modules folder for resolving npm package imports. May
      *            be null if node_modules resolution is not needed.
      */
-    private static String inlineImports(File baseFolder, File cssFile,
-            Set<String> assetAliases, BundleFor bundleFor, String contextPath,
-            File nodeModulesFolder) throws IOException {
+    private static String inlineImports(@Nullable File baseFolder, File cssFile,
+            Set<String> assetAliases, @Nullable BundleFor bundleFor,
+            @Nullable String contextPath, @Nullable File nodeModulesFolder)
+            throws IOException {
         List<String> cyclicImportWarnings = new ArrayList<>();
         String result = inlineImports(baseFolder, cssFile, assetAliases,
                 bundleFor, contextPath, nodeModulesFolder, new HashSet<>(),
@@ -227,10 +230,11 @@ public class CssBundler {
      * @param cyclicImportWarnings
      *            list to collect cycle warnings for summary logging
      */
-    private static String inlineImports(File baseFolder, File cssFile,
-            Set<String> assetAliases, BundleFor bundleFor, String contextPath,
-            File nodeModulesFolder, Set<String> visitedFiles,
-            List<String> cyclicImportWarnings) throws IOException {
+    private static String inlineImports(@Nullable File baseFolder, File cssFile,
+            Set<String> assetAliases, @Nullable BundleFor bundleFor,
+            @Nullable String contextPath, @Nullable File nodeModulesFolder,
+            Set<String> visitedFiles, List<String> cyclicImportWarnings)
+            throws IOException {
 
         // Track current file as visited using canonical path
         String canonicalPath = cssFile.getCanonicalPath();
@@ -241,10 +245,22 @@ public class CssBundler {
 
         String content = Files.readString(cssFile.toPath());
         if (bundleFor == BundleFor.THEMES) {
+            if (baseFolder == null) {
+                throw new IllegalStateException(
+                        "baseFolder must not be null for THEMES bundling");
+            }
             Matcher urlMatcher = URL_PATTERN.matcher(content);
             content = rewriteCssUrlsForThemes(baseFolder, cssFile, assetAliases,
                     urlMatcher);
         } else if (bundleFor == BundleFor.STATIC_RESOURCES) {
+            if (baseFolder == null) {
+                throw new IllegalStateException(
+                        "baseFolder must not be null for STATIC_RESOURCES bundling");
+            }
+            if (contextPath == null) {
+                throw new IllegalStateException(
+                        "contextPath must not be null for STATIC_RESOURCES bundling");
+            }
             content = rewriteCssUrlsForStaticResources(baseFolder, cssFile,
                     contextPath, content);
         }
@@ -451,7 +467,8 @@ public class CssBundler {
         return potentialAsset;
     }
 
-    private static Set<String> getThemeAssetsAliases(JsonNode themeJson) {
+    private static Set<String> getThemeAssetsAliases(
+            @Nullable JsonNode themeJson) {
         JsonNode assets = themeJson != null && themeJson.has("assets")
                 ? themeJson.get("assets")
                 : null;
@@ -467,7 +484,8 @@ public class CssBundler {
         return aliases;
     }
 
-    private static String getNonNullGroup(MatchResult result, int... groupId) {
+    private static @Nullable String getNonNullGroup(MatchResult result,
+            int... groupId) {
         for (int i : groupId) {
             String res = result.group(i);
             if (res != null) {
@@ -477,7 +495,7 @@ public class CssBundler {
         return null;
     }
 
-    private static String sanitizeUrl(String url) {
+    private static @Nullable String sanitizeUrl(@Nullable String url) {
         if (url == null) {
             return null;
         }
@@ -496,8 +514,8 @@ public class CssBundler {
      *            the node_modules folder, may be null
      * @return the resolved file, or null if not found
      */
-    private static File resolveImportPath(String importPath, File cssFileDir,
-            File nodeModulesFolder) {
+    private static @Nullable File resolveImportPath(String importPath,
+            File cssFileDir, @Nullable File nodeModulesFolder) {
         // First, try relative to the CSS file's directory
         File relativeFile = new File(cssFileDir, importPath);
         if (relativeFile.exists()) {

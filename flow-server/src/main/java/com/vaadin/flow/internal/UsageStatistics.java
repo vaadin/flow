@@ -18,6 +18,8 @@ package com.vaadin.flow.internal;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.Version;
 
 /**
@@ -41,9 +43,9 @@ public class UsageStatistics {
      */
     public static class UsageEntry {
         private final String name;
-        private final String version;
+        private final @Nullable String version;
 
-        private UsageEntry(String name, String version) {
+        private UsageEntry(String name, @Nullable String version) {
             this.name = name;
             this.version = version;
         }
@@ -89,7 +91,7 @@ public class UsageStatistics {
      *            the version, or <code>null</code> to use the current Flow
      *            version
      */
-    public static void markAsUsed(String name, String version) {
+    public static void markAsUsed(String name, @Nullable String version) {
         assert name != null;
 
         entries.computeIfAbsent(name, ignore -> new UsageEntry(name, version));

@@ -72,6 +72,9 @@ public class AttachExistingElementRpcHandler
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
+        if (requestedNode == null) {
+            return Optional.empty();
+        }
         if (assignedId == -1) {
             // handle an error
             assert index == -1;
@@ -85,10 +88,14 @@ public class AttachExistingElementRpcHandler
 
             feature.unregister(requestedNode);
         } else {
-            Element element = Element.get(tree.getNodeById(assignedId));
+            StateNode assignedNode = tree.getNodeById(assignedId);
+            if (assignedNode == null) {
+                return Optional.empty();
+            }
+            Element element = Element.get(assignedNode);
 
-            attachElement(feature, element, index,
-                    tree.getNodeById(requestedId), requestedId == assignedId);
+            attachElement(feature, element, index, requestedNode,
+                    requestedId == assignedId);
         }
 
         return Optional.empty();

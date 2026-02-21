@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -40,7 +41,7 @@ import tools.jackson.databind.node.ObjectNode;
  */
 public class ConstantPoolKey implements Serializable {
     private final JsonNode json;
-    private String id;
+    private @Nullable String id;
 
     /**
      * Creates a new constant pool key for the given JSON value. The value

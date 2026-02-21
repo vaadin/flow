@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -49,7 +50,7 @@ public final class BundleUtils {
      * resource that cannot change at runtime, making it safe to cache
      * indefinitely.
      */
-    private static volatile ObjectNode cachedStatsJson = null;
+    private static volatile @Nullable ObjectNode cachedStatsJson = null;
 
     /**
      * Loads stats.json from the classpath (from the production bundle) and
@@ -57,7 +58,7 @@ public final class BundleUtils {
      *
      * @return the bundle imports as a set
      */
-    public static Set<String> loadBundleImports() {
+    public static @Nullable Set<String> loadBundleImports() {
         JsonNode statsJson = loadStatsJson();
         if (!statsJson.has("bundleImports")) {
             return null;

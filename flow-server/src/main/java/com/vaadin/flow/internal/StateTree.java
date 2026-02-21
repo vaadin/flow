@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -62,7 +64,7 @@ public class StateTree implements NodeOwner {
         }
 
         @Override
-        public void setParent(StateNode parent) {
+        public void setParent(@Nullable StateNode parent) {
             if (parent == null) {
                 super.setParent(null);
                 isRootAttached = false;
@@ -266,7 +268,7 @@ public class StateTree implements NodeOwner {
      * @return the node with the given id; <code>null</code> if the id is not
      *         registered with this tree
      */
-    public StateNode getNodeById(int id) {
+    public @Nullable StateNode getNodeById(int id) {
         return idToNode.get(id);
     }
 

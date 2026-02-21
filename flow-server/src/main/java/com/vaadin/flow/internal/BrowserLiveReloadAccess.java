@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -39,7 +41,7 @@ public class BrowserLiveReloadAccess {
      *            a service
      * @return a BrowserLiveReload instance or null for production mode
      */
-    public BrowserLiveReload getLiveReload(VaadinService service) {
+    public @Nullable BrowserLiveReload getLiveReload(VaadinService service) {
         return BrowserLiveReloadAccessor.getLiveReloadFromService(service)
                 .orElse(null);
     }

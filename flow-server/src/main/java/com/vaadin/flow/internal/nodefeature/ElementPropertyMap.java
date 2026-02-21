@@ -93,8 +93,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *             to the property is read-only and cannot thus be updated by a
      *             client
      */
-    public Runnable deferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeDeniedException {
+    public Runnable deferredUpdateFromClient(String key,
+            @Nullable Serializable value) throws PropertyChangeDeniedException {
         return doDeferredUpdateFromClient(key, value);
     }
 
@@ -189,8 +189,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected @Nullable Serializable put(String key, Serializable value,
-            boolean emitChange) {
+    protected @Nullable Serializable put(String key,
+            @Nullable Serializable value, boolean emitChange) {
         PutResult result = putWithDeferredChangeEvent(key, value, emitChange);
 
         // Fire event right away (if applicable)
@@ -217,8 +217,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
     }
 
-    private PutResult putWithDeferredChangeEvent(String key, Serializable value,
-            boolean emitChange) {
+    private PutResult putWithDeferredChangeEvent(String key,
+            @Nullable Serializable value, boolean emitChange) {
         Serializable oldValue = super.put(key, value, emitChange);
         boolean valueChanged = !Objects.equals(oldValue, value);
 
@@ -250,7 +250,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected boolean producePutChange(String key, boolean hadValueEarlier,
-            Serializable newValue) {
+            @Nullable Serializable newValue) {
         if (ALWAYS_GENERATE_CHANGE_PROPERTIES.contains(key)) {
             return true;
         }
@@ -594,8 +594,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *
      * </pre>
      */
-    private Runnable doDeferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeDeniedException {
+    private Runnable doDeferredUpdateFromClient(String key,
+            @Nullable Serializable value) throws PropertyChangeDeniedException {
         // Use private <code>allowUpdateFromClient</code> method instead of
         // <code>mayUpdateFromClient</code> which may be overridden
         // The logic below
@@ -628,7 +628,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     // registration
     @SuppressWarnings("NullAway")
     private PutResult doDeferredUpdateFromClientWithSignal(String key,
-            Serializable value) {
+            @Nullable Serializable value) {
         SignalBinding binding = (SignalBinding) super.get(key);
 
         AtomicReference<Serializable> putValue = new AtomicReference<>(value);

@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
@@ -78,7 +80,8 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            the request
      * @return the raw path info, or {@code null} if it cannot be determined
      */
-    private static String getRawPathInfo(VaadinRequest vaadinRequest) {
+    private static @Nullable String getRawPathInfo(
+            VaadinRequest vaadinRequest) {
         if (vaadinRequest instanceof VaadinServletRequest servletRequest) {
             HttpServletRequest httpRequest = servletRequest
                     .getHttpServletRequest();
@@ -120,7 +123,7 @@ public final class BootstrapHandlerHelper implements Serializable {
         return contextPath + pushURL;
     }
 
-    public static String determinePushServletMapping(
+    public static @Nullable String determinePushServletMapping(
             VaadinSession vaadinSession) {
         String pushServletMapping = getCleanedPushServletMapping(
                 vaadinSession.getConfiguration().getPushServletMapping());
@@ -148,8 +151,8 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            Original pushServletMapping value
      * @return cleaned-up value, or null if the original value is blank.
      */
-    public static String getCleanedPushServletMapping(
-            String pushServletMapping) {
+    public static @Nullable String getCleanedPushServletMapping(
+            @Nullable String pushServletMapping) {
         if (pushServletMapping == null || pushServletMapping.trim().isEmpty()) {
             return null;
         } else {
