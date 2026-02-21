@@ -17,6 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Navigation error parameter class containing thrown exception and possibly a
  * custom message.
@@ -28,9 +30,9 @@ import java.io.Serializable;
  */
 public class ErrorParameter<T extends Exception> implements Serializable {
 
-    private final T exception;
+    private final @Nullable T exception;
     private final Exception caughtException;
-    private final String customMessage;
+    private final @Nullable String customMessage;
 
     /**
      * Create ErrorParameter for exception.
@@ -55,14 +57,14 @@ public class ErrorParameter<T extends Exception> implements Serializable {
      *            custom message to go with exception
      */
     public ErrorParameter(Class<T> parameterType, Exception caughtException,
-            String customMessage) {
+            @Nullable String customMessage) {
         this.caughtException = caughtException;
         this.customMessage = customMessage;
         this.exception = findCauseByType(parameterType, caughtException);
     }
 
-    private static <T extends Exception> T findCauseByType(Class<T> type,
-            Exception exception) {
+    private static <T extends Exception> @Nullable T findCauseByType(
+            Class<T> type, Exception exception) {
         if (type.isInstance(exception)) {
             return type.cast(exception);
         } else {
@@ -85,7 +87,7 @@ public class ErrorParameter<T extends Exception> implements Serializable {
      *
      * @return exception
      */
-    public T getException() {
+    public @Nullable T getException() {
         return exception;
     }
 

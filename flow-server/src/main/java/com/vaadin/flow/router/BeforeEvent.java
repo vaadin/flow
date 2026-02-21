@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
@@ -43,21 +45,21 @@ public abstract class BeforeEvent extends EventObject {
     private final NavigationTrigger trigger;
     private final UI ui;
 
-    private NavigationHandler forwardTarget;
-    private NavigationHandler rerouteTarget;
+    private @Nullable NavigationHandler forwardTarget;
+    private @Nullable NavigationHandler rerouteTarget;
 
     private final Class<? extends Component> navigationTarget;
     private final RouteParameters parameters;
-    private QueryParameters redirectQueryParameters;
+    private @Nullable QueryParameters redirectQueryParameters;
     private final List<Class<? extends RouterLayout>> layouts;
-    private NavigationState forwardTargetState;
-    private NavigationState rerouteTargetState;
-    private ErrorParameter<?> errorParameter;
+    private @Nullable NavigationState forwardTargetState;
+    private @Nullable NavigationState rerouteTargetState;
+    private @Nullable ErrorParameter<?> errorParameter;
 
-    private String unknownForward = null;
-    private String unknownReroute = null;
+    private @Nullable String unknownForward = null;
+    private @Nullable String unknownReroute = null;
 
-    private String externalForwardUrl = null;
+    private @Nullable String externalForwardUrl = null;
     private boolean useForwardCallback;
 
     /**
@@ -191,7 +193,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the unknown forward.
      */
-    public String getUnknownForward() {
+    public @Nullable String getUnknownForward() {
         return unknownForward;
     }
 
@@ -200,7 +202,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the unknown reroute.
      */
-    public String getUnknownReroute() {
+    public @Nullable String getUnknownReroute() {
         return unknownReroute;
     }
 
@@ -209,7 +211,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the external forward url or {@code null} if none has been set
      */
-    public String getExternalForwardUrl() {
+    public @Nullable String getExternalForwardUrl() {
         return externalForwardUrl;
     }
 
@@ -270,7 +272,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return navigation handler
      */
-    public NavigationHandler getForwardTarget() {
+    public @Nullable NavigationHandler getForwardTarget() {
         return forwardTarget;
     }
 
@@ -280,7 +282,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return an navigation handler
      */
-    public NavigationHandler getRerouteTarget() {
+    public @Nullable NavigationHandler getRerouteTarget() {
         return rerouteTarget;
     }
 
@@ -300,8 +302,8 @@ public abstract class BeforeEvent extends EventObject {
      * @param targetState
      *            the target navigation state of the rerouting
      */
-    public void forwardTo(NavigationHandler forwardTarget,
-            NavigationState targetState) {
+    public void forwardTo(@Nullable NavigationHandler forwardTarget,
+            @Nullable NavigationState targetState) {
         this.forwardTargetState = targetState;
         this.forwardTarget = forwardTarget;
     }
@@ -643,8 +645,8 @@ public abstract class BeforeEvent extends EventObject {
      * @param targetState
      *            the target navigation state of the rerouting
      */
-    public void rerouteTo(NavigationHandler rerouteTarget,
-            NavigationState targetState) {
+    public void rerouteTo(@Nullable NavigationHandler rerouteTarget,
+            @Nullable NavigationState targetState) {
         rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;
     }
@@ -940,6 +942,11 @@ public abstract class BeforeEvent extends EventObject {
             Class<? extends Component> target) {
         Class<?> genericInterfaceType = ReflectTools
                 .getGenericInterfaceType(target, HasUrlParameter.class);
+        if (genericInterfaceType == null) {
+            throw new IllegalArgumentException(String.format(
+                    "Given target '%s' does not implement HasUrlParameter.",
+                    target.getName()));
+        }
         if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
             throw new IllegalArgumentException(String.format(
                     "Given route parameter '%s' is of the wrong type. Required '%s'.",
@@ -962,9 +969,10 @@ public abstract class BeforeEvent extends EventObject {
                 HasUrlParameterFormat.getUrl(url, routeParams));
     }
 
+    @SuppressWarnings("NullAway") // router is always set during navigation
     private NavigationState getNavigationState(
             Class<? extends Component> target, RouteParameters parameters,
-            String resolvedUrl) {
+            @Nullable String resolvedUrl) {
         return new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(target, parameters).withPath(resolvedUrl).build();
     }
@@ -978,7 +986,16 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasForwardTarget()} before accessing this method.
      */
     public Class<? extends Component> getForwardTargetType() {
-        return forwardTargetState.getNavigationTarget();
+        if (forwardTargetState == null) {
+            throw new NullPointerException(
+                    "No forward target set. Check hasForwardTarget() before calling this method.");
+        }
+        var target = forwardTargetState.getNavigationTarget();
+        if (target == null) {
+            throw new NullPointerException(
+                    "Forward target navigation target not resolved.");
+        }
+        return target;
     }
 
     /**
@@ -990,6 +1007,10 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasForwardTarget()} before accessing this method.
      */
     public RouteParameters getForwardTargetRouteParameters() {
+        if (forwardTargetState == null) {
+            throw new NullPointerException(
+                    "No forward target set. Check hasForwardTarget() before calling this method.");
+        }
         return forwardTargetState.getRouteParameters();
     }
 
@@ -1001,7 +1022,11 @@ public abstract class BeforeEvent extends EventObject {
      *             if no forward target is set. Check
      *             {@link #hasForwardTarget()} before accessing this method.
      */
-    public String getForwardUrl() {
+    public @Nullable String getForwardUrl() {
+        if (forwardTargetState == null) {
+            throw new NullPointerException(
+                    "No forward target set. Check hasForwardTarget() before calling this method.");
+        }
         return forwardTargetState.getResolvedPath();
     }
 
@@ -1014,7 +1039,16 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
-        return rerouteTargetState.getNavigationTarget();
+        if (rerouteTargetState == null) {
+            throw new NullPointerException(
+                    "No reroute target set. Check hasRerouteTarget() before calling this method.");
+        }
+        var target = rerouteTargetState.getNavigationTarget();
+        if (target == null) {
+            throw new NullPointerException(
+                    "Reroute target navigation target not resolved.");
+        }
+        return target;
     }
 
     /**
@@ -1026,6 +1060,10 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public RouteParameters getRerouteTargetRouteParameters() {
+        if (rerouteTargetState == null) {
+            throw new NullPointerException(
+                    "No reroute target set. Check hasRerouteTarget() before calling this method.");
+        }
         return rerouteTargetState.getRouteParameters();
     }
 
@@ -1037,7 +1075,11 @@ public abstract class BeforeEvent extends EventObject {
      *             if no reroute target is set. Check
      *             {@link #hasRerouteTarget()} before accessing this method.
      */
-    public String getRerouteUrl() {
+    public @Nullable String getRerouteUrl() {
+        if (rerouteTargetState == null) {
+            throw new NullPointerException(
+                    "No reroute target set. Check hasRerouteTarget() before calling this method.");
+        }
         return rerouteTargetState.getResolvedPath();
     }
 
@@ -1075,7 +1117,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return query parameters for forwarding and rerouting
      */
-    public QueryParameters getRedirectQueryParameters() {
+    public @Nullable QueryParameters getRedirectQueryParameters() {
         return redirectQueryParameters;
     }
 
@@ -1134,9 +1176,8 @@ public abstract class BeforeEvent extends EventObject {
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            rerouteTargetState = new NavigationStateBuilder(
-                    ui.getInternals().getRouter())
-                    .withTarget(lookupResult.getNavigationTarget()).build();
+            rerouteTargetState = buildRerouteTargetState(
+                    lookupResult.getNavigationTarget());
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
             errorParameter = new ErrorParameter<>(
@@ -1161,7 +1202,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return error parameter
      */
-    public ErrorParameter<?> getErrorParameter() {
+    public @Nullable ErrorParameter<?> getErrorParameter() {
         return errorParameter;
     }
 
@@ -1183,6 +1224,13 @@ public abstract class BeforeEvent extends EventObject {
      */
     public UI getUI() {
         return ui;
+    }
+
+    @SuppressWarnings("NullAway") // router is always set during navigation
+    private NavigationState buildRerouteTargetState(
+            Class<? extends Component> target) {
+        return new NavigationStateBuilder(ui.getInternals().getRouter())
+                .withTarget(target).build();
     }
 
 }

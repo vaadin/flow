@@ -17,6 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Defines route parameters for navigation targets for use in routing.
  *
@@ -35,7 +37,8 @@ public interface HasUrlParameter<T> extends Serializable {
      * @param event
      *            the navigation event that caused the call to this method
      * @param parameter
-     *            the resolved url parameter
+     *            the resolved url parameter, may be null for optional
+     *            parameters
      */
-    void setParameter(BeforeEvent event, T parameter);
+    void setParameter(BeforeEvent event, @Nullable T parameter);
 }

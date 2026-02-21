@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
@@ -71,7 +72,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,
-            BaseJsonNode state) {
+            @Nullable BaseJsonNode state) {
         super(router, location, ui, trigger, state, false);
 
         this.errorParameter = errorParameter;

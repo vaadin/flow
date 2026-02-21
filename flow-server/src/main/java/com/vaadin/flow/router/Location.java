@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents a relative URL made up of path segments and query parameters, but
  * lacking e.g. the hostname that can also be present in URLs.
@@ -37,7 +39,7 @@ public class Location implements Serializable {
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
-    private String fragment;
+    private @Nullable String fragment;
 
     /**
      * Creates a new {@link Location} object for given location string.

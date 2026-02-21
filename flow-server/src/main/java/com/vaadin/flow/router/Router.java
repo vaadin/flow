@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntConsumer;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -190,7 +191,7 @@ public class Router implements Serializable {
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            BaseJsonNode state) {
+            @Nullable BaseJsonNode state) {
         return navigate(ui, location, trigger, state, false, false);
     }
 
@@ -223,12 +224,15 @@ public class Router implements Serializable {
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            BaseJsonNode state, boolean forceInstantiation,
+            @Nullable BaseJsonNode state, boolean forceInstantiation,
             boolean recreateLayoutChain) {
         assert ui != null;
         assert location != null;
         assert trigger != null;
-        ui.getSession().checkHasLock();
+        VaadinSession session = ui.getSession();
+        if (session != null) {
+            session.checkHasLock();
+        }
 
         if (handleNavigationForLocation(ui, location)) {
             ui.getInternals().setLastHandledNavigation(location);
@@ -247,15 +251,15 @@ public class Router implements Serializable {
 
     private boolean handleNavigationForLocation(UI ui, Location location) {
         if (ui.getInternals().hasLastHandledLocation()) {
-            return !location.getPathWithQueryParameters()
-                    .equals(ui.getInternals().getLastHandledLocation()
-                            .getPathWithQueryParameters());
+            Location lastHandled = ui.getInternals().getLastHandledLocation();
+            return lastHandled == null || !location.getPathWithQueryParameters()
+                    .equals(lastHandled.getPathWithQueryParameters());
         }
         return true;
     }
 
     private int handleNavigation(UI ui, Location location,
-            NavigationTrigger trigger, BaseJsonNode state,
+            NavigationTrigger trigger, @Nullable BaseJsonNode state,
             boolean forceInstantiation, boolean recreateLayoutChain) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
@@ -311,7 +315,7 @@ public class Router implements Serializable {
      */
     public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
-            BaseJsonNode state) {
+            @Nullable BaseJsonNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
@@ -393,7 +397,7 @@ public class Router implements Serializable {
      */
     public int executeNavigation(UI ui, Location location,
             NavigationEvent navigationEvent, NavigationHandler handler,
-            IntConsumer onSuccess) {
+            @Nullable IntConsumer onSuccess) {
         ui.getInternals().setLastHandledNavigation(location);
         try {
             int result = handler.handle(navigationEvent);

@@ -245,6 +245,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
         AccessCheckResult result = checkAccess(context,
                 isProductionMode(event));
         if (result.decision() != AccessCheckDecision.ALLOW) {
+            String reason = result.reason() != null ? result.reason() : "";
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
@@ -253,15 +254,14 @@ public class NavigationAccessControl implements BeforeEnterListener {
                     if (loginUrl != null) {
                         event.forwardToUrl(loginUrl);
                     } else {
-                        event.rerouteToError(NotFoundException.class,
-                                result.reason());
+                        event.rerouteToError(NotFoundException.class, reason);
                     }
                 }
             } else {
                 event.rerouteToError(
                         getAccessDeniedException(AccessAnnotationChecker
                                 .securityTarget(event.getNavigationTarget())),
-                        result.reason());
+                        reason);
             }
         }
     }

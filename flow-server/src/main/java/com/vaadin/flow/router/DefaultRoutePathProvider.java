@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import org.jspecify.annotations.Nullable;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 
@@ -29,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
 public class DefaultRoutePathProvider implements RoutePathProvider {
 
     @Override
-    public String getRoutePath(Class<?> navigationTarget) {
+    public @Nullable String getRoutePath(Class<?> navigationTarget) {
         Route route = navigationTarget.getAnnotation(Route.class);
         if (route == null) {
             return null;

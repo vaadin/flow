@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.util.EventObject;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
@@ -33,7 +34,7 @@ public class NavigationEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private boolean forwardTo = false;
-    private BaseJsonNode state = null;
+    private @Nullable BaseJsonNode state = null;
     private boolean forceInstantiation = false;
     private boolean recreateLayoutChain = false;
 
@@ -83,7 +84,8 @@ public class NavigationEvent extends EventObject {
      *            {@link BeforeEvent#forwardTo} or not
      */
     public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo) {
+            NavigationTrigger trigger, @Nullable BaseJsonNode state,
+            boolean forwardTo) {
         this(router, location, ui, trigger);
 
         this.state = state;
@@ -117,8 +119,9 @@ public class NavigationEvent extends EventObject {
      *            {@code forceInstantiation} to be true to have an effect.
      */
     public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, BaseJsonNode state, boolean forwardTo,
-            boolean forceInstantiation, boolean recreateLayoutChain) {
+            NavigationTrigger trigger, @Nullable BaseJsonNode state,
+            boolean forwardTo, boolean forceInstantiation,
+            boolean recreateLayoutChain) {
         this(router, location, ui, trigger);
 
         this.state = state;

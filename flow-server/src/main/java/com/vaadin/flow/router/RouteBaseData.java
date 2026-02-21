@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 
 /**
@@ -97,7 +99,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @return route parent layout
      */
-    public Class<? extends RouterLayout> getParentLayout() {
+    public @Nullable Class<? extends RouterLayout> getParentLayout() {
         if (parentLayouts.isEmpty()) {
             return null;
         }

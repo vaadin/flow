@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,13 +147,13 @@ public class InternalServerError extends Component
         }
     }
 
-    private String getRootCause(ErrorParameter<Exception> parameter) {
-        if (parameter == null || parameter.getException() == null
+    private @Nullable String getRootCause(ErrorParameter<Exception> parameter) {
+        if (parameter.getException() == null
                 || parameter.getException().getCause() == null) {
             return null;
         }
-        Throwable rootCause = null;
-        Throwable cause = parameter.getException().getCause();
+        Throwable rootCause = parameter.getException().getCause();
+        Throwable cause = rootCause.getCause();
         while (cause != null && cause != rootCause) {
             rootCause = cause;
             cause = cause.getCause();

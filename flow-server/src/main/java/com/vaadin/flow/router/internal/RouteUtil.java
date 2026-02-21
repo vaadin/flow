@@ -173,6 +173,9 @@ public class RouteUtil {
             Class<?> component) {
         Route route = component.getAnnotation(Route.class);
         String routePath = resolve(context, component);
+        if (routePath == null) {
+            routePath = "";
+        }
         if (route.absolute()) {
             return routePath;
         }
@@ -360,7 +363,8 @@ public class RouteUtil {
      * @return The value of the annotation or naming convention based value if
      *         no explicit value is given.
      */
-    public static String resolve(VaadinContext context, Class<?> component) {
+    public static @Nullable String resolve(VaadinContext context,
+            Class<?> component) {
         RoutePathProvider provider = null;
         Lookup lookup = context.getAttribute(Lookup.class);
         if (lookup != null) {
@@ -716,6 +720,9 @@ public class RouteUtil {
             } else {
                 path = resolve(registry.getContext(),
                         routeData.getNavigationTarget());
+                if (path == null) {
+                    path = "";
+                }
                 List<String> parentRoutePrefixes = getRoutePrefixes(
                         routeData.getNavigationTarget(), null, path);
                 path = String.join("/", parentRoutePrefixes);

@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Focusable;
@@ -54,7 +56,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
     private HighlightAction<RouterLink> highlightAction = HighlightActions
             .toggleAttribute("highlight");
 
-    private QueryParameters queryParameters;
+    private @Nullable QueryParameters queryParameters;
 
     /**
      * Creates a new empty router link.
@@ -418,7 +420,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            the query parameters object, or {@code null} to remove
      *            existing query parameters
      */
-    public void setQueryParameters(QueryParameters queryParameters) {
+    public void setQueryParameters(@Nullable QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
         updateHref(getHref());
     }

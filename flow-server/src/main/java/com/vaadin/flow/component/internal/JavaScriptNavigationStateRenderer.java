@@ -128,9 +128,9 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     }
 
     private boolean isPostponedClientSideNavigation() {
-        return continueNavigationAction != null
-                && UI.ClientViewPlaceholder.class.isAssignableFrom(
-                        getNavigationState().getNavigationTarget());
+        var navTarget = getNavigationState().getNavigationTarget();
+        return continueNavigationAction != null && navTarget != null
+                && UI.ClientViewPlaceholder.class.isAssignableFrom(navTarget);
     }
 
     private static Logger getLogger() {

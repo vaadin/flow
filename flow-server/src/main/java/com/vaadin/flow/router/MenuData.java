@@ -17,6 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 
 /**
@@ -35,8 +37,10 @@ import com.vaadin.flow.component.Component;
  * @param menuClass
  *            the component class associated with this menu item
  */
-public record MenuData(String title, Double order, boolean exclude, String icon,
-        Class<? extends Component> menuClass) implements Serializable {
+public record MenuData(String title, @Nullable Double order, boolean exclude,
+        @Nullable String icon, @Nullable Class<? extends Component> menuClass)
+        implements
+            Serializable {
 
     /**
      * Gets the title of the menu item.
@@ -50,9 +54,9 @@ public record MenuData(String title, Double order, boolean exclude, String icon,
     /**
      * Gets the order of the menu item.
      *
-     * @return the order of the menu item
+     * @return the order of the menu item, or null if not set
      */
-    public Double getOrder() {
+    public @Nullable Double getOrder() {
         return order;
     }
 
@@ -68,9 +72,9 @@ public record MenuData(String title, Double order, boolean exclude, String icon,
     /**
      * Gets the icon of the menu item.
      *
-     * @return the icon of the menu item
+     * @return the icon of the menu item, or null if not set
      */
-    public String getIcon() {
+    public @Nullable String getIcon() {
         return icon;
     }
 

@@ -73,8 +73,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         path = Jsoup.clean(path, Safelist.none());
         additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
 
-        boolean productionMode = event.getUI().getSession().getConfiguration()
-                .isProductionMode();
+        boolean productionMode = isProductionMode(event);
         String template;
         String routes = getRoutes(event);
 
@@ -198,6 +197,12 @@ public abstract class AbstractRouteNotFoundError extends Component {
     private Element elementAsLink(String url, String text) {
         Element link = new Element(Tag.A).attr("href", url).text(text);
         return new Element(Tag.LI).appendChild(link);
+    }
+
+    @SuppressWarnings("NullAway") // session is always available during
+                                  // navigation
+    private static boolean isProductionMode(BeforeEnterEvent event) {
+        return event.getUI().getSession().getConfiguration().isProductionMode();
     }
 
     private static class LazyInit {

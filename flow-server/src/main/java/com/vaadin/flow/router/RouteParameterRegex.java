@@ -17,6 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Predefined regex used with template parameters.
  */
@@ -47,7 +49,7 @@ public class RouteParameterRegex implements Serializable {
      *            type of the parameter.
      * @return the regex matching the type.
      */
-    public static String getRegex(Class<?> parameterType) {
+    public static @Nullable String getRegex(Class<?> parameterType) {
         String regex = null;
         if (parameterType.isAssignableFrom(Integer.class)) {
             regex = RouteParameterRegex.INTEGER;

@@ -201,13 +201,15 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                                 route.getName()));
             }
 
+            String resolvedPath = RouteUtil.resolve(context, route);
+            if (resolvedPath == null) {
+                resolvedPath = "";
+            }
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route,
-                            RouteUtil.resolve(context, route));
+                    .getParentLayouts(context, route, resolvedPath);
             @Nullable
             Class<? extends RouterLayout> topParentLayout = RouteUtil
-                    .getTopParentLayout(context, route,
-                            RouteUtil.resolve(context, route));
+                    .getTopParentLayout(context, route, resolvedPath);
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);

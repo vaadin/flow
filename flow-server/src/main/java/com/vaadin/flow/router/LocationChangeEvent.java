@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
@@ -39,7 +41,7 @@ public class LocationChangeEvent extends EventObject {
     private final Location location;
 
     private int statusCode = HttpStatusCode.OK.getCode();
-    private NavigationHandler rerouteTarget;
+    private @Nullable NavigationHandler rerouteTarget;
 
     private List<HasElement> routeTargetChain;
 
@@ -185,7 +187,7 @@ public class LocationChangeEvent extends EventObject {
      *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
      */
-    public void rerouteTo(NavigationHandler rerouteTarget) {
+    public void rerouteTo(@Nullable NavigationHandler rerouteTarget) {
         this.rerouteTarget = rerouteTarget;
     }
 

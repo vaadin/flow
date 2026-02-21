@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Allows to implement a custom navigation target path generation logic for
  * components annotated with {@code @Route(Route.NAMING_CONVENTION)}.
@@ -33,6 +35,7 @@ public interface RoutePathProvider {
      * @return a route path for the navigation target, may be {@code null} if
      *         the provided class is not a navigation target
      */
+    @Nullable
     String getRoutePath(Class<?> navigationTarget);
 
 }

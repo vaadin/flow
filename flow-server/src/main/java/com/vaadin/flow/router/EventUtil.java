@@ -24,6 +24,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasElement;
@@ -309,7 +311,8 @@ public final class EventUtil {
         return descendants.stream();
     }
 
-    private static <T> T getComponent(Component component, Class<T> type) {
+    private static <T> @Nullable T getComponent(Component component,
+            Class<T> type) {
         if (type.isAssignableFrom(component.getClass())) {
             return type.cast(component);
         }

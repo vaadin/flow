@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.router.internal.ParameterInfo;
 
 /**
@@ -27,7 +29,7 @@ public class RouteParameterData implements Serializable {
 
     private final String template;
 
-    private final String regex;
+    private final @Nullable String regex;
 
     /**
      * Creates a parameter data instance.
@@ -37,7 +39,7 @@ public class RouteParameterData implements Serializable {
      * @param regex
      *            the regex as found in the template.
      */
-    public RouteParameterData(String template, String regex) {
+    public RouteParameterData(String template, @Nullable String regex) {
         this.template = template;
         this.regex = regex;
     }

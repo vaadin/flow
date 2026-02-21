@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
@@ -29,7 +31,7 @@ import com.vaadin.flow.component.UI;
  */
 public class BeforeLeaveEvent extends BeforeEvent {
 
-    private ContinueNavigationAction continueNavigationAction = null;
+    private @Nullable ContinueNavigationAction continueNavigationAction = null;
 
     /**
      * The action to resume a postponed {@link BeforeEnterEvent}.
@@ -39,8 +41,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
      */
     public class ContinueNavigationAction implements Serializable {
 
-        private NavigationHandler handler = null;
-        private NavigationEvent event = null;
+        private @Nullable NavigationHandler handler = null;
+        private @Nullable NavigationEvent event = null;
 
         private ContinueNavigationAction() {
         }
@@ -54,8 +56,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
          * @param event
          *            the navigation event
          */
-        public void setReferences(NavigationHandler handler,
-                NavigationEvent event) {
+        @SuppressWarnings("NullAway") // getSession() is always available during
+                                      // navigation
+        public void setReferences(@Nullable NavigationHandler handler,
+                @Nullable NavigationEvent event) {
             if (event != null) {
                 event.getUI().getSession().hasLock();
             } else {
@@ -69,6 +73,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
         /**
          * Resumes the page transition associated with the postponed event.
          */
+        @SuppressWarnings("NullAway") // getSession() is always available during
+                                      // navigation
         public void proceed() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
             if (handler != null && event != null) {
@@ -224,7 +230,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @return the action used to resume this event if it was postponed, or null
      *         if it is not being postponed
      */
-    public ContinueNavigationAction getContinueNavigationAction() {
+    public @Nullable ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;
     }
 }

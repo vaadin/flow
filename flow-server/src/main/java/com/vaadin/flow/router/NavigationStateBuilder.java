@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.RouteTarget;
 
@@ -96,7 +98,7 @@ public class NavigationStateBuilder {
      *            navigation path
      * @return this builder, for chaining
      */
-    public NavigationStateBuilder withPath(String path) {
+    public NavigationStateBuilder withPath(@Nullable String path) {
         currentState.setResolvedPath(path);
         return this;
     }

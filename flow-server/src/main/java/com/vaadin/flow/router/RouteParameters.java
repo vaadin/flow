@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.router.internal.PathUtil;
 
 /**
@@ -208,7 +210,7 @@ public final class RouteParameters implements Serializable {
         return params.hashCode();
     }
 
-    private String getValue(String parameterName) {
+    private @Nullable String getValue(String parameterName) {
         return params.get(parameterName);
     }
 

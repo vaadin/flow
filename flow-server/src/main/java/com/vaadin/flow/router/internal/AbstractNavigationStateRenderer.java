@@ -339,6 +339,8 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @return optional return http status code
      */
+    @SuppressWarnings("NullAway") // routeLayoutTypes set in handle() before
+                                  // this call
     private Optional<Integer> handleBeforeLeaveEvents(NavigationEvent event,
             Class<? extends Component> routeTargetType,
             RouteParameters parameters) {
@@ -373,6 +375,8 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @return optional return http status code
      */
+    @SuppressWarnings("NullAway") // routeLayoutTypes set in handle() before
+                                  // this call
     private Optional<Integer> handleBeforeNavigationEvents(
             NavigationEvent event, Class<? extends Component> routeTargetType,
             RouteParameters parameters, ArrayList<HasElement> chain) {
@@ -388,6 +392,8 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @return optional return http status code
      */
+    @SuppressWarnings("NullAway") // locationChangeEvent set in handle() before
+                                  // this call
     private void handleAfterNavigationEvents(UI ui,
             RouteParameters parameters) {
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
@@ -616,8 +622,10 @@ public abstract class AbstractNavigationStateRenderer
 
                 ContinueNavigationAction currentAction = beforeNavigation
                         .getContinueNavigationAction();
-                currentAction.setReferences(this, event);
-                storeContinueNavigationAction(event.getUI(), currentAction);
+                if (currentAction != null) {
+                    currentAction.setReferences(this, event);
+                    storeContinueNavigationAction(event.getUI(), currentAction);
+                }
 
                 return Optional.of(HttpStatusCode.OK.getCode());
             }
@@ -888,8 +896,10 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
 
-        boolean queryParameterChanged = beforeEvent.hasRedirectQueryParameters()
-                && !beforeEvent.getRedirectQueryParameters()
+        QueryParameters redirectQueryParams = beforeEvent
+                .getRedirectQueryParameters();
+        boolean queryParameterChanged = redirectQueryParams != null
+                && !redirectQueryParams
                         .equals(event.getLocation().getQueryParameters());
 
         if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
@@ -914,8 +924,8 @@ public abstract class AbstractNavigationStateRenderer
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
             RouteParameters targetParameters) {
-        final boolean sameTarget = navigationState.getNavigationTarget()
-                .equals(targetType);
+        final boolean sameTarget = targetType
+                .equals(navigationState.getNavigationTarget());
 
         final boolean sameParameters = targetParameters
                 .equals(navigationState.getRouteParameters());
@@ -923,6 +933,8 @@ public abstract class AbstractNavigationStateRenderer
         return sameTarget && sameParameters;
     }
 
+    @SuppressWarnings("NullAway") // only called when hasExternalForwardUrl() is
+                                  // true
     private int forwardToExternalUrl(NavigationEvent event,
             BeforeEvent beforeNavigation) {
         event.getUI().getPage()
@@ -933,6 +945,10 @@ public abstract class AbstractNavigationStateRenderer
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getForwardTarget();
+        if (handler == null) {
+            throw new IllegalStateException(
+                    "Forward target handler is not set.");
+        }
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
@@ -948,6 +964,10 @@ public abstract class AbstractNavigationStateRenderer
 
     private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
+        if (handler == null) {
+            throw new IllegalStateException(
+                    "Reroute target handler is not set.");
+        }
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
@@ -963,6 +983,10 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeNavigation.hasErrorParameter()) {
             ErrorParameter<?> errorParameter = beforeNavigation
                     .getErrorParameter();
+            if (errorParameter == null) {
+                throw new IllegalStateException(
+                        "Error parameter is null despite hasErrorParameter() being true.");
+            }
 
             return new ErrorNavigationEvent(event.getSource(),
                     event.getLocation(), event.getUI(),
@@ -999,10 +1023,10 @@ public abstract class AbstractNavigationStateRenderer
                     redirectType, redirectTarget, redirectParameters));
         }
 
-        QueryParameters queryParameters = beforeNavigation
-                .hasRedirectQueryParameters()
-                        ? beforeNavigation.getRedirectQueryParameters()
-                        : event.getLocation().getQueryParameters();
+        QueryParameters redirectQp = beforeNavigation
+                .getRedirectQueryParameters();
+        QueryParameters queryParameters = redirectQp != null ? redirectQp
+                : event.getLocation().getQueryParameters();
 
         Location location = new Location(url, queryParameters);
 

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -103,8 +104,8 @@ public final class ParameterDeserializer {
      *            the list of route parameters to deserialize
      * @return the deserialized url parameter, can be {@code null}
      */
-    public static Object deserializeRouteParameters(Class<?> navigationTarget,
-            List<String> parameters) {
+    public static @Nullable Object deserializeRouteParameters(
+            Class<?> navigationTarget, List<String> parameters) {
         if (parameters.isEmpty()) {
             return isAnnotatedParameter(navigationTarget,
                     WildcardParameter.class) ? "" : null;

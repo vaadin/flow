@@ -100,10 +100,14 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         NavigationState navigationState = getNavigationState();
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
+        if (routeTargetType == null) {
+            return;
+        }
 
         List<String> parameters = navigationState.getUrlParameters()
-                .orElse(null);
+                .orElse(Collections.emptyList());
 
+        @Nullable
         Object deserializedParameter = null;
         try {
             deserializedParameter = ParameterDeserializer

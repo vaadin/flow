@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteTarget;
@@ -32,10 +34,10 @@ import com.vaadin.flow.router.internal.RouteTarget;
  */
 public class NavigationState implements Serializable {
 
-    private Class<? extends Component> navigationTarget;
-    private RouteTarget routeTarget;
+    private @Nullable Class<? extends Component> navigationTarget;
+    private @Nullable RouteTarget routeTarget;
     private RouteParameters routeParameters = RouteParameters.empty();
-    private String resolvedPath;
+    private @Nullable String resolvedPath;
     private final Router router;
 
     /**
@@ -53,7 +55,7 @@ public class NavigationState implements Serializable {
      *
      * @return the navigation target of this state
      */
-    public Class<? extends Component> getNavigationTarget() {
+    public @Nullable Class<? extends Component> getNavigationTarget() {
         return navigationTarget != null ? navigationTarget
                 : routeTarget != null ? routeTarget.getTarget() : null;
     }
@@ -87,7 +89,7 @@ public class NavigationState implements Serializable {
      *
      * @return the route target to navigate to.
      */
-    public RouteTarget getRouteTarget() {
+    public @Nullable RouteTarget getRouteTarget() {
         if (routeTarget == null && navigationTarget != null) {
             routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
                     routeParameters);
@@ -105,7 +107,7 @@ public class NavigationState implements Serializable {
      * @param resolvedPath
      *            path for which the target was selected
      */
-    public void setResolvedPath(String resolvedPath) {
+    public void setResolvedPath(@Nullable String resolvedPath) {
         this.resolvedPath = resolvedPath;
     }
 
@@ -114,7 +116,7 @@ public class NavigationState implements Serializable {
      *
      * @return the resolved path details
      */
-    public String getResolvedPath() {
+    public @Nullable String getResolvedPath() {
         if (resolvedPath == null) {
             resolvedPath = router.getRegistry()
                     .getTargetUrl(getNavigationTarget(), getRouteParameters())

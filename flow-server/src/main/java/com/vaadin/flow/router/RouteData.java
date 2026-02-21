@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 
 /**
@@ -31,7 +33,7 @@ import com.vaadin.flow.component.Component;
  */
 public class RouteData extends RouteBaseData<RouteData> {
     private final List<RouteAliasData> routeAliases;
-    private final MenuData menuData;
+    private final @Nullable MenuData menuData;
 
     /**
      * RouteData constructor. This constructor doesn't support parameters. When
@@ -103,7 +105,7 @@ public class RouteData extends RouteBaseData<RouteData> {
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget,
-            List<RouteAliasData> routeAliases, MenuData menuData) {
+            List<RouteAliasData> routeAliases, @Nullable MenuData menuData) {
         super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
@@ -125,7 +127,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @return the menu data for this route
      */
-    public MenuData getMenuData() {
+    public @Nullable MenuData getMenuData() {
         return menuData;
     }
 
