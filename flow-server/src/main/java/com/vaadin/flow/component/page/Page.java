@@ -57,6 +57,8 @@ public class Page implements Serializable {
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
+    private ValueSignal<PageVisibility> pageVisibilitySignal;
+    private DomListenerRegistration visibilityReceiver;
 
     /**
      * Creates a page instance for the given UI.
@@ -474,6 +476,46 @@ public class Page implements Serializable {
                         }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
+        }
+    }
+
+    /**
+     * Returns a signal that tracks the current page visibility state.
+     * <p>
+     * The signal is lazily initialized on first access and automatically
+     * updates when the browser tab visibility or focus state changes. It
+     * distinguishes between three states: fully visible and focused, visible
+     * but not focused (e.g. behind another window), and hidden (e.g. background
+     * tab or minimized window).
+     * <p>
+     * The returned signal is read-only.
+     *
+     * @return a read-only signal with the current page visibility
+     */
+    public Signal<PageVisibility> pageVisibilitySignal() {
+        ensurePageVisibilitySignal();
+        return pageVisibilitySignal.asReadonly();
+    }
+
+    private void ensurePageVisibilitySignal() {
+        if (pageVisibilitySignal == null) {
+            pageVisibilitySignal = new ValueSignal<>(PageVisibility.VISIBLE);
+        }
+        ensureVisibilityListener();
+    }
+
+    private void ensureVisibilityListener() {
+        if (visibilityReceiver == null) {
+            ui.getElement()
+                    .executeJs("window.Vaadin.Flow.pageVisibility.init(this)");
+            visibilityReceiver = ui.getElement()
+                    .addEventListener("vaadin-page-visibility-change", e -> {
+                        String detail = e.getEventDetail(String.class);
+                        if (detail != null && pageVisibilitySignal != null) {
+                            pageVisibilitySignal
+                                    .set(PageVisibility.valueOf(detail));
+                        }
+                    }).addEventDetail().debounce(100).allowInert();
         }
     }
 
