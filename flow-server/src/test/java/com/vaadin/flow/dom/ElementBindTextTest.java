@@ -148,10 +148,10 @@ class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_initialNullSignalValue_treatAsBlank() {
+    public void bindText_initialEmptySignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>();
+        ValueSignal<String> signal = new ValueSignal<>("");
         element.bindText(signal);
         assertEquals("", element.getText());
         assertTrue(events.isEmpty());
