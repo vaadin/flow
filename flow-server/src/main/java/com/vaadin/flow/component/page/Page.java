@@ -36,6 +36,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -62,6 +63,8 @@ public class Page implements Serializable {
     private DomListenerRegistration visibilityReceiver;
     private DomListenerRegistration fullscreenReceiver;
     private ArrayList<FullscreenChangeListener> fullscreenListeners;
+    private DomListenerRegistration wakeLockReceiver;
+    private ArrayList<SerializableRunnable> wakeLockListeners;
 
     /**
      * Creates a page instance for the given UI.
@@ -479,6 +482,73 @@ public class Page implements Serializable {
                         }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
+        }
+    }
+
+    // --- Screen Wake Lock API ---
+
+    /**
+     * Requests the browser to keep the screen awake using the Screen Wake Lock
+     * API. This prevents the screen from dimming or locking, which is useful
+     * for dashboards, kiosk applications, and presentations.
+     * <p>
+     * The wake lock is automatically re-acquired when the page becomes visible
+     * again after being hidden (e.g., switching tabs and back).
+     * <p>
+     * If the wake lock is released by the browser (e.g., due to low battery),
+     * listeners registered with {@link #addWakeLockReleaseListener} are
+     * notified.
+     */
+    public void requestWakeLock() {
+        ensureWakeLockListener();
+        ui.getElement().executeJs("window.Vaadin.Flow.wakeLock.request(this)");
+    }
+
+    /**
+     * Releases a previously acquired screen wake lock.
+     */
+    public void releaseWakeLock() {
+        executeJs("window.Vaadin.Flow.wakeLock.release()");
+    }
+
+    /**
+     * Checks whether a screen wake lock is currently active.
+     *
+     * @return a pending result that resolves to {@code true} if a wake lock is
+     *         active
+     */
+    public PendingJavaScriptResult isWakeLockActive() {
+        return executeJs("return window.Vaadin.Flow.wakeLock.isActive()");
+    }
+
+    /**
+     * Adds a listener that is notified when the screen wake lock is released,
+     * either by the browser or by a call to {@link #releaseWakeLock()}.
+     *
+     * @param listener
+     *            the listener to add, not {@code null}
+     * @return a registration object for removing the listener
+     */
+    public Registration addWakeLockReleaseListener(
+            SerializableRunnable listener) {
+        Objects.requireNonNull(listener);
+        ensureWakeLockListener();
+        if (wakeLockListeners == null) {
+            wakeLockListeners = new ArrayList<>(1);
+        }
+        wakeLockListeners.add(listener);
+        return () -> wakeLockListeners.remove(listener);
+    }
+
+    private void ensureWakeLockListener() {
+        if (wakeLockReceiver == null) {
+            wakeLockReceiver = ui.getElement()
+                    .addEventListener("vaadin-wakelock-release", e -> {
+                        if (wakeLockListeners != null) {
+                            new ArrayList<>(wakeLockListeners)
+                                    .forEach(SerializableRunnable::run);
+                        }
+                    }).allowInert();
         }
     }
 

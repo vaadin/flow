@@ -113,6 +113,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 @JsModule("./clipboard.js")
 @JsModule("./fullscreenConnector.js")
 @JsModule("./componentSizeObserver.js")
+@JsModule("./wakeLockConnector.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
