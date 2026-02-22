@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
@@ -245,7 +246,8 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
      */
-    default <T, S extends Signal<T>> void bindChildren(Signal<List<S>> list,
+    default <T extends @Nullable Object, S extends Signal<T>> void bindChildren(
+            Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();

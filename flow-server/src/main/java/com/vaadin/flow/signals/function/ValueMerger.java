@@ -57,17 +57,17 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @see ValueSignal#updater(ValueMerger)
  */
 @FunctionalInterface
-public interface ValueMerger<O, I> extends Serializable {
+public interface ValueMerger<O extends @Nullable Object, I extends @Nullable Object>
+        extends Serializable {
     /**
      * Creates a new outer value by merging the new inner value with the old
      * outer value.
      *
      * @param outerValue
-     *            the current outer signal value, may be <code>null</code>
+     *            the current outer signal value
      * @param newInnerValue
-     *            the new inner value to merge, may be <code>null</code>
-     * @return the new outer value, may be <code>null</code>
+     *            the new inner value to merge
+     * @return the new outer value
      */
-    @Nullable
-    O merge(@Nullable O outerValue, @Nullable I newInnerValue);
+    O merge(O outerValue, I newInnerValue);
 }

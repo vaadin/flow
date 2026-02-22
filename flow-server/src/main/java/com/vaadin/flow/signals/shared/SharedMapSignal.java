@@ -49,7 +49,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedMapSignal<T>
+public class SharedMapSignal<T extends @Nullable Object>
         extends AbstractSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;

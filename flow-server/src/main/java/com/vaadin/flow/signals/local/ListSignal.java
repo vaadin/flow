@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.signals.impl.Transaction;
 
@@ -41,7 +42,7 @@ import com.vaadin.flow.signals.impl.Transaction;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T>
+public class ListSignal<T extends @Nullable Object>
         extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {
 
     /**

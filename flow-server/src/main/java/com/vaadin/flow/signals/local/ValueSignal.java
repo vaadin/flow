@@ -52,7 +52,8 @@ import com.vaadin.flow.signals.impl.Transaction;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractLocalSignal<T> {
+public class ValueSignal<T extends @Nullable Object>
+        extends AbstractLocalSignal<T> {
 
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
@@ -62,9 +63,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * Creates a new value signal with the given initial value.
      *
      * @param initialValue
-     *            the initial value, may be <code>null</code>
+     *            the initial value
      */
-    public ValueSignal(@Nullable T initialValue) {
+    public ValueSignal(T initialValue) {
         super(initialValue);
     }
 
@@ -110,7 +111,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * @param value
      *            the value to set
      */
-    public void set(@Nullable T value) {
+    public void set(T value) {
         lock();
         try {
             checkPreconditions();
@@ -137,7 +138,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * @return <code>true</code> if the expected value was present,
      *         <code>false</code> if there was a different value
      */
-    public boolean replace(@Nullable T expectedValue, @Nullable T newValue) {
+    public boolean replace(T expectedValue, T newValue) {
         lock();
         try {
             checkPreconditions();
@@ -169,7 +170,8 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the value update callback, not <code>null</code>
      * @return the previous value
      */
-    public synchronized @Nullable T update(SignalUpdater<T> updater) {
+    @SuppressWarnings("NullAway")
+    public synchronized T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
         try {
@@ -203,6 +205,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            a callback that receives the current value to modify, not
      *            <code>null</code>
      */
+    @SuppressWarnings("NullAway")
     public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 

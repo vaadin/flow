@@ -35,13 +35,13 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#computed(SignalComputation)
  */
 @FunctionalInterface
-public interface SignalComputation<T> extends Serializable {
+public interface SignalComputation<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Computes the signal value, automatically tracking dependencies on other
      * signals.
      *
-     * @return the computed value, may be <code>null</code>
+     * @return the computed value
      */
-    @Nullable
     T compute();
 }

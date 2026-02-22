@@ -35,7 +35,8 @@ import com.vaadin.flow.signals.impl.UsageTracker.Usage;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractLocalSignal<T> implements Signal<T> {
+public abstract class AbstractLocalSignal<T extends @Nullable Object>
+        implements Signal<T> {
 
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
@@ -78,8 +79,9 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
         }
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T get() {
+    public T get() {
         lock.lock();
         try {
             checkPreconditions();
@@ -92,8 +94,9 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
         }
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T peek() {
+    public T peek() {
         lock.lock();
         try {
             checkPreconditions();
