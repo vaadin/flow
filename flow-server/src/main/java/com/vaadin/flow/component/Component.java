@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
+import com.vaadin.flow.component.internal.ComponentSizeObserver;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -45,6 +46,7 @@ import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -61,6 +63,18 @@ import com.vaadin.flow.signals.Signal;
  */
 public abstract class Component
         implements HasStyle, AttachNotifier, DetachNotifier {
+
+    /**
+     * Represents the size of a component as observed by the browser's
+     * {@code ResizeObserver} API.
+     *
+     * @param width
+     *            the component width in pixels
+     * @param height
+     *            the component height in pixels
+     */
+    public record Size(int width, int height) implements Serializable {
+    }
 
     /**
      * Encapsulates data required for mapping a new component instance to an
@@ -940,6 +954,59 @@ public abstract class Component
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this component as
+     * observed by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on first access. It automatically starts
+     * observing when the component is attached and stops when detached. The
+     * initial value is {@code Size(0, 0)} until the browser reports the actual
+     * size.
+     * <p>
+     * The returned signal is read-only.
+     *
+     * @return a read-only signal with the current component size
+     */
+    @SuppressWarnings("unchecked")
+    public Signal<Size> sizeSignal() {
+        ValueSignal<Size> signal = (ValueSignal<Size>) ComponentUtil
+                .getData(this, Size.class.getName());
+        if (signal == null) {
+            signal = new ValueSignal<>(new Size(0, 0));
+            ComponentUtil.setData(this, Size.class.getName(), signal);
+            setupSizeObservation(signal);
+        }
+        return signal.asReadonly();
+    }
+
+    private void setupSizeObservation(ValueSignal<Size> signal) {
+        addAttachListener(attach -> {
+            UI ui = attach.getUI();
+            ComponentSizeObserver.get(ui).observe(getElement(), signal);
+
+            addDetachListener(detach -> {
+                if (!detach.getUI().isClosing()) {
+                    ComponentSizeObserver.get(detach.getUI()).unobserve(signal);
+                }
+                detach.unregisterListener();
+            });
+        });
+
+        if (isAttached()) {
+            getUI().ifPresent(ui -> {
+                ComponentSizeObserver.get(ui).observe(getElement(), signal);
+
+                addDetachListener(detach -> {
+                    if (!detach.getUI().isClosing()) {
+                        ComponentSizeObserver.get(detach.getUI())
+                                .unobserve(signal);
+                    }
+                    detach.unregisterListener();
+                });
+            });
+        }
     }
 
     /**

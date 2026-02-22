@@ -112,6 +112,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 @JsModule("./page-visibility.js")
 @JsModule("./clipboard.js")
 @JsModule("./fullscreenConnector.js")
+@JsModule("./componentSizeObserver.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
