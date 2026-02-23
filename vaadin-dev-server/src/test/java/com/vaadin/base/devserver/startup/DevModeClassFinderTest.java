@@ -130,11 +130,10 @@ class DevModeClassFinderTest {
 
     @Test
     void callGetSubTypesOfByClass_unexpectedType_throw() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            DevModeClassFinder classFinder = new DevModeClassFinder(
-                    Collections.emptySet());
-            classFinder.getSubTypesOf(Object.class);
-        });
+        DevModeClassFinder classFinder = new DevModeClassFinder(
+                Collections.emptySet());
+        assertThrows(IllegalArgumentException.class,
+                () -> classFinder.getSubTypesOf(Object.class));
     }
 
     @Test

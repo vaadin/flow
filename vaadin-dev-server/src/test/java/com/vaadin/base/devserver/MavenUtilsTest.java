@@ -23,15 +23,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MavenUtilsTest {
-
-    @TempDir
-    File temporaryFolder;
 
     private File mavenFolder;
 

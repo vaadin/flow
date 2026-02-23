@@ -378,22 +378,18 @@ class HotswapEventsTest {
 
     @Test
     void updateClientResource_nullPath_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
-                    classes, true);
-
-            event.updateClientResource(null, "content");
-        });
+        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
+                true);
+        assertThrows(IllegalArgumentException.class,
+                () -> event.updateClientResource(null, "content"));
     }
 
     @Test
     void updateClientResource_emptyPath_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
-                    classes, true);
-
-            event.updateClientResource("", "content");
-        });
+        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
+                true);
+        assertThrows(IllegalArgumentException.class,
+                () -> event.updateClientResource("", "content"));
     }
 
     @Test
@@ -471,24 +467,20 @@ class HotswapEventsTest {
 
     @Test
     void sendHmrEvent_nullEvent_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
-                    classes, true);
-            ObjectNode data = objectMapper.createObjectNode();
-
-            event.sendHmrEvent(null, data);
-        });
+        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
+                true);
+        ObjectNode data = objectMapper.createObjectNode();
+        assertThrows(IllegalArgumentException.class,
+                () -> event.sendHmrEvent(null, data));
     }
 
     @Test
     void sendHmrEvent_emptyEvent_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            HotswapClassEvent event = new HotswapClassEvent(vaadinService,
-                    classes, true);
-            ObjectNode data = objectMapper.createObjectNode();
-
-            event.sendHmrEvent("", data);
-        });
+        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
+                true);
+        ObjectNode data = objectMapper.createObjectNode();
+        assertThrows(IllegalArgumentException.class,
+                () -> event.sendHmrEvent("", data));
     }
 
     @Test

@@ -15,14 +15,12 @@
  */
 package com.vaadin.base.devserver.hotswap;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -48,9 +46,6 @@ class HotswapperResourcesTest {
     private Hotswapper hotswapper;
     private VaadinHotswapper flowHotswapper;
     private VaadinHotswapper hillaHotswapper;
-
-    @TempDir
-    File tempProjectDir;
 
     @BeforeEach
     void setUp() throws IOException {

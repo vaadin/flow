@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
@@ -174,6 +175,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         return packageJson;
     }
 
+    @AfterEach
     @Override
     void teardown() {
         super.teardown();
