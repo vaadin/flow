@@ -19,16 +19,19 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NativeTableTest extends ComponentTest {
+class NativeTableTest extends ComponentTest {
     // Actual test methods in super class
 
+    @BeforeEach
     @Override
-    public void setup() throws IntrospectionException, InstantiationException,
+    void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
         whitelistProperty("captionText");
@@ -36,15 +39,15 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void getCaption() {
+    void getCaption() {
         var component = (NativeTable) getComponent();
         NativeTableCaption caption = component.getCaption();
-        AssertUtils.assertEquals("Caption does not match",
-                component.getChildren().toList().get(0), caption);
+        AssertUtils.assertEquals(component.getChildren().toList().get(0),
+                caption, "Caption does not match");
     }
 
     @Test
-    public void addsCaptionAsFirstChild() {
+    void addsCaptionAsFirstChild() {
         var component = (NativeTable) getComponent();
         assertEquals(0, component.getChildren().count());
         component.getHead();
@@ -52,15 +55,16 @@ public class NativeTableTest extends ComponentTest {
         component.getFoot();
         var caption = component.getCaption();
         assertEquals(4, component.getChildren().count());
-        AssertUtils.assertEquals("Caption is not the first child", caption,
-                component.getChildren().findFirst().orElseThrow());
-        AssertUtils.assertEquals("Table is not the caption's father",
-                caption.getParent().orElseThrow(), component);
+        AssertUtils.assertEquals(caption,
+                component.getChildren().findFirst().orElseThrow(),
+                "Caption is not the first child");
+        AssertUtils.assertEquals(caption.getParent().orElseThrow(), component,
+                "Table is not the caption's father");
 
     }
 
     @Test
-    public void setCaptionText() {
+    void setCaptionText() {
         var component = (NativeTable) getComponent();
         String expectedText = "Test caption text.";
         component.setCaptionText(expectedText);
@@ -69,7 +73,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void getCaptionText() {
+    void getCaptionText() {
         var component = (NativeTable) getComponent();
         String expectedText = "Test caption text.";
         var caption = component.getCaption();
@@ -78,7 +82,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void removeCaption() {
+    void removeCaption() {
         var component = (NativeTable) getComponent();
         var caption = component.getCaption();
         component.removeCaption();
@@ -86,16 +90,16 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void getHead() {
+    void getHead() {
         var component = (NativeTable) getComponent();
         assertEquals(0, component.getChildren().count());
         NativeTableHeader head = component.getHead();
-        AssertUtils.assertEquals("head was not added", component,
-                head.getParent().orElseThrow());
+        AssertUtils.assertEquals(component, head.getParent().orElseThrow(),
+                "head was not added");
     }
 
     @Test
-    public void addHeadAfterCaption() {
+    void addHeadAfterCaption() {
         var component = (NativeTable) getComponent();
         component.getCaption();
         var head = component.getHead();
@@ -105,7 +109,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void removeHead() {
+    void removeHead() {
         var component = (NativeTable) getComponent();
         NativeTableHeader head = component.getHead();
         component.removeHead();
@@ -113,16 +117,16 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void getFoot() {
+    void getFoot() {
         var component = (NativeTable) getComponent();
         assertEquals(0, component.getChildren().count());
         NativeTableFooter footer = component.getFoot();
-        AssertUtils.assertEquals("footer was not added", component,
-                footer.getParent().orElseThrow());
+        AssertUtils.assertEquals(component, footer.getParent().orElseThrow(),
+                "footer was not added");
     }
 
     @Test
-    public void removeFoot() {
+    void removeFoot() {
         var component = (NativeTable) getComponent();
         NativeTableFooter footer = component.getFoot();
         component.removeFoot();
@@ -130,7 +134,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void addBody() {
+    void addBody() {
         var component = (NativeTable) getComponent();
         component.addBody();
         assertEquals(1, component.getChildren().count());
@@ -139,7 +143,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void addBodyAfterCaption() {
+    void addBodyAfterCaption() {
         var component = (NativeTable) getComponent();
         component.getCaption();
         var body = component.addBody();
@@ -147,7 +151,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void addBodyAfterHeader() {
+    void addBodyAfterHeader() {
         var component = (NativeTable) getComponent();
         component.getHead();
         var body = component.addBody();
@@ -155,7 +159,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void addBodyAfterBothCaptionAndHeader() {
+    void addBodyAfterBothCaptionAndHeader() {
         var component = (NativeTable) getComponent();
         component.getCaption();
         component.getHead();
@@ -164,7 +168,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void getBody() {
+    void getBody() {
         var component = (NativeTable) getComponent();
         var body = component.getBody();
         assertEquals(1, component.getChildren().count());
@@ -173,42 +177,43 @@ public class NativeTableTest extends ComponentTest {
         assertEquals(2, component.getChildren().count());
         // subsequent calls should return the same first body
         var secondCallBody = component.getBody();
-        AssertUtils.assertEquals("No new body should've been created", body,
-                secondCallBody);
+        AssertUtils.assertEquals(body, secondCallBody,
+                "No new body should've been created");
     }
 
     @Test
-    public void getBodyByIndex() {
+    void getBodyByIndex() {
         var component = (NativeTable) getComponent();
         var body = component.getBody(0);
         assertEquals(1, component.getChildren().count());
         var secondCallBody = component.getBody(0);
         assertEquals(1, component.getChildren().count());
-        AssertUtils.assertEquals("No new body should've been created", body,
-                secondCallBody);
-    }
-
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void getNonExistentBodyByIndex() {
-        var component = (NativeTable) getComponent();
-        component.getBody(1);
+        AssertUtils.assertEquals(body, secondCallBody,
+                "No new body should've been created");
     }
 
     @Test
-    public void getBodies() {
+    void getNonExistentBodyByIndex() {
+        var component = (NativeTable) getComponent();
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> component.getBody(1));
+    }
+
+    @Test
+    void getBodies() {
         var component = (NativeTable) getComponent();
         for (int i = 0; i < 10; i++) {
             component.addBody();
         }
         List<NativeTableBody> bodies = component.getBodies();
         for (NativeTableBody body : bodies) {
-            AssertUtils.assertEquals("Body is not a child of table", component,
-                    body.getParent().orElseThrow());
+            AssertUtils.assertEquals(component, body.getParent().orElseThrow(),
+                    "Body is not a child of table");
         }
     }
 
     @Test
-    public void removeBody() {
+    void removeBody() {
         var component = (NativeTable) getComponent();
         for (int i = 0; i < 10; i++) {
             component.addBody();
@@ -221,7 +226,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void removeBodyByIndex() {
+    void removeBodyByIndex() {
         var component = (NativeTable) getComponent();
         var body0 = component.addBody();
         var body1 = component.addBody();
@@ -233,7 +238,7 @@ public class NativeTableTest extends ComponentTest {
     }
 
     @Test
-    public void removeBodyByReference() {
+    void removeBodyByReference() {
         var component = (NativeTable) getComponent();
         var body0 = component.addBody();
         var body1 = component.addBody();

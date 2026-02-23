@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit tests for
  * {@link HasPlaceholder#bindPlaceholder(com.vaadin.flow.signals.Signal)}.
  */
-public class HasPlaceholderBindTest extends SignalsUnitTest {
+class HasPlaceholderBindTest extends SignalsUnitTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component
@@ -48,11 +48,11 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("first", component.getPlaceholder());
 
         // Update signal and verify placeholder follows
-        signal.value("second");
+        signal.set("second");
         assertEquals("second", component.getPlaceholder());
 
         // Another update to ensure continued propagation
-        signal.value("third");
+        signal.set("third");
         assertEquals("third", component.getPlaceholder());
     }
 
@@ -64,7 +64,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         component.bindPlaceholder(signal);
         // No propagation while detached
         assertNull(component.getPlaceholder());
-        signal.value("bar");
+        signal.set("bar");
         assertNull(component.getPlaceholder());
     }
 
@@ -74,7 +74,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         // Update before attach
-        signal.value("bar");
+        signal.set("bar");
         assertNull(component.getPlaceholder());
         // Attach -> latest value is applied
         UI.getCurrent().add(component);
@@ -91,7 +91,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("foo", component.getPlaceholder());
         // Detach and update signal -> ignored while detached
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", component.getPlaceholder());
         // Re-attach -> latest value applied
         UI.getCurrent().add(component);
@@ -114,10 +114,9 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when setting placeholder while binding is active",
-                BindingActiveException.class,
-                () -> component.setPlaceholder("bar"));
+        assertThrows(BindingActiveException.class,
+                () -> component.setPlaceholder("bar"),
+                "Expected BindingActiveException when setting placeholder while binding is active");
     }
 
     @Test
@@ -127,9 +126,8 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when binding a new signal while a binding is active",
-                BindingActiveException.class,
-                () -> component.bindPlaceholder(new ValueSignal<>("bar")));
+        assertThrows(BindingActiveException.class,
+                () -> component.bindPlaceholder(new ValueSignal<>("bar")),
+                "Expected BindingActiveException when binding a new signal while a binding is active");
     }
 }

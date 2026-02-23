@@ -249,21 +249,49 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * the value back. After the callback, the signal is re-consulted via
      * {@link Signal#peek()} and if its value differs from what was being set,
      * the new value is ignored and the signal's updated value is used instead,
-     * i.e. in cases where write callback has `signal.value("different")`,
-     * whereas a value being set is "a new value", the "different" value wins.
+     * i.e. in cases where write callback has `signal.set("different")`, whereas
+     * a value being set is "a new value", the "different" value wins.
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only and
      * any attempt to set the value while the element is attached will throw an
      * {@link IllegalStateException}.
      * <p>
-     * Example of usage:
+     * Examples of usage:
      *
      * <pre>
+     * // Simple binding to a signal holding the component value
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Input component = new Input();
      * add(component);
-     * component.bindValue(signal, signal::value);
-     * signal.value("Hello"); // The input's value changes
+     * component.bindValue(signal, signal::set);
+     * signal.set("Hello"); // The input's value changes
+     *
+     * // Binding to a property of an immutable record using updater helper
+     * record Person(String name, int age) {
+     *     Person withName(String name) {
+     *         return new Person(name, this.age);
+     *     }
+     * }
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(
+     *         new Person("Alice", 30));
+     * component.bindValue(personSignal.map(Person::name),
+     *         personSignal.updater(Person::withName));
+     *
+     * // Binding to a property of a mutable bean using modifier helper
+     * class Person {
+     *     private String name;
+     *
+     *     public String getName() {
+     *         return name;
+     *     }
+     *
+     *     public void setName(String name) {
+     *         this.name = name;
+     *     }
+     * }
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
+     * component.bindValue(personSignal.map(Person::getName),
+     *         personSignal.modifier(Person::setName));
      * </pre>
      *
      * @param valueSignal
@@ -300,7 +328,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Input component = new Input();
      * add(component);
      * component.bindReadOnly(signal);
-     * signal.value(true); // The input becomes read-only
+     * signal.set(true); // The input becomes read-only
      * </pre>
      *
      * @param readOnlySignal
@@ -312,6 +340,40 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     default void bindReadOnly(Signal<Boolean> readOnlySignal) {
         throw new UnsupportedOperationException(
                 "Binding read only state to a Signal is not supported by "
+                        + getClass().getSimpleName());
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the required indicator visible state of
+     * this component and keeps the state synchronized with the signal value
+     * while the component is in attached state. When the component is in
+     * detached state, signal value changes have no effect.
+     * <p>
+     * While a Signal is bound to the required indicator visible state, any
+     * attempt to set the state manually with
+     * {@link #setRequiredIndicatorVisible(boolean)} throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Input component = new Input();
+     * add(component);
+     * component.bindRequiredIndicatorVisible(signal);
+     * signal.set(true); // The required indicator becomes visible
+     * </pre>
+     *
+     * @param requiredSignal
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setRequiredIndicatorVisible(boolean)
+     */
+    default void bindRequiredIndicatorVisible(Signal<Boolean> requiredSignal) {
+        throw new UnsupportedOperationException(
+                "Binding required indicator visible state to a Signal is not supported by "
                         + getClass().getSimpleName());
     }
 }

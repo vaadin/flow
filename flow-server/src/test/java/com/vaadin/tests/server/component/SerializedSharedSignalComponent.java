@@ -16,9 +16,9 @@
 package com.vaadin.tests.server.component;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
@@ -33,8 +33,8 @@ public class SerializedSharedSignalComponent extends Component {
     SerializedSharedSignalComponent(SharedValueSignal<String> signal) {
         this.signal = signal;
 
-        registration = ComponentEffect.effect(this, () -> {
-            signal.value();
+        registration = Signal.effect(this, () -> {
+            signal.get();
             effectExecutionCounter++;
         });
     }

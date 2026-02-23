@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -273,7 +274,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindAttribute("mol", signal);
-     * signal.value("42"); // The element now has attribute mol="42"
+     * signal.set("42"); // The element now has attribute mol="42"
      * </pre>
      *
      * @param attribute
@@ -854,8 +855,7 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the given property and keeps the
      * property value synchronized with the signal value while the element is in
      * attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * changes have no effect.
      * <p>
      * Same rules apply for the property name and value from the bound Signal as
      * in {@link #setProperty(String, String)}.
@@ -871,28 +871,40 @@ public class Element extends Node<Element> {
      * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
      * {@code Signal<Map<?,?>}.
      * <p>
+     * While a Signal is bound to a property and the element is in attached
+     * state, when a property change originates from the client (e.g., via a
+     * synchronized property change listener), the write callback will be
+     * invoked to propagate the value back.
+     * <p>
+     * If the write callback is <code>null</code>, the binding is read-only.
+     * <p>
      * Example of usage:
      *
      * <pre>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
-     * Element element = new Element("span");
+     * Element element = new Element("input");
      * getElement().appendChild(element);
-     * element.bindProperty("mol", signal);
-     * signal.value("42"); // The element now has property mol="42"
+     * element.bindProperty("value", signal, null);
+     * signal.set("Hello"); // The element property value="Hello"
      * </pre>
      *
      * @param name
      *            the name of the property
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes originated from the
+     *            client back, or <code>null</code> for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public void bindProperty(String name, Signal<?> signal) {
+    public <T> void bindProperty(String name, Signal<T> signal,
+            SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
-        getStateProvider().bindPropertySignal(this, name, signal);
+        getStateProvider().bindPropertySignal(this, name, signal,
+                writeCallback);
     }
 
     /**
@@ -1332,7 +1344,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindText(signal);
-     * signal.value("text"); // The element text content is set to "text"
+     * signal.set("text"); // The element text content is set to "text"
      * </pre>
      *
      * @param signal
@@ -1812,7 +1824,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindVisible(signal);
-     * signal.value(false); // The element is set hidden
+     * signal.set(false); // The element is set hidden
      * </pre>
      *
      * @param visibleSignal
@@ -1869,7 +1881,7 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindEnabled(signal);
-     * signal.value(false); // The element is disabled
+     * signal.set(false); // The element is disabled
      * </pre>
      *
      * @param enabledSignal

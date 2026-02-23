@@ -46,10 +46,10 @@ public class ComputedSignalTest extends SignalTestBase {
             return null;
         });
 
-        assertNull(signal.value());
+        assertNull(signal.get());
         assertEquals(1, count.intValue());
 
-        signal.value();
+        signal.get();
         assertEquals(1, count.intValue());
     }
 
@@ -60,20 +60,20 @@ public class ComputedSignalTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
 
         Signal<String> signal = Signal.computed(() -> {
-            String value = source.value();
+            String value = source.get();
             invocations.add(value);
             return value;
         });
 
         assertEquals(List.of(), invocations);
 
-        assertEquals("value", signal.value());
+        assertEquals("value", signal.get());
         assertEquals(List.of("value"), invocations);
 
-        source.value("update");
+        source.set("update");
         assertEquals(List.of("value"), invocations);
 
-        assertEquals("update", signal.value());
+        assertEquals("update", signal.get());
         assertEquals(List.of("value", "update"), invocations);
     }
 
@@ -84,15 +84,15 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<String> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value();
+            return source.get();
         });
 
-        signal.value();
+        signal.get();
         assertEquals(1, count.intValue());
 
-        source.value(source.value());
+        source.set(source.get());
 
-        signal.value();
+        signal.get();
         assertEquals(1, count.intValue());
     }
 
@@ -100,12 +100,11 @@ public class ComputedSignalTest extends SignalTestBase {
     void map_mapComputedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<Integer> computed = Signal
-                .computed(() -> source.value().length());
+        Signal<Integer> computed = Signal.computed(() -> source.get().length());
 
         Signal<Integer> doubled = computed.map(l -> l * 2);
 
-        assertEquals(10, doubled.value());
+        assertEquals(10, doubled.get());
     }
 
     @Test
@@ -116,7 +115,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = computed.map(l -> l * 2);
 
-        assertEquals(10, doubled.value());
+        assertEquals(10, doubled.get());
     }
 
     @Test
@@ -130,10 +129,10 @@ public class ComputedSignalTest extends SignalTestBase {
         });
         assertEquals(0, count.get());
 
-        computed.value();
+        computed.get();
         assertEquals(1, count.get());
 
-        computed.value();
+        computed.get();
         assertEquals(2, count.get());
     }
 
@@ -143,13 +142,13 @@ public class ComputedSignalTest extends SignalTestBase {
                 Boolean.TRUE);
         Signal<Boolean> negated = Signal.not(signal);
 
-        assertFalse(negated.value());
+        assertFalse(negated.get());
 
-        signal.value(false);
-        assertTrue(negated.value());
+        signal.set(false);
+        assertTrue(negated.get());
 
-        signal.value(null);
-        assertNull(negated.value());
+        signal.set(null);
+        assertNull(negated.get());
     }
 
     @Test
@@ -157,14 +156,14 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<String> signal = Signal.computed((() -> {
-            other.value("update");
+            other.set("update");
             return null;
         }));
 
         // Trigger running the callback
-        signal.value();
+        signal.get();
 
-        assertEquals("update", other.value());
+        assertEquals("update", other.get());
     }
 
     @Test
@@ -174,18 +173,18 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<String> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value();
+            return source.get();
         });
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
-            invocations.add(signal.value());
+        Signal.unboundEffect(() -> {
+            invocations.add(signal.get());
         });
 
         assertEquals(1, count.get());
         assertEquals(List.of("value"), invocations);
 
-        source.value("update");
+        source.set("update");
 
         assertEquals(2, count.get());
         assertEquals(List.of("value", "update"), invocations);
@@ -198,23 +197,23 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value().length();
+            return source.get().length();
         });
 
         ArrayList<Integer> invocations = new ArrayList<>();
-        Signal.effect(() -> {
-            invocations.add(signal.value());
+        Signal.unboundEffect(() -> {
+            invocations.add(signal.get());
         });
 
         assertEquals(1, count.get());
         assertEquals(List.of(6), invocations);
 
-        source.value("value2");
+        source.set("value2");
 
         assertEquals(2, count.get());
         assertEquals(List.of(6), invocations);
 
-        source.value("value");
+        source.set("value");
         assertEquals(3, count.get());
         assertEquals(List.of(6, 5), invocations);
     }
@@ -226,16 +225,16 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger computeCount = new AtomicInteger();
         Signal<String> signal = Signal.computed(() -> {
             computeCount.incrementAndGet();
-            return source.value();
+            return source.get();
         });
 
         ArrayList<String> invocations = new ArrayList<>();
-        Signal.effect(() -> {
-            invocations.add(signal.value());
+        Signal.unboundEffect(() -> {
+            invocations.add(signal.get());
         });
 
         Signal.runInTransaction(() -> {
-            source.value("update");
+            source.set("update");
         });
 
         assertEquals(2, computeCount.intValue());
@@ -246,7 +245,7 @@ public class ComputedSignalTest extends SignalTestBase {
     void effect_closedEffect_computedGarbageCollected() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<String> signal = Signal.computed(() -> source.value());
+        Signal<String> signal = Signal.computed(() -> source.get());
 
         ArrayList<String> invocations = new ArrayList<>();
 
@@ -261,11 +260,11 @@ public class ComputedSignalTest extends SignalTestBase {
 
             @Override
             public void execute() {
-                invocations.add(signal.value());
+                invocations.add(signal.get());
             }
         }
 
-        Signal.effect(new CapturingRunnable(signal)).cleanup();
+        Signal.unboundEffect(new CapturingRunnable(signal)).remove();
 
         assertEquals(List.of("value"), invocations);
 
@@ -282,20 +281,20 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<String> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value();
+            return source.get();
         });
 
-        signal.value();
+        signal.get();
         assertEquals(1, count.get());
 
         Transaction.runInTransaction(() -> {
-            source.value("update");
+            source.set("update");
 
-            signal.value();
+            signal.get();
             assertEquals(2, count.get());
         });
 
-        signal.value();
+        signal.get();
         assertEquals(2, count.get());
     }
 
@@ -306,22 +305,22 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<String> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value();
+            return source.get();
         });
 
-        signal.value();
+        signal.get();
         assertEquals(1, count.get());
 
         Transaction.runInTransaction(() -> {
-            source.value("update");
+            source.set("update");
 
-            signal.value();
+            signal.get();
             assertEquals(2, count.get());
 
             source.verifyValue("other");
         });
 
-        signal.value();
+        signal.get();
         assertEquals(2, count.get());
     }
 
@@ -347,19 +346,19 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = () -> {
             count.incrementAndGet();
-            return signal.value() * 2;
+            return signal.get() * 2;
         };
 
-        assertEquals(2, doubled.value());
+        assertEquals(2, doubled.get());
         assertEquals(1, count.intValue());
 
-        assertEquals(2, doubled.value());
+        assertEquals(2, doubled.get());
         assertEquals(2, count.intValue());
 
-        signal.value(3);
+        signal.set(3);
         assertEquals(2, count.intValue());
 
-        assertEquals(6, doubled.value());
+        assertEquals(6, doubled.get());
         assertEquals(3, count.intValue());
     }
 
@@ -370,24 +369,24 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
         Signal<Boolean> computed = Signal.computed(() -> {
             count.incrementAndGet();
-            if (shouldThrow.value()) {
+            if (shouldThrow.get()) {
                 throw new RuntimeException("Expected exception");
             } else {
-                return shouldThrow.value();
+                return shouldThrow.get();
             }
         });
-        assertFalse(computed.value());
+        assertFalse(computed.get());
         assertEquals(1, count.get());
 
-        shouldThrow.value(true);
-        assertThrows(RuntimeException.class, () -> computed.value());
+        shouldThrow.set(true);
+        assertThrows(RuntimeException.class, () -> computed.get());
         assertEquals(2, count.get());
 
-        assertThrows(RuntimeException.class, () -> computed.value());
+        assertThrows(RuntimeException.class, () -> computed.get());
         assertEquals(2, count.get(), "Exception should be cached");
 
-        shouldThrow.value(false);
-        assertFalse(computed.value());
+        shouldThrow.set(false);
+        assertFalse(computed.get());
         assertEquals(3, count.get());
     }
 

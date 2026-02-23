@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -52,10 +55,11 @@ public abstract class Transaction implements Serializable {
      * Committing and rolling back are no-ops since all commands have already
      * been applied.
      */
-    private static abstract class ImmediateTransaction extends Transaction {
+    private abstract static class ImmediateTransaction extends Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -97,7 +101,8 @@ public abstract class Transaction implements Serializable {
 
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                CommandResultHandler resultHandler, boolean applyToTree) {
+                @Nullable CommandResultHandler resultHandler,
+                boolean applyToTree) {
             // Update the read revision first so that change observers can read
             // the updated value
             getOrCreateReadRevision(tree).apply(command, null);
@@ -115,18 +120,33 @@ public abstract class Transaction implements Serializable {
     }
 
     /**
+     * An immediate transaction that reads directly from the submitted tree
+     * state. Used for both the default ROOT transaction and the
+     * EXPLICITLY_NO_TRANSACTION sentinel since they share identical behavior.
+     */
+    private static class DirectReadTransaction extends ImmediateTransaction {
+        @Override
+        public TreeRevision read(SignalTree tree) {
+            return tree.submitted();
+        }
+    }
+
+    /**
      * The default stateless transaction logic that is used when no transaction
      * is active. Applies commands directly to the underlying tree and reads
      * directly from the tree. This is basically not a transaction at all but
      * still expressed as a transaction so that transaction-aware logic doesn't
      * have to check whether a transaction is active.
      */
-    private static final Transaction ROOT = new ImmediateTransaction() {
-        @Override
-        public TreeRevision read(SignalTree tree) {
-            return tree.submitted();
-        }
-    };
+    private static final Transaction ROOT = new DirectReadTransaction();
+
+    /**
+     * Sentinel value used to indicate that the developer has explicitly opted
+     * out of any transaction context. When this value is stored in the
+     * thread-local, the fallback mechanism is bypassed and ROOT behavior is
+     * used instead.
+     */
+    private static final Transaction EXPLICITLY_NO_TRANSACTION = new DirectReadTransaction();
 
     /**
      * The type of a transaction, determining how it handles reads and writes.
@@ -172,27 +192,84 @@ public abstract class Transaction implements Serializable {
 
     private static final ThreadLocal<Transaction> currentTransaction = new ThreadLocal<>();
 
+    private static volatile @Nullable SerializableSupplier<@Nullable Transaction> transactionFallback;
+
     /**
-     * Gets the current transaction handler.
+     * Sets a supplier that provides a fallback transaction when no explicit
+     * transaction is active on the current thread. The supplier is called each
+     * time a transaction is needed and no thread-local transaction is set.
+     * <p>
+     * The supplier should return <code>null</code> if no fallback is available
+     * for the current context (e.g. no session lock is held).
+     *
+     * @param fallback
+     *            the fallback supplier, or <code>null</code> to remove the
+     *            fallback
+     */
+    public static void setTransactionFallback(
+            @Nullable SerializableSupplier<@Nullable Transaction> fallback) {
+        transactionFallback = fallback;
+    }
+
+    private static @Nullable Transaction getFallback() {
+        SerializableSupplier<@Nullable Transaction> fallback = transactionFallback;
+        return fallback != null ? fallback.get() : null;
+    }
+
+    /**
+     * Gets the current transaction handler. If no explicit transaction is
+     * active on the current thread, a fallback from
+     * {@link #setTransactionFallback} is used if available. If no fallback is
+     * available either, the stateless ROOT transaction is returned.
      *
      * @return the current transaction handler, not <code>null</code>
      */
     public static Transaction getCurrent() {
         Transaction transaction = currentTransaction.get();
-        if (transaction == null) {
-            return ROOT;
-        } else {
-            return transaction;
+        if (transaction != null) {
+            return transaction == EXPLICITLY_NO_TRANSACTION ? ROOT
+                    : transaction;
         }
+        Transaction fallback = getFallback();
+        if (fallback != null) {
+            return fallback;
+        }
+        return ROOT;
     }
 
     /**
      * Checks whether a transaction is currently active on the current thread.
+     * Returns <code>true</code> if an explicit transaction is set or if a
+     * fallback transaction is available from the signal environment. Returns
+     * <code>false</code> if the thread is explicitly running without a
+     * transaction.
      *
      * @return <code>true</code> if a transaction is active
      */
     public static boolean inTransaction() {
-        return currentTransaction.get() != null;
+        Transaction transaction = currentTransaction.get();
+        if (transaction != null) {
+            return transaction != EXPLICITLY_NO_TRANSACTION;
+        }
+        return getFallback() != null;
+    }
+
+    /**
+     * Checks whether an explicit transaction (started via
+     * {@link #runInTransaction}) is currently active on the current thread.
+     * Unlike {@link #inTransaction()}, this method does not consider fallback
+     * transactions set via {@link #setTransactionFallback}.
+     * <p>
+     * This is used by local signal types that are incompatible with
+     * transactional semantics to guard against being used in explicit
+     * transactions while still allowing use when a session-scoped fallback
+     * transaction is active.
+     *
+     * @return <code>true</code> if an explicit transaction is active
+     */
+    public static boolean inExplicitTransaction() {
+        Transaction transaction = currentTransaction.get();
+        return transaction != null && transaction != EXPLICITLY_NO_TRANSACTION;
     }
 
     /**
@@ -232,6 +309,7 @@ public abstract class Transaction implements Serializable {
      */
     public static <T> TransactionOperation<T> runInTransaction(
             ValueSupplier<T> transactionTask, Type transactionType) {
+        Transaction previousThreadLocal = currentTransaction.get();
         Transaction outer = getCurrent();
 
         Transaction inner = transactionType.create(outer);
@@ -248,10 +326,10 @@ public abstract class Transaction implements Serializable {
 
             throw e;
         } finally {
-            if (outer == ROOT) {
+            if (previousThreadLocal == null) {
                 currentTransaction.remove();
             } else {
-                currentTransaction.set(outer);
+                currentTransaction.set(previousThreadLocal);
             }
         }
     }
@@ -310,14 +388,18 @@ public abstract class Transaction implements Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T runWithoutTransaction(ValueSupplier<T> task) {
+    public static <T> @Nullable T runWithoutTransaction(ValueSupplier<T> task) {
         Transaction previousTransaction = currentTransaction.get();
         try {
-            currentTransaction.set(null);
+            currentTransaction.set(EXPLICITLY_NO_TRANSACTION);
 
             return task.supply();
         } finally {
-            currentTransaction.set(previousTransaction);
+            if (previousTransaction == null) {
+                currentTransaction.remove();
+            } else {
+                currentTransaction.set(previousTransaction);
+            }
         }
     }
 
@@ -330,6 +412,17 @@ public abstract class Transaction implements Serializable {
      */
     public static void runWithoutTransaction(TransactionTask task) {
         runWithoutTransaction(asSupplier(task));
+    }
+
+    /**
+     * Creates a new write-through transaction that provides repeatable reads
+     * while applying commands immediately to the underlying tree. This is
+     * intended for use as a session-scoped fallback transaction.
+     *
+     * @return a new write-through transaction, not <code>null</code>
+     */
+    public static Transaction createWriteThrough() {
+        return Type.WRITE_THROUGH.create(ROOT);
     }
 
     /**
@@ -353,7 +446,7 @@ public abstract class Transaction implements Serializable {
      *            repeatable-read revision
      */
     public abstract void include(SignalTree tree, SignalCommand command,
-            CommandResultHandler resultHandler, boolean applyToTree);
+            @Nullable CommandResultHandler resultHandler, boolean applyToTree);
 
     /**
      * Includes the given command to the given tree in the context of this
@@ -372,7 +465,7 @@ public abstract class Transaction implements Serializable {
      *            ignore the result
      */
     public void include(SignalTree tree, SignalCommand command,
-            CommandResultHandler resultHandler) {
+            @Nullable CommandResultHandler resultHandler) {
         include(tree, command, resultHandler, true);
     }
 

@@ -194,7 +194,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * After the callback, the signal is re-consulted and if its value differs
      * from what was being set, the new value is ignored and the signal's
      * updated value is used instead, i.e. in cases where write callback has
-     * `signal.value("different")`, whereas a value being set is "a new value",
+     * `signal.set("different")`, whereas a value being set is "a new value",
      * the "different" value wins.
      * <p>
      * If the write callback is <code>null</code>, the binding is read-only and

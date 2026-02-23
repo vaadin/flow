@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Helper for test classes that need to have {@code VaadinService.getCurrent()}
@@ -34,7 +34,7 @@ public abstract class HasCurrentService {
     // test is running
     private VaadinService service;
 
-    @Before
+    @BeforeEach
     public void setUpCurrentService() {
         clearCurrentService();
         assertNull(VaadinService.getCurrent());
@@ -45,7 +45,7 @@ public abstract class HasCurrentService {
 
     protected abstract VaadinService createService();
 
-    @After
+    @AfterEach
     public void clearCurrentService() {
         VaadinService.setCurrent(null);
         service = null;

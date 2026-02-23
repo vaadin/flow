@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
@@ -55,7 +57,7 @@ public class StagedTransaction extends Transaction {
         private final Consumer<ResultOrError<Void>> resultHandler;
         private final Object lock = new Object();
 
-        private Boolean state = null;
+        private @Nullable Boolean state = null;
 
         public ResultCollector(Collection<?> dependencies,
                 Consumer<ResultOrError<Void>> resultHandler) {
@@ -174,15 +176,6 @@ public class StagedTransaction extends Transaction {
             }
         } else {
             commitTwoPhase(resultHandler);
-
-            for (SignalTree tree : openTrees.keySet()) {
-                CommandsAndHandlers staged = openTrees.get(tree).staged;
-
-                TransactionCommand command = new SignalCommand.TransactionCommand(
-                        Id.random(), staged.getCommands());
-
-                outer.include(tree, command, null, false);
-            }
         }
     }
 
@@ -209,6 +202,21 @@ public class StagedTransaction extends Transaction {
 
             if (pendingCommits.stream().allMatch(PendingCommit::canCommit)) {
                 pendingCommits.forEach(PendingCommit::applyChanges);
+
+                // Update outer transaction's read revision before publishing
+                // changes so that change observers can read the updated value
+                for (SignalTree tree : trees) {
+                    TreeState treeState = openTrees.get(tree);
+                    if (treeState == null) {
+                        throw new IllegalStateException(
+                                "No state for tree " + tree.id());
+                    }
+                    outer.include(tree,
+                            new TransactionCommand(Id.random(),
+                                    treeState.staged.getCommands()),
+                            null, false);
+                }
+
                 pendingCommits.forEach(PendingCommit::publishChanges);
             } else {
                 pendingCommits.forEach(PendingCommit::markAsAborted);
@@ -222,7 +230,11 @@ public class StagedTransaction extends Transaction {
             ResultCollector collector) {
         Id txId = Id.random();
 
-        CommandsAndHandlers change = openTrees.get(tree).staged;
+        TreeState treeState = openTrees.get(tree);
+        if (treeState == null) {
+            throw new IllegalStateException("No state for tree " + tree.id());
+        }
+        CommandsAndHandlers change = treeState.staged;
 
         HashMap<Id, CommandResultHandler> handlers = new HashMap<>(
                 change.getResultHandlers());
@@ -248,7 +260,7 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public void include(SignalTree tree, SignalCommand command,
-            CommandResultHandler resultHandler, boolean applyToTree) {
+            @Nullable CommandResultHandler resultHandler, boolean applyToTree) {
         if (committing) {
             outer.include(tree, command, resultHandler, applyToTree);
             return;

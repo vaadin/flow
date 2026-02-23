@@ -18,12 +18,15 @@ package com.vaadin.flow.internal;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.tests.util.TestUtil;
 
-public class ReflectionCacheTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ReflectionCacheTest {
 
     @Test
     public void generateCachedValues() {
@@ -32,14 +35,14 @@ public class ReflectionCacheTest {
         ReflectionCache<Object, Integer> cache = new ReflectionCache<>(
                 type -> count.incrementAndGet());
 
-        Assert.assertEquals(0, count.get());
+        assertEquals(0, count.get());
 
-        Assert.assertEquals(1, cache.get(Object.class).intValue());
-        Assert.assertEquals(2, cache.get(String.class).intValue());
+        assertEquals(1, cache.get(Object.class).intValue());
+        assertEquals(2, cache.get(String.class).intValue());
 
-        Assert.assertEquals(1, cache.get(Object.class).intValue());
+        assertEquals(1, cache.get(Object.class).intValue());
 
-        Assert.assertEquals(2, count.get());
+        assertEquals(2, count.get());
     }
 
     @Test
@@ -47,11 +50,11 @@ public class ReflectionCacheTest {
         ReflectionCache<Object, Object> cache = new ReflectionCache<>(
                 type -> type);
 
-        Assert.assertFalse(cache.contains(Object.class));
+        assertFalse(cache.contains(Object.class));
 
         cache.get(Object.class);
-        Assert.assertTrue(cache.contains(Object.class));
-        Assert.assertFalse(cache.contains(String.class));
+        assertTrue(cache.contains(Object.class));
+        assertFalse(cache.contains(String.class));
     }
 
     @Test
@@ -60,10 +63,10 @@ public class ReflectionCacheTest {
                 type -> type);
 
         cache.get(Object.class);
-        Assert.assertTrue(cache.contains(Object.class));
+        assertTrue(cache.contains(Object.class));
 
         cache.clear();
-        Assert.assertFalse(cache.contains(Object.class));
+        assertFalse(cache.contains(Object.class));
     }
 
     @Test
@@ -74,24 +77,24 @@ public class ReflectionCacheTest {
         cache.get(Integer.class);
         cache.get(Double.class);
         cache.get(Long.class);
-        Assert.assertTrue(cache.contains(Integer.class));
-        Assert.assertTrue(cache.contains(Double.class));
-        Assert.assertTrue(cache.contains(Long.class));
+        assertTrue(cache.contains(Integer.class));
+        assertTrue(cache.contains(Double.class));
+        assertTrue(cache.contains(Long.class));
 
         cache.clear(Double.class);
-        Assert.assertTrue(cache.contains(Integer.class));
-        Assert.assertFalse(cache.contains(Double.class));
-        Assert.assertTrue(cache.contains(Long.class));
+        assertTrue(cache.contains(Integer.class));
+        assertFalse(cache.contains(Double.class));
+        assertTrue(cache.contains(Long.class));
 
         cache.clear(Integer.class);
-        Assert.assertFalse(cache.contains(Integer.class));
-        Assert.assertFalse(cache.contains(Double.class));
-        Assert.assertTrue(cache.contains(Long.class));
+        assertFalse(cache.contains(Integer.class));
+        assertFalse(cache.contains(Double.class));
+        assertTrue(cache.contains(Long.class));
 
         cache.clear(Long.class);
-        Assert.assertFalse(cache.contains(Integer.class));
-        Assert.assertFalse(cache.contains(Double.class));
-        Assert.assertFalse(cache.contains(Long.class));
+        assertFalse(cache.contains(Integer.class));
+        assertFalse(cache.contains(Double.class));
+        assertFalse(cache.contains(Long.class));
 
     }
 
@@ -107,8 +110,8 @@ public class ReflectionCacheTest {
 
         ReflectionCache.clearAll();
 
-        Assert.assertFalse(cache1.contains(Object.class));
-        Assert.assertFalse(cache2.contains(Object.class));
+        assertFalse(cache1.contains(Object.class));
+        assertFalse(cache2.contains(Object.class));
     }
 
     @Test
@@ -126,15 +129,15 @@ public class ReflectionCacheTest {
 
         ReflectionCache.clearAll(Integer.class);
 
-        Assert.assertFalse(cache1.contains(Integer.class));
-        Assert.assertTrue(cache1.contains(Double.class));
-        Assert.assertTrue(cache2.contains(Float.class));
-        Assert.assertTrue(cache2.contains(Double.class));
+        assertFalse(cache1.contains(Integer.class));
+        assertTrue(cache1.contains(Double.class));
+        assertTrue(cache2.contains(Float.class));
+        assertTrue(cache2.contains(Double.class));
 
         ReflectionCache.clearAll(Double.class);
-        Assert.assertFalse(cache1.contains(Double.class));
-        Assert.assertTrue(cache2.contains(Float.class));
-        Assert.assertFalse(cache2.contains(Double.class));
+        assertFalse(cache1.contains(Double.class));
+        assertTrue(cache2.contains(Float.class));
+        assertFalse(cache2.contains(Double.class));
     }
 
     @Test
@@ -145,7 +148,7 @@ public class ReflectionCacheTest {
                 cache1);
 
         cache1 = null;
-        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
+        assertTrue(TestUtil.isGarbageCollected(ref));
     }
 
     @Test
@@ -159,7 +162,7 @@ public class ReflectionCacheTest {
 
         ReflectionCache.clearAll();
 
-        Assert.assertFalse(cache.contains(Object.class));
+        assertFalse(cache.contains(Object.class));
     }
 
     @Test
@@ -174,11 +177,10 @@ public class ReflectionCacheTest {
         try {
             String result = cache.get(Object.class);
 
-            Assert.assertEquals("Current instance should not be in the result",
-                    "Object: null", result);
-            Assert.assertEquals(
-                    "Current instance should be preserved after running",
-                    currentString, CurrentInstance.get(String.class));
+            assertEquals("Object: null", result,
+                    "Current instance should not be in the result");
+            assertEquals(currentString, CurrentInstance.get(String.class),
+                    "Current instance should be preserved after running");
         } finally {
             CurrentInstance.set(String.class, null);
         }

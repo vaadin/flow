@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
@@ -41,7 +43,7 @@ public sealed interface CommandResult extends Serializable {
      * @param newNode
      *            the new node instance or null if the command removed the node
      */
-    record NodeModification(Node oldNode, Node newNode) {
+    record NodeModification(@Nullable Node oldNode, @Nullable Node newNode) {
     }
 
     /**

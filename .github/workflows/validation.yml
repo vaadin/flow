@@ -266,7 +266,7 @@ jobs:
   api-diff-labeling:
     environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     if: github.event_name == 'pull_request_target'
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-24.04
     permissions:
       contents: read

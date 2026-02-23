@@ -21,12 +21,12 @@ import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UsageStatisticsExporterTest {
+class UsageStatisticsExporterTest {
 
     @Test
     public void should_append_script_element_to_the_body() {

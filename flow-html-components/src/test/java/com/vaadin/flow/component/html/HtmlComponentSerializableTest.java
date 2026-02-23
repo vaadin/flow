@@ -17,6 +17,6 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-public class HtmlComponentSerializableTest extends ClassesSerializableTest {
+class HtmlComponentSerializableTest extends ClassesSerializableTest {
 
 }

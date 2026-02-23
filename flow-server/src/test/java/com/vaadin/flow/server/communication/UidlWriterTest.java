@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -67,16 +67,16 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class UidlWriterTest {
+class UidlWriterTest {
     private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
             .name();
     private MockServletServiceSessionSetup mocks;
@@ -164,7 +164,7 @@ public class UidlWriterTest {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (mocks != null) {
             mocks.cleanup();
@@ -354,10 +354,12 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
 
         ObjectNode response = uidlWriter.createUidl(ui, false, true);
-        assertTrue("Response contains resynchronize field",
-                response.has(ApplicationConstants.RESYNCHRONIZE_ID));
-        assertTrue("Response resynchronize field is set to true", response
-                .get(ApplicationConstants.RESYNCHRONIZE_ID).booleanValue());
+        assertTrue(response.has(ApplicationConstants.RESYNCHRONIZE_ID),
+                "Response contains resynchronize field");
+        assertTrue(
+                response.get(ApplicationConstants.RESYNCHRONIZE_ID)
+                        .booleanValue(),
+                "Response resynchronize field is set to true");
     }
 
     @Test
@@ -374,8 +376,8 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertFalse("UI is still dirty after creating UIDL",
-                ui.getInternals().isDirty());
+        assertFalse(ui.getInternals().isDirty(),
+                "UI is still dirty after creating UIDL");
     }
 
     @Test
@@ -392,9 +394,8 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertTrue(
-                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
-                ui.getInternals().isDirty());
+        assertTrue(ui.getInternals().isDirty(),
+                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL");
     }
 
     private void assertInlineDependencies(List<ObjectNode> inlineDependencies) {
@@ -489,9 +490,8 @@ public class UidlWriterTest {
     private void assertDependency(String url, String type,
             Map<String, ObjectNode> dependenciesMap) {
         ObjectNode jsonValue = dependenciesMap.get(url);
-        assertNotNull(
-                "Expected dependencies map to have dependency with key=" + url,
-                jsonValue);
+        assertNotNull(jsonValue,
+                "Expected dependencies map to have dependency with key=" + url);
         assertEquals(url, jsonValue.get(Dependency.KEY_URL).textValue());
         assertEquals(type, jsonValue.get(Dependency.KEY_TYPE).textValue());
     }

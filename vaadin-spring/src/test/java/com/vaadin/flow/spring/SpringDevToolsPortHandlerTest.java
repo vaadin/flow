@@ -15,28 +15,31 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-public class SpringDevToolsPortHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SpringDevToolsPortHandlerTest {
 
     private SpringDevToolsPortHandler handler;
     private ConfigurableEnvironment environment;
     private SpringApplication application;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         handler = new SpringDevToolsPortHandler();
         environment = Mockito.mock(ConfigurableEnvironment.class);
         application = Mockito.mock(SpringApplication.class);
     }
 
     @Test
-    public void liveReloadEnabled_portIsAssigned() {
+    void liveReloadEnabled_portIsAssigned() {
         // Arrange: livereload explicitly enabled, no port set
         Mockito.when(environment.getProperty(
                 "spring.devtools.livereload.enabled", Boolean.class, false))
@@ -50,20 +53,20 @@ public class SpringDevToolsPortHandlerTest {
         // Assert: port should be set via System.setProperty
         String portProperty = System
                 .getProperty("spring.devtools.livereload.port");
-        Assert.assertNotNull("Port should be set when livereload is enabled",
-                portProperty);
+        assertNotNull(portProperty,
+                "Port should be set when livereload is enabled");
 
         // Verify it's a valid port number
         int port = Integer.parseInt(portProperty);
-        Assert.assertTrue("Port should be positive", port > 0);
-        Assert.assertTrue("Port should be in valid range", port <= 65535);
+        assertTrue(port > 0, "Port should be positive");
+        assertTrue(port <= 65535, "Port should be in valid range");
 
         // Clean up
         System.clearProperty("spring.devtools.livereload.port");
     }
 
     @Test
-    public void liveReloadDisabled_portIsNotAssigned() {
+    void liveReloadDisabled_portIsNotAssigned() {
         // Arrange: livereload explicitly disabled, no port set
         Mockito.when(environment.getProperty(
                 "spring.devtools.livereload.enabled", Boolean.class, false))
@@ -80,7 +83,7 @@ public class SpringDevToolsPortHandlerTest {
         // Assert: port should NOT be set
         String portProperty = System
                 .getProperty("spring.devtools.livereload.port");
-        Assert.assertNull("Port should not be set when livereload is disabled",
-                portProperty);
+        assertNull(portProperty,
+                "Port should not be set when livereload is disabled");
     }
 }

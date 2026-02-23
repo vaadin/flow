@@ -66,7 +66,7 @@ public class LocalSignalSerializationTest {
         ValueSignal<String> signal = new ValueSignal<>();
         assertSerializeAndDeserialize(signal);
 
-        signal.value("Test");
+        signal.set("Test");
         assertSerializeAndDeserialize(signal);
     }
 

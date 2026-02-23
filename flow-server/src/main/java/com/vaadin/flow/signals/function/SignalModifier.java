@@ -17,40 +17,56 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Modifies the parent signal value in place based on a new child value. Used
- * for creating two-way computed signals with mutable parent values where
- * changes to the mapped signal propagate back to the parent signal.
+ * with the {@link ValueSignal#modifier(SignalModifier)} helper method to create
+ * write callbacks for mutable value patterns.
  * <p>
  * This interface is used with mutable value patterns where changing the child
  * value directly modifies the parent value instance rather than creating a new
  * one.
  * <p>
- * Example usage with a mutable bean:
+ *
+ * Usage example with a Todo class:
  *
  * <pre>
  * class Todo {
- *     private String text;
+ *     private String task;
  *     private boolean done;
  *
- *     // getters and setters...
+ *     public String getTask() {
+ *         return task;
+ *     }
+ *
+ *     public void setTask(String task) {
+ *         this.task = task;
+ *     }
+ *
+ *     public boolean isDone() {
+ *         return done;
+ *     }
+ *
+ *     public void setDone(boolean done) {
+ *         this.done = done;
+ *     }
  * }
  *
- * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
- *         new Todo("Buy milk", false));
- * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
- *         Todo::setDone);
- *
- * doneSignal.value(true); // Calls todoSignal.modify(t -&gt; t.setDone(true))
+ * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
+ * textField.bindValue(todoSignal.map(Todo::getTask),
+ *         todoSignal.modifier(Todo::setTask));
+ * checkbox.bindValue(todoSignal.map(Todo::isDone),
+ *         todoSignal.modifier(Todo::setDone));
  * </pre>
  *
  * @param <P>
  *            the parent signal value type
  * @param <C>
  *            the child (mapped) signal value type
- * @see ValueSignal#mapMutable(SignalMapper, SignalModifier)
+ * @see ValueSignal#modifier(SignalModifier)
  */
 @FunctionalInterface
 public interface SignalModifier<P, C> extends Serializable {
@@ -62,5 +78,5 @@ public interface SignalModifier<P, C> extends Serializable {
      * @param newChildValue
      *            the new child value to apply, may be <code>null</code>
      */
-    void modify(P parentValue, C newChildValue);
+    void modify(@Nullable P parentValue, @Nullable C newChildValue);
 }

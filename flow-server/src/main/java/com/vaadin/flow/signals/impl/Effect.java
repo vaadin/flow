@@ -21,11 +21,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalEnvironment;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.function.SerializableExecutor;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback
@@ -40,10 +42,10 @@ public class Effect implements Serializable {
             .withInitial(() -> new LinkedList<>());
 
     private SerializableExecutor dispatcher;
-    private final List<CleanupCallback> registrations = new ArrayList<>();
+    private final List<Registration> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
-    private SerializableRunnable action;
+    private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
@@ -173,7 +175,7 @@ public class Effect implements Serializable {
     }
 
     private void clearRegistrations() {
-        registrations.forEach(CleanupCallback::cleanup);
+        registrations.forEach(Registration::remove);
         registrations.clear();
     }
 

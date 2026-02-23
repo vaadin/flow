@@ -17,7 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
@@ -37,10 +37,10 @@ public class ParamBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         param.bindName(signal);
 
-        signal.value("name-1");
+        signal.set("name-1");
         assertEquals("name-1", param.getName());
 
-        signal.value("name-2");
+        signal.set("name-2");
         assertEquals("name-2", param.getName());
     }
 
@@ -72,10 +72,10 @@ public class ParamBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         param.bindValue(signal);
 
-        signal.value("value-1");
+        signal.set("value-1");
         assertEquals(Optional.of("value-1"), param.getValue());
 
-        signal.value("value-2");
+        signal.set("value-2");
         assertEquals(Optional.of("value-2"), param.getValue());
     }
 

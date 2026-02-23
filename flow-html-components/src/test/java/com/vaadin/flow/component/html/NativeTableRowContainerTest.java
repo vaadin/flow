@@ -15,79 +15,79 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NativeTableRowContainerTest {
+class NativeTableRowContainerTest {
 
     private RowContainer container;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         container = new RowContainer();
     }
 
     @Test
-    public void addRow() {
+    void addRow() {
         var children = container.getChildren().toList();
         assertEquals(0, children.size());
         var row = container.addRow();
         children = container.getChildren().toList();
         assertEquals(1, children.size());
-        AssertUtils.assertEquals("Child is not added row", children.get(0),
-                row);
+        AssertUtils.assertEquals(children.get(0), row,
+                "Child is not added row");
         row = container.addRow();
         children = container.getChildren().toList();
         assertEquals(2, children.size());
-        AssertUtils.assertEquals("Child is not added row", children.get(1),
-                row);
+        AssertUtils.assertEquals(children.get(1), row,
+                "Child is not added row");
         for (var child : children) {
             assertTrue(child instanceof NativeTableRow);
         }
     }
 
     @Test
-    public void getRows() {
+    void getRows() {
         for (int i = 0; i < 10; i++) {
             container.addRow();
         }
         var rows = container.getRows();
         var children = container.getChildren().toList();
         for (int i = 0; i < 10; i++) {
-            AssertUtils.assertEquals("row does not match", children.get(i),
-                    rows.get(i));
+            AssertUtils.assertEquals(children.get(i), rows.get(i),
+                    "row does not match");
         }
     }
 
     @Test
-    public void getRow() {
+    void getRow() {
         var row0 = new NativeTableRow();
         var row1 = new NativeTableRow();
         var row2 = new NativeTableRow();
         container.addRows(row0, row1, row2);
-        AssertUtils.assertEquals("Row 0 does not match", row0,
-                container.getRow(0).orElseThrow());
-        AssertUtils.assertEquals("Row 1 does not match", row1,
-                container.getRow(1).orElseThrow());
-        AssertUtils.assertEquals("Row 2 does not match", row2,
-                container.getRow(2).orElseThrow());
+        AssertUtils.assertEquals(row0, container.getRow(0).orElseThrow(),
+                "Row 0 does not match");
+        AssertUtils.assertEquals(row1, container.getRow(1).orElseThrow(),
+                "Row 1 does not match");
+        AssertUtils.assertEquals(row2, container.getRow(2).orElseThrow(),
+                "Row 2 does not match");
     }
 
     @Test
-    public void getNonExistentRow() {
+    void getNonExistentRow() {
         container.addRow();
         assertTrue(container.getRow(0).isPresent());
         assertTrue(container.getRow(1).isEmpty());
     }
 
     @Test
-    public void getRowIndex() {
+    void getRowIndex() {
         for (int i = 0; i < 10; i++) {
             container.addRow();
             var row = container.getRow(i).orElseThrow();
@@ -97,7 +97,7 @@ public class NativeTableRowContainerTest {
     }
 
     @Test
-    public void insertRow() {
+    void insertRow() {
         var row0 = new NativeTableRow();
         var row1 = new NativeTableRow();
         var row2 = new NativeTableRow();
@@ -105,12 +105,12 @@ public class NativeTableRowContainerTest {
         var newRow = container.insertRow(1);
         var children = container.getChildren().toList();
         assertEquals(4, children.size());
-        AssertUtils.assertEquals("New row must be inserted at given position",
-                newRow, children.get(1));
+        AssertUtils.assertEquals(newRow, children.get(1),
+                "New row must be inserted at given position");
     }
 
     @Test
-    public void removeAllRows() {
+    void removeAllRows() {
         container.addRow();
         container.addRow();
         container.addRow();
@@ -119,7 +119,7 @@ public class NativeTableRowContainerTest {
     }
 
     @Test
-    public void removeRowByIndex() {
+    void removeRowByIndex() {
         var row0 = container.addRow();
         var row1 = container.addRow();
         var row2 = container.addRow();
@@ -127,14 +127,14 @@ public class NativeTableRowContainerTest {
         assertTrue(row1.getParent().isEmpty());
         var children = container.getChildren().toList();
         assertEquals(2, children.size());
-        AssertUtils.assertEquals("row0 must not be removed", row0,
-                children.get(0));
-        AssertUtils.assertEquals("row2 must not be removed", row2,
-                children.get(1));
+        AssertUtils.assertEquals(row0, children.get(0),
+                "row0 must not be removed");
+        AssertUtils.assertEquals(row2, children.get(1),
+                "row2 must not be removed");
     }
 
     @Test
-    public void removeRowsByReference() {
+    void removeRowsByReference() {
         var row0 = container.addRow();
         var row1 = container.addRow();
         var row2 = container.addRow();
@@ -145,28 +145,28 @@ public class NativeTableRowContainerTest {
         assertTrue(row3.getParent().isEmpty());
         var children = container.getChildren().toList();
         assertEquals(3, children.size());
-        AssertUtils.assertEquals("row0 must not be removed", container,
-                row0.getParent().orElseThrow());
-        AssertUtils.assertEquals("row2 must not be removed", container,
-                row2.getParent().orElseThrow());
-        AssertUtils.assertEquals("row4 must not be removed", container,
-                row4.getParent().orElseThrow());
+        AssertUtils.assertEquals(container, row0.getParent().orElseThrow(),
+                "row0 must not be removed");
+        AssertUtils.assertEquals(container, row2.getParent().orElseThrow(),
+                "row2 must not be removed");
+        AssertUtils.assertEquals(container, row4.getParent().orElseThrow(),
+                "row4 must not be removed");
     }
 
     @Test
-    public void replaceRow() {
+    void replaceRow() {
         container.addRow();
         container.addRow();
         container.addRow();
         var newRow = new NativeTableRow();
         container.replaceRow(1, newRow);
         assertEquals(3, container.getChildren().count());
-        AssertUtils.assertEquals("Row must be replaced with new row", newRow,
-                container.getRow(1).orElseThrow());
+        AssertUtils.assertEquals(newRow, container.getRow(1).orElseThrow(),
+                "Row must be replaced with new row");
     }
 
     @Test
-    public void getRowCount() {
+    void getRowCount() {
         assertEquals(0, container.getRowCount());
         container.addRow();
         assertEquals(1, container.getRowCount());

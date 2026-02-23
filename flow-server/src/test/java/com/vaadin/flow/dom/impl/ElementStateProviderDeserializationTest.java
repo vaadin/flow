@@ -21,20 +21,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * @author Muammer Yucel
  * @since 2.2.
  * @see https://github.com/vaadin/flow/issues/7190
  */
-public class ElementStateProviderDeserializationTest {
+class ElementStateProviderDeserializationTest {
 
     @Test
     public void shouldRemoveChildComponentFromDeserializedParent()
@@ -48,8 +49,8 @@ public class ElementStateProviderDeserializationTest {
 
         parent.remove(child);
 
-        Assert.assertEquals("Child component should have been removed.", 0,
-                parent.getChildren().count());
+        assertEquals(0, parent.getChildren().count(),
+                "Child component should have been removed.");
     }
 
     private byte[] serialize(Object object) throws IOException {

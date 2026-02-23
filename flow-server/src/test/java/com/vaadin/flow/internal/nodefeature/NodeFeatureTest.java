@@ -21,34 +21,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
-public class NodeFeatureTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {
         public UnregisteredNodeFeature(StateNode node) {
             super(node);
         }
     }
 
-    @Test(expected = AssertionError.class)
-    public void testCreateNullTypeThrows() {
-        NodeFeatureRegistry.create(null, StateNodeTest.createEmptyNode());
+    @Test
+    void testCreateNullTypeThrows() {
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(null, StateNodeTest.createEmptyNode());
+        });
     }
 
-    @Test(expected = AssertionError.class)
-    public void testCreateNullNodeThrows() {
-        NodeFeatureRegistry.create(ElementData.class, null);
+    @Test
+    void testCreateNullNodeThrows() {
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(ElementData.class, null);
+        });
     }
 
-    @Test(expected = AssertionError.class)
-    public void testCreateUnknownFeatureThrows() {
-        NodeFeatureRegistry.create(UnregisteredNodeFeature.class,
-                StateNodeTest.createEmptyNode());
+    @Test
+    void testCreateUnknownFeatureThrows() {
+        assertThrows(AssertionError.class, () -> {
+            NodeFeatureRegistry.create(UnregisteredNodeFeature.class,
+                    StateNodeTest.createEmptyNode());
+        });
     }
 
     private static Map<Class<? extends NodeFeature>, Integer> buildExpectedIdMap() {
@@ -103,31 +112,32 @@ public class NodeFeatureTest {
     }
 
     @Test
-    public void testGetIdValues() {
+    void testGetIdValues() {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
-        Assert.assertEquals("The number of expected features is not up to date",
-                expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
+        assertEquals(expectedIds.size(),
+                NodeFeatureRegistry.nodeFeatures.size(),
+                "The number of expected features is not up to date");
 
         expectedIds.forEach((type, expectedId) -> {
-            Assert.assertEquals("Unexpected id for " + type.getName(),
-                    expectedId.intValue(), NodeFeatureRegistry.getId(type));
+            assertEquals(expectedId.intValue(), NodeFeatureRegistry.getId(type),
+                    "Unexpected id for " + type.getName());
         });
     }
 
     @Test
-    public void testGetById() {
+    void testGetById() {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         expectedIds.forEach((expectedType, id) -> {
-            Assert.assertEquals("Unexpected type for id " + id, expectedType,
-                    NodeFeatureRegistry.getFeature(id));
+            assertEquals(expectedType, NodeFeatureRegistry.getFeature(id),
+                    "Unexpected type for id " + id);
         });
     }
 
     @Test
-    public void priorityOrder() {
+    void priorityOrder() {
         List<Class<? extends NodeFeature>> priorityOrder = buildExpectedIdMap()
                 .keySet().stream()
                 .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
@@ -169,13 +179,13 @@ public class NodeFeatureTest {
                 PollConfigurationMap.class,
                 ReconnectDialogConfigurationMap.class);
 
-        Assert.assertEquals(expectedOrder.size(), priorityOrder.size());
+        assertEquals(expectedOrder.size(), priorityOrder.size());
 
         for (int i = 0; i < priorityOrder.size(); i++) {
             if (priorityOrder.get(i) != expectedOrder.get(i)) {
-                Assert.fail("Invalid priority ordering at index " + i
-                        + ". Expected " + expectedOrder.get(i).getSimpleName()
-                        + " but got " + priorityOrder.get(i).getSimpleName());
+                fail("Invalid priority ordering at index " + i + ". Expected "
+                        + expectedOrder.get(i).getSimpleName() + " but got "
+                        + priorityOrder.get(i).getSimpleName());
             }
         }
     }

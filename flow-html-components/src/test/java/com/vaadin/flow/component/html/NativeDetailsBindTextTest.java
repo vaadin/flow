@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NativeDetailsBindTextTest extends SignalsUnitTest {
 
@@ -35,10 +35,10 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         details.bindSummaryText(signal);
 
-        signal.value("summary-1");
+        signal.set("summary-1");
         assertEquals("summary-1", details.getSummaryText());
 
-        signal.value("summary-2");
+        signal.set("summary-2");
         assertEquals("summary-2", details.getSummaryText());
     }
 
@@ -71,7 +71,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", details.getSummaryText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", details.getSummaryText());
     }
 
@@ -85,7 +85,7 @@ public class NativeDetailsBindTextTest extends SignalsUnitTest {
         assertEquals("initial", details.getSummaryText());
         assertEquals(content, details.getContent());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", details.getSummaryText());
     }
 }

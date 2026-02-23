@@ -20,12 +20,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class SharedSignalSerializationTest {
+class SharedSignalSerializationTest {
 
     private <T> T assertSerializeAndDeserialize(T obj) {
         try {
@@ -49,7 +49,7 @@ public class SharedSignalSerializationTest {
      *             if something goes wrong.
      */
     @SuppressWarnings({ "UnusedReturnValue", "WeakerAccess" })
-    public <T> T serializeAndDeserialize(T instance) throws Throwable {
+    <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
@@ -64,11 +64,11 @@ public class SharedSignalSerializationTest {
     }
 
     @Test
-    public void sharedValueSignal_serializable() {
+    void sharedValueSignal_serializable() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
-        signal.value("Test");
+        signal.set("Test");
         assertSerializeAndDeserialize(signal);
     }
 
@@ -98,8 +98,8 @@ public class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        Assert.assertEquals("Test", signal.value().mapChildren().get("key")
-                .value().value(String.class));
+        assertEquals("Test", signal.get().mapChildren().get("key").get()
+                .value(String.class));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class SharedSignalSerializationTest {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
         assertSerializeAndDeserialize(signal);
 
-        signal.value(123.45);
+        signal.set(123.45);
         assertSerializeAndDeserialize(signal);
     }
 }

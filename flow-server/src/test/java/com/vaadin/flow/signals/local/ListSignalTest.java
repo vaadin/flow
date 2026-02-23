@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 
@@ -37,7 +38,7 @@ public class ListSignalTest extends SignalTestBase {
     void constructor_empty_emptyList() {
         ListSignal<String> signal = new ListSignal<>();
 
-        List<ValueSignal<String>> value = signal.value();
+        List<ValueSignal<String>> value = signal.get();
 
         assertTrue(value.isEmpty());
     }
@@ -48,7 +49,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertFirst("first");
 
-        assertEquals("first", entry.value());
+        assertEquals("first", entry.get());
         assertValues(signal, "first");
     }
 
@@ -68,7 +69,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("last");
 
-        assertEquals("last", entry.value());
+        assertEquals("last", entry.get());
         assertValues(signal, "last");
     }
 
@@ -90,7 +91,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertAt(1, "middle");
 
-        assertEquals("middle", entry.value());
+        assertEquals("middle", entry.get());
         assertValues(signal, "first", "middle", "last");
     }
 
@@ -137,9 +138,9 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("value");
 
-        assertEquals("value", entry.value());
-        entry.value("updated");
-        assertEquals("updated", entry.value());
+        assertEquals("value", entry.get());
+        entry.set("updated");
+        assertEquals("updated", entry.get());
     }
 
     @Test
@@ -174,7 +175,7 @@ public class ListSignalTest extends SignalTestBase {
 
         signal.clear();
 
-        assertTrue(signal.value().isEmpty());
+        assertTrue(signal.get().isEmpty());
     }
 
     @Test
@@ -182,7 +183,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        List<ValueSignal<String>> value = signal.value();
+        List<ValueSignal<String>> value = signal.get();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new ValueSignal<>("new"));
@@ -206,12 +207,12 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("first");
 
-        List<ValueSignal<String>> snapshot = signal.value();
+        List<ValueSignal<String>> snapshot = signal.get();
 
         signal.insertFirst("second");
 
         assertEquals(1, snapshot.size());
-        assertEquals("first", snapshot.get(0).value());
+        assertEquals("first", snapshot.get(0).get());
     }
 
     @Test
@@ -224,9 +225,9 @@ public class ListSignalTest extends SignalTestBase {
         AtomicBoolean entry2Changed = new AtomicBoolean(false);
         AtomicBoolean listChanged = new AtomicBoolean(false);
 
-        Usage usage1 = UsageTracker.track(entry1::value);
-        Usage usage2 = UsageTracker.track(entry2::value);
-        Usage listUsage = UsageTracker.track(signal::value);
+        Usage usage1 = UsageTracker.track(entry1::get);
+        Usage usage2 = UsageTracker.track(entry2::get);
+        Usage listUsage = UsageTracker.track(signal::get);
 
         usage1.onNextChange(initial -> {
             entry1Changed.set(true);
@@ -241,7 +242,7 @@ public class ListSignalTest extends SignalTestBase {
             return false;
         });
 
-        entry1.value("updated");
+        entry1.set("updated");
 
         assertTrue(entry1Changed.get());
         assertFalse(entry2Changed.get());
@@ -253,7 +254,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -277,7 +278,7 @@ public class ListSignalTest extends SignalTestBase {
         ValueSignal<String> entry = signal.insertLast("value");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -293,7 +294,7 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("value");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         assertFalse(usage.hasChanges());
@@ -309,10 +310,10 @@ public class ListSignalTest extends SignalTestBase {
         ValueSignal<String> entry = signal.insertLast("value");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        entry.value("updated");
+        entry.set("updated");
 
         assertFalse(usage.hasChanges());
     }
@@ -334,7 +335,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         signal.insertLast("update1");
@@ -359,7 +360,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         signal.insertLast("update1");
@@ -376,9 +377,99 @@ public class ListSignalTest extends SignalTestBase {
         assertEquals(1, count.intValue());
     }
 
+    @Test
+    void toString_includesValue() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        assertEquals("ListSignal[one, two]", signal.toString());
+    }
+
+    @Test
+    void get_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.get();
+            });
+        });
+    }
+
+    @Test
+    void peek_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.peek();
+            });
+        });
+    }
+
+    @Test
+    void insertFirst_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertFirst("value");
+            });
+        });
+    }
+
+    @Test
+    void insertLast_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertLast("value");
+            });
+        });
+    }
+
+    @Test
+    void insertAt_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.insertAt(0, "value");
+            });
+        });
+    }
+
+    @Test
+    void remove_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> entry = signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.remove(entry);
+            });
+        });
+    }
+
+    @Test
+    void clear_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.clear();
+            });
+        });
+    }
+
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
-        List<String> values = signal.value().stream().map(ValueSignal::value)
+        List<String> values = signal.get().stream().map(ValueSignal::get)
                 .toList();
         assertEquals(List.of(expectedValues), values);
     }

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
@@ -35,10 +35,10 @@ public class RangeInputBindTest extends SignalsUnitTest {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
         rangeInput.bindMin(signal);
 
-        signal.value(5.5);
+        signal.set(5.5);
         assertEquals("5.5", rangeInput.getElement().getAttribute("min"));
 
-        signal.value(10.0);
+        signal.set(10.0);
         assertEquals("10.0", rangeInput.getElement().getAttribute("min"));
     }
 
@@ -71,10 +71,10 @@ public class RangeInputBindTest extends SignalsUnitTest {
         SharedNumberSignal signal = new SharedNumberSignal(100.0);
         rangeInput.bindMax(signal);
 
-        signal.value(150.5);
+        signal.set(150.5);
         assertEquals("150.5", rangeInput.getElement().getAttribute("max"));
 
-        signal.value(200.0);
+        signal.set(200.0);
         assertEquals("200.0", rangeInput.getElement().getAttribute("max"));
     }
 

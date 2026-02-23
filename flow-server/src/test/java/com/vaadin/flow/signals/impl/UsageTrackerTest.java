@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
@@ -39,11 +39,11 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         Signal.runInTransaction(() -> {
-            signal.value("changed");
+            signal.set("changed");
 
             assertTrue(usage.hasChanges());
 
@@ -66,10 +66,10 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertTrue(usage.hasChanges());
     }
 
@@ -81,7 +81,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peek();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -93,7 +93,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peekConfirmed();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -103,12 +103,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value();
+                signal.get();
                 return null;
             });
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -118,12 +118,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value("update");
+                signal.set("update");
                 return null;
             });
         });
 
-        signal.value("another");
+        signal.set("another");
         assertFalse(usage.hasChanges());
     }
 
@@ -188,12 +188,12 @@ public class UsageTrackerTest extends SignalTestBase {
         TestUsage b = new TestUsage();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        CleanupCallback cleanup = usage.onNextChange(immediate -> false);
+        Registration cleanup = usage.onNextChange(immediate -> false);
 
         assertEquals(1, a.listeners.size());
         assertEquals(1, b.listeners.size());
 
-        cleanup.cleanup();
+        cleanup.remove();
         assertEquals(0, a.listeners.size());
         assertEquals(0, b.listeners.size());
     }
@@ -242,8 +242,8 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedNonRepeatingListener_immediatelyNotifiedThenRemoved() {
         TestUsage a = new TestUsage() {
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                CleanupCallback cleanup = super.onNextChange(listener);
+            public Registration onNextChange(TransientListener listener) {
+                Registration cleanup = super.onNextChange(listener);
                 listener.invoke(true);
                 return cleanup;
             }
@@ -267,8 +267,8 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedRepeatingListener_immediatelyNotifiedAndKeptInUse() {
         TestUsage a = new TestUsage() {
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                CleanupCallback cleanup = super.onNextChange(listener);
+            public Registration onNextChange(TransientListener listener) {
+                Registration cleanup = super.onNextChange(listener);
                 listener.invoke(true);
                 return cleanup;
             }
@@ -298,7 +298,7 @@ public class UsageTrackerTest extends SignalTestBase {
         }
 
         @Override
-        public CleanupCallback onNextChange(TransientListener listener) {
+        public Registration onNextChange(TransientListener listener) {
             listeners.add(listener);
 
             return () -> listeners.remove(listener);

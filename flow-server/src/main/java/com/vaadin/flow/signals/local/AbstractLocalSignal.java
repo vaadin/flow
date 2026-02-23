@@ -19,8 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
@@ -37,7 +40,8 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private int version;
-    private T signalValue;
+    private @Nullable T signalValue;
+    private transient @Nullable VaadinSession ownerSession;
 
     /**
      * Creates a new signal with the given initial value.
@@ -45,20 +49,37 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      * @param initialValue
      *            the initial value
      */
-    protected AbstractLocalSignal(T initialValue) {
+    protected AbstractLocalSignal(@Nullable T initialValue) {
         this.signalValue = initialValue;
     }
 
     /**
      * Hook for subclasses to perform precondition checks before accessing the
-     * value. Called while holding the lock. Default implementation does
-     * nothing.
+     * value. Called while holding the lock. The base implementation verifies
+     * that the signal is not accessed from a different session than the one
+     * that first used it.
      */
     protected void checkPreconditions() {
+        VaadinSession currentSession = VaadinSession.getCurrent();
+        if (currentSession == null) {
+            return;
+        }
+        if (ownerSession == null) {
+            ownerSession = currentSession;
+        } else if (ownerSession != currentSession) {
+            throw new IllegalStateException("This " + getClass().getSimpleName()
+                    + " instance was created in one VaadinSession but"
+                    + " is being accessed from another. This typically"
+                    + " happens when a local signal is stored in a"
+                    + " static field or an application-scoped bean."
+                    + " Use SharedValueSignal or SharedListSignal"
+                    + " instead for state that is shared across"
+                    + " sessions.");
+        }
     }
 
     @Override
-    public T value() {
+    public @Nullable T get() {
         lock.lock();
         try {
             checkPreconditions();
@@ -72,7 +93,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
     }
 
     @Override
-    public T peek() {
+    public @Nullable T peek() {
         lock.lock();
         try {
             checkPreconditions();
@@ -118,7 +139,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected T getSignalValue() {
+    protected @Nullable T getSignalValue() {
         assertLockHeld();
         return signalValue;
     }
@@ -129,7 +150,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      *
      * @return the current value
      */
-    protected T getSignalValueUnsafe() {
+    protected @Nullable T getSignalValueUnsafe() {
         return signalValue;
     }
 
@@ -140,7 +161,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
      * @param value
      *            the new value
      */
-    protected void setSignalValue(T value) {
+    protected void setSignalValue(@Nullable T value) {
         assertLockHeld();
         this.signalValue = value;
         version++;
@@ -174,7 +195,7 @@ public abstract class AbstractLocalSignal<T> implements Signal<T> {
             }
 
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
+            public Registration onNextChange(TransientListener listener) {
                 lock.lock();
                 try {
                     if (hasChanges()) {

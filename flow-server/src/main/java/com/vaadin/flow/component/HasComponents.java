@@ -20,10 +20,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -210,7 +212,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * from the list and returns a corresponding {@link Component}. It shouldn't
      * return <code>null</code>. The {@link Signal} can be further bound to the
      * returned component as needed. Note that <code>childFactory</code> is run
-     * inside a {@link Effect}, and therefore {@link Signal#value()} calls makes
+     * inside a {@link Effect}, and therefore {@link Signal#get()} calls makes
      * effect re-run automatically on signal value change.
      * <p>
      * Example of usage:
@@ -242,8 +244,6 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             thrown if this component isn't empty
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
-     * @see ComponentEffect#bindChildren(Component, Signal,
-     *      SerializableFunction)
      */
     default <T, S extends Signal<T>> void bindChildren(Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
@@ -256,7 +256,14 @@ public interface HasComponents extends HasElement, HasEnabled {
         Objects.requireNonNull(list, "Signal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
-        var binding = ComponentEffect.bindChildren(self, list, childFactory);
+        var binding = ElementEffect.bindChildren(self.getElement(), list,
+                // wrap childFactory to convert Component to Element
+                signalValue -> Optional
+                        .ofNullable(childFactory.apply(signalValue))
+                        .map(Component::getElement)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "HasComponents.bindChildren childFactory must not return null")));
+
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
     }
 

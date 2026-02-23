@@ -13,14 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.i18n;
+@NullMarked
+package com.vaadin.flow.signals.shared;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-@RunWith(Suite.class)
-@NotThreadSafe
-@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
-public class DefaultI18NProviderFactorySuite {
-}
+import org.jspecify.annotations.NullMarked;

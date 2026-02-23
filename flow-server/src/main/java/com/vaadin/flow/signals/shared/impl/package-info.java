@@ -13,16 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.signals.function;
+@NullMarked
+package com.vaadin.flow.signals.shared.impl;
 
-import java.io.Serializable;
-import java.util.concurrent.Executor;
-
-/**
- * An {@link Executor} that is also {@link Serializable}.
- *
- * @author Vaadin Ltd
- */
-@FunctionalInterface
-public interface SerializableExecutor extends Executor, Serializable {
-}
+import org.jspecify.annotations.NullMarked;

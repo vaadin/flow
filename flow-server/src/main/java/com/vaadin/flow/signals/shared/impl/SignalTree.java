@@ -20,14 +20,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
@@ -183,7 +186,7 @@ public abstract class SignalTree implements Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned by the supplier
      */
-    protected <T> T getWithLock(ValueSupplier<T> action) {
+    protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
         lock.lock();
         try {
             return action.supply();
@@ -212,10 +215,10 @@ public abstract class SignalTree implements Serializable {
      *
      * @param action
      *            the action to wrap, not <code>null</code>
-     * @return a cleanup callback that runs the provided action while holding
-     *         the lock, not <code>null</code>
+     * @return a runnable that runs the provided action while holding the lock,
+     *         not <code>null</code>
      */
-    protected CleanupCallback wrapWithLock(SerializableRunnable action) {
+    protected SerializableRunnable wrapWithLock(SerializableRunnable action) {
         return () -> runWithLock(action);
     }
 
@@ -231,15 +234,15 @@ public abstract class SignalTree implements Serializable {
      * @param observer
      *            the callback to run when the node has changed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the observer before it's
-     *         triggered, not <code>null</code>
+     * @return a {@link Registration} that can be used to remove the observer
+     *         before it's triggered, not <code>null</code>
      */
-    public CleanupCallback observeNextChange(Id nodeId,
+    public Registration observeNextChange(Id nodeId,
             TransientListener observer) {
         assert nodeId != null;
         assert observer != null;
 
-        return getWithLock(() -> {
+        return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
             List<TransientListener> list = observers.computeIfAbsent(nodeId,
@@ -247,8 +250,8 @@ public abstract class SignalTree implements Serializable {
 
             list.add(observer);
 
-            return wrapWithLock(() -> list.remove(observer));
-        });
+            return wrapWithLock(() -> list.remove(observer))::run;
+        }));
     }
 
     /**
@@ -317,10 +320,10 @@ public abstract class SignalTree implements Serializable {
      *            the command to apply, not <code>null</code>
      * @param resultHandler
      *            a result handler that will be notified when the command is
-     *            confirmed, not <code>null</code> to ignore the result
+     *            confirmed, or <code>null</code> to ignore the result
      */
     public void commitSingleCommand(SignalCommand command,
-            CommandResultHandler resultHandler) {
+            @Nullable CommandResultHandler resultHandler) {
         assert command != null;
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,
@@ -384,15 +387,15 @@ public abstract class SignalTree implements Serializable {
      * @param subscriber
      *            the callback to run when a command is confirmed, not
      *            <code>null</code>
-     * @return a callback that can be used to remove the subscriber, not
-     *         <code>null</code>
+     * @return a {@link Registration} that can be used to remove the subscriber,
+     *         not <code>null</code>
      */
-    public CleanupCallback subscribeToProcessed(CommandSubscriber subscriber) {
+    public Registration subscribeToProcessed(CommandSubscriber subscriber) {
         assert subscriber != null;
-        return getWithLock(() -> {
+        return Objects.requireNonNull(getWithLock(() -> {
             subscribers.add(subscriber);
-            return wrapWithLock(() -> subscribers.remove(subscriber));
-        });
+            return wrapWithLock(() -> subscribers.remove(subscriber))::run;
+        }));
     }
 
     /**
@@ -408,9 +411,13 @@ public abstract class SignalTree implements Serializable {
             List<SignalCommand> commands, Map<Id, CommandResult> results) {
         assert hasLock();
         for (var command : commands) {
+            CommandResult result = results.get(command.commandId());
+            if (result == null) {
+                throw new IllegalStateException(
+                        "Missing result for command " + command.commandId());
+            }
             for (var subscriber : subscribers) {
-                subscriber.onCommandProcessed(command,
-                        results.get(command.commandId()));
+                subscriber.onCommandProcessed(command, result);
             }
         }
     }

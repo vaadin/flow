@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,15 +38,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -61,21 +59,20 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class DeploymentConfigurationFactoryTest {
+class DeploymentConfigurationFactoryTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
     private File tokenFile;
     private ServletContext contextMock;
 
     private ApplicationConfiguration appConfiguration;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private Map<String, String> defaultServletParams = new HashMap<>();
 
@@ -89,11 +86,11 @@ public class DeploymentConfigurationFactoryTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         System.setProperty("user.dir",
-                temporaryFolder.getRoot().getAbsolutePath());
-        tokenFile = new File(temporaryFolder.getRoot(),
+                temporaryFolder.toFile().getAbsolutePath());
+        tokenFile = new File(temporaryFolder.toFile(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         appConfiguration = mockApplicationConfiguration();
@@ -102,17 +99,17 @@ public class DeploymentConfigurationFactoryTest {
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         tokenFile.delete();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty("user.dir");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() {
         if (globalUserDirValue != null) {
             System.setProperty("user.dir", globalUserDirValue);
@@ -133,13 +130,13 @@ public class DeploymentConfigurationFactoryTest {
                                         tokenFile.getPath())));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
-        assertTrue(String.format(
+        assertTrue(UI.class.isAssignableFrom(customUiClass), String.format(
                 "Servlet '%s' should have its enclosing class to be UI subclass, but got: '%s'",
-                customUiClass, servlet),
-                UI.class.isAssignableFrom(customUiClass));
-        assertEquals(String.format(
-                "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
-                servlet), customUiClass.getName(), config.getUIClassName());
+                customUiClass, servlet));
+        assertEquals(customUiClass.getName(), config.getUIClassName(),
+                String.format(
+                        "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
+                        servlet));
     }
 
     @Test
@@ -155,12 +152,12 @@ public class DeploymentConfigurationFactoryTest {
                         servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
-        assertFalse(String.format(
+        assertFalse(UI.class.isAssignableFrom(notUiClass), String.format(
                 "Servlet '%s' should not have its enclosing class to be UI subclass, but got: '%s'",
-                notUiClass, servlet), UI.class.isAssignableFrom(notUiClass));
-        assertEquals(String.format(
+                notUiClass, servlet));
+        assertEquals(UI.class.getName(), config.getUIClassName(), String.format(
                 "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
-                servlet), UI.class.getName(), config.getUIClassName());
+                servlet));
     }
 
     @Test
@@ -193,13 +190,12 @@ public class DeploymentConfigurationFactoryTest {
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
-        assertEquals(
-                "Unexpected value for production mode, should be the same as in servlet context parameters",
-                servletConfigProductionModeValue, config.isProductionMode());
-        assertEquals(
-                "Unexpected value for heartbeat interval, should be the same as in servlet context parameters",
-                servletConfigHeartbeatIntervalValue,
-                config.getHeartbeatInterval());
+        assertEquals(servletConfigProductionModeValue,
+                config.isProductionMode(),
+                "Unexpected value for production mode, should be the same as in servlet context parameters");
+        assertEquals(servletConfigHeartbeatIntervalValue,
+                config.getHeartbeatInterval(),
+                "Unexpected value for heartbeat interval, should be the same as in servlet context parameters");
     }
 
     @Test
@@ -217,12 +213,10 @@ public class DeploymentConfigurationFactoryTest {
                 .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
-        Assert.assertFalse(
-                "Expecting null parameter to be ignored, but was in configuration",
-                config.getInitParameters().containsKey("someKey"));
-        Assert.assertTrue(
-                "Expecting not null parameter to be in configuration, but was not",
-                config.getInitParameters().containsKey("someNotNullKey"));
+        assertFalse(config.getInitParameters().containsKey("someKey"),
+                "Expecting null parameter to be ignored, but was in configuration");
+        assertTrue(config.getInitParameters().containsKey("someNotNullKey"),
+                "Expecting not null parameter to be in configuration, but was not");
     }
 
     @Test
@@ -238,56 +232,57 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
                         "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                tokenFile.getPath()));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
+        assertTrue(thrown.getMessage()
+                .contains(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm")));
     }
 
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                tokenFile.getPath()));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
+        assertTrue(thrown.getMessage().contains(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }
 
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
-        temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+        java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"));
+        String tempFolder = temporaryFolder.toFile().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
                         "\"npmFolder\": \"" + tempFolder + "/npm\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
-                tokenFile.getPath()));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                        tokenFile.getPath())));
+        assertTrue(thrown.getMessage().contains(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend")));
     }
 
     @Test
     public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
             throws Exception {
-        temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+        java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"))
+                .toFile();
+        String tempFolder = temporaryFolder.toFile().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"productionMode\": false,",
@@ -301,9 +296,12 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void shouldNotThrow_tokenFileFoldersExist() throws Exception {
-        temporaryFolder.newFolder("npm");
-        temporaryFolder.newFolder("frontend");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+        java.nio.file.Files.createDirectories(temporaryFolder.resolve("npm"))
+                .toFile();
+        java.nio.file.Files
+                .createDirectories(temporaryFolder.resolve("frontend"))
+                .toFile();
+        String tempFolder = temporaryFolder.toFile().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
@@ -344,8 +342,8 @@ public class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assert.assertEquals("baz", parameters.get("foo"));
-        Assert.assertFalse(parameters.contains("bar"));
+        assertEquals("baz", parameters.get("foo"));
+        assertFalse(parameters.contains("bar"));
     }
 
     @Test
@@ -397,19 +395,16 @@ public class DeploymentConfigurationFactoryTest {
                 // the one we set from flow-build-info.json
                 if (paramName.equals(
                         InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    Assert.assertEquals(
+                    assertEquals("true", parameters.get(paramName),
                             InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE
-                                    + " (boolean parameter) does not have expected value set from token file",
-                            "true", parameters.get(paramName));
+                                    + " (boolean parameter) does not have expected value set from token file");
                 } else {
-                    Assert.assertEquals(paramName
-                            + " (boolean parameter) does not have expected value set from servlet config",
-                            "false", parameters.get(paramName));
+                    assertEquals("false", parameters.get(paramName), paramName
+                            + " (boolean parameter) does not have expected value set from servlet config");
                 }
             } else {
-                Assert.assertEquals(paramName
-                        + "(string parameter) does not have expected value set from servlet config",
-                        "foo", parameters.get(paramName));
+                assertEquals("foo", parameters.get(paramName), paramName
+                        + "(string parameter) does not have expected value set from servlet config");
             }
         }
     }
@@ -429,7 +424,7 @@ public class DeploymentConfigurationFactoryTest {
                 }
                 allParamsList.add(paramName);
             } catch (IllegalAccessException illegalAccess) {
-                Assert.fail("Illegal access to InitParameters class: "
+                fail("Illegal access to InitParameters class: "
                         + illegalAccess.getMessage());
             }
         }
@@ -450,7 +445,7 @@ public class DeploymentConfigurationFactoryTest {
                 }
 
             } catch (IllegalAccessException illegalAccess) {
-                Assert.fail("Illegal access to InitParameters class: "
+                fail("Illegal access to InitParameters class: "
                         + illegalAccess.getMessage());
             }
             if (i < fields.length - 1) {
@@ -478,9 +473,9 @@ public class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assert.assertEquals("http://my.server/static/stats.json",
+        assertEquals("http://my.server/static/stats.json",
                 parameters.get(Constants.EXTERNAL_STATS_URL));
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
     }
 
@@ -501,7 +496,7 @@ public class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
     }
 
@@ -522,7 +517,7 @@ public class DeploymentConfigurationFactoryTest {
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        assertEquals(Boolean.TRUE.toString(),
                 parameters.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
@@ -542,7 +537,8 @@ public class DeploymentConfigurationFactoryTest {
 
         Mockito.when(config.getVaadinContext()).thenReturn(context);
 
-        File tmpFile = temporaryFolder.newFile();
+        File tmpFile = java.nio.file.Files
+                .createTempFile(temporaryFolder, "tmp", null).toFile();
         Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
         Mockito.when(
@@ -589,9 +585,9 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+        assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+        assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
     }
 
@@ -614,11 +610,11 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 Boolean.FALSE.toString());
 
-        Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+        assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+        assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
                 .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
-        Assert.assertEquals(Boolean.FALSE.toString(),
+        assertEquals(Boolean.FALSE.toString(),
                 config.getInitParameters().getProperty(
                         InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
@@ -659,7 +655,7 @@ public class DeploymentConfigurationFactoryTest {
             Map<String, String> servletContextParameters) throws Exception {
 
         URLClassLoader classLoader = new URLClassLoader(
-                new URL[] { temporaryFolder.getRoot().toURI().toURL() });
+                new URL[] { temporaryFolder.toFile().toURI().toURL() });
 
         Mockito.when(contextMock
                 .getAttribute(ApplicationConfiguration.class.getName()))

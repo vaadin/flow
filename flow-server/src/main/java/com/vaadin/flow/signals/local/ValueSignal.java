@@ -18,15 +18,16 @@ package com.vaadin.flow.signals.local;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 
-import com.vaadin.flow.signals.WritableSignal;
-import com.vaadin.flow.signals.function.SignalMapper;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.function.SignalModifier;
 import com.vaadin.flow.signals.function.SignalUpdater;
+import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.function.ValueModifier;
-import com.vaadin.flow.signals.impl.MappedModifySignal;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.operations.CancelableOperation;
-import com.vaadin.flow.signals.operations.SignalOperation;
 
 /**
  * A local writable signal that holds a reference to an object.
@@ -51,10 +52,11 @@ import com.vaadin.flow.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractLocalSignal<T>
-        implements WritableSignal<T> {
+public class ValueSignal<T> extends AbstractLocalSignal<T> {
 
     private boolean modifyRunning = false;
+    private transient boolean modifyUsed = false;
+    private transient boolean usedWithoutSessionLock = false;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -62,7 +64,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * @param initialValue
      *            the initial value, may be <code>null</code>
      */
-    public ValueSignal(T initialValue) {
+    public ValueSignal(@Nullable T initialValue) {
         super(initialValue);
     }
 
@@ -76,53 +78,82 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     @Override
     protected void checkPreconditions() {
         assertLockHeld();
+        super.checkPreconditions();
 
-        if (Transaction.inTransaction()) {
+        if (Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
-                    "ValueSignal cannot be used inside signal transactions.");
+                    "ValueSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedValueSignal instead.");
         }
 
         if (modifyRunning) {
             throw new ConcurrentModificationException();
         }
+
+        // Track if the signal has ever been accessed without a locked session
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session == null || !session.hasLock()) {
+            usedWithoutSessionLock = true;
+        }
+
+        if (modifyUsed && usedWithoutSessionLock) {
+            throw new IllegalStateException(
+                    "This ValueSignal instance has been used with modify() "
+                            + "and accessed without holding the session lock. "
+                            + "This is not thread-safe because modify() works "
+                            + "with mutable values without holding a lock while "
+                            + "the modifier callback runs. Use immutable values "
+                            + "with set(), replace(), or update() instead of "
+                            + "modify() when the signal is shared between "
+                            + "threads.");
+        }
     }
 
-    @Override
-    public SignalOperation<T> value(T value) {
+    /**
+     * Sets the value of this signal.
+     * <p>
+     * Setting a new value will trigger effect functions that have reads from
+     * this signal.
+     *
+     * @param value
+     *            the value to set
+     */
+    public void set(@Nullable T value) {
         lock();
         try {
             checkPreconditions();
 
-            T oldValue = getSignalValue();
-
             setSignalValue(value);
-
-            return new SignalOperation<>(
-                    new SignalOperation.Result<>(oldValue));
         } finally {
             unlock();
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the value of this signal if and only if the signal has the expected
+     * value at the time when the operation is confirmed. This is the signal
+     * counterpart to
+     * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
      * <p>
      * Comparison between the expected value and the new value is performed
      * using {@link #equals(Object)}.
+     *
+     * @param expectedValue
+     *            the expected value
+     * @param newValue
+     *            the new value
+     * @return <code>true</code> if the expected value was present,
+     *         <code>false</code> if there was a different value
      */
-    @Override
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    public boolean replace(@Nullable T expectedValue, @Nullable T newValue) {
         lock();
         try {
             checkPreconditions();
 
             if (Objects.equals(expectedValue, getSignalValue())) {
                 setSignalValue(newValue);
-                return new SignalOperation<>(
-                        new SignalOperation.Result<>(null));
+                return true;
             } else {
-                return new SignalOperation<>(
-                        new SignalOperation.Error<>("Unexpected value"));
+                return false;
             }
         } finally {
             unlock();
@@ -136,16 +167,16 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
      * it's never necessary to run the callback again. This also means that
      * canceling the returned operation will never have any effect.
      * <p>
-     * The result of the returned operation is resolved with the same value that
-     * was passed to the updater callback.
+     * Update operations cannot participate in transactions since any retry
+     * would occur after the original transaction has already been committed.
+     * For this reason, the whole operation completely bypasses all transaction
+     * handling.
      *
      * @param updater
      *            the value update callback, not <code>null</code>
-     * @return an operation containing the result
+     * @return the previous value
      */
-    @Override
-    public synchronized CancelableOperation<T> update(
-            SignalUpdater<T> updater) {
+    public synchronized @Nullable T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
         try {
@@ -157,9 +188,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
                 setSignalValue(newValue);
             }
 
-            CancelableOperation<T> operation = new CancelableOperation<>();
-            operation.result().complete(new SignalOperation.Result<>(oldValue));
-            return operation;
+            return oldValue;
         } finally {
             unlock();
         }
@@ -190,6 +219,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
         try {
             checkPreconditions();
 
+            modifyUsed = true;
             modifyRunning = true;
         } finally {
             unlock();
@@ -218,52 +248,101 @@ public class ValueSignal<T> extends AbstractLocalSignal<T>
     }
 
     /**
-     * Creates a two-way mapped signal that uses in-place modification for
-     * writing. Reading the mapped signal applies the getter function to extract
-     * a child value. Writing to the mapped signal uses the modifier function to
-     * update this signal's value in place.
+     * Wraps this signal to not accept changes.
      * <p>
-     * This method is named differently from
-     * {@link WritableSignal#map(SignalMapper, SignalSetter)} to avoid ambiguity
-     * in method overload resolution when using method references or lambdas.
+     * This signal will keep its current configuration and changes applied
+     * through this instance will be visible through the wrapped instance.
+     *
+     * @return the new readonly signal, not <code>null</code>
+     */
+    public Signal<T> asReadonly() {
+        return () -> get();
+    }
+
+    /**
+     * Creates a callback that updates this signal value using the provided
+     * merger function. This is useful for creating write callbacks for
+     * {@code bindValue} when working with immutable value patterns.
      * <p>
-     * This is useful for mutable bean patterns where the parent object's
-     * properties are modified directly using setters. For example:
+     * The merger function receives the current signal value and a new child
+     * value, and should return a new signal value. This is typically a method
+     * reference to a "with" style method on an immutable record or class.
+     * <p>
+     * Example usage with an immutable record:
      *
      * <pre>
-     * class Todo {
-     *     private String text;
-     *     private boolean done;
-     *
-     *     public boolean isDone() {
-     *         return done;
-     *     }
-     *
-     *     public void setDone(boolean done) {
-     *         this.done = done;
+     * record Person(String name, int age) {
+     *     Person withName(String name) {
+     *         return new Person(name, this.age);
      *     }
      * }
      *
-     * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(new Todo());
-     * WritableSignal&lt;Boolean&gt; doneSignal = todoSignal.mapMutable(Todo::isDone,
-     *         Todo::setDone);
-     *
-     * checkbox.bindValue(doneSignal, doneSignal::value); // Two-way binding
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(
+     *         new Person("Alice", 30));
+     * textField.bindValue(personSignal.map(Person::name),
+     *         personSignal.updater(Person::withName));
      * </pre>
      *
      * @param <C>
-     *            the child (mapped) signal type
-     * @param getter
-     *            the function to extract the child value from this signal's
-     *            value, not <code>null</code>
-     * @param modifier
-     *            the function to modify this signal's value in place with the
-     *            new child value, not <code>null</code>
-     * @return a two-way mapped signal using in-place modification, not
-     *         <code>null</code>
+     *            the child value type that will be provided to the callback
+     * @param merger
+     *            the function to create a new signal value from the old value
+     *            and a new child value, not <code>null</code>
+     * @return a callback that updates this signal using the merger function,
+     *         not <code>null</code>
      */
-    public <C> WritableSignal<C> mapMutable(SignalMapper<T, C> getter,
-            SignalModifier<T, C> modifier) {
-        return new MappedModifySignal<>(this, getter, modifier);
+    public <C> SerializableConsumer<C> updater(ValueMerger<T, C> merger) {
+        Objects.requireNonNull(merger);
+        return newChildValue -> update(
+                currentValue -> merger.merge(currentValue, newChildValue));
+    }
+
+    /**
+     * Creates a callback that modifies this signal's mutable value in place
+     * using the provided modifier function. This is useful for creating write
+     * callbacks for {@code bindValue} when working with mutable value patterns.
+     * <p>
+     * The modifier function receives the current signal value and a new child
+     * value, and should modify the signal value in place. This is typically a
+     * method reference to a setter method on a mutable bean.
+     * <p>
+     * Example usage with a mutable bean:
+     *
+     * <pre>
+     * class Person {
+     *     private String name;
+     *     private int age;
+     *
+     *     public String getName() {
+     *         return name;
+     *     }
+     *
+     *     public void setName(String name) {
+     *         this.name = name;
+     *     }
+     * }
+     *
+     * ValueSignal&lt;Person&gt; personSignal = new ValueSignal&lt;&gt;(new Person());
+     * textField.bindValue(personSignal.map(Person::getName),
+     *         personSignal.modifier(Person::setName));
+     * </pre>
+     *
+     * @param <C>
+     *            the child value type that will be provided to the callback
+     * @param modifier
+     *            the function to modify the signal value in place with a new
+     *            child value, not <code>null</code>
+     * @return a callback that modifies this signal using the modifier function,
+     *         not <code>null</code>
+     */
+    public <C> SerializableConsumer<C> modifier(SignalModifier<T, C> modifier) {
+        Objects.requireNonNull(modifier);
+        return newValue -> modify(
+                parentValue -> modifier.modify(parentValue, newValue));
+    }
+
+    @Override
+    public String toString() {
+        return "ValueSignal[" + peek() + "]";
     }
 }

@@ -15,18 +15,23 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Tests for binding CSS class presence to a Signal using ClassList.bind.
  */
-public class ClassListBindTest extends SignalsUnitTest {
+class ClassListBindTest extends SignalsUnitTest {
 
     @Test
     public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesClass() {
@@ -37,13 +42,13 @@ public class ClassListBindTest extends SignalsUnitTest {
         element.getClassList().bind("highlight", signal);
 
         // Initially false -> not present
-        Assert.assertFalse(element.getClassList().contains("highlight"));
+        assertFalse(element.getClassList().contains("highlight"));
 
-        signal.value(true);
-        Assert.assertTrue(element.getClassList().contains("highlight"));
+        signal.set(true);
+        assertTrue(element.getClassList().contains("highlight"));
 
-        signal.value(false);
-        Assert.assertFalse(element.getClassList().contains("highlight"));
+        signal.set(false);
+        assertFalse(element.getClassList().contains("highlight"));
     }
 
     @Test
@@ -57,12 +62,12 @@ public class ClassListBindTest extends SignalsUnitTest {
         UI.getCurrent().getElement().removeChild(element);
 
         // Change signal while detached – should NOT apply
-        signal.value(true);
-        Assert.assertFalse(element.getClassList().contains("active"));
+        signal.set(true);
+        assertFalse(element.getClassList().contains("active"));
 
         // Reattach – current value true should be applied
         UI.getCurrent().getElement().appendChild(element);
-        Assert.assertTrue(element.getClassList().contains("active"));
+        assertTrue(element.getClassList().contains("active"));
     }
 
     @Test
@@ -72,13 +77,13 @@ public class ClassListBindTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.getClassList().bind("locked", signal);
 
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getClassList().add("locked"));
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getClassList().remove("locked"));
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getClassList().set("locked", true));
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getClassList().set("locked", false));
     }
 
@@ -91,23 +96,23 @@ public class ClassListBindTest extends SignalsUnitTest {
         element.getClassList().bind("a", a);
         element.getClassList().bind("b", b);
 
-        Assert.assertTrue(element.getClassList().contains("a"));
-        Assert.assertTrue(element.getClassList().contains("b"));
+        assertTrue(element.getClassList().contains("a"));
+        assertTrue(element.getClassList().contains("b"));
 
         element.getClassList().clear();
 
         // Classes cleared
-        Assert.assertFalse(element.getClassList().contains("a"));
-        Assert.assertFalse(element.getClassList().contains("b"));
+        assertFalse(element.getClassList().contains("a"));
+        assertFalse(element.getClassList().contains("b"));
 
         // Toggling signals has no effect (bindings were cleared)
-        a.value(false);
-        b.value(false);
-        a.value(true);
-        b.value(true);
-        Assert.assertFalse(element.getClassList().contains("a"));
-        Assert.assertFalse(element.getClassList().contains("b"));
-        Assert.assertFalse(element.getClassList().iterator().hasNext());
+        a.set(false);
+        b.set(false);
+        a.set(true);
+        b.set(true);
+        assertFalse(element.getClassList().contains("a"));
+        assertFalse(element.getClassList().contains("b"));
+        assertFalse(element.getClassList().iterator().hasNext());
     }
 
     @Test
@@ -116,18 +121,18 @@ public class ClassListBindTest extends SignalsUnitTest {
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
         element.getClassList().bind("flag", bound);
-        Assert.assertTrue(element.getClassList().contains("flag"));
+        assertTrue(element.getClassList().contains("flag"));
 
         // Bulk replace via attribute handler
         element.setAttribute("class", "foo bar");
-        Assert.assertTrue(element.getClassList().contains("foo"));
-        Assert.assertTrue(element.getClassList().contains("bar"));
-        Assert.assertFalse(element.getClassList().contains("flag"));
+        assertTrue(element.getClassList().contains("foo"));
+        assertTrue(element.getClassList().contains("bar"));
+        assertFalse(element.getClassList().contains("flag"));
 
         // Binding should be cleared, so toggling has no effect
-        bound.value(false);
-        bound.value(true);
-        Assert.assertFalse(element.getClassList().contains("flag"));
+        bound.set(false);
+        bound.set(true);
+        assertFalse(element.getClassList().contains("flag"));
     }
 
     @Test
@@ -136,7 +141,7 @@ public class ClassListBindTest extends SignalsUnitTest {
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.getClassList().bind("badge", signal);
-        Assert.assertTrue(element.getClassList().contains("badge"));
+        assertTrue(element.getClassList().contains("badge"));
 
         // Remove binding via the node's SignalBindingFeature
         SignalBindingFeature feature = element.getNode()
@@ -144,12 +149,12 @@ public class ClassListBindTest extends SignalsUnitTest {
         feature.removeBinding(SignalBindingFeature.CLASSES + "badge");
 
         // Signal changes should no longer affect the class list
-        signal.value(false);
-        Assert.assertTrue(element.getClassList().contains("badge"));
+        signal.set(false);
+        assertTrue(element.getClassList().contains("badge"));
 
         // Manual set should work without throwing
         element.getClassList().remove("badge");
-        Assert.assertFalse(element.getClassList().contains("badge"));
+        assertFalse(element.getClassList().contains("badge"));
     }
 
     @Test
@@ -157,11 +162,11 @@ public class ClassListBindTest extends SignalsUnitTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        Assert.assertThrows(NullPointerException.class,
+        assertThrows(NullPointerException.class,
                 () -> element.getClassList().bind("badge", null));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void rebinding_alreadyBound_throws() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
@@ -169,10 +174,11 @@ public class ClassListBindTest extends SignalsUnitTest {
         ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
         element.getClassList().bind("tag", s1);
-        Assert.assertTrue(element.getClassList().contains("tag"));
+        assertTrue(element.getClassList().contains("tag"));
 
         // Rebind to a new signal
-        element.getClassList().bind("tag", s2);
+        assertThrows(BindingActiveException.class,
+                () -> element.getClassList().bind("tag", s2));
     }
 
     @Test
@@ -184,15 +190,15 @@ public class ClassListBindTest extends SignalsUnitTest {
 
         // Flip to true a couple of times; should not throw and should not
         // duplicate class entries.
-        signal.value(true);
-        signal.value(true); // no-op update
-        Assert.assertTrue(element.getClassList().contains("spin"));
-        Assert.assertEquals(1,
+        signal.set(true);
+        signal.set(true); // no-op update
+        assertTrue(element.getClassList().contains("spin"));
+        assertEquals(1,
                 element.getClassList().stream().filter("spin"::equals).count());
 
-        signal.value(false);
-        signal.value(false); // no-op update
-        Assert.assertFalse(element.getClassList().contains("spin"));
+        signal.set(false);
+        signal.set(false); // no-op update
+        assertFalse(element.getClassList().contains("spin"));
     }
 
     @Test
@@ -200,10 +206,10 @@ public class ClassListBindTest extends SignalsUnitTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         element.getClassList().add("spin");
-        Assert.assertTrue(element.getClassList().contains("spin"));
+        assertTrue(element.getClassList().contains("spin"));
 
         element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> Assert.fail(
+                .ifPresent(feature -> fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<Boolean> signal = new ValueSignal<>(false);

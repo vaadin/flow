@@ -15,29 +15,31 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-public class BundleUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BundleUtilsTest {
 
     private List<AutoCloseable> closeOnTearDown = new ArrayList<>();
+    @TempDir
+    Path temporaryFolder;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @After
+    @AfterEach
     public void tearDown() {
         for (AutoCloseable closeable : closeOnTearDown) {
             try {
@@ -53,9 +55,9 @@ public class BundleUtilsTest {
         mockStatsJson("Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains("Frontend/foo.js"));
-        Assert.assertTrue(bundleImports.contains("foo.js"));
-        Assert.assertTrue(bundleImports.contains("./foo.js"));
+        assertTrue(bundleImports.contains("Frontend/foo.js"));
+        assertTrue(bundleImports.contains("foo.js"));
+        assertTrue(bundleImports.contains("./foo.js"));
     }
 
     @Test
@@ -63,10 +65,10 @@ public class BundleUtilsTest {
         mockStatsJson("Frontend/generated/jar-resources/my/addon.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports
+        assertTrue(bundleImports
                 .contains("Frontend/generated/jar-resources/my/addon.js"));
-        Assert.assertTrue(bundleImports.contains("./my/addon.js"));
-        Assert.assertTrue(bundleImports.contains("my/addon.js"));
+        assertTrue(bundleImports.contains("./my/addon.js"));
+        assertTrue(bundleImports.contains("my/addon.js"));
     }
 
     @Test
@@ -74,7 +76,7 @@ public class BundleUtilsTest {
         mockStatsJson("my/Frontend/foo.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertEquals(Set.of("my/Frontend/foo.js"), bundleImports);
+        assertEquals(Set.of("my/Frontend/foo.js"), bundleImports);
     }
 
     @Test
@@ -82,9 +84,8 @@ public class BundleUtilsTest {
         mockStatsJson("@foo/bar/theme/lumo/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(
-                bundleImports.contains("@foo/bar/theme/lumo/file.js"));
-        Assert.assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
+        assertTrue(bundleImports.contains("@foo/bar/theme/lumo/file.js"));
+        assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
     }
 
     @Test
@@ -93,11 +94,11 @@ public class BundleUtilsTest {
                 "Frontend/generated/jar-resources/theme/material/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains(
+        assertTrue(bundleImports.contains(
                 "Frontend/generated/jar-resources/theme/lumo/file.js"));
-        Assert.assertTrue(bundleImports.contains(
+        assertTrue(bundleImports.contains(
                 "Frontend/generated/jar-resources/theme/material/file.js"));
-        Assert.assertTrue(bundleImports.contains("./src/file.js"));
+        assertTrue(bundleImports.contains("./src/file.js"));
     }
 
     private void mockStatsJson(String... imports) {
@@ -126,8 +127,8 @@ public class BundleUtilsTest {
         ObjectNode first = BundleUtils.loadStatsJson();
         // Second call returns cached instance
         ObjectNode second = BundleUtils.loadStatsJson();
-        Assert.assertSame("Should return cached instance on second call", first,
-                second);
+        assertSame(first, second,
+                "Should return cached instance on second call");
     }
 
     @Test
@@ -136,8 +137,8 @@ public class BundleUtilsTest {
         ObjectNode second = BundleUtils.loadStatsJson();
 
         // Verify both have same content (whether same instance or not)
-        Assert.assertEquals("Cached result should be consistent",
-                first.toString(), second.toString());
+        assertEquals(first.toString(), second.toString(),
+                "Cached result should be consistent");
     }
 
     @Test
@@ -148,7 +149,7 @@ public class BundleUtilsTest {
         boolean third = BundleUtils.isPreCompiledProductionBundle();
 
         // All should return same result
-        Assert.assertEquals("Should return consistent results", first, second);
-        Assert.assertEquals("Should return consistent results", second, third);
+        assertEquals(first, second, "Should return consistent results");
+        assertEquals(second, third, "Should return consistent results");
     }
 }

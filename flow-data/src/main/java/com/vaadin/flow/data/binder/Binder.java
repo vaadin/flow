@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
@@ -65,7 +64,6 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.WritableSignal;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -383,9 +381,9 @@ public class Binder<BEAN> implements Serializable {
          * {@link BindingBuilder#withValidator(Validator)}.
          * <p>
          * The Binder automatically runs validators inside a
-         * {@link com.vaadin.flow.component.ComponentEffect#effect} context.
-         * This makes validators reactive to signal changes - when you call
-         * {@code value()} on another binding from within a validator, the
+         * {@link Signal#effect(Component, com.vaadin.flow.signals.function.EffectAction)}
+         * context. This makes validators reactive to signal changes - when you
+         * call {@code value()} on another binding from within a validator, the
          * validator will automatically re-run whenever that other binding's
          * value changes.
          * <p>
@@ -421,13 +419,13 @@ public class Binder<BEAN> implements Serializable {
          *
          * // Same works also with a Signal directly:
          * ValueSignal<String> passwordSignal = new ValueSignal<>("");
-         * passwordField.bindValue(passwordSignal, passwordSignal::value);
+         * passwordField.bindValue(passwordSignal, passwordSignal::set);
          * binder.forField(confirmField)
-         *         .withValidator(text -> text.equals(passwordSignal.value()),
+         *         .withValidator(text -> text.equals(passwordSignal.get()),
          *                 "Both fields must match")
          *         .bind("confirmPassword");
-         * passwordSignal.value("secret"); // confirmField shows validation
-         *                                 // error
+         * passwordSignal.set("secret"); // confirmField shows validation
+         *                               // error
          * }
          * </pre>
          *
@@ -436,7 +434,8 @@ public class Binder<BEAN> implements Serializable {
          *
          * @see BindingBuilder#withValidator(Validator)
          * @see com.vaadin.flow.component.HasValue#bindValue
-         * @see com.vaadin.flow.component.ComponentEffect#effect
+         * @see Signal#effect(Component,
+         *      com.vaadin.flow.signals.function.EffectAction)
          *
          * @since 25.1
          */
@@ -1513,7 +1512,7 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
-        private transient WritableSignal<Boolean> internalValidationTriggerSignal;
+        private transient ValueSignal<Boolean> internalValidationTriggerSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1565,19 +1564,22 @@ public class Binder<BEAN> implements Serializable {
             return locale;
         }
 
+        private void fireValidationEvents(
+                BindingValidationStatus<TARGET> status) {
+            var statusChange = new BinderValidationStatus<>(getBinder(),
+                    Collections.singletonList(status), Collections.emptyList());
+            getBinder().getValidationStatusHandler().statusChange(statusChange);
+            getBinder().signalStatusChangeFromBinding(status);
+            getBinder().fireStatusChangeEvent(status.isError());
+        }
+
         @Override
         public BindingValidationStatus<TARGET> validate(boolean fireEvent) {
             Objects.requireNonNull(binder,
                     "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
-                var statusChange = new BinderValidationStatus<>(getBinder(),
-                        Collections.singletonList(status),
-                        Collections.emptyList());
-                getBinder().getValidationStatusHandler()
-                        .statusChange(statusChange);
-                getBinder().signalStatusChangeFromBinding(status);
-                getBinder().fireStatusChangeEvent(status.isError());
+                fireValidationEvents(status);
             }
             return status;
         }
@@ -1616,18 +1618,31 @@ public class Binder<BEAN> implements Serializable {
         }
 
         /**
-         * Returns the field value run through all converters and validators,
-         * but doesn't pass the {@link BindingValidationStatus} to any status
-         * handler.
+         * Runs the field value through all converters and validators without
+         * wrapping in {@code untracked()}. This allows signal dependency
+         * tracking when called from the reactive effect in
+         * {@link #initInternalSignalEffectForValidators()}.
          *
          * @return the result of the conversion
          */
-        private Result<TARGET> doConversion() {
+        private Result<TARGET> executeConversionChain() {
             return execute(() -> {
                 FIELDVALUE fieldValue = field.getValue();
                 return converterValidatorChain.convertToModel(fieldValue,
                         createValueContext());
             });
+        }
+
+        /**
+         * Returns the field value run through all converters and validators,
+         * but doesn't pass the {@link BindingValidationStatus} to any status
+         * handler. Always runs inside {@code untracked()} so that callers
+         * outside a reactive context never trigger signal tracking.
+         *
+         * @return the result of the conversion
+         */
+        private Result<TARGET> doConversion() {
+            return UsageTracker.untracked(this::executeConversionChain);
         }
 
         private BindingValidationStatus<TARGET> toValidationStatus(
@@ -1711,12 +1726,13 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
-                signalRegistration = ComponentEffect.effect(component, () -> {
-                    if (valueInit) {
-                        // start to track signal usage
-                        doConversion();
-                    } else {
-                        validate();
+                signalRegistration = Signal.effect(component, () -> {
+                    // Run chain with real tracking to discover signal deps
+                    Result<TARGET> result = executeConversionChain();
+                    if (!valueInit) {
+                        BindingValidationStatus<TARGET> status = toValidationStatus(
+                                result);
+                        fireValidationEvents(status);
                     }
                 });
             }
@@ -1747,7 +1763,7 @@ public class Binder<BEAN> implements Serializable {
                     // Trigger re-validation signal to notify validators using
                     // value()
                     internalValidationTriggerSignal
-                            .value(!internalValidationTriggerSignal.peek());
+                            .set(!internalValidationTriggerSignal.peek());
                 }
             }
         }
@@ -1988,11 +2004,14 @@ public class Binder<BEAN> implements Serializable {
         }
 
         private void trackUsageOfInternalValidationSignal() {
+            if (!UsageTracker.isActive()) {
+                return;
+            }
             if (internalValidationTriggerSignal == null) {
                 internalValidationTriggerSignal = new ValueSignal<>(false);
             }
             // registers tracking
-            internalValidationTriggerSignal.value();
+            internalValidationTriggerSignal.get();
         }
 
     }
@@ -3142,10 +3161,10 @@ public class Binder<BEAN> implements Serializable {
                 return UsageTracker.track(() -> validator.apply(value, context),
                         usage -> {
                             throw new InvalidSignalUsageError(
-                                    "Detected Signal.value() call inside a bean level validator. "
+                                    "Detected Signal.get() call inside a bean level validator. "
                                             + "This is not supported since bean level validators "
                                             + "are not run inside a reactive effect. "
-                                            + "Use of Signal.value() is only supported in field level validators.");
+                                            + "Use of Signal.get() is only supported in field level validators.");
                         });
             }
         });
@@ -4408,7 +4427,7 @@ public class Binder<BEAN> implements Serializable {
                         .getBinding() != statusChange.getBinding())
                 .toList());
         fieldValidationStatuses.add(statusChange);
-        binderValidationStatusSignal.value(new BinderValidationStatus<>(
+        binderValidationStatusSignal.set(new BinderValidationStatus<>(
                 oldStatus.getBinder(), fieldValidationStatuses,
                 oldStatus.getBeanValidationErrors()));
     }
@@ -4418,9 +4437,9 @@ public class Binder<BEAN> implements Serializable {
             return;
         }
         if (statusChange != null) {
-            binderValidationStatusSignal.value(statusChange);
+            binderValidationStatusSignal.set(statusChange);
         } else {
-            binderValidationStatusSignal.value(validate(false));
+            binderValidationStatusSignal.set(validate(false));
         }
     }
 

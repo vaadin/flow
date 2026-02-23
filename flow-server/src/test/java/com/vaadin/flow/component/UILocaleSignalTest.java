@@ -17,34 +17,34 @@ package com.vaadin.flow.component;
 
 import java.util.Locale;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Unit tests for {@link UI#localeSignal()}.
  */
-public class UILocaleSignalTest extends SignalsUnitTest {
+class UILocaleSignalTest extends SignalsUnitTest {
 
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
-        assertNotNull("localeSignal() should never return null", signal);
-        assertEquals("Signal value should match getLocale()", ui.getLocale(),
-                signal.value());
+        assertNotNull(signal, "localeSignal() should never return null");
+        assertEquals(ui.getLocale(), signal.get(),
+                "Signal value should match getLocale()");
     }
 
     @Test
     public void localeSignal_setLocale_signalUpdated() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         Locale initialLocale = ui.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -56,16 +56,16 @@ public class UILocaleSignalTest extends SignalsUnitTest {
 
         ui.setLocale(newLocale);
 
-        assertEquals("Signal should reflect the new locale after setLocale()",
-                newLocale, signal.value());
-        assertEquals("getLocale() should also return the new locale", newLocale,
-                ui.getLocale());
+        assertEquals(newLocale, signal.get(),
+                "Signal should reflect the new locale after setLocale()");
+        assertEquals(newLocale, ui.getLocale(),
+                "getLocale() should also return the new locale");
     }
 
     @Test
     public void localeSignal_writeToSignal_updatesGetLocale() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         Locale initialLocale = ui.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -75,52 +75,54 @@ public class UILocaleSignalTest extends SignalsUnitTest {
             newLocale = Locale.GERMAN;
         }
 
-        signal.value(newLocale);
+        signal.set(newLocale);
 
-        assertEquals("getLocale() should reflect the new locale after "
-                + "writing to signal", newLocale, ui.getLocale());
-        assertEquals("Signal should have the new value", newLocale,
-                signal.value());
+        assertEquals(newLocale, ui.getLocale(),
+                "getLocale() should reflect the new locale after "
+                        + "writing to signal");
+        assertEquals(newLocale, signal.get(),
+                "Signal should have the new value");
     }
 
     @Test
     public void localeSignal_sameInstance_returnedOnMultipleCalls() {
         UI ui = UI.getCurrent();
 
-        WritableSignal<Locale> signal1 = ui.localeSignal();
-        WritableSignal<Locale> signal2 = ui.localeSignal();
+        ValueSignal<Locale> signal1 = ui.localeSignal();
+        ValueSignal<Locale> signal2 = ui.localeSignal();
 
-        assertSame("localeSignal() should return the same instance on "
-                + "multiple calls", signal1, signal2);
+        assertSame(signal1, signal2,
+                "localeSignal() should return the same instance on "
+                        + "multiple calls");
     }
 
     @Test
     public void localeSignal_multipleLocaleChanges_signalFollows() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
         ui.setLocale(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, signal.value());
+        assertEquals(Locale.FRENCH, signal.get());
 
         ui.setLocale(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, signal.value());
+        assertEquals(Locale.GERMAN, signal.get());
 
         ui.setLocale(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, signal.value());
+        assertEquals(Locale.JAPANESE, signal.get());
     }
 
     @Test
     public void localeSignal_multipleSignalWrites_getLocaleFollows() {
         UI ui = UI.getCurrent();
-        WritableSignal<Locale> signal = ui.localeSignal();
+        ValueSignal<Locale> signal = ui.localeSignal();
 
-        signal.value(Locale.FRENCH);
+        signal.set(Locale.FRENCH);
         assertEquals(Locale.FRENCH, ui.getLocale());
 
-        signal.value(Locale.GERMAN);
+        signal.set(Locale.GERMAN);
         assertEquals(Locale.GERMAN, ui.getLocale());
 
-        signal.value(Locale.JAPANESE);
+        signal.set(Locale.JAPANESE);
         assertEquals(Locale.JAPANESE, ui.getLocale());
     }
 }
