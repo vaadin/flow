@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -32,6 +33,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.TestBench;
@@ -56,6 +59,8 @@ import com.vaadin.testbench.parallel.Browser;
  */
 @Category(ChromeTests.class)
 public class ChromeDeviceTest extends ViewOrUITest {
+    private static final Logger log = LoggerFactory
+            .getLogger(ChromeDeviceTest.class);
     private DevToolsWrapper devTools = null;
 
     protected DevToolsWrapper getDevTools() {
@@ -77,6 +82,11 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (Browser.CHROME == getRunLocallyBrowser()) {
             driver = new ChromeDriver(chromeOptions);
         } else {
+            // Temporary workaround for dev tools websocket connection errors
+            // in the CI environment.
+            log.warn(
+                    "Forcing Chrome 143.0 for tests using Selenium dev tools to avoid websocket connection issues in CI");
+            chromeOptions.setBrowserVersion("143.0");
             URL remoteURL = new URL(getHubURL());
             driver = new RemoteWebDriver(remoteURL, chromeOptions);
             setDevToolsRuntimeCapabilities((RemoteWebDriver) driver, remoteURL);
@@ -85,6 +95,11 @@ public class ChromeDeviceTest extends ViewOrUITest {
         devTools = new DevToolsWrapper(driver);
 
         setDriver(TestBench.createDriver(driver));
+    }
+
+    @After
+    public void closeDevTools() {
+        devTools.close();
     }
 
     /**
