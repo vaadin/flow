@@ -128,10 +128,12 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
     /**
      * Sets the value of this signal.
      * <p>
-     * Setting a new value will trigger effect functions that have reads from
-     * this signal, unless the new value is equal to the current value (compared
-     * using the equality checker provided in the constructor, which defaults to
-     * {@link Objects#equals(Object, Object)}).
+     * If the new value is not equal to the current value, the value is set and
+     * effect functions that have reads from this signal are triggered. If the
+     * values are equal, no change is made and effect functions are not
+     * triggered. The equality checker provided in the constructor is used to
+     * compare the values and defaults to
+     * {@link Objects#equals(Object, Object)}.
      *
      * @param value
      *            the value to set
@@ -155,11 +157,12 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * counterpart to
      * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
      * <p>
-     * Comparison between the expected value and the current value is performed
-     * using the equality checker provided in the constructor. The value is set
-     * only when the new value differs from the old value (compared using the
-     * equality checker), ensuring no change notification is triggered for equal
-     * values.
+     * If the expected value matches and the new value differs from the old
+     * value, the value is set and effect functions are triggered. If the
+     * expected value matches but the new value equals the old value, no change
+     * is made and effect functions are not triggered. The equality checker
+     * provided in the constructor is used to compare the expected value with
+     * the current value, and to compare the new value with the old value.
      *
      * @param expectedValue
      *            the expected value
@@ -198,9 +201,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * For this reason, the whole operation completely bypasses all transaction
      * handling.
      * <p>
-     * If the new value is equal to the current value (compared using the
-     * equality checker provided in the constructor), no effect function is
-     * triggered.
+     * If the new value is equal to the current value, no change is made and
+     * effect functions are not triggered. The equality checker provided in the
+     * constructor is used to compare the values.
      *
      * @param updater
      *            the value update callback, not <code>null</code>
