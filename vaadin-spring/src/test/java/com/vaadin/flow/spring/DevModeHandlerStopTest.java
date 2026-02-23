@@ -38,7 +38,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 
-public class DevModeHandlerStopTest {
+class DevModeHandlerStopTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(Config.class,

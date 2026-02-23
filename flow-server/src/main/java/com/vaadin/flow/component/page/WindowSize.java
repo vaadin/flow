@@ -13,14 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.i18n;
+package com.vaadin.flow.component.page;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.Serializable;
 
-@RunWith(Suite.class)
-@NotThreadSafe
-@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
-public class DefaultI18NProviderFactorySuite {
+/**
+ * Represents the size of the browser window.
+ *
+ * @param width
+ *            the window width in pixels
+ * @param height
+ *            the window height in pixels
+ *
+ * @author Vaadin Ltd
+ */
+public record WindowSize(int width, int height) implements Serializable {
 }

@@ -40,6 +40,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -54,6 +56,7 @@ public class Page implements Serializable {
     private final History history;
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
+    private ValueSignal<WindowSize> windowSizeSignal;
 
     /**
      * Creates a page instance for the given UI.
@@ -384,6 +387,45 @@ public class Page implements Serializable {
     }
 
     /**
+     * Returns a signal that tracks the current browser window size.
+     * <p>
+     * The signal is lazily initialized on first access and automatically
+     * updates when the browser window is resized. The initial value uses
+     * dimensions from {@link ExtendedClientDetails} if available, otherwise
+     * defaults to 0x0.
+     * <p>
+     * The returned signal is read-only.
+     *
+     * @return a read-only signal with the current window size
+     */
+    public Signal<WindowSize> windowSizeSignal() {
+        ensureWindowSizeSignal();
+        return windowSizeSignal.asReadonly();
+    }
+
+    /**
+     * Sets the window size in the signal. Used by {@link ExtendedClientDetails}
+     * to feed bootstrap data into the signal.
+     *
+     * @param width
+     *            the window inner width
+     * @param height
+     *            the window inner height
+     */
+    void setWindowSize(int width, int height) {
+        ensureWindowSizeSignal();
+        windowSizeSignal
+                .set(new WindowSize(Math.max(width, 0), Math.max(height, 0)));
+    }
+
+    private void ensureWindowSizeSignal() {
+        if (windowSizeSignal == null) {
+            windowSizeSignal = new ValueSignal<>(new WindowSize(0, 0));
+        }
+        ensureResizeListener();
+    }
+
+    /**
      * Adds a new {@link BrowserWindowResizeListener} to this UI. The listener
      * will be notified whenever the browser window within which this UI resides
      * is resized.
@@ -398,6 +440,15 @@ public class Page implements Serializable {
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
+        ensureResizeListener();
+        if (resizeListeners == null) {
+            resizeListeners = new ArrayList<>(1);
+        }
+        resizeListeners.add(resizeListener);
+        return () -> resizeListeners.remove(resizeListener);
+    }
+
+    private void ensureResizeListener() {
         if (resizeReceiver == null) {
             // "republish" on the UI element, so can be listened with core APIs
             ui.getElement().executeJs("""
@@ -411,21 +462,19 @@ public class Page implements Serializable {
                     """);
             resizeReceiver = ui.getElement()
                     .addEventListener("window-resize", e -> {
-                        var evt = new BrowserWindowResizeEvent(this,
-                                e.getEventData().get("event.w").intValue(),
-                                e.getEventData().get("event.h").intValue());
-                        // Clone list to avoid issues if listener unregisters
-                        // itself
-                        new ArrayList<>(resizeListeners)
-                                .forEach(l -> l.browserWindowResized(evt));
+                        int w = e.getEventData().get("event.w").intValue();
+                        int h = e.getEventData().get("event.h").intValue();
+                        if (windowSizeSignal != null) {
+                            windowSizeSignal.set(new WindowSize(w, h));
+                        }
+                        if (resizeListeners != null) {
+                            var evt = new BrowserWindowResizeEvent(this, w, h);
+                            new ArrayList<>(resizeListeners)
+                                    .forEach(l -> l.browserWindowResized(evt));
+                        }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
         }
-        if (resizeListeners == null) {
-            resizeListeners = new ArrayList<>(1);
-        }
-        resizeListeners.add(resizeListener);
-        return () -> resizeListeners.remove(resizeListener);
     }
 
     /**
