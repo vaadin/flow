@@ -132,7 +132,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void storeSerializableObject_objectIsRestoredAfterDeserialization()
+    void storeSerializableObject_objectIsRestoredAfterDeserialization()
             throws Throwable {
         TestBeanStore store = createStore();
 
@@ -145,7 +145,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void storeSerializableCallback_callbackIsRestoredAfterDeserialization()
+    void storeSerializableCallback_callbackIsRestoredAfterDeserialization()
             throws Throwable {
         TestBeanStore store = createStore();
 

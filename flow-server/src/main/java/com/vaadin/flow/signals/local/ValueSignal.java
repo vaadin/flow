@@ -68,13 +68,6 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
         super(initialValue);
     }
 
-    /**
-     * Creates a new value signal with an initial value of <code>null</code>.
-     */
-    public ValueSignal() {
-        this(null);
-    }
-
     @Override
     protected void checkPreconditions() {
         assertLockHeld();

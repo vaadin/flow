@@ -34,8 +34,8 @@ import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.operations.CancelableOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a value. The value is updated as a single atomic change.
@@ -59,7 +59,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      */
     @SuppressWarnings("unchecked")
     public SharedValueSignal(T initialValue) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 (Class<T>) initialValue.getClass());
         set(initialValue);
     }
@@ -72,7 +72,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the value type, not <code>null</code>
      */
     public SharedValueSignal(Class<T> valueType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 Objects.requireNonNull(valueType));
     }
 

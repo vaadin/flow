@@ -20,12 +20,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class SharedSignalSerializationTest {
+class SharedSignalSerializationTest {
 
     private <T> T assertSerializeAndDeserialize(T obj) {
         try {
@@ -49,7 +49,7 @@ public class SharedSignalSerializationTest {
      *             if something goes wrong.
      */
     @SuppressWarnings({ "UnusedReturnValue", "WeakerAccess" })
-    public <T> T serializeAndDeserialize(T instance) throws Throwable {
+    <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
@@ -64,7 +64,7 @@ public class SharedSignalSerializationTest {
     }
 
     @Test
-    public void sharedValueSignal_serializable() {
+    void sharedValueSignal_serializable() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
@@ -98,7 +98,7 @@ public class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
+        assertEquals("Test", signal.get().mapChildren().get("key").get()
                 .value(String.class));
     }
 
