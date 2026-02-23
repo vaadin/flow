@@ -121,14 +121,13 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     }
 
     /**
-     * Gets the value of this signal as an integer. This method works in the
-     * same way was {@link #get()} with regards to transactions and dependency
-     * tracking.
+     * Gets the value of this signal as an integer without registering a
+     * dependency. Equivalent to {@code peek().intValue()}.
      *
      * @return the signal value as an integer
      */
     public int getAsInt() {
-        return get().intValue();
+        return peek().intValue();
     }
 
     /**
