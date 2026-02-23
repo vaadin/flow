@@ -28,6 +28,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
@@ -275,6 +276,30 @@ public class NativeDetails extends HtmlComponent
      */
     public void setOpen(boolean open) {
         getElement().setProperty("open", open);
+    }
+
+    /**
+     * Binds the open state to the given signal. Signal changes push to the DOM
+     * property. If a non-null {@code writeCallback} is provided, client-side
+     * property changes are pushed back through the callback, making the binding
+     * two-way. If {@code writeCallback} is {@code null}, the binding is
+     * read-only.
+     * <p>
+     * While a signal is bound, any attempt to set the open state manually
+     * throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     *
+     * @param signal
+     *            the signal to bind, not {@code null}
+     * @param writeCallback
+     *            callback invoked when the client-side value changes, or
+     *            {@code null} for a read-only binding
+     * @since 25.1
+     */
+    public void bindOpen(Signal<Boolean> signal,
+            SerializableConsumer<Boolean> writeCallback) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
+        getElement().bindProperty("open",
+                signal.map(v -> v == null ? Boolean.FALSE : v), writeCallback);
     }
 
     /**

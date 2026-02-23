@@ -48,16 +48,16 @@ class PageWindowSizeSignalTest {
         Page page = new Page(ui);
 
         Signal<WindowSize> signal = page.windowSizeSignal();
-        assertEquals(new WindowSize(0, 0), signal.get());
+        assertEquals(new WindowSize(0, 0), signal.peek());
 
         fireResizeEvent(ui, 1024, 768);
-        assertEquals(new WindowSize(1024, 768), signal.get());
+        assertEquals(new WindowSize(1024, 768), signal.peek());
 
         fireResizeEvent(ui, 1920, 1080);
-        assertEquals(new WindowSize(1920, 1080), signal.get());
+        assertEquals(new WindowSize(1920, 1080), signal.peek());
 
         fireResizeEvent(ui, 800, 600);
-        assertEquals(new WindowSize(800, 600), signal.get());
+        assertEquals(new WindowSize(800, 600), signal.peek());
     }
 
     @Test
@@ -78,7 +78,7 @@ class PageWindowSizeSignalTest {
         assertNotNull(listenerEvent.get());
         assertEquals(1280, listenerEvent.get().getWidth());
         assertEquals(720, listenerEvent.get().getHeight());
-        assertEquals(new WindowSize(1280, 720), signal.get());
+        assertEquals(new WindowSize(1280, 720), signal.peek());
     }
 
     @Test
@@ -96,7 +96,7 @@ class PageWindowSizeSignalTest {
         // Both should be updated by a single resize event
         fireResizeEvent(ui, 1920, 1080);
 
-        assertEquals(new WindowSize(1920, 1080), signal.get());
+        assertEquals(new WindowSize(1920, 1080), signal.peek());
         assertNotNull(listenerEvent.get());
         assertEquals(1920, listenerEvent.get().getWidth());
         assertEquals(1080, listenerEvent.get().getHeight());
