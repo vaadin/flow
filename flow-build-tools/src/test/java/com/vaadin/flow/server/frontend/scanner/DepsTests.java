@@ -35,8 +35,7 @@ public class DepsTests {
 
     static {
         JsModule[] annotations = UI.class.getAnnotationsByType(JsModule.class);
-        UI_IMPORTS = Arrays.stream(annotations).map(JsModule::value)
-                .toList();
+        UI_IMPORTS = Arrays.stream(annotations).map(JsModule::value).toList();
     }
 
     public static <T> List<T> merge(Map<ChunkInfo, List<T>> values) {
