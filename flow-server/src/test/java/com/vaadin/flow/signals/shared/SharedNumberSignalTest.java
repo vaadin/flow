@@ -71,8 +71,8 @@ public class SharedNumberSignalTest extends SignalTestBase {
     @Test
     void getAsInt_decimalValue_valueIsTruncated() {
         SharedNumberSignal signal = new SharedNumberSignal(2.718);
-
-        assertEquals(2, signal.getAsInt());
+        assertEquals(2,
+                Signal.runInTransaction(() -> signal.getAsInt()).returnValue());
     }
 
     @Test
