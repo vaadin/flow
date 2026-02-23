@@ -244,7 +244,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
-        assertEquals("different", signal.get());
+        assertEquals("different", signal.peek());
     }
 
     @Test
@@ -266,7 +266,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
     }
 
     @Test
@@ -288,7 +288,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
-        assertNull(signal.get());
+        assertNull(signal.peek());
     }
 
     @Test
@@ -672,12 +672,12 @@ public class ValueSignalTest extends SignalTestBase {
         // "apricot" starts with 'a' like "apple", should be considered equal
         signal.set("apricot");
         assertFalse(invoked.get());
-        assertEquals("apple", signal.get());
+        assertEquals("apple", signal.peek());
 
         // "banana" starts with 'b', should trigger change
         signal.set("banana");
         assertTrue(invoked.get());
-        assertEquals("banana", signal.get());
+        assertEquals("banana", signal.peek());
     }
 
     @Test
@@ -705,12 +705,12 @@ public class ValueSignalTest extends SignalTestBase {
         // "HELLO" is equal case-insensitively, should not trigger change
         signal.update(x -> "HELLO");
         assertFalse(invoked.get());
-        assertEquals("Hello", signal.get());
+        assertEquals("Hello", signal.peek());
 
         // "World" is different, should trigger change
         signal.update(x -> "World");
         assertTrue(invoked.get());
-        assertEquals("World", signal.get());
+        assertEquals("World", signal.peek());
     }
 
     @Test
@@ -731,7 +731,7 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         // Same reference, should not trigger change
-        String value = signal.get();
+        String value = signal.peek();
         signal.set(value);
         assertFalse(invoked.get());
 
@@ -768,13 +768,13 @@ public class ValueSignalTest extends SignalTestBase {
         boolean result = signal.replace("HELLO", "HELLO");
         assertTrue(result);
         assertFalse(invoked.get());
-        assertEquals("Hello", signal.get());
+        assertEquals("Hello", signal.peek());
 
         // Replace with different value
         result = signal.replace("HELLO", "World");
         assertTrue(result);
         assertTrue(invoked.get());
-        assertEquals("World", signal.get());
+        assertEquals("World", signal.peek());
     }
 
     @Test
