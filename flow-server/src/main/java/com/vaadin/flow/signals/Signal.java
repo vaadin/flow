@@ -167,8 +167,17 @@ public interface Signal<T> extends Serializable {
      * when the effect is created and is subsequently run again whenever there's
      * a change to any signal value that was read during the last invocation.
      * <p>
+     * An unbound effect executes without holding the session lock, similar to a
+     * background thread. If the effect action needs to modify components or
+     * other UI state, it must explicitly acquire the lock using
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}.
+     * This applies even when creating the effect while already holding the
+     * session lock, as the effect callbacks run independently and may execute
+     * after the session has expired or been invalidated.
+     * <p>
      * Consider using {@link #effect(Component, EffectAction)} instead to tie
-     * the effect lifecycle to a component.
+     * the effect lifecycle to a component and automatically manage the session
+     * lock.
      *
      * @param action
      *            the effect action to use, not <code>null</code>
