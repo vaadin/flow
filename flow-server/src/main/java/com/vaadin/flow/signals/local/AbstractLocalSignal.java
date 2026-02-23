@@ -41,7 +41,6 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private int version;
-    @SuppressWarnings("NullAway")
     private T signalValue;
     private transient @Nullable VaadinSession ownerSession;
 
@@ -51,7 +50,6 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      * @param initialValue
      *            the initial value
      */
-    @SuppressWarnings("NullAway")
     protected AbstractLocalSignal(T initialValue) {
         this.signalValue = initialValue;
     }
@@ -81,7 +79,6 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
         }
     }
 
-    @SuppressWarnings("NullAway")
     @Override
     public T get() {
         if (!UsageTracker.isGetAllowed()) {
@@ -104,7 +101,6 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
         }
     }
 
-    @SuppressWarnings("NullAway")
     @Override
     public T peek() {
         lock.lock();

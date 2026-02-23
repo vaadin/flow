@@ -210,7 +210,6 @@ public class ValueSignal<T extends @Nullable Object>
      *            the value update callback, not <code>null</code>
      * @return the previous value
      */
-    @SuppressWarnings("NullAway")
     public synchronized T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
@@ -245,7 +244,6 @@ public class ValueSignal<T extends @Nullable Object>
      *            a callback that receives the current value to modify, not
      *            <code>null</code>
      */
-    @SuppressWarnings("NullAway")
     public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 
@@ -291,7 +289,6 @@ public class ValueSignal<T extends @Nullable Object>
      *
      * @return the new readonly signal, not <code>null</code>
      */
-    @SuppressWarnings("NullAway")
     public Signal<T> asReadonly() {
         return () -> get();
     }
