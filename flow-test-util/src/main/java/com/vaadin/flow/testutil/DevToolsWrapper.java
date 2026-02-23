@@ -30,13 +30,15 @@ import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
 import org.openqa.selenium.devtools.v144.network.Network;
 import org.openqa.selenium.remote.Augmenter;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.http.ClientConfig;
 
 public class DevToolsWrapper {
     private final WebDriver driver;
     private final Duration timeout = Duration.ofSeconds(3);
     private final HashMap<TargetID, SessionID> attachedTargets = new HashMap<TargetID, SessionID>();
     private Connection connection = null;
+    private DevTools devTools = null;
+    private Domains domains = null;
 
     public DevToolsWrapper(WebDriver driver) {
         this.driver = driver;
@@ -70,9 +72,18 @@ public class DevToolsWrapper {
         sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 
+    public void close() {
+        if (devTools != null) {
+            devTools.close();
+        }
+        if (connection != null) {
+            connection.close();
+        }
+    }
+
     /**
      * Creates a custom DevTools CDP connection if there is not one yet.
-     *
+     * <p>
      * Note, there is already a CDP connection provided by {@link DevTools} but
      * it allows sending commands only to the page session whereas we need to
      * also send commands to service workers. Therefore a custom connection is
@@ -80,7 +91,8 @@ public class DevToolsWrapper {
      */
     private void createConnectionIfThereIsNotOne() {
         if (connection == null) {
-            connection = SeleniumCdpConnection.create(driver).get();
+            connection = SeleniumCdpConnection
+                    .create(driver, ClientConfig.defaultConfig()).get();
         }
     }
 
@@ -88,9 +100,9 @@ public class DevToolsWrapper {
      * Attaches to all the available targets by creating a session per each.
      * These sessions can be later used for sending commands to the
      * corresponding targets.
-     *
+     * <p>
      * Every target represents a certain browser page, service worker and etc.
-     *
+     * <p>
      * Read more about targets and sessions here:
      * https://github.com/aslushnikov/getting-started-with-cdp#targets--sessions
      */
@@ -100,8 +112,9 @@ public class DevToolsWrapper {
         connection
                 .sendAndWait(null, getDomains().target().getTargets(), timeout)
                 .stream()
-                .filter((target) -> !attachedTargets
-                        .containsKey(target.getTargetId()))
+                .filter((target) -> attachedTargets.keySet().stream()
+                        .noneMatch(t -> t.toString()
+                                .equals(target.getTargetId().toString())))
                 .forEach((target) -> {
                     TargetID targetId = target.getTargetId();
                     SessionID sessionId = connection.sendAndWait(null,
@@ -123,12 +136,17 @@ public class DevToolsWrapper {
     }
 
     private DevTools getDevTools() {
-        WebDriver driver = new Augmenter()
-                .augment((RemoteWebDriver) this.driver);
-        return ((HasDevTools) driver).getDevTools();
+        if (devTools == null) {
+            WebDriver augmented = new Augmenter().augment(this.driver);
+            devTools = ((HasDevTools) augmented).getDevTools();
+        }
+        return devTools;
     }
 
     private Domains getDomains() {
-        return getDevTools().getDomains();
+        if (domains == null) {
+            domains = getDevTools().getDomains();
+        }
+        return domains;
     }
 }
