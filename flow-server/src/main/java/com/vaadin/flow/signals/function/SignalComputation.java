@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.signals.Signal;
@@ -33,7 +35,7 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#computed(SignalComputation)
  */
 @FunctionalInterface
-public interface SignalComputation<T> extends TrackableSupplier<T> {
+public interface SignalComputation<T> extends Serializable {
     /**
      * Computes the signal value, automatically tracking dependencies on other
      * signals.
@@ -42,10 +44,4 @@ public interface SignalComputation<T> extends TrackableSupplier<T> {
      */
     @Nullable
     T compute();
-
-    @Override
-    @Nullable
-    default T supply() {
-        return compute();
-    }
 }

@@ -28,6 +28,7 @@ import com.vaadin.flow.signals.SignalCommand.SetCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.CancelableOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -346,7 +347,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -370,7 +371,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -391,7 +392,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -414,7 +415,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -438,7 +439,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AtomicInteger falseCount = new AtomicInteger();
         AtomicInteger trueCount = new AtomicInteger();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -466,7 +467,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedListSignal<String> list = new SharedListSignal<>(String.class);
         SharedValueSignal<String> signal = list.insertLast("value").signal();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
@@ -482,7 +483,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         list.remove(signal);
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 

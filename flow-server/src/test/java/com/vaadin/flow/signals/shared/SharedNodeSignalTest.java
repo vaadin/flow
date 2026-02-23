@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
-import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.PutIfAbsentResult;
@@ -441,20 +441,20 @@ public class SharedNodeSignalTest extends SignalTestBase {
     void usageTracking_changeDifferentValues_anyChangeDetected() {
         SharedNodeSignal signal = new SharedNodeSignal();
 
-        Usage usage = TestUtil.runAndTrackUsage(() -> {
+        Usage usage = UsageTracker.track(() -> {
             signal.get();
         });
 
         signal.asValue(String.class).set("value");
         assertTrue(usage.hasChanges());
 
-        usage = TestUtil.runAndTrackUsage(() -> {
+        usage = UsageTracker.track(() -> {
             signal.get();
         });
         signal.insertChildWithValue("insert", ListPosition.last());
         assertTrue(usage.hasChanges());
 
-        usage = TestUtil.runAndTrackUsage(() -> {
+        usage = UsageTracker.track(() -> {
             signal.get();
         });
         signal.putChildWithValue("key", "value");

@@ -24,10 +24,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableExecutor;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.function.TrackableSupplier;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback
@@ -45,7 +46,7 @@ public class Effect implements Serializable {
     private final List<Registration> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
-    private @Nullable TrackableSupplier<Void> action;
+    private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
@@ -55,9 +56,10 @@ public class Effect implements Serializable {
      * again whenever there's a change to any signal value that was read during
      * the last invocation.
      *
+     * @see SignalEnvironment#getDefaultEffectDispatcher()
+     *
      * @param action
      *            the action to use, not <code>null</code>
-     * @see SignalEnvironment#getDefaultEffectDispatcher()
      */
     public Effect(EffectAction action) {
         this(action, SignalEnvironment.getDefaultEffectDispatcher()::execute);
@@ -94,7 +96,6 @@ public class Effect implements Serializable {
                                 e));
                 dispose();
             }
-            return null;
         };
 
         assert dispatcher != null;
@@ -117,24 +118,22 @@ public class Effect implements Serializable {
 
         activeEffects.get().add(this);
         try {
-            // avoid lambda to allow proper deserialization
-            TransientListener usageListener = new TransientListener() {
-                @Override
-                public boolean invoke(boolean immediate) {
-                    return onDependencyChange(immediate);
-                }
-            };
-            // avoid lambda to allow proper deserialization
-            UsageTracker.UsageRegistrar usageRegistrar = new UsageTracker.UsageRegistrar() {
-                @Override
-                public void register(UsageTracker.Usage usage) {
-                    registrations.add(usage.onNextChange(usageListener));
-                }
-            };
-            UsageTracker.TrackedSupplier<Void> trackedSupplier = UsageTracker
-                    .tracked(action).withUsageListener(usageRegistrar);
-            trackedSupplier.supply();
-            trackedSupplier.assertHasUsage("Effect action must use signals.");
+            boolean[] hasSignalUsage = { false };
+            UsageTracker.track(action, usage -> {
+                hasSignalUsage[0] = true;
+                // avoid lambda to allow proper deserialization
+                TransientListener usageListener = new TransientListener() {
+                    @Override
+                    public boolean invoke(boolean immediate) {
+                        return onDependencyChange(immediate);
+                    }
+                };
+                registrations.add(usage.onNextChange(usageListener));
+            });
+            if (!hasSignalUsage[0]) {
+                throw new MissingSignalUsageException(
+                        "Effect action must read at least one signal value.");
+            }
         } finally {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;
@@ -176,7 +175,9 @@ public class Effect implements Serializable {
 
     private synchronized void invalidate() {
         invalidateScheduled.set(false);
+
         clearRegistrations();
+
         revalidate();
     }
 
@@ -193,4 +194,5 @@ public class Effect implements Serializable {
         clearRegistrations();
         action = null;
     }
+
 }

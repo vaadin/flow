@@ -24,6 +24,7 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
@@ -40,12 +41,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ComputedSignalTest extends SignalTestBase {
 
     @Test
+    void value_constantCallback_throws() {
+        Signal<String> signal = Signal.computed(() -> "const");
+        assertThrows(MissingSignalUsageException.class, signal::get);
+    }
+
+    @Test
     void value_constantCallback_runOnceAndConstantSignalValue() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         AtomicInteger count = new AtomicInteger();
         Signal<Object> signal = Signal.computed(() -> {
+            dependency.get();
             count.incrementAndGet();
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
             return null;
         });
 
@@ -54,14 +61,6 @@ public class ComputedSignalTest extends SignalTestBase {
 
         signal.get();
         assertEquals(1, count.intValue());
-    }
-
-    @Test
-    void value_constantCallback_throws() {
-        Signal<String> signal = Signal.computed(() -> "const");
-
-        assertThrows(UsageTracker.MissingSignalUsageException.class,
-                signal::get);
     }
 
     @Test
@@ -164,11 +163,11 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void callback_updateOtherSignal_signalUpdated() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<String> signal = Signal.computed((() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             other.set("update");
             return null;
         }));

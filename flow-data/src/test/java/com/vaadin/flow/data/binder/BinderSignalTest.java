@@ -27,8 +27,8 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.tests.data.bean.Person;
 
@@ -706,10 +706,8 @@ public class BinderSignalTest extends SignalsUnitTest {
             return true;
         }, "Bean level validation with a signal failed");
 
-        assertThrows(UsageTracker.DeniedSignalUsageException.class,
-                () -> binder.validate());
-        assertThrows(UsageTracker.DeniedSignalUsageException.class,
-                () -> binder.isValid());
+        assertThrows(DeniedSignalUsageException.class, () -> binder.validate());
+        assertThrows(DeniedSignalUsageException.class, () -> binder.isValid());
     }
 
     @Test
@@ -870,24 +868,23 @@ public class BinderSignalTest extends SignalsUnitTest {
         });
 
         // change field values to valid and invalid back-and-forth
-        // Note: effect counts are higher due to internal signal tracking
         firstNameField.setValue("");
         assertFalse(prevStatus.get());
-        assertEquals(3, effectCalled.get());
+        assertEquals(2, effectCalled.get());
 
         firstNameField.setValue("foo");
-        assertEquals(5, effectCalled.get());
+        assertEquals(3, effectCalled.get());
         assertTrue(prevStatus.get());
 
         lastNameField.setValue("");
-        assertEquals(7, effectCalled.get());
+        assertEquals(4, effectCalled.get());
         assertFalse(prevStatus.get());
 
         firstNameField.setValue("");
         assertFalse(prevStatus.get());
-        assertEquals(9, effectCalled.get());
+        assertEquals(5, effectCalled.get());
         firstNameField.setValue("foo");
-        assertEquals(11, effectCalled.get());
+        assertEquals(6, effectCalled.get());
         assertFalse(prevStatus.get(),
                 "Binder status change signal should be invalid when other field is still invalid.");
     }

@@ -193,9 +193,9 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal<?> computedSignal = Signal.computed(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             return null;
         });
         component.getElement().bindProperty("foo", computedSignal, null);
@@ -209,9 +209,9 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal<?> computedSignal = Signal.computed(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             return JacksonUtils.createObjectNode();
         });
         component.getElement().bindProperty("bar", computedSignal, null);

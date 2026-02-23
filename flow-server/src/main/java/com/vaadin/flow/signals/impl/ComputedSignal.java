@@ -25,6 +25,7 @@ import tools.jackson.databind.node.POJONode;
 
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -196,23 +197,25 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
-            var trackedComputation = UsageTracker.tracked(computation);
-
             @Nullable
-            Object value = null;
-            @Nullable
-            RuntimeException exception = null;
-            try {
-                value = trackedComputation.supply();
-            } catch (RuntimeException e) {
-                exception = e;
+            Object[] holder = new @Nullable Object[2];
+            Usage dependencies = UsageTracker.track(() -> {
+                try {
+                    holder[0] = computation.compute();
+                } catch (RuntimeException e) {
+                    holder[1] = e;
+                }
+            });
+            if (dependencies == UsageTracker.NO_USAGE) {
+                throw new MissingSignalUsageException(
+                        "Signal computation must read at least one signal value.");
             }
+            @Nullable
+            Object value = holder[0];
+            @Nullable
+            RuntimeException exception = (RuntimeException) holder[1];
 
-            trackedComputation.assertHasUsage(
-                    "Signal computation must use other signals.");
-
-            state = new ComputedState(value, exception,
-                    trackedComputation.dependencies());
+            state = new ComputedState(value, exception, dependencies);
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
                     new ComputedPOJONode(state)));

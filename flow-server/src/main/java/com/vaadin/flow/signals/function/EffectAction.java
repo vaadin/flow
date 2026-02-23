@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -29,14 +31,9 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#unboundEffect(EffectAction)
  */
 @FunctionalInterface
-public interface EffectAction extends TrackableSupplier<Void> {
+public interface EffectAction extends Serializable {
     /**
      * Executes the effect action, automatically tracking signal dependencies.
      */
     void execute();
-
-    @Override
-    default Void supply() {
-        return null;
-    }
 }

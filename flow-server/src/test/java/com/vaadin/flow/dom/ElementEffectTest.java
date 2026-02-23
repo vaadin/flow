@@ -134,9 +134,9 @@ class ElementEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -159,7 +159,9 @@ class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             currentUI.set(UI.getCurrent());
         });
 
@@ -194,7 +196,9 @@ class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             currentUI.set(UI.getCurrent());
         });
 
@@ -218,9 +222,9 @@ class ElementEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             throw new RuntimeException("Expected exception");
         });
 
@@ -245,9 +249,9 @@ class ElementEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             throw new RuntimeException("Expected exception");
         });
 

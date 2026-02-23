@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -41,20 +42,19 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_noSignalUsage_throws() {
-        assertThrows(UsageTracker.MissingSignalUsageException.class, () -> {
+        assertThrows(MissingSignalUsageException.class, () -> {
             Signal.unboundEffect(() -> {
-                // no-op - action doesn't read any signals
             });
         });
     }
 
     @Test
     void newEffect_actionIsRunOnce() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             count.incrementAndGet();
         });
 
@@ -63,11 +63,11 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             count.incrementAndGet();
         }).remove();
 
@@ -130,13 +130,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -156,13 +156,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -403,10 +403,10 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.unboundEffect(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             throw exception;
         });
 

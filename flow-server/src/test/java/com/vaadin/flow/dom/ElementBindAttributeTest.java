@@ -272,9 +272,9 @@ class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal<String> signal = Signal.computed(() -> {
-            // bypass signal usage requirement
-            new ValueSignal<>().get();
+            dependency.get();
             return "bar";
         });
         Signal<String> computedSignal = Signal

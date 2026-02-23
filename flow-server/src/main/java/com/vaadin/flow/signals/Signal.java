@@ -196,7 +196,7 @@ public interface Signal<T> extends Serializable {
      * Crates a new computed signal containing the negation of the provided
      * boolean-valued signal. <code>null</code> values are preserved as
      * <code>null</code>.
-     *
+     * 
      * @param signal
      *            the boolean-valued signal to negate, not <code>null</code>
      * @return the negated signal, not <code>null</code>
