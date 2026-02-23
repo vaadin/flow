@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.util.LinkedList;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -151,7 +152,7 @@ class ElementBindTextTest {
     public void bindText_initialEmptySignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>("");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>(null);
         element.bindText(signal);
         assertEquals("", element.getText());
         assertTrue(events.isEmpty());

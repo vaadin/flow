@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
@@ -58,6 +59,7 @@ public class ValueSignal<T extends @Nullable Object>
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
     private transient boolean usedWithoutSessionLock = false;
+    private final SerializableBiPredicate<T, T> equalityChecker;
 
     /**
      * Creates a new value signal with the given initial value.
@@ -65,8 +67,30 @@ public class ValueSignal<T extends @Nullable Object>
      * @param initialValue
      *            the initial value
      */
-    public ValueSignal(T initialValue) {
+    public ValueSignal(@Nullable T initialValue) {
+        this(initialValue, Objects::equals);
+    }
+
+    /**
+     * Creates a new value signal with the given initial value and a custom
+     * equality checker.
+     * <p>
+     * The equality checker is used to determine if a new value is equal to the
+     * current value. If the equality checker returns {@code true}, the value
+     * update is skipped, and no change notification is triggered, i.e., no
+     * dependent effect function is triggered.
+     *
+     * @param initialValue
+     *            the initial value, may be <code>null</code>
+     * @param equalityChecker
+     *            the predicate used to compare values for equality, not
+     *            <code>null</code>
+     */
+    public ValueSignal(@Nullable T initialValue,
+            SerializableBiPredicate<T, T> equalityChecker) {
         super(initialValue);
+        this.equalityChecker = Objects.requireNonNull(equalityChecker,
+                "Equality checker must not be null");
     }
 
     @Override
@@ -105,8 +129,12 @@ public class ValueSignal<T extends @Nullable Object>
     /**
      * Sets the value of this signal.
      * <p>
-     * Setting a new value will trigger effect functions that have reads from
-     * this signal.
+     * If the new value is not equal to the current value, the value is set and
+     * effect functions that have reads from this signal are triggered. If the
+     * values are equal, no change is made and effect functions are not
+     * triggered. The equality checker provided in the constructor is used to
+     * compare the values and defaults to
+     * {@link Objects#equals(Object, Object)}.
      *
      * @param value
      *            the value to set
@@ -116,7 +144,9 @@ public class ValueSignal<T extends @Nullable Object>
         try {
             checkPreconditions();
 
-            setSignalValue(value);
+            if (!equalityChecker.test(value, getSignalValue())) {
+                setSignalValue(value);
+            }
         } finally {
             unlock();
         }
@@ -128,8 +158,12 @@ public class ValueSignal<T extends @Nullable Object>
      * counterpart to
      * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
      * <p>
-     * Comparison between the expected value and the new value is performed
-     * using {@link #equals(Object)}.
+     * If the expected value matches and the new value differs from the old
+     * value, the value is set and effect functions are triggered. If the
+     * expected value matches but the new value equals the old value, no change
+     * is made and effect functions are not triggered. The equality checker
+     * provided in the constructor is used to compare the expected value with
+     * the current value, and to compare the new value with the old value.
      *
      * @param expectedValue
      *            the expected value
@@ -143,8 +177,10 @@ public class ValueSignal<T extends @Nullable Object>
         try {
             checkPreconditions();
 
-            if (Objects.equals(expectedValue, getSignalValue())) {
-                setSignalValue(newValue);
+            if (equalityChecker.test(expectedValue, getSignalValue())) {
+                if (!equalityChecker.test(newValue, getSignalValue())) {
+                    setSignalValue(newValue);
+                }
                 return true;
             } else {
                 return false;
@@ -165,6 +201,10 @@ public class ValueSignal<T extends @Nullable Object>
      * would occur after the original transaction has already been committed.
      * For this reason, the whole operation completely bypasses all transaction
      * handling.
+     * <p>
+     * If the new value is equal to the current value, no change is made and
+     * effect functions are not triggered. The equality checker provided in the
+     * constructor is used to compare the values.
      *
      * @param updater
      *            the value update callback, not <code>null</code>
@@ -179,7 +219,7 @@ public class ValueSignal<T extends @Nullable Object>
 
             T oldValue = getSignalValue();
             T newValue = updater.update(oldValue);
-            if (newValue != oldValue) {
+            if (!equalityChecker.test(newValue, oldValue)) {
                 setSignalValue(newValue);
             }
 
