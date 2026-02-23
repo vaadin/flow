@@ -43,7 +43,7 @@ public class ComputedSignalTest extends SignalTestBase {
     @Test
     void value_constantCallback_throws() {
         Signal<String> signal = Signal.computed(() -> "const");
-        assertThrows(MissingSignalUsageException.class, signal::get);
+        assertThrows(MissingSignalUsageException.class, signal::peek);
     }
 
     @Test
