@@ -116,6 +116,14 @@ public abstract class AsynchronousSignalTree extends SignalTree {
      * commands were involved. Uses the top-level command list to determine the
      * count rather than the results key set, since results may also include
      * sub-command IDs from transaction commands.
+     * <p>
+     * When this returns {@code true} and there are additional unconfirmed
+     * commands beyond the confirmed ones, submitted still doesn't need to be
+     * rebuilt. If unconfirmed was [A, B, C] and confirmed is [A], then the
+     * current submitted was built as {@code old_confirmed + A + B + C}. After
+     * confirming A, the new confirmed is {@code old_confirmed + A}, so
+     * rebuilding would give {@code (old_confirmed + A) + B + C} which is the
+     * same as the current submitted.
      */
     private static boolean wereAtHead(List<SignalCommand> unconfirmedCommands,
             List<SignalCommand> confirmedCommands) {
