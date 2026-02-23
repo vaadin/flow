@@ -20,9 +20,8 @@ import jakarta.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
@@ -31,7 +30,9 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 
-public class SpringApplicationConfigurationFactoryTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SpringApplicationConfigurationFactoryTest {
 
     private WebApplicationContext webAppContext = Mockito
             .mock(WebApplicationContext.class);
@@ -47,8 +48,8 @@ public class SpringApplicationConfigurationFactoryTest {
 
     private Map<String, Object> map = new HashMap<>();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Mockito.doAnswer(invocation -> {
             map.put(invocation.getArgument(0), invocation.getArgument(1));
             return null;
@@ -67,7 +68,7 @@ public class SpringApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void doCreate_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
+    void doCreate_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
         String prefix = "foo_";
         SpringServlet.PROPERTY_NAMES.stream()
                 .forEach(name -> Mockito.when(env.getProperty("vaadin." + name))
@@ -76,21 +77,19 @@ public class SpringApplicationConfigurationFactoryTest {
         ApplicationConfiguration config = factory.doCreate(context, props);
 
         for (String prop : SpringServlet.PROPERTY_NAMES) {
-            Assert.assertEquals(
+            assertEquals(prefix + prop, config.getStringProperty(prop, null),
                     "'" + prop + "' property is not available via "
-                            + ApplicationConfiguration.class,
-                    prefix + prop, config.getStringProperty(prop, null));
-            Assert.assertEquals("'" + prop
+                            + ApplicationConfiguration.class);
+            assertEquals(prefix + prop, props.get(prop), "'" + prop
                     + "' property is not set in the properties map passed to the "
-                    + ApplicationConfiguration.class.getSimpleName() + " CTOR",
-                    prefix + prop, props.get(prop));
+                    + ApplicationConfiguration.class.getSimpleName() + " CTOR");
         }
 
-        Assert.assertEquals(SpringServlet.PROPERTY_NAMES.size(), props.size());
+        assertEquals(SpringServlet.PROPERTY_NAMES.size(), props.size());
     }
 
     @Test
-    public void doCreate__servletContextIsNotYetAvailableViaSrpingUtils_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
+    void doCreate__servletContextIsNotYetAvailableViaSrpingUtils_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
         Mockito.when(webAppContext.getServletContext())
                 .thenReturn(servletContext);
         Mockito.when(servletContext.getAttribute(

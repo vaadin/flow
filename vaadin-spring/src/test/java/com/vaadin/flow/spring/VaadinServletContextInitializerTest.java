@@ -26,10 +26,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -54,7 +53,9 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
 
-public class VaadinServletContextInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class VaadinServletContextInitializerTest {
 
     @Mock
     private ApplicationContext applicationContext;
@@ -84,8 +85,8 @@ public class VaadinServletContextInitializerTest {
 
     private MockedStatic<ServletDeployer> servletDeployerMock;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.openMocks(this);
 
         Mockito.when(applicationContext.getBeansOfType(Executor.class))
@@ -96,8 +97,8 @@ public class VaadinServletContextInitializerTest {
         servletDeployerMock = Mockito.mockStatic(ServletDeployer.class);
     }
 
-    @After
-    public void teardown() {
+    @AfterEach
+    void teardown() {
         autoConfigurationPackagesMock.close();
         autoConfigurationPackagesMock = null;
         servletDeployerMock.close();
@@ -105,8 +106,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void onStartup_devModeNotInitialized_devModeInitialized()
-            throws Exception {
+    void onStartup_devModeNotInitialized_devModeInitialized() throws Exception {
         initDefaultMocks();
 
         Mockito.when(devModeHandlerManager.getDevModeHandler())
@@ -127,7 +127,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void onStartup_devModeAlreadyInitialized_devModeInitializationSkipped()
+    void onStartup_devModeAlreadyInitialized_devModeInitializationSkipped()
             throws Exception {
         initDefaultMocks();
 
@@ -151,7 +151,7 @@ public class VaadinServletContextInitializerTest {
     }
 
     @Test
-    public void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewExtendingRouteNotFoundError_customRouteNotFoundViewIsRegistered()
+    void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewExtendingRouteNotFoundError_customRouteNotFoundViewIsRegistered()
             throws Exception {
         // given
         initDefaultMocks();
@@ -177,11 +177,11 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        assertEquals(TestErrorView.class, navigationTarget);
     }
 
     @Test
-    public void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewImplementingHasErrorParameter_customRouteNotFoundViewIsRegistered()
+    void errorParameterServletContextListenerEvent_hasCustomRouteNotFoundViewImplementingHasErrorParameter_customRouteNotFoundViewIsRegistered()
             throws Exception {
         // given
         initDefaultMocks();
@@ -213,7 +213,7 @@ public class VaadinServletContextInitializerTest {
         final Class<? extends Component> navigationTarget = registry
                 .getErrorNavigationTarget(new NotFoundException()).get()
                 .getNavigationTarget();
-        Assert.assertEquals(TestErrorView.class, navigationTarget);
+        assertEquals(TestErrorView.class, navigationTarget);
     }
 
     private Runnable initRouteNotFoundMocksAndGetContextInitializedMockCall(
