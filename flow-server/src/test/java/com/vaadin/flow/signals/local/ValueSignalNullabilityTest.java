@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.signals.local;
 
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-@NullMarked
 public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test

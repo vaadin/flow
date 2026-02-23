@@ -61,8 +61,9 @@ public class TestUtil {
         return Transaction.getCurrent().read(tree).data(Id.ZERO).get().value();
     }
 
-    public static <T extends @Nullable Object> T assertSuccess(
-            SignalOperation<T> operation) {
+    // Result.value() is @Nullable T but successful results always have a value
+    @SuppressWarnings("NullAway")
+    public static <T> T assertSuccess(SignalOperation<T> operation) {
         if (assertCompleted(operation) instanceof Result<T> result) {
             return result.value();
         } else {

@@ -25,6 +25,7 @@ import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -125,6 +126,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
                 IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
+        assertNotNull(message);
         assertTrue(message.contains("ValueSignal"));
         assertTrue(message.contains("SharedValueSignal"));
         assertTrue(message.contains("static field"));
@@ -190,6 +192,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
                 IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
+        assertNotNull(message);
         assertTrue(message.contains("ListSignal"));
         assertTrue(message.contains("static field"));
     }

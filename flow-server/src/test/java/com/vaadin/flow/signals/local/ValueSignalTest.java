@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
@@ -206,7 +207,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_nullToNull_noChangeDetected() {
-        ValueSignal<String> signal = new ValueSignal<>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -249,7 +250,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_nullToDifferent_changeDetected() {
-        ValueSignal<String> signal = new ValueSignal<>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -271,7 +272,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_differentToNull_changeDetected() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -314,7 +315,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void set_nullToNull_noChangeDetected() {
-        ValueSignal<String> signal = new ValueSignal<>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -641,6 +642,7 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void customEqualityChecker_nullNotAllowed_throws() {
         assertThrows(NullPointerException.class,
                 () -> new ValueSignal<>("initial", null));
