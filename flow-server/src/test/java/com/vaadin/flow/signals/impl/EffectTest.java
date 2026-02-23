@@ -291,6 +291,7 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // Deliberately testing null value behavior
     void changeTracking_changeValueToNull_effectTriggered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();

@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.operations.SignalOperation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SharedNumberSignalTest extends SignalTestBase {
@@ -64,6 +65,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
 
         assertEquals(3, signal.peek());
 
+        assertNotNull(operation);
         Double result = TestUtil.assertSuccess(operation);
         assertEquals(3, result);
     }
@@ -152,6 +154,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void peek_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
         signal.set(null);
@@ -159,6 +162,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void peekConfirmed_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
         signal.set(null);

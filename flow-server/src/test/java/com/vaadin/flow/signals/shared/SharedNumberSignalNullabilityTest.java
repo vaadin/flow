@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.SignalTestBase;
@@ -31,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-@NullMarked
 public class SharedNumberSignalNullabilityTest extends SignalTestBase {
 
     @Test

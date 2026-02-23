@@ -37,6 +37,7 @@ public class SharedValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void updater_nullUpdater_throwsNullPointerException() {
         SharedValueSignal<ImmutablePerson> signal = new SharedValueSignal<>(
                 new ImmutablePerson("Alice", 30));

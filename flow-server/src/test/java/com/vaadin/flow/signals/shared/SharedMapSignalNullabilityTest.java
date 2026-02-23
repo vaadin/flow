@@ -17,7 +17,6 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.Map;
 
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-@NullMarked
 public class SharedMapSignalNullabilityTest extends SignalTestBase {
 
     @Test
