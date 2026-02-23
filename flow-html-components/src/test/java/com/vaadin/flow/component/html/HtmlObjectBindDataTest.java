@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for {@link HtmlObject#bindData(com.vaadin.flow.signals.Signal)}.
@@ -73,7 +73,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
                 () -> htmlObject.bindData(null));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void bindData_setDataWhileBound_throwsException() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
@@ -81,10 +81,11 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         htmlObject.bindData(signal);
 
-        htmlObject.setData("manual");
+        assertThrows(BindingActiveException.class,
+                () -> htmlObject.setData("manual"));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void bindData_bindAgainWhileBound_throwsException() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
@@ -92,6 +93,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         htmlObject.bindData(signal);
 
-        htmlObject.bindData(new ValueSignal<>("other"));
+        assertThrows(BindingActiveException.class,
+                () -> htmlObject.bindData(new ValueSignal<>("other")));
     }
 }
