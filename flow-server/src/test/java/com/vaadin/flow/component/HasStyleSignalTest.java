@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for
@@ -102,7 +103,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
         assertTrue(component.hasClassName("class2"));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void bindClassName_addClassNameWhileBound_throwsException() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
@@ -110,10 +111,11 @@ public class HasStyleSignalTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindClassName("active", signal);
 
-        component.addClassName("active");
+        assertThrows(BindingActiveException.class,
+                () -> component.addClassName("active"));
     }
 
-    @Test(expected = BindingActiveException.class)
+    @Test
     public void bindClassName_bindAgainWhileBound_throwsException() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
@@ -121,6 +123,8 @@ public class HasStyleSignalTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindClassName("active", signal);
 
-        component.bindClassName("active", new ValueSignal<>(false));
+        assertThrows(BindingActiveException.class,
+                () -> component.bindClassName("active",
+                        new ValueSignal<>(false)));
     }
 }
