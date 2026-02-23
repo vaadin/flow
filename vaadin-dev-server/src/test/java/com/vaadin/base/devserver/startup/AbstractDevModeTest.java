@@ -51,8 +51,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class AbstractDevModeTest {
 
-    // CleanupMode.NEVER is needed because dev mode handler may still hold
-    // file locks when JUnit tries to delete the temp directory after tests
+    // JUnit 4 TemporaryFolder silently ignored cleanup failures, but JUnit 5
+    // @TempDir fails the test. node_modules created by dev mode cannot always
+    // be deleted, so skip automatic cleanup.
     @TempDir(cleanup = CleanupMode.NEVER)
     File temporaryFolder;
     protected ApplicationConfiguration appConfig;
