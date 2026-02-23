@@ -195,6 +195,7 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertTrue(handler.result.accepted());
     }
 
@@ -213,6 +214,7 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertFalse(handler.result.accepted());
     }
 

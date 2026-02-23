@@ -1,4 +1,4 @@
-@NullUnmarked
+@NullMarked
 package com.vaadin.flow.signals.shared.impl;
 
-import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.NullMarked;
