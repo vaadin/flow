@@ -427,10 +427,10 @@ public class EffectTest extends SignalTestBase {
         Signal.unboundEffect(() -> {
             other.set(signal.get());
         });
-        assertEquals("signal", other.get());
+        assertEquals("signal", other.peek());
 
         signal.set("update");
-        assertEquals("update", other.get());
+        assertEquals("update", other.peek());
     }
 
     @Test

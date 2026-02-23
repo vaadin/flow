@@ -42,7 +42,7 @@ public class ValueSignalTest extends SignalTestBase {
     void constructor_initialValue_initialValueUsed() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("");
         signal.set("value");
 
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
     }
 
     @Test
@@ -60,7 +60,7 @@ public class ValueSignalTest extends SignalTestBase {
         boolean result = signal.replace("initial", "update");
 
         assertTrue(result);
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ValueSignalTest extends SignalTestBase {
         boolean result = signal.replace("other", "update");
 
         assertFalse(result);
-        assertEquals("initial", signal.get());
+        assertEquals("initial", signal.peek());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertEquals("initial", previousValue);
 
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ValueSignalTest extends SignalTestBase {
             });
 
             assertEquals("update", holder[0]);
-            assertSame(holder, signal.get());
+            assertSame(holder, signal.peek());
             return null;
         });
     }
@@ -133,7 +133,7 @@ public class ValueSignalTest extends SignalTestBase {
         Signal<String> readonly = signal.asReadonly();
 
         signal.set("update");
-        assertEquals("update", readonly.get());
+        assertEquals("update", readonly.peek());
     }
 
     @Test
@@ -311,7 +311,7 @@ public class ValueSignalTest extends SignalTestBase {
         AtomicInteger completed = new AtomicInteger();
 
         Thread.startVirtualThread(() -> {
-            signal.get();
+            signal.peek();
             completed.incrementAndGet();
         });
 
@@ -382,7 +382,8 @@ public class ValueSignalTest extends SignalTestBase {
         // Wait until other thread is inside the modify method
         modifyStarted.acquireUninterruptibly();
 
-        assertThrows(ConcurrentModificationException.class, () -> signal.get());
+        assertThrows(ConcurrentModificationException.class,
+                () -> signal.peek());
         assertThrows(ConcurrentModificationException.class,
                 () -> signal.peek());
         assertThrows(ConcurrentModificationException.class,
@@ -404,7 +405,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {
-                signal.get();
+                signal.peek();
             });
         });
     }
@@ -481,7 +482,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         session.runWithLock(() -> {
             signal.modify(value -> value[0] = "modified");
-            signal.get();
+            signal.peek();
             signal.set(new String[] { "new" });
             return null;
         });
@@ -501,7 +502,7 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         Thread other = Thread.startVirtualThread(() -> {
-            assertThrows(IllegalStateException.class, () -> signal.get());
+            assertThrows(IllegalStateException.class, () -> signal.peek());
         });
         other.join();
     }
@@ -513,7 +514,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         signal.modify(value -> value[0] = "modified");
 
-        assertThrows(IllegalStateException.class, () -> signal.get());
+        assertThrows(IllegalStateException.class, () -> signal.peek());
     }
 
     private static void assertEventually(BooleanSupplier test) {

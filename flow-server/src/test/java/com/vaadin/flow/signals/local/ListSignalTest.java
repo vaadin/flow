@@ -38,7 +38,7 @@ public class ListSignalTest extends SignalTestBase {
     void constructor_empty_emptyList() {
         ListSignal<String> signal = new ListSignal<>();
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = signal.peek();
 
         assertTrue(value.isEmpty());
     }
@@ -49,7 +49,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertFirst("first");
 
-        assertEquals("first", entry.get());
+        assertEquals("first", entry.peek());
         assertValues(signal, "first");
     }
 
@@ -69,7 +69,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("last");
 
-        assertEquals("last", entry.get());
+        assertEquals("last", entry.peek());
         assertValues(signal, "last");
     }
 
@@ -91,7 +91,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertAt(1, "middle");
 
-        assertEquals("middle", entry.get());
+        assertEquals("middle", entry.peek());
         assertValues(signal, "first", "middle", "last");
     }
 
@@ -138,9 +138,9 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("value");
 
-        assertEquals("value", entry.get());
+        assertEquals("value", entry.peek());
         entry.set("updated");
-        assertEquals("updated", entry.get());
+        assertEquals("updated", entry.peek());
     }
 
     @Test
@@ -175,7 +175,7 @@ public class ListSignalTest extends SignalTestBase {
 
         signal.clear();
 
-        assertTrue(signal.get().isEmpty());
+        assertTrue(signal.peek().isEmpty());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = signal.peek();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new ValueSignal<>("new"));
@@ -207,12 +207,12 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("first");
 
-        List<ValueSignal<String>> snapshot = signal.get();
+        List<ValueSignal<String>> snapshot = signal.peek();
 
         signal.insertFirst("second");
 
         assertEquals(1, snapshot.size());
-        assertEquals("first", snapshot.get(0).get());
+        assertEquals("first", snapshot.get(0).peek());
     }
 
     @Test
@@ -469,7 +469,7 @@ public class ListSignalTest extends SignalTestBase {
 
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
-        List<String> values = signal.get().stream().map(ValueSignal::get)
+        List<String> values = signal.peek().stream().map(ValueSignal::peek)
                 .toList();
         assertEquals(List.of(expectedValues), values);
     }

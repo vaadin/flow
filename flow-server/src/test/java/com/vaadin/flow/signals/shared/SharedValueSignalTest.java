@@ -56,10 +56,10 @@ public class SharedValueSignalTest extends SignalTestBase {
     void constructor_type_noValueAndTypeIsUsed() {
         SharedValueSignal<String> signal = new SharedValueSignal<>(
                 String.class);
-        assertNull(signal.get());
+        assertNull(signal.peek());
 
         signal.set("a string");
-        assertEquals("a string", signal.get());
+        assertEquals("a string", signal.peek());
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -67,16 +67,16 @@ public class SharedValueSignalTest extends SignalTestBase {
 
             raw.set(new Object());
         });
-        assertEquals("a string", signal.get());
+        assertEquals("a string", signal.peek());
     }
 
     @Test
     void constructor_initialValue_valueUsedAndTypeIsInferred() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        assertEquals("initial", signal.get());
+        assertEquals("initial", signal.peek());
 
         signal.set("a string");
-        assertEquals("a string", signal.get());
+        assertEquals("a string", signal.peek());
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -84,7 +84,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
             raw.set(new Object());
         });
-        assertEquals("a string", signal.get());
+        assertEquals("a string", signal.peek());
     }
 
     @Test
@@ -109,10 +109,10 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String[]> signal = new SharedValueSignal<>(array);
 
         array[0] = "modified";
-        assertEquals("initial", signal.get()[0]);
+        assertEquals("initial", signal.peek()[0]);
 
-        signal.get()[0] = "modified";
-        assertEquals("initial", signal.get()[0]);
+        signal.peek()[0] = "modified";
+        assertEquals("initial", signal.peek()[0]);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         SignalOperation<String> operation = signal.set("update");
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
 
         String resultValue = assertSuccess(operation);
         assertEquals("initial", resultValue);
@@ -131,7 +131,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
         signal.set("update");
 
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
         assertNull(signal.peekConfirmed());
 
         signal.tree().confirmSubmitted();
@@ -144,7 +144,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
 
         assertSuccess(operation);
     }
@@ -155,7 +155,7 @@ public class SharedValueSignalTest extends SignalTestBase {
                 "unexpected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
-        assertEquals("unexpected", signal.get());
+        assertEquals("unexpected", signal.peek());
 
         assertFailure(operation);
     }
@@ -206,7 +206,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.tree().confirmSubmitted();
         assertNull(assertSuccess(operation));
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -226,7 +226,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertEquals(5, assertSuccess(operation));
-        assertEquals(6, signal.get());
+        assertEquals(6, signal.peek());
     }
 
     @Test
@@ -260,7 +260,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         wrapper.set("update");
 
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
         assertEquals(1, validatedCommands.size());
         assertInstanceOf(SignalCommand.SetCommand.class,
                 validatedCommands.get(0));
@@ -279,12 +279,12 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         SignalOperation<String> updateResult = wrapper.set("update");
         assertSuccess(updateResult);
-        assertEquals("update", wrapper.get());
+        assertEquals("update", wrapper.peek());
 
         assertThrows(UnsupportedOperationException.class, () -> {
             wrapper.set(null);
         });
-        assertEquals("update", wrapper.get());
+        assertEquals("update", wrapper.peek());
     }
 
     @Test
@@ -297,7 +297,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.set("update");
 
-        assertEquals("update", wrapper.get());
+        assertEquals("update", wrapper.peek());
     }
 
     @Test
@@ -339,7 +339,7 @@ public class SharedValueSignalTest extends SignalTestBase {
             readonly.set("Update");
         });
 
-        assertEquals("initial", readonly.get());
+        assertEquals("initial", readonly.peek());
     }
 
     @Test
@@ -599,7 +599,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
             assertEquals("value", signal.get());
         });
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -610,10 +610,10 @@ public class SharedValueSignalTest extends SignalTestBase {
             signal.set("update");
 
             Signal.runWithoutTransaction(() -> {
-                assertEquals("value", signal.get());
+                assertEquals("value", signal.peek());
             });
         });
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -629,7 +629,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertFailure(operation);
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
     }
 
     @Test
@@ -645,7 +645,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertSuccess(operation);
-        assertEquals("value update", signal.get());
+        assertEquals("value update", signal.peek());
     }
 
     @Test
@@ -661,7 +661,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertSuccess(operation);
-        assertEquals("value update", signal.get());
+        assertEquals("value update", signal.peek());
     }
 
     @Test

@@ -369,7 +369,7 @@ public class SharedMapSignal<T>
             return "SharedMapSignal[null]";
         }
         return value.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue().get())
+                .map(entry -> entry.getKey() + "=" + entry.getValue().peek())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 

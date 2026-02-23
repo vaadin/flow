@@ -46,10 +46,10 @@ public class ComputedSignalTest extends SignalTestBase {
             return null;
         });
 
-        assertNull(signal.get());
+        assertNull(signal.peek());
         assertEquals(1, count.intValue());
 
-        signal.get();
+        signal.peek();
         assertEquals(1, count.intValue());
     }
 
@@ -67,13 +67,13 @@ public class ComputedSignalTest extends SignalTestBase {
 
         assertEquals(List.of(), invocations);
 
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
         assertEquals(List.of("value"), invocations);
 
         source.set("update");
         assertEquals(List.of("value"), invocations);
 
-        assertEquals("update", signal.get());
+        assertEquals("update", signal.peek());
         assertEquals(List.of("value", "update"), invocations);
     }
 
@@ -87,12 +87,12 @@ public class ComputedSignalTest extends SignalTestBase {
             return source.get();
         });
 
-        signal.get();
+        signal.peek();
         assertEquals(1, count.intValue());
 
-        source.set(source.get());
+        source.set(source.peek());
 
-        signal.get();
+        signal.peek();
         assertEquals(1, count.intValue());
     }
 
@@ -104,7 +104,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = computed.map(l -> l * 2);
 
-        assertEquals(10, doubled.get());
+        assertEquals(10, doubled.peek());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = computed.map(l -> l * 2);
 
-        assertEquals(10, doubled.get());
+        assertEquals(10, doubled.peek());
     }
 
     @Test
@@ -129,10 +129,10 @@ public class ComputedSignalTest extends SignalTestBase {
         });
         assertEquals(0, count.get());
 
-        computed.get();
+        computed.peek();
         assertEquals(1, count.get());
 
-        computed.get();
+        computed.peek();
         assertEquals(2, count.get());
     }
 
@@ -142,13 +142,13 @@ public class ComputedSignalTest extends SignalTestBase {
                 Boolean.TRUE);
         Signal<Boolean> negated = Signal.not(signal);
 
-        assertFalse(negated.get());
+        assertFalse(negated.peek());
 
         signal.set(false);
-        assertTrue(negated.get());
+        assertTrue(negated.peek());
 
         signal.set(null);
-        assertNull(negated.get());
+        assertNull(negated.peek());
     }
 
     @Test
@@ -161,9 +161,9 @@ public class ComputedSignalTest extends SignalTestBase {
         }));
 
         // Trigger running the callback
-        signal.get();
+        signal.peek();
 
-        assertEquals("update", other.get());
+        assertEquals("update", other.peek());
     }
 
     @Test
@@ -284,7 +284,7 @@ public class ComputedSignalTest extends SignalTestBase {
             return source.get();
         });
 
-        signal.get();
+        signal.peek();
         assertEquals(1, count.get());
 
         Transaction.runInTransaction(() -> {
@@ -294,7 +294,7 @@ public class ComputedSignalTest extends SignalTestBase {
             assertEquals(2, count.get());
         });
 
-        signal.get();
+        signal.peek();
         assertEquals(2, count.get());
     }
 
@@ -308,7 +308,7 @@ public class ComputedSignalTest extends SignalTestBase {
             return source.get();
         });
 
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
         assertEquals(1, count.get());
 
         Transaction.runInTransaction(() -> {
@@ -326,7 +326,7 @@ public class ComputedSignalTest extends SignalTestBase {
          * the submitted value is still "value", which differs from the captured
          * value, so the computed signal must recompute.
          */
-        assertEquals("value", signal.get());
+        assertEquals("value", signal.peek());
         assertEquals(3, count.get());
     }
 
@@ -334,10 +334,6 @@ public class ComputedSignalTest extends SignalTestBase {
     void unsuppotedOperations_runOperations_throws() {
         AbstractSignal<Object> signal = (AbstractSignal<Object>) Signal
                 .computed(() -> null);
-
-        assertThrows(UnsupportedOperationException.class, () -> {
-            signal.peek();
-        });
 
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peekConfirmed();
@@ -355,16 +351,16 @@ public class ComputedSignalTest extends SignalTestBase {
             return signal.get() * 2;
         };
 
-        assertEquals(2, doubled.get());
+        assertEquals(2, doubled.peek());
         assertEquals(1, count.intValue());
 
-        assertEquals(2, doubled.get());
+        assertEquals(2, doubled.peek());
         assertEquals(2, count.intValue());
 
         signal.set(3);
         assertEquals(2, count.intValue());
 
-        assertEquals(6, doubled.get());
+        assertEquals(6, doubled.peek());
         assertEquals(3, count.intValue());
     }
 
@@ -381,18 +377,18 @@ public class ComputedSignalTest extends SignalTestBase {
                 return shouldThrow.get();
             }
         });
-        assertFalse(computed.get());
+        assertFalse(computed.peek());
         assertEquals(1, count.get());
 
         shouldThrow.set(true);
-        assertThrows(RuntimeException.class, () -> computed.get());
+        assertThrows(RuntimeException.class, () -> computed.peek());
         assertEquals(2, count.get());
 
-        assertThrows(RuntimeException.class, () -> computed.get());
+        assertThrows(RuntimeException.class, () -> computed.peek());
         assertEquals(2, count.get(), "Exception should be cached");
 
         shouldThrow.set(false);
-        assertFalse(computed.get());
+        assertFalse(computed.peek());
         assertEquals(3, count.get());
     }
 

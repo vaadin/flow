@@ -274,12 +274,6 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    public T peek() {
-        throw new UnsupportedOperationException(
-                "Cannot peek a computed signal");
-    }
-
-    @Override
     public SharedNodeSignal asNode() {
         throw new UnsupportedOperationException(
                 "Cannot use a computed signal as a node signal");
