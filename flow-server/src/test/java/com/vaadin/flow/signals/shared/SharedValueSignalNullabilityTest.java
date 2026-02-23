@@ -23,7 +23,6 @@ import com.vaadin.flow.signals.SignalTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Compile-time nullability tests for {@link SharedValueSignal}.
@@ -38,22 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SharedValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
-    void get_nonNull_returnsNonNull() {
+    void get_returnsNullable() {
         var signal = new SharedValueSignal<>("hello");
-        // NullAway verifies get() returns non-null String
-        int length = signal.get().length();
-        assertEquals(5, length);
-    }
-
-    @Test
-    void get_nullable_returnsNullable() {
-        SharedValueSignal<@Nullable String> signal = new SharedValueSignal<>(
-                String.class);
         @Nullable
         String value = signal.get();
-        // Must null-check — NullAway enforces this
+        // get() returns @Nullable T, so a null-check is required even for
+        // non-null type parameters — NullAway enforces this
         if (value != null) {
-            assertTrue(value.length() >= 0);
+            assertEquals(5, value.length());
         }
     }
 

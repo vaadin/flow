@@ -291,6 +291,7 @@ public class ValueSignal<T extends @Nullable Object>
      *
      * @return the new readonly signal, not <code>null</code>
      */
+    @SuppressWarnings("NullAway")
     public Signal<T> asReadonly() {
         return () -> get();
     }

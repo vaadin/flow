@@ -37,21 +37,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
-    void get_nonNull_returnsNonNull() {
+    void get_returnsNullable() {
         var signal = new ValueSignal<>("hello");
-        // NullAway verifies get() returns non-null String, so .length()
-        // is safe without a null check
-        int length = signal.get().length();
-        assertEquals(5, length);
-    }
-
-    @Test
-    void get_nullable_returnsNullable() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<>(
-                "hello");
         @Nullable
         String value = signal.get();
-        // Must null-check before calling .length() — NullAway enforces this
+        // get() returns @Nullable T, so a null-check is required even for
+        // non-null type parameters — NullAway enforces this
         if (value != null) {
             assertEquals(5, value.length());
         }
@@ -67,8 +58,7 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void set_nullable_acceptsNull() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<>(
-                "hello");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>("hello");
         // NullAway verifies that set(null) is valid for a nullable signal
         signal.set(null);
         assertNull(signal.get());
@@ -76,8 +66,7 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void replace_nullable_acceptsNull() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<>(
-                "hello");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>("hello");
         // NullAway verifies that replace(null, ...) is valid for a nullable
         // signal
         signal.replace(null, "world");
