@@ -25,6 +25,7 @@ import tools.jackson.databind.node.POJONode;
 
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -205,6 +206,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                     holder[1] = e;
                 }
             });
+            if (dependencies == UsageTracker.NO_USAGE) {
+                throw new MissingSignalUsageException(
+                        "Signal computation must read at least one signal value.");
+            }
             @Nullable
             Object value = holder[0];
             @Nullable
