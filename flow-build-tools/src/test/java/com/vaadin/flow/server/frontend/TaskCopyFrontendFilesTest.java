@@ -17,16 +17,15 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.testutil.TestUtils;
@@ -34,40 +33,45 @@ import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
+    @TempDir
+    File temporaryFolder;
 
     private File npmFolder;
     private File generatedFolder;
     private File frontendDepsFolder;
 
-    @Before
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
-        npmFolder = new File(temporaryFolder.newFolder(), "child/");
+        npmFolder = new File(Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile(),
+                "child/");
         generatedFolder = new File(npmFolder, "target/frontend");
         frontendDepsFolder = new File(npmFolder, "target/frontend-deps");
     }
 
     @Test
-    public void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
+    void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
             throws IOException {
         should_collectJsAndCssFilesFromJars("jar-with-frontend-resources.jar",
                 "dir-with-frontend-resources/");
     }
 
     @Test
-    public void should_collectJsAndCssFilesFromJars_modernResourceFolder()
+    void should_collectJsAndCssFilesFromJars_modernResourceFolder()
             throws IOException {
         should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar",
                 "dir-with-modern-frontend");
     }
 
     @Test
-    public void should_collectJsAndCssFilesFromJars_removeExtraFiles()
+    void should_collectJsAndCssFilesFromJars_removeExtraFiles()
             throws IOException {
         File dummy = new File(frontendDepsFolder, "dummy.ts");
         frontendDepsFolder.mkdirs();
@@ -77,17 +81,17 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_createPackageJson() throws IOException {
+    void should_createPackageJson() throws IOException {
         Options options = new MockOptions(getClassFinder(), npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
 
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
         task.execute();
-        Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
-        Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
+        assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
+        assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
         JsonNode deps = task.getPackageJson().get("dependencies");
-        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_DEPS));
-        Assert.assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_JARS));
+        assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_DEPS));
+        assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_JARS));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,
@@ -116,64 +120,57 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
-        Assert.assertEquals(19, files.size());
+        assertEquals(19, files.size());
 
         // Check some resources
-        Assert.assertTrue("TS resource should have been copied from jar file",
-                files.contains("example.ts"));
+        assertTrue(files.contains("example.ts"),
+                "TS resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "TS resource source map should have been copied from jar file",
-                files.contains("example.ts.map"));
+        assertTrue(files.contains("example.ts.map"),
+                "TS resource source map should have been copied from jar file");
 
-        Assert.assertTrue("JS resource should have been copied from jar file",
-                files.contains("ExampleConnector.js"));
+        assertTrue(files.contains("ExampleConnector.js"),
+                "JS resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "JS resource source map should have been copied from jar file",
-                files.contains("ExampleConnector.js.map"));
+        assertTrue(files.contains("ExampleConnector.js.map"),
+                "JS resource source map should have been copied from jar file");
 
-        Assert.assertTrue("CSS resource should have been copied from jar file",
-                files.contains("inline.css"));
+        assertTrue(files.contains("inline.css"),
+                "CSS resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "CSS resource source map should have been copied from jar file",
-                files.contains("inline.css.map"));
+        assertTrue(files.contains("inline.css.map"),
+                "CSS resource source map should have been copied from jar file");
 
-        Assert.assertTrue(
-                "JS resource should have been copied from resource folder",
-                files.contains("resourceInFolder.js"));
+        assertTrue(files.contains("resourceInFolder.js"),
+                "JS resource should have been copied from resource folder");
 
-        Assert.assertTrue(
-                "JS resource source map should have been copied from resource folder",
-                files.contains("resourceInFolder.js.map"));
+        assertTrue(files.contains("resourceInFolder.js.map"),
+                "JS resource source map should have been copied from resource folder");
 
-        Assert.assertTrue("TSX resource should have been copied from jar file",
-                files.contains("react.tsx"));
+        assertTrue(files.contains("react.tsx"),
+                "TSX resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "TSX resource source map should have been copied from jar file",
-                files.contains("react.tsx.map"));
+        assertTrue(files.contains("react.tsx.map"),
+                "TSX resource source map should have been copied from jar file");
 
-        Assert.assertTrue("JSX resource should have been copied from jar file",
-                files.contains("test.jsx"));
+        assertTrue(files.contains("test.jsx"),
+                "JSX resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "JSX resource source map should have been copied from jar file",
-                files.contains("test.jsx.map"));
+        assertTrue(files.contains("test.jsx.map"),
+                "JSX resource source map should have been copied from jar file");
 
-        Assert.assertTrue("HTML resource should have been copied from jar file",
-                files.contains("ExampleTemplate.html"));
+        assertTrue(files.contains("ExampleTemplate.html"),
+                "HTML resource should have been copied from jar file");
 
-        Assert.assertFalse(
-                "Resource from unsupported frontend folder location should not have been copied from jar file",
-                files.contains("ignored.js"));
+        assertFalse(files.contains("ignored.js"),
+                "Resource from unsupported frontend folder location should not have been copied from jar file");
 
-        Assert.assertEquals("Generated files should have been tracked",
+        assertEquals(
                 files.stream()
                         .map(path -> frontendDepsFolder.toPath().resolve(path))
                         .collect(Collectors.toSet()),
-                generatedFileSupport.getFiles());
+                generatedFileSupport.getFiles(),
+                "Generated files should have been tracked");
     }
 
     private static Set<File> jars(File... files) {

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.samples.pwa.AnotherAppShellWithPwa;
@@ -23,15 +23,16 @@ import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithPwa;
 import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithoutPwa;
 import com.vaadin.flow.server.frontend.scanner.samples.pwa.NonAppShellWithPwa;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public abstract class AbstractScannerPwaTest {
+abstract class AbstractScannerPwaTest {
     abstract protected PwaConfiguration getPwaConfiguration(Class<?>... classes)
             throws Exception;
 
     @Test
-    public void should_findPwaOnAppShell() throws Exception {
+    void should_findPwaOnAppShell() throws Exception {
         PwaConfiguration pwaConfiguration = getPwaConfiguration(
                 AppShellWithPwa.class);
         assertEquals("PWA Application", pwaConfiguration.getAppName());
@@ -49,7 +50,7 @@ public abstract class AbstractScannerPwaTest {
     }
 
     @Test
-    public void should_returnDefaultConfiguration_When_AppShellWithoutPwa()
+    void should_returnDefaultConfiguration_When_AppShellWithoutPwa()
             throws Exception {
         PwaConfiguration pwaConfiguration = getPwaConfiguration(
                 AppShellWithoutPwa.class);
@@ -75,8 +76,7 @@ public abstract class AbstractScannerPwaTest {
     }
 
     @Test
-    public void should_returnDefaultConfiguration_When_NoAppShell()
-            throws Exception {
+    void should_returnDefaultConfiguration_When_NoAppShell() throws Exception {
         PwaConfiguration pwaConfiguration = getPwaConfiguration(
                 this.getClass());
         assertEquals(PwaConfiguration.DEFAULT_NAME,
@@ -100,14 +100,17 @@ public abstract class AbstractScannerPwaTest {
                 pwaConfiguration.getOfflineResources().toArray());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void should_throw_When_PwaNotOnAppShell() throws Exception {
-        getPwaConfiguration(NonAppShellWithPwa.class);
+    @Test
+    void should_throw_When_PwaNotOnAppShell() throws Exception {
+        assertThrows(IllegalStateException.class,
+                () -> getPwaConfiguration(NonAppShellWithPwa.class));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void should_throw_When_MultipleAppShellPwa() throws Exception {
-        getPwaConfiguration(AppShellWithPwa.class,
-                AnotherAppShellWithPwa.class);
+    @Test
+    void should_throw_When_MultipleAppShellPwa() throws Exception {
+        assertThrows(IllegalStateException.class, () -> {
+            getPwaConfiguration(AppShellWithPwa.class,
+                    AnotherAppShellWithPwa.class);
+        });
     }
 }

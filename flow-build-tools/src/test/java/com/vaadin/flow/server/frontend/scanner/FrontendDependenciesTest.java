@@ -21,9 +21,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -56,12 +55,19 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-public class FrontendDependenciesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FrontendDependenciesTest {
 
     private ClassFinder classFinder = Mockito.mock(ClassFinder.class);
 
-    @Before
-    public void setUp() throws ClassNotFoundException {
+    @BeforeEach
+    void setUp() throws ClassNotFoundException {
         Mockito.when(classFinder.loadClass(Mockito.anyString()))
                 .thenAnswer(q -> {
                     String className = q.getArgument(0);
@@ -82,7 +88,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void routedComponent_entryPointsAreCollected() {
+    void routedComponent_entryPointsAreCollected() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -93,7 +99,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void appShellConfigurator_collectedAsEntryPoint()
+    void appShellConfigurator_collectedAsEntryPoint()
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppShell.class));
@@ -103,66 +109,68 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals("UI, AppShell should be found", 3,
-                dependencies.getEntryPoints().size());
+        assertEquals(3, dependencies.getEntryPoints().size(),
+                "UI, AppShell should be found");
 
         AbstractTheme theme = dependencies.getTheme();
-        Assert.assertNotNull("Theme not found in entry point", theme);
+        assertNotNull(theme, "Theme not found in entry point");
 
         ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
-        Assert.assertNotNull("ThemeDefinition is not filled", themeDefinition);
-        Assert.assertEquals(FakeLumo.class, themeDefinition.getTheme());
+        assertNotNull(themeDefinition, "ThemeDefinition is not filled");
+        assertEquals(FakeLumo.class, themeDefinition.getTheme());
     }
 
     @Test
-    public void themeDefiningClassAndName_throwsException()
+    void themeDefiningClassAndName_throwsException()
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
         Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
                 .thenReturn((Class) FakeLumo.class);
 
-        IllegalStateException exception = Assert.assertThrows(
+        IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false, null, true));
 
-        Assert.assertEquals("Unexpected message for the thrown exception",
-                "Theme name and theme class can not both be specified. "
-                        + "Theme name uses Lumo and can not be used in combination with custom theme class.",
-                exception.getMessage());
+        assertEquals("Theme name and theme class can not both be specified. "
+                + "Theme name uses Lumo and can not be used in combination with custom theme class.",
+                exception.getMessage(),
+                "Unexpected message for the thrown exception");
     }
 
     @Test
-    public void noDefaultThemeAvailable_throwsException()
+    void noDefaultThemeAvailable_throwsException()
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppThemeShell.class));
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenThrow(ClassNotFoundException.class);
 
-        IllegalStateException exception = Assert.assertThrows(
+        IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> new FrontendDependencies(classFinder, false, null, true));
 
-        Assert.assertEquals("Thrown exception didn't contain correct message",
+        assertEquals(
                 "Lumo dependency needs to be available on the classpath when using a theme name.",
-                exception.getMessage());
+                exception.getMessage(),
+                "Thrown exception didn't contain correct message");
     }
 
     @Test
-    public void appThemeDefined_getsLumoAsTheme() {
+    void appThemeDefined_getsLumoAsTheme() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
-                dependencies.getThemeDefinition().getTheme());
+        assertEquals(FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme(),
+                "Faulty default theme received");
     }
 
     @Test
-    public void themeDefined_themeCssLoaded() {
+    void themeDefined_themeCssLoaded() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppShell.class));
 
@@ -176,11 +184,11 @@ public class FrontendDependenciesTest {
                             .equals("@vaadin/vaadin-lumo-styles/lumo.css"));
         }
 
-        Assert.assertTrue(cssFound);
+        assertTrue(cssFound);
     }
 
     @Test
-    public void themeNotDefined_ButReferenced_themeCssNotLoaded() {
+    void themeNotDefined_ButReferenced_themeCssNotLoaded() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(ThemeReferenceShell.class));
 
@@ -194,25 +202,26 @@ public class FrontendDependenciesTest {
                             .equals("@vaadin/vaadin-lumo-styles/lumo.css"));
         }
 
-        Assert.assertFalse(cssFound);
+        assertFalse(cssFound);
     }
 
     @Test
-    public void onlyThemeVariantDefined_getsLumoAsTheme_preserveVariant() {
+    void onlyThemeVariantDefined_getsLumoAsTheme_preserveVariant() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(ThemeVariantOnly.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals("Faulty default theme received", FakeLumo.class,
-                dependencies.getThemeDefinition().getTheme());
-        Assert.assertEquals("Faulty variant received", "dark",
-                dependencies.getThemeDefinition().getVariant());
+        assertEquals(FakeLumo.class,
+                dependencies.getThemeDefinition().getTheme(),
+                "Faulty default theme received");
+        assertEquals("dark", dependencies.getThemeDefinition().getVariant(),
+                "Faulty variant received");
     }
 
     @Test
-    public void defaultThemeAnnotation_getsLumoAsTheme() {
+    void defaultThemeAnnotation_getsLumoAsTheme() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(
                         Collections.singleton(DefaultThemeAnnotation.class));
@@ -221,22 +230,21 @@ public class FrontendDependenciesTest {
                 classFinder, false, null, true);
 
         AbstractTheme theme = dependencies.getTheme();
-        Assert.assertNotNull(
-                "Theme should be found for @Theme with default values", theme);
+        assertNotNull(theme,
+                "Theme should be found for @Theme with default values");
 
         ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
-        Assert.assertNotNull("ThemeDefinition should be filled",
-                themeDefinition);
-        Assert.assertEquals("Should default to Lumo theme", FakeLumo.class,
-                themeDefinition.getTheme());
-        Assert.assertEquals("Variant should be empty", "",
-                themeDefinition.getVariant());
-        Assert.assertEquals("Theme name should be empty", "",
-                themeDefinition.getName());
+        assertNotNull(themeDefinition, "ThemeDefinition should be filled");
+        assertEquals(FakeLumo.class, themeDefinition.getTheme(),
+                "Should default to Lumo theme");
+        assertEquals("", themeDefinition.getVariant(),
+                "Variant should be empty");
+        assertEquals("", themeDefinition.getName(),
+                "Theme name should be empty");
     }
 
     @Test
-    public void hasErrorParameterComponent_entryPointIsCollected() {
+    void hasErrorParameterComponent_entryPointIsCollected() {
         Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -247,7 +255,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListener_entryPointsAreCollected() {
+    void componentInsideUiInitListener_entryPointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -259,7 +267,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void componentInsideUiInitListenerInsideServiceInitListener_entryPointsAreCollected() {
+    void componentInsideUiInitListenerInsideServiceInitListener_entryPointsAreCollected() {
         Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -269,7 +277,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void jsScriptOrderIsPreserved() {
+    void jsScriptOrderIsPreserved() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(JsOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -280,7 +288,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void jsModuleOrderIsPreserved() {
+    void jsModuleOrderIsPreserved() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(JsModuleOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -292,7 +300,7 @@ public class FrontendDependenciesTest {
 
     // flow #6524
     @Test
-    public void extractsAndScansClassesFromMethodReferences() {
+    void extractsAndScansClassesFromMethodReferences() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(RouteComponentWithMethodReference.class));
 
@@ -304,7 +312,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void defaultThemeIsNotLoadedForExporters() throws Exception {
+    void defaultThemeIsNotLoadedForExporters() throws Exception {
         FakeLumo.class.getDeclaredConstructor().newInstance();
         Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(MyExporter.class)
@@ -313,12 +321,12 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
 
-        Assert.assertNull(dependencies.getTheme());
-        Assert.assertNull(dependencies.getThemeDefinition());
+        assertNull(dependencies.getTheme());
+        assertNull(dependencies.getThemeDefinition());
     }
 
     @Test // #9861
-    public void collectEntryPoints_uiIsAlwaysCollected() {
+    void collectEntryPoints_uiIsAlwaysCollected() {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
@@ -326,11 +334,11 @@ public class FrontendDependenciesTest {
                 .stream().filter(entryPoint -> entryPoint.getName()
                         .equals(UI.class.getName()))
                 .findAny();
-        Assert.assertTrue("UI should be visited", uiEndpointData.isPresent());
+        assertTrue(uiEndpointData.isPresent(), "UI should be visited");
     }
 
     @Test // #9861
-    public void classInMultipleEntryPoints_collectEntryPointsNotOverrideInitial() {
+    void classInMultipleEntryPoints_collectEntryPointsNotOverrideInitial() {
         // Reference found through first entry point
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
@@ -345,7 +353,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test // 20074
-    public void layoutClasses_collectedAsEntrypoint() {
+    void layoutClasses_collectedAsEntrypoint() {
         Mockito.when(classFinder.getAnnotatedClasses(Layout.class))
                 .thenReturn(Collections.singleton(MainLayout.class));
 
@@ -356,15 +364,14 @@ public class FrontendDependenciesTest {
                 .getEntryPoints().stream().filter(entryPoint -> entryPoint
                         .getName().equals(MainLayout.class.getName()))
                 .findAny();
-        Assert.assertTrue("MainLayout should be visited",
-                layoutEndpointData.isPresent());
+        assertTrue(layoutEndpointData.isPresent(),
+                "MainLayout should be visited");
         DepsTests.assertImports(dependencies.getModules(), "reference.js",
                 "@vaadin/common-frontend/ConnectionIndicator.js");
     }
 
     @Test // #9861
-    public void visitedExporter_previousEntryPointsNotOverridden()
-            throws Exception {
+    void visitedExporter_previousEntryPointsNotOverridden() throws Exception {
 
         FakeLumo.class.getDeclaredConstructor().newInstance();
         // Reference found through first entry point
@@ -383,32 +390,28 @@ public class FrontendDependenciesTest {
     }
 
     @Test // #9861
-    public void shouldVisit_shouldNotMatchOnPartOfPackage() {
+    void shouldVisit_shouldNotMatchOnPartOfPackage() {
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
 
-        Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springseason'",
-                dependencies.shouldVisit("org.springseason.samples"));
-        Assert.assertTrue(
-                "second package should match fully not as starts with 'spring != springseason'",
-                dependencies.shouldVisit("org.springseason"));
-        Assert.assertFalse("should not visit with only 2 packages 'org.spring'",
-                dependencies.shouldVisit("org.spring"));
+        assertTrue(dependencies.shouldVisit("org.springseason.samples"),
+                "second package should match fully not as starts with 'spring != springseason'");
+        assertTrue(dependencies.shouldVisit("org.springseason"),
+                "second package should match fully not as starts with 'spring != springseason'");
+        assertFalse(dependencies.shouldVisit("org.spring"),
+                "should not visit with only 2 packages 'org.spring'");
 
-        Assert.assertTrue(
-                "second package should match fully not as starts with 'sun != sunny'",
-                dependencies.shouldVisit("com.sunny.app"));
-        Assert.assertTrue(
-                "second package should match fully not as starts with 'sun != sunny'",
-                dependencies.shouldVisit("com.sunny"));
-        Assert.assertFalse("should not visit with only 2 packages 'com.sun'",
-                dependencies.shouldVisit("com.sun"));
+        assertTrue(dependencies.shouldVisit("com.sunny.app"),
+                "second package should match fully not as starts with 'sun != sunny'");
+        assertTrue(dependencies.shouldVisit("com.sunny"),
+                "second package should match fully not as starts with 'sun != sunny'");
+        assertFalse(dependencies.shouldVisit("com.sun"),
+                "should not visit with only 2 packages 'com.sun'");
     }
 
     @Test
-    public void classScanningForChildAndParentEntryPoint_ordered_childrenSeeClassesFromParent() {
+    void classScanningForChildAndParentEntryPoint_ordered_childrenSeeClassesFromParent() {
         LinkedHashSet<Class<?>> hierarchy = Stream
                 .of(ParentRoute.class, AnnotatedChildRoute.class,
                         ChildRoute.class, GrandChildRoute.class)
@@ -425,7 +428,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void classScanningForChildAndParentEntryPoint_shuffled_childrenSeeClassesFromParent() {
+    void classScanningForChildAndParentEntryPoint_shuffled_childrenSeeClassesFromParent() {
         LinkedHashSet<Class<?>> hierarchy = Stream
                 .of(GrandChildRoute.class, AnnotatedChildRoute.class,
                         ParentRoute.class, ChildRoute.class)
@@ -442,7 +445,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void classScanningForChildAndParentEntryPoint_reversed_childrenSeeClassesFromParent() {
+    void classScanningForChildAndParentEntryPoint_reversed_childrenSeeClassesFromParent() {
         LinkedHashSet<Class<?>> hierarchy = Stream
                 .of(GrandChildRoute.class, ChildRoute.class,
                         AnnotatedChildRoute.class, ParentRoute.class)
@@ -459,7 +462,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void classScanningForNpmPackage_collectsNpmAssets()
+    void classScanningForNpmPackage_collectsNpmAssets()
             throws ClassNotFoundException {
         LinkedHashSet<Class<?>> hierarchy = Stream.of(Assets.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -471,14 +474,14 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals(1, dependencies.getAssets().size());
-        Assert.assertEquals(1, dependencies.getAssets().get("images").size());
-        Assert.assertEquals("images/22x25/**:22x25",
+        assertEquals(1, dependencies.getAssets().size());
+        assertEquals(1, dependencies.getAssets().get("images").size());
+        assertEquals("images/22x25/**:22x25",
                 dependencies.getAssets().get("images").get(0));
     }
 
     @Test
-    public void classScanningForNpmPackage_duplicatePackages_collectsAllNpmAssets()
+    void classScanningForNpmPackage_duplicatePackages_collectsAllNpmAssets()
             throws ClassNotFoundException {
         LinkedHashSet<Class<?>> hierarchy = Stream
                 .of(Assets.class, DuplicatedAssets.class)
@@ -491,11 +494,11 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals(1, dependencies.getAssets().size());
-        Assert.assertEquals(2, dependencies.getAssets().get("images").size());
-        Assert.assertTrue(dependencies.getAssets().get("images")
+        assertEquals(1, dependencies.getAssets().size());
+        assertEquals(2, dependencies.getAssets().get("images").size());
+        assertTrue(dependencies.getAssets().get("images")
                 .contains("images/22x25/**:22x25"));
-        Assert.assertTrue(dependencies.getAssets().get("images")
+        assertTrue(dependencies.getAssets().get("images")
                 .contains("images/28x28/**:28x28"));
 
     }
@@ -506,7 +509,7 @@ public class FrontendDependenciesTest {
                 .stream().filter(entryPoint -> entryPoint.getName()
                         .equals(entryPointClass.getName()))
                 .findAny();
-        Assert.assertTrue(childEntryPoint.isPresent());
+        assertTrue(childEntryPoint.isPresent());
         return childEntryPoint.get();
     }
 
@@ -515,16 +518,16 @@ public class FrontendDependenciesTest {
         EntryPointData entryPointData = getEntryPointByClass(dependencies,
                 entryPointClass);
 
-        Assert.assertNotNull(entryPointData.reachableClasses);
-        Assert.assertFalse(entryPointData.reachableClasses.isEmpty());
+        assertNotNull(entryPointData.reachableClasses);
+        assertFalse(entryPointData.reachableClasses.isEmpty());
 
         // Child entrypoint should see classes reachable from parent entrypoint,
         // not only the parent class
-        Assert.assertTrue(entryPointData.reachableClasses.size() > 1);
+        assertTrue(entryPointData.reachableClasses.size() > 1);
 
-        Assert.assertNotNull(entryPointData.getModules());
-        Assert.assertEquals(1, entryPointData.getModules().size());
-        Assert.assertEquals("reference.js",
+        assertNotNull(entryPointData.getModules());
+        assertEquals(1, entryPointData.getModules().size());
+        assertEquals("reference.js",
                 entryPointData.getModules().iterator().next());
     }
 

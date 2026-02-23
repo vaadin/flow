@@ -26,18 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FrontendAnnotatedClassVisitorTest {
+class FrontendAnnotatedClassVisitorTest {
 
     private FrontendAnnotatedClassVisitor visitor;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         ClassFinder finder = new ClassFinder.DefaultClassFinder(
                 getClass().getClassLoader(), TestAnnotation.class,
                 AnnotatedClass.class, ValuesForKey.class, DefaultValues.class);
@@ -46,36 +47,40 @@ public class FrontendAnnotatedClassVisitorTest {
     }
 
     @Test
-    public void getValues_noAnnotationsFound_returnEmptySet() {
+    void getValues_noAnnotationsFound_returnEmptySet() {
         // No class visited yet, so no annotations processed
         Set<String> values = visitor.getValues("value");
-        assertTrue("Values set should be empty", values.isEmpty());
+        assertTrue(values.isEmpty(), "Values set should be empty");
         values = visitor.getValues("other");
-        assertTrue("Others set should be empty", values.isEmpty());
+        assertTrue(values.isEmpty(), "Others set should be empty");
     }
 
     @Test
-    public void getValuesForKey_noAnnotationsFound_returnEmptySet() {
+    void getValuesForKey_noAnnotationsFound_returnEmptySet() {
         // No class visited yet, so no annotations processed
         Set<String> values = visitor.getValuesForKey("value", "Bar", "other");
-        assertTrue("Values set should be empty", values.isEmpty());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getValue_noAnnotationsFound_shouldThrowException() {
-        // No annotations found, so getValue should throw an exception
-        visitor.getValue("value");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getValue_multipleAnnotationsFound_shouldThrowException() {
-        // Multiple annotations found, so getValue should throw an exception
-        visitor.visitClass(AnnotatedClass.class.getName());
-        visitor.getValue("value");
+        assertTrue(values.isEmpty(), "Values set should be empty");
     }
 
     @Test
-    public void getValues_defaultValues_returnsEmptySet() {
+    void getValue_noAnnotationsFound_shouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            // No annotations found, so getValue should throw an exception
+            visitor.getValue("value");
+        });
+    }
+
+    @Test
+    void getValue_multipleAnnotationsFound_shouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            // Multiple annotations found, so getValue should throw an exception
+            visitor.visitClass(AnnotatedClass.class.getName());
+            visitor.getValue("value");
+        });
+    }
+
+    @Test
+    void getValues_defaultValues_returnsEmptySet() {
         // Default values are ignored by getValues, only explicitly defined
         // attributes are returned
         visitor.visitClass(DefaultValues.class.getName());
@@ -84,7 +89,7 @@ public class FrontendAnnotatedClassVisitorTest {
     }
 
     @Test
-    public void getValues_returnsOrderedSet() {
+    void getValues_returnsOrderedSet() {
         visitor.visitClass(AnnotatedClass.class.getName());
 
         List<String> values = new ArrayList<>(visitor.getValues("value"));
@@ -105,7 +110,7 @@ public class FrontendAnnotatedClassVisitorTest {
     }
 
     @Test
-    public void getValuesForKey_returnsMatchingValues() {
+    void getValuesForKey_returnsMatchingValues() {
         visitor.visitClass(ValuesForKey.class.getName());
 
         List<String> values = new ArrayList<>(
@@ -117,14 +122,14 @@ public class FrontendAnnotatedClassVisitorTest {
     }
 
     @Test
-    public void getValuesForKey_defaultValues_returnsEmptySet() {
+    void getValuesForKey_defaultValues_returnsEmptySet() {
         visitor.visitClass(DefaultValues.class.getName());
         assertTrue(
                 visitor.getValuesForKey("value", "default", "other").isEmpty());
     }
 
     @Test
-    public void getValue_attributeNotDefined_returnsDefaultValue() {
+    void getValue_attributeNotDefined_returnsDefaultValue() {
         visitor.visitClass(DefaultValues.class.getName());
         assertEquals("default", visitor.getValue("value"));
         assertEquals("other", visitor.getValue("other"));

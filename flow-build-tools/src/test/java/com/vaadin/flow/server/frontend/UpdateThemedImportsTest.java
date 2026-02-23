@@ -27,12 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -45,8 +42,10 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
+class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
     public static class MyTheme implements AbstractTheme {
         @Override
@@ -65,26 +64,23 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    @TempDir
+    File temporaryFolder;
 
     private File importsFile;
     private File frontendDirectory;
     private File nodeModulesPath;
     private TaskUpdateImports updater;
 
-    @Before
-    public void setup() throws Exception {
-        File tmpRoot = temporaryFolder.getRoot();
+    @BeforeEach
+    void setup() throws Exception {
+        File tmpRoot = temporaryFolder;
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
-        Assert.assertTrue(nodeModulesPath.mkdirs());
+        assertTrue(nodeModulesPath.mkdirs());
         createImport("./src/subfolder/sub-template.js", "");
         createImport("./src/client-side-template.js",
                 "import 'xx' from './subfolder/sub-template.js';"
@@ -146,8 +142,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void themedClientSideModulesAreWrittenIntoImportsFile()
-            throws Exception {
+    void themedClientSideModulesAreWrittenIntoImportsFile() throws Exception {
         updater.execute();
 
         String content = FileUtils.readFileToString(importsFile,
@@ -166,21 +161,19 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void noDuplicateImportEntryIsWrittenIntoImportsFile()
-            throws Exception {
+    void noDuplicateImportEntryIsWrittenIntoImportsFile() throws Exception {
         updater.execute();
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
         int count = StringUtils.countMatches(content,
                 "import '@vaadin/vaadin-button/src/vaadin-button.js';");
-        Assert.assertEquals(
-                "Import entries in the imports file should be unique.", 1,
-                count);
+        assertEquals(1, count,
+                "Import entries in the imports file should be unique.");
     }
 
     @Test
-    public void directoryImportEntryIsResolvedAsIndexJS() throws Exception {
+    void directoryImportEntryIsResolvedAsIndexJS() throws Exception {
 
         createImport("./src/directory/index.js",
                 "import { xx } from './sub1.js';");
@@ -207,7 +200,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void directoryImportEntry_avoidRecursion() throws Exception {
+    void directoryImportEntry_avoidRecursion() throws Exception {
 
         createImport("./src/directory/index.js",
                 "import { xx } from '../import2.js';");
@@ -242,7 +235,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 path);
         newFile.getParentFile().mkdirs();
         newFile.delete();
-        Assert.assertTrue(newFile.createNewFile());
+        assertTrue(newFile.createNewFile());
         if (content != null) {
             Files.write(newFile.toPath(), Collections.singletonList(content));
         }

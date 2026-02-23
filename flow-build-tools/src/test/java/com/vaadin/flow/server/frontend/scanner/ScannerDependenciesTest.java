@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -51,11 +51,11 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.UnAnnotated
 import com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent;
 import com.vaadin.flow.theme.NoTheme;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ScannerDependenciesTest {
+class ScannerDependenciesTest {
 
     static FrontendDependencies getFrontendDependencies(Class<?>... classes) {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
@@ -70,21 +70,22 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void visitRouteEntryPoint_ExpectToAlsoVisitImplementedInterface() {
+    void visitRouteEntryPoint_ExpectToAlsoVisitImplementedInterface() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteInterfaceComponent.class);
 
-        assertTrue("Missing dependency from implemented interface",
-                DepsTests.merge(deps.getModules()).contains("myModule.js"));
+        assertTrue(DepsTests.merge(deps.getModules()).contains("myModule.js"),
+                "Missing dependency from implemented interface");
 
         DepsTests.assertImportCount(1, deps.getCss());
 
-        assertEquals("Invalid css import", "frontend://styles/interface.css",
-                DepsTests.merge(deps.getCss()).get(0).getValue());
+        assertEquals("frontend://styles/interface.css",
+                DepsTests.merge(deps.getCss()).get(0).getValue(),
+                "Invalid css import");
     }
 
     @Test
-    public void should_extractClassesFromSignatures() {
+    void should_extractClassesFromSignatures() {
         Set<String> classes = new HashSet<>();
         FrontendClassVisitor visitor = new FrontendClassVisitor(
                 new ClassInfo("foo"));
@@ -123,7 +124,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitNpmPakageAnnotations() {
+    void should_visitNpmPakageAnnotations() {
         FrontendDependencies deps = getFrontendDependencies(Component1.class,
                 Component2.class);
         assertEquals(4, deps.getPackages().size());
@@ -140,7 +141,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitSuperNpmPakageAnnotations() {
+    void should_visitSuperNpmPakageAnnotations() {
         FrontendDependencies deps = getFrontendDependencies(
                 ScannerTestComponents.ComponentExtending.class);
         assertEquals(1, deps.getPackages().size());
@@ -152,13 +153,13 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void when_MultipleVersions_should_returnFirstVisitedOne() {
+    void when_MultipleVersions_should_returnFirstVisitedOne() {
         FrontendDependencies deps = getFrontendDependencies(Component0.class);
         assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
     }
 
     @Test
-    public void should_summarize_when_MultipleViews() {
+    void should_summarize_when_MultipleViews() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class,
                 FirstView.class);
 
@@ -171,13 +172,13 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visit_Constructor() {
+    void should_visit_Constructor() {
         FrontendDependencies deps = getFrontendDependencies(SecondView.class);
         DepsTests.assertHasImports(deps.getModules(), "./component-3.js");
     }
 
     @Test
-    public void should_resolveComponentFactories() {
+    void should_resolveComponentFactories() {
         FrontendDependencies deps = getFrontendDependencies(ThirdView.class);
 
         assertEquals(0, deps.getPackages().size());
@@ -188,27 +189,27 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_notVisitNonAnnotatredClasses() {
+    void should_notVisitNonAnnotatredClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 UnAnnotatedClass.class);
-        assertEquals("Only UI should be found", 1,
-                deps.getEntryPoints().size());
+        assertEquals(1, deps.getEntryPoints().size(),
+                "Only UI should be found");
     }
 
     @Test
-    public void should_cacheVisitedClasses() {
+    void should_cacheVisitedClasses() {
         FrontendDependencies deps = getFrontendDependencies(
                 RoutedClassWithoutAnnotations.class);
         assertEquals(2, deps.getEntryPoints().size());
-        assertTrue("Should cache visited classes",
-                deps.getClasses().size() > 2);
+        assertTrue(deps.getClasses().size() > 2,
+                "Should cache visited classes");
         assertTrue(deps.getClasses().contains(Route.class.getName()));
         assertTrue(deps.getClasses()
                 .contains(RoutedClassWithoutAnnotations.class.getName()));
     }
 
     @Test
-    public void should_cacheSuperVisitedClasses() {
+    void should_cacheSuperVisitedClasses() {
         List<Class<?>> visited = Arrays.asList(Route.class, NoTheme.class,
                 JsModule.class, RoutedClassWithAnnotations.class,
                 RoutedClassWithoutAnnotations.class, RoutedClass.class,
@@ -216,12 +217,12 @@ public class ScannerDependenciesTest {
 
         // Visit a route that extends an extra routed class
         FrontendDependencies deps = getFrontendDependencies(RoutedClass.class);
-        assertEquals("Should find RoutedClass and UI", 2,
-                deps.getEntryPoints().size());
+        assertEquals(2, deps.getEntryPoints().size(),
+                "Should find RoutedClass and UI");
         int visitedClassesAmount = deps.getClasses().size();
         for (Class<?> clz : visited) {
-            assertTrue("should cache " + clz.getName(),
-                    deps.getClasses().contains(clz.getName()));
+            assertTrue(deps.getClasses().contains(clz.getName()),
+                    "should cache " + clz.getName());
         }
 
         // Visit the same route but also the super routed class, the number of
@@ -229,17 +230,17 @@ public class ScannerDependenciesTest {
         // be the same, but number of entry points increases
         deps = getFrontendDependencies(RoutedClassWithoutAnnotations.class,
                 RoutedClass.class);
-        assertEquals("Should contain UI, RoutedClass and its parent", 3,
-                deps.getEntryPoints().size());
+        assertEquals(3, deps.getEntryPoints().size(),
+                "Should contain UI, RoutedClass and its parent");
         assertEquals(visitedClassesAmount, deps.getClasses().size());
         for (Class<?> clz : visited) {
-            assertTrue("should cache " + clz.getName(),
-                    deps.getClasses().contains(clz.getName()));
+            assertTrue(deps.getClasses().contains(clz.getName()),
+                    "should cache " + clz.getName());
         }
     }
 
     @Test
-    public void should_visitDynamicRouteWithTwoImports() {
+    void should_visitDynamicRouteWithTwoImports() {
         FrontendDependencies deps = getFrontendDependencies(
                 DynamicComponentClassWithTwoImports.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
@@ -247,7 +248,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test // #5509
-    public void should_visitDynamicRoute() {
+    void should_visitDynamicRoute() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithNestedDynamicRouteClass.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
@@ -256,7 +257,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test // #5658
-    public void should_visitFactoryBeans() {
+    void should_visitFactoryBeans() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithViewBean.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
@@ -264,7 +265,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitServices() {
+    void should_visitServices() {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithService.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
@@ -272,7 +273,7 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitMethodAnnotations() {
+    void should_visitMethodAnnotations() {
         FrontendDependencies deps = getFrontendDependencies(
                 MethodAnnotationRoute.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),

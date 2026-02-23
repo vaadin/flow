@@ -27,11 +27,9 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -40,22 +38,27 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class TaskGeneratePWAIconsTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGeneratePWAIconsTest {
+
+    @TempDir
+    File temporaryFolder;
     private final TestPwaConfiguration pwaConfiguration = new TestPwaConfiguration();
     private TaskGeneratePWAIcons task;
     private Path resourcesDirectory;
     private Path iconsOutDirectory;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
-        File projectDirectory = temporaryFolder.newFolder("my-project");
-        resourcesDirectory = temporaryFolder
-                .newFolder("my-project", "out", "classes").toPath();
+        File projectDirectory = new File(temporaryFolder, "my-project");
+        projectDirectory.mkdirs();
+        resourcesDirectory = new File(temporaryFolder, "my-project/out/classes")
+                .toPath();
         Files.createDirectories(resourcesDirectory);
         Path resourceOutDirectory = projectDirectory.toPath()
                 .resolve(Path.of("out", "VAADIN"));
@@ -80,16 +83,16 @@ public class TaskGeneratePWAIconsTest {
     }
 
     @Test
-    public void execute_PWA_disabled_iconsNotGenerated()
+    void execute_PWA_disabled_iconsNotGenerated()
             throws ExecutionFailedException {
         pwaConfiguration.enabled = false;
         task.execute();
-        Assert.assertFalse("PWA icons should not have been generated",
-                Files.exists(iconsOutDirectory));
+        assertFalse(Files.exists(iconsOutDirectory),
+                "PWA icons should not have been generated");
     }
 
     @Test
-    public void execute_PWA_iconInClassPath_generateIcons()
+    void execute_PWA_iconInClassPath_generateIcons()
             throws ExecutionFailedException, IOException {
         createBaseIcon(resourcesDirectory);
         task.execute();
@@ -97,7 +100,7 @@ public class TaskGeneratePWAIconsTest {
     }
 
     @Test
-    public void execute_PWA_iconInMetaInfResourcesFolder_generateIcons()
+    void execute_PWA_iconInMetaInfResourcesFolder_generateIcons()
             throws ExecutionFailedException, IOException {
         createBaseIcon(
                 resourcesDirectory.resolve(Path.of("META-INF", "resources")));
@@ -106,24 +109,22 @@ public class TaskGeneratePWAIconsTest {
     }
 
     @Test
-    public void execute_PWA_baseIconNotFound_generateIconsFromDefaultLogo()
+    void execute_PWA_baseIconNotFound_generateIconsFromDefaultLogo()
             throws ExecutionFailedException, IOException {
         task.execute();
         assertIconsGenerated();
     }
 
     @Test
-    public void execute_PWA_invalidBaseIconNotFound_throws()
-            throws IOException {
+    void execute_PWA_invalidBaseIconNotFound_throws() throws IOException {
         createBaseIcon(
                 resourcesDirectory.resolve(Path.of("META-INF", "resources")),
                 new ByteArrayInputStream("NOT AN IMAGE".getBytes()));
-        ExecutionFailedException exception = Assert
-                .assertThrows(ExecutionFailedException.class, task::execute);
-        Assert.assertTrue(
-                exception.getMessage().contains("Cannot load PWA icon"));
-        Assert.assertFalse("PWA icons should not have been generated",
-                Files.exists(iconsOutDirectory));
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class, task::execute);
+        assertTrue(exception.getMessage().contains("Cannot load PWA icon"));
+        assertFalse(Files.exists(iconsOutDirectory),
+                "PWA icons should not have been generated");
     }
 
     private void createBaseIcon(Path resourcesFolder) throws IOException {
@@ -144,8 +145,8 @@ public class TaskGeneratePWAIconsTest {
         String iconPath = pwaConfiguration.getIconPath();
         Path generatedIconsPath = iconsOutDirectory
                 .resolve(iconPath.replace('/', File.separatorChar)).getParent();
-        Assert.assertTrue("PWA icons folder should have been generated",
-                Files.exists(generatedIconsPath));
+        assertTrue(Files.exists(generatedIconsPath),
+                "PWA icons folder should have been generated");
         String iconName = iconPath.substring(iconPath.lastIndexOf("/") + 1,
                 iconPath.lastIndexOf("."));
         String iconExt = iconPath.substring(iconPath.lastIndexOf(".") + 1);
@@ -153,12 +154,12 @@ public class TaskGeneratePWAIconsTest {
                 .compile(iconName + "-\\d+x\\d+\\." + iconExt).asPredicate();
         List<String> generatedIcons = Files.list(generatedIconsPath)
                 .map(p -> p.getFileName().toString()).toList();
-        Assert.assertFalse("Expected PWA icons to be generated",
-                generatedIcons.isEmpty());
+        assertFalse(generatedIcons.isEmpty(),
+                "Expected PWA icons to be generated");
         List<String> invalidIcons = generatedIcons.stream()
                 .filter(iconNamePattern.negate()).toList();
-        Assert.assertTrue("Generated icons have invalid names: " + invalidIcons,
-                invalidIcons.isEmpty());
+        assertTrue(invalidIcons.isEmpty(),
+                "Generated icons have invalid names: " + invalidIcons);
 
     }
 

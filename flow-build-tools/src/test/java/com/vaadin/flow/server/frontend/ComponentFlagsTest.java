@@ -19,13 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -41,14 +41,14 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class ComponentFlagsTest extends NodeUpdateTestUtil {
+class ComponentFlagsTest extends NodeUpdateTestUtil {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private FeatureFlags featureFlags;
     private File propertiesDir;
@@ -60,11 +60,12 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private Class<?>[] testClasses = { FlagView.class,
             EagerFlagRouteAppConf.class };
 
-    @Before
-    public void before() throws IOException {
+    @BeforeEach
+    void before() throws IOException {
 
-        tmpRoot = temporaryFolder.getRoot();
-        propertiesDir = temporaryFolder.newFolder();
+        tmpRoot = temporaryFolder;
+        propertiesDir = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
 
         featureFlags = new FeatureFlags(Mockito.mock(Lookup.class));
         featureFlags.setPropertiesLocation(propertiesDir);
@@ -84,7 +85,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFlagDisabled()
+    void should_ExcludeExperimentalComponent_WhenFlagDisabled()
             throws IOException {
         createUpdater().execute();
 
@@ -98,8 +99,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFlagFoo()
-            throws IOException {
+    void should_ExcludeExperimentalComponent_WhenFlagFoo() throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=FOO\n");
         featureFlags.loadProperties();
@@ -116,7 +116,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_IncludeExperimentalComponent_WhenFlagEnabled()
+    void should_IncludeExperimentalComponent_WhenFlagEnabled()
             throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");

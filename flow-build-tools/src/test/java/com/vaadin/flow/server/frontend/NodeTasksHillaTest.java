@@ -17,18 +17,17 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -42,13 +41,10 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-public class NodeTasksHillaTest {
+class NodeTasksHillaTest {
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private static final String USER_DIR = "user.dir";
 
@@ -59,6 +55,8 @@ public class NodeTasksHillaTest {
 
     private File propertiesDir;
 
+    private AutoCloseable closeable;
+
     @Mock
     private EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
 
@@ -68,22 +66,29 @@ public class NodeTasksHillaTest {
     @Mock
     private TaskGenerateEndpoint taskGenerateEndpoint;
 
-    @Before
-    public void setup() throws Exception {
-        userDir = temporaryFolder.getRoot().getAbsolutePath();
+    @BeforeEach
+    void setup() throws Exception {
+        closeable = org.mockito.MockitoAnnotations.openMocks(this);
+        userDir = temporaryFolder.getAbsolutePath();
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
 
-        propertiesDir = temporaryFolder.newFolder();
+        propertiesDir = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
     }
 
-    @BeforeClass
+    @AfterEach
+    void releaseMocks() throws Exception {
+        closeable.close();
+    }
+
+    @BeforeAll
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
         globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
@@ -107,7 +112,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_useHillaEngine_whenEnabled()
+    void should_useHillaEngine_whenEnabled()
             throws ExecutionFailedException, IOException {
         Options options = createOptions();
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
@@ -130,7 +135,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_notHillaEngine_whenDisabled()
+    void should_notHillaEngine_whenDisabled()
             throws ExecutionFailedException, IOException {
         Options options = createOptions();
         new NodeTasks(options).execute();

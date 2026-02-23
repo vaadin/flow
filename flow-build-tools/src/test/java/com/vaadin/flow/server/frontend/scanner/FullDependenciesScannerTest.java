@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -55,7 +54,15 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-public class FullDependenciesScannerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FullDependenciesScannerTest {
 
     private ClassFinder finder;
 
@@ -89,15 +96,15 @@ public class FullDependenciesScannerTest {
 
     }
 
-    @Before
-    public void setUp() throws ClassNotFoundException {
+    @BeforeEach
+    void setUp() throws ClassNotFoundException {
         finder = Mockito.mock(ClassFinder.class);
         Mockito.when(finder.loadClass(AbstractTheme.class.getName()))
                 .thenReturn((Class) AbstractTheme.class);
     }
 
     @Test
-    public void getTheme_noExplicitTheme_noThemeIsDiscovered()
+    void getTheme_noExplicitTheme_noThemeIsDiscovered()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpThemeScanner(
                 Collections.emptySet(), Collections.emptySet(),
@@ -105,13 +112,12 @@ public class FullDependenciesScannerTest {
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
-        Assert.assertNull(scanner.getTheme());
-        Assert.assertEquals(0, scanner.getClasses().size());
+        assertNull(scanner.getTheme());
+        assertEquals(0, scanner.getClasses().size());
     }
 
     @Test
-    public void getTheme_noTheme_noThemeIsDiscovered()
-            throws ClassNotFoundException {
+    void getTheme_noTheme_noThemeIsDiscovered() throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpThemeScanner(
                 Collections.emptySet(),
                 new HashSet<>(Arrays.asList(NoThemeComponent.class,
@@ -120,15 +126,15 @@ public class FullDependenciesScannerTest {
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
-        Assert.assertNull(scanner.getTheme());
-        Assert.assertNull(scanner.getThemeDefinition());
-        Assert.assertEquals(0, scanner.getClasses().size());
-        Assert.assertFalse(DepsTests.merge(scanner.getModules())
+        assertNull(scanner.getTheme());
+        assertNull(scanner.getThemeDefinition());
+        assertEquals(0, scanner.getClasses().size());
+        assertFalse(DepsTests.merge(scanner.getModules())
                 .contains("./foo-bar-baz.js"));
     }
 
     @Test
-    public void getTheme_explicitTheme_themeIsDiscovered()
+    void getTheme_explicitTheme_themeIsDiscovered()
             throws ClassNotFoundException {
         Mockito.when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
@@ -139,16 +145,15 @@ public class FullDependenciesScannerTest {
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
-        Assert.assertNotNull(scanner.getTheme());
-        Assert.assertEquals("theme/lumo/", scanner.getTheme().getThemeUrl());
-        Assert.assertEquals(LumoTest.class,
-                scanner.getThemeDefinition().getTheme());
-        Assert.assertEquals("dark", scanner.getThemeDefinition().getVariant());
-        Assert.assertEquals(0, scanner.getClasses().size());
+        assertNotNull(scanner.getTheme());
+        assertEquals("theme/lumo/", scanner.getTheme().getThemeUrl());
+        assertEquals(LumoTest.class, scanner.getThemeDefinition().getTheme());
+        assertEquals("dark", scanner.getThemeDefinition().getVariant());
+        assertEquals(0, scanner.getClasses().size());
     }
 
     @Test
-    public void themeWithCssDefined_cssLoaded() throws ClassNotFoundException {
+    void themeWithCssDefined_cssLoaded() throws ClassNotFoundException {
         Mockito.when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
         Mockito.when(finder.loadClass(CssImport.class.getName()))
@@ -168,14 +173,14 @@ public class FullDependenciesScannerTest {
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
-        Assert.assertNotNull(scanner.getTheme());
-        Assert.assertTrue(DepsTests.merge(scanner.getCss()).stream()
+        assertNotNull(scanner.getTheme());
+        assertTrue(DepsTests.merge(scanner.getCss()).stream()
                 .map(CssData::getValue).toList()
                 .contains("lumo-css-import.css"));
     }
 
     @Test
-    public void themeWithCssOnClassPath_notDefinedAsTheme_cssNotLoaded()
+    void themeWithCssOnClassPath_notDefinedAsTheme_cssNotLoaded()
             throws ClassNotFoundException {
         Mockito.when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
@@ -200,59 +205,61 @@ public class FullDependenciesScannerTest {
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
-        Assert.assertNull(scanner.getTheme());
-        Assert.assertFalse(DepsTests.merge(scanner.getCss()).stream()
+        assertNull(scanner.getTheme());
+        assertFalse(DepsTests.merge(scanner.getCss()).stream()
                 .map(CssData::getValue).toList()
                 .contains("lumo-css-import.css"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void getTheme_noThemeAndExplicitTheme_throws()
+    @Test
+    void getTheme_noThemeAndExplicitTheme_throws()
             throws ClassNotFoundException {
-        setUpThemeScanner(getAnnotatedClasses(Theme.class),
-                Collections.singleton(NoThemeComponent.class),
-                (type, annotationType) -> findAnnotations(type, Theme.class));
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void getTheme_severalExplicitThemes_throws()
-            throws ClassNotFoundException {
-        Set<Class<?>> themeAnnotatedClasses = getAnnotatedClasses(Theme.class);
-        themeAnnotatedClasses.add(ThemedComponent.class);
-        setUpThemeScanner(themeAnnotatedClasses, Collections.emptySet(),
-                (type, annotationType) -> findAnnotations(type, Theme.class));
+        assertThrows(IllegalStateException.class, () -> {
+            setUpThemeScanner(getAnnotatedClasses(Theme.class),
+                    Collections.singleton(NoThemeComponent.class),
+                    (type, annotationType) -> findAnnotations(type,
+                            Theme.class));
+        });
     }
 
     @Test
-    public void getPackages_returnsAllPackages_getClassesReturnAllPackageAnnotatedComponents()
+    void getTheme_severalExplicitThemes_throws() throws ClassNotFoundException {
+        assertThrows(IllegalStateException.class, () -> {
+            Set<Class<?>> themeAnnotatedClasses = getAnnotatedClasses(
+                    Theme.class);
+            themeAnnotatedClasses.add(ThemedComponent.class);
+            setUpThemeScanner(themeAnnotatedClasses, Collections.emptySet(),
+                    (type, annotationType) -> findAnnotations(type,
+                            Theme.class));
+        });
+    }
+
+    @Test
+    void getPackages_returnsAllPackages_getClassesReturnAllPackageAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 NpmPackage.class);
 
         Map<String, String> packages = scanner.getPackages();
 
-        Assert.assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
-        Assert.assertEquals(packages.get("@vaadin/vaadin-element-mixin"),
-                "1.1.2");
-        Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
-        Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
-                "2.2.10");
-        Assert.assertEquals(packages.get("images"), "1.1.1");
+        assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
+        assertEquals(packages.get("@vaadin/vaadin-element-mixin"), "1.1.2");
+        assertEquals(packages.get("@foo/var-component"), "1.1.0");
+        assertEquals(packages.get("@webcomponents/webcomponentsjs"), "2.2.10");
+        assertEquals(packages.get("images"), "1.1.1");
 
-        Assert.assertEquals(5, packages.size());
+        assertEquals(5, packages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
-                visitedClasses.contains(LocalP3Template.class.getName()));
-        Assert.assertTrue(visitedClasses
+        assertTrue(visitedClasses.contains(LocalP3Template.class.getName()));
+        assertTrue(visitedClasses
                 .contains(NodeTestComponents.BUTTON_COMPONENT_FQN));
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinElementMixin.class.getName()));
-        Assert.assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
+        assertTrue(visitedClasses.contains(VaadinElementMixin.class.getName()));
+        assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
     }
 
     @Test
-    public void getAllPackages_returnsAllPackages_packagesAreOrganized_getClassesReturnAllPackageAnnotatedComponents()
+    void getAllPackages_returnsAllPackages_packagesAreOrganized_getClassesReturnAllPackageAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 NpmPackage.class);
@@ -260,31 +267,27 @@ public class FullDependenciesScannerTest {
         Map<String, String> packages = scanner.getPackages();
         Map<String, String> devPackages = scanner.getDevPackages();
 
-        Assert.assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
-        Assert.assertEquals(packages.get("@vaadin/vaadin-element-mixin"),
-                "1.1.2");
-        Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
-        Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
-                "2.2.10");
-        Assert.assertEquals(packages.get("images"), "1.1.1");
+        assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
+        assertEquals(packages.get("@vaadin/vaadin-element-mixin"), "1.1.2");
+        assertEquals(packages.get("@foo/var-component"), "1.1.0");
+        assertEquals(packages.get("@webcomponents/webcomponentsjs"), "2.2.10");
+        assertEquals(packages.get("images"), "1.1.1");
 
-        Assert.assertEquals(devPackages.get("vite-plugin-pwa"), "0.16.5");
+        assertEquals(devPackages.get("vite-plugin-pwa"), "0.16.5");
 
-        Assert.assertEquals(5, packages.size());
-        Assert.assertEquals(1, devPackages.size());
+        assertEquals(5, packages.size());
+        assertEquals(1, devPackages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
-                visitedClasses.contains(LocalP3Template.class.getName()));
-        Assert.assertTrue(visitedClasses
+        assertTrue(visitedClasses.contains(LocalP3Template.class.getName()));
+        assertTrue(visitedClasses
                 .contains(NodeTestComponents.BUTTON_COMPONENT_FQN));
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinElementMixin.class.getName()));
-        Assert.assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
+        assertTrue(visitedClasses.contains(VaadinElementMixin.class.getName()));
+        assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
     }
 
     @Test
-    public void getScripts_returnAllScripts_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
+    void getScripts_returnAllScripts_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JavaScript.class);
@@ -294,14 +297,13 @@ public class FullDependenciesScannerTest {
                 "javascript/b.js", "javascript/c.js", "ExampleConnector.js");
 
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
+        assertTrue(
                 visitedClasses.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(
-                visitedClasses.contains(JavaScriptOrder.class.getName()));
+        assertTrue(visitedClasses.contains(JavaScriptOrder.class.getName()));
     }
 
     @Test
-    public void getScripts_returnAllJsModules_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
+    void getScripts_returnAllJsModules_orderPerClassIsPreserved_getClassesReturnAllJSAnnotatedComponents()
             throws ClassNotFoundException {
         List<String> expectedModulesInOrder = new ArrayList<>();
         expectedModulesInOrder.add("jsmodule/h.js");
@@ -313,14 +315,13 @@ public class FullDependenciesScannerTest {
                 expectedModulesInOrder.toArray(String[]::new));
 
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
+        assertTrue(
                 visitedClasses.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(
-                visitedClasses.contains(JavaScriptOrder.class.getName()));
+        assertTrue(visitedClasses.contains(JavaScriptOrder.class.getName()));
     }
 
     @Test
-    public void getCss_returnAllCss_orderPerClassIsPreserved_getClassesReturnAllCssAnnotatedComponents()
+    void getCss_returnAllCss_orderPerClassIsPreserved_getClassesReturnAllCssAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 CssImport.class);
@@ -337,13 +338,13 @@ public class FullDependenciesScannerTest {
 
         DepsTests.assertCss(scanner.getCss(), expected);
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertEquals(2, visitedClasses.size());
-        Assert.assertTrue(visitedClasses.contains(FlatImport.class.getName()));
-        Assert.assertTrue(visitedClasses.contains(LumoTest.class.getName()));
+        assertEquals(2, visitedClasses.size());
+        assertTrue(visitedClasses.contains(FlatImport.class.getName()));
+        assertTrue(visitedClasses.contains(LumoTest.class.getName()));
     }
 
     @Test
-    public void getModules_noTheme_returnAllModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
+    void getModules_noTheme_returnAllModules_orderPerClassIsPreserved_getClassesReturnAllModuleAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JsModule.class);
@@ -351,13 +352,13 @@ public class FullDependenciesScannerTest {
         assertJsModules(DepsTests.merge(scanner.getModules()));
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(14, classes.size());
+        assertEquals(14, classes.size());
 
         assertJsModulesClasses(classes);
     }
 
     @Test
-    public void getModules_explcitTheme_returnAllModulesExcludingNotUsedTheme_getClassesReturnAllModuleAnnotatedComponents()
+    void getModules_explcitTheme_returnAllModulesExcludingNotUsedTheme_getClassesReturnAllModuleAnnotatedComponents()
             throws ClassNotFoundException {
         // use this fake/mock class for the loaded class to check that annotated
         // classes are requested for the loaded class and not for the
@@ -379,7 +380,7 @@ public class FullDependenciesScannerTest {
         themeClasses.add(FakeLumoTheme.class);
         Mockito.when(finder.getAnnotatedClasses(themeClass))
                 .thenReturn(themeClasses);
-        Assert.assertTrue(themeClasses.size() >= 2);
+        assertTrue(themeClasses.size() >= 2);
 
         Mockito.when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
@@ -393,7 +394,7 @@ public class FullDependenciesScannerTest {
                     } else if (annotation.equals(themeClass)) {
                         return findAnnotations(type, Theme.class);
                     }
-                    Assert.fail();
+                    fail();
                     return null;
                 }, null, true);
 
@@ -402,32 +403,27 @@ public class FullDependenciesScannerTest {
         assertJsModules(modules);
 
         // Theme modules should be included now
-        Assert.assertTrue(
-                modules.contains("@vaadin/vaadin-lumo-styles/color.js"));
-        Assert.assertTrue(
+        assertTrue(modules.contains("@vaadin/vaadin-lumo-styles/color.js"));
+        assertTrue(
                 modules.contains("@vaadin/vaadin-lumo-styles/typography.js"));
-        Assert.assertTrue(
-                modules.contains("@vaadin/vaadin-lumo-styles/sizing.js"));
-        Assert.assertTrue(
-                modules.contains("@vaadin/vaadin-lumo-styles/spacing.js"));
-        Assert.assertTrue(
-                modules.contains("@vaadin/vaadin-lumo-styles/style.js"));
-        Assert.assertTrue(
-                modules.contains("@vaadin/vaadin-lumo-styles/icons.js"));
+        assertTrue(modules.contains("@vaadin/vaadin-lumo-styles/sizing.js"));
+        assertTrue(modules.contains("@vaadin/vaadin-lumo-styles/spacing.js"));
+        assertTrue(modules.contains("@vaadin/vaadin-lumo-styles/style.js"));
+        assertTrue(modules.contains("@vaadin/vaadin-lumo-styles/icons.js"));
 
         // not used theme module is not included
-        Assert.assertFalse(modules.contains("./foo-bar-baz.js"));
+        assertFalse(modules.contains("./foo-bar-baz.js"));
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(14, classes.size());
+        assertEquals(14, classes.size());
 
         assertJsModulesClasses(classes);
-        Assert.assertTrue(classes.contains(LumoTest.class.getName()));
-        Assert.assertFalse(classes.contains(FakeLumoTheme.class.getName()));
+        assertTrue(classes.contains(LumoTest.class.getName()));
+        assertFalse(classes.contains(FakeLumoTheme.class.getName()));
     }
 
     @Test
-    public void getAllPackageAssets_returnsAllPackages_collectsAssets()
+    void getAllPackageAssets_returnsAllPackages_collectsAssets()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 NpmPackage.class);
@@ -435,23 +431,22 @@ public class FullDependenciesScannerTest {
         Map<String, List<String>> assets = scanner.getAssets();
         Map<String, List<String>> devAssets = scanner.getDevAssets();
 
-        Assert.assertEquals(2, assets.size());
-        Assert.assertEquals(1, devAssets.size());
+        assertEquals(2, assets.size());
+        assertEquals(1, devAssets.size());
 
-        Assert.assertTrue(assets.containsKey("@vaadin/vaadin-button"));
-        Assert.assertTrue(assets.containsKey("images"));
+        assertTrue(assets.containsKey("@vaadin/vaadin-button"));
+        assertTrue(assets.containsKey("images"));
 
-        Assert.assertTrue(devAssets.containsKey("vite-plugin-pwa"));
+        assertTrue(devAssets.containsKey("vite-plugin-pwa"));
 
-        Assert.assertEquals(1, assets.get("@vaadin/vaadin-button").size());
-        Assert.assertEquals(2, assets.get("images").size());
-        Assert.assertEquals(1, devAssets.get("vite-plugin-pwa").size());
+        assertEquals(1, assets.get("@vaadin/vaadin-button").size());
+        assertEquals(2, assets.get("images").size());
+        assertEquals(1, devAssets.get("vite-plugin-pwa").size());
 
-        Assert.assertEquals("img/arrow*:img",
+        assertEquals("img/arrow*:img",
                 assets.get("@vaadin/vaadin-button").get(0));
 
-        Assert.assertEquals("frown/**:pwa",
-                devAssets.get("vite-plugin-pwa").get(0));
+        assertEquals("frown/**:pwa", devAssets.get("vite-plugin-pwa").get(0));
     }
 
     private CssData createCssData(String value, String id, String include,
@@ -519,77 +514,69 @@ public class FullDependenciesScannerTest {
     }
 
     private void assertJsModules(List<String> modules) {
-        Assert.assertTrue(modules.contains("@polymer/iron-icon/iron-icon.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains("@polymer/iron-icon/iron-icon.js"));
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-date-picker/src/vaadin-date-picker.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js"));
-        Assert.assertTrue(
-                modules.contains("./foo-dir/vaadin-npm-component.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains("./foo-dir/vaadin-npm-component.js"));
+        assertTrue(modules.contains(
                 "vaadin-mixed-component/src/vaadin-mixed-component.js"));
-        Assert.assertTrue(modules.contains("./local-template.js"));
-        Assert.assertTrue(modules.contains("3rdparty/component.js"));
-        Assert.assertTrue(modules.contains("./local-p3-template.js"));
-        Assert.assertTrue(modules.contains("unresolved/component"));
-        Assert.assertTrue(modules.contains("./foo.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains("./local-template.js"));
+        assertTrue(modules.contains("3rdparty/component.js"));
+        assertTrue(modules.contains("./local-p3-template.js"));
+        assertTrue(modules.contains("unresolved/component"));
+        assertTrue(modules.contains("./foo.js"));
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-mixed-component/src/vaadin-something-else"));
-        Assert.assertTrue(modules.contains(
+        assertTrue(modules.contains(
                 "@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js"));
-        Assert.assertTrue(modules.contains("./common-js-file.js"));
-        Assert.assertTrue(modules.contains("jsmodule/g.js"));
+        assertTrue(modules.contains("./common-js-file.js"));
+        assertTrue(modules.contains("jsmodule/g.js"));
 
         // Check the order for VaadinBowerComponent class
         List<String> modulesPerClass = modules.stream().filter(
                 module -> module.startsWith("@vaadin/vaadin-date-picker"))
                 .collect(Collectors.toList());
-        Assert.assertEquals(
-                "@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
+        assertEquals("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
                 modulesPerClass.get(0));
-        Assert.assertEquals(
-                "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
+        assertEquals("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
                 modulesPerClass.get(1));
 
         // Check the order for TranslatedImports class
         modulesPerClass = modules.stream().filter(
                 module -> module.startsWith("@vaadin/vaadin-mixed-component"))
                 .collect(Collectors.toList());
-        Assert.assertEquals(
+        assertEquals(
                 "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js",
                 modulesPerClass.get(0));
-        Assert.assertEquals(
+        assertEquals(
                 "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
                 modulesPerClass.get(1));
-        Assert.assertEquals(
-                "@vaadin/vaadin-mixed-component/src/vaadin-something-else",
+        assertEquals("@vaadin/vaadin-mixed-component/src/vaadin-something-else",
                 modulesPerClass.get(2));
-        Assert.assertEquals(
+        assertEquals(
                 "@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js",
                 modulesPerClass.get(3));
     }
 
     private void assertJsModulesClasses(Set<String> classes) {
-        Assert.assertTrue(
-                classes.contains(NodeTestComponents.ICON_COMPONENT_FQN));
-        Assert.assertTrue(
-                classes.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(classes.contains(VaadinElementMixin.class.getName()));
-        Assert.assertTrue(classes.contains(VaadinNpmComponent.class.getName()));
-        Assert.assertTrue(
-                classes.contains(VaadinMixedComponent.class.getName()));
-        Assert.assertTrue(classes.contains(LocalTemplate.class.getName()));
-        Assert.assertTrue(classes.contains(LocalP3Template.class.getName()));
-        Assert.assertTrue(
-                classes.contains(UnresolvedComponent.class.getName()));
-        Assert.assertTrue(classes.contains(FlatImport.class.getName()));
-        Assert.assertTrue(classes.contains(MainLayout.class.getName()));
-        Assert.assertTrue(classes.contains(JavaScriptOrder.class.getName()));
+        assertTrue(classes.contains(NodeTestComponents.ICON_COMPONENT_FQN));
+        assertTrue(classes.contains(VaadinBowerComponent.class.getName()));
+        assertTrue(classes.contains(VaadinElementMixin.class.getName()));
+        assertTrue(classes.contains(VaadinNpmComponent.class.getName()));
+        assertTrue(classes.contains(VaadinMixedComponent.class.getName()));
+        assertTrue(classes.contains(LocalTemplate.class.getName()));
+        assertTrue(classes.contains(LocalP3Template.class.getName()));
+        assertTrue(classes.contains(UnresolvedComponent.class.getName()));
+        assertTrue(classes.contains(FlatImport.class.getName()));
+        assertTrue(classes.contains(MainLayout.class.getName()));
+        assertTrue(classes.contains(JavaScriptOrder.class.getName()));
     }
 }

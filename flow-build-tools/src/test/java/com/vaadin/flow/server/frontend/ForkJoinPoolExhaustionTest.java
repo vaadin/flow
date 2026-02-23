@@ -23,12 +23,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Regression test for https://github.com/vaadin/flow/issues/22756
@@ -37,12 +39,12 @@ import com.vaadin.flow.internal.Pair;
  * depend on {@link ForkJoinPool#commonPool()} and can complete even when the
  * common pool is exhausted.
  */
-public class ForkJoinPoolExhaustionTest {
+class ForkJoinPoolExhaustionTest {
 
     private final List<CompletableFuture<?>> blockingTasks = new ArrayList<>();
 
-    @After
-    public void cleanup() {
+    @AfterEach
+    void cleanup() {
         // Cancel all blocking tasks to avoid affecting other tests
         blockingTasks.forEach(f -> f.cancel(true));
         blockingTasks.clear();
@@ -56,7 +58,7 @@ public class ForkJoinPoolExhaustionTest {
      * (virtual threads) instead of the common pool.
      */
     @Test
-    public void consumeProcessStreams_shouldNotBeBlockedByExhaustedCommonPool()
+    void consumeProcessStreams_shouldNotBeBlockedByExhaustedCommonPool()
             throws Exception {
         // Step 1: Saturate the ForkJoinPool.commonPool() with blocking tasks
         // We need to submit more blocking tasks than the pool's parallelism
@@ -88,8 +90,8 @@ public class ForkJoinPoolExhaustionTest {
         }
 
         // Wait until the pool is saturated (more reliable than fixed sleep)
-        Assert.assertTrue("Pool didn't saturate in time",
-                poolSaturated.await(5, TimeUnit.SECONDS));
+        assertTrue(poolSaturated.await(5, TimeUnit.SECONDS),
+                "Pool didn't saturate in time");
 
         // Step 2: Start a fast process that outputs immediately and exits
         List<String> cmd = List.of(
@@ -110,8 +112,8 @@ public class ForkJoinPoolExhaustionTest {
 
         // Wait for the process to complete (should be nearly instant)
         boolean processCompleted = process.waitFor(2, TimeUnit.SECONDS);
-        Assert.assertTrue("Process should complete within 2 seconds",
-                processCompleted);
+        assertTrue(processCompleted,
+                "Process should complete within 2 seconds");
 
         // Step 4: Try to get the streams with a 2-second timeout
         // This is the key assertion - with the buggy code this will timeout
@@ -121,18 +123,16 @@ public class ForkJoinPoolExhaustionTest {
 
             // Verify the output was captured correctly
             String stdOut = streams.getFirst();
-            Assert.assertTrue(
+            assertTrue(stdOut.contains("FastTestExecutable completed"),
                     "Expected stdout to contain test output, but was: "
-                            + stdOut,
-                    stdOut.contains("FastTestExecutable completed"));
+                            + stdOut);
             String stdErr = streams.getSecond();
-            Assert.assertTrue(
+            assertTrue(stdErr.contains("FastTestExecutable writing to stderr"),
                     "Expected stdout to contain test output, but was: "
-                            + stdErr,
-                    stdErr.contains("FastTestExecutable writing to stderr"));
+                            + stdErr);
 
         } catch (java.util.concurrent.TimeoutException e) {
-            Assert.fail("consumeProcessStreams should not be blocked by "
+            fail("consumeProcessStreams should not be blocked by "
                     + "exhausted ForkJoinPool.commonPool(). "
                     + "This indicates the implementation incorrectly uses "
                     + "the common pool instead of a dedicated executor. "
