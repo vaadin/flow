@@ -31,20 +31,12 @@ import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ValueSignalTest extends SignalTestBase {
-
-    @Test
-    void constructor_noArgs_nullValue() {
-        ValueSignal<Object> signal = new ValueSignal<>();
-
-        assertNull(signal.peek());
-    }
 
     @Test
     void constructor_initialValue_initialValueUsed() {
@@ -55,7 +47,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void setValue_valueUsed() {
-        ValueSignal<String> signal = new ValueSignal<>();
+        ValueSignal<String> signal = new ValueSignal<>("");
         signal.set("value");
 
         assertEquals("value", signal.peek());
