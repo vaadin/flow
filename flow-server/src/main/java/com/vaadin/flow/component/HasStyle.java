@@ -20,6 +20,7 @@ import java.util.Set;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents {@link Component} which has class attribute and inline styles.
@@ -159,6 +160,25 @@ public interface HasStyle extends HasElement {
                 getClassNames().add(part);
             }
         }
+    }
+
+    /**
+     * Binds the presence of the given CSS class name to a {@link Signal}. When
+     * the signal's value is {@code true}, the class name is added; when
+     * {@code false}, the class name is removed.
+     * <p>
+     * The binding is active while the component is attached to a UI. When
+     * detached, signal value changes have no effect.
+     *
+     * @param className
+     *            the CSS class name to toggle, not {@code null} or blank
+     * @param signal
+     *            the boolean signal to bind to, not {@code null}
+     * @see ClassList#bind(String, Signal)
+     * @since 25.1
+     */
+    default void bindClassName(String className, Signal<Boolean> signal) {
+        getClassNames().bind(className, signal);
     }
 
     /**

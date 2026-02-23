@@ -27,6 +27,7 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.tests.data.bean.Person;
@@ -705,10 +706,8 @@ public class BinderSignalTest extends SignalsUnitTest {
             return true;
         }, "Bean level validation with a signal failed");
 
-        assertThrows(Binder.InvalidSignalUsageError.class,
-                () -> binder.validate());
-        assertThrows(Binder.InvalidSignalUsageError.class,
-                () -> binder.isValid());
+        assertThrows(DeniedSignalUsageException.class, () -> binder.validate());
+        assertThrows(DeniedSignalUsageException.class, () -> binder.isValid());
     }
 
     @Test
