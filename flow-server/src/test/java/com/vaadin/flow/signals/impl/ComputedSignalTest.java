@@ -30,7 +30,6 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -51,7 +50,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void value_constantCallback_runOnceAndConstantSignalValue() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
         Signal<Object> signal = Signal.computed(() -> {
             dependency.get();
@@ -163,7 +162,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void callback_updateOtherSignal_signalUpdated() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<@Nullable String> signal = Signal.<@Nullable String>computed((() -> {
