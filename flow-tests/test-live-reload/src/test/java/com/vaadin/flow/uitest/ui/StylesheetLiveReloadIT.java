@@ -70,10 +70,18 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                 .resolve(Paths.get("css", "images", "vaadin-logo.png"));
 
         // The file watcher monitors the source directory, not the build
-        // output. Derive the source path from the target path:
-        // target/classes/META-INF/resources -> project root
-        Path projectDir = resourcesPath.getParent().getParent().getParent()
-                .getParent();
+        // output. Walk up from the target path to find the Maven project
+        // root (containing both "src" and "pom.xml"), then resolve the
+        // source path.
+        Path projectDir = resourcesPath;
+        while (projectDir != null
+                && !(Files.isDirectory(projectDir.resolve("src")) && Files
+                        .isRegularFile(projectDir.resolve("pom.xml")))) {
+            projectDir = projectDir.getParent();
+        }
+        Assert.assertNotNull(
+                "Could not find project root from " + resourcesPath,
+                projectDir);
         sourceResourcesPath = projectDir
                 .resolve("src/main/resources/META-INF/resources");
     }
