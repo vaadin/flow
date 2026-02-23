@@ -129,10 +129,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * Sets the value of this signal.
      * <p>
      * Setting a new value will trigger effect functions that have reads from
-     * this signal. If the new value is equal to the current value (compared
+     * this signal, unless the new value is equal to the current value (compared
      * using the equality checker provided in the constructor, which defaults to
-     * {@link Objects#equals(Object, Object)}), effect function is not
-     * triggered.
+     * {@link Objects#equals(Object, Object)}).
      *
      * @param value
      *            the value to set
@@ -156,8 +155,11 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * counterpart to
      * {@link java.util.concurrent.atomic.AtomicReference#compareAndSet(Object, Object)}.
      * <p>
-     * Comparison between the expected value and the new value is performed
-     * using {@link #equals(Object)}.
+     * Comparison between the expected value and the current value is performed
+     * using the equality checker provided in the constructor. The value is set
+     * only when the new value differs from the old value (compared using the
+     * equality checker), ensuring no change notification is triggered for equal
+     * values.
      *
      * @param expectedValue
      *            the expected value
@@ -171,8 +173,10 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
         try {
             checkPreconditions();
 
-            if (Objects.equals(expectedValue, getSignalValue())) {
-                setSignalValue(newValue);
+            if (equalityChecker.test(expectedValue, getSignalValue())) {
+                if (!equalityChecker.test(newValue, getSignalValue())) {
+                    setSignalValue(newValue);
+                }
                 return true;
             } else {
                 return false;

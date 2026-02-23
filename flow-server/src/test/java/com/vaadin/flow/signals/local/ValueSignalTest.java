@@ -740,6 +740,42 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void customEqualityChecker_replace_usesCustomChecker() {
+        // Custom checker that uses case-insensitive comparison
+        SerializableBiPredicate<String, String> checker = (a, b) -> {
+            if (a == null || b == null) {
+                return a == b;
+            }
+            return a.equalsIgnoreCase(b);
+        };
+
+        ValueSignal<String> signal = new ValueSignal<>("Hello", checker);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            invoked.set(true);
+            return false;
+        });
+
+        // Replace with same value (case-insensitive match), should return true
+        // but not trigger change
+        boolean result = signal.replace("HELLO", "HELLO");
+        assertTrue(result);
+        assertFalse(invoked.get());
+        assertEquals("Hello", signal.get());
+
+        // Replace with different value
+        result = signal.replace("HELLO", "World");
+        assertTrue(result);
+        assertTrue(invoked.get());
+        assertEquals("World", signal.get());
+    }
+
+    @Test
     void toString_includesValue() {
         ValueSignal<String> signal = new ValueSignal<>("signal value");
 
