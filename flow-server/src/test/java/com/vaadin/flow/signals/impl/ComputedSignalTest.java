@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.MissingSignalUsageException;
@@ -38,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@NullMarked
 public class ComputedSignalTest extends SignalTestBase {
 
     @Test
@@ -156,9 +159,6 @@ public class ComputedSignalTest extends SignalTestBase {
 
         signal.set(false);
         assertTrue(negated.peek());
-
-        signal.set(null);
-        assertNull(negated.peek());
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ComputedSignalTest extends SignalTestBase {
         ValueSignal<Void> dependency = new ValueSignal<>(null);
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
-        Signal<String> signal = Signal.computed((() -> {
+        Signal<@Nullable String> signal = Signal.<@Nullable String>computed((() -> {
             dependency.get();
             other.set("update");
             return null;

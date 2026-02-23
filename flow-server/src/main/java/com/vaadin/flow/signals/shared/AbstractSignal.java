@@ -158,7 +158,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
 
     @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T get() {
+    public T get() {
         if (!UsageTracker.isGetAllowed() && !Transaction.inTransaction()) {
             throw new IllegalStateException(
                     "Signal.get() was called outside a reactive context. "

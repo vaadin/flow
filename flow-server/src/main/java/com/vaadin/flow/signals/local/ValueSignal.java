@@ -67,7 +67,7 @@ public class ValueSignal<T extends @Nullable Object>
      * @param initialValue
      *            the initial value
      */
-    public ValueSignal(@Nullable T initialValue) {
+    public ValueSignal(T initialValue) {
         this(initialValue, Objects::equals);
     }
 
@@ -86,7 +86,7 @@ public class ValueSignal<T extends @Nullable Object>
      *            the predicate used to compare values for equality, not
      *            <code>null</code>
      */
-    public ValueSignal(@Nullable T initialValue,
+    public ValueSignal(T initialValue,
             SerializableBiPredicate<T, T> equalityChecker) {
         super(initialValue);
         this.equalityChecker = Objects.requireNonNull(equalityChecker,

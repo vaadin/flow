@@ -41,7 +41,8 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
     private final List<TransientListener> listeners = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private int version;
-    private @Nullable T signalValue;
+    @SuppressWarnings("NullAway")
+    private T signalValue;
     private transient @Nullable VaadinSession ownerSession;
 
     /**
@@ -50,7 +51,8 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      * @param initialValue
      *            the initial value
      */
-    protected AbstractLocalSignal(@Nullable T initialValue) {
+    @SuppressWarnings("NullAway")
+    protected AbstractLocalSignal(T initialValue) {
         this.signalValue = initialValue;
     }
 
@@ -81,7 +83,7 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
 
     @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T get() {
+    public T get() {
         if (!UsageTracker.isGetAllowed()) {
             throw new IllegalStateException(
                     "Signal.get() was called outside a reactive context. "
@@ -150,7 +152,7 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      *
      * @return the current value
      */
-    protected @Nullable T getSignalValue() {
+    protected T getSignalValue() {
         assertLockHeld();
         return signalValue;
     }
@@ -161,7 +163,7 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      *
      * @return the current value
      */
-    protected @Nullable T getSignalValueUnsafe() {
+    protected T getSignalValueUnsafe() {
         return signalValue;
     }
 
@@ -172,7 +174,7 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      * @param value
      *            the new value
      */
-    protected void setSignalValue(@Nullable T value) {
+    protected void setSignalValue(T value) {
         assertLockHeld();
         this.signalValue = value;
         version++;

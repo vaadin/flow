@@ -143,7 +143,7 @@ public class SharedMapSignal<T extends @Nullable Object>
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> put(String key, @Nullable T value) {
+    public SignalOperation<T> put(String key, T value) {
         return submit(
                 new SignalCommand.PutCommand(Id.random(), id(),
                         Objects.requireNonNull(key), toJson(value)),
@@ -176,7 +176,7 @@ public class SharedMapSignal<T extends @Nullable Object>
      * @return an operation containing the eventual result with the entry signal
      */
     public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
-            String key, @Nullable T value) {
+            String key, T value) {
         Id commandId = Id.random();
         return submit(
                 new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
