@@ -123,8 +123,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindClassName("active", signal);
 
-        assertThrows(BindingActiveException.class,
-                () -> component.bindClassName("active",
-                        new ValueSignal<>(false)));
+        assertThrows(BindingActiveException.class, () -> component
+                .bindClassName("active", new ValueSignal<>(false)));
     }
 }
