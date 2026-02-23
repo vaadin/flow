@@ -40,7 +40,7 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
     void get_returnsNullable() {
         var signal = new ValueSignal<>("hello");
         @Nullable
-        String value = signal.get();
+        String value = signal.peek();
         // get() returns @Nullable T, so a null-check is required even for
         // non-null type parameters — NullAway enforces this
         if (value != null) {
@@ -53,7 +53,7 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
         var signal = new ValueSignal<>("hello");
         // NullAway verifies that set() accepts a non-null String
         signal.set("world");
-        assertEquals("world", signal.get());
+        assertEquals("world", signal.peek());
     }
 
     @Test
@@ -61,7 +61,7 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
         ValueSignal<@Nullable String> signal = new ValueSignal<>("hello");
         // NullAway verifies that set(null) is valid for a nullable signal
         signal.set(null);
-        assertNull(signal.get());
+        assertNull(signal.peek());
     }
 
     @Test

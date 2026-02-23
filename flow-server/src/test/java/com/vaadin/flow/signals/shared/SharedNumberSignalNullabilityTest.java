@@ -39,7 +39,7 @@ public class SharedNumberSignalNullabilityTest extends SignalTestBase {
         var signal = new SharedNumberSignal(42);
         // NullAway verifies get() returns non-null Double, so unboxing
         // is safe without a null check
-        double value = signal.get();
+        double value = signal.peek();
         assertEquals(42.0, value);
     }
 }

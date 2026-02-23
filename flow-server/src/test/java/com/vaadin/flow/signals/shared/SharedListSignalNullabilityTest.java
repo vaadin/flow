@@ -42,7 +42,7 @@ public class SharedListSignalNullabilityTest extends SignalTestBase {
         var signal = new SharedListSignal<>(String.class);
         // NullAway verifies get() returns non-null List, so .size()
         // is safe without a null check
-        List<SharedValueSignal<String>> list = signal.get();
+        List<SharedValueSignal<String>> list = signal.peek();
         assertTrue(list.isEmpty());
     }
 

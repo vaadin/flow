@@ -42,7 +42,7 @@ public class SharedMapSignalNullabilityTest extends SignalTestBase {
         var signal = new SharedMapSignal<>(String.class);
         // NullAway verifies get() returns non-null Map, so .size()
         // is safe without a null check
-        Map<String, SharedValueSignal<String>> map = signal.get();
+        Map<String, SharedValueSignal<String>> map = signal.peek();
         assertTrue(map.isEmpty());
     }
 

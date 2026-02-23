@@ -44,7 +44,7 @@ public class ComputedSignalNullabilityTest extends SignalTestBase {
         var signal = new ValueSignal<>("hello");
         Signal<Integer> mapped = signal.map(String::length);
         @Nullable
-        Integer length = mapped.get();
+        Integer length = mapped.peek();
         // get() returns @Nullable T — NullAway enforces a null-check
         if (length != null) {
             assertEquals(5, (int) length);
@@ -57,7 +57,7 @@ public class ComputedSignalNullabilityTest extends SignalTestBase {
         Signal<@Nullable String> mapped = signal
                 .map(s -> s.isEmpty() ? null : s);
         @Nullable
-        String value = mapped.get();
+        String value = mapped.peek();
         // Must null-check — NullAway enforces this
         if (value != null) {
             assertEquals("hello", value);
@@ -73,7 +73,7 @@ public class ComputedSignalNullabilityTest extends SignalTestBase {
             return value != null ? value.length() : 0;
         });
         @Nullable
-        Integer length = computed.get();
+        Integer length = computed.peek();
         // get() returns @Nullable T — NullAway enforces a null-check
         if (length != null) {
             assertEquals(5, (int) length);
@@ -85,7 +85,7 @@ public class ComputedSignalNullabilityTest extends SignalTestBase {
         var signal = new ValueSignal<>(true);
         Signal<Boolean> negated = Signal.not(signal);
         @Nullable
-        Boolean value = negated.get();
+        Boolean value = negated.peek();
         // get() returns @Nullable T — NullAway enforces a null-check
         if (value != null) {
             assertFalse(value);

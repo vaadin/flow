@@ -40,7 +40,7 @@ public class SharedValueSignalNullabilityTest extends SignalTestBase {
     void get_returnsNullable() {
         var signal = new SharedValueSignal<>("hello");
         @Nullable
-        String value = signal.get();
+        String value = signal.peek();
         // get() returns @Nullable T, so a null-check is required even for
         // non-null type parameters — NullAway enforces this
         if (value != null) {
@@ -61,7 +61,7 @@ public class SharedValueSignalNullabilityTest extends SignalTestBase {
                 String.class);
         // NullAway verifies that set(null) is valid for a nullable signal
         signal.set(null);
-        assertNull(signal.get());
+        assertNull(signal.peek());
     }
 
     @Test

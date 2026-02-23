@@ -43,7 +43,7 @@ public class ListSignalNullabilityTest extends SignalTestBase {
         var signal = new ListSignal<String>();
         // NullAway verifies get() returns non-null List, so .size()
         // is safe without a null check
-        List<ValueSignal<String>> list = signal.get();
+        List<ValueSignal<String>> list = signal.peek();
         assertTrue(list.isEmpty());
     }
 
@@ -60,7 +60,7 @@ public class ListSignalNullabilityTest extends SignalTestBase {
         ListSignal<@Nullable String> signal = new ListSignal<>();
         ValueSignal<@Nullable String> entry = signal.insertFirst(null);
         @Nullable
-        String value = entry.get();
+        String value = entry.peek();
         // Must null-check — NullAway enforces this
         assertNull(value);
     }
