@@ -50,11 +50,12 @@ public class ComputedSignalTest extends SignalTestBase {
     void value_constantCallback_runOnceAndConstantSignalValue() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
-        Signal<Object> signal = Signal.computed(() -> {
-            dependency.get();
-            count.incrementAndGet();
-            return null;
-        });
+        Signal<@Nullable Object> signal = Signal
+                .<@Nullable Object> computed(() -> {
+                    dependency.get();
+                    count.incrementAndGet();
+                    return null;
+                });
 
         assertNull(signal.peek());
         assertEquals(1, count.intValue());
