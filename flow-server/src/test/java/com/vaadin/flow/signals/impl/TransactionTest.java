@@ -20,16 +20,13 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
+import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -52,21 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TransactionTest {
-    private static final ThreadLocal<SerializableSupplier<Transaction>> currentFallback = new ThreadLocal<>();
-
-    @BeforeAll
-    static void setupFallback() {
-        Transaction.setTransactionFallback(() -> {
-            SerializableSupplier<Transaction> supplier = currentFallback.get();
-            return supplier != null ? supplier.get() : null;
-        });
-    }
-
-    @AfterAll
-    static void teardownFallback() {
-        Transaction.setTransactionFallback(null);
-    }
+public class TransactionTest extends SignalTestBase {
 
     @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
@@ -361,11 +344,6 @@ public class TransactionTest {
         }, Type.WRITE_THROUGH);
     }
 
-    @AfterEach
-    void cleanupFallback() {
-        currentFallback.remove();
-    }
-
     @Test
     void fallback_providesRepeatableReads() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
@@ -454,11 +432,6 @@ public class TransactionTest {
         });
 
         assertTrue(Transaction.inTransaction());
-    }
-
-    private void useTransactionFallback(
-            SerializableSupplier<Transaction> supplier) {
-        currentFallback.set(supplier);
     }
 
     private static TransactionTask dummyTask() {

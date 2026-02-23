@@ -33,6 +33,7 @@ import tools.jackson.databind.node.StringNode;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
+import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -50,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StagedTransactionTest {
+public class StagedTransactionTest extends SignalTestBase {
     /*
      * Note that much of the logic in this test only interacts with API in
      * Transaction and in that way tests logic from StagedTransaction.
@@ -618,26 +619,22 @@ public class StagedTransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Transaction fallback = Transaction.createWriteThrough();
-        Transaction.setTransactionFallback(() -> fallback);
+        useTransactionFallback(() -> fallback);
 
-        try {
-            AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
+        AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
 
-            tree.observeNextChange(Id.ZERO, immediate -> {
-                valueInObserver.set(TestUtil.readTransactionRootValue(tree));
-                return false;
-            });
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            valueInObserver.set(TestUtil.readTransactionRootValue(tree));
+            return false;
+        });
 
-            Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand("updated"), null);
-            });
+        Transaction.runInTransaction(() -> {
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("updated"), null);
+        });
 
-            assertNotNull(valueInObserver.get(),
-                    "Change observer should see updated value via outer transaction");
-        } finally {
-            Transaction.setTransactionFallback(null);
-        }
+        assertNotNull(valueInObserver.get(),
+                "Change observer should see updated value via outer transaction");
     }
 
     @Test
