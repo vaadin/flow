@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalEnvironment;
@@ -28,9 +33,33 @@ import com.vaadin.flow.signals.SignalEnvironment;
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 
+    private transient Queue<List<SignalCommand>> pendingConfirmations = new ConcurrentLinkedQueue<>();
+
     @Override
     protected void submit(List<SignalCommand> commands) {
+        pendingConfirmations.add(commands);
         SignalEnvironment.getDefaultEffectDispatcher()
-                .execute(() -> confirm(commands));
+                .execute(this::processPendingConfirmations);
+    }
+
+    private void processPendingConfirmations() {
+        // Drain under the tree lock to guarantee FIFO confirmation order
+        // even when dispatched to concurrent virtual threads.
+        getLock().lock();
+        try {
+            List<SignalCommand> commands;
+            while ((commands = pendingConfirmations.poll()) != null) {
+                confirm(commands);
+            }
+        } finally {
+            getLock().unlock();
+        }
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        pendingConfirmations = new ConcurrentLinkedQueue<>();
     }
 }

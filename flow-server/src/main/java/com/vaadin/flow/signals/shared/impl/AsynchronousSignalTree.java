@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
@@ -198,5 +202,21 @@ public abstract class AsynchronousSignalTree extends SignalTree {
     @Override
     public Snapshot submitted() {
         return Objects.requireNonNull(getWithLock(() -> submitted));
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        // After deserialization, any async confirmation tasks from the
+        // previous instance are lost. Align confirmed with submitted and
+        // clear unconfirmed commands to ensure tree consistency.
+        if (!unconfirmedCommands.isEmpty()) {
+            unconfirmedCommands.removeHandledCommands(unconfirmedCommands
+                    .getCommands().stream().map(SignalCommand::commandId)
+                    .collect(Collectors.toSet()));
+            confirmed = submitted;
+        }
     }
 }
