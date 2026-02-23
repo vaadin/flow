@@ -57,7 +57,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
                 signal.incrementBy(2);
                 assertEquals(2, signal.peek());
             });
-            assertEquals(1, signal.peek());
+            assertEquals(1, signal.get());
 
             return operationInner;
         }).returnValue();
