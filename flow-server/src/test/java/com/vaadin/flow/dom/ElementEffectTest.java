@@ -134,7 +134,9 @@ class ElementEffectTest {
         AtomicReference<Thread> currentThread = new AtomicReference<>();
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             currentThread.set(Thread.currentThread());
             currentUI.set(UI.getCurrent());
         });
@@ -157,7 +159,9 @@ class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             currentUI.set(UI.getCurrent());
         });
 
@@ -192,7 +196,9 @@ class ElementEffectTest {
 
         AtomicReference<UI> currentUI = new AtomicReference<>();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             currentUI.set(UI.getCurrent());
         });
 
@@ -216,7 +222,9 @@ class ElementEffectTest {
         var events = new ArrayList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             throw new RuntimeException("Expected exception");
         });
 
@@ -241,7 +249,9 @@ class ElementEffectTest {
         UI.setCurrent(null);
         session.unlock();
 
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
         Signal.effect(ui, () -> {
+            dependency.get();
             throw new RuntimeException("Expected exception");
         });
 
@@ -455,7 +465,7 @@ class ElementEffectTest {
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
 
-        taskList.remove(taskList.get().get(0));
+        taskList.remove(taskList.peek().get(0));
 
         assertEquals(2, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -492,7 +502,7 @@ class ElementEffectTest {
                 "Parent component children count is wrong");
 
         // move last to first
-        taskList.moveTo(taskList.get().get(2),
+        taskList.moveTo(taskList.peek().get(2),
                 SharedListSignal.ListPosition.first());
 
         assertEquals(3, parentComponent.getComponentCount(),
@@ -502,15 +512,15 @@ class ElementEffectTest {
                         .getValue());
 
         // move it back to last
-        taskList.moveTo(taskList.get().get(0),
+        taskList.moveTo(taskList.peek().get(0),
                 SharedListSignal.ListPosition.last());
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(2))
                         .getValue());
 
         // move last between first and last
-        taskList.moveTo(taskList.get().get(2), SharedListSignal.ListPosition
-                .between(taskList.get().get(0), taskList.get().get(1)));
+        taskList.moveTo(taskList.peek().get(2), SharedListSignal.ListPosition
+                .between(taskList.peek().get(0), taskList.peek().get(1)));
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(1))
                         .getValue());
@@ -528,7 +538,7 @@ class ElementEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move last to first
-        taskList.moveTo(taskList.get().get(2),
+        taskList.moveTo(taskList.peek().get(2),
                 SharedListSignal.ListPosition.first());
 
         List<TestComponent> children = parentComponent.getChildren()
@@ -554,7 +564,7 @@ class ElementEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move first to last
-        taskList.moveTo(taskList.get().get(0),
+        taskList.moveTo(taskList.peek().get(0),
                 SharedListSignal.ListPosition.last());
 
         List<TestComponent> children = parentComponent.getChildren()
@@ -580,8 +590,8 @@ class ElementEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move last between first and second
-        taskList.moveTo(taskList.get().get(2), SharedListSignal.ListPosition
-                .between(taskList.get().get(0), taskList.get().get(1)));
+        taskList.moveTo(taskList.peek().get(2), SharedListSignal.ListPosition
+                .between(taskList.peek().get(0), taskList.peek().get(1)));
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();

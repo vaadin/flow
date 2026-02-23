@@ -231,7 +231,7 @@ class HasComponentsTest {
         assertEquals("second",
                 container.getChildren().toList().get(1).getId().orElse(null));
 
-        items.remove(items.get().get(0));
+        items.remove(items.peek().get(0));
         assertEquals(1, container.getChildren().count());
         assertEquals("second",
                 container.getChildren().toList().get(0).getId().orElse(null));

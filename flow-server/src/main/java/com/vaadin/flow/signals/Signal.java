@@ -69,8 +69,17 @@ public interface Signal<T> extends Serializable {
      * Reading the value inside an {@link #unboundEffect(EffectAction)} or
      * {@link #computed(SignalComputation)} callback sets up that effect or
      * computed signal to depend on the signal.
+     * <p>
+     * This method must only be called within a reactive context such as an
+     * effect, a computed signal, an explicit {@link #untracked(ValueSupplier)}
+     * block, or a {@link #runInTransaction(TransactionTask) transaction}.
+     * Calling it outside such a context throws an
+     * {@link IllegalStateException}. Use {@link #peek()} for one-time reads
+     * that do not need dependency tracking.
      *
      * @return the signal value
+     * @throws IllegalStateException
+     *             if called outside a reactive context
      */
     @Nullable
     T get();
@@ -79,6 +88,10 @@ public interface Signal<T> extends Serializable {
      * Reads the value without setting up any dependencies. This method returns
      * the same value as {@link #get()} but without creating a dependency when
      * used inside a transaction, effect or computed signal.
+     * <p>
+     * Unlike {@link #get()}, this method can be called outside a reactive
+     * context and is the recommended way to read a signal value for one-time
+     * use, such as logging, assertions, or initializing non-reactive UI.
      *
      * @return the signal value
      */
@@ -154,8 +167,17 @@ public interface Signal<T> extends Serializable {
      * when the effect is created and is subsequently run again whenever there's
      * a change to any signal value that was read during the last invocation.
      * <p>
+     * An unbound effect executes without holding the session lock, similar to a
+     * background thread. If the effect action needs to modify components or
+     * other UI state, it must explicitly acquire the lock using
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}.
+     * This applies even when creating the effect while already holding the
+     * session lock, as the effect callbacks run independently and may execute
+     * after the session has expired or been invalidated.
+     * <p>
      * Consider using {@link #effect(Component, EffectAction)} instead to tie
-     * the effect lifecycle to a component.
+     * the effect lifecycle to a component and automatically manage the session
+     * lock.
      *
      * @param action
      *            the effect action to use, not <code>null</code>

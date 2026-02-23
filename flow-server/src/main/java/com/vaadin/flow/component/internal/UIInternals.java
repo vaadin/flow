@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -1050,6 +1051,13 @@ public class UIInternals implements Serializable {
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+
+        VaadinService service = session.getService();
+        if (!service.getDeploymentConfiguration().isProductionMode()) {
+            dependencies.getStyleSheets()
+                    .forEach(styleSheet -> ActiveStyleSheetTracker.get(service)
+                            .trackAddForComponent(styleSheet.value()));
+        }
 
         warnForUnavailableBundledDependencies(componentClass, dependencies);
     }
