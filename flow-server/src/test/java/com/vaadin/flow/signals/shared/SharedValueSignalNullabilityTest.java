@@ -47,7 +47,8 @@ public class SharedValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void get_nullable_returnsNullable() {
-        var signal = new SharedValueSignal<@Nullable String>(String.class);
+        SharedValueSignal<@Nullable String> signal = new SharedValueSignal<>(
+                String.class);
         @Nullable
         String value = signal.get();
         // Must null-check — NullAway enforces this
@@ -65,7 +66,8 @@ public class SharedValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void set_nullable_acceptsNull() {
-        var signal = new SharedValueSignal<@Nullable String>(String.class);
+        SharedValueSignal<@Nullable String> signal = new SharedValueSignal<>(
+                String.class);
         // NullAway verifies that set(null) is valid for a nullable signal
         signal.set(null);
         assertNull(signal.get());
@@ -73,7 +75,8 @@ public class SharedValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void replace_nullable_acceptsNull() {
-        var signal = new SharedValueSignal<@Nullable String>(String.class);
+        SharedValueSignal<@Nullable String> signal = new SharedValueSignal<>(
+                String.class);
         signal.set("hello");
         // NullAway verifies that replace(null, ...) is valid for a nullable
         // signal

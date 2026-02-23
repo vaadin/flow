@@ -47,7 +47,8 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void get_nullable_returnsNullable() {
-        var signal = new ValueSignal<@Nullable String>("hello");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>(
+                "hello");
         @Nullable
         String value = signal.get();
         // Must null-check before calling .length() — NullAway enforces this
@@ -66,7 +67,8 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void set_nullable_acceptsNull() {
-        var signal = new ValueSignal<@Nullable String>("hello");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>(
+                "hello");
         // NullAway verifies that set(null) is valid for a nullable signal
         signal.set(null);
         assertNull(signal.get());
@@ -74,7 +76,8 @@ public class ValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void replace_nullable_acceptsNull() {
-        var signal = new ValueSignal<@Nullable String>("hello");
+        ValueSignal<@Nullable String> signal = new ValueSignal<>(
+                "hello");
         // NullAway verifies that replace(null, ...) is valid for a nullable
         // signal
         signal.replace(null, "world");

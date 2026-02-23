@@ -48,7 +48,8 @@ public class SharedListSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void insertLast_nullable_acceptsNull() {
-        var signal = new SharedListSignal<@Nullable String>(String.class);
+        SharedListSignal<@Nullable String> signal = new SharedListSignal<>(
+                String.class);
         // NullAway verifies that insertLast(null) is valid for a nullable
         // list signal
         signal.insertLast(null);

@@ -48,7 +48,8 @@ public class SharedMapSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void put_nullable_acceptsNull() {
-        var signal = new SharedMapSignal<@Nullable String>(String.class);
+        SharedMapSignal<@Nullable String> signal = new SharedMapSignal<>(
+                String.class);
         // NullAway verifies that put(key, null) is valid for a nullable
         // map signal
         signal.put("key", null);

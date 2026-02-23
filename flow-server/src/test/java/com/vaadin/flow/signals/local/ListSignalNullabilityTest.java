@@ -49,7 +49,7 @@ public class ListSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void insertFirst_nullable_acceptsNull() {
-        var signal = new ListSignal<@Nullable String>();
+        ListSignal<@Nullable String> signal = new ListSignal<>();
         // NullAway verifies that insertFirst(null) is valid for a nullable
         // list signal
         signal.insertFirst(null);
@@ -57,7 +57,7 @@ public class ListSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void insertedEntry_nullable_returnsNullable() {
-        var signal = new ListSignal<@Nullable String>();
+        ListSignal<@Nullable String> signal = new ListSignal<>();
         ValueSignal<@Nullable String> entry = signal.insertFirst(null);
         @Nullable
         String value = entry.get();
