@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.signals;
 
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.jspecify.annotations.Nullable;
@@ -56,8 +55,7 @@ public class TestUtil {
         return tree.submitted().data(Id.ZERO).get().value();
     }
 
-    public static @Nullable JsonNode readTransactionRootValue(
-            SignalTree tree) {
+    public static @Nullable JsonNode readTransactionRootValue(SignalTree tree) {
         return Transaction.getCurrent().read(tree).data(Id.ZERO).get().value();
     }
 

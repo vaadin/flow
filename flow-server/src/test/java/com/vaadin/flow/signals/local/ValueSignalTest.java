@@ -207,7 +207,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_nullToNull_noChangeDetected() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(
+                null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -250,7 +251,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_nullToDifferent_changeDetected() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(
+                null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();
@@ -315,7 +317,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void set_nullToNull_noChangeDetected() {
-        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(null);
+        ValueSignal<@Nullable String> signal = new ValueSignal<@Nullable String>(
+                null);
 
         Usage usage = UsageTracker.track(() -> {
             signal.get();

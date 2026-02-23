@@ -260,13 +260,15 @@ public class TransactionTest {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = Objects.requireNonNull(TestUtil.readTransactionRootValue(tree))
+            String value = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
                     .asString();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = Objects.requireNonNull(TestUtil.readTransactionRootValue(tree))
+            String value2 = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
                     .asString();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
@@ -313,7 +315,8 @@ public class TransactionTest {
 
         List<String> invocations = new ArrayList<>();
         tree.observeNextChange(Id.ZERO, immediate -> {
-            invocations.add(Objects.requireNonNull(TestUtil.readTransactionRootValue(tree))
+            invocations.add(Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
                     .asString());
             return true;
         });

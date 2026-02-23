@@ -164,11 +164,12 @@ public class ComputedSignalTest extends SignalTestBase {
         var dependency = createDependency();
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
-        Signal<@Nullable String> signal = Signal.<@Nullable String>computed((() -> {
-            dependency.get();
-            other.set("update");
-            return null;
-        }));
+        Signal<@Nullable String> signal = Signal
+                .<@Nullable String> computed((() -> {
+                    dependency.get();
+                    other.set("update");
+                    return null;
+                }));
 
         // Trigger running the callback
         signal.peek();
