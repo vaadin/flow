@@ -290,7 +290,7 @@ public class ComputedSignalTest extends SignalTestBase {
         Transaction.runInTransaction(() -> {
             source.set("update");
 
-            signal.peek();
+            signal.get();
             assertEquals(2, count.get());
         });
 
@@ -314,7 +314,7 @@ public class ComputedSignalTest extends SignalTestBase {
         Transaction.runInTransaction(() -> {
             source.set("update");
 
-            signal.peek();
+            signal.get();
             assertEquals(2, count.get());
 
             source.verifyValue("other");
