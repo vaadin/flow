@@ -1727,11 +1727,12 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
+                // Constant signal that is only read and never modified.
+                // Satisfies the signal usage requirement for bindings
+                // without signal-using validators in the chain.
+                var usageGuard = new ValueSignal<Void>(null);
                 signalRegistration = Signal.effect(component, () -> {
-                    // Always establish a signal dependency so the
-                    // effect satisfies the signal usage requirement
-                    trackUsageOfInternalValidationSignal();
-                    // Run chain with real tracking to discover signal deps
+                    usageGuard.get();
                     Result<TARGET> result = executeConversionChain();
                     if (!valueInit) {
                         BindingValidationStatus<TARGET> status = toValidationStatus(
