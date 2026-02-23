@@ -23,6 +23,7 @@ import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -31,6 +32,7 @@ import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -175,6 +177,178 @@ public class ValueSignalTest extends SignalTestBase {
         });
 
         signal.update(x -> x);
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void update_sameValueEqualObjects_noChangeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>(new String("identical"));
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        // Return new instance with same value using Objects.equals
+        signal.update(x -> new String("identical"));
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void update_nullToNull_noChangeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>(null);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.update(x -> null);
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void update_differentValue_changeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.update(x -> "different");
+
+        assertTrue(usage.hasChanges());
+        assertTrue(invoked.get());
+        assertEquals("different", signal.get());
+    }
+
+    @Test
+    void update_nullToDifferent_changeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>(null);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.update(x -> "value");
+
+        assertTrue(usage.hasChanges());
+        assertTrue(invoked.get());
+        assertEquals("value", signal.get());
+    }
+
+    @Test
+    void update_differentToNull_changeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.update(x -> null);
+
+        assertTrue(usage.hasChanges());
+        assertTrue(invoked.get());
+        assertNull(signal.get());
+    }
+
+    @Test
+    void usageTracker_setSameValue_noChangeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.set("initial");
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void set_nullToNull_noChangeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>(null);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.set(null);
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void set_equalObjects_noChangeDetected() {
+        ValueSignal<String> signal = new ValueSignal<>(new String("identical"));
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        signal.set(new String("identical"));
 
         assertFalse(usage.hasChanges());
         assertFalse(invoked.get());
@@ -464,6 +638,143 @@ public class ValueSignalTest extends SignalTestBase {
                 signal.modify(x -> x[0] = "update");
             });
         });
+    }
+
+    @Test
+    void customEqualityChecker_nullNotAllowed_throws() {
+        assertThrows(NullPointerException.class,
+                () -> new ValueSignal<>("initial", null));
+    }
+
+    @Test
+    void customEqualityChecker_set_usesCustomChecker() {
+        // Custom checker that considers all strings starting with same letter
+        // as equal
+        SerializableBiPredicate<String, String> checker = (a, b) -> {
+            if (a == null || b == null) {
+                return a == b;
+            }
+            return a.charAt(0) == b.charAt(0);
+        };
+
+        ValueSignal<String> signal = new ValueSignal<>("apple", checker);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            invoked.set(true);
+            return false;
+        });
+
+        // "apricot" starts with 'a' like "apple", should be considered equal
+        signal.set("apricot");
+        assertFalse(invoked.get());
+        assertEquals("apple", signal.get());
+
+        // "banana" starts with 'b', should trigger change
+        signal.set("banana");
+        assertTrue(invoked.get());
+        assertEquals("banana", signal.get());
+    }
+
+    @Test
+    void customEqualityChecker_update_usesCustomChecker() {
+        // Custom checker that uses case-insensitive comparison
+        SerializableBiPredicate<String, String> checker = (a, b) -> {
+            if (a == null || b == null) {
+                return a == b;
+            }
+            return a.equalsIgnoreCase(b);
+        };
+
+        ValueSignal<String> signal = new ValueSignal<>("Hello", checker);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            invoked.set(true);
+            return false;
+        });
+
+        // "HELLO" is equal case-insensitively, should not trigger change
+        signal.update(x -> "HELLO");
+        assertFalse(invoked.get());
+        assertEquals("Hello", signal.get());
+
+        // "World" is different, should trigger change
+        signal.update(x -> "World");
+        assertTrue(invoked.get());
+        assertEquals("World", signal.get());
+    }
+
+    @Test
+    void customEqualityChecker_referenceEquality_triggersOnNewInstance() {
+        // Custom checker that uses reference equality (==)
+        SerializableBiPredicate<String, String> checker = (a, b) -> a == b;
+
+        ValueSignal<String> signal = new ValueSignal<>("initial", checker);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            invoked.set(true);
+            return false;
+        });
+
+        // Same reference, should not trigger change
+        String value = signal.get();
+        signal.set(value);
+        assertFalse(invoked.get());
+
+        // New instance with same value, should trigger change (reference
+        // equality)
+        signal.set(new String("initial"));
+        assertTrue(invoked.get());
+    }
+
+    @Test
+    void customEqualityChecker_replace_usesCustomChecker() {
+        // Custom checker that uses case-insensitive comparison
+        SerializableBiPredicate<String, String> checker = (a, b) -> {
+            if (a == null || b == null) {
+                return a == b;
+            }
+            return a.equalsIgnoreCase(b);
+        };
+
+        ValueSignal<String> signal = new ValueSignal<>("Hello", checker);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            invoked.set(true);
+            return false;
+        });
+
+        // Replace with same value (case-insensitive match), should return true
+        // but not trigger change
+        boolean result = signal.replace("HELLO", "HELLO");
+        assertTrue(result);
+        assertFalse(invoked.get());
+        assertEquals("Hello", signal.get());
+
+        // Replace with different value
+        result = signal.replace("HELLO", "World");
+        assertTrue(result);
+        assertTrue(invoked.get());
+        assertEquals("World", signal.get());
     }
 
     @Test
