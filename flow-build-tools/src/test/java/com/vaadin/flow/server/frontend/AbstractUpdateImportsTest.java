@@ -677,9 +677,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row.contains(
-                        "@vaadin/common-frontend/ConnectionIndicator"))
-                .toList();
+                .filter(row -> !DepsTests.isUiImport(row)).toList();
 
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
@@ -699,9 +697,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
                 .filter(row -> !row.contains("const loadOnDemand"))
-                .filter(row -> !row.contains(
-                        "@vaadin/common-frontend/ConnectionIndicator"))
-                .toList();
+                .filter(row -> !DepsTests.isUiImport(row)).toList();
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
                 "import 'Frontend/js-all.js';",
@@ -784,8 +780,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     }
 
-    public void assertFullSortOrder(boolean uiImportSeparated,
-            List<String> expectedJsModuleImports) throws MalformedURLException {
+    public void assertFullSortOrder(List<String> expectedJsModuleImports)
+            throws MalformedURLException {
         Class[] testClasses = { MainView.class,
                 NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
@@ -812,13 +808,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .map(JavaScript::value).map(this::updateToImport)
                 .forEach(expectedImports::add);
 
-        if (uiImportSeparated) {
-            String uiImport = expectedImports.stream()
-                    .filter(dep -> dep.contains(DepsTests.UI_IMPORT))
-                    .findFirst().get();
-            expectedImports.remove(uiImport);
-            uiAndGeneratedImports.add(uiImport);
-        }
         updater.getGeneratedModules().stream()
                 .map(updater::resolveGeneratedModule).map(this::updateToImport)
                 .forEach(uiAndGeneratedImports::add);
@@ -829,6 +818,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         result.removeIf(line -> line.isBlank());
         result.removeIf(line -> line.contains("loadOnDemand"));
         result.removeIf(line -> line.contains("window.Vaadin"));
+        result.removeIf(DepsTests::isUiImport);
 
         expectedImports.addAll(uiAndGeneratedImports);
         Assert.assertEquals(expectedImports, result);
