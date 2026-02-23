@@ -193,7 +193,11 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Signal<?> computedSignal = Signal.computed(() -> null);
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal<?> computedSignal = Signal.computed(() -> {
+            dependency.get();
+            return null;
+        });
         component.getElement().bindProperty("foo", computedSignal, null);
         assertEquals(JacksonUtils.nullNode(),
                 component.getElement().getPropertyRaw("foo"));
@@ -205,8 +209,11 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Signal<?> computedSignal = Signal
-                .computed(JacksonUtils::createObjectNode);
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal<?> computedSignal = Signal.computed(() -> {
+            dependency.get();
+            return JacksonUtils.createObjectNode();
+        });
         component.getElement().bindProperty("bar", computedSignal, null);
         assertEquals(JacksonUtils.createObjectNode(),
                 component.getElement().getPropertyRaw("bar"));
