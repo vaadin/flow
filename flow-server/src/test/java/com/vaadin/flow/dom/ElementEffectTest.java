@@ -18,7 +18,10 @@ package com.vaadin.flow.dom;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -862,7 +865,7 @@ class ElementEffectTest {
 
         Mockito.clearInvocations(expectedMockedElements.toArray());
         Mockito.clearInvocations(parentComponent.getElement());
-        Signal.runInTransaction(() -> {
+        var op = Signal.runInTransaction(() -> {
             taskList.insertFirst("first");
             taskList.insertLast("last");
 
@@ -872,6 +875,14 @@ class ElementEffectTest {
 
             taskList.remove(taskList.get().get(0));
         });
+
+        // Wait for async confirmation to complete
+        try {
+            op.result().get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException
+                | TimeoutException e) {
+            // Ignore - we only need to wait for the confirmation
+        }
 
         // getChildren() should be called twice per bindChildren effect call
         verify(parentComponent.getElement(), times(2)).getChildren();
