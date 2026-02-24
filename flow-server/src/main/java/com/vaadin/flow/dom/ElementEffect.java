@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -145,8 +147,8 @@ public final class ElementEffect implements Serializable {
      * @param <T>
      *            the type of the signal value
      */
-    public static <T> Registration bind(Element owner, Signal<T> signal,
-            SerializableBiConsumer<Element, T> setter) {
+    public static <T extends @Nullable Object> Registration bind(Element owner,
+            Signal<T> signal, SerializableBiConsumer<Element, T> setter) {
         return effect(owner, () -> {
             setter.accept(owner, signal.get());
         });
@@ -239,7 +241,7 @@ public final class ElementEffect implements Serializable {
      * @throws IllegalStateException
      *             thrown if parent element isn't empty
      */
-    public static <T, S extends Signal<T>> Registration bindChildren(
+    public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,
             SerializableFunction<S, Element> childFactory) {
         Objects.requireNonNull(parentElement, "Parent element cannot be null");
@@ -263,7 +265,7 @@ public final class ElementEffect implements Serializable {
                         valueSignalToChildCache)))::close;
     }
 
-    private static <T, S extends Signal<T>> void runEffect(
+    private static <T extends @Nullable Object, S extends Signal<T>> void runEffect(
             BindChildrenEffectContext<T, S> context) {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
@@ -291,7 +293,7 @@ public final class ElementEffect implements Serializable {
      * Validate that parent element has no children not belonging to the list of
      * child signals.
      */
-    private static <T, S extends Signal<T>> void validate(
+    private static <T extends @Nullable Object, S extends Signal<T>> void validate(
             BindChildrenEffectContext<T, S> context) {
         LinkedList<Element> children = context.parentChildrenToLinkedList();
         int index = 0;
@@ -321,7 +323,7 @@ public final class ElementEffect implements Serializable {
      * Remove all existing children in valueSignalToChildCache map that are no
      * longer present in the list of child signals.
      */
-    private static <T, S extends Signal<T>> void removeNotPresentChildren(
+    private static <T extends @Nullable Object, S extends Signal<T>> void removeNotPresentChildren(
             BindChildrenEffectContext<T, S> context,
             HashSet<Element> remainingChildrenSet) {
         var toRemove = new HashSet<>(context.valueSignalToChildCache.keySet());
@@ -339,7 +341,7 @@ public final class ElementEffect implements Serializable {
      * removing any existing elements. Creates new elements with the element
      * factory if not found from the cache.
      */
-    private static <T, S extends Signal<T>> void updateByChildSignals(
+    private static <T extends @Nullable Object, S extends Signal<T>> void updateByChildSignals(
             BindChildrenEffectContext<T, S> context,
             LinkedList<Element> remainingChildren,
             HashSet<Element> remainingChildrenSet) {
@@ -410,7 +412,7 @@ public final class ElementEffect implements Serializable {
      * @param <S>
      *            the type of the signal in the list
      */
-    private record BindChildrenEffectContext<T, S extends Signal<T>>(
+    private record BindChildrenEffectContext<T extends @Nullable Object, S extends Signal<T>>(
             Element parentElement, List<S> childSignalsList,
             SerializableFunction<S, Element> childElementFactory,
             HashMap<S, Element> valueSignalToChildCache)

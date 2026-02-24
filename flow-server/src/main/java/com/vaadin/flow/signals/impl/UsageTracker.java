@@ -260,7 +260,8 @@ public class UsageTracker {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> @Nullable T untracked(ValueSupplier<T> task) {
+    public static <T extends @Nullable Object> T untracked(
+            ValueSupplier<T> task) {
         var previousTracker = currentTracker.get();
         if (previousTracker == DELIBERATELY_UNTRACKED) {
             return task.supply();

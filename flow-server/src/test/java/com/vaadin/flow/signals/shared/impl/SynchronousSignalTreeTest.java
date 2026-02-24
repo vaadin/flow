@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.DoubleNode;
@@ -78,6 +79,7 @@ public class SynchronousSignalTreeTest {
             return tree.hasLock();
         });
 
+        assertNotNull(hasLock);
         assertTrue(hasLock);
     }
 
@@ -462,8 +464,8 @@ public class SynchronousSignalTreeTest {
     @Test
     void subscribeToProcessed_subscriberRemoved_doesNotReceiveAnymore() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
-        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer1 = new AtomicReference<>();
-        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer2 = new AtomicReference<>();
+        AtomicReference<Map.@Nullable Entry<SignalCommand, CommandResult>> resultContainer1 = new AtomicReference<>();
+        AtomicReference<Map.@Nullable Entry<SignalCommand, CommandResult>> resultContainer2 = new AtomicReference<>();
 
         var canceler1 = tree.subscribeToProcessed((event,
                 result) -> resultContainer1.set(Map.entry(event, result)));
@@ -475,8 +477,12 @@ public class SynchronousSignalTreeTest {
         tree.commitSingleCommand(
                 new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(2)));
 
-        assertEquals(id1, resultContainer1.get().getKey().commandId());
-        assertEquals(id1, resultContainer2.get().getKey().commandId());
+        var result1 = resultContainer1.get();
+        assertNotNull(result1);
+        assertEquals(id1, result1.getKey().commandId());
+        var result2 = resultContainer2.get();
+        assertNotNull(result2);
+        assertEquals(id1, result2.getKey().commandId());
 
         canceler1.remove(); // removes the first subscriber
 
@@ -486,7 +492,9 @@ public class SynchronousSignalTreeTest {
         tree.commitSingleCommand(
                 new SignalCommand.SetCommand(id1, Id.ZERO, new DoubleNode(3)));
         assertNull(resultContainer1.get());
-        assertEquals(id1, resultContainer2.get().getKey().commandId());
+        result2 = resultContainer2.get();
+        assertNotNull(result2);
+        assertEquals(id1, result2.getKey().commandId());
 
         canceler2.remove();
         resultContainer2.set(null);

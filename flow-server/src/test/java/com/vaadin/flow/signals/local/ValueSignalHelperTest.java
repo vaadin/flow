@@ -65,6 +65,7 @@ public class ValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void updater_nullUpdater_throwsNullPointerException() {
         ValueSignal<ImmutablePerson> signal = new ValueSignal<>(
                 new ImmutablePerson("Alice", 30));
@@ -137,6 +138,7 @@ public class ValueSignalHelperTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void modifier_nullModifier_throwsNullPointerException() {
         ValueSignal<MutablePerson> signal = new ValueSignal<>(
                 new MutablePerson("Alice", 30));
