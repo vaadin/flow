@@ -167,6 +167,118 @@ public class ListSignalTest extends SignalTestBase {
     }
 
     @Test
+    void moveTo_forward_entryMovedToLaterIndex() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+        signal.insertLast("c");
+
+        signal.moveTo(a, 2);
+
+        assertValues(signal, "b", "c", "a");
+    }
+
+    @Test
+    void moveTo_backward_entryMovedToEarlierIndex() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        signal.insertLast("b");
+        ValueSignal<String> c = signal.insertLast("c");
+
+        signal.moveTo(c, 0);
+
+        assertValues(signal, "c", "a", "b");
+    }
+
+    @Test
+    void moveTo_preservesSignalIdentity() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> b = signal.insertLast("b");
+        signal.insertLast("c");
+
+        signal.moveTo(b, 0);
+
+        assertSame(b, signal.peek().get(0));
+    }
+
+    @Test
+    void moveTo_entryNotInList_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> other = new ValueSignal<>("other");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> signal.moveTo(other, 0));
+    }
+
+    @Test
+    void moveTo_sameIndex_noOp() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> b = signal.insertLast("b");
+        signal.insertLast("c");
+
+        AtomicBoolean changed = new AtomicBoolean(false);
+        Usage usage = UsageTracker.track(signal::get);
+        usage.onNextChange(initial -> {
+            changed.set(true);
+            return false;
+        });
+
+        signal.moveTo(b, 1);
+
+        assertFalse(changed.get());
+        assertValues(signal, "a", "b", "c");
+    }
+
+    @Test
+    void moveTo_negativeIndex_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.moveTo(a, -1));
+    }
+
+    @Test
+    void moveTo_indexEqualToSize_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.moveTo(a, 2));
+    }
+
+    @Test
+    void moveTo_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> entry = signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.moveTo(entry, 0);
+            });
+        });
+    }
+
+    @Test
+    void usageTracker_moveTo_changeDetected() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+
+        Usage usage = UsageTracker.track(signal::get);
+
+        assertFalse(usage.hasChanges());
+
+        signal.moveTo(a, 1);
+
+        assertTrue(usage.hasChanges());
+    }
+
+    @Test
     void clear_listWithEntries_listCleared() {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("a");
