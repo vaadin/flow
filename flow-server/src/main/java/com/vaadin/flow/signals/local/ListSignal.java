@@ -59,7 +59,10 @@ public class ListSignal<T extends @Nullable Object>
      * Creates a new empty list signal with a custom equality checker.
      * <p>
      * The equality checker is used to determine if a new value is equal to the
-     * current value of each entry signal. If the equality checker returns
+     * current value of an entry signal when that entry's value is updated via
+     * {@link ValueSignal#set(Object)}. It does <em>not</em> apply when
+     * inserting new items into the list (e.g., via
+     * {@link #insertLast(Object)}). If the equality checker returns
      * {@code true}, the value update is skipped, and no change notification is
      * triggered, i.e., no dependent effect function is triggered.
      * <p>
