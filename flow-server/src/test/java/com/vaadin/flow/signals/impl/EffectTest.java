@@ -29,7 +29,6 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
@@ -50,7 +49,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_actionIsRunOnce() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
@@ -63,7 +62,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
@@ -130,7 +129,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
@@ -156,7 +155,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
@@ -292,6 +291,7 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // Deliberately testing null value behavior
     void changeTracking_changeValueToNull_effectTriggered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
@@ -403,7 +403,7 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.unboundEffect(() -> {
             dependency.get();

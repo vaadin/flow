@@ -55,7 +55,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractSignal<T> implements Signal<T> {
+public abstract class AbstractSignal<T extends @Nullable Object>
+        implements Signal<T> {
     /**
      * Converts a command result into a specific value type.
      *
@@ -63,7 +64,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the result value type
      */
     @FunctionalInterface
-    protected interface ResultConverter<T> extends Serializable {
+    protected interface ResultConverter<T extends @Nullable Object>
+            extends Serializable {
         /**
          * Converts an accepted command result into a result value.
          *
@@ -154,8 +156,9 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return data(transaction.read(tree()));
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T get() {
+    public T get() {
         if (!UsageTracker.isGetAllowed() && !Transaction.inTransaction()) {
             throw new IllegalStateException(
                     "Signal.get() was called outside a reactive context. "
@@ -187,8 +190,9 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return value;
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T peek() {
+    public T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }
 
@@ -199,7 +203,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the confirmed signal value
      */
-    public @Nullable T peekConfirmed() {
+    @SuppressWarnings("NullAway")
+    public T peekConfirmed() {
         return extractValue(data(tree().confirmed()));
     }
 

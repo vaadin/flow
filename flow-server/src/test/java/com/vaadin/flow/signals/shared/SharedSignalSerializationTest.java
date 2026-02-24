@@ -23,10 +23,12 @@ import java.io.ObjectOutputStream;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class SharedSignalSerializationTest {
 
+    @SuppressWarnings("NullAway") // fail() always throws, null is unreachable
     private <T> T assertSerializeAndDeserialize(T obj) {
         try {
             return serializeAndDeserialize(obj);
@@ -98,8 +100,9 @@ class SharedSignalSerializationTest {
         signal.putChildWithValue("key", "Test");
         signal = assertSerializeAndDeserialize(signal);
 
-        assertEquals("Test", signal.peek().mapChildren().get("key").peek()
-                .value(String.class));
+        var child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
+        assertEquals("Test", child.peek().value(String.class));
     }
 
     @Test

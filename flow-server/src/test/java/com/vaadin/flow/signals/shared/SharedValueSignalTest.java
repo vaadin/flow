@@ -88,6 +88,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void constructor_nullType_throws() {
         assertThrows(NullPointerException.class, () -> {
             Class<String> type = null;
@@ -96,6 +97,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void constructor_nullInitialValue_throws() {
         assertThrows(NullPointerException.class, () -> {
             String initial = null;
@@ -267,6 +269,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void withValidator_rejectsNullValues_nullRejectedAndOtherAccepted() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 

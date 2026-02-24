@@ -149,7 +149,7 @@ class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_initialNullSignalValue_treatAsBlank() {
+    public void bindText_initialEmptySignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<@Nullable String> signal = new ValueSignal<>(null);

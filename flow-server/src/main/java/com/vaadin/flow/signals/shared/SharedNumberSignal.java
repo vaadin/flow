@@ -121,13 +121,14 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     }
 
     /**
-     * Gets the value of this signal as an integer without registering a
-     * dependency. Equivalent to {@code peek().intValue()}.
+     * Gets the value of this signal as an integer. This method works in the
+     * same way was {@link #get()} with regards to transactions and dependency
+     * tracking.
      *
      * @return the signal value as an integer
      */
     public int getAsInt() {
-        return peek().intValue();
+        return get().intValue();
     }
 
     /**
@@ -192,12 +193,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      * @return the computed signal, not <code>null</code>
      */
     public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
-        return map(doubleValue -> {
-            if (doubleValue == null) {
-                return null;
-            }
-            return mapper.apply(doubleValue.intValue());
-        });
+        return map(doubleValue -> mapper.apply(doubleValue.intValue()));
     }
 
     @Override

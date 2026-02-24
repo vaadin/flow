@@ -36,12 +36,12 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#untracked(ValueSupplier)
  */
 @FunctionalInterface
-public interface ValueSupplier<T> extends Serializable {
+public interface ValueSupplier<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Supplies a value.
      *
-     * @return the supplied value, may be <code>null</code>
+     * @return the supplied value
      */
-    @Nullable
     T supply();
 }

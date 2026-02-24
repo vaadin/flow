@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -48,13 +48,14 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void value_constantCallback_runOnceAndConstantSignalValue() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
-        Signal<Object> signal = Signal.computed(() -> {
-            dependency.get();
-            count.incrementAndGet();
-            return null;
-        });
+        Signal<@Nullable Object> signal = Signal
+                .<@Nullable Object> computed(() -> {
+                    dependency.get();
+                    count.incrementAndGet();
+                    return null;
+                });
 
         assertNull(signal.peek());
         assertEquals(1, count.intValue());
@@ -156,21 +157,19 @@ public class ComputedSignalTest extends SignalTestBase {
 
         signal.set(false);
         assertTrue(negated.peek());
-
-        signal.set(null);
-        assertNull(negated.peek());
     }
 
     @Test
     void callback_updateOtherSignal_signalUpdated() {
-        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        var dependency = createDependency();
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
-        Signal<String> signal = Signal.computed((() -> {
-            dependency.get();
-            other.set("update");
-            return null;
-        }));
+        Signal<@Nullable String> signal = Signal
+                .<@Nullable String> computed((() -> {
+                    dependency.get();
+                    other.set("update");
+                    return null;
+                }));
 
         // Trigger running the callback
         signal.peek();
