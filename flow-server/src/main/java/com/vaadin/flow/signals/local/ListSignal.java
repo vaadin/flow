@@ -176,6 +176,55 @@ public class ListSignal<T extends @Nullable Object>
     }
 
     /**
+     * Moves an existing entry to a new position in this list. The entry is
+     * identified by reference identity ({@code ==}), consistent with
+     * {@link #remove(ValueSignal)}. The same {@code ValueSignal} instance is
+     * preserved — no new signal is created.
+     * <p>
+     * Does nothing if the entry is not in the list or is already at the target
+     * index.
+     *
+     * @param entry
+     *            the entry to move
+     * @param toIndex
+     *            the desired final index (0-based)
+     * @throws IndexOutOfBoundsException
+     *             if the entry is in the list and {@code toIndex} is negative
+     *             or >= size
+     */
+    public void moveTo(ValueSignal<T> entry, int toIndex) {
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
+            int fromIndex = -1;
+            for (int i = 0; i < entries.size(); i++) {
+                if (entries.get(i) == entry) {
+                    fromIndex = i;
+                    break;
+                }
+            }
+            if (fromIndex == -1) {
+                return;
+            }
+            if (toIndex < 0 || toIndex >= entries.size()) {
+                throw new IndexOutOfBoundsException(
+                        "Index: " + toIndex + ", Size: " + entries.size());
+            }
+            if (fromIndex == toIndex) {
+                return;
+            }
+            List<ValueSignal<T>> newEntries = new ArrayList<>(entries);
+            newEntries.remove(fromIndex);
+            newEntries.add(toIndex, entry);
+            setSignalValue(Collections.unmodifiableList(newEntries));
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
      * Removes all entries from this list.
      */
     public void clear() {
