@@ -16,11 +16,13 @@
 package com.vaadin.flow.signals.local;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -579,10 +581,106 @@ public class ListSignalTest extends SignalTestBase {
         });
     }
 
+    @Test
+    void internalValueSignalSet_equalObjects_noChangeDetected() {
+        ListSignal<MutableUniquePerson> signal = new ListSignal<>();
+
+        var person = new MutableUniquePerson(1L, "Alice");
+        ValueSignal<MutableUniquePerson> valueSignal = signal
+                .insertLast(person);
+
+        Usage usage = UsageTracker.track(valueSignal::get);
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        person.setName("Alice Updated");
+        // Set the same person instance again - should not trigger change since
+        // equals() is based on ID
+        valueSignal.set(person);
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void internalValueSignalSet_customEqualityChecker_changeDetected() {
+        // Equality checker that returns always false
+        SerializableBiPredicate<MutableUniquePerson, MutableUniquePerson> equalityChecker = (
+                a, b) -> false;
+
+        ListSignal<MutableUniquePerson> signal = new ListSignal<>(
+                equalityChecker);
+
+        var person = new MutableUniquePerson(1L, "Alice");
+        ValueSignal<MutableUniquePerson> valueSignal = signal
+                .insertLast(person);
+
+        Usage usage = UsageTracker.track(valueSignal::get);
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        person.setName("Alice Updated");
+        // Since equality checker returns always false, this should trigger a
+        // change even though it's the same instance
+        valueSignal.set(person);
+
+        assertTrue(usage.hasChanges());
+        assertTrue(invoked.get());
+    }
+
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
         List<String> values = signal.peek().stream().map(ValueSignal::peek)
                 .toList();
         assertEquals(List.of(expectedValues), values);
+    }
+
+    static class MutableUniquePerson {
+        private Long id;
+        private String name;
+
+        MutableUniquePerson(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass())
+                return false;
+            MutableUniquePerson that = (MutableUniquePerson) o;
+            return Objects.equals(getId(), that.getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(getId());
+        }
     }
 }

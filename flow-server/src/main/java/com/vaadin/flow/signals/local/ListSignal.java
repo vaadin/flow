@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.signals.impl.Transaction;
 
 /**
@@ -45,11 +46,37 @@ import com.vaadin.flow.signals.impl.Transaction;
 public class ListSignal<T extends @Nullable Object>
         extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {
 
+    private final SerializableBiPredicate<T, T> equalityChecker;
+
     /**
      * Creates a new empty list signal.
      */
     public ListSignal() {
+        this(Objects::equals);
+    }
+
+    /**
+     * Creates a new empty list signal with a custom equality checker.
+     * <p>
+     * The equality checker is used to determine if a new value is equal to the
+     * current value of an entry signal when that entry's value is updated via
+     * {@link ValueSignal#set(Object)}. It does <em>not</em> apply when
+     * inserting new items into the list (e.g., via
+     * {@link #insertLast(Object)}). If the equality checker returns
+     * {@code true}, the value update is skipped, and no change notification is
+     * triggered, i.e., no dependent effect function is triggered.
+     * <p>
+     * The equality checker is applied to all {@link ValueSignal} instances
+     * created for entries in this list.
+     *
+     * @param equalityChecker
+     *            the predicate used to compare entry values for equality, not
+     *            <code>null</code>
+     */
+    public ListSignal(SerializableBiPredicate<T, T> equalityChecker) {
         super(List.of());
+        this.equalityChecker = Objects.requireNonNull(equalityChecker,
+                "Equality checker must not be null");
     }
 
     @Override
@@ -144,7 +171,7 @@ public class ListSignal<T extends @Nullable Object>
 
     private ValueSignal<T> insertAtInternal(int index, T value) {
         assertLockHeld();
-        ValueSignal<T> entry = new ValueSignal<>(value);
+        ValueSignal<T> entry = new ValueSignal<>(value, equalityChecker);
         List<ValueSignal<T>> newEntries = new ArrayList<>(
                 Objects.requireNonNull(getSignalValue()));
         newEntries.add(index, entry);
