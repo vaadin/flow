@@ -203,6 +203,53 @@ public class ListSignal<T extends @Nullable Object>
     }
 
     /**
+     * Moves an existing entry to a new position in this list. The same
+     * {@code ValueSignal} instance is preserved — no new signal is created.
+     * <p>
+     * Does nothing if the entry is already at the target index.
+     * <p>
+     * <b>Note:</b> This method should only be used in non-concurrent cases
+     * where the list structure is not being modified by other threads. The
+     * index is sensitive to concurrent modifications and may lead to unexpected
+     * results if the list is modified between determining the index and calling
+     * this method.
+     *
+     * @param entry
+     *            the entry to move
+     * @param toIndex
+     *            the desired final index (0-based)
+     * @throws IllegalArgumentException
+     *             if the entry is not in the list
+     * @throws IndexOutOfBoundsException
+     *             if {@code toIndex} is negative or >= size
+     */
+    public void moveTo(ValueSignal<T> entry, int toIndex) {
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
+            int fromIndex = entries.indexOf(entry);
+            if (fromIndex == -1) {
+                throw new IllegalArgumentException("Entry is not in the list");
+            }
+            if (toIndex < 0 || toIndex >= entries.size()) {
+                throw new IndexOutOfBoundsException(
+                        "Index: " + toIndex + ", Size: " + entries.size());
+            }
+            if (fromIndex == toIndex) {
+                return;
+            }
+            List<ValueSignal<T>> newEntries = new ArrayList<>(entries);
+            newEntries.remove(fromIndex);
+            newEntries.add(toIndex, entry);
+            setSignalValue(Collections.unmodifiableList(newEntries));
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
      * Removes all entries from this list.
      */
     public void clear() {
