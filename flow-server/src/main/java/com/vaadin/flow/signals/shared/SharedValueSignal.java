@@ -46,7 +46,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * @param <T>
  *            the signal value type
  */
-public class SharedValueSignal<T> extends AbstractSignal<T> {
+public class SharedValueSignal<T extends @Nullable Object>
+        extends AbstractSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -111,7 +112,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> set(@Nullable T value) {
+    public SignalOperation<T> set(T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
@@ -150,8 +151,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> replace(@Nullable T expectedValue,
-            @Nullable T newValue) {
+    public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
@@ -236,7 +236,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the expected value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyValue(@Nullable T expectedValue) {
+    public SignalOperation<Void> verifyValue(T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue)));
     }

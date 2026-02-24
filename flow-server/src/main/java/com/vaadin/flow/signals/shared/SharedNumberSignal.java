@@ -193,12 +193,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      * @return the computed signal, not <code>null</code>
      */
     public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
-        return map(doubleValue -> {
-            if (doubleValue == null) {
-                return null;
-            }
-            return mapper.apply(doubleValue.intValue());
-        });
+        return map(doubleValue -> mapper.apply(doubleValue.intValue()));
     }
 
     @Override

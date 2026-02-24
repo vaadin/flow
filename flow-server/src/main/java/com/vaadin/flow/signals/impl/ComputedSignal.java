@@ -49,7 +49,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the value type
  */
-public class ComputedSignal<T> extends AbstractSignal<T> {
+public class ComputedSignal<T extends @Nullable Object>
+        extends AbstractSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to

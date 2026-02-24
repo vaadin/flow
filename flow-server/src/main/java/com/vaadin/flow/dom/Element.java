@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -899,8 +900,8 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public <T> void bindProperty(String name, Signal<T> signal,
-            SerializableConsumer<T> writeCallback) {
+    public <T extends @Nullable Object> void bindProperty(String name,
+            Signal<T> signal, SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
         getStateProvider().bindPropertySignal(this, name, signal,

@@ -37,6 +37,7 @@ import static com.vaadin.flow.signals.TestUtil.assertSuccess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -147,8 +148,9 @@ public class SharedNodeSignalTest extends SignalTestBase {
         Map<String, SharedNodeSignal> mapChildren = signal.peek().mapChildren();
         assertEquals(Set.of("key"), mapChildren.keySet());
 
-        assertEquals("value",
-                mapChildren.get("key").peek().value(String.class));
+        SharedNodeSignal child = mapChildren.get("key");
+        assertNotNull(child);
+        assertEquals("value", child.peek().value(String.class));
     }
 
     @Test
@@ -161,7 +163,9 @@ public class SharedNodeSignalTest extends SignalTestBase {
         Map<String, SharedValueSignal<String>> value = asMap.peek();
 
         assertEquals(Set.of("key"), value.keySet());
-        assertEquals("value", value.get("key").peek());
+        SharedValueSignal<String> keySignal = value.get("key");
+        assertNotNull(keySignal);
+        assertEquals("value", keySignal.peek());
     }
 
     /*
@@ -190,6 +194,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         PutIfAbsentResult<SharedNodeSignal> result = assertSuccess(operation);
         assertTrue(result.created());
         SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
         assertEquals(Map.of("key", child), signal.peek().mapChildren());
         assertEquals(null, child.peek().value(String.class));
     }
@@ -249,6 +254,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
         SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
 
         assertEquals(List.of(), signal.peek().listChildren());
 
@@ -263,6 +269,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
         SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
 
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
@@ -276,8 +283,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("parent");
         SharedNodeSignal parent = signal.peek().mapChildren().get("parent");
+        assertNotNull(parent);
         parent.putChildIfAbsent("child");
         SharedNodeSignal child = parent.peek().mapChildren().get("child");
+        assertNotNull(child);
 
         assertEquals(parent, child.peek().parent());
 
@@ -295,8 +304,10 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("parent");
         SharedNodeSignal parent = signal.peek().mapChildren().get("parent");
+        assertNotNull(parent);
         parent.putChildIfAbsent("child");
         SharedNodeSignal child = parent.peek().mapChildren().get("child");
+        assertNotNull(child);
 
         SignalOperation<Void> operation = child.adoptAs(parent, "child");
 
@@ -325,6 +336,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
                 .signal();
         signal.putChildIfAbsent("key");
         SharedNodeSignal mapChild = signal.peek().mapChildren().get("key");
+        assertNotNull(mapChild);
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild(mapChild);
         assertSuccess(mapRemoveOp);
@@ -344,6 +356,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
         SharedNodeSignal signal = new SharedNodeSignal();
         signal.putChildIfAbsent("key");
         SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild("key");
         assertSuccess(mapRemoveOp);
@@ -359,6 +372,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
                 .signal();
         signal.putChildIfAbsent("key");
         SharedNodeSignal mapChild = signal.peek().mapChildren().get("key");
+        assertNotNull(mapChild);
 
         SignalOperation<Void> operation = signal.clear();
         assertSuccess(operation);
@@ -504,9 +518,12 @@ public class SharedNodeSignalTest extends SignalTestBase {
         signal.putChildIfAbsent("other");
 
         SharedNodeSignal child = signal.peek().mapChildren().get("child");
+        assertNotNull(child);
         SharedNodeSignal other = signal.peek().mapChildren().get("other");
+        assertNotNull(other);
 
         SharedNodeSignal valueChild = signal.peek().mapChildren().get("child");
+        assertNotNull(valueChild);
 
         assertEquals(child, valueChild);
         assertEquals(child.hashCode(), valueChild.hashCode());

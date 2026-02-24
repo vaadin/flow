@@ -53,7 +53,8 @@ import com.vaadin.flow.signals.impl.Transaction;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractLocalSignal<T> {
+public class ValueSignal<T extends @Nullable Object>
+        extends AbstractLocalSignal<T> {
 
     private boolean modifyRunning = false;
     private transient boolean modifyUsed = false;
@@ -64,9 +65,9 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * Creates a new value signal with the given initial value.
      *
      * @param initialValue
-     *            the initial value, may be <code>null</code>
+     *            the initial value
      */
-    public ValueSignal(@Nullable T initialValue) {
+    public ValueSignal(T initialValue) {
         this(initialValue, Objects::equals);
     }
 
@@ -85,7 +86,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the predicate used to compare values for equality, not
      *            <code>null</code>
      */
-    public ValueSignal(@Nullable T initialValue,
+    public ValueSignal(T initialValue,
             SerializableBiPredicate<T, T> equalityChecker) {
         super(initialValue);
         this.equalityChecker = Objects.requireNonNull(equalityChecker,
@@ -138,7 +139,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * @param value
      *            the value to set
      */
-    public void set(@Nullable T value) {
+    public void set(T value) {
         lock();
         try {
             checkPreconditions();
@@ -171,7 +172,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      * @return <code>true</code> if the expected value was present,
      *         <code>false</code> if there was a different value
      */
-    public boolean replace(@Nullable T expectedValue, @Nullable T newValue) {
+    public boolean replace(T expectedValue, T newValue) {
         lock();
         try {
             checkPreconditions();
@@ -209,7 +210,7 @@ public class ValueSignal<T> extends AbstractLocalSignal<T> {
      *            the value update callback, not <code>null</code>
      * @return the previous value
      */
-    public synchronized @Nullable T update(SignalUpdater<T> updater) {
+    public synchronized T update(SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock();
         try {
