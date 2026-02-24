@@ -203,14 +203,13 @@ public class ListSignalTest extends SignalTestBase {
     }
 
     @Test
-    void moveTo_entryNotInList_noOp() {
+    void moveTo_entryNotInList_throwsException() {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("a");
         ValueSignal<String> other = new ValueSignal<>("other");
 
-        signal.moveTo(other, 0);
-
-        assertValues(signal, "a");
+        assertThrows(IllegalArgumentException.class,
+                () -> signal.moveTo(other, 0));
     }
 
     @Test

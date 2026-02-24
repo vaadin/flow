@@ -176,21 +176,25 @@ public class ListSignal<T extends @Nullable Object>
     }
 
     /**
-     * Moves an existing entry to a new position in this list. The entry is
-     * identified by reference identity ({@code ==}), consistent with
-     * {@link #remove(ValueSignal)}. The same {@code ValueSignal} instance is
-     * preserved — no new signal is created.
+     * Moves an existing entry to a new position in this list. The same
+     * {@code ValueSignal} instance is preserved — no new signal is created.
      * <p>
-     * Does nothing if the entry is not in the list or is already at the target
-     * index.
+     * Does nothing if the entry is already at the target index.
+     * <p>
+     * <b>Note:</b> This method should only be used in non-concurrent cases
+     * where the list structure is not being modified by other threads. The
+     * index is sensitive to concurrent modifications and may lead to unexpected
+     * results if the list is modified between determining the index and calling
+     * this method.
      *
      * @param entry
      *            the entry to move
      * @param toIndex
      *            the desired final index (0-based)
+     * @throws IllegalArgumentException
+     *             if the entry is not in the list
      * @throws IndexOutOfBoundsException
-     *             if the entry is in the list and {@code toIndex} is negative
-     *             or >= size
+     *             if {@code toIndex} is negative or >= size
      */
     public void moveTo(ValueSignal<T> entry, int toIndex) {
         lock();
@@ -198,15 +202,9 @@ public class ListSignal<T extends @Nullable Object>
             checkPreconditions();
             List<ValueSignal<T>> entries = Objects
                     .requireNonNull(getSignalValue());
-            int fromIndex = -1;
-            for (int i = 0; i < entries.size(); i++) {
-                if (entries.get(i) == entry) {
-                    fromIndex = i;
-                    break;
-                }
-            }
+            int fromIndex = entries.indexOf(entry);
             if (fromIndex == -1) {
-                return;
+                throw new IllegalArgumentException("Entry is not in the list");
             }
             if (toIndex < 0 || toIndex >= entries.size()) {
                 throw new IndexOutOfBoundsException(
