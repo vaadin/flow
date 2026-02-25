@@ -302,6 +302,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
 
         // Serialize only session A; session B must not be pulled in
         sessionA.unlock();
+        sessionB.unlock();
         try {
             serializeAndDeserialize(sessionA);
             CurrentInstance.clearAll();
@@ -323,7 +324,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
              */
             assertEquals(0, ((MockVaadinSession) uiA
                     .getSession()).writeObjectCallCount);
-            assertEquals(1, ((MockVaadinSession) uiB
+            assertEquals(0, ((MockVaadinSession) uiB
                     .getSession()).writeObjectCallCount);
             CurrentInstance.clearAll();
         } catch (Throwable e) {

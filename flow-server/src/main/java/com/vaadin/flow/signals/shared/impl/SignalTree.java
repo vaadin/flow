@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -419,6 +422,19 @@ public abstract class SignalTree implements Serializable {
             for (var subscriber : subscribers) {
                 subscriber.onCommandProcessed(command, result);
             }
+        }
+    }
+
+    @Serial
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
+        if (this instanceof AsynchronousSignalTree) {
+            throw new NotSerializableException(
+                    "AsynchronousSignalTree is a shared object that cannot be serialized: "
+                            + "it is tied to a specific runtime environment and would "
+                            + "leak other sessions if included in session serialization.");
+        } else {
+            out.defaultWriteObject();
         }
     }
 }
