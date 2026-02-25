@@ -16,7 +16,9 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
@@ -35,13 +37,16 @@ import com.vaadin.flow.signals.Signal;
 public class SignalBindingFeature extends ServerSideFeature {
 
     public static final String CLASSES = "classes/";
+    public static final String CLASS_GROUP = "classes/*";
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
     public static final String THEMES = "themes/";
+    public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
 
     private Map<String, SignalBinding> values;
+    private List<String> themeGroupBoundNames;
 
     private record SignalBinding(Signal<?> signal, Registration registration,
             SerializableConsumer<?> writeCallback) implements Serializable {
@@ -235,6 +240,20 @@ public class SignalBindingFeature extends ServerSideFeature {
                             + "Provide a write callback to enable two-way binding.");
         }
         return true;
+    }
+
+    /**
+     * Gets the list of theme names contributed by the group binding. The
+     * returned list is shared across all ThemeListImpl instances for the same
+     * node.
+     *
+     * @return the list of group-bound theme names, never {@code null}
+     */
+    public List<String> getThemeGroupBoundNames() {
+        if (themeGroupBoundNames == null) {
+            themeGroupBoundNames = new ArrayList<>();
+        }
+        return themeGroupBoundNames;
     }
 
     private void ensureValues() {

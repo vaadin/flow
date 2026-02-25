@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
@@ -179,6 +180,23 @@ public interface HasStyle extends HasElement {
      */
     default void bindClassName(String className, Signal<Boolean> signal) {
         getClassNames().bind(className, signal);
+    }
+
+    /**
+     * Binds the CSS class names of this component to a {@link Signal} so that
+     * the class list is dynamically updated to match the signal's value. Only
+     * one group binding is allowed per component.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings.
+     *
+     * @param names
+     *            the signal providing the list of class names, not {@code null}
+     * @see ClassList#bind(Signal)
+     * @since 25.1
+     */
+    default void bindClassNames(Signal<List<String>> names) {
+        getClassNames().bind(names);
     }
 
     /**
