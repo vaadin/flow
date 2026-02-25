@@ -45,6 +45,27 @@
   /*
    * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
    */
+  window.Vaadin.Flow.flashClass = function(element, className) {
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+    function onAnimationEnd(e) {
+      if (e.target === element) {
+        element.classList.remove(className);
+        element.removeEventListener('animationend', onAnimationEnd);
+      }
+    }
+    element.addEventListener('animationend', onAnimationEnd);
+    requestAnimationFrame(function() {
+      var style = getComputedStyle(element);
+      var animName = style.animationName;
+      if (!animName || animName === 'none') {
+        element.classList.remove(className);
+        element.removeEventListener('animationend', onAnimationEnd);
+      }
+    });
+  };
+
   window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
     return function() {
       try {
