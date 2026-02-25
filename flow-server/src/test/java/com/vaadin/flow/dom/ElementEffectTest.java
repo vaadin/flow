@@ -48,9 +48,11 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -147,6 +149,30 @@ class ElementEffectTest {
 
         assertSame(Thread.currentThread(), currentThread.get());
         assertSame(ui, currentUI.get());
+    }
+
+    @Test
+    public void contextAwareEffect_receivesEffectContext() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Signal.effect(ui, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        assertEquals(1, initialRuns.size());
+        assertTrue(initialRuns.get(0),
+                "First execution should be initial run");
+
+        signal.set("world");
+
+        assertEquals(2, initialRuns.size());
+        assertFalse(initialRuns.get(1),
+                "Subsequent execution should not be initial run");
     }
 
     @Test
