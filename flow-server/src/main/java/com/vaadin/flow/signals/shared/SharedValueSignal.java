@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
@@ -343,9 +340,4 @@ public class SharedValueSignal<T extends @Nullable Object>
                 currentValue -> merger.merge(currentValue, newChildValue));
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedValueSignal.class).warn(
-                "Serializing SharedValueSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
-    }
 }
