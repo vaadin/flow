@@ -32,6 +32,11 @@ cat > ~/.m2/settings.xml << EOF
 </settings>
 EOF
 
+# Force wagon transport for Maven 3.9+ proxy auth compatibility
+cat > ~/.mavenrc << 'MAVENRC'
+MAVEN_OPTS="$MAVEN_OPTS -Dmaven.resolver.transport=wagon"
+MAVENRC
+
 mkdir -p ~/.gradle
 cat > ~/.gradle/gradle.properties << EOF
 systemProp.https.proxyHost=$host
