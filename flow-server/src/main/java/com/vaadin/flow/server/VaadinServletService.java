@@ -101,7 +101,8 @@ public class VaadinServletService extends VaadinService {
                         .ifPresentOrElse(idx -> {
                             handlers.add(idx, devModeHandler);
                         }, () -> handlers.add(devModeHandler));
-            } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
+            } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                    && !getDeploymentConfiguration().isBrowserless()) {
                 getLogger()
                         .warn("""
                                 'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin:vaadin-dev' dependency
