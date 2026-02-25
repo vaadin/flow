@@ -17,9 +17,8 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasElement;
@@ -32,11 +31,14 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class DefaultBindingExceptionHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class DefaultBindingExceptionHandlerTest {
 
     private DefaultBindingExceptionHandler handler = new DefaultBindingExceptionHandler();
 
-    private abstract class TestComponent implements HasElement, HasValue {
+    abstract class TestComponent implements HasElement, HasValue {
 
     }
 
@@ -44,37 +46,37 @@ public class DefaultBindingExceptionHandlerTest {
 
     private Element element = ElementFactory.createAnchor();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Mockito.when(component.getElement()).thenReturn(element);
     }
 
     @Test
-    public void handleException_elementHasId_messageContainsIdReference() {
+    void handleException_elementHasId_messageContainsIdReference() {
         element.setProperty("id", "foo");
         Optional<BindingException> result = handler.handleException(component,
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        assertEquals(
                 "An exception has been thrown inside binding logic for the field element [id='foo']",
                 message);
     }
 
     @Test
-    public void handleException_elementHasLabel_messageContainsLabelReference() {
+    void handleException_elementHasLabel_messageContainsLabelReference() {
         element.setProperty("label", "foo");
         Optional<BindingException> result = handler.handleException(component,
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        assertEquals(
                 "An exception has been thrown inside binding logic for the field element [label='foo']",
                 message);
     }
 
     @Test
-    public void handleException_elementHasNoLabelAndId_devMode_messageContainsPropertiesReference() {
+    void handleException_elementHasNoLabelAndId_devMode_messageContainsPropertiesReference() {
         UI ui = mockUI(false);
         ui.getElement().appendChild(element);
 
@@ -84,13 +86,13 @@ public class DefaultBindingExceptionHandlerTest {
                 new Exception());
 
         String message = result.get().getMessage();
-        Assert.assertEquals(
+        assertEquals(
                 "An exception has been thrown inside binding logic for the field element [baz='foo-bar', foo='bar']",
                 message);
     }
 
     @Test
-    public void handleException_elementHasNoLabelAndId_prodcutionMode_returnsEmpty() {
+    void handleException_elementHasNoLabelAndId_prodcutionMode_returnsEmpty() {
         UI ui = mockUI(true);
         ui.getElement().appendChild(element);
 
@@ -99,7 +101,7 @@ public class DefaultBindingExceptionHandlerTest {
         Optional<BindingException> result = handler.handleException(component,
                 new Exception());
 
-        Assert.assertFalse(result.isPresent());
+        assertFalse(result.isPresent());
     }
 
     private UI mockUI(boolean productionMode) {

@@ -15,27 +15,27 @@
  */
 package com.vaadin.flow.data.validator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RegexpValidatorTest extends ValidatorTestBase {
+class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
-    public void testNullStringFails() {
+    void testNullStringFails() {
         assertPasses(null, new RegexpValidator("Should be 'abc'", "abc"));
     }
 
     @Test
-    public void testEmptyPatternMatchesEmptyString() {
+    void testEmptyPatternMatchesEmptyString() {
         assertPasses("", new RegexpValidator("Should be empty", "", true));
     }
 
     @Test
-    public void testEmptyPatternDoesNotMatchNonEmptyString() {
+    void testEmptyPatternDoesNotMatchNonEmptyString() {
         assertFails("x", new RegexpValidator("Should be empty", "", true));
     }
 
     @Test
-    public void testPatternMatchesString() {
+    void testPatternMatchesString() {
         RegexpValidator v = new RegexpValidator(
                 "Should be foo and bar repeating", "(foo|bar)+", true);
 
@@ -45,7 +45,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testPatternDoesNotMatchString() {
+    void testPatternDoesNotMatchString() {
         RegexpValidator v = new RegexpValidator(
                 "Should be foo and bar repeating", "(foo|bar)+", true);
 
@@ -56,7 +56,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testEmptyPatternFoundInAnyString() {
+    void testEmptyPatternFoundInAnyString() {
         RegexpValidator v = new RegexpValidator("Should always pass", "",
                 false);
 
@@ -66,7 +66,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testPatternFoundInString() {
+    void testPatternFoundInString() {
         RegexpValidator v = new RegexpValidator("Should contain a number",
                 "\\d+", false);
 
@@ -76,7 +76,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
     }
 
     @Test
-    public void testPatternNotFoundInString() {
+    void testPatternNotFoundInString() {
         RegexpValidator v = new RegexpValidator("Should contain a number",
                 "\\d+", false);
 

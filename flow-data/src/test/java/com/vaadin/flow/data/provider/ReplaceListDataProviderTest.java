@@ -18,32 +18,36 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class that verifies that ReplaceListDataProvider functions the way it's
  * meant to.
  *
  */
-public class ReplaceListDataProviderTest {
+class ReplaceListDataProviderTest {
 
     private static final StrBean TEST_OBJECT = new StrBean("Foo", 10, -1);
     private ReplaceListDataProvider dataProvider = new ReplaceListDataProvider(
             new ArrayList<>(Arrays.asList(TEST_OBJECT)));
 
     @Test
-    public void testGetIdOfItem() {
+    void testGetIdOfItem() {
         Object id = dataProvider.fetch(new Query<>()).findFirst()
                 .map(dataProvider::getId).get();
-        Assert.assertEquals("DataProvider not using correct identifier getter",
-                TEST_OBJECT.getId(), id);
+        assertEquals(TEST_OBJECT.getId(), id,
+                "DataProvider not using correct identifier getter");
     }
 
     @Test
-    public void testGetIdOfReplacementItem() {
-        Assert.assertFalse("Test object was stale before making any changes.",
-                dataProvider.isStale(TEST_OBJECT));
+    void testGetIdOfReplacementItem() {
+        assertFalse(dataProvider.isStale(TEST_OBJECT),
+                "Test object was stale before making any changes.");
 
         dataProvider.refreshItem(new StrBean("Replacement TestObject", 10, -2));
 
@@ -51,13 +55,13 @@ public class ReplaceListDataProviderTest {
                 .get();
         Object id = dataProvider.getId(fromDataProvider);
 
-        Assert.assertNotEquals("DataProvider did not return the replacement",
-                TEST_OBJECT, fromDataProvider);
+        assertNotEquals(TEST_OBJECT, fromDataProvider,
+                "DataProvider did not return the replacement");
 
-        Assert.assertEquals("DataProvider not using correct identifier getter",
-                TEST_OBJECT.getId(), id);
+        assertEquals(TEST_OBJECT.getId(), id,
+                "DataProvider not using correct identifier getter");
 
-        Assert.assertTrue("Old test object should be stale",
-                dataProvider.isStale(TEST_OBJECT));
+        assertTrue(dataProvider.isStale(TEST_OBJECT),
+                "Old test object should be stale");
     }
 }

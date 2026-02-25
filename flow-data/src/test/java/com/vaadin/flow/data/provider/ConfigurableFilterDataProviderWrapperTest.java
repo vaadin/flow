@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.data.provider;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 
-public class ConfigurableFilterDataProviderWrapperTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ConfigurableFilterDataProviderWrapperTest {
     private static SerializablePredicate<StrBean> xyzFilter = item -> item
             .getValue().equals("Xyz");
 
@@ -45,58 +47,58 @@ public class ConfigurableFilterDataProviderWrapperTest {
             });
 
     @Test
-    public void void_setFilter() {
+    void void_setFilter() {
         configurableVoid.setFilter(xyzFilter);
 
-        Assert.assertEquals("Set filter should be used", 1,
-                configurableVoid.size(new Query<>()));
+        assertEquals(1, configurableVoid.size(new Query<>()),
+                "Set filter should be used");
 
         configurableVoid.setFilter(null);
 
-        Assert.assertEquals("null filter should return all items", 100,
-                configurableVoid.size(new Query<>()));
+        assertEquals(100, configurableVoid.size(new Query<>()),
+                "null filter should return all items");
     }
 
-    @Test(expected = Exception.class)
+    @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void void_nonNullQueryFilter_throws() {
-        configurableVoid
-                .size((Query) new Query<StrBean, String>("invalid filter"));
+    void void_nonNullQueryFilter_throws() {
+        assertThrows(Exception.class, () -> configurableVoid
+                .size((Query) new Query<StrBean, String>("invalid filter")));
     }
 
     @Test
-    public void predicate_setFilter() {
+    void predicate_setFilter() {
         configurablePredicate.setFilter(Integer.valueOf(50));
 
-        Assert.assertEquals("Set filter should be used", 49,
-                configurablePredicate.size(new Query<>()));
+        assertEquals(49, configurablePredicate.size(new Query<>()),
+                "Set filter should be used");
 
         configurablePredicate.setFilter(null);
 
-        Assert.assertEquals("null filter should return all items", 100,
-                configurablePredicate.size(new Query<>()));
+        assertEquals(100, configurablePredicate.size(new Query<>()),
+                "null filter should return all items");
     }
 
     @Test
-    public void predicate_queryFilter() {
-        Assert.assertEquals("Query filter should be used", 1,
-                configurablePredicate.size(new Query<>("Xyz")));
+    void predicate_queryFilter() {
+        assertEquals(1, configurablePredicate.size(new Query<>("Xyz")),
+                "Query filter should be used");
 
-        Assert.assertEquals("null query filter should return all items", 100,
-                configurablePredicate.size(new Query<>()));
+        assertEquals(100, configurablePredicate.size(new Query<>()),
+                "null query filter should return all items");
     }
 
     @Test
-    public void predicate_combinedFilters() {
+    void predicate_combinedFilters() {
         configurablePredicate.setFilter(Integer.valueOf(50));
 
-        Assert.assertEquals("Both filters should be used", 0,
-                configurablePredicate.size(new Query<>("Xyz")));
+        assertEquals(0, configurablePredicate.size(new Query<>("Xyz")),
+                "Both filters should be used");
 
         configurablePredicate.setFilter(null);
 
-        Assert.assertEquals("Only zyz filter should be used", 1,
-                configurablePredicate.size(new Query<>("Xyz")));
+        assertEquals(1, configurablePredicate.size(new Query<>("Xyz")),
+                "Only zyz filter should be used");
     }
 
 }

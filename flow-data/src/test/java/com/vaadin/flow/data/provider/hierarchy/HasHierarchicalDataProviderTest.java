@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -37,7 +37,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
-public class HasHierarchicalDataProviderTest {
+class HasHierarchicalDataProviderTest {
 
     interface TestLazyDataView extends LazyDataView<String> {
 
@@ -278,7 +278,7 @@ public class HasHierarchicalDataProviderTest {
     }
 
     @Test
-    public void testDataView_componentHierachyIsPossible() {
+    void testDataView_componentHierachyIsPossible() {
         new TestHierarchicalComponent();
     }
 

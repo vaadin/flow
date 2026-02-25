@@ -15,50 +15,52 @@
  */
 package com.vaadin.flow.data.binder;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SimpleResultTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
+class SimpleResultTest {
 
     @Test
-    public void twoEqualSimpleResults_objectsAreEqual() {
+    void twoEqualSimpleResults_objectsAreEqual() {
         SimpleResult<String> one = new SimpleResult<String>("foo", null);
         SimpleResult<String> two = new SimpleResult<String>("foo", null);
-        Assert.assertEquals(one, two);
+        assertEquals(one, two);
     }
 
     @Test
-    public void differentValues_objectsAreUnequal() {
+    void differentValues_objectsAreUnequal() {
         SimpleResult<String> one = new SimpleResult<String>("foo", null);
         SimpleResult<String> two = new SimpleResult<String>("baz", null);
-        Assert.assertNotEquals(one, two);
+        assertNotEquals(one, two);
     }
 
     @Test
-    public void differentMessages_objectsAreUnequal() {
+    void differentMessages_objectsAreUnequal() {
         SimpleResult<String> one = new SimpleResult<String>(null, "bar");
         SimpleResult<String> two = new SimpleResult<String>(null, "baz");
-        Assert.assertNotEquals(one, two);
+        assertNotEquals(one, two);
     }
 
     @Test
-    public void differentClasses_objectsAreUnequal() {
+    void differentClasses_objectsAreUnequal() {
         SimpleResult<String> one = new SimpleResult<String>("foo", null);
         SimpleResult<String> two = new SimpleResult<String>("foo", null) {
         };
-        Assert.assertNotEquals(one, two);
+        assertNotEquals(one, two);
     }
 
     @Test
-    public void nullIsNotEqualToObject() {
+    void nullIsNotEqualToObject() {
         SimpleResult<String> one = new SimpleResult<String>("foo", null);
-        Assert.assertNotEquals(one, null);
+        assertNotEquals(one, null);
     }
 
     @Test
-    public void twoEqualSimpleResults_hashCodeIsTheSame() {
+    void twoEqualSimpleResults_hashCodeIsTheSame() {
         SimpleResult<String> one = new SimpleResult<String>("foo", null);
         SimpleResult<String> two = new SimpleResult<String>("foo", null);
-        Assert.assertEquals(one.hashCode(), two.hashCode());
+        assertEquals(one.hashCode(), two.hashCode());
     }
 }

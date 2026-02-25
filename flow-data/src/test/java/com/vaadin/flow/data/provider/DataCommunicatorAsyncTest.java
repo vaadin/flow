@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -26,11 +24,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -46,8 +42,12 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
-@RunWith(Parameterized.class)
-public class DataCommunicatorAsyncTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class DataCommunicatorAsyncTest {
 
     /**
      * Test item that uses id for identity.
@@ -105,20 +105,10 @@ public class DataCommunicatorAsyncTest {
     public Range lastSet = null;
     public int lastUpdateId = -1;
 
-    private final boolean dataProviderWithParallelStream;
+    private boolean dataProviderWithParallelStream;
 
-    public DataCommunicatorAsyncTest(boolean dataProviderWithParallelStream) {
-        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Boolean> testParameters() {
-        // Runs tests with both sequential and parallel data provider streams
-        return Arrays.asList(false, true);
-    }
-
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         element = new Element("div");
@@ -151,17 +141,25 @@ public class DataCommunicatorAsyncTest {
                 }, element.getNode());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void asyncExcutorPushDisabledThrows() {
-        ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
-        dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setViewportRange(0, 50);
-        fakeClientCommunication();
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void asyncExcutorPushDisabledThrows(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        assertThrows(IllegalStateException.class, () -> {
+            ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+            dataCommunicator.setDataProvider(createDataProvider(), null);
+            dataCommunicator.enablePushUpdates(executor);
+            dataCommunicator.setViewportRange(0, 50);
+            fakeClientCommunication();
+        });
     }
 
-    @Test
-    public void asyncRequestedRangeHappensLater() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void asyncRequestedRangeHappensLater(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         latch = new CountDownLatch(1);
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -169,8 +167,8 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertNotEquals("Expected initial reset not yet done.",
-                Range.withLength(0, 50), lastSet);
+        assertNotEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial reset not yet done.");
 
         try {
             latch.await();
@@ -178,14 +176,14 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset.");
         lastSet = null;
 
         element.removeFromParent();
         fakeClientCommunication();
 
-        Assert.assertNull("Expected no during reattach.", lastSet);
+        assertNull(lastSet, "Expected no during reattach.");
 
         ui.getElement().appendChild(element);
         fakeClientCommunication();
@@ -198,8 +196,8 @@ public class DataCommunicatorAsyncTest {
             throw new RuntimeException(e);
         }
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        assertEquals(Range.withLength(0, 50), lastSet,
+                "Expected initial full reset after reattach");
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
