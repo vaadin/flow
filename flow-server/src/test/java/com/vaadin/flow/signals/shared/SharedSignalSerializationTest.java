@@ -54,14 +54,14 @@ class SharedSignalSerializationTest {
     }
 
     @Test
-    void sharedValueSignal_serializable() {
+    void sharedValueSignal_notSerializable() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         assertThrows(NotSerializableException.class,
                 () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedListSignal_serializable() {
+    void sharedListSignal_notSerializable() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         assertThrows(NotSerializableException.class,
                 () -> serializeAndDeserialize(signal));
@@ -69,21 +69,21 @@ class SharedSignalSerializationTest {
     }
 
     @Test
-    void sharedMapSignal_serializable() {
+    void sharedMapSignal_notSerializable() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         assertThrows(NotSerializableException.class,
                 () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedNodeSignal_serializable() {
+    void sharedNodeSignal_notSerializable() {
         SharedNodeSignal signal = new SharedNodeSignal();
         assertThrows(NotSerializableException.class,
                 () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedNumberSignal_serializable() {
+    void sharedNumberSignal_notSerializable() {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
         assertThrows(NotSerializableException.class,
                 () -> serializeAndDeserialize(signal));

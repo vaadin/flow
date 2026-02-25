@@ -430,7 +430,7 @@ public abstract class SignalTree implements Serializable {
             throws IOException {
         if (this instanceof AsynchronousSignalTree) {
             throw new NotSerializableException(
-                    "AsynchronousSignalTree is a shared object that cannot be serialized: "
+                    "Shared Signal is a shared object that cannot be serialized: "
                             + "it is tied to a specific runtime environment and would "
                             + "leak other sessions if included in session serialization.");
         } else {
