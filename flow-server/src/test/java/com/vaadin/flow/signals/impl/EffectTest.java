@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -39,10 +40,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class EffectTest extends SignalTestBase {
 
     @Test
+    void newEffect_noSignalUsage_throws() {
+        assertThrows(MissingSignalUsageException.class, () -> {
+            Signal.unboundEffect(() -> {
+            });
+        });
+    }
+
+    @Test
     void newEffect_actionIsRunOnce() {
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             count.incrementAndGet();
         });
 
@@ -51,9 +62,11 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             count.incrementAndGet();
         }).remove();
 
@@ -116,11 +129,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -140,11 +155,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -274,6 +291,7 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // Deliberately testing null value behavior
     void changeTracking_changeValueToNull_effectTriggered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
@@ -385,8 +403,10 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
+        var dependency = createDependency();
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.unboundEffect(() -> {
+            dependency.get();
             throw exception;
         });
 
@@ -427,10 +447,10 @@ public class EffectTest extends SignalTestBase {
         Signal.unboundEffect(() -> {
             other.set(signal.get());
         });
-        assertEquals("signal", other.get());
+        assertEquals("signal", other.peek());
 
         signal.set("update");
-        assertEquals("update", other.get());
+        assertEquals("update", other.peek());
     }
 
     @Test

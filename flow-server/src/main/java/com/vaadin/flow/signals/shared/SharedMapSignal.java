@@ -49,7 +49,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedMapSignal<T>
+public class SharedMapSignal<T extends @Nullable Object>
         extends AbstractSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
@@ -143,7 +143,7 @@ public class SharedMapSignal<T>
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> put(String key, @Nullable T value) {
+    public SignalOperation<T> put(String key, T value) {
         return submit(
                 new SignalCommand.PutCommand(Id.random(), id(),
                         Objects.requireNonNull(key), toJson(value)),
@@ -176,7 +176,7 @@ public class SharedMapSignal<T>
      * @return an operation containing the eventual result with the entry signal
      */
     public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
-            String key, @Nullable T value) {
+            String key, T value) {
         Id commandId = Id.random();
         return submit(
                 new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
@@ -369,7 +369,7 @@ public class SharedMapSignal<T>
             return "SharedMapSignal[null]";
         }
         return value.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue().get())
+                .map(entry -> entry.getKey() + "=" + entry.getValue().peek())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 

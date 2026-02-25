@@ -17,6 +17,7 @@ package com.vaadin.flow.signals.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -195,6 +196,7 @@ public class TransactionTest extends SignalTestBase {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertTrue(handler.result.accepted());
     }
 
@@ -213,6 +215,7 @@ public class TransactionTest extends SignalTestBase {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertFalse(handler.result.accepted());
     }
 
@@ -260,12 +263,16 @@ public class TransactionTest extends SignalTestBase {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = TestUtil.readTransactionRootValue(tree).asString();
+            String value = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.readTransactionRootValue(tree).asString();
+            String value2 = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }
@@ -311,7 +318,9 @@ public class TransactionTest extends SignalTestBase {
 
         List<String> invocations = new ArrayList<>();
         tree.observeNextChange(Id.ZERO, immediate -> {
-            invocations.add(TestUtil.readTransactionRootValue(tree).asString());
+            invocations.add(Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString());
             return true;
         });
 
