@@ -767,9 +767,9 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .bind("firstName");
         binder.setBean(item);
 
-        assertTrue(
-                binder.validationStatusSignal().peek().getFieldValidationStatuses()
-                        .stream().noneMatch(BindingValidationStatus::isError));
+        assertTrue(binder.validationStatusSignal().peek()
+                .getFieldValidationStatuses().stream()
+                .noneMatch(BindingValidationStatus::isError));
         assertTrue(binder.validationStatusSignal().peek().isOk());
 
         lastNameField.setValue(""); // change to invalid state
