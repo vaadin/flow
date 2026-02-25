@@ -170,3 +170,6 @@ Components extend `Component` and use:
 - When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
 - Don't add @since to javadocs
 - When adding unit tests, add only the essential ones and not more than that
+- Prefix custom DOM events with `vaadin-` (e.g. `vaadin-component-resize` instead of `component-resize`)
+- Always write even slightly complex JavaScript into a separate `.js` file rather than inlining it in Java strings. Use `@JsModule` on `UI.java` to load the file from `META-INF/frontend/`
+- Store global JavaScript state and functions on `window.Vaadin.Flow` (e.g. `window.Vaadin.Flow.componentSizeObserver`). Use annotations on the UI class for global scripts
