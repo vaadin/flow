@@ -713,9 +713,9 @@ public class BinderSignalTest extends SignalsUnitTest {
     @Test
     public void getValidationStatus_signalInitialized() {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
-                .getValidationStatus();
+                .validationStatusSignal();
         assertNotNull(statusSignal,
-                "getValidationStatus() should setup validation status signal");
+                "validationStatusSignal() should setup validation status signal");
         assertNotNull(statusSignal.peek(),
                 "validation status signal value should not be null initially");
     }
@@ -723,7 +723,7 @@ public class BinderSignalTest extends SignalsUnitTest {
     @Test
     public void getValidationStatus_signalIsReadOnly() {
         Signal<BinderValidationStatus<Person>> statusSignal = binder
-                .getValidationStatus();
+                .validationStatusSignal();
         assertThrows(ClassCastException.class,
                 () -> ((ValueSignal<BinderValidationStatus<Person>>) statusSignal)
                         .set(null));
@@ -740,18 +740,18 @@ public class BinderSignalTest extends SignalsUnitTest {
                 .withValidator(value -> !value.isEmpty(), "").bind("lastName");
         binder.setBean(item);
 
-        assertTrue(binder.getValidationStatus().peek().isOk());
+        assertTrue(binder.validationStatusSignal().peek().isOk());
 
         firstNameField.setValue("");
-        assertFalse(binder.getValidationStatus().peek().isOk());
+        assertFalse(binder.validationStatusSignal().peek().isOk());
         firstNameField.setValue("foo");
-        assertTrue(binder.getValidationStatus().peek().isOk());
+        assertTrue(binder.validationStatusSignal().peek().isOk());
         lastNameField.setValue("");
-        assertFalse(binder.getValidationStatus().peek().isOk());
+        assertFalse(binder.validationStatusSignal().peek().isOk());
         firstNameField.setValue("");
-        assertFalse(binder.getValidationStatus().peek().isOk());
+        assertFalse(binder.validationStatusSignal().peek().isOk());
         firstNameField.setValue("foo");
-        assertFalse(binder.getValidationStatus().peek().isOk());
+        assertFalse(binder.validationStatusSignal().peek().isOk());
     }
 
     // verifies that field-specific validation statuses are updated correctly
@@ -768,18 +768,18 @@ public class BinderSignalTest extends SignalsUnitTest {
         binder.setBean(item);
 
         assertTrue(
-                binder.getValidationStatus().peek().getFieldValidationStatuses()
+                binder.validationStatusSignal().peek().getFieldValidationStatuses()
                         .stream().noneMatch(BindingValidationStatus::isError));
-        assertTrue(binder.getValidationStatus().peek().isOk());
+        assertTrue(binder.validationStatusSignal().peek().isOk());
 
         lastNameField.setValue(""); // change to invalid state
 
-        assertFalse(binder.getValidationStatus().peek().isOk());
-        var firstNameValidationStatuses = binder.getValidationStatus().peek()
+        assertFalse(binder.validationStatusSignal().peek().isOk());
+        var firstNameValidationStatuses = binder.validationStatusSignal().peek()
                 .getFieldValidationStatuses().stream()
                 .filter(status -> status.getBinding() == firstNameBinding)
                 .toList();
-        var otherValidationStatuses = binder.getValidationStatus().peek()
+        var otherValidationStatuses = binder.validationStatusSignal().peek()
                 .getFieldValidationStatuses().stream()
                 .filter(status -> status.getBinding() != firstNameBinding)
                 .toList();
@@ -793,7 +793,7 @@ public class BinderSignalTest extends SignalsUnitTest {
                 "Expected first name field to have an error");
 
         lastNameField.setValue("Smith");
-        assertTrue(binder.getValidationStatus().peek().isOk());
+        assertTrue(binder.validationStatusSignal().peek().isOk());
     }
 
     @Test
@@ -863,7 +863,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         AtomicInteger effectCalled = new AtomicInteger(0);
         AtomicBoolean prevStatus = new AtomicBoolean(true);
         Signal.effect(firstNameField, () -> {
-            prevStatus.set(binder.getValidationStatus().get().isOk());
+            prevStatus.set(binder.validationStatusSignal().get().isOk());
             effectCalled.incrementAndGet();
         });
 
@@ -909,7 +909,7 @@ public class BinderSignalTest extends SignalsUnitTest {
 
         AtomicBoolean prevStatus = new AtomicBoolean(true);
         Signal.effect(firstNameField, () -> {
-            prevStatus.set(binder.getValidationStatus().get().isOk());
+            prevStatus.set(binder.validationStatusSignal().get().isOk());
         });
 
         assertFalse(prevStatus.get());
