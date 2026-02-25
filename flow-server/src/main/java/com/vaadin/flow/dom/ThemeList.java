@@ -71,10 +71,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bind(String name, Signal<Boolean> signal) {
-        // experimental API, do not force implementation
-        throw new UnsupportedOperationException();
-    }
+    void bind(String name, Signal<Boolean> signal);
 
     /**
      * Binds the theme names to the provided signal so that the theme list is
@@ -99,8 +96,5 @@ public interface ThemeList extends Set<String>, Serializable {
      *             thrown when there is already an existing group binding
      * @since 25.1
      */
-    default void bind(Signal<List<String>> names) {
-        // experimental API, do not force implementation
-        throw new UnsupportedOperationException();
-    }
+    void bind(Signal<List<String>> names);
 }

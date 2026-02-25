@@ -110,10 +110,7 @@ public interface HasValidation extends Serializable {
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bindErrorMessage(Signal<String> signal) {
-        // experimental API, do not force implementation
-        throw new UnsupportedOperationException();
-    }
+    void bindErrorMessage(Signal<String> signal);
 
     /**
      * Sets the validity of the component input.
@@ -165,8 +162,5 @@ public interface HasValidation extends Serializable {
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bindInvalid(Signal<Boolean> signal) {
-        // experimental API, do not force implementation
-        throw new UnsupportedOperationException();
-    }
+    void bindInvalid(Signal<Boolean> signal);
 }

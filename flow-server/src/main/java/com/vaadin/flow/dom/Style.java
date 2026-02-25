@@ -228,10 +228,7 @@ public interface Style extends Serializable {
      *
      * @since 25.0
      */
-    default Style bind(String name, Signal<String> signal) {
-        // experimental API, do not force implementation
-        throw new UnsupportedOperationException();
-    };
+    Style bind(String name, Signal<String> signal);
 
     /**
      * Sets the <code>background</code> property.
