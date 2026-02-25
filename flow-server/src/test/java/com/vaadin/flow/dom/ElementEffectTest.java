@@ -987,6 +987,179 @@ class ElementEffectTest {
         assertEquals(0, parentComponent.getComponentCount());
     }
 
+    @Test
+    public void bindChildren_parentWithSlottedChild_succeeds() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        // Add a slotted child before binding
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "title");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Should not throw
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+        assertEquals(0, parentComponent.getComponentCount());
+    }
+
+    @Test
+    public void bindChildren_parentWithDefaultSlotChild_throws() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        TestLayout parentComponent = new TestLayout();
+        parentComponent.add(new TestComponent("default"));
+        new MockUI().add(parentComponent);
+
+        assertThrows(IllegalStateException.class, () -> {
+            parentComponent.bindChildren(taskList, valueSignal -> {
+                fail("Should not call element factory");
+                return null;
+            });
+        });
+    }
+
+    @Test
+    public void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> new TestComponent(valueSignal.get())
+                        .getElement());
+
+        assertEquals(1, parentComponent.getComponentCount());
+
+        // Add a slotted child via Element API
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "title");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Total children includes slotted
+        assertEquals(2, parentComponent.getElement().getChildCount());
+
+        // Add another signal item - slotted child should be preserved
+        taskList.insertLast("second");
+
+        // signal children + slotted child
+        assertEquals(3, parentComponent.getElement().getChildCount());
+        // Verify default-slot children are in correct order
+        List<Element> defaultSlotChildren = parentComponent.getElement()
+                .getChildren().filter(e -> e.getAttribute("slot") == null)
+                .toList();
+        assertEquals(2, defaultSlotChildren.size());
+        assertEquals("first", defaultSlotChildren.get(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("second", defaultSlotChildren.get(1).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        // Slotted child should still be present
+        long slottedCount = parentComponent.getElement().getChildren()
+                .filter(e -> "title".equals(e.getAttribute("slot"))).count();
+        assertEquals(1, slottedCount);
+    }
+
+    @Test
+    public void bindChildren_factoryReturnsSlottedElement_throws() {
+        CurrentInstance.clearAll();
+        LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
+        UI ui = UI.getCurrent();
+
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        ui.add(parentComponent);
+
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> {
+                    Element el = new Element("div");
+                    el.setAttribute("slot", "title");
+                    return el;
+                });
+
+        ErrorEvent event = events.pollFirst();
+        assertNotNull(event);
+        assertEquals(IllegalStateException.class,
+                event.getThrowable().getClass());
+        assertEquals(
+                "Children created by the bindChildren factory must not have a slot attribute set",
+                event.getThrowable().getMessage());
+    }
+
+    @Test
+    public void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
+
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+
+        // Add a slotted child via Element API
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "header");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Move last to first
+        taskList.moveTo(taskList.peek().get(2), 0);
+
+        // Verify default-slot order matches signal
+        List<TestComponent> components = parentComponent.getChildren()
+                .filter(c -> c instanceof TestComponent)
+                .map(TestComponent.class::cast).toList();
+
+        assertEquals("last", components.get(0).getValue());
+        assertEquals("first", components.get(1).getValue());
+        assertEquals("middle", components.get(2).getValue());
+
+        // Slotted child should still exist
+        long slottedCount = parentComponent.getElement().getChildren()
+                .filter(e -> e.getAttribute("slot") != null).count();
+        assertEquals(1, slottedCount);
+    }
+
+    @Test
+    public void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        taskList.insertLast("second");
+
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+
+        // Add a slotted child
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "footer");
+        parentComponent.getElement().appendChild(slotted);
+
+        assertEquals(3, parentComponent.getElement().getChildCount());
+
+        // Remove an item from the signal list
+        taskList.remove(taskList.peek().get(0));
+
+        // One signal child + slotted child remain
+        assertEquals(2, parentComponent.getElement().getChildCount());
+        assertEquals("second",
+                ((TestComponent) parentComponent.getChildren().toList().get(0))
+                        .getValue());
+        // Slotted child preserved
+        assertEquals("footer",
+                parentComponent.getElement().getChild(1).getAttribute("slot"));
+    }
+
     private TestLayout prepareTestLayout(ListSignal<String> listSignal) {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
