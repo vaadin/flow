@@ -154,8 +154,8 @@ public final class ElementEffect implements Serializable {
      *
      * <pre>
      * Element mySpan = new Element("span");
-     * SignalBinding&lt;String&gt; binding = ElementEffect.bind(mySpan,
-     *         stringSignal, Element::setText);
+     * SignalBinding&lt;String&gt; binding = ElementEffect.bind(mySpan, stringSignal,
+     *         Element::setText);
      *
      * binding.onChange(ctx -&gt; {
      *     if (ctx.isBackgroundChange()) {

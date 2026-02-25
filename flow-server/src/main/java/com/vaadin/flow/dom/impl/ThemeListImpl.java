@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 

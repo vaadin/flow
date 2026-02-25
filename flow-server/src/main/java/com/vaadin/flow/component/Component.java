@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -44,7 +45,6 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
-import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.signals.Signal;
 
 /**

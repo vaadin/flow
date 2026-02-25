@@ -95,9 +95,9 @@ public class BindingContext<T extends @Nullable Object> extends EffectContext {
 
     /**
      * Returns the nearest component for the target element. If the element
-     * itself has an associated component, that component is returned. Otherwise,
-     * the element tree is traversed upward to find the first ancestor with an
-     * associated component.
+     * itself has an associated component, that component is returned.
+     * Otherwise, the element tree is traversed upward to find the first
+     * ancestor with an associated component.
      *
      * @return the nearest component, or {@code null} if no component is found
      *         in the element hierarchy
