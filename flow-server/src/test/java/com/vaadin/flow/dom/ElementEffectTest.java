@@ -165,8 +165,7 @@ class ElementEffectTest {
         });
 
         assertEquals(1, initialRuns.size());
-        assertTrue(initialRuns.get(0),
-                "First execution should be initial run");
+        assertTrue(initialRuns.get(0), "First execution should be initial run");
 
         signal.set("world");
 
