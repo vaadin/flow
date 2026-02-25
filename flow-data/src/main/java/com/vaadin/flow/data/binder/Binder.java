@@ -372,8 +372,8 @@ public class Binder<BEAN> implements Serializable {
                 SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate);
 
         /**
-         * Returns the current converted and validated value of this binding's
-         * field.
+         * Returns a signal holding the current converted and validated value of
+         * this binding's field.
          * <p>
          * This method is primarily designed for implementing cross-field
          * validation, where one field's validator needs to access the value of
@@ -384,9 +384,9 @@ public class Binder<BEAN> implements Serializable {
          * The Binder automatically runs validators inside a
          * {@link Signal#effect(Component, com.vaadin.flow.signals.function.EffectAction)}
          * context. This makes validators reactive to signal changes - when you
-         * call {@code value()} on another binding from within a validator, the
-         * validator will automatically re-run whenever that other binding's
-         * value changes.
+         * call {@code valueSignal()} on another binding from within a
+         * validator, the validator will automatically re-run whenever that
+         * other binding's value changes.
          * <p>
          * For cross-field validation to work automatically, the fields must be
          * attached to the UI component tree. Detached fields will not trigger
@@ -394,7 +394,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link Binder#validate()} will still work.
          * <p>
          * <b>Example - Cross-field validation:</b>
-         * 
+         *
          * <pre>
          * {@code
          * Binder<UserRegistration> binder = new Binder<>(
@@ -406,10 +406,9 @@ public class Binder<BEAN> implements Serializable {
          * Binding<UserRegistration, String> passwordBinding = binder
          *         .forField(passwordField).bind("password");
          *
-         * binder.forField(confirmField)
-         *         .withValidator(text -> text.equals(passwordBinding.value()),
-         *                 "Both fields must match")
-         *         .bind("confirmPassword");
+         * binder.forField(confirmField).withValidator(
+         *         text -> text.equals(passwordBinding.valueSignal().get()),
+         *         "Both fields must match").bind("confirmPassword");
          *
          * add(passwordField, confirmField);
          *
@@ -430,8 +429,8 @@ public class Binder<BEAN> implements Serializable {
          * }
          * </pre>
          *
-         * @return the current converted and validated value of this binding's
-         *         field
+         * @return a signal holding the current converted and validated value of
+         *         this binding's field
          *
          * @see BindingBuilder#withValidator(Validator)
          * @see com.vaadin.flow.component.HasValue#bindValue
@@ -440,9 +439,9 @@ public class Binder<BEAN> implements Serializable {
          *
          * @since 25.1
          */
-        default TARGET value() {
+        default ValueSignal<TARGET> valueSignal() {
             throw new UnsupportedOperationException(
-                    "value() is not supported by "
+                    "valueSignal() is not supported by "
                             + getClass().getSimpleName());
         }
     }
@@ -1513,7 +1512,7 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
-        private transient ValueSignal<Boolean> internalValidationTriggerSignal;
+        private transient ValueSignal<TARGET> valueSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1612,8 +1611,9 @@ public class Binder<BEAN> implements Serializable {
             if (signalRegistration != null) {
                 signalRegistration.remove();
                 signalRegistration = null;
-                internalValidationTriggerSignal = null;
             }
+
+            valueSignal = null;
 
             field = null;
         }
@@ -1764,11 +1764,12 @@ public class Binder<BEAN> implements Serializable {
                 removeFromChangedBindingsIfReverted(
                         getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
-                if (internalValidationTriggerSignal != null) {
-                    // Trigger re-validation signal to notify validators using
-                    // value()
-                    internalValidationTriggerSignal
-                            .set(!internalValidationTriggerSignal.peek());
+                if (valueSignal != null) {
+                    // Update the value signal with the new field value
+                    // This automatically triggers re-validation of validators
+                    // that depend on this binding's value
+                    HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
+                    valueSignal.set(field.getValue());
                 }
             }
         }
@@ -1827,6 +1828,11 @@ public class Binder<BEAN> implements Serializable {
                 try {
                     field.setValue(convertedValue);
                     initialValue = modelValue;
+                    if (valueSignal != null) {
+                        // Update the value signal when field value is set from
+                        // bean
+                        valueSignal.set(modelValue);
+                    }
                 } catch (RuntimeException e) {
                     /*
                      * Add an additional hint to the exception for the typical
@@ -2002,21 +2008,12 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public TARGET value() {
-            HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
-            trackUsageOfInternalValidationSignal();
-            return field.getValue();
-        }
-
-        private void trackUsageOfInternalValidationSignal() {
-            if (!UsageTracker.isActive()) {
-                return;
+        public ValueSignal<TARGET> valueSignal() {
+            if (valueSignal == null) {
+                HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
+                valueSignal = new ValueSignal<>(field.getValue());
             }
-            if (internalValidationTriggerSignal == null) {
-                internalValidationTriggerSignal = new ValueSignal<>(false);
-            }
-            // registers tracking
-            internalValidationTriggerSignal.get();
+            return valueSignal;
         }
 
     }
