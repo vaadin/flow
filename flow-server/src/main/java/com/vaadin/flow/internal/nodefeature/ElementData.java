@@ -160,8 +160,9 @@ public class ElementData extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
      */
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
-        bindSignal(owner, NodeProperties.VISIBLE, signal,
+    public com.vaadin.flow.dom.SignalBinding<Boolean> bindVisibleSignal(
+            Element owner, Signal<Boolean> signal) {
+        return bindSignal(owner, NodeProperties.VISIBLE, signal,
                 (element, value) -> putVisibleSignalValue(value), null);
     }
 

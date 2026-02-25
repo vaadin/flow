@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -99,8 +100,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindAttributeSignal(Element owner, String attribute,
-            Signal<String> signal) {
+    public SignalBinding<String> bindAttributeSignal(Element owner,
+            String attribute, Signal<String> signal) {
         throw new UnsupportedOperationException();
     }
 
@@ -148,8 +149,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+    public SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 
@@ -231,7 +232,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         throw new UnsupportedOperationException();
     }
 

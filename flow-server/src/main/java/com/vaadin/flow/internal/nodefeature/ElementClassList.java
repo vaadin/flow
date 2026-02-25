@@ -96,12 +96,11 @@ public class ElementClassList extends SerializableNodeList<String> {
                         + "' is already bound to a signal");
             }
 
-            Registration registration = ElementEffect.bind(
-                    Element.get(getNode()), signal,
+            ElementEffect.bind(Element.get(getNode()), signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
-            feature.setBinding(SignalBindingFeature.CLASSES + name,
-                    registration, signal);
+            feature.setBinding(SignalBindingFeature.CLASSES + name, null,
+                    signal);
         }
 
         @Override

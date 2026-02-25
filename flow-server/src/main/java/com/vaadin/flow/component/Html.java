@@ -267,9 +267,9 @@ public class Html extends Component {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(getElement(), htmlSignal,
+        ElementEffect.bind(getElement(), htmlSignal,
                 (element, value) -> setOuterHtml(value, true));
-        feature.setBinding(SignalBindingFeature.HTML_CONTENT, registration,
+        feature.setBinding(SignalBindingFeature.HTML_CONTENT, null,
                 htmlSignal);
     }
 }

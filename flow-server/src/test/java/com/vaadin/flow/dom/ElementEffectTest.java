@@ -175,6 +175,62 @@ class ElementEffectTest {
     }
 
     @Test
+    public void bindText_returnsSignalBinding() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalBinding<String> binding = span.bindText(signal);
+
+        assertNotNull(binding);
+    }
+
+    @Test
+    public void signalBinding_onChange_receivesBindingContext() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // onChange is registered after bind, so the initial execution is missed
+        span.bindText(signal).onChange(contexts::add);
+
+        // Trigger a subsequent update
+        signal.set("updated");
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        assertSame(span, ctx.getElement());
+    }
+
+    @Test
+    public void bindingContext_getComponent_returnsNearestComponent() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("test");
+        AtomicReference<com.vaadin.flow.component.Component> componentRef = new AtomicReference<>();
+
+        // Bind directly on the UI's element so it has a component mapping
+        ui.getElement().bindText(signal).onChange(ctx -> {
+            componentRef.set(ctx.getComponent());
+        });
+
+        signal.set("changed");
+
+        assertNotNull(componentRef.get());
+        assertSame(ui, componentRef.get());
+    }
+
+    @Test
     public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);

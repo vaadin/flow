@@ -221,10 +221,10 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(component.getElement(),
-                valueSignal, (element, value) -> setValueFromSignal(value));
-        feature.setBinding(SignalBindingFeature.VALUE, registration,
-                valueSignal, writeCallback);
+        ElementEffect.bind(component.getElement(), valueSignal,
+                (element, value) -> setValueFromSignal(value));
+        feature.setBinding(SignalBindingFeature.VALUE, null, valueSignal,
+                writeCallback);
     }
 
     private void setValueFromSignal(T value) {

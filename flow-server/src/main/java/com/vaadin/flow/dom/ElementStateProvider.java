@@ -80,7 +80,7 @@ public interface ElementStateProvider extends Serializable {
      * @param signal
      *            the signal to bind, not <code>null</code>
      */
-    void bindAttributeSignal(Element owner, String attribute,
+    SignalBinding<String> bindAttributeSignal(Element owner, String attribute,
             Signal<String> signal);
 
     /**
@@ -281,8 +281,8 @@ public interface ElementStateProvider extends Serializable {
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback);
+    SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback);
 
     /**
      * Checks if the given property has been set.
@@ -470,7 +470,8 @@ public interface ElementStateProvider extends Serializable {
      * @param signal
      *            the signal to bind, not <code>null</code>
      */
-    void bindVisibleSignal(Element owner, Signal<Boolean> signal);
+    SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal);
 
     /**
      * Sets the {@code node} visibility.

@@ -102,12 +102,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "Theme name '" + name + "' is already bound to a signal");
         }
 
-        Registration registration = ElementEffect.bind(
-                Element.get(element.getNode()), signal,
+        ElementEffect.bind(Element.get(element.getNode()), signal,
                 (element, value) -> internalSetPresence(name,
                         Boolean.TRUE.equals(value)));
-        feature.setBinding(SignalBindingFeature.THEMES + name, registration,
-                signal);
+        feature.setBinding(SignalBindingFeature.THEMES + name, null, signal);
     }
 
     private void internalSetPresence(String name, boolean set) {

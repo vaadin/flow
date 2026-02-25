@@ -34,6 +34,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -198,12 +199,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindAttributeSignal(Element owner, String attribute,
-            Signal<String> signal) {
+    public SignalBinding<String> bindAttributeSignal(Element owner,
+            String attribute, Signal<String> signal) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+        return getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
                 signal);
     }
 
@@ -297,13 +298,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+    public SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         assert owner != null;
         assert name != null;
 
-        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal,
-                writeCallback);
+        return getPropertyFeature(owner.getNode()).bindSignal(owner, name,
+                signal, writeCallback);
     }
 
     @Override
@@ -436,10 +437,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         assert owner.getNode().hasFeature(ElementData.class);
-        owner.getNode().getFeature(ElementData.class).bindVisibleSignal(owner,
-                signal);
+        return owner.getNode().getFeature(ElementData.class)
+                .bindVisibleSignal(owner, signal);
     }
 
     @Override

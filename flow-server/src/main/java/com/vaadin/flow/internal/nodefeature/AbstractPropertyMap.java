@@ -166,9 +166,10 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    public void bindSignal(Element owner, String name, Signal<?> signal,
+    public com.vaadin.flow.dom.SignalBinding<?> bindSignal(Element owner,
+            String name, Signal<?> signal,
             SerializableConsumer<?> writeCallback) {
-        super.bindSignal(owner, name, signal,
+        return super.bindSignal(owner, name, signal,
                 (element, value) -> setPropertyFromSignal(name, value),
                 writeCallback);
     }

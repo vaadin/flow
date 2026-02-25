@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -615,8 +616,8 @@ public abstract class Component
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
-    public void bindVisible(Signal<Boolean> visibleSignal) {
-        getElement().bindVisible(visibleSignal);
+    public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
+        return getElement().bindVisible(visibleSignal);
     }
 
     /**

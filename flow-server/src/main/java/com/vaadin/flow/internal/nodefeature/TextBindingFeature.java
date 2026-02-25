@@ -45,7 +45,7 @@ public class TextBindingFeature extends ServerSideFeature {
     }
 
     public boolean hasBinding() {
-        return textSignal != null && registration != null;
+        return textSignal != null;
     }
 
     public void removeBinding() {
