@@ -1047,20 +1047,14 @@ class ElementEffectTest {
         taskList.insertLast("second");
 
         // signal children + slotted child
-        assertEquals(3, parentComponent.getElement().getChildCount());
-        // Verify default-slot children are in correct order
-        List<Element> defaultSlotChildren = parentComponent.getElement()
-                .getChildren().filter(e -> e.getAttribute("slot") == null)
-                .toList();
-        assertEquals(2, defaultSlotChildren.size());
-        assertEquals("first", defaultSlotChildren.get(0).getComponent()
+        Element parent = parentComponent.getElement();
+        assertEquals(3, parent.getChildCount());
+        // Verify DOM indices: "first" at 0, "second" at 1, slotted at 2
+        assertEquals("first", parent.getChild(0).getComponent()
                 .map(c -> ((TestComponent) c).getValue()).orElse(null));
-        assertEquals("second", defaultSlotChildren.get(1).getComponent()
+        assertEquals("second", parent.getChild(1).getComponent()
                 .map(c -> ((TestComponent) c).getValue()).orElse(null));
-        // Slotted child should still be present
-        long slottedCount = parentComponent.getElement().getChildren()
-                .filter(e -> "title".equals(e.getAttribute("slot"))).count();
-        assertEquals(1, slottedCount);
+        assertEquals("title", parent.getChild(2).getAttribute("slot"));
     }
 
     @Test
@@ -1112,19 +1106,17 @@ class ElementEffectTest {
         // Move last to first
         taskList.moveTo(taskList.peek().get(2), 0);
 
-        // Verify default-slot order matches signal
-        List<TestComponent> components = parentComponent.getChildren()
-                .filter(c -> c instanceof TestComponent)
-                .map(TestComponent.class::cast).toList();
-
-        assertEquals("last", components.get(0).getValue());
-        assertEquals("first", components.get(1).getValue());
-        assertEquals("middle", components.get(2).getValue());
-
-        // Slotted child should still exist
-        long slottedCount = parentComponent.getElement().getChildren()
-                .filter(e -> e.getAttribute("slot") != null).count();
-        assertEquals(1, slottedCount);
+        // Verify DOM indices: "last" at 0, "first" at 1, "middle" at 2,
+        // slotted at 3
+        Element parent = parentComponent.getElement();
+        assertEquals(4, parent.getChildCount());
+        assertEquals("last", parent.getChild(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("first", parent.getChild(1).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("middle", parent.getChild(2).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("header", parent.getChild(3).getAttribute("slot"));
     }
 
     @Test
@@ -1150,14 +1142,12 @@ class ElementEffectTest {
         // Remove an item from the signal list
         taskList.remove(taskList.peek().get(0));
 
-        // One signal child + slotted child remain
-        assertEquals(2, parentComponent.getElement().getChildCount());
-        assertEquals("second",
-                ((TestComponent) parentComponent.getChildren().toList().get(0))
-                        .getValue());
-        // Slotted child preserved
-        assertEquals("footer",
-                parentComponent.getElement().getChild(1).getAttribute("slot"));
+        // Verify DOM indices: "second" at 0, slotted at 1
+        Element parent = parentComponent.getElement();
+        assertEquals(2, parent.getChildCount());
+        assertEquals("second", parent.getChild(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("footer", parent.getChild(1).getAttribute("slot"));
     }
 
     private TestLayout prepareTestLayout(ListSignal<String> listSignal) {

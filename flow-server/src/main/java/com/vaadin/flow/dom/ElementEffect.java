@@ -275,7 +275,7 @@ public final class ElementEffect implements Serializable {
             BindChildrenEffectContext<T, S> context) {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
-                .parentChildrenToLinkedList();
+                .parentDefaultSlotChildrenList();
         // Cache the children in a HashSet for O(1) lookups and removals
         HashSet<Element> remainingChildrenSet = new HashSet<>(
                 remainingChildren);
@@ -301,7 +301,7 @@ public final class ElementEffect implements Serializable {
      */
     private static <T extends @Nullable Object, S extends Signal<T>> void validate(
             BindChildrenEffectContext<T, S> context) {
-        LinkedList<Element> children = context.parentChildrenToLinkedList();
+        LinkedList<Element> children = context.parentDefaultSlotChildrenList();
         int index = 0;
         for (Element actualElement : children) {
             if (index >= context.childSignalsList.size()) {
@@ -471,7 +471,7 @@ public final class ElementEffect implements Serializable {
             return actualIndex;
         }
 
-        private LinkedList<Element> parentChildrenToLinkedList() {
+        private LinkedList<Element> parentDefaultSlotChildrenList() {
             return parentElement.getChildren()
                     .filter(child -> child.getAttribute("slot") == null)
                     .collect(Collectors.toCollection(LinkedList::new));
