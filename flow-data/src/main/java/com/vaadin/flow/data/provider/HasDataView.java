@@ -157,38 +157,15 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
             innerEffectRegistrations.forEach(Registration::remove);
             innerEffectRegistrations.clear();
 
-            // Extract current values from all inner signals
-            backingList.clear();
-            for (Signal<T> signal : currentSignals) {
-                T value = signal.peek();
-                backingList.add(value);
-            }
+            // Update the backing list with current signal values
+            updateBackingList(currentSignals, backingList);
 
             // Refresh all data
             dataView.refreshAll();
 
             // Set up new inner effects for each signal
-            for (int i = 0; i < currentSignals.size(); i++) {
-                Signal<T> itemSignal = currentSignals.get(i);
-                int index = i;
-
-                // Track whether this is the first run of the inner effect
-                AtomicBoolean isFirstRun = new AtomicBoolean(true);
-
-                Registration innerEffect = Signal.effect(component, () -> {
-                    T newValue = itemSignal.get();
-
-                    // Skip refreshItem on the first run since refreshAll was
-                    // just called
-                    if (!isFirstRun.get()) {
-                        backingList.set(index, newValue);
-                        dataView.refreshItem(newValue);
-                    }
-                    isFirstRun.set(false);
-                });
-
-                innerEffectRegistrations.add(innerEffect);
-            }
+            createInnerEffects(component, currentSignals, backingList, dataView,
+                    innerEffectRegistrations);
         });
 
         // Store the binding in SignalBindingFeature to track active binding
@@ -196,5 +173,56 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
                 itemsSignal);
 
         return dataView;
+    }
+
+    // Updates the backing list with current values from the item signals.
+    private static <T> void updateBackingList(
+            List<? extends Signal<T>> currentSignals, List<T> backingList) {
+        backingList.clear();
+        for (Signal<T> signal : currentSignals) {
+            T value = signal.peek();
+            backingList.add(value);
+        }
+    }
+
+    /*
+     * Creates inner effects for each item signal to track individual item
+     * changes.
+     */
+    private static <T, V extends DataView<T>> void createInnerEffects(
+            Component component, List<? extends Signal<T>> currentSignals,
+            List<T> backingList, V dataView,
+            List<Registration> innerEffectRegistrations) {
+        for (int i = 0; i < currentSignals.size(); i++) {
+            Signal<T> itemSignal = currentSignals.get(i);
+
+            Registration innerEffect = createItemEffect(component, itemSignal,
+                    i, backingList, dataView);
+
+            innerEffectRegistrations.add(innerEffect);
+        }
+    }
+
+    /*
+     * Creates an effect for a single item signal that updates the backing list
+     * and refreshes the item when it changes. Skips the first execution to
+     * avoid redundant refresh after refreshAll.
+     */
+    private static <T, V extends DataView<T>> Registration createItemEffect(
+            Component component, Signal<T> itemSignal, int index,
+            List<T> backingList, V dataView) {
+        // Track whether this is the first run of the effect
+        AtomicBoolean isFirstRun = new AtomicBoolean(true);
+        return Signal.effect(component, () -> {
+            T newValue = itemSignal.get();
+
+            // Skip refreshItem on the first run since refreshAll was just
+            // called
+            if (!isFirstRun.get()) {
+                backingList.set(index, newValue);
+                dataView.refreshItem(newValue);
+            }
+            isFirstRun.set(false);
+        });
     }
 }
