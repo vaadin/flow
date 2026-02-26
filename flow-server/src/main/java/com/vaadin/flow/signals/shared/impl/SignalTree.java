@@ -429,6 +429,10 @@ public abstract class SignalTree implements Serializable {
     private void writeObject(java.io.ObjectOutputStream out)
             throws IOException {
         if (this instanceof AsynchronousSignalTree) {
+            // Throwing here instead of throwing from AsynchronousSignalTree to
+            // avoid possible ConcurrentModificationException due to fields in
+            // SignalTree may be accessed before
+            // AsynchronousSignalTree.writeObject is reached while serializing.
             throw new NotSerializableException(
                     "Shared Signal is a shared object that cannot be serialized: "
                             + "it is tied to a specific runtime environment and would "
