@@ -16,6 +16,13 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * An interface for components that get items from the generic data provider
@@ -70,4 +77,98 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      * @return DataView instance
      */
     V getGenericDataView();
+
+    /**
+     * Binds a signal containing a list of item signals to this component,
+     * enabling fine-grained reactive updates. This method establishes a
+     * reactive binding where:
+     * <ul>
+     * <li>Changes to the outer signal (list structure changes such as adding or
+     * removing items) trigger {@link DataView#refreshAll()}</li>
+     * <li>Changes to any inner signal (individual item value changes) trigger
+     * {@link DataView#refreshItem(Object)} for that specific item</li>
+     * </ul>
+     * <p>
+     * The binding is automatically managed based on the component's lifecycle.
+     * When the component is attached, the effects are activated; when detached,
+     * they are deactivated.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * ListSignal&lt;String&gt; items = new ListSignal&lt;&gt;();
+     * items.insertLast("Item 1");
+     * items.insertLast("Item 2");
+     *
+     * component.bindItems(items);
+     *
+     * // Structural change - triggers refreshAll()
+     * items.insertLast("Item 3");
+     *
+     * // Item value change - triggers refreshItem()
+     * items.peek().get(0).set("Updated Item 1");
+     * </pre>
+     *
+     * @param itemsSignal
+     *            the signal containing a list of item signals (e.g.,
+     *            ListSignal), not {@code null}
+     * @return the DataView providing access to the items
+     * @throws IllegalArgumentException
+     *             if this is not a Component instance
+     */
+    default V bindItems(
+            Signal<? extends List<? extends Signal<T>>> itemsSignal) {
+        Objects.requireNonNull(itemsSignal, "Items signal cannot be null");
+
+        if (!(this instanceof Component component)) {
+            throw new IllegalArgumentException(
+                    "bindItems can only be used with Component instances");
+        }
+
+        // Create a mutable backing list for the data provider
+        List<T> backingList = new ArrayList<>(
+                Objects.requireNonNull(itemsSignal.peek()).size());
+
+        // Create and set the data provider
+        V dataView = setItems(DataProvider.ofCollection(backingList));
+
+        // List to store inner effect registrations
+        List<Registration> innerEffectRegistrations = new ArrayList<>();
+
+        // Outer effect: tracks changes to the list structure
+        Signal.effect(component, () -> {
+            List<? extends Signal<T>> currentSignals = Objects
+                    .requireNonNull(itemsSignal.get());
+
+            // Dispose old inner effects
+            innerEffectRegistrations.forEach(Registration::remove);
+            innerEffectRegistrations.clear();
+
+            // Extract current values from all inner signals
+            backingList.clear();
+            for (Signal<T> signal : currentSignals) {
+                T value = signal.peek();
+                backingList.add(value);
+            }
+
+            // Refresh all data
+            dataView.refreshAll();
+
+            // Set up new inner effects for each signal
+            for (int i = 0; i < currentSignals.size(); i++) {
+                Signal<T> itemSignal = currentSignals.get(i);
+                int index = i;
+
+                Registration innerEffect = Signal.effect(component, () -> {
+                    T newValue = itemSignal.get();
+                    backingList.set(index, newValue);
+                    dataView.refreshItem(newValue);
+                });
+
+                innerEffectRegistrations.add(innerEffect);
+            }
+        });
+
+        return dataView;
+    }
 }
