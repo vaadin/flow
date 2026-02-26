@@ -4442,7 +4442,7 @@ public class Binder<BEAN> implements Serializable {
      *
      * @return the binder validation status signal
      */
-    public Signal<BinderValidationStatus<BEAN>> getValidationStatus() {
+    public Signal<BinderValidationStatus<BEAN>> validationStatusSignal() {
         if (binderValidationStatusSignal == null) {
             binderValidationStatusSignal = new ValueSignal<>(validate(false));
         }
