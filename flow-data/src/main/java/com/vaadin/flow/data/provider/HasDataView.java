@@ -177,12 +177,11 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
 
                 Registration innerEffect = Signal.effect(component, () -> {
                     T newValue = itemSignal.get();
-                    backingList.set(index, newValue);
 
                     // Skip refreshItem on the first run since refreshAll was
-                    // just
-                    // called
+                    // just called
                     if (!isFirstRun.get()) {
+                        backingList.set(index, newValue);
                         dataView.refreshItem(newValue);
                     }
                     isFirstRun.set(false);
