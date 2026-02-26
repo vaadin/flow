@@ -299,6 +299,79 @@ class HasComponentsTest {
     }
 
     @Test
+    public void bindChildren_addSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        // signal child + slotted child
+        assertEquals(2, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_removeSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        // Add a slotted child before binding
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        // Remove slotted child - should succeed
+        container.remove(slotted);
+
+        // Only signal child remains
+        assertEquals(1, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_parentHasOnlySlottedChildren_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+
+        // Should not throw even though container has a child
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+    }
+
+    @Test
+    public void bindChildren_removeAllThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        assertThrows(BindingActiveException.class, () -> container.removeAll(),
+                "removeAll should throw while binding is active");
+    }
+
+    @Test
     public void bindChildren_addThrowsWhileBindingActive() {
         CurrentInstance.clearAll();
         TestComponent container = new TestComponent();
