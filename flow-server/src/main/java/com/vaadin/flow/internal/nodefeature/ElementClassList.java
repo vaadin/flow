@@ -95,11 +95,12 @@ public class ElementClassList extends SerializableNodeList<String> {
                         + "' is already bound to a signal");
             }
 
-            ElementEffect.bind(Element.get(getNode()), signal,
+            com.vaadin.flow.dom.SignalBinding<?> binding = ElementEffect.bind(
+                    Element.get(getNode()), signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
-            feature.setBinding(SignalBindingFeature.CLASSES + name, null,
-                    signal);
+            feature.setBinding(SignalBindingFeature.CLASSES + name,
+                    binding.getEffectRegistration(), signal);
         }
 
         @Override

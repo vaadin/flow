@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -101,10 +102,12 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "Theme name '" + name + "' is already bound to a signal");
         }
 
-        ElementEffect.bind(Element.get(element.getNode()), signal,
+        SignalBinding<?> binding = ElementEffect.bind(
+                Element.get(element.getNode()), signal,
                 (element, value) -> internalSetPresence(name,
                         Boolean.TRUE.equals(value)));
-        feature.setBinding(SignalBindingFeature.THEMES + name, null, signal);
+        feature.setBinding(SignalBindingFeature.THEMES + name,
+                binding.getEffectRegistration(), signal);
     }
 
     private void internalSetPresence(String name, boolean set) {

@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Represents an active binding between a signal and an element property (text,
@@ -45,11 +46,35 @@ import com.vaadin.flow.function.SerializableConsumer;
 public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
     private final List<SerializableConsumer<BindingContext<T>>> changeCallbacks = new ArrayList<>();
+    private transient Registration effectRegistration;
 
     /**
      * Creates a new signal binding.
      */
     SignalBinding() {
+    }
+
+    /**
+     * Sets the registration that controls the lifecycle of the underlying
+     * effect.
+     *
+     * @param registration
+     *            the registration to set
+     */
+    void setEffectRegistration(Registration registration) {
+        this.effectRegistration = registration;
+    }
+
+    /**
+     * Gets the registration that controls the lifecycle of the underlying
+     * effect. Removing the registration stops the effect from running.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the effect registration, or {@code null} if not set
+     */
+    public Registration getEffectRegistration() {
+        return effectRegistration;
     }
 
     /**

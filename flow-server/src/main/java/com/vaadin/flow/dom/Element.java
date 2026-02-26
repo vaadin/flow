@@ -1368,7 +1368,7 @@ public class Element extends Node<Element> {
 
         SignalBinding<String> binding = ElementEffect.bind(this, signal,
                 (element, value) -> setTextContent(value));
-        feature.setBinding(null, signal);
+        feature.setBinding(binding.getEffectRegistration(), signal);
         return binding;
     }
 
@@ -1906,7 +1906,8 @@ public class Element extends Node<Element> {
 
         SignalBinding<Boolean> binding = ElementEffect.bind(this, enabledSignal,
                 (element, value) -> setEnabledInternal(value));
-        feature.setBinding(SignalBindingFeature.ENABLED, null, enabledSignal);
+        feature.setBinding(SignalBindingFeature.ENABLED,
+                binding.getEffectRegistration(), enabledSignal);
         return binding;
     }
 

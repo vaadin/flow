@@ -185,7 +185,7 @@ public final class ElementEffect implements Serializable {
         SignalBinding<T> binding = new SignalBinding<>();
         @SuppressWarnings("unchecked")
         T[] previousValue = (T[]) new Object[] { signal.peek() };
-        new ElementEffect(owner, ctx -> {
+        ElementEffect effect = new ElementEffect(owner, ctx -> {
             T newValue = signal.get();
             T oldValue = previousValue[0];
             setter.accept(owner, newValue);
@@ -193,6 +193,7 @@ public final class ElementEffect implements Serializable {
                     oldValue, newValue, owner));
             previousValue[0] = newValue;
         });
+        binding.setEffectRegistration(effect::close);
         return binding;
     }
 

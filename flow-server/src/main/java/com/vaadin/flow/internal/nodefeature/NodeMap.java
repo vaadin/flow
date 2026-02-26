@@ -585,8 +585,8 @@ public abstract class NodeMap extends NodeFeature {
 
         com.vaadin.flow.dom.SignalBinding<T> domBinding = ElementEffect
                 .bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, null, get(key), writeCallback),
-                false);
+        put(key, new SignalBinding(signal, domBinding.getEffectRegistration(),
+                get(key), writeCallback), false);
         return domBinding;
     }
 
