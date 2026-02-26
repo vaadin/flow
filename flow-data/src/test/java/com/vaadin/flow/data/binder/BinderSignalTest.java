@@ -901,6 +901,37 @@ public class BinderSignalTest extends SignalsUnitTest {
         testInitialStatusChangeRunEffects(item -> binder.readBean(item));
     }
 
+    @Test
+    public void bindingValue_multipleValueSignalCalls_revalidateTriggeredForEach() {
+        item.setFirstName("Alice");
+        item.setLastName("Smith");
+
+        AtomicInteger validatorCalls = new AtomicInteger(0);
+
+        UI.getCurrent().add(firstNameField, lastNameField);
+        var lastNameBinding = binder.forField(lastNameField).bind("lastName");
+        binder.forField(firstNameField).withValidator((String value) -> {
+            validatorCalls.incrementAndGet();
+            return !value.isEmpty()
+                    // multiple calls to same valueSignal()
+                    && !lastNameBinding.valueSignal().get().isEmpty()
+                    && !lastNameBinding.valueSignal().get().isEmpty();
+        }, "First and last name are required").bind("firstName");
+
+        binder.setBean(item);
+
+        assertEquals(2, validatorCalls.get());
+
+        assertTrue(binder.isValid());
+
+        assertEquals(3, validatorCalls.get());
+
+        lastNameField.setValue("");
+        // value change runs revalidation for both Signal.get() calls in the
+        // validator
+        assertEquals(5, validatorCalls.get());
+    }
+
     private void testInitialStatusChangeRunEffects(
             Consumer<Person> binderSetup) {
         item.setFirstName("");
