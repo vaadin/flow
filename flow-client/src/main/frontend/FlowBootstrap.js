@@ -54,9 +54,6 @@ const init = function (appInitResponse) {
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-  /*
-   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
-   */
   window.Vaadin.Flow.flashClass = function (element, className) {
     element.classList.remove(className);
     void element.offsetWidth;
@@ -78,6 +75,9 @@ const init = function (appInitResponse) {
     });
   };
 
+  /*
+   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+   */
   window.Vaadin.Flow.tryCatchWrapper = function (originalFunction, component) {
     return function () {
       try {
