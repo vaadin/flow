@@ -1512,7 +1512,7 @@ public class Binder<BEAN> implements Serializable {
 
         private transient Registration signalRegistration;
 
-        private transient ValueSignal<TARGET> valueSignal;
+        private transient ValueSignal<TARGET> bindingValueSignal;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1613,7 +1613,7 @@ public class Binder<BEAN> implements Serializable {
                 signalRegistration = null;
             }
 
-            valueSignal = null;
+            bindingValueSignal = null;
 
             field = null;
         }
@@ -1764,12 +1764,12 @@ public class Binder<BEAN> implements Serializable {
                 removeFromChangedBindingsIfReverted(
                         getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
-                if (valueSignal != null) {
+                if (bindingValueSignal != null) {
                     // Update the value signal with the new field value
                     // This automatically triggers re-validation of validators
                     // that depend on this binding's value
                     HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
-                    valueSignal.set(field.getValue());
+                    bindingValueSignal.set(field.getValue());
                 }
             }
         }
@@ -1828,10 +1828,10 @@ public class Binder<BEAN> implements Serializable {
                 try {
                     field.setValue(convertedValue);
                     initialValue = modelValue;
-                    if (valueSignal != null) {
+                    if (bindingValueSignal != null) {
                         // Update the value signal when field value is set from
                         // bean
-                        valueSignal.set(modelValue);
+                        bindingValueSignal.set(modelValue);
                     }
                 } catch (RuntimeException e) {
                     /*
@@ -2009,11 +2009,11 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public ValueSignal<TARGET> valueSignal() {
-            if (valueSignal == null) {
+            if (bindingValueSignal == null) {
                 HasValue<?, TARGET> field = (HasValue<?, TARGET>) getField();
-                valueSignal = new ValueSignal<>(field.getValue());
+                bindingValueSignal = new ValueSignal<>(field.getValue());
             }
-            return valueSignal;
+            return bindingValueSignal;
         }
 
     }
