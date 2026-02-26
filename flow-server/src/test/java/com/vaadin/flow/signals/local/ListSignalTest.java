@@ -16,11 +16,13 @@
 package com.vaadin.flow.signals.local;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -38,7 +40,7 @@ public class ListSignalTest extends SignalTestBase {
     void constructor_empty_emptyList() {
         ListSignal<String> signal = new ListSignal<>();
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = signal.peek();
 
         assertTrue(value.isEmpty());
     }
@@ -49,7 +51,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertFirst("first");
 
-        assertEquals("first", entry.get());
+        assertEquals("first", entry.peek());
         assertValues(signal, "first");
     }
 
@@ -69,7 +71,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("last");
 
-        assertEquals("last", entry.get());
+        assertEquals("last", entry.peek());
         assertValues(signal, "last");
     }
 
@@ -91,7 +93,7 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertAt(1, "middle");
 
-        assertEquals("middle", entry.get());
+        assertEquals("middle", entry.peek());
         assertValues(signal, "first", "middle", "last");
     }
 
@@ -138,9 +140,9 @@ public class ListSignalTest extends SignalTestBase {
 
         ValueSignal<String> entry = signal.insertLast("value");
 
-        assertEquals("value", entry.get());
+        assertEquals("value", entry.peek());
         entry.set("updated");
-        assertEquals("updated", entry.get());
+        assertEquals("updated", entry.peek());
     }
 
     @Test
@@ -167,6 +169,118 @@ public class ListSignalTest extends SignalTestBase {
     }
 
     @Test
+    void moveTo_forward_entryMovedToLaterIndex() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+        signal.insertLast("c");
+
+        signal.moveTo(a, 2);
+
+        assertValues(signal, "b", "c", "a");
+    }
+
+    @Test
+    void moveTo_backward_entryMovedToEarlierIndex() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        signal.insertLast("b");
+        ValueSignal<String> c = signal.insertLast("c");
+
+        signal.moveTo(c, 0);
+
+        assertValues(signal, "c", "a", "b");
+    }
+
+    @Test
+    void moveTo_preservesSignalIdentity() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> b = signal.insertLast("b");
+        signal.insertLast("c");
+
+        signal.moveTo(b, 0);
+
+        assertSame(b, signal.peek().get(0));
+    }
+
+    @Test
+    void moveTo_entryNotInList_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> other = new ValueSignal<>("other");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> signal.moveTo(other, 0));
+    }
+
+    @Test
+    void moveTo_sameIndex_noOp() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("a");
+        ValueSignal<String> b = signal.insertLast("b");
+        signal.insertLast("c");
+
+        AtomicBoolean changed = new AtomicBoolean(false);
+        Usage usage = UsageTracker.track(signal::get);
+        usage.onNextChange(initial -> {
+            changed.set(true);
+            return false;
+        });
+
+        signal.moveTo(b, 1);
+
+        assertFalse(changed.get());
+        assertValues(signal, "a", "b", "c");
+    }
+
+    @Test
+    void moveTo_negativeIndex_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.moveTo(a, -1));
+    }
+
+    @Test
+    void moveTo_indexEqualToSize_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> signal.moveTo(a, 2));
+    }
+
+    @Test
+    void moveTo_insideExplicitTransaction_throwsException() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> entry = signal.insertLast("value");
+
+        assertThrows(IllegalStateException.class, () -> {
+            Transaction.runInTransaction(() -> {
+                signal.moveTo(entry, 0);
+            });
+        });
+    }
+
+    @Test
+    void usageTracker_moveTo_changeDetected() {
+        ListSignal<String> signal = new ListSignal<>();
+        ValueSignal<String> a = signal.insertLast("a");
+        signal.insertLast("b");
+
+        Usage usage = UsageTracker.track(signal::get);
+
+        assertFalse(usage.hasChanges());
+
+        signal.moveTo(a, 1);
+
+        assertTrue(usage.hasChanges());
+    }
+
+    @Test
     void clear_listWithEntries_listCleared() {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("a");
@@ -175,7 +289,7 @@ public class ListSignalTest extends SignalTestBase {
 
         signal.clear();
 
-        assertTrue(signal.get().isEmpty());
+        assertTrue(signal.peek().isEmpty());
     }
 
     @Test
@@ -183,7 +297,7 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("value");
 
-        List<ValueSignal<String>> value = signal.get();
+        List<ValueSignal<String>> value = signal.peek();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new ValueSignal<>("new"));
@@ -207,12 +321,12 @@ public class ListSignalTest extends SignalTestBase {
         ListSignal<String> signal = new ListSignal<>();
         signal.insertLast("first");
 
-        List<ValueSignal<String>> snapshot = signal.get();
+        List<ValueSignal<String>> snapshot = signal.peek();
 
         signal.insertFirst("second");
 
         assertEquals(1, snapshot.size());
-        assertEquals("first", snapshot.get(0).get());
+        assertEquals("first", snapshot.get(0).peek());
     }
 
     @Test
@@ -467,10 +581,106 @@ public class ListSignalTest extends SignalTestBase {
         });
     }
 
+    @Test
+    void internalValueSignalSet_equalObjects_noChangeDetected() {
+        ListSignal<MutableUniquePerson> signal = new ListSignal<>();
+
+        var person = new MutableUniquePerson(1L, "Alice");
+        ValueSignal<MutableUniquePerson> valueSignal = signal
+                .insertLast(person);
+
+        Usage usage = UsageTracker.track(valueSignal::get);
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        person.setName("Alice Updated");
+        // Set the same person instance again - should not trigger change since
+        // equals() is based on ID
+        valueSignal.set(person);
+
+        assertFalse(usage.hasChanges());
+        assertFalse(invoked.get());
+    }
+
+    @Test
+    void internalValueSignalSet_customEqualityChecker_changeDetected() {
+        // Equality checker that returns always false
+        SerializableBiPredicate<MutableUniquePerson, MutableUniquePerson> equalityChecker = (
+                a, b) -> false;
+
+        ListSignal<MutableUniquePerson> signal = new ListSignal<>(
+                equalityChecker);
+
+        var person = new MutableUniquePerson(1L, "Alice");
+        ValueSignal<MutableUniquePerson> valueSignal = signal
+                .insertLast(person);
+
+        Usage usage = UsageTracker.track(valueSignal::get);
+
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        usage.onNextChange(initial -> {
+            assertFalse(initial);
+            invoked.set(true);
+            return false;
+        });
+
+        person.setName("Alice Updated");
+        // Since equality checker returns always false, this should trigger a
+        // change even though it's the same instance
+        valueSignal.set(person);
+
+        assertTrue(usage.hasChanges());
+        assertTrue(invoked.get());
+    }
+
     private static void assertValues(ListSignal<String> signal,
             String... expectedValues) {
-        List<String> values = signal.get().stream().map(ValueSignal::get)
+        List<String> values = signal.peek().stream().map(ValueSignal::peek)
                 .toList();
         assertEquals(List.of(expectedValues), values);
+    }
+
+    static class MutableUniquePerson {
+        private Long id;
+        private String name;
+
+        MutableUniquePerson(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass())
+                return false;
+            MutableUniquePerson that = (MutableUniquePerson) o;
+            return Objects.equals(getId(), that.getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(getId());
+        }
     }
 }

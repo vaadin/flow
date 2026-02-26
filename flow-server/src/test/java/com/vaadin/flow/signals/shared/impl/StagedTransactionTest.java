@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.Id;
@@ -173,7 +174,9 @@ public class StagedTransactionTest {
             assertNull(h2.result);
         });
 
+        assertNotNull(h1.result);
         assertTrue(h1.result.accepted());
+        assertNotNull(h2.result);
         assertTrue(h2.result.accepted());
 
         assertTrue(operation.result().isDone());
@@ -204,7 +207,9 @@ public class StagedTransactionTest {
             assertNull(h2.result);
         });
 
+        assertNotNull(h1.result);
         assertFalse(h1.result.accepted());
+        assertNotNull(h2.result);
         assertFalse(h2.result.accepted());
 
         assertTrue(operation.result().isDone());
@@ -234,6 +239,7 @@ public class StagedTransactionTest {
 
         tree.confirmSubmitted();
 
+        assertNotNull(handler.result);
         assertTrue(handler.result.accepted());
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
@@ -267,6 +273,7 @@ public class StagedTransactionTest {
 
         tree.confirmSubmitted();
 
+        assertNotNull(h1.result);
         assertFalse(h1.result.accepted());
         assertFalse(h1.result.accepted());
         assertTrue(operation.result().isDone());
@@ -362,8 +369,9 @@ public class StagedTransactionTest {
         });
 
         assertTrue(operation.result().get().successful());
-        assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).asString());
+        var confirmedValue = TestUtil.readConfirmedRootValue(tree);
+        assertNotNull(confirmedValue);
+        assertEquals("update", confirmedValue.asString());
     }
 
     @Test
@@ -386,14 +394,16 @@ public class StagedTransactionTest {
                         TestUtil.writeRootValueCommand("expected"), null);
             }, Type.WRITE_THROUGH);
 
-            assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).asString(),
+            var transactionValue = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue);
+            assertEquals("update", transactionValue.asString(),
                     "Should take inner transaction changes into account");
         });
 
         assertTrue(operation.result().get().successful());
-        assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).asString());
+        var confirmedValue = TestUtil.readConfirmedRootValue(tree);
+        assertNotNull(confirmedValue);
+        assertEquals("update", confirmedValue.asString());
     }
 
     @Test
@@ -411,13 +421,15 @@ public class StagedTransactionTest {
             tree.commitSingleCommand(
                     TestUtil.writeRootValueCommand("unexpected"));
 
-            assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).asString());
+            var transactionValue = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue);
+            assertEquals("update", transactionValue.asString());
         });
 
         assertFalse(operation.result().get().successful());
-        assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).asString());
+        var confirmedValue = TestUtil.readConfirmedRootValue(tree);
+        assertNotNull(confirmedValue);
+        assertEquals("unexpected", confirmedValue.asString());
     }
 
     @Test
@@ -437,13 +449,15 @@ public class StagedTransactionTest {
                         TestUtil.writeRootValueCommand("unexpected"), null);
             }, Type.WRITE_THROUGH);
 
-            assertEquals("unexpected",
-                    TestUtil.readTransactionRootValue(tree).asString());
+            var transactionValue = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue);
+            assertEquals("unexpected", transactionValue.asString());
         });
 
         assertFalse(operation.result().get().successful());
-        assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).asString());
+        var confirmedValue = TestUtil.readConfirmedRootValue(tree);
+        assertNotNull(confirmedValue);
+        assertEquals("unexpected", confirmedValue.asString());
     }
 
     @Test
@@ -464,8 +478,9 @@ public class StagedTransactionTest {
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
 
-        assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).asString());
+        var submittedValue = TestUtil.readSubmittedRootValue(tree);
+        assertNotNull(submittedValue);
+        assertEquals("update", submittedValue.asString());
 
         tree.confirmSubmitted();
 
@@ -485,13 +500,15 @@ public class StagedTransactionTest {
                     TestUtil.writeRootValueCommand("update"), null);
         });
 
-        assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).asString());
+        var submittedValue = TestUtil.readSubmittedRootValue(tree);
+        assertNotNull(submittedValue);
+        assertEquals("update", submittedValue.asString());
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("unexpected")));
 
-        assertEquals("unexpected",
-                TestUtil.readSubmittedRootValue(tree).asString());
+        var submittedValueAfterConfirm = TestUtil.readSubmittedRootValue(tree);
+        assertNotNull(submittedValueAfterConfirm);
+        assertEquals("unexpected", submittedValueAfterConfirm.asString());
 
         tree.confirmSubmitted();
 
@@ -522,7 +539,9 @@ public class StagedTransactionTest {
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("observer"), null);
 
-            String value = TestUtil.readTransactionRootValue(tree).asString();
+            var transactionValue = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue);
+            String value = transactionValue.asString();
             valueInObserver.set(value);
 
             return false;
@@ -534,8 +553,9 @@ public class StagedTransactionTest {
         });
 
         assertEquals("observer", valueInObserver.get());
-        assertEquals("observer",
-                TestUtil.readConfirmedRootValue(tree).asString());
+        var confirmedValue = TestUtil.readConfirmedRootValue(tree);
+        assertNotNull(confirmedValue);
+        assertEquals("observer", confirmedValue.asString());
     }
 
     @Test
@@ -610,6 +630,35 @@ public class StagedTransactionTest {
                 TestUtil.readTransactionRootValue(a1);
             });
         });
+    }
+
+    @Test
+    void commit_withRepeatableReadFallback_changeObserverSeesUpdatedValue() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        Transaction fallback = Transaction.createWriteThrough();
+        Transaction.setTransactionFallback(() -> fallback);
+
+        try {
+            AtomicReference<JsonNode> valueInObserver = new AtomicReference<>();
+
+            tree.observeNextChange(Id.ZERO, immediate -> {
+                var transactionValue = TestUtil.readTransactionRootValue(tree);
+                assertNotNull(transactionValue);
+                valueInObserver.set(transactionValue);
+                return false;
+            });
+
+            Transaction.runInTransaction(() -> {
+                Transaction.getCurrent().include(tree,
+                        TestUtil.writeRootValueCommand("updated"), null);
+            });
+
+            assertNotNull(valueInObserver.get(),
+                    "Change observer should see updated value via outer transaction");
+        } finally {
+            Transaction.setTransactionFallback(null);
+        }
     }
 
     @Test

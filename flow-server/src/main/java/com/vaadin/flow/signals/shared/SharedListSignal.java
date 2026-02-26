@@ -34,8 +34,8 @@ import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a list of values. Supports atomic updates to the list
@@ -46,7 +46,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedListSignal<T>
+public class SharedListSignal<T extends @Nullable Object>
         extends AbstractSignal<@NonNull List<SharedValueSignal<T>>> {
 
     /**
@@ -158,7 +158,7 @@ public class SharedListSignal<T>
      *            the element type, not <code>null</code>
      */
     public SharedListSignal(Class<T> elementType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
 

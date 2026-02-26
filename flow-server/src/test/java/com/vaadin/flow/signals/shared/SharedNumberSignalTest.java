@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.operations.SignalOperation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SharedNumberSignalTest extends SignalTestBase {
@@ -36,14 +37,14 @@ public class SharedNumberSignalTest extends SignalTestBase {
     void constructor_noArgs_zeroValue() {
         SharedNumberSignal signal = new SharedNumberSignal();
 
-        assertEquals(0, signal.get());
+        assertEquals(0, signal.peek());
     }
 
     @Test
     void constructor_initialValue_initialValue() {
         SharedNumberSignal signal = new SharedNumberSignal(42);
 
-        assertEquals(42, signal.get());
+        assertEquals(42, signal.peek());
     }
 
     @Test
@@ -55,24 +56,25 @@ public class SharedNumberSignalTest extends SignalTestBase {
 
             Signal.runWithoutTransaction(() -> {
                 signal.incrementBy(2);
-                assertEquals(2, signal.get());
+                assertEquals(2, signal.peek());
             });
             assertEquals(1, signal.get());
 
             return operationInner;
         }).returnValue();
 
-        assertEquals(3, signal.get());
+        assertEquals(3, signal.peek());
 
+        assertNotNull(operation);
         Double result = TestUtil.assertSuccess(operation);
         assertEquals(3, result);
     }
 
     @Test
-    void valueAsInt_decimalValue_valueIsTruncated() {
+    void getAsInt_decimalValue_valueIsTruncated() {
         SharedNumberSignal signal = new SharedNumberSignal(2.718);
-
-        assertEquals(2, signal.valueAsInt());
+        assertEquals(2,
+                Signal.runInTransaction(() -> signal.getAsInt()).returnValue());
     }
 
     @Test
@@ -81,7 +83,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
 
         signal.set(2);
 
-        assertEquals(2, signal.get());
+        assertEquals(2, signal.peek());
     }
 
     @Test
@@ -117,10 +119,10 @@ public class SharedNumberSignalTest extends SignalTestBase {
         SharedNumberSignal signal = new SharedNumberSignal();
 
         Signal<Integer> doubled = signal.mapIntValue(value -> value * 2);
-        assertEquals(0, doubled.get());
+        assertEquals(0, doubled.peek());
 
         signal.set(5);
-        assertEquals(10, doubled.get());
+        assertEquals(10, doubled.peek());
     }
 
     @Test
@@ -152,13 +154,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
     }
 
     @Test
-    void get_returnsZeroAfterSetNull() {
-        SharedNumberSignal signal = new SharedNumberSignal();
-        signal.set(null);
-        assertEquals(0.0, signal.get());
-    }
-
-    @Test
+    @SuppressWarnings("NullAway")
     void peek_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
         signal.set(null);
@@ -166,6 +162,7 @@ public class SharedNumberSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void peekConfirmed_returnsZeroAfterSetNull() {
         SharedNumberSignal signal = new SharedNumberSignal();
         signal.set(null);

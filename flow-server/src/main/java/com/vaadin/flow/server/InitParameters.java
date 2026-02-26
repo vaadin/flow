@@ -295,4 +295,10 @@ public class InitParameters implements Serializable {
      */
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
 
+    /**
+     * Configuration name for enabling browserless mode (e.g. for UI unit
+     * tests). When enabled, dev server related warnings are suppressed.
+     */
+    public static final String BROWSERLESS = "browserless";
+
 }

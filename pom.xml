@@ -85,7 +85,7 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.2</spring.boot.version>
+    <spring.boot.version>4.0.3</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
@@ -99,8 +99,8 @@
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-    <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
-    <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
+    <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
+    <maven.failsafe.plugin.version>3.5.5</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>

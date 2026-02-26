@@ -164,7 +164,8 @@ public class ScannerDependenciesTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        DepsTests.assertImportCount(9, deps.getModules());
+        DepsTests.assertImportCount(8 + DepsTests.UI_IMPORTS.size(),
+                deps.getModules());
         assertEquals(1, deps.getPackages().size());
         DepsTests.assertImportCount(6, deps.getScripts());
         assertEquals(1, deps.getAssets().size());

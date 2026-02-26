@@ -127,7 +127,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *
      * @return the signal value as an integer
      */
-    public int valueAsInt() {
+    public int getAsInt() {
         return get().intValue();
     }
 
@@ -175,7 +175,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
         /*
          * While this method could semantically be declared to return a less
          * specific type that doesn't provide mutator methods, that would also
-         * remove access to e.g. the valueAsInt method.
+         * remove access to e.g. the getAsInt method.
          */
         return withValidator(anything -> false);
     }
@@ -193,12 +193,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      * @return the computed signal, not <code>null</code>
      */
     public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
-        return map(doubleValue -> {
-            if (doubleValue == null) {
-                return null;
-            }
-            return mapper.apply(doubleValue.intValue());
-        });
+        return map(doubleValue -> mapper.apply(doubleValue.intValue()));
     }
 
     @Override

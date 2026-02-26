@@ -168,3 +168,6 @@ Components extend `Component` and use:
 - Extensive CI/CD pipeline with multiple test configurations
 - When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
 - When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
+- Don't add @since to javadocs
+- When adding unit tests, add only the essential ones and not more than that
+- Use test: instead of fix: when fixing only tests

@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 
 /**
  * A functional interface for validating user input or other potentially invalid
@@ -202,6 +203,8 @@ public interface Validator<T>
                     return ValidationResult.create(
                             errorMessageProvider.apply(context), errorLevel);
                 }
+            } catch (DeniedSignalUsageException e) {
+                throw e;
             } catch (Exception e) {
                 LoggerFactory.getLogger(Validator.class.getName())
                         .info("An exception is thrown during validation", e);
