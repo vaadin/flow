@@ -24,24 +24,29 @@ class EffectContextTest {
 
     @Test
     void isInitialRun_returnsValueFromConstructor() {
-        EffectContext initial = new EffectContext(true);
+        EffectContext initial = new EffectContext(true, false);
         assertTrue(initial.isInitialRun());
 
-        EffectContext subsequent = new EffectContext(false);
+        EffectContext subsequent = new EffectContext(false, false);
         assertFalse(subsequent.isInitialRun());
     }
 
     @Test
     void isBackgroundChange_falseOnInitialRun() {
-        EffectContext ctx = new EffectContext(true);
+        EffectContext ctx = new EffectContext(true, true);
         assertFalse(ctx.isBackgroundChange(),
-                "Initial run should never be a background change");
+                "Initial run should never be a background change even if invalidated from background");
     }
 
     @Test
-    void isBackgroundChange_trueWhenNotInitialAndNoRequest() {
-        // No VaadinRequest is active in tests, so non-initial = background
-        EffectContext ctx = new EffectContext(false);
+    void isBackgroundChange_trueWhenNotInitialAndInvalidatedFromBackground() {
+        EffectContext ctx = new EffectContext(false, true);
         assertTrue(ctx.isBackgroundChange());
+    }
+
+    @Test
+    void isBackgroundChange_falseWhenNotInitialAndInvalidatedFromRequest() {
+        EffectContext ctx = new EffectContext(false, false);
+        assertFalse(ctx.isBackgroundChange());
     }
 }

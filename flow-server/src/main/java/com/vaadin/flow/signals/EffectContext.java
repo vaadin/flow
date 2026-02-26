@@ -17,8 +17,6 @@ package com.vaadin.flow.signals;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.server.VaadinRequest;
-
 /**
  * Provides context information about why a signal effect is running. This
  * allows effect callbacks to distinguish between the initial execution, updates
@@ -39,15 +37,20 @@ import com.vaadin.flow.server.VaadinRequest;
 public class EffectContext implements Serializable {
 
     private final boolean initialRun;
+    private final boolean backgroundChange;
 
     /**
      * Creates a new effect context.
      *
      * @param initialRun
      *            whether this is the first execution of the effect
+     * @param backgroundChange
+     *            whether the invalidation that triggered this execution
+     *            happened outside a user request context
      */
-    public EffectContext(boolean initialRun) {
+    public EffectContext(boolean initialRun, boolean backgroundChange) {
         this.initialRun = initialRun;
+        this.backgroundChange = backgroundChange;
     }
 
     /**
@@ -85,6 +88,6 @@ public class EffectContext implements Serializable {
      *         otherwise
      */
     public boolean isBackgroundChange() {
-        return !initialRun && VaadinRequest.getCurrent() == null;
+        return !initialRun && backgroundChange;
     }
 }

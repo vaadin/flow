@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.MissingSignalUsageException;
@@ -53,6 +54,7 @@ public class Effect implements Serializable {
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
     private boolean firstRun = true;
+    private volatile boolean invalidatedFromBackground = false;
 
     /**
      * Creates a signal effect with the given action and the default dispatcher.
@@ -122,8 +124,10 @@ public class Effect implements Serializable {
         assert action != null;
         this.action = () -> {
             try {
-                EffectContext ctx = new EffectContext(firstRun);
+                EffectContext ctx = new EffectContext(firstRun,
+                        invalidatedFromBackground);
                 firstRun = false;
+                invalidatedFromBackground = false;
                 action.accept(ctx);
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
@@ -193,6 +197,7 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
+        invalidatedFromBackground = VaadinRequest.getCurrent() == null;
         scheduleInvalidate();
         return false;
     }

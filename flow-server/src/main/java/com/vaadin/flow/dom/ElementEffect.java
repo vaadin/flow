@@ -128,14 +128,33 @@ public final class ElementEffect implements Serializable {
      * The effect is enabled when the element is attached and automatically
      * disabled when it is detached. The effect action receives an
      * {@link EffectContext} providing information about why the effect is
-     * running.
+     * running, allowing the callback to distinguish between the initial
+     * execution, updates triggered by user requests, and updates triggered by
+     * background changes (such as server push or another user modifying a
+     * shared signal).
+     * <p>
+     * Example of usage:
      *
+     * <pre>
+     * Registration effect = ElementEffect.effect(myElement, ctx -&gt; {
+     *     span.setText("$" + priceSignal.get());
+     *     if (ctx.isBackgroundChange()) {
+     *         span.getElement().executeJs("this.classList.add('highlight')");
+     *     }
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @see Signal#unboundEffect(EffectAction)
+     * @see EffectContext#isInitialRun()
+     * @see EffectContext#isBackgroundChange()
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
      * @param effectFunction
-     *            the context-aware effect function, must not be
-     *            <code>null</code>
+     *            the context-aware effect function to be executed when any
+     *            dependency is changed, receiving an {@link EffectContext} with
+     *            information about the trigger, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      */
