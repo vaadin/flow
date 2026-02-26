@@ -1,0 +1,4 @@
+Bundle-Name: Flow Component Sampler
+Bundle-SymbolicName: com.vaadin.flow.tests.sampler
+Bundle-Version: 1.0.0
+-sources: false
