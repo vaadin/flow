@@ -253,12 +253,10 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
         // Outer signal change
         itemsSignal.insertLast("Item 2");
         assertEquals(1, dataView.getRefreshAllCount());
-        // Note: After the outer signal change, new inner effects are created
-        // and
-        // immediately
-        // execute, causing refreshItem to be called for all items (2 more
-        // calls)
-        assertEquals(3, dataView.getRefreshedItems().size());
+        // After refreshAll, inner effects should not call refreshItem on
+        // initial
+        // setup
+        assertEquals(1, dataView.getRefreshedItems().size());
 
         // Get the updated reference to item1Signal after list structure change
         // using peek()
@@ -267,7 +265,7 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
         // Another inner signal change
         item1Signal.set("Updated Again");
         assertEquals(1, dataView.getRefreshAllCount());
-        assertEquals(4, dataView.getRefreshedItems().size());
+        assertEquals(2, dataView.getRefreshedItems().size());
     }
 
     @Test
@@ -319,6 +317,25 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
 
         assertThrows(NullPointerException.class,
                 () -> component.bindItems(null));
+    }
+
+    @Test
+    public void bindItems_alreadyBound_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+
+        // First binding should succeed
+        component.bindItems(itemsSignal);
+
+        // Second binding should throw BindingActiveException
+        ListSignal<String> secondSignal = new ListSignal<>();
+        secondSignal.insertLast("Item 2");
+
+        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
+                () -> component.bindItems(secondSignal));
     }
 
     @Test

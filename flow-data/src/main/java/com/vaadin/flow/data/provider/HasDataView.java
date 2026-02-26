@@ -19,9 +19,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -115,6 +118,8 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      * @return the DataView providing access to the items
      * @throws IllegalArgumentException
      *             if this is not a Component instance
+     * @throws BindingActiveException
+     *             if there is already an active items binding
      */
     default V bindItems(
             Signal<? extends List<? extends Signal<T>>> itemsSignal) {
@@ -123,6 +128,14 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
         if (!(this instanceof Component component)) {
             throw new IllegalArgumentException(
                     "bindItems can only be used with Component instances");
+        }
+
+        // Check if there's already an active binding
+        SignalBindingFeature bindingFeature = component.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        if (bindingFeature.hasBinding(SignalBindingFeature.ITEMS)) {
+            throw new BindingActiveException(
+                    "Cannot bind items: a binding is already active");
         }
 
         // Create a mutable backing list for the data provider
@@ -136,7 +149,7 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
         List<Registration> innerEffectRegistrations = new ArrayList<>();
 
         // Outer effect: tracks changes to the list structure
-        Signal.effect(component, () -> {
+        Registration outerEffect = Signal.effect(component, () -> {
             List<? extends Signal<T>> currentSignals = Objects
                     .requireNonNull(itemsSignal.get());
 
@@ -159,15 +172,29 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
                 Signal<T> itemSignal = currentSignals.get(i);
                 int index = i;
 
+                // Track whether this is the first run of the inner effect
+                AtomicBoolean isFirstRun = new AtomicBoolean(true);
+
                 Registration innerEffect = Signal.effect(component, () -> {
                     T newValue = itemSignal.get();
                     backingList.set(index, newValue);
-                    dataView.refreshItem(newValue);
+
+                    // Skip refreshItem on the first run since refreshAll was
+                    // just
+                    // called
+                    if (!isFirstRun.get()) {
+                        dataView.refreshItem(newValue);
+                    }
+                    isFirstRun.set(false);
                 });
 
                 innerEffectRegistrations.add(innerEffect);
             }
         });
+
+        // Store the binding in SignalBindingFeature to track active binding
+        bindingFeature.setBinding(SignalBindingFeature.ITEMS, outerEffect,
+                itemsSignal);
 
         return dataView;
     }
