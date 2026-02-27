@@ -38,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -74,7 +75,7 @@ import com.vaadin.flow.signals.shared.SharedValueSignal;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class VaadinSession implements HttpSessionBindingListener, Serializable {
+public class VaadinSession implements HttpSessionBindingListener, Serializable, AccessSupport {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
     private static final Logger LOGGER = LoggerFactory
@@ -126,7 +127,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * session is serialized as long as it doesn't happen while some other
      * thread has the lock.
      */
-    private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
+    private transient ConcurrentLinkedQueue<AbstractFutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
     /*
      * This token should be handled with care since it's used to protect against
@@ -629,6 +630,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         sessionLockCheckStrategy.checkHasLock(this, message);
     }
 
+
+    @Override
+    public void runPendingAccessTasks() {
+        getService().runPendingAccessTasks(this);
+    }
+
+
+    @Override
+    public void ensureAccessQueuePurged() {
+        getService().ensureAccessQueuePurged(this);
+    }
+
+
     /**
      * Potentially checks whether this session is currently locked by the
      * current thread, and fails with a standard error message if not.
@@ -782,6 +796,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
              */
             if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
                 ultimateRelease = true;
+                // Run pending accesses from session
                 getService().runPendingAccessTasks(this);
 
                 for (UI ui : getUIs()) {
@@ -790,7 +805,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
                                 .setCurrent(ui);
                         try {
-                            ui.push();
+                            ui.accessSynchronously(()->{});
                         } finally {
                             CurrentInstance.restoreInstances(oldCurrent);
                         }
@@ -857,8 +872,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #setAttribute(String, Object)
      */
     public <T> void setAttribute(Class<T> type, T value) {
-        checkHasLock();
-        attributes.setAttribute(type, value);
+        this.accessSynchronously(() -> attributes.setAttribute(type, value));
     }
 
     /**
@@ -873,8 +887,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #setAttribute(String, Object)
      */
     public Object getAttribute(String name) {
-        checkHasLock();
-        return attributes.getAttribute(name);
+        AtomicReference<Object> o = new AtomicReference<>();
+        this.accessSynchronously(() -> o.set(attributes.getAttribute(name)));
+        return o.get();
     }
 
     /**
@@ -898,8 +913,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #getAttribute(String)
      */
     public <T> T getAttribute(Class<T> type) {
-        checkHasLock();
-        return attributes.getAttribute(type);
+        AtomicReference<T> o = new AtomicReference<>();
+        this.accessSynchronously(() -> o.set(attributes.getAttribute(type)));
+        return o.get();
     }
 
     /**
@@ -1097,7 +1113,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return the queue of pending access tasks
      */
-    public Queue<FutureAccess> getPendingAccessQueue() {
+    public Queue<AbstractFutureAccess> getPendingAccessQueue() {
         return pendingAccessQueue;
     }
 
