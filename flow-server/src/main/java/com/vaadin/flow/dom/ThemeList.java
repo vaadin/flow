@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.signals.Signal;
@@ -71,6 +72,34 @@ public interface ThemeList extends Set<String>, Serializable {
      * @since 25.1
      */
     default void bind(String name, Signal<Boolean> signal) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Binds the theme names to the provided signal so that the theme list is
+     * dynamically updated to match the signal's value. Only one group binding
+     * is allowed per theme list.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings. Names that appear in both sources may appear as duplicates in
+     * the {@code theme} attribute.
+     * <p>
+     * Null or empty entries in the list and a {@code null} list value are
+     * silently ignored.
+     * <p>
+     * Bulk operations that indiscriminately replace or clear the theme list
+     * (for example {@link #clear()} or setting the {@code theme} attribute via
+     * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) clear
+     * the group binding.
+     *
+     * @param names
+     *            the signal providing the list of theme names, not {@code null}
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing group binding
+     * @since 25.1
+     */
+    default void bind(Signal<List<String>> names) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     }
