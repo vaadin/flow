@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -10,8 +10,7 @@ package com.vaadin.flow.component;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -19,7 +18,12 @@ import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
 
     private static final String TEMPLATE = " <template>  <div id='name'>{{name}}</div> </template>";
 
@@ -28,70 +32,70 @@ public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
     }
 
     @Test
-    public void disableTemplateIdMappedComponentsOnTemplateDisabled() {
+    void disableTemplateIdMappedComponentsOnTemplateDisabled() {
         Template template = new Template();
         template.setEnabled(false);
         getUI().add(template);
 
-        Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                template.getName().getElement().getAttribute("disabled"));
+        assertFalse(template.isEnabled(), "Template should be disabled");
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertNotNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been added");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been added");
 
         template.setEnabled(true);
 
-        Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertTrue("NameField should be enabled.",
-                template.getName().isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNull("Attribute should have been removed",
-                template.getName().getElement().getAttribute("disabled"));
+        assertTrue(template.isEnabled(), "Template should be enabled");
+        assertTrue(template.getName().isEnabled(),
+                "NameField should be enabled.");
+        assertNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been removed");
+        assertNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been removed");
     }
 
     @Test
-    public void templateIdMappedComponentDisabledStaysDisabled() {
+    void templateIdMappedComponentDisabledStaysDisabled() {
 
         Template template = new Template();
         template.getName().setEnabled(false);
         getUI().add(template);
 
-        Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertNull("Attribute should not exist",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should not exist",
-                template.getName().getElement().getAttribute("disabled"));
+        assertTrue(template.isEnabled(), "Template should be enabled");
+        assertNull(template.getElement().getAttribute("disabled"),
+                "Attribute should not exist");
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should not exist");
 
         template.setEnabled(false);
 
-        Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                template.getName().getElement().getAttribute("disabled"));
+        assertFalse(template.isEnabled(), "Template should be disabled");
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertNotNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been added");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been added");
 
         template.setEnabled(true);
 
-        Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
+        assertTrue(template.isEnabled(), "Template should be enabled");
+        assertNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been removed");
 
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getName().getElement().getAttribute("disabled"));
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been added");
 
     }
 
     @Test
-    public void templatIdComponentChildrenGetEnabledCorrectly() {
+    void templatIdComponentChildrenGetEnabledCorrectly() {
         EnabledDiv child = new EnabledDiv();
 
         Template template = new Template();
@@ -99,46 +103,43 @@ public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
 
         getUI().add(template);
 
-        Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertTrue("NameField should be enabled.",
-                template.getName().isEnabled());
-        Assert.assertTrue("NameField child should be enabled.",
-                child.isEnabled());
-        Assert.assertNull("Attribute should not exist",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNull("Attribute should not exist",
-                template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNull("Attribute should not exist",
-                child.getElement().getAttribute("disabled"));
+        assertTrue(template.isEnabled(), "Template should be enabled");
+        assertTrue(template.getName().isEnabled(),
+                "NameField should be enabled.");
+        assertTrue(child.isEnabled(), "NameField child should be enabled.");
+        assertNull(template.getElement().getAttribute("disabled"),
+                "Attribute should not exist");
+        assertNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should not exist");
+        assertNull(child.getElement().getAttribute("disabled"),
+                "Attribute should not exist");
 
         template.setEnabled(false);
 
-        Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertFalse("NameField child should be disabled.",
-                child.isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                child.getElement().getAttribute("disabled"));
+        assertFalse(template.isEnabled(), "Template should be disabled");
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertFalse(child.isEnabled(), "NameField child should be disabled.");
+        assertNotNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been added");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been added");
+        assertNotNull(child.getElement().getAttribute("disabled"),
+                "Attribute should have been added");
 
         template.setEnabled(true);
         template.getName().setEnabled(false);
 
-        Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertFalse("NameField child should be disabled.",
-                child.isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                child.getElement().getAttribute("disabled"));
+        assertTrue(template.isEnabled(), "Template should be enabled");
+        assertFalse(template.getName().isEnabled(),
+                "NameField should be disabled.");
+        assertFalse(child.isEnabled(), "NameField child should be disabled.");
+        assertNull(template.getElement().getAttribute("disabled"),
+                "Attribute should have been removed");
+        assertNotNull(template.getName().getElement().getAttribute("disabled"),
+                "Attribute should have been added");
+        assertNotNull(child.getElement().getAttribute("disabled"),
+                "Attribute should have been added");
 
     }
 

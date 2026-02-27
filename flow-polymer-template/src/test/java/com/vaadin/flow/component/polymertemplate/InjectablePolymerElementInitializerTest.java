@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -10,8 +10,7 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Collections;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
@@ -19,7 +18,12 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class InjectablePolymerElementInitializerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InjectablePolymerElementInitializerTest {
 
     private Element element = ElementFactory.createDiv();
 
@@ -27,100 +31,99 @@ public class InjectablePolymerElementInitializerTest {
             element, Component.class);
 
     @Test
-    public void initializeElement_setId_idIsSetAsAttribute() {
+    void initializeElement_setId_idIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("id", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("id"));
+        assertEquals("foo", element.getAttribute("id"));
     }
 
     @Test
-    public void initializeElement_setTheme_themeIsSetAsAttribute() {
+    void initializeElement_setTheme_themeIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("theme", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("theme"));
+        assertEquals("foo", element.getAttribute("theme"));
     }
 
     @Test
-    public void initializeElement_setHref_hrefIsSetAsAttribute() {
+    void initializeElement_setHref_hrefIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("href", "foo"));
 
-        Assert.assertEquals("foo", element.getAttribute("href"));
+        assertEquals("foo", element.getAttribute("href"));
     }
 
     @Test
-    public void initializeElement_setAttributeBinding_attributeIsIgnored() {
+    void initializeElement_setAttributeBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("class$", "foo"));
 
-        Assert.assertFalse(element.hasAttribute("class"));
-        Assert.assertFalse(element.hasAttribute("class$"));
-        Assert.assertFalse(element.hasProperty("class"));
-        Assert.assertFalse(element.hasProperty("class$"));
+        assertFalse(element.hasAttribute("class"));
+        assertFalse(element.hasAttribute("class$"));
+        assertFalse(element.hasProperty("class"));
+        assertFalse(element.hasProperty("class$"));
     }
 
     @Test
-    public void initializeElement_setPropertyBinding_attributeIsIgnored() {
+    void initializeElement_setPropertyBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("foo", "[[bar]]"));
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasProperty("foo"));
     }
 
     @Test
-    public void initializeElement_setDynamicValue_attributeIsIgnored() {
+    void initializeElement_setDynamicValue_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("foo", "${bar}"));
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasProperty("foo"));
     }
 
     @Test
-    public void initializeElement_setPropertyTwoWayBinding_attributeIsIgnored() {
+    void initializeElement_setPropertyTwoWayBinding_attributeIsIgnored() {
         initializer.accept(Collections.singletonMap("foo", "{{bar}}"));
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertFalse(element.hasProperty("foo"));
+        assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.hasProperty("foo"));
     }
 
     @Test
-    public void initializeElement_setOtherTemplateAttribute_attributeIsSetAsProperty() {
+    void initializeElement_setOtherTemplateAttribute_attributeIsSetAsProperty() {
         initializer.accept(Collections.singletonMap("foo", "bar"));
 
-        Assert.assertEquals("bar", element.getProperty("foo"));
-        Assert.assertNull(element.getAttribute("foo"));
+        assertEquals("bar", element.getProperty("foo"));
+        assertNull(element.getAttribute("foo"));
     }
 
     @Test
-    public void initializeElement_setClass_classIsSetAsAttribute() {
+    void initializeElement_setClass_classIsSetAsAttribute() {
         initializer.accept(Collections.singletonMap("class", "foo bar"));
 
-        Assert.assertEquals("foo bar", element.getAttribute("class"));
+        assertEquals("foo bar", element.getAttribute("class"));
 
         TestComponent comp = new TestComponent(element);
-        Assert.assertEquals("foo bar", comp.getClassName());
-        Assert.assertTrue(comp.getClassNames().contains("foo"));
+        assertEquals("foo bar", comp.getClassName());
+        assertTrue(comp.getClassNames().contains("foo"));
     }
 
     @Test
-    public void initializeElement_setStyle_styleIsSetAsAttribute() {
+    void initializeElement_setStyle_styleIsSetAsAttribute() {
         initializer.accept(
                 Collections.singletonMap("style", "width:100px;height:50px"));
 
-        Assert.assertEquals("width:100px;height:50px",
-                element.getAttribute("style"));
+        assertEquals("width:100px;height:50px", element.getAttribute("style"));
 
         TestComponent comp = new TestComponent(element);
-        Assert.assertEquals("100px", comp.getStyle().get("width"));
-        Assert.assertEquals("50px", comp.getStyle().get("height"));
+        assertEquals("100px", comp.getStyle().get("width"));
+        assertEquals("50px", comp.getStyle().get("height"));
     }
 
     @Test
-    public void initializeElement_disabled_elementIsEnabledContainsProperty() {
+    void initializeElement_disabled_elementIsEnabledContainsProperty() {
         initializer.accept(
                 Collections.singletonMap("disabled", Boolean.TRUE.toString()));
 
-        Assert.assertTrue("Element should stay enabled", element.isEnabled());
-        Assert.assertTrue("Disabled should show as a property",
-                element.hasProperty("disabled"));
+        assertTrue(element.isEnabled(), "Element should stay enabled");
+        assertTrue(element.hasProperty("disabled"),
+                "Disabled should show as a property");
     }
 
     @Tag(Tag.DIV)

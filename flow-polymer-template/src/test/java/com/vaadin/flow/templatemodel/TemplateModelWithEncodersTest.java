@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -16,8 +16,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
@@ -27,10 +26,12 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
-public class TemplateModelWithEncodersTest extends HasCurrentService {
+class TemplateModelWithEncodersTest extends HasCurrentService {
 
     public static class TemplateWithEncoders extends
             EmptyDivTemplate<TemplateWithEncoders.TemplateModelWithEncoders> {
@@ -358,7 +359,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return stringValue;
         }
 
-        public void setStringValue(String stringValue) {
+        void setStringValue(String stringValue) {
             this.stringValue = stringValue;
         }
     }
@@ -380,7 +381,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return longValue;
         }
 
-        public void setLongValue(long longValue) {
+        void setLongValue(long longValue) {
             this.longValue = longValue;
         }
 
@@ -389,7 +390,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return date;
         }
 
-        public void setDate(Date date) {
+        void setDate(Date date) {
             this.date = date;
         }
     }
@@ -410,7 +411,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return longValue;
         }
 
-        public void setLongValue(long longValue) {
+        void setLongValue(long longValue) {
             this.longValue = longValue;
         }
     }
@@ -434,7 +435,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return day;
         }
 
-        public void setDay(int day) {
+        void setDay(int day) {
             this.day = day;
         }
 
@@ -443,7 +444,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return month;
         }
 
-        public void setMonth(int month) {
+        void setMonth(int month) {
             this.month = month;
         }
 
@@ -452,7 +453,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             return year;
         }
 
-        public void setYear(int year) {
+        void setYear(int year) {
             this.year = year;
         }
     }
@@ -554,14 +555,14 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     }
 
     @Test
-    public void unsupported_primitive_type_to_basic_type_encoder() {
+    void unsupported_primitive_type_to_basic_type_encoder() {
         TemplateWithEncoders template = new TemplateWithEncoders();
         template.getModel().setLongValue(10L);
         assertEquals(10L, template.getModel().getLongValue());
     }
 
     @Test
-    public void bean_to_basic_type_encoder() {
+    void bean_to_basic_type_encoder() {
         TemplateWithEncoders template = new TemplateWithEncoders();
         Date date = new Date();
         template.getModel().setDate(date);
@@ -569,7 +570,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     }
 
     @Test
-    public void bean_to_bean_encoder() {
+    void bean_to_bean_encoder() {
         TemplateWithEncoders template = new TemplateWithEncoders();
         Date date = new Date();
         template.getModel().setDateString(date);
@@ -577,14 +578,14 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     }
 
     @Test
-    public void basic_type_to_bean_encoder() {
+    void basic_type_to_bean_encoder() {
         TemplateWithEncoders template = new TemplateWithEncoders();
         template.getModel().setString("string to bean");
         assertEquals("string to bean", template.getModel().getString());
     }
 
     @Test
-    public void bean_with_multiple_encoders() {
+    void bean_with_multiple_encoders() {
         TemplateWithEncoders template = new TemplateWithEncoders();
         Date date = new Date();
         TestBean bean = new TestBean(10L, date);
@@ -594,21 +595,21 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     }
 
     @Test
-    public void encoder_on_encoded_type() {
+    void encoder_on_encoded_type() {
         TemplateWithEncoderOnEncodedType template = new TemplateWithEncoderOnEncodedType();
         template.getModel().setLongValue(10L);
         assertEquals(10L, template.getModel().getLongValue());
     }
 
     @Test
-    public void Encoder_on_bean_with_read_only_property() {
+    void Encoder_on_bean_with_read_only_property() {
         TemplateWithEncodedReadOnlyBean template = new TemplateWithEncodedReadOnlyBean();
         template.getModel().setReadOnlyBean(new ReadOnlyBean());
         assertEquals(0L, template.getModel().getReadOnlyBean().getId());
     }
 
     @Test
-    public void encode_date_to_datebean() {
+    void encode_date_to_datebean() {
         // DateBean strips time information
         Date date = new Date();
         Calendar calendar = new GregorianCalendar();
@@ -625,7 +626,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     }
 
     @Test
-    public void encode_on_list_of_beans() {
+    void encode_on_list_of_beans() {
         Date date = new Date();
         List<TestBean> testBeans = Collections
                 .singletonList(new TestBean(0L, date));
@@ -636,36 +637,40 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         assertEquals(date, template.getModel().getTestBeans().get(0).getDate());
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
-    public void incompatible_Encoder_throws() {
-        new TemplateWithIncompatibleEncoder();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void parameterized_type_encoding_throws() {
-        new TemplateWithEncoderOnParameterizedType();
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void multiple_encoders_for_same_path_throws() {
-        new TemplateWithSamePathInEncoders();
-    }
-
-    @Test(expected = InvalidTemplateModelException.class)
-    public void unsupported_model_type_in_encoder() {
-        new TemplateWithUnsupportedEncoderModel();
+    @Test
+    void incompatible_Encoder_throws() {
+        assertThrows(InvalidTemplateModelException.class,
+                () -> new TemplateWithIncompatibleEncoder());
     }
 
     @Test
-    public void encodeDateToBean_noExceptions() {
+    void parameterized_type_encoding_throws() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> new TemplateWithEncoderOnParameterizedType());
+    }
+
+    @Test
+    void multiple_encoders_for_same_path_throws() {
+        assertThrows(RuntimeException.class,
+                () -> new TemplateWithSamePathInEncoders());
+    }
+
+    @Test
+    void unsupported_model_type_in_encoder() {
+        assertThrows(InvalidTemplateModelException.class,
+                () -> new TemplateWithUnsupportedEncoderModel());
+    }
+
+    @Test
+    void encodeDateToBean_noExceptions() {
         TemplateWithEncoders template = new TemplateWithEncoders();
 
         Date date = template.getModel().getDateString();
-        Assert.assertNull(date);
+        assertNull(date);
     }
 
     @Test
-    public void encodersOnGetters_noExceptions() {
+    void encodersOnGetters_noExceptions() {
         EncodersOnGetters template = new EncodersOnGetters();
         EncodersOnGetters.Model model = template.getModel();
 
@@ -687,21 +692,24 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         assertEquals(bean.getDate(), model.getTestBean().getDate());
     }
 
-    @Test(expected = InvalidTemplateModelException.class)
-    public void sameEncodersOnAllMethods_notAllowed() {
-        new SameEncodersOnAllMethods();
+    @Test
+    void sameEncodersOnAllMethods_notAllowed() {
+        assertThrows(InvalidTemplateModelException.class,
+                () -> new SameEncodersOnAllMethods());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void brokenModelType_throws() {
-        TemplateWithDate template = new TemplateWithDate();
+    @Test
+    void brokenModelType_throws() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            TemplateWithDate template = new TemplateWithDate();
 
-        StateNode node = template.getElement().getNode();
+            StateNode node = template.getElement().getNode();
 
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
-                .resolveModelMap("date");
+            ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
+                    .resolveModelMap("date");
 
-        map.setProperty("day", "foo");
-        template.getModel().getDate();
+            map.setProperty("day", "foo");
+            template.getModel().getDate();
+        });
     }
 }

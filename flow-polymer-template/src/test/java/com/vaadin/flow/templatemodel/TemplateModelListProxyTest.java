@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -8,15 +8,15 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class TemplateModelListProxyTest {
+class TemplateModelListProxyTest {
 
     private static class ClassWithDefaultConstructor {
         private String field;
@@ -25,7 +25,7 @@ public class TemplateModelListProxyTest {
             return field;
         }
 
-        public void setField(String field) {
+        void setField(String field) {
             this.field = field;
         }
     }
@@ -41,13 +41,13 @@ public class TemplateModelListProxyTest {
             return field;
         }
 
-        public void setField(String field) {
+        void setField(String field) {
             this.field = field;
         }
     }
 
     @Test
-    public void clear_noDefaultConstructor() {
+    void clear_noDefaultConstructor() {
         TemplateModelListProxy<ClassWithoutDefaultConstructor> list = createModelListProxy(
                 ClassWithoutDefaultConstructor.class);
         list.add(new ClassWithoutDefaultConstructor("one"));
@@ -57,7 +57,7 @@ public class TemplateModelListProxyTest {
     }
 
     @Test
-    public void clear_defaultConstructor() {
+    void clear_defaultConstructor() {
         TemplateModelListProxy<ClassWithDefaultConstructor> list = createModelListProxy(
                 ClassWithDefaultConstructor.class);
         ClassWithDefaultConstructor one = new ClassWithDefaultConstructor();
@@ -74,7 +74,7 @@ public class TemplateModelListProxyTest {
     private static void assertListClearedNormally(
             TemplateModelListProxy<?> list) {
         list.clear();
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "List should be of size 0, since we've called clear()",
                 list.size(), is(0));
     }
