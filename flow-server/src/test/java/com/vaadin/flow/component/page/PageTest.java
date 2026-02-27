@@ -464,11 +464,52 @@ class PageTest {
         // Set up ExtendedClientDetails with color scheme
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
                 null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, "dark", null);
+                null, null, null, null, null, "dark", null, null);
         mockUI.getInternals().setExtendedClientDetails(details);
 
         Page page = new Page(mockUI);
         assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
+    }
+
+    @Test
+    public void share_passesCorrectJsAndParameters() {
+        MockUI mockUI = new MockUI();
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, "true");
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        TestPage sharePage = new TestPage(mockUI);
+        sharePage.share("My Title", "Some text", "https://example.com");
+
+        assertEquals("return navigator.share({title: $0, text: $1, url: $2})",
+                sharePage.expression);
+        assertEquals("My Title", sharePage.firstParam);
+    }
+
+    @Test
+    public void share_throwsWhenNotSupported() {
+        MockUI mockUI = new MockUI();
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, "false");
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page sharePage = new Page(mockUI);
+        assertThrows(UnsupportedOperationException.class,
+                () -> sharePage.share("title", "text", "url"));
+    }
+
+    @Test
+    public void isShareSupported_delegatesToExtendedClientDetails() {
+        MockUI mockUI = new MockUI();
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, "true");
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI);
+        assertTrue(page.isShareSupported());
     }
 
     @Test
@@ -477,7 +518,7 @@ class PageTest {
         // Set up ExtendedClientDetails
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
                 null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null);
         mockUI.getInternals().setExtendedClientDetails(details);
 
         Page page = new Page(mockUI) {

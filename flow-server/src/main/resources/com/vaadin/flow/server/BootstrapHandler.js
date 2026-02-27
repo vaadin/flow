@@ -250,7 +250,10 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       if(navigator.platform) {
         params['v-np'] = navigator.platform;
       }
-      
+
+      /* Web Share API support */
+      params['v-ns'] = !!navigator.share;
+
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function(key) {
         var value = params[key];
