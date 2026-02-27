@@ -16,14 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -123,106 +117,8 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      */
     default V bindItems(
             Signal<? extends List<? extends Signal<T>>> itemsSignal) {
-        Objects.requireNonNull(itemsSignal, "Items signal cannot be null");
-
-        if (!(this instanceof Component component)) {
-            throw new IllegalArgumentException(
-                    "bindItems can only be used with Component instances");
-        }
-
-        // Check if there's already an active binding
-        SignalBindingFeature bindingFeature = component.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        if (bindingFeature.hasBinding(SignalBindingFeature.ITEMS)) {
-            throw new BindingActiveException(
-                    "Cannot bind items: a binding is already active");
-        }
-
-        // Create a mutable backing list for the data provider
-        List<T> backingList = new ArrayList<>(
-                Objects.requireNonNull(itemsSignal.peek()).size());
-
-        // Create and set the data provider
-        V dataView = setItems(DataProvider.ofCollection(backingList));
-
-        // List to store inner effect registrations
-        List<Registration> innerEffectRegistrations = new ArrayList<>();
-
-        // Outer effect: tracks changes to the list structure
-        Registration outerEffect = Signal.effect(component, () -> {
-            List<? extends Signal<T>> currentSignals = Objects
-                    .requireNonNull(itemsSignal.get());
-
-            // Dispose old inner effects
-            innerEffectRegistrations.forEach(Registration::remove);
-            innerEffectRegistrations.clear();
-
-            // Update the backing list with current signal values
-            updateBackingList(currentSignals, backingList);
-
-            // Refresh all data
-            dataView.refreshAll();
-
-            // Set up new inner effects for each signal
-            createInnerEffects(component, currentSignals, backingList, dataView,
-                    innerEffectRegistrations);
-        });
-
-        // Store the binding in SignalBindingFeature to track active binding
-        bindingFeature.setBinding(SignalBindingFeature.ITEMS, outerEffect,
-                itemsSignal);
-
-        return dataView;
-    }
-
-    // Updates the backing list with current values from the item signals.
-    private static <T> void updateBackingList(
-            List<? extends Signal<T>> currentSignals, List<T> backingList) {
-        backingList.clear();
-        for (Signal<T> signal : currentSignals) {
-            T value = signal.peek();
-            backingList.add(value);
-        }
-    }
-
-    /*
-     * Creates inner effects for each item signal to track individual item
-     * changes.
-     */
-    private static <T, V extends DataView<T>> void createInnerEffects(
-            Component component, List<? extends Signal<T>> currentSignals,
-            List<T> backingList, V dataView,
-            List<Registration> innerEffectRegistrations) {
-        for (int i = 0; i < currentSignals.size(); i++) {
-            Signal<T> itemSignal = currentSignals.get(i);
-
-            Registration innerEffect = createItemEffect(component, itemSignal,
-                    i, backingList, dataView);
-
-            innerEffectRegistrations.add(innerEffect);
-        }
-    }
-
-    /*
-     * Creates an effect for a single item signal that updates the backing list
-     * and refreshes the item when it changes. Skips the first execution to
-     * avoid redundant refresh after refreshAll.
-     */
-    private static <T, V extends DataView<T>> Registration createItemEffect(
-            Component component, Signal<T> itemSignal, int index,
-            List<T> backingList, V dataView) {
-        // Track whether this is the first run of the effect
-        AtomicBoolean isFirstRun = new AtomicBoolean(true);
-        return Signal.effect(component, () -> {
-            T newValue = itemSignal.get();
-
-            // Skip refreshItem on the first run since refreshAll was just
-            // called
-            if (!isFirstRun.get()) {
-                backingList.set(index, newValue);
-                dataView.refreshItem(newValue);
-            }
-            isFirstRun.set(false);
-        });
+        return DataViewUtils.bindItems(this, itemsSignal,
+                backingList -> setItems(
+                        DataProvider.ofCollection(backingList)));
     }
 }
