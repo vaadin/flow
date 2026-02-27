@@ -25,9 +25,12 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 
 /**
@@ -49,6 +52,9 @@ public class Effect implements Serializable {
     private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
+
+    private boolean firstRun = true;
+    private volatile boolean invalidatedFromBackground = false;
 
     /**
      * Creates a signal effect with the given action and the default dispatcher.
@@ -80,10 +86,48 @@ public class Effect implements Serializable {
      *            <code>null</code>
      */
     public Effect(EffectAction action, SerializableExecutor dispatcher) {
+        this((ContextualEffectAction) ctx -> action.execute(), dispatcher);
+    }
+
+    /**
+     * Creates a context-aware signal effect with the given action and the
+     * default dispatcher. The action receives an {@link EffectContext} that
+     * provides information about why the effect is running (initial render,
+     * user request, or background change).
+     *
+     * @see SignalEnvironment#getDefaultEffectDispatcher()
+     *
+     * @param action
+     *            the context-aware action to use, not <code>null</code>
+     */
+    public Effect(ContextualEffectAction action) {
+        this(action, SignalEnvironment.getDefaultEffectDispatcher()::execute);
+    }
+
+    /**
+     * Creates a context-aware signal effect with the given action and a custom
+     * dispatcher. The action receives an {@link EffectContext} that provides
+     * information about why the effect is running. The dispatcher can be used
+     * to make sure changes are evaluated asynchronously or with some specific
+     * context available. The action itself needs to be synchronous to be able
+     * to track changes.
+     *
+     * @param action
+     *            the context-aware action to use, not <code>null</code>
+     * @param dispatcher
+     *            the dispatcher to use when handling changes, not
+     *            <code>null</code>
+     */
+    public Effect(ContextualEffectAction action,
+            SerializableExecutor dispatcher) {
         assert action != null;
         this.action = () -> {
             try {
-                action.execute();
+                EffectContext ctx = new EffectContext(firstRun,
+                        invalidatedFromBackground);
+                firstRun = false;
+                invalidatedFromBackground = false;
+                action.execute(ctx);
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
@@ -152,6 +196,7 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
+        invalidatedFromBackground = VaadinRequest.getCurrent() == null;
         scheduleInvalidate();
         return false;
     }
