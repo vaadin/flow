@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.polymer2lit;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -22,30 +23,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ServerConverterTest {
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ServerConverterTest {
+    @TempDir
+    File tmpDir;
 
     private ServerConverter serverConverter;
 
-    @Before
-    public void init() throws IOException {
+    @BeforeEach
+    void init() throws IOException {
         serverConverter = new ServerConverter();
     }
 
     @Test
-    public void noModel() throws IOException {
+    void noModel() throws IOException {
         convertFile_outputFileMatchesExpectedOne("NoModel.java");
     }
 
     @Test
-    public void basicGettersSetters() throws IOException {
+    void basicGettersSetters() throws IOException {
         convertFile_outputFileMatchesExpectedOne("BasicGettersSetters.java");
     }
 
@@ -56,7 +57,8 @@ public class ServerConverterTest {
         InputStream expectedFileStream = getClass().getClassLoader()
                 .getResourceAsStream("server/expected/" + fileName);
 
-        Path tmpInputFilePath = tmpDir.newFile().toPath();
+        Path tmpInputFilePath = Files.createTempFile(tmpDir.toPath(), "tmp",
+                null);
         Files.copy(inputFileStream, tmpInputFilePath,
                 StandardCopyOption.REPLACE_EXISTING);
 
@@ -74,9 +76,7 @@ public class ServerConverterTest {
         //         actualContent, StandardCharsets.UTF_8);
         // @formatter:on
 
-        Assert.assertEquals(
-                "The output " + fileName
-                        + " file does not match the expected one.",
-                expectedContent, actualContent);
+        assertEquals(expectedContent, actualContent, "The output " + fileName
+                + " file does not match the expected one.");
     }
 }
