@@ -373,8 +373,10 @@ public abstract class VaadinService implements Serializable {
                         task.run();
                     } else {
                         try {
-                            getExecutor()
-                                    .execute(() -> owner.access(task::run));
+                            if (!owner.isClosing()) {
+                                getExecutor()
+                                        .execute(() -> owner.access(task::run));
+                            }
                         } catch (Exception e) {
                             // submitted when executor is shut down, ignore
                         }
