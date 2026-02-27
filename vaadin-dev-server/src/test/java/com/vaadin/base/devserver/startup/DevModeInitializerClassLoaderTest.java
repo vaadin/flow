@@ -22,18 +22,20 @@ import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.TestUtils;
 
-public class DevModeInitializerClassLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DevModeInitializerClassLoaderTest {
 
     @Test
-    @Ignore("mockito 3.0 does not use the instance classloader, probably because it uses bytebuddy, see https://github.com/vaadin/flow/issues/11071 and https://github.com/mockito/mockito/issues/2304")
-    public void should_loadResources_from_customClassLoader() throws Exception {
+    @Disabled("mockito 3.0 does not use the instance classloader, probably because it uses bytebuddy, see https://github.com/vaadin/flow/issues/11071 and https://github.com/mockito/mockito/issues/2304")
+    void should_loadResources_from_customClassLoader() throws Exception {
 
         // Get a list of all the URLs in the classPath
         List<URL> path = DevModeInitializerTestBase.getClasspathURLs();
@@ -72,20 +74,19 @@ public class DevModeInitializerClassLoaderTest {
         List<String> files = TestUtils.listFilesRecursively(Paths.get(baseDir,
                 FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED,
                 FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
-        Assert.assertEquals(5, files.size());
+        assertEquals(5, files.size());
 
-        Assert.assertTrue("A package.json file should be created",
-                files.contains("package.json"));
+        assertTrue(files.contains("package.json"),
+                "A package.json file should be created");
 
-        Assert.assertTrue("Js resource should have been copied from jar file",
-                files.contains("ExampleConnector.js"));
+        assertTrue(files.contains("ExampleConnector.js"),
+                "Js resource should have been copied from jar file");
 
-        Assert.assertTrue("Css resource should have been copied from jar file",
-                files.contains("inline.css"));
+        assertTrue(files.contains("inline.css"),
+                "Css resource should have been copied from jar file");
 
-        Assert.assertTrue(
-                "Js resource should have been copied from resource folder",
-                files.contains("resourceInFolder.js"));
+        assertTrue(files.contains("resourceInFolder.js"),
+                "Js resource should have been copied from resource folder");
     }
 
 }
