@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -53,6 +54,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class FlowClassesSerializableTest extends ClassesSerializableTest {
+
+    @AfterEach
+    public void cleanup() {
+        CurrentInstance.clearAll();
+    }
 
     /**
      * {@link HtmlComponent} and {@link HtmlContainer} are not covered by
@@ -166,7 +172,6 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
             assertNotNull(deserializedSession);
             assertNotSame(deserializedSession, session);
         } catch (Throwable e) {
-            CurrentInstance.clearAll();
             fail("SerializedLocalSignalComponent should be serializable: "
                     + e.getClass() + ": " + e.getMessage());
         }
@@ -219,7 +224,6 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertFalse(deserializedComponent.getElement().isVisible());
 
         deserializedSession.unlock();
-        CurrentInstance.clearAll();
     }
 
     @Test
@@ -241,13 +245,10 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         session.unlock(); // serialization happens for unlocked session
         try {
             serializeAndDeserialize(session);
-            CurrentInstance.clearAll();
             fail("Serialization should have failed because of shared signal");
         } catch (NotSerializableException e) {
             // OK, expected because shared signals are not serializable
-            CurrentInstance.clearAll();
         } catch (Throwable e) {
-            CurrentInstance.clearAll();
             fail("Expected NotSerializableException. Session serialization throws this instead: "
                     + e.getClass() + ": " + e.getMessage());
         }
@@ -305,7 +306,6 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         sessionB.unlock();
         try {
             serializeAndDeserialize(sessionA);
-            CurrentInstance.clearAll();
             fail("Serialization should have failed because of shared signal");
         } catch (NotSerializableException e) {
             // OK, expected because shared signals are not serializable
@@ -326,9 +326,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
                     .getSession()).writeObjectCallCount);
             assertEquals(0, ((MockVaadinSession) uiB
                     .getSession()).writeObjectCallCount);
-            CurrentInstance.clearAll();
         } catch (Throwable e) {
-            CurrentInstance.clearAll();
             fail("Expected NotSerializableException. Session serialization throws this instead: "
                     + e.getClass() + ": " + e.getMessage());
         }
