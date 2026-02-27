@@ -202,20 +202,22 @@ public class TreeDataProvider<T>
         }
 
         for (T child : children) {
+            boolean isExpanded = expandedItemIds.contains(getId(child));
             List<T> descendants = Collections.emptyList();
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
-                    || expandedItemIds.contains(getId(child))) {
+                    || isExpanded || combinedFilter.isPresent()) {
                 descendants = flatten(child, expandedItemIds, combinedFilter,
                         comparator);
             }
 
-            boolean shouldInclude = combinedFilter.map(f -> f.test(child))
-                    .orElse(true) || descendants.size() > 0;
-            if (shouldInclude) {
+            boolean matchesFilter = combinedFilter.map(f -> f.test(child))
+                    .orElse(true) || !descendants.isEmpty();
+            if (matchesFilter) {
                 result.add(child);
             }
-            if (shouldInclude
-                    && getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
+            if (matchesFilter
+                    && getHierarchyFormat().equals(HierarchyFormat.FLATTENED)
+                    && isExpanded) {
                 result.addAll(descendants);
             }
         }
