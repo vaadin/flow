@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
@@ -172,6 +173,40 @@ class ElementEffectTest {
         assertEquals(2, initialRuns.size());
         assertFalse(initialRuns.get(1),
                 "Subsequent execution should not be initial run");
+    }
+
+    @Test
+    public void contextAwareEffect_detectsBackgroundChange() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Signal.effect(ui, ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0),
+                "Initial run should not be a background change");
+
+        // Change signal with VaadinRequest present (simulates user request)
+        signal.set("from request");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with VaadinRequest should not be a background change");
+
+        // Clear VaadinRequest to simulate background change
+        CurrentInstance.set(VaadinRequest.class, null);
+
+        signal.set("from background");
+
+        assertEquals(3, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(2),
+                "Change without VaadinRequest should be a background change");
     }
 
     @Test

@@ -30,13 +30,13 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.impl.Effect;
 
@@ -55,18 +55,16 @@ import com.vaadin.flow.signals.impl.Effect;
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
-    private final SerializableConsumer<EffectContext> effectFunction;
+    private final ContextualEffectAction effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
-        this(owner, (SerializableConsumer<EffectContext>) ctx -> effectFunction
-                .execute());
+        this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
     }
 
-    public ElementEffect(Element owner,
-            SerializableConsumer<EffectContext> effectFunction) {
+    public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -129,9 +127,9 @@ public final class ElementEffect implements Serializable {
      * disabled when it is detached. The effect action receives an
      * {@link EffectContext} providing information about why the effect is
      * running, allowing the callback to distinguish between the initial
-     * execution, updates triggered by user requests, and updates triggered by
-     * background changes (such as server push or another user modifying a
-     * shared signal).
+     * execution, updates triggered by the effect owner's requests, and updates
+     * triggered by background changes (such as a background thread or another
+     * user modifying a shared signal).
      * <p>
      * Example of usage:
      *
@@ -159,7 +157,7 @@ public final class ElementEffect implements Serializable {
      *         function
      */
     public static Registration effect(Element owner,
-            SerializableConsumer<EffectContext> effectFunction) {
+            ContextualEffectAction effectFunction) {
         ElementEffect effect = new ElementEffect(owner, effectFunction);
         return effect::close;
     }
@@ -212,9 +210,9 @@ public final class ElementEffect implements Serializable {
                 .get();
         UI ui = parentComponent.getUI().get();
 
-        SerializableConsumer<EffectContext> errorHandlingEffectFunction = ctx -> {
+        ContextualEffectAction errorHandlingEffectFunction = ctx -> {
             try {
-                effectFunction.accept(ctx);
+                effectFunction.execute(ctx);
             } catch (Exception e) {
                 ui.getSession().getErrorHandler()
                         .error(new ErrorEvent(e, owner.getNode()));

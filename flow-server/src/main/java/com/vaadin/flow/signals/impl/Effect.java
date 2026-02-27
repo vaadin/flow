@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.VaadinRequest;
@@ -31,6 +30,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 
 /**
@@ -86,8 +86,7 @@ public class Effect implements Serializable {
      *            <code>null</code>
      */
     public Effect(EffectAction action, SerializableExecutor dispatcher) {
-        this((SerializableConsumer<EffectContext>) ctx -> action.execute(),
-                dispatcher);
+        this((ContextualEffectAction) ctx -> action.execute(), dispatcher);
     }
 
     /**
@@ -101,7 +100,7 @@ public class Effect implements Serializable {
      * @param action
      *            the context-aware action to use, not <code>null</code>
      */
-    public Effect(SerializableConsumer<EffectContext> action) {
+    public Effect(ContextualEffectAction action) {
         this(action, SignalEnvironment.getDefaultEffectDispatcher()::execute);
     }
 
@@ -119,7 +118,7 @@ public class Effect implements Serializable {
      *            the dispatcher to use when handling changes, not
      *            <code>null</code>
      */
-    public Effect(SerializableConsumer<EffectContext> action,
+    public Effect(ContextualEffectAction action,
             SerializableExecutor dispatcher) {
         assert action != null;
         this.action = () -> {
@@ -128,7 +127,7 @@ public class Effect implements Serializable {
                         invalidatedFromBackground);
                 firstRun = false;
                 invalidatedFromBackground = false;
-                action.accept(ctx);
+                action.execute(ctx);
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,

@@ -22,8 +22,8 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.ElementEffect;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.function.SignalMapper;
@@ -167,8 +167,8 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * Creates a context-aware component-scoped signal effect. The effect is
      * enabled when the component is attached and automatically disabled when it
      * is detached. The action receives an {@link EffectContext} providing
-     * information about why the effect is running (initial render, user
-     * request, or background change).
+     * information about why the effect is running (initial render, effect
+     * owner's request, or background change).
      * <p>
      * Example of usage:
      *
@@ -193,7 +193,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      *         function
      */
     static <C extends Component> Registration effect(C owner,
-            SerializableConsumer<EffectContext> effectFunction) {
+            ContextualEffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 

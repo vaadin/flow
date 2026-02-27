@@ -20,8 +20,9 @@ import java.io.Serializable;
 /**
  * Provides context information about why a signal effect is running. This
  * allows effect callbacks to distinguish between the initial execution, updates
- * triggered by user requests, and updates triggered by background changes (such
- * as server push or other users modifying shared signals).
+ * triggered by the effect owner's requests, and updates triggered by background
+ * changes (such as a background thread or another user modifying a shared
+ * signal).
  * <p>
  * Typical usage:
  *
@@ -66,23 +67,22 @@ public class EffectContext implements Serializable {
     }
 
     /**
-     * Returns whether this execution was triggered by a background change
-     * rather than by a user request or the initial render. A background change
-     * occurs when a signal is modified outside of a user request context, for
-     * example from a background thread using
-     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)
-     * UI.access()}, from server push, or from another user modifying a shared
-     * signal.
+     * Returns whether this execution was triggered by a signal change that
+     * happened outside the effect owner's request context. A background change
+     * occurs when a signal is modified from a background thread or by another
+     * user modifying a shared signal.
      * <p>
      * This is {@code false} during the initial run (even if there is no active
-     * request) and {@code false} during a normal user request. It is
-     * {@code true} only when the effect re-runs due to a signal change that
-     * happened outside any user request.
+     * request) and {@code false} when the signal was changed during a request
+     * from the user who owns the effect. It is {@code true} when the signal
+     * change originated from outside any request context for this user.
      * <p>
-     * Note: async user actions (user click leading to async work, then
-     * {@code ui.access(() -> signal.set(...))}) are classified as background
-     * changes because by the time the async result arrives, there is no active
-     * request.
+     * <strong>Note:</strong> This flag is a hint and may not be fully accurate
+     * when multiple signal changes from different sources are batched into a
+     * single effect invocation. The flag is guaranteed to not be set if none of
+     * the changes are from a background context and guaranteed to be set if all
+     * changes are from a background context. When changes come from mixed
+     * sources, the state of the flag is arbitrary.
      *
      * @return {@code true} if triggered by a background change, {@code false}
      *         otherwise
