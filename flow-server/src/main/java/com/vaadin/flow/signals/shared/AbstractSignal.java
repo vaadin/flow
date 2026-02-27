@@ -24,6 +24,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
@@ -127,6 +128,8 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      */
     protected AbstractSignal(SignalTree tree, Id id,
             CommandValidator validator) {
+        UsageStatistics.markAsUsed("flow/signal", null);
+        UsageStatistics.markAsUsed("flow/shared-signal", null);
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
         this.id = Objects.requireNonNull(id);
