@@ -260,10 +260,13 @@ public final class ElementEffect implements Serializable {
      * the list signal. Changes to the list, such as additions, removals, or
      * reordering, will update the parent's children accordingly.
      * <p>
-     * The parent component must not contain any children that are not part of
-     * the list signal. If the parent has existing children when this method is
-     * called, or if it contains unrelated children after the list changes, an
-     * {@link IllegalStateException} will be thrown.
+     * The parent element must not contain any children in the default slot
+     * (i.e. without a {@code slot} attribute) that are not part of the list
+     * signal. If the parent has existing default-slot children when this method
+     * is called, or if it contains unrelated default-slot children after the
+     * list changes, an {@link IllegalStateException} will be thrown. Named-slot
+     * children are allowed and will be preserved. The child factory must not
+     * produce elements with a {@code slot} attribute.
      * <p>
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a signal from the
@@ -286,7 +289,8 @@ public final class ElementEffect implements Serializable {
      * @param <S>
      *            the type of the {@link Signal}s in the list
      * @throws IllegalStateException
-     *             thrown if parent element isn't empty
+     *             thrown if parent element has default-slot children, or if the
+     *             child factory produces elements with a {@code slot} attribute
      */
     public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,
@@ -297,9 +301,11 @@ public final class ElementEffect implements Serializable {
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
-        if (parentElement.getChildCount() > 0) {
+        boolean hasDefaultSlotChildren = parentElement.getChildren()
+                .anyMatch(child -> child.getAttribute("slot") == null);
+        if (hasDefaultSlotChildren) {
             throw new IllegalStateException(
-                    "Parent element must not have children when binding a list signal to it");
+                    "Parent element must not have children in the default slot when binding a list signal to it");
         }
         // Create a child element cache outside the effect to persist elements
         // created by the child factory and avoid recreating them each time the
@@ -316,7 +322,7 @@ public final class ElementEffect implements Serializable {
             BindChildrenEffectContext<T, S> context) {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
-                .parentChildrenToLinkedList();
+                .parentDefaultSlotChildrenList();
         // Cache the children in a HashSet for O(1) lookups and removals
         HashSet<Element> remainingChildrenSet = new HashSet<>(
                 remainingChildren);
@@ -342,7 +348,7 @@ public final class ElementEffect implements Serializable {
      */
     private static <T extends @Nullable Object, S extends Signal<T>> void validate(
             BindChildrenEffectContext<T, S> context) {
-        LinkedList<Element> children = context.parentChildrenToLinkedList();
+        LinkedList<Element> children = context.parentDefaultSlotChildrenList();
         int index = 0;
         for (Element actualElement : children) {
             if (index >= context.childSignalsList.size()) {
@@ -399,7 +405,8 @@ public final class ElementEffect implements Serializable {
             Element expectedChild = context.getElement(item);
             if (remainingChildrenSet.isEmpty() || !Objects
                     .equals(expectedChild.getParent(), context.parentElement)) {
-                context.parentElement.insertChild(i, expectedChild);
+                context.parentElement.insertChild(context.toActualIndex(i),
+                        expectedChild);
                 continue;
             }
 
@@ -430,7 +437,8 @@ public final class ElementEffect implements Serializable {
                     remainingChildren.pollFirst();
                 } else {
                     // Move expected child from a later position
-                    context.parentElement.insertChild(i, expectedChild);
+                    context.parentElement.insertChild(context.toActualIndex(i),
+                            expectedChild);
 
                     remainingChildrenSet.remove(expectedChild);
 
@@ -473,8 +481,14 @@ public final class ElementEffect implements Serializable {
          *             if child factory adds or removes unexpected child
          */
         private Element getElement(S item) {
-            return valueSignalToChildCache.computeIfAbsent(item,
-                    childElementFactory);
+            return valueSignalToChildCache.computeIfAbsent(item, signal -> {
+                Element element = childElementFactory.apply(signal);
+                if (element.getAttribute("slot") != null) {
+                    throw new IllegalStateException(
+                            "Children created by the bindChildren factory must not have a slot attribute set");
+                }
+                return element;
+            });
         }
 
         /**
@@ -485,8 +499,28 @@ public final class ElementEffect implements Serializable {
             return valueSignalToChildCache.size();
         }
 
-        private LinkedList<Element> parentChildrenToLinkedList() {
+        /**
+         * Translates a logical index among default-slot children to the actual
+         * DOM child index, skipping over slotted children.
+         */
+        private int toActualIndex(int defaultSlotIndex) {
+            int actualIndex = 0;
+            int defaultSlotCount = 0;
+            int totalChildren = parentElement.getChildCount();
+            while (actualIndex < totalChildren
+                    && defaultSlotCount < defaultSlotIndex) {
+                if (parentElement.getChild(actualIndex)
+                        .getAttribute("slot") == null) {
+                    defaultSlotCount++;
+                }
+                actualIndex++;
+            }
+            return actualIndex;
+        }
+
+        private LinkedList<Element> parentDefaultSlotChildrenList() {
             return parentElement.getChildren()
+                    .filter(child -> child.getAttribute("slot") == null)
                     .collect(Collectors.toCollection(LinkedList::new));
         }
     }
