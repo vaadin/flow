@@ -15,10 +15,12 @@
  */
 package com.vaadin.tests.server.component;
 
+import java.io.NotSerializableException;
 import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -52,6 +54,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class FlowClassesSerializableTest extends ClassesSerializableTest {
+
+    @AfterEach
+    public void cleanup() {
+        CurrentInstance.clearAll();
+    }
 
     /**
      * {@link HtmlComponent} and {@link HtmlContainer} are not covered by
@@ -95,9 +102,8 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         }
     }
 
-    private MockUI setupForSignalSerializationTest() {
-        CurrentInstance.clearAll();
-        var service = new MockVaadinServletService() {
+    private MockVaadinServletService createTestService() {
+        return new MockVaadinServletService() {
             private final Lock lock = new ReentrantLock();
             {
                 lock.lock();
@@ -123,15 +129,23 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
                         configuration);
             }
         };
-        VaadinService.setCurrent(service);
+    }
+
+    private MockUI createSessionAndUI(MockVaadinServletService service) {
         var session = new MockVaadinSession(service);
         session.lock();
         session.refreshTransients(null, service);
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
         session.addUI(ui);
-
         return ui;
+    }
+
+    private MockUI setupForSignalSerializationTest() {
+        CurrentInstance.clearAll();
+        MockVaadinServletService service = createTestService();
+        VaadinService.setCurrent(service);
+        return createSessionAndUI(service);
     }
 
     @Test
@@ -210,11 +224,10 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         assertFalse(deserializedComponent.getElement().isVisible());
 
         deserializedSession.unlock();
-        VaadinService.setCurrent(null);
     }
 
     @Test
-    public void sharedSignalSerializable() {
+    public void sharedSignalNotSerializable() {
         MockUI ui = setupForSignalSerializationTest();
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
@@ -229,45 +242,94 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
         signal.set("changed");
         assertEquals(2, component.effectExecutionCounter);
 
-        SerializedSharedSignalComponent deserializedComponent;
-        VaadinSession deserializedSession = null;
         session.unlock(); // serialization happens for unlocked session
         try {
-            deserializedSession = serializeAndDeserialize(session);
-            assertNotNull(deserializedSession);
-            assertNotSame(deserializedSession, session);
+            serializeAndDeserialize(session);
+            fail("Serialization should have failed because of shared signal");
+        } catch (NotSerializableException e) {
+            // OK, expected because shared signals are not serializable
         } catch (Throwable e) {
-            fail("SerializedSharedSignalComponent should be serializable: "
+            fail("Expected NotSerializableException. Session serialization throws this instead: "
                     + e.getClass() + ": " + e.getMessage());
         }
-        deserializedSession.refreshTransients(null, service);
-        deserializedSession.lock();
+    }
 
-        UI deserializedUi = deserializedSession.getUIs().iterator().next();
-        deserializedComponent = deserializedUi.getChildren()
-                .filter(SerializedSharedSignalComponent.class::isInstance)
-                .map(SerializedSharedSignalComponent.class::cast).findFirst()
-                .orElseThrow(() -> new AssertionError(
-                        "SerializedSharedSignalComponent has not been deserialized"));
-        assertNotSame(deserializedComponent, component);
+    @Test
+    public void sharedSignalNotSerializable_twoSessionsSharingSignal_onlyOneSessionAttemptedToSerialize() {
+        // Create both services before touching any CurrentInstance state so
+        // neither service's construction clobbers the other's ThreadLocals.
+        CurrentInstance.clearAll();
+        MockVaadinServletService serviceA = createTestService();
+        MockVaadinServletService serviceB = createTestService();
 
-        UI.setCurrent(deserializedUi);
-        deserializedComponent.signal.set("changed after deserialization");
-        assertEquals(3, deserializedComponent.effectExecutionCounter);
-        deserializedComponent.signal.set("changed");
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        // Build session A (the one to serialize) and session B independently,
+        // each backed by their own service. No CurrentInstance.clearAll() is
+        // called between them so both remain valid.
+        VaadinService.setCurrent(serviceA);
+        MockUI uiA = createSessionAndUI(serviceA);
+        VaadinSession sessionA = uiA.getSession();
 
-        signal.set("changed in original signal");
-        // original signal change should not affect deserialized component
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        VaadinService.setCurrent(serviceB);
+        MockUI uiB = createSessionAndUI(serviceB);
+        VaadinSession sessionB = uiB.getSession();
 
-        // remove registration and verify that effect is not called anymore
-        deserializedComponent.registration.remove();
-        deserializedComponent.signal.set("foo");
-        assertEquals(4, deserializedComponent.effectExecutionCounter);
+        // Point CurrentInstance at serviceA for the rest of the test
+        VaadinService.setCurrent(serviceA);
 
-        deserializedSession.unlock();
-        VaadinService.setCurrent(null);
+        // Both sessions share the exact same SharedValueSignal instance
+        // (same SignalTree), mimicking a signal stored in e.g. a static field
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+
+        UI.setCurrent(uiA);
+        SerializedSharedSignalComponent componentA = new SerializedSharedSignalComponent(
+                signal);
+        uiA.add(componentA);
+        assertEquals(1, componentA.effectExecutionCounter);
+
+        VaadinService.setCurrent(serviceB);
+        UI.setCurrent(uiB);
+        SerializedSharedSignalComponent componentB = new SerializedSharedSignalComponent(
+                signal);
+        uiB.add(componentB);
+        assertEquals(1, componentB.effectExecutionCounter);
+
+        VaadinService.setCurrent(serviceA);
+        UI.setCurrent(uiA);
+
+        assertEquals(0,
+                ((MockVaadinSession) uiA.getSession()).writeObjectCallCount);
+        assertEquals(0,
+                ((MockVaadinSession) uiB.getSession()).writeObjectCallCount);
+
+        // Serialize only session A; session B must not be pulled in
+        sessionA.unlock();
+        sessionB.unlock();
+        try {
+            serializeAndDeserialize(sessionA);
+            fail("Serialization should have failed because of shared signal");
+        } catch (NotSerializableException e) {
+            // OK, expected because shared signals are not serializable
+
+            /*
+             * Object tree sample during session A serialization showing where
+             * session B would be leaked in this test if the shared signal was
+             * not properly handled. Alternative paths are via
+             * ElementEffect#effect, SignalTree#subscribers,
+             * AsynchronousSignalTree#unconfirmedCommands:
+             *
+             * SessionA → ComponentA → SharedValueSignal →
+             * AsynchronousSignalTree (inherited SignalTree) → observers map →
+             * TransientListener (session B's effect lambda) → closes over uiB →
+             * VaadinSession B ← LEAK
+             */
+            assertEquals(0, ((MockVaadinSession) uiA
+                    .getSession()).writeObjectCallCount);
+            assertEquals(0, ((MockVaadinSession) uiB
+                    .getSession()).writeObjectCallCount);
+        } catch (Throwable e) {
+            fail("Expected NotSerializableException. Session serialization throws this instead: "
+                    + e.getClass() + ": " + e.getMessage());
+        }
     }
 
     private void emulateClientUpdate(Element element, String property,
