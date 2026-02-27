@@ -574,8 +574,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         } catch (IOException exception) {
             File nodeModules = options.getNodeModulesFolder();
             log().debug("Exception removing node_modules", exception);
-            log().error(
-                    "Failed to remove '{}'. Remove it manually if there are problems with the build.",
+            StringBuilder messageWithReason = new StringBuilder(
+                    "Failed to remove '{}'");
+            if (!forceCleanUp) {
+                messageWithReason.append(", due to platform version update");
+            }
+            messageWithReason.append(
+                    ". Remove it manually if there are problems with the build.");
+            log().error(messageWithReason.toString(),
                     nodeModules.getAbsolutePath());
         }
 
