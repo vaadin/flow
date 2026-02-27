@@ -796,6 +796,16 @@ class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void productionMode_writeCacheHeaders_withVersionParam_oneYearCache() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(request.getParameter("v-c")).thenReturn("abcd1234");
+
+        fileServer.writeCacheHeaders("/folder/myfile.css", request, response);
+        assertEquals("max-age=31536000, immutable",
+                headers.get("Cache-Control"));
+    }
+
+    @Test
     public void getCacheTime() {
         int oneYear = 60 * 60 * 24 * 365;
         assertEquals(oneYear, fileServer.getCacheTime("somefile.cache.js"));

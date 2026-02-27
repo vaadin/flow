@@ -348,6 +348,67 @@ class UidlWriterTest {
     }
 
     @Test
+    public void productionMode_stylesheetDependency_urlContainsHash()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        // Add resources so hash can be computed. Paths must match what
+        // resolveResource() produces for the @StyleSheet annotation values.
+        mocks.getServlet().addServletContextResource("eager.css",
+                "body { color: red; }");
+        mocks.getServlet().addServletContextResource("lazy.css",
+                "body { color: blue; }");
+
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+        ui.add(new ComponentWithAllDependencyTypes());
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        Map<LoadMode, List<ObjectNode>> dependenciesMap = Stream
+                .of(LoadMode.values())
+                .map(mode -> (ArrayNode) response.get(mode.name()))
+                .flatMap(JacksonUtils::<ObjectNode> stream)
+                .collect(Collectors.toMap(
+                        jsonObject -> LoadMode.valueOf(jsonObject
+                                .get(Dependency.KEY_LOAD_MODE).textValue()),
+                        Collections::singletonList, (list1, list2) -> {
+                            List<ObjectNode> result = new ArrayList<>(list1);
+                            result.addAll(list2);
+                            return result;
+                        }));
+
+        // EAGER stylesheet should have hash
+        List<ObjectNode> eagerDeps = dependenciesMap.get(LoadMode.EAGER);
+        ObjectNode eagerCss = eagerDeps.stream()
+                .filter(d -> Dependency.Type.STYLESHEET.name()
+                        .equals(d.get(Dependency.KEY_TYPE).textValue()))
+                .findFirst().orElse(null);
+        assertNotNull(eagerCss, "Should have an eager stylesheet dependency");
+        String eagerUrl = eagerCss.get(Dependency.KEY_URL).textValue();
+        assertTrue(eagerUrl.matches("eager\\.css\\?v=[0-9a-f]{8}"),
+                "Eager stylesheet URL should contain hash: " + eagerUrl);
+
+        // LAZY stylesheet should have hash
+        List<ObjectNode> lazyDeps = dependenciesMap.get(LoadMode.LAZY);
+        lazyDeps.removeIf(obj -> obj.get(Dependency.KEY_URL).textValue()
+                .contains("Flow.loadOnDemand"));
+        ObjectNode lazyCss = lazyDeps.stream()
+                .filter(d -> Dependency.Type.STYLESHEET.name()
+                        .equals(d.get(Dependency.KEY_TYPE).textValue()))
+                .findFirst().orElse(null);
+        assertNotNull(lazyCss, "Should have a lazy stylesheet dependency");
+        String lazyUrl = lazyCss.get(Dependency.KEY_URL).textValue();
+        assertTrue(lazyUrl.matches("lazy\\.css\\?v=[0-9a-f]{8}"),
+                "Lazy stylesheet URL should contain hash: " + lazyUrl);
+
+        // INLINE dependency should NOT have a URL (it has contents instead)
+        List<ObjectNode> inlineDeps = dependenciesMap.get(LoadMode.INLINE);
+        assertThat("Should have an inline dependency", inlineDeps, hasSize(1));
+        assertFalse(inlineDeps.get(0).has(Dependency.KEY_URL));
+    }
+
+    @Test
     public void resynchronizationRequested_responseFieldContainsResynchronize()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
