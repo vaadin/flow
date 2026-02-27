@@ -569,7 +569,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
+        try {
+            FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
+        } catch (IOException exception) {
+            File nodeModules = options.getNodeModulesFolder();
+            log().debug("Exception removing node_modules", exception);
+            log().error(
+                    "Failed to remove '{}'. Remove it manually if there are problems with the build.",
+                    nodeModules.getAbsolutePath());
+        }
 
         if (jarResourcesFolder != null && jarResourcesFolder.exists()) {
             // This feels like cleanup done in the wrong place but is left here
