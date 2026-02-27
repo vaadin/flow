@@ -104,8 +104,7 @@ public class SignalBindingFeature extends ServerSideFeature {
             return false;
         }
         SignalBinding binding = values.get(key);
-        return binding != null && binding.signal != null
-                && binding.registration != null;
+        return binding != null && binding.signal != null;
     }
 
     /**

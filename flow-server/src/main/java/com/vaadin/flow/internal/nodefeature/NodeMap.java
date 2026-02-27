@@ -567,8 +567,8 @@ public abstract class NodeMap extends NodeFeature {
      *             given key
      *
      */
-    protected <T extends @Nullable Object> void bindSignal(Element owner,
-            String key, Signal<T> signal,
+    protected <T extends @Nullable Object> com.vaadin.flow.dom.SignalBinding<T> bindSignal(
+            Element owner, String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter,
             SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");
@@ -583,9 +583,11 @@ public abstract class NodeMap extends NodeFeature {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, registration, get(key),
-                writeCallback), false);
+        com.vaadin.flow.dom.SignalBinding<T> domBinding = ElementEffect
+                .bind(owner, signal, setter);
+        put(key, new SignalBinding(signal, domBinding.getEffectRegistration(),
+                get(key), writeCallback), false);
+        return domBinding;
     }
 
     /**
@@ -597,6 +599,6 @@ public abstract class NodeMap extends NodeFeature {
      */
     public boolean hasSignal(String key) {
         return doGet(key) instanceof SignalBinding binding
-                && binding.signal() != null && binding.registration() != null;
+                && binding.signal() != null;
     }
 }

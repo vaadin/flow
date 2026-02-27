@@ -22,7 +22,6 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -96,12 +95,12 @@ public class ElementClassList extends SerializableNodeList<String> {
                         + "' is already bound to a signal");
             }
 
-            Registration registration = ElementEffect.bind(
+            com.vaadin.flow.dom.SignalBinding<?> binding = ElementEffect.bind(
                     Element.get(getNode()), signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
             feature.setBinding(SignalBindingFeature.CLASSES + name,
-                    registration, signal);
+                    binding.getEffectRegistration(), signal);
         }
 
         @Override

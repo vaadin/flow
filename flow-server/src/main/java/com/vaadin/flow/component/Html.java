@@ -29,8 +29,8 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -267,9 +267,9 @@ public class Html extends Component {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(getElement(), htmlSignal,
+        SignalBinding<?> binding = ElementEffect.bind(getElement(), htmlSignal,
                 (element, value) -> setOuterHtml(value, true));
-        feature.setBinding(SignalBindingFeature.HTML_CONTENT, registration,
-                htmlSignal);
+        feature.setBinding(SignalBindingFeature.HTML_CONTENT,
+                binding.getEffectRegistration(), htmlSignal);
     }
 }
