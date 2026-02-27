@@ -110,6 +110,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public static class ThemeCssImport implements AppShellConfigurator {
     }
 
+    @Theme(themeClass = LumoTest.class)
+    @CssImport(value = "./foo.css", themeFor = "custom-component")
+    public static class ThemeForAppShellCssImport
+            implements AppShellConfigurator {
+    }
+
     protected File tmpRoot;
     protected File frontendDirectory;
     protected File nodeModulesPath;

@@ -412,6 +412,10 @@ abstract class AbstractUpdateImports implements Runnable {
         cssLineOffset += appShellCssLines.size();
         if (!appShellCssLines.isEmpty()) {
             appShellLines.add(IMPORT_INJECT);
+            if (appShellCssData.stream().anyMatch(
+                    d -> d.getThemefor() != null || d.getId() != null)) {
+                appShellLines.add(THEMABLE_MIXIN_IMPORT);
+            }
             appShellLines.addAll(appShellCssLines);
         }
         if (FrontendBuildUtils.isTailwindCssEnabled(options)) {

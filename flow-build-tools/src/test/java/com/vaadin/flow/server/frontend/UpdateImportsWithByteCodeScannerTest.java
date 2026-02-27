@@ -332,6 +332,27 @@ public class UpdateImportsWithByteCodeScannerTest
     }
 
     @Test
+    public void themeForCssImportFromAppShell_includesRegisterStylesImport()
+            throws Exception {
+        Class<?>[] testClasses = { ThemeForAppShellCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        Optional<File> appShellFile = output.keySet().stream()
+                .filter(file -> file.getName().endsWith("app-shell-imports.js"))
+                .findAny();
+        Assert.assertTrue(appShellFile.isPresent());
+        List<String> appShellLines = output.get(appShellFile.get());
+
+        assertOnce("registerStyles('custom-component',", appShellLines);
+        assertOnce("registerStyles } from '@vaadin/vaadin-themable-mixin'",
+                appShellLines);
+    }
+
+    @Test
     public void cssInLazyChunkWorks() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
