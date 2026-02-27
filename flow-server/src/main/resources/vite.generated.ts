@@ -431,6 +431,34 @@ function preserveUsageStats() {
   };
 }
 
+function bareCssImportResolver(): PluginOption {
+  return {
+    name: 'vaadin:bare-css-import-resolver',
+    configResolved() {
+      const original = (globalThis as any).__tw_resolve;
+      (globalThis as any).__tw_resolve = (specifier: string, base: string) => {
+        if (original) {
+          const result = original(specifier, base);
+          if (result) return result;
+        }
+        if (specifier.startsWith('.') || specifier.startsWith('/') || specifier.includes('://')) {
+          return null;
+        }
+        for (const folder of projectStaticAssetsFolders) {
+          if (base.startsWith(folder)) {
+            const resolved = path.resolve(base, specifier);
+            if (existsSync(resolved)) {
+              return resolved;
+            }
+            break;
+          }
+        }
+        return null;
+      };
+    }
+  };
+}
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const productionMode = !devMode && !devBundle
@@ -568,6 +596,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
+      bareCssImportResolver(),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
