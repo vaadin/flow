@@ -147,7 +147,12 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "A group theme name binding is already active");
         }
 
-        List<String> groupBoundNames = feature.getThemeGroupBoundNames();
+        ArrayList<String> groupBoundNames = new ArrayList<>();
+
+        // Store binding data before creating the effect so that
+        // getGroupBoundNames() can find it during the first execution
+        feature.setBinding(SignalBindingFeature.THEME_GROUP, () -> {
+        }, names, null, groupBoundNames);
 
         Registration registration = ElementEffect
                 .effect(Element.get(element.getNode()), () -> {
@@ -178,8 +183,9 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     themes.addAll(attrNames);
                     updateThemeAttribute();
                 });
+        // Replace with real registration
         feature.setBinding(SignalBindingFeature.THEME_GROUP, registration,
-                names);
+                names, null, groupBoundNames);
     }
 
     private void internalSetPresence(String name, boolean set) {
@@ -266,8 +272,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
     public void clear() {
         clearBindings();
         themes.clear();
-        getSignalBindingFeatureIfInitialized()
-                .ifPresent(f -> f.getThemeGroupBoundNames().clear());
         updateThemeAttribute();
     }
 
