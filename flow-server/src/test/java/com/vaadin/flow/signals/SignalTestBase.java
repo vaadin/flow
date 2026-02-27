@@ -25,6 +25,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class SignalTestBase {
     private static final ThreadLocal<Executor> currentResultNotifier = new ThreadLocal<Executor>();
     private static final ThreadLocal<Executor> currentEffectDispatcher = new ThreadLocal<Executor>();
+    private static final ThreadLocal<SerializableSupplier<Transaction>> currentTransactionFallback = new ThreadLocal<>();
 
     private final List<Throwable> uncaughtExceptions = new ArrayList<>();
 
@@ -66,6 +69,20 @@ public class SignalTestBase {
     private static Runnable environmentRegistration;
 
     @BeforeAll
+    static void setupTransactionFallback() {
+        Transaction.setTransactionFallback(() -> {
+            SerializableSupplier<Transaction> supplier = currentTransactionFallback
+                    .get();
+            return supplier != null ? supplier.get() : null;
+        });
+    }
+
+    @AfterAll
+    static void teardownTransactionFallback() {
+        Transaction.setTransactionFallback(null);
+    }
+
+    @BeforeAll
     static void setupEnvironment() {
         environmentRegistration = SignalEnvironment
                 .register(new SignalEnvironment() {
@@ -89,6 +106,11 @@ public class SignalTestBase {
     @AfterAll
     static void closeEnvironment() {
         environmentRegistration.run();
+    }
+
+    protected void useTransactionFallback(
+            SerializableSupplier<Transaction> supplier) {
+        currentTransactionFallback.set(supplier);
     }
 
     protected TestExecutor useTestResultNotifier() {
@@ -166,5 +188,6 @@ public class SignalTestBase {
 
         currentResultNotifier.remove();
         currentEffectDispatcher.remove();
+        currentTransactionFallback.remove();
     }
 }
