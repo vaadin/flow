@@ -16,9 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
@@ -49,8 +47,7 @@ public class SignalBindingFeature extends ServerSideFeature {
     private Map<String, SignalBinding> values;
 
     private record SignalBinding(Signal<?> signal, Registration registration,
-            SerializableConsumer<?> writeCallback,
-            Serializable data) implements Serializable {
+            SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
     /**
@@ -93,31 +90,8 @@ public class SignalBindingFeature extends ServerSideFeature {
      */
     public void setBinding(String key, Registration registration,
             Signal<?> signal, SerializableConsumer<?> writeCallback) {
-        setBinding(key, registration, signal, writeCallback, null);
-    }
-
-    /**
-     * Sets a binding for the given key with a write callback and associated
-     * data.
-     *
-     * @param key
-     *            the key
-     * @param registration
-     *            the registration
-     * @param signal
-     *            the signal
-     * @param writeCallback
-     *            the callback to propagate value changes back, or
-     *            <code>null</code> for a read-only binding
-     * @param data
-     *            arbitrary binding-specific data, or <code>null</code>
-     */
-    public void setBinding(String key, Registration registration,
-            Signal<?> signal, SerializableConsumer<?> writeCallback,
-            Serializable data) {
         ensureValues();
-        values.put(key,
-                new SignalBinding(signal, registration, writeCallback, data));
+        values.put(key, new SignalBinding(signal, registration, writeCallback));
     }
 
     /**
@@ -264,23 +238,6 @@ public class SignalBindingFeature extends ServerSideFeature {
                             + "Provide a write callback to enable two-way binding.");
         }
         return true;
-    }
-
-    /**
-     * Gets the list of theme names contributed by the group binding. The
-     * returned list is stored as data on the {@link #THEME_GROUP} binding.
-     *
-     * @return the list of group-bound theme names, never {@code null}
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getThemeGroupBoundNames() {
-        if (values != null) {
-            SignalBinding binding = values.get(THEME_GROUP);
-            if (binding != null && binding.data != null) {
-                return (List<String>) binding.data;
-            }
-        }
-        return Collections.emptyList();
     }
 
     private void ensureValues() {

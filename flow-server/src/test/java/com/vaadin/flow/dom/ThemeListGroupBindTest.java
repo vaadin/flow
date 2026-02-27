@@ -98,7 +98,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void duplicateInAttribute_staticAndGroupBothContribute() {
+    public void duplicateInAttribute_staticAndGroupAreDeduplicated() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -107,15 +107,15 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
         ValueSignal<List<String>> signal = new ValueSignal<>(List.of("wrap"));
         component.bindThemeNames(signal);
 
-        // Both sources contribute "wrap", so the attribute contains it twice
+        // Group names go into the same backing set, so duplicates are merged
         String attr = component.getElement().getAttribute("theme");
         long count = Arrays.stream(attr.split(" ")).filter("wrap"::equals)
                 .count();
-        assertEquals(2, count);
+        assertEquals(1, count);
     }
 
     @Test
-    public void staticRemovalWhileGroupHasSameName_groupNameRemains() {
+    public void staticRemovalWhileGroupHasSameName_nameIsRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -126,15 +126,14 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
 
         assertTrue(component.hasThemeName("shared"));
 
-        // Remove from static source
+        // Remove from static source — single backing store, so name is gone
         component.removeThemeName("shared");
 
-        // Group binding still has it
-        assertTrue(component.hasThemeName("shared"));
+        assertFalse(component.hasThemeName("shared"));
     }
 
     @Test
-    public void groupRemovalWhileStaticHasSameName_staticNameRemains() {
+    public void groupRemovalWhileStaticHasSameName_nameIsRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -143,11 +142,10 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
         ValueSignal<List<String>> signal = new ValueSignal<>(List.of("shared"));
         component.bindThemeNames(signal);
 
-        // Remove from group signal
+        // Remove from group signal — single backing store, so name is gone
         signal.set(List.of());
 
-        // Static source still has it
-        assertTrue(component.hasThemeName("shared"));
+        assertFalse(component.hasThemeName("shared"));
     }
 
     @Test

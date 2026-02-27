@@ -16,9 +16,7 @@
 package com.vaadin.flow.dom.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +50,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
     private static final String THEME_NAMES_DELIMITER = " ";
 
     private final class ThemeListIterator implements Iterator<String> {
-        private final Iterator<String> wrappedIterator = allNames().iterator();
+        private final Iterator<String> wrappedIterator = themes.iterator();
         private String current;
 
         @Override
@@ -69,7 +67,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
         @Override
         public void remove() {
             wrappedIterator.remove();
-            themes.remove(current);
             updateThemeAttribute();
         }
     }
@@ -95,26 +92,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
                 .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
                         .collect(Collectors.toSet()))
                 .orElseGet(HashSet::new);
-    }
-
-    private List<String> readThemesFromAttributeAsList() {
-        String attr = element.getAttribute(THEME_ATTRIBUTE_NAME);
-        if (attr == null || attr.isEmpty()) {
-            return new ArrayList<>();
-        }
-        List<String> result = new ArrayList<>();
-        for (String name : attr.split(THEME_NAMES_DELIMITER)) {
-            if (!name.isEmpty()) {
-                result.add(name);
-            }
-        }
-        return result;
-    }
-
-    private List<String> getGroupBoundNames() {
-        return getSignalBindingFeatureIfInitialized()
-                .map(SignalBindingFeature::getThemeGroupBoundNames)
-                .orElse(Collections.emptyList());
     }
 
     @Override
@@ -147,56 +124,45 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "A group theme name binding is already active");
         }
 
-        ArrayList<String> groupBoundNames = new ArrayList<>();
-
-        // Store binding data before creating the effect so that
-        // getGroupBoundNames() can find it during the first execution
-        feature.setBinding(SignalBindingFeature.THEME_GROUP, () -> {
-        }, names, null, groupBoundNames);
+        Set<String> previousNames = new HashSet<>();
 
         Registration registration = ElementEffect
                 .effect(Element.get(element.getNode()), () -> {
                     List<String> current = names.get();
-
-                    // Save old group names before replacing
-                    List<String> oldGroupNames = new ArrayList<>(
-                            groupBoundNames);
-
-                    // Compute new group names
-                    groupBoundNames.clear();
+                    Set<String> newNames = new HashSet<>();
                     if (current != null) {
                         for (String name : current) {
                             if (name != null && !name.isEmpty()) {
-                                groupBoundNames.add(name);
+                                newNames.add(name);
                             }
                         }
                     }
 
-                    // Re-read all names from the attribute as a list
-                    // (preserving duplicates), then remove one occurrence of
-                    // each old group name to recover static/toggle themes
-                    List<String> attrNames = readThemesFromAttributeAsList();
-                    for (String old : oldGroupNames) {
-                        attrNames.remove(old);
+                    // Remove names no longer in the list
+                    for (String old : previousNames) {
+                        if (!newNames.contains(old)) {
+                            internalSetPresence(old, false);
+                        }
                     }
-                    themes.clear();
-                    themes.addAll(attrNames);
-                    updateThemeAttribute();
+                    // Add new names
+                    for (String name : newNames) {
+                        if (!previousNames.contains(name)) {
+                            internalSetPresence(name, true);
+                        }
+                    }
+
+                    previousNames.clear();
+                    previousNames.addAll(newNames);
                 });
-        // Replace with real registration
         feature.setBinding(SignalBindingFeature.THEME_GROUP, registration,
-                names, null, groupBoundNames);
+                names);
     }
 
     private void internalSetPresence(String name, boolean set) {
         // Re-read themes from the attribute to stay in sync with other
         // ThemeListImpl instances that may have modified the attribute.
         themes.clear();
-        Set<String> fromAttribute = readThemesFromAttribute();
-        // Exclude group-bound names to avoid pulling them into the themes set
-        List<String> groupNames = getGroupBoundNames();
-        fromAttribute.removeAll(groupNames);
-        themes.addAll(fromAttribute);
+        themes.addAll(readThemesFromAttribute());
 
         boolean changed;
         if (set) {
@@ -276,56 +242,47 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     private void updateThemeAttribute() {
-        List<String> groupNames = getGroupBoundNames();
-        if (themes.isEmpty() && groupNames.isEmpty()) {
+        if (themes.isEmpty()) {
             element.removeAttribute(THEME_ATTRIBUTE_NAME);
         } else {
-            String value = Stream.concat(themes.stream(), groupNames.stream())
-                    .collect(Collectors.joining(THEME_NAMES_DELIMITER));
+            String value = String.join(THEME_NAMES_DELIMITER, themes);
             element.setAttribute(THEME_ATTRIBUTE_NAME, value);
         }
     }
 
-    private Set<String> allNames() {
-        Set<String> all = new HashSet<>(themes);
-        all.addAll(getGroupBoundNames());
-        return all;
-    }
-
     @Override
     public int size() {
-        return allNames().size();
+        return themes.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return themes.isEmpty() && getGroupBoundNames().isEmpty();
+        return themes.isEmpty();
     }
 
     @Override
     public Object[] toArray() {
-        return allNames().toArray();
+        return themes.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return allNames().toArray(a);
+        return themes.toArray(a);
     }
 
     @Override
     public boolean contains(Object themeName) {
-        return themes.contains(themeName)
-                || getGroupBoundNames().contains(themeName);
+        return themes.contains(themeName);
     }
 
     @Override
     public boolean containsAll(Collection<?> themeNames) {
-        return allNames().containsAll(themeNames);
+        return themes.containsAll(themeNames);
     }
 
     @Override
     public String toString() {
-        return allNames().toString();
+        return themes.toString();
     }
 
     /**
