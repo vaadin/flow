@@ -18,7 +18,6 @@ package com.vaadin.flow.component.dnd;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
@@ -32,15 +31,16 @@ import com.vaadin.flow.component.dnd.internal.DndUtil;
  *            Type of the drop target component.
  * @author Vaadin Ltd
  * @see DropTarget#addDropListener(com.vaadin.flow.component.ComponentEventListener)
- * @author Vaadin Ltd
  * @since 2.0
  */
 @DomEvent("drop")
-public class DropEvent<T extends Component> extends ComponentEvent<T> {
+public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
 
     private final EffectAllowed effectAllowed;
     private final String dropEffect;
     private final Component dragSourceComponent;
+    private final int offsetX;
+    private final int offsetY;
 
     /**
      * Creates a server side drop event.
@@ -52,12 +52,28 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      *            side, <code>false</code> otherwise
      * @param effectAllowed
      *            the effect allowed by the drag source
+     * @param clientX
+     *            the x coordinate of the mouse pointer relative to the viewport
+     * @param clientY
+     *            the y coordinate of the mouse pointer relative to the viewport
+     * @param offsetX
+     *            the x coordinate of the mouse pointer relative to the drop
+     *            target element
+     * @param offsetY
+     *            the y coordinate of the mouse pointer relative to the drop
+     *            target element
      */
     public DropEvent(T source, boolean fromClient,
-            @EventData("event.dataTransfer.effectAllowed") String effectAllowed) {
-        super(source, fromClient);
+            @EventData("event.dataTransfer.effectAllowed") String effectAllowed,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY,
+            @EventData("event.clientX - event.currentTarget.getBoundingClientRect().left") int offsetX,
+            @EventData("event.clientY - event.currentTarget.getBoundingClientRect().top") int offsetY) {
+        super(source, fromClient, clientX, clientY);
 
         this.effectAllowed = EffectAllowed.fromString(effectAllowed);
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
         // capture drop effect from server side, since it is meant for drag
         // end event
         dropEffect = source.getElement()
@@ -114,11 +130,66 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
     }
 
     /**
-     * Returns the drop target component where the drop event occurred.
+     * Gets the x coordinate of the drop position relative to the drop target
+     * element.
+     * <p>
+     * This is useful for positioning dropped items within the drop target
+     * container using absolute or relative positioning.
      *
-     * @return Component on which a drag source was dropped.
+     * @return the x coordinate relative to the drop target element
+     * @since 25.1
      */
-    public T getComponent() {
-        return getSource();
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    /**
+     * Gets the y coordinate of the drop position relative to the drop target
+     * element.
+     * <p>
+     * This is useful for positioning dropped items within the drop target
+     * container using absolute or relative positioning.
+     *
+     * @return the y coordinate relative to the drop target element
+     * @since 25.1
+     */
+    public int getOffsetY() {
+        return offsetY;
+    }
+
+    /**
+     * Gets the x coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items. For example, if you want items to appear where
+     * they were grabbed (not where the cursor is), subtract this value from
+     * {@link #getOffsetX()}.
+     *
+     * @return the drag start x offset if drag source is in the same UI,
+     *         otherwise empty
+     * @since 25.1
+     */
+    public Optional<Integer> getDragStartOffsetX() {
+        return getDragSourceComponent().map(component -> (Integer) ComponentUtil
+                .getData(component, DndUtil.DRAG_START_OFFSET_X_KEY));
+    }
+
+    /**
+     * Gets the y coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items. For example, if you want items to appear where
+     * they were grabbed (not where the cursor is), subtract this value from
+     * {@link #getOffsetY()}.
+     *
+     * @return the drag start y offset if drag source is in the same UI,
+     *         otherwise empty
+     * @since 25.1
+     */
+    public Optional<Integer> getDragStartOffsetY() {
+        return getDragSourceComponent().map(component -> (Integer) ComponentUtil
+                .getData(component, DndUtil.DRAG_START_OFFSET_Y_KEY));
     }
 }
