@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -423,11 +420,5 @@ public class SharedListSignal<T extends @Nullable Object>
         return value.stream().map(SharedValueSignal::peek)
                 .map(Objects::toString)
                 .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedListSignal.class).warn(
-                "Serializing SharedListSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

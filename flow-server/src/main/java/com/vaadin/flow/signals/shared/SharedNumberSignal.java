@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Objects;
-
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.Id;
@@ -212,11 +208,5 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     @Override
     public String toString() {
         return "SharedNumberSignal[" + peek() + "]";
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedNumberSignal.class).warn(
-                "Serializing SharedNumberSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

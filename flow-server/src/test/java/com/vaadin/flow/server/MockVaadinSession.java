@@ -38,6 +38,8 @@ public class MockVaadinSession extends VaadinSession {
      */
     private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 
+    public int writeObjectCallCount = 0;
+
     public MockVaadinSession(VaadinService service) {
         super(service);
     }
@@ -87,5 +89,11 @@ public class MockVaadinSession extends VaadinSession {
             unlock();
             CurrentInstance.restoreInstances(previous);
         }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws java.io.IOException {
+        writeObjectCallCount++;
+        out.defaultWriteObject();
     }
 }
