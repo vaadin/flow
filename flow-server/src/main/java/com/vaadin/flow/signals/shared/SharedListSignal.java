@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -34,8 +31,8 @@ import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a list of values. Supports atomic updates to the list
@@ -46,7 +43,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedListSignal<T>
+public class SharedListSignal<T extends @Nullable Object>
         extends AbstractSignal<@NonNull List<SharedValueSignal<T>>> {
 
     /**
@@ -158,7 +155,7 @@ public class SharedListSignal<T>
      *            the element type, not <code>null</code>
      */
     public SharedListSignal(Class<T> elementType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
 
@@ -423,11 +420,5 @@ public class SharedListSignal<T>
         return value.stream().map(SharedValueSignal::peek)
                 .map(Objects::toString)
                 .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedListSignal.class).warn(
-                "Serializing SharedListSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

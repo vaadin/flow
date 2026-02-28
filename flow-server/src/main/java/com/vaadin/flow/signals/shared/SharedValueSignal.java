@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Id;
@@ -34,8 +31,8 @@ import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.operations.CancelableOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a value. The value is updated as a single atomic change.
@@ -46,7 +43,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the signal value type
  */
-public class SharedValueSignal<T> extends AbstractSignal<T> {
+public class SharedValueSignal<T extends @Nullable Object>
+        extends AbstractSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -59,7 +57,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      */
     @SuppressWarnings("unchecked")
     public SharedValueSignal(T initialValue) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 (Class<T>) initialValue.getClass());
         set(initialValue);
     }
@@ -72,7 +70,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the value type, not <code>null</code>
      */
     public SharedValueSignal(Class<T> valueType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 Objects.requireNonNull(valueType));
     }
 
@@ -111,7 +109,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> set(@Nullable T value) {
+    public SignalOperation<T> set(T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
@@ -150,8 +148,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> replace(@Nullable T expectedValue,
-            @Nullable T newValue) {
+    public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
@@ -236,7 +233,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
      *            the expected value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyValue(@Nullable T expectedValue) {
+    public SignalOperation<Void> verifyValue(T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue)));
     }
@@ -343,9 +340,4 @@ public class SharedValueSignal<T> extends AbstractSignal<T> {
                 currentValue -> merger.merge(currentValue, newChildValue));
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedValueSignal.class).warn(
-                "Serializing SharedValueSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
-    }
 }

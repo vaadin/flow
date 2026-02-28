@@ -170,3 +170,4 @@ Components extend `Component` and use:
 - When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
 - Don't add @since to javadocs
 - When adding unit tests, add only the essential ones and not more than that
+- Use test: instead of fix: when fixing only tests

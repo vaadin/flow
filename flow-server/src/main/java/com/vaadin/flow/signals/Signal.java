@@ -54,7 +54,7 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  *            the signal value type
  */
 @FunctionalInterface
-public interface Signal<T> extends Serializable {
+public interface Signal<T extends @Nullable Object> extends Serializable {
     /**
      * Gets the current value of this signal. The value is read in a way that
      * takes the current transaction into account and in the case of clustering
@@ -69,20 +69,32 @@ public interface Signal<T> extends Serializable {
      * Reading the value inside an {@link #unboundEffect(EffectAction)} or
      * {@link #computed(SignalComputation)} callback sets up that effect or
      * computed signal to depend on the signal.
+     * <p>
+     * This method must only be called within a reactive context such as an
+     * effect, a computed signal, an explicit {@link #untracked(ValueSupplier)}
+     * block, or a {@link #runInTransaction(TransactionTask) transaction}.
+     * Calling it outside such a context throws an
+     * {@link IllegalStateException}. Use {@link #peek()} for one-time reads
+     * that do not need dependency tracking.
      *
      * @return the signal value
+     * @throws IllegalStateException
+     *             if called outside a reactive context
      */
-    @Nullable
     T get();
 
     /**
      * Reads the value without setting up any dependencies. This method returns
      * the same value as {@link #get()} but without creating a dependency when
      * used inside a transaction, effect or computed signal.
+     * <p>
+     * Unlike {@link #get()}, this method can be called outside a reactive
+     * context and is the recommended way to read a signal value for one-time
+     * use, such as logging, assertions, or initializing non-reactive UI.
      *
      * @return the signal value
      */
-    default @Nullable T peek() {
+    default T peek() {
         /*
          * Subclasses are encouraged to use an approach with less overhead than
          * what this very generic implementation can do.
@@ -108,7 +120,8 @@ public interface Signal<T> extends Serializable {
      *            the mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    default <C> Signal<C> map(SignalMapper<T, C> mapper) {
+    default <C extends @Nullable Object> Signal<C> map(
+            SignalMapper<T, C> mapper) {
         return () -> mapper.map(get());
     }
 
@@ -154,8 +167,17 @@ public interface Signal<T> extends Serializable {
      * when the effect is created and is subsequently run again whenever there's
      * a change to any signal value that was read during the last invocation.
      * <p>
+     * An unbound effect executes without holding the session lock, similar to a
+     * background thread. If the effect action needs to modify components or
+     * other UI state, it must explicitly acquire the lock using
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}.
+     * This applies even when creating the effect while already holding the
+     * session lock, as the effect callbacks run independently and may execute
+     * after the session has expired or been invalidated.
+     * <p>
      * Consider using {@link #effect(Component, EffectAction)} instead to tie
-     * the effect lifecycle to a component.
+     * the effect lifecycle to a component and automatically manage the session
+     * lock.
      *
      * @param action
      *            the effect action to use, not <code>null</code>
@@ -188,22 +210,21 @@ public interface Signal<T> extends Serializable {
      *            the computation callback, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    static <T> Signal<T> computed(SignalComputation<T> computation) {
+    static <T extends @Nullable Object> Signal<T> computed(
+            SignalComputation<T> computation) {
         return new ComputedSignal<>(computation);
     }
 
     /**
-     * Crates a new computed signal containing the negation of the provided
-     * boolean-valued signal. <code>null</code> values are preserved as
-     * <code>null</code>.
-     * 
+     * Creates a new computed signal containing the negation of the provided
+     * boolean-valued signal.
+     *
      * @param signal
      *            the boolean-valued signal to negate, not <code>null</code>
      * @return the negated signal, not <code>null</code>
      */
     static Signal<Boolean> not(Signal<Boolean> signal) {
-        return Objects.requireNonNull(signal)
-                .map(value -> value == null ? null : !value);
+        return Objects.requireNonNull(signal).map(value -> !value);
     }
 
     /**
@@ -228,7 +249,7 @@ public interface Signal<T> extends Serializable {
      * @return a transaction operation containing the supplier return value and
      *         the eventual result
      */
-    static <T> TransactionOperation<T> runInTransaction(
+    static <T extends @Nullable Object> TransactionOperation<T> runInTransaction(
             ValueSupplier<T> transactionTask) {
         return Transaction.runInTransaction(transactionTask);
     }
@@ -267,7 +288,8 @@ public interface Signal<T> extends Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> @Nullable T runWithoutTransaction(ValueSupplier<T> task) {
+    static <T extends @Nullable Object> T runWithoutTransaction(
+            ValueSupplier<T> task) {
         return Transaction.runWithoutTransaction(task);
     }
 
@@ -294,7 +316,7 @@ public interface Signal<T> extends Serializable {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> @Nullable T untracked(ValueSupplier<T> task) {
+    static <T extends @Nullable Object> T untracked(ValueSupplier<T> task) {
         /*
          * Note that there's no Runnable overload since the whole point of
          * untracked is to read values.

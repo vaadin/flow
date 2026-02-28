@@ -29,6 +29,7 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
@@ -339,6 +340,26 @@ public class HtmlObject extends HtmlContainer implements
      */
     public String getData() {
         return get(dataDescriptor);
+    }
+
+    /**
+     * Binds the given signal to the "data" attribute of this component.
+     * <p>
+     * When a signal is bound, the data attribute is kept synchronized with the
+     * signal value while the component is attached. When the component is
+     * detached, signal value changes have no effect.
+     * <p>
+     * While a signal is bound, any attempt to set the data attribute manually
+     * through {@link #setData(String)} throws a
+     * {@link com.vaadin.flow.signals.BindingActiveException}.
+     *
+     * @param signal
+     *            the signal to bind the data attribute to, not {@code null}
+     * @see #setData(String)
+     * @since 25.1
+     */
+    public void bindData(Signal<String> signal) {
+        getElement().bindAttribute("data", signal);
     }
 
     /**

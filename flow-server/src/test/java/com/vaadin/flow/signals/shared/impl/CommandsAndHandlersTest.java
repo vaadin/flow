@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.signals.Id;
@@ -204,7 +205,7 @@ public class CommandsAndHandlersTest {
     }
 
     public static class ResultHandler implements CommandResultHandler {
-        public CommandResult result;
+        public @Nullable CommandResult result;
 
         @Override
         public void handle(CommandResult result) {

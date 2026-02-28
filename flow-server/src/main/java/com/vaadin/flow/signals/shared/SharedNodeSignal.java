@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
@@ -35,8 +32,8 @@ import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal representing a node in a tree structure. The {@link #get()} of a
@@ -142,7 +139,7 @@ public class SharedNodeSignal
      * node structure. The signal does not support clustering.
      */
     public SharedNodeSignal() {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES);
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES);
     }
 
     /**
@@ -488,11 +485,5 @@ public class SharedNodeSignal
 
         builder.append(']');
         return builder.toString();
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedNodeSignal.class).warn(
-                "Serializing SharedNodeSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }
