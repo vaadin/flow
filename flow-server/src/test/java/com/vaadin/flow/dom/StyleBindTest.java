@@ -125,9 +125,8 @@ class StyleBindTest {
                 () -> element.getStyle().remove("background-color"));
     }
 
-    // Bulk operations: clear() clears styles and stops updates
     @Test
-    public void clear_removesBindingsAndStopsUpdates() {
+    public void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -139,17 +138,8 @@ class StyleBindTest {
         assertEquals("1", element.getStyle().get("borderTopWidth"));
         assertEquals("2", element.getStyle().get("borderBottomWidth"));
 
-        element.getStyle().clear();
-
-        // Cleared
-        assertNull(element.getStyle().get("borderTopWidth"));
-        assertNull(element.getStyle().get("borderBottomWidth"));
-
-        // Toggling signals should have no effect
-        a.set("3");
-        b.set("4");
-        assertNull(element.getStyle().get("borderTopWidth"));
-        assertNull(element.getStyle().get("borderBottomWidth"));
+        assertThrows(BindingActiveException.class,
+                () -> element.getStyle().clear());
     }
 
     @Test

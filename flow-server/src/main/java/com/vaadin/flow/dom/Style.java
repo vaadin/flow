@@ -157,10 +157,12 @@ public interface Style extends Serializable {
     /**
      * Removes all set style properties.
      * <p>
-     * This method silently clears all style signal bindings (unsubscribe and
-     * forget recorded values) in addition to clearing style values.
+     * Throws a {@code com.vaadin.flow.signals.BindingActiveException} if any
+     * style signal binding is active.
      *
      * @return this style instance
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             if any style signal binding is active
      * @see #bind(String, Signal)
      */
     Style clear();

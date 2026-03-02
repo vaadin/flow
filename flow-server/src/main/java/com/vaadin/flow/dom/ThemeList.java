@@ -60,8 +60,9 @@ public interface ThemeList extends Set<String>, Serializable {
      * <p>
      * Bulk operations that indiscriminately replace or clear the theme list
      * (for example {@link #clear()} or setting the {@code theme} attribute via
-     * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) clear
-     * all bindings.
+     * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) throw a
+     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
+     * active.
      *
      * @param name
      *            the theme name to bind, not {@code null} or blank
@@ -90,8 +91,9 @@ public interface ThemeList extends Set<String>, Serializable {
      * <p>
      * Bulk operations that indiscriminately replace or clear the theme list
      * (for example {@link #clear()} or setting the {@code theme} attribute via
-     * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) clear
-     * the group binding.
+     * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) throw a
+     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
+     * active.
      *
      * @param names
      *            the signal providing the list of theme names, not {@code null}

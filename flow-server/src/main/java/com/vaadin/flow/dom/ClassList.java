@@ -62,7 +62,9 @@ public interface ClassList extends Set<String>, Serializable {
      * <p>
      * Bulk operations that indiscriminately replace or clear the class list
      * (for example {@link #clear()} or setting the {@code class} attribute via
-     * {@link Element#setAttribute(String, String)}) clear all bindings.
+     * {@link Element#setAttribute(String, String)}) throw a
+     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
+     * active.
      *
      * @param name
      *            the class name to bind, not {@code null} or blank
@@ -91,7 +93,9 @@ public interface ClassList extends Set<String>, Serializable {
      * <p>
      * Bulk operations that indiscriminately replace or clear the class list
      * (for example {@link #clear()} or setting the {@code class} attribute via
-     * {@link Element#setAttribute(String, String)}) clear the group binding.
+     * {@link Element#setAttribute(String, String)}) throw a
+     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
+     * active.
      *
      * @param names
      *            the signal providing the list of class names, not {@code null}

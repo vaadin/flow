@@ -65,7 +65,7 @@ public interface HasTheme extends HasElement {
      *            string to remove all theme names
      */
     default void setThemeName(String themeName) {
-        getThemeNames().clear(); // clears bound signals
+        getThemeNames().clear();
         getElement().setAttribute("theme", themeName);
     }
 

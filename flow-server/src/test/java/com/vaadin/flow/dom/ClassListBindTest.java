@@ -88,7 +88,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsBindingsSilently_andClearsClasses() {
+    public void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> a = new ValueSignal<>(true);
@@ -99,62 +99,20 @@ class ClassListBindTest extends SignalsUnitTest {
         assertTrue(element.getClassList().contains("a"));
         assertTrue(element.getClassList().contains("b"));
 
-        element.getClassList().clear();
-
-        // Classes cleared
-        assertFalse(element.getClassList().contains("a"));
-        assertFalse(element.getClassList().contains("b"));
-
-        // Toggling signals has no effect (bindings were cleared)
-        a.set(false);
-        b.set(false);
-        a.set(true);
-        b.set(true);
-        assertFalse(element.getClassList().contains("a"));
-        assertFalse(element.getClassList().contains("b"));
-        assertFalse(element.getClassList().iterator().hasNext());
+        assertThrows(BindingActiveException.class,
+                () -> element.getClassList().clear());
     }
 
     @Test
-    public void setAttributeClass_bulkReplacement_clearsBindingsSilently() {
+    public void setAttributeClass_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
         element.getClassList().bind("flag", bound);
         assertTrue(element.getClassList().contains("flag"));
 
-        // Bulk replace via attribute handler
-        element.setAttribute("class", "foo bar");
-        assertTrue(element.getClassList().contains("foo"));
-        assertTrue(element.getClassList().contains("bar"));
-        assertFalse(element.getClassList().contains("flag"));
-
-        // Binding should be cleared, so toggling has no effect
-        bound.set(false);
-        bound.set(true);
-        assertFalse(element.getClassList().contains("flag"));
-    }
-
-    @Test
-    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        Element element = new Element("div");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.getClassList().bind("badge", signal);
-        assertTrue(element.getClassList().contains("badge"));
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = element.getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.CLASSES + "badge");
-
-        // Signal changes should no longer affect the class list
-        signal.set(false);
-        assertTrue(element.getClassList().contains("badge"));
-
-        // Manual set should work without throwing
-        element.getClassList().remove("badge");
-        assertFalse(element.getClassList().contains("badge"));
+        assertThrows(BindingActiveException.class,
+                () -> element.setAttribute("class", "foo bar"));
     }
 
     @Test

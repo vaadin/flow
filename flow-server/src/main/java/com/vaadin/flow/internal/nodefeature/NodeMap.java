@@ -37,7 +37,6 @@ import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
@@ -154,8 +153,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    public record SignalBinding(Signal<?> signal, Registration registration,
-            Serializable value,
+    public record SignalBinding(Signal<?> signal, Serializable value,
             SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
@@ -583,9 +581,8 @@ public abstract class NodeMap extends NodeFeature {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, registration, get(key),
-                writeCallback), false);
+        ElementEffect.bind(owner, signal, setter);
+        put(key, new SignalBinding(signal, get(key), writeCallback), false);
     }
 
     /**
@@ -597,6 +594,6 @@ public abstract class NodeMap extends NodeFeature {
      */
     public boolean hasSignal(String key) {
         return doGet(key) instanceof SignalBinding binding
-                && binding.signal() != null && binding.registration() != null;
+                && binding.signal() != null;
     }
 }
