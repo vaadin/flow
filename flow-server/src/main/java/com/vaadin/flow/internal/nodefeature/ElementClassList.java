@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
@@ -102,6 +105,51 @@ public class ElementClassList extends SerializableNodeList<String> {
                             Boolean.TRUE.equals(value)));
             feature.setBinding(SignalBindingFeature.CLASSES + name,
                     registration, signal);
+        }
+
+        @Override
+        public void bind(Signal<List<String>> names) {
+            Objects.requireNonNull(names, "Signal cannot be null");
+            SignalBindingFeature feature = getNode()
+                    .getFeature(SignalBindingFeature.class);
+
+            if (feature.hasBinding(SignalBindingFeature.CLASS_GROUP)) {
+                throw new BindingActiveException(
+                        "A group class name binding is already active");
+            }
+
+            Set<String> previousNames = new HashSet<>();
+
+            Registration registration = ElementEffect
+                    .effect(Element.get(getNode()), () -> {
+                        List<String> current = names.get();
+                        Set<String> newNames = new HashSet<>();
+                        if (current != null) {
+                            for (String name : current) {
+                                if (name != null && !name.isEmpty()) {
+                                    newNames.add(name);
+                                }
+                            }
+                        }
+
+                        // Remove names no longer in the list
+                        for (String old : previousNames) {
+                            if (!newNames.contains(old)) {
+                                internalSetPresence(old, false);
+                            }
+                        }
+                        // Add new names
+                        for (String name : newNames) {
+                            if (!previousNames.contains(name)) {
+                                internalSetPresence(name, true);
+                            }
+                        }
+
+                        previousNames.clear();
+                        previousNames.addAll(newNames);
+                    });
+            feature.setBinding(SignalBindingFeature.CLASS_GROUP, registration,
+                    names);
         }
 
         @Override
