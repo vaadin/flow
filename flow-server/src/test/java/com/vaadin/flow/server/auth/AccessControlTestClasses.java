@@ -454,6 +454,20 @@ public class AccessControlTestClasses {
     }
 
     @Tag(Tag.DIV)
+    @Layout
+    @PermitAll
+    public static class PermitAllLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    @RolesAllowed("admin")
+    public static class RolesAllowedLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
     public static class NoPermitParent extends Component
             implements RouterLayout {
     }
