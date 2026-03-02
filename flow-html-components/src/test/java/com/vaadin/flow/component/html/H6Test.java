@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class H6Test extends ComponentTest {
+class H6Test extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,7 +27,7 @@ public class H6Test extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
+    protected void testHasAriaLabelIsNotImplemented() {
         // Don't use aria-label or aria-labelledby on any heading elements
         // because it overrides them on NVDA, VoiceOver and Talkback.
         // JAWS ignores them.

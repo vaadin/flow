@@ -18,10 +18,9 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -46,8 +45,17 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 @NotThreadSafe
-public class PublishedServerEventHandlerRpcHandlerTest {
+class PublishedServerEventHandlerRpcHandlerTest {
 
     private VaadinService service;
 
@@ -192,9 +200,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        Assert.assertNull(System.getSecurityManager());
+        assertNull(System.getSecurityManager());
 
         MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
 
@@ -210,7 +218,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         Mockito.when(session.hasLock()).thenReturn(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         service = null;
         VaadinService.setCurrent(null);
@@ -223,7 +231,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     @Test
@@ -233,7 +241,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1, true);
 
-        Assert.assertFalse(component.isInvoked);
+        assertFalse(component.isInvoked);
     }
 
     @Test
@@ -243,7 +251,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "methodThatCanBeCalledWhenInert",
                 JacksonUtils.createArrayNode(), -1, true);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     @Test
@@ -254,7 +262,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 composite.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     @Test
@@ -265,7 +273,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 composite.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     @Test
@@ -283,31 +291,35 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", params, -1);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void methodWithDecoderParameters_nonConvertableValues_methodIsInvoked() {
-        ArrayNode params = JacksonUtils.createArrayNode();
-        params.add("264.1");
-        params.add("MR");
+        assertThrows(IllegalArgumentException.class, () -> {
+            ArrayNode params = JacksonUtils.createArrayNode();
+            params.add("264.1");
+            params.add("MR");
 
-        UI ui = new UI();
-        ui.getInternals().setSession(session);
+            UI ui = new UI();
+            ui.getInternals().setSession(session);
 
-        DecoderParameters component = new DecoderParameters();
-        ui.add(component);
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", params, -1);
+            DecoderParameters component = new DecoderParameters();
+            ui.add(component);
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "method", params, -1);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void methodWithoutArgs_argsProvided() {
-        ArrayNode args = JacksonUtils.createArrayNode();
-        args.add(true);
-        ComponentWithCompute component = new ComponentWithCompute();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", args, -1);
+        assertThrows(IllegalArgumentException.class, () -> {
+            ArrayNode args = JacksonUtils.createArrayNode();
+            args.add(true);
+            ComponentWithCompute component = new ComponentWithCompute();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "method", args, -1);
+        });
     }
 
     @Test
@@ -332,25 +344,24 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
                 .getInternals().dumpPendingJavaScriptInvocations();
-        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
+        assertEquals(1, pendingJavaScriptInvocations.size());
 
         JavaScriptInvocation invocation = pendingJavaScriptInvocations.get(0)
                 .getInvocation();
-        Assert.assertTrue("Invocation does not look like a promise callback",
+        assertTrue(
                 invocation.getExpression()
-                        .contains(JsonConstants.RPC_PROMISE_CALLBACK_NAME));
+                        .contains(JsonConstants.RPC_PROMISE_CALLBACK_NAME),
+                "Invocation does not look like a promise callback");
 
         List<Object> parameters = invocation.getParameters();
-        Assert.assertEquals(
-                "Expected three paramters: promiseId, value, target", 3,
-                parameters.size());
-        Assert.assertEquals(
-                "Promise id should match the value passed to invokeMethod",
-                Integer.valueOf(promiseId), parameters.get(0));
-        Assert.assertEquals("Promise value should be sqrt(36) = 6",
-                Integer.valueOf(6), parameters.get(1));
-        Assert.assertEquals("Target should be the component's element",
-                component.getElement(), parameters.get(2));
+        assertEquals(3, parameters.size(),
+                "Expected three paramters: promiseId, value, target");
+        assertEquals(Integer.valueOf(promiseId), parameters.get(0),
+                "Promise id should match the value passed to invokeMethod");
+        assertEquals(Integer.valueOf(6), parameters.get(1),
+                "Promise value should be sqrt(36) = 6");
+        assertEquals(component.getElement(), parameters.get(2),
+                "Target should be the component's element");
     }
 
     @Test
@@ -372,30 +383,30 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         try {
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                     component.getClass(), "compute", args, promiseId);
-            Assert.fail("Exception should be thrown");
+            fail("Exception should be thrown");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getCause() instanceof ArithmeticException);
+            assertTrue(e.getCause() instanceof ArithmeticException);
         }
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
                 .getInternals().dumpPendingJavaScriptInvocations();
-        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
+        assertEquals(1, pendingJavaScriptInvocations.size());
 
         JavaScriptInvocation invocation = pendingJavaScriptInvocations.get(0)
                 .getInvocation();
-        Assert.assertTrue("Invocation does not look like a promise callback",
+        assertTrue(
                 invocation.getExpression()
-                        .contains(JsonConstants.RPC_PROMISE_CALLBACK_NAME));
+                        .contains(JsonConstants.RPC_PROMISE_CALLBACK_NAME),
+                "Invocation does not look like a promise callback");
 
         List<Object> parameters = invocation.getParameters();
-        Assert.assertEquals("Expected two paramters: promiseId,  target", 2,
-                parameters.size());
-        Assert.assertEquals(
-                "Promise id should match the value passed to invokeMethod",
-                Integer.valueOf(promiseId), parameters.get(0));
-        Assert.assertEquals("Target should be the component's element",
-                component.getElement(), parameters.get(1));
+        assertEquals(2, parameters.size(),
+                "Expected two paramters: promiseId,  target");
+        assertEquals(Integer.valueOf(promiseId), parameters.get(0),
+                "Promise id should match the value passed to invokeMethod");
+        assertEquals(component.getElement(), parameters.get(1),
+                "Target should be the component's element");
     }
 
     @Test
@@ -406,7 +417,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertEquals(0, component.varArg.length);
+        assertEquals(0, component.varArg.length);
     }
 
     @Test
@@ -423,7 +434,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method4", array, -1);
 
-        Assert.assertEquals(component.jsonValue, json);
+        assertEquals(component.jsonValue, json);
     }
 
     @Test
@@ -440,7 +451,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method5", array, -1);
 
-        Assert.assertEquals(component.jsonNode, json);
+        assertEquals(component.jsonNode, json);
     }
 
     @Test
@@ -457,11 +468,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
+        assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
                 firstArg.get(1).doubleValue() }, component.doubleArg);
 
-        Assert.assertNotNull(component.varArg);
-        Assert.assertEquals(0, component.varArg.length);
+        assertNotNull(component.varArg);
+        assertEquals(0, component.varArg.length);
     }
 
     @Test
@@ -474,8 +485,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertEquals(1, component.varArg.length);
-        Assert.assertEquals("foo", component.varArg[0]);
+        assertEquals(1, component.varArg.length);
+        assertEquals("foo", component.varArg[0]);
     }
 
     @Test
@@ -490,7 +501,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertArrayEquals(new String[] { value.get(0).asString() },
+        assertArrayEquals(new String[] { value.get(0).asString() },
                 component.varArg);
     }
 
@@ -507,23 +518,27 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "intMethod", array, -1);
 
         // Verify the field was not modified
-        Assert.assertEquals(0, component.intArg);
+        assertEquals(0, component.intArg);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void noClientCallableMethodException() {
-        ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalStateException.class, () -> {
+            ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "operation",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void noMethodException() {
-        ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation1",
-                JacksonUtils.createArrayNode(), -1);
+        assertThrows(IllegalStateException.class, () -> {
+            ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "operation1",
+                    JacksonUtils.createArrayNode(), -1);
+        });
     }
 
     @Test
@@ -534,7 +549,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         requestInvokeMethod(component);
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     @Test
@@ -547,7 +562,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         requestInvokeMethod(component);
 
-        Assert.assertFalse(component.isInvoked);
+        assertFalse(component.isInvoked);
     }
 
     @Test
@@ -558,11 +573,11 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         component.getElement().setEnabled(false);
 
-        Assert.assertFalse(component.isInvoked);
+        assertFalse(component.isInvoked);
 
         requestInvokeMethod(component, "operation");
 
-        Assert.assertTrue(component.isInvoked);
+        assertTrue(component.isInvoked);
     }
 
     private void requestInvokeMethod(Component component) {

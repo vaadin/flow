@@ -19,14 +19,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializablePredicate;
 
 import static org.junit.Assert.assertEquals;
@@ -168,6 +171,39 @@ public class TreeDataProviderTest
     }
 
     @Test
+    public void treeData_setParent_direct_cycle_throws() {
+        // Test direct cycle: parent -> child, then try to set child as parent's
+        // parent
+        StrBean parent = rootData.get(0);
+        StrBean child = data.getChildren(parent).get(0);
+
+        // This should throw because it would create cycle: child -> parent ->
+        // child
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> data.setParent(parent, child));
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+        assertTrue(exception.getMessage().contains(parent.toString()));
+        assertTrue(exception.getMessage().contains(child.toString()));
+    }
+
+    @Test
+    public void treeData_setParent_multi_level_cycle_throws() {
+        // Test multi-level cycle: A -> B -> C, then try to set C as A's parent
+        StrBean itemA = rootData.get(0);
+        StrBean itemB = data.getChildren(itemA).get(0);
+        StrBean itemC = data.getChildren(itemB).get(0);
+
+        // This should throw because it would create cycle: C -> A -> B -> C
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> data.setParent(itemA, itemC));
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+        assertTrue(exception.getMessage().contains(itemA.toString()));
+        assertTrue(exception.getMessage().contains(itemC.toString()));
+    }
+
+    @Test
     public void treeData_root_items() {
         TreeData<String> data = new TreeData<>();
         TreeData<String> dataVarargs = new TreeData<>();
@@ -305,6 +341,40 @@ public class TreeDataProviderTest
     public void notPresentItem_getParent_returnsNull() {
         var itemNotPresentInProvider = new StrBean("Not present", -1, 0);
         assertNull(getDataProvider().getParent(itemNotPresentInProvider));
+    }
+
+    @Test
+    public void flattenedFormat_filterMatchesNestedDescendant_nothingExpanded_showsOnlyAncestorRoot() {
+        TreeData<String> treeData = new TreeData<>();
+        treeData.addRootItems("Item 0", "Item 1");
+        treeData.addItem("Item 0", "Item 0-0");
+        treeData.addItem("Item 0-0", "Item 0-0-0");
+
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
+                treeData, HierarchyFormat.FLATTENED);
+        treeDataProvider.setFilter(folder -> folder.equals("Item 0-0-0"));
+
+        assertEquals(List.of("Item 0"),
+                treeDataProvider
+                        .fetchChildren(
+                                new HierarchicalQuery<>(null, Set.of(), null))
+                        .toList());
+    }
+
+    @Test
+    public void flattenedFormat_filterMatchesNestedDescendant_allAncestorsExpanded_showsFullPathToMatch() {
+        TreeData<String> treeData = new TreeData<>();
+        treeData.addRootItems("Item 0", "Item 1");
+        treeData.addItem("Item 0", "Item 0-0");
+        treeData.addItem("Item 0-0", "Item 0-0-0");
+
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
+                treeData, HierarchyFormat.FLATTENED);
+        treeDataProvider.setFilter(folder -> folder.equals("Item 0-0-0"));
+
+        assertEquals(List.of("Item 0", "Item 0-0", "Item 0-0-0"),
+                treeDataProvider.fetchChildren(new HierarchicalQuery<>(null,
+                        Set.of("Item 0", "Item 0-0"), null)).toList());
     }
 
     @Override

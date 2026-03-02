@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -46,7 +45,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
-public class AbstractDownloadHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AbstractDownloadHandlerTest {
     private static final long TOTAL_BYTES = 100L;
     private static final long TRANSFERRED_BYTES = 42L;
     private static final IOException EXCEPTION = new IOException("Test error");
@@ -63,7 +67,7 @@ public class AbstractDownloadHandlerTest {
     private Element owner;
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
@@ -144,7 +148,7 @@ public class AbstractDownloadHandlerTest {
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
         List<String> expectedOrder = List.of("first", "second");
-        Assert.assertEquals(expectedOrder, executionOrder);
+        assertEquals(expectedOrder, executionOrder);
     }
 
     @Test
@@ -198,10 +202,9 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
 
-        Assert.assertTrue(successAtomic.get());
-        Assert.assertEquals("Hello",
-                outputStream.toString(StandardCharsets.UTF_8));
-        Assert.assertNull(downloadEvent.getException());
+        assertTrue(successAtomic.get());
+        assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
+        assertNull(downloadEvent.getException());
 
         OutputStream outputStreamError = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
@@ -211,8 +214,8 @@ public class AbstractDownloadHandlerTest {
                 .thenReturn(outputStreamError);
 
         customHandler.handleDownloadRequest(downloadEvent);
-        Assert.assertFalse(successAtomic.get());
-        Assert.assertNull(downloadEvent.getException());
+        assertFalse(successAtomic.get());
+        assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -224,13 +227,13 @@ public class AbstractDownloadHandlerTest {
 
     @Test
     public void inline_attachmentUsedByDefault() {
-        Assert.assertFalse(handler.isInline());
+        assertFalse(handler.isInline());
     }
 
     @Test
     public void inline_inlinedWhenExplicitlyCalled() {
         handler.inline();
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
     }
 
     @Test
@@ -250,13 +253,13 @@ public class AbstractDownloadHandlerTest {
             }
         };
         TransferContext context = handler.getTransferContext(event);
-        Assert.assertEquals(owner, context.owningElement());
-        Assert.assertEquals(session, context.session());
-        Assert.assertEquals(request, context.request());
-        Assert.assertEquals(response, context.response());
-        Assert.assertEquals(1024, context.contentLength());
-        Assert.assertEquals("test.txt", context.fileName());
-        Assert.assertNull(event.getException());
+        assertEquals(owner, context.owningElement());
+        assertEquals(session, context.session());
+        assertEquals(request, context.request());
+        assertEquals(response, context.response());
+        assertEquals(1024, context.contentLength());
+        assertEquals("test.txt", context.fileName());
+        assertNull(event.getException());
     }
 
     @Test
@@ -265,8 +268,7 @@ public class AbstractDownloadHandlerTest {
         handler.whenStart((context) -> invoked.set(true));
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
-        Assert.assertTrue("Start with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Start with context should be invoked");
     }
 
     @Test
@@ -276,8 +278,7 @@ public class AbstractDownloadHandlerTest {
                 1024);
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        Assert.assertTrue("Progress with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 
     @Test
@@ -286,9 +287,8 @@ public class AbstractDownloadHandlerTest {
         handler.onProgress((context, current, total) -> invoked.set(true));
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        Assert.assertTrue(
-                "Progress with context and interval should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(),
+                "Progress with context and interval should be invoked");
     }
 
     @Test
@@ -299,7 +299,6 @@ public class AbstractDownloadHandlerTest {
             listener.onComplete(mockContext, TRANSFERRED_BYTES);
             listener.onError(mockContext, EXCEPTION);
         });
-        Assert.assertTrue("Progress with context should be invoked",
-                invoked.get());
+        assertTrue(invoked.get(), "Progress with context should be invoked");
     }
 }

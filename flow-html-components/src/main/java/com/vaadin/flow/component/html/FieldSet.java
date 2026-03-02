@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
@@ -167,23 +167,18 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * Binds a signal's value to the fieldset legend text so that the legend is
      * updated when the signal's value is updated.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the legend text. When unbinding, the current legend text is left
-     * unchanged.
-     * <p>
      * While a binding for the legend text is active, any attempt to set the
      * legend text manually via {@link #setLegendText(String)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
      * detached state.
      *
      * @param legendTextSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setLegendText(String)
      * @see com.vaadin.flow.component.HasText#bindText(Signal)
@@ -191,17 +186,13 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @since 25.1
      */
     public void bindLegendText(Signal<String> legendTextSignal) {
+        Objects.requireNonNull(legendTextSignal, "Signal cannot be null");
         Legend legend = findLegend();
-        if (legendTextSignal != null) {
-            if (legend == null) {
-                legend = new Legend();
-                addComponentAsFirst(legend);
-            }
-            legend.bindText(legendTextSignal);
-        } else if (legend != null) {
-            // Unbind existing binding but keep current value and legend element
-            legend.bindText(null);
+        if (legend == null) {
+            legend = new Legend();
+            addComponentAsFirst(legend);
         }
+        legend.bindText(legendTextSignal);
     }
 
     /**

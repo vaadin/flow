@@ -18,9 +18,9 @@ package com.vaadin.flow.uitest.ui.signal;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Test view for testing Signal binding with
@@ -43,12 +43,12 @@ public class BindVisibleView extends Div {
 
         NativeButton toggleButton1 = new NativeButton(
                 "Toggle visible Signal value",
-                e -> signal1.value(!signal1.peek()));
+                e -> signal1.set(!signal1.peek()));
         toggleButton1.setId("toggle-button-1");
 
         NativeButton toggleButton2 = new NativeButton(
                 "Toggle visible Signal value",
-                e -> signal2.value(!signal2.peek()));
+                e -> signal2.set(!signal2.peek()));
         toggleButton2.setId("toggle-button-2");
 
         add(targetVisibleInitially, targetHiddenInitially, toggleButton1,

@@ -19,87 +19,59 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SignalPropertySupportTest {
+class SignalPropertySupportTest {
 
     private static MockVaadinServletService service;
-
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
 
     private LinkedList<ErrorEvent> events;
 
     private AtomicInteger callCount;
     private AtomicReference<Object> lastValue;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         events = mockLockedSessionWithErrorHandler();
         callCount = new AtomicInteger(0);
         lastValue = new AtomicReference<>();
     }
 
-    @After
+    @AfterEach
     public void after() {
-        Assert.assertTrue(events.isEmpty());
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
+        assertTrue(events.isEmpty());
         CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
+        events = null;
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
@@ -164,7 +136,7 @@ public class SignalPropertySupportTest {
         assertEquals("foo", signalPropertySupport.get());
         assertEquals("foo", lastValue.get());
 
-        signal.value("bar");
+        signal.set("bar");
 
         assertEquals("bar", signalPropertySupport.get());
         assertEquals("bar", lastValue.get());
@@ -217,7 +189,7 @@ public class SignalPropertySupportTest {
                 .create(component, lastValue::set);
         ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport
-                .bind(Signal.computed(() -> "computed-" + signal.value()));
+                .bind(Signal.computed(() -> "computed-" + signal.get()));
         assertEquals("computed-foo", signalPropertySupport.get());
         assertEquals("computed-foo", lastValue.get());
     }
@@ -236,32 +208,16 @@ public class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_nullWithNotYetBound_noEffect() {
+    public void bind_nullSignal_throwsNPE() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        signalPropertySupport.bind(null);
 
-        assertNull(signalPropertySupport.get());
-    }
-
-    @Test
-    public void bind_nullWithAlreadyBound_removeBinding() {
-        var component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
-                .create(component, value -> {
-                });
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        signalPropertySupport.bind(new ValueSignal<>("foo"));
-        assertEquals("foo", signalPropertySupport.get());
-        signalPropertySupport.bind(null);
-        signal.value("bar");
-        assertEquals("foo", signalPropertySupport.get());
+        assertThrows(NullPointerException.class,
+                () -> signalPropertySupport.bind(null));
     }
 
     @Test
@@ -290,7 +246,7 @@ public class SignalPropertySupportTest {
         signalPropertySupport.bind(signal);
         assertEquals("foo", signalPropertySupport.get());
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", signalPropertySupport.get());
         UI.getCurrent().add(component);
         assertEquals("bar", signalPropertySupport.get());

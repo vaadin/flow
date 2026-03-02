@@ -26,9 +26,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -36,8 +39,8 @@ import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * A state node feature that structures data as a map.
@@ -152,7 +155,8 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     public record SignalBinding(Signal<?> signal, Registration registration,
-            Serializable value) implements Serializable {
+            Serializable value,
+            SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
     private Values values;
@@ -541,48 +545,47 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Binds the given signal to the given key. <code>null</code> signal unbinds
-     * existing binding.
+     * Binds a signal to a given key using a setter function and stores the
+     * writeCallback in SignalBindingFeature.
      *
      * @param owner
      *            the element owning the key, not <code>null</code>
      * @param key
      *            the key of the node map
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
+     * @param setter
+     *            the function to call when the signal value changes
+     * @param writeCallback
+     *            the callback to propagate value changes back, or
+     *            <code>null</code> for a read-only binding
      * @param <T>
      *            the type of the signal value
-     * 
-     * @throws com.vaadin.signals.BindingActiveException
+     *
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given key
-     * 
+     *
      */
-    protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
-            SerializableBiConsumer<Element, T> setter) {
+    protected <T extends @Nullable Object> void bindSignal(Element owner,
+            String key, Signal<T> signal,
+            SerializableBiConsumer<Element, T> setter,
+            SerializableConsumer<?> writeCallback) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBinding previousSignalBinding;
         if (doGet(key) instanceof SignalBinding binding) {
             previousSignalBinding = binding;
         } else {
             previousSignalBinding = null;
         }
-        if (signal != null && previousSignalBinding != null
+        if (previousSignalBinding != null
                 && previousSignalBinding.signal() != null) {
             throw new BindingActiveException();
         }
 
-        Registration registration = signal != null
-                ? ElementEffect.bind(owner, signal, setter)
-                : null;
-        if (signal == null && previousSignalBinding != null) {
-            if (previousSignalBinding.registration() != null) {
-                previousSignalBinding.registration().remove();
-            }
-            put(key, get(key), false);
-        } else {
-            put(key, new SignalBinding(signal, registration, get(key)), false);
-        }
+        Registration registration = ElementEffect.bind(owner, signal, setter);
+        put(key, new SignalBinding(signal, registration, get(key),
+                writeCallback), false);
     }
 
     /**

@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit tests for Html.bindHtmlContent(Signal<String>).
  */
-public class HtmlBindHtmlContentTest extends SignalsUnitTest {
+class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
     @Test
     public void bindHtmlContent_componentAttachedBefore_bindingActive() {
@@ -69,7 +70,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         assertEquals("b", html.getElement().getAttribute("id"));
 
         // update value while attached
-        signal.value("<div id='c'>v2</div>");
+        signal.set("<div id='c'>v2</div>");
         assertEquals("v2", html.getInnerHtml());
         assertEquals("c", html.getElement().getAttribute("id"));
     }
@@ -82,7 +83,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.bindHtmlContent(signal);
 
         // change ignored while not attached
-        signal.value("<div id='c'>ignored</div>");
+        signal.set("<div id='c'>ignored</div>");
 
         assertEquals("init", html.getInnerHtml());
         assertEquals("a", html.getElement().getAttribute("id"));
@@ -99,7 +100,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.getElement().removeFromParent();
 
         // change ignored while detached
-        signal.value("<div id='c'>ignored</div>");
+        signal.set("<div id='c'>ignored</div>");
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
@@ -116,7 +117,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.getElement().removeFromParent();
 
         // change while detached
-        signal.value("<div id='c'>after2</div>");
+        signal.set("<div id='c'>after2</div>");
         // re-attach
         UI.getCurrent().add(html);
 
@@ -135,7 +136,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // sending null will cause NPE in setHtmlContent inside effect function;
         // state should not change, and an error should be captured by
         // SignalsUnitTest error handler
-        signal.value(null);
+        signal.set(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
@@ -148,7 +149,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_withNullBinding_removesBinding() {
+    public void bindHtmlContent_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
         ValueSignal<String> signal = new ValueSignal<>(
@@ -156,29 +157,29 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         html.bindHtmlContent(signal);
         assertEquals("after", html.getInnerHtml());
 
-        // remove binding
-        html.bindHtmlContent(null);
-        // further changes are ignored
-        signal.value("<div id='c'>ignored</div>");
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = html.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.HTML_CONTENT);
+
+        // Signal changes should no longer affect the component
+        signal.set("<div id='c'>ignored</div>");
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
+
+        // Manual set should work without throwing
+        html.setHtmlContent("<div id='d'>manual</div>");
+        assertEquals("manual", html.getInnerHtml());
+        assertEquals("d", html.getElement().getAttribute("id"));
     }
 
     @Test
-    public void bindHtmlContent_withNullBinding_allowsSetHtmlContent() {
+    public void bindHtmlContent_nullSignal_throwsNPE() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        ValueSignal<String> signal = new ValueSignal<>(
-                "<div id='b'>after</div>");
-        html.bindHtmlContent(signal);
-        assertEquals("after", html.getInnerHtml());
 
-        // remove binding
-        html.bindHtmlContent(null);
-
-        html.setHtmlContent("<div id='c'>manual</div>");
-        assertEquals("manual", html.getInnerHtml());
-        assertEquals("c", html.getElement().getAttribute("id"));
+        assertThrows(NullPointerException.class,
+                () -> html.bindHtmlContent(null));
     }
 
     @Test

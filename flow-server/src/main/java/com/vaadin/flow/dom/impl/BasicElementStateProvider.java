@@ -35,6 +35,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
@@ -58,8 +59,8 @@ import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -296,12 +297,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name,
-            Signal<?> signal) {
+    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
+            SerializableConsumer<?> writeCallback) {
         assert owner != null;
         assert name != null;
 
-        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal);
+        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal,
+                writeCallback);
     }
 
     @Override

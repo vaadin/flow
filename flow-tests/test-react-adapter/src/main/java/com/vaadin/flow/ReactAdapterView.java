@@ -35,6 +35,10 @@ public class ReactAdapterView extends Div {
                 (event) -> input.setValue("set value"));
         setValueButton.setId("setValueButton");
 
+        var setNullButton = new NativeButton("Set null",
+                (event) -> input.setValue(null));
+        setNullButton.setId("setNullValueButton");
+
         var getOutput = new Span();
         getOutput.setId("getOutput");
 
@@ -43,7 +47,7 @@ public class ReactAdapterView extends Div {
         getValueButton.setId("getValueButton");
 
         add(new Div(input, listenerOutput), new Div(setValueButton),
-                new Div(getValueButton, getOutput));
+                new Div(setNullButton), new Div(getValueButton, getOutput));
     }
 
 }

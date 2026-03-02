@@ -20,10 +20,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -35,7 +34,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @NotThreadSafe
 public class CompositeTest {
@@ -92,7 +92,7 @@ public class CompositeTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         compositeWithComponent = new CompositeWithComponent() {
             @Override
@@ -114,7 +114,7 @@ public class CompositeTest {
         layoutInsideComposite.track();
         layoutWithSingleComponentComposite.track();
 
-        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService.setCurrent(null);
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -124,7 +124,7 @@ public class CompositeTest {
         VaadinService.setCurrent(service);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         VaadinService.setCurrent(null);
     }
@@ -193,14 +193,14 @@ public class CompositeTest {
         assertEquals(TestComponent.class, instance.getContent().getClass());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void compositeContentTypeWithVariableTypeParameter() {
         class CompositeWithVariableType<C extends Component>
                 extends Composite<C> {
         }
 
         CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     public static class CustomComponent<T> extends UI {
@@ -221,33 +221,34 @@ public class CompositeTest {
             extends Composite<C> {
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void compositeContentTypeWithTypeVariable() {
         class CompositeWithComposite
                 extends Composite<CompositeWithVariableType<TestComponent>> {
         }
 
         CompositeWithComposite composite = new CompositeWithComposite();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void rawContentType() {
         @SuppressWarnings("rawtypes")
         class CompositeWithRawType extends Composite {
         }
 
         CompositeWithRawType composite = new CompositeWithRawType();
-        composite.getContent();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void noDefaultConstructor() {
         class NoDefaultConstructor extends Composite<Text> {
         }
 
         NoDefaultConstructor composite = new NoDefaultConstructor();
-        composite.getContent();
+        assertThrows(IllegalArgumentException.class,
+                () -> composite.getContent());
     }
 
     @Test

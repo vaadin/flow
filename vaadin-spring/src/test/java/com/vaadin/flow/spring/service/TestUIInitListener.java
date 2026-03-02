@@ -27,7 +27,7 @@ import com.vaadin.flow.server.UIInitListener;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class TestUIInitListener implements UIInitListener {
+class TestUIInitListener implements UIInitListener {
 
     List<UIInitEvent> events = new ArrayList<>();
 

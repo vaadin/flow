@@ -44,7 +44,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -77,8 +76,7 @@ public class UpdateImportsWithByteCodeScannerTest
         expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
         expectedJsModuleImports.add("import 'jsmodule/h.js';");
         expectedJsModuleImports.add("import 'jsmodule/g.js';");
-        expectedJsModuleImports.add("import '" + DepsTests.UI_IMPORT + "';");
-        super.assertFullSortOrder(true, expectedJsModuleImports);
+        super.assertFullSortOrder(expectedJsModuleImports);
     }
 
     @JavaScript("./lazy-component-javascript.js")

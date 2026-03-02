@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseChecker.DownloadOptions;
@@ -36,14 +39,16 @@ import com.vaadin.pro.licensechecker.Product;
  * @since 25.0
  */
 @Mojo(name = "download-license", requiresProject = false)
-public class DownloadLicenseMojo extends FlowModeAbstractMojo {
+public class DownloadLicenseMojo extends AbstractMojo {
 
     private static final String PRODUCT_NAME = "vaadin-maven-download";
     private static final int TIMEOUT_SECONDS = 300; // 5 minutes
 
+    @Parameter(defaultValue = "${mojoExecution}")
+    MojoExecution mojoExecution;
+
     @Override
-    protected void executeInternal()
-            throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         String version = getFlowVersion();
 
         // Check if we already have a proKey

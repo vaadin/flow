@@ -19,6 +19,7 @@ import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.lang.reflect.AnnotatedElement;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +33,8 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -163,13 +166,38 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 
     private void logDeniedByLayoutAccessRules(NavigationContext context,
             Class<?> layoutClass, String msg) {
-        if (context.isNavigating()) {
-            LOGGER.warn(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+        if (isViewBroaderThanLayout(context.getNavigationTarget(),
+                layoutClass)) {
+            LOGGER.warn(
+                    msg + " The view allows broader access than the layout,"
+                            + " which is likely a configuration error.",
+                    context.getNavigationTarget().getName(),
+                    layoutClass.getName());
+        } else if (context.isNavigating() && isDevelopmentMode(context)) {
+            LOGGER.info(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         } else {
-            LOGGER.trace(msg, context.getNavigationTarget().getSimpleName(),
-                    layoutClass.getSimpleName());
+            LOGGER.debug(msg, context.getNavigationTarget().getName(),
+                    layoutClass.getName());
         }
+    }
+
+    private boolean isViewBroaderThanLayout(Class<?> view, Class<?> layout) {
+        return getAccessLevel(view) > getAccessLevel(layout);
+    }
+
+    private int getAccessLevel(Class<?> cls) {
+        AnnotatedElement target = AccessAnnotationChecker.securityTarget(cls);
+        if (target.isAnnotationPresent(AnonymousAllowed.class)) {
+            return 3;
+        }
+        if (target.isAnnotationPresent(PermitAll.class)) {
+            return 2;
+        }
+        if (target.isAnnotationPresent(RolesAllowed.class)) {
+            return 1;
+        }
+        return 0;
     }
 
     private boolean isImplicitlyDenyAllAnnotated(Class<?> targetView) {
@@ -178,4 +206,11 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 
+    private boolean isDevelopmentMode(NavigationContext context) {
+        VaadinContext vaadinContext = context.getRouter().getRegistry()
+                .getContext();
+        ApplicationConfiguration appConfig = ApplicationConfiguration
+                .get(vaadinContext);
+        return !appConfig.isProductionMode();
+    }
 }

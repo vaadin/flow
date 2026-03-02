@@ -15,9 +15,12 @@
  */
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class AssertionsEnabledTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AssertionsEnabledTest {
+    @Test
     public void testAssertionsEnabled() {
         boolean assertFailed = false;
         try {
@@ -25,8 +28,8 @@ public class AssertionsEnabledTest extends TestCase {
         } catch (AssertionError e) {
             assertFailed = true;
         } finally {
-            assertTrue("Unit tests should be run with assertions enabled",
-                    assertFailed);
+            assertTrue(assertFailed,
+                    "Unit tests should be run with assertions enabled");
         }
     }
 }

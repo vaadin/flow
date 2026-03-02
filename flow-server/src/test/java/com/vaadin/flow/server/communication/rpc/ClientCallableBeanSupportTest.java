@@ -18,10 +18,9 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -36,11 +35,16 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Tests for @ClientCallable method support with bean and collection parameters
  * and return values.
  */
-public class ClientCallableBeanSupportTest {
+class ClientCallableBeanSupportTest {
 
     private MockServletServiceSessionSetup mocks;
     private UI ui;
@@ -143,7 +147,7 @@ public class ClientCallableBeanSupportTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         VaadinService service = mocks.getService();
@@ -156,7 +160,7 @@ public class ClientCallableBeanSupportTest {
         handler = new PublishedServerEventHandlerRpcHandler();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mocks.cleanup();
     }
@@ -182,10 +186,10 @@ public class ClientCallableBeanSupportTest {
 
         // Verify the bean was properly deserialized
         SimpleBean received = component.getReceivedBean();
-        Assert.assertNotNull("Bean should be received", received);
-        Assert.assertEquals("TestBean", received.name);
-        Assert.assertEquals(123, received.value);
-        Assert.assertTrue(received.active);
+        assertNotNull(received, "Bean should be received");
+        assertEquals("TestBean", received.name);
+        assertEquals(123, received.value);
+        assertTrue(received.active);
     }
 
     @Test
@@ -218,16 +222,16 @@ public class ClientCallableBeanSupportTest {
 
         // Verify the list was properly deserialized
         List<SimpleBean> received = component.getReceivedList();
-        Assert.assertNotNull("List should be received", received);
-        Assert.assertEquals("Should have 2 beans", 2, received.size());
+        assertNotNull(received, "List should be received");
+        assertEquals(2, received.size(), "Should have 2 beans");
 
-        Assert.assertEquals("First", received.get(0).name);
-        Assert.assertEquals(1, received.get(0).value);
-        Assert.assertTrue(received.get(0).active);
+        assertEquals("First", received.get(0).name);
+        assertEquals(1, received.get(0).value);
+        assertTrue(received.get(0).active);
 
-        Assert.assertEquals("Second", received.get(1).name);
-        Assert.assertEquals(2, received.get(1).value);
-        Assert.assertFalse(received.get(1).active);
+        assertEquals("Second", received.get(1).name);
+        assertEquals(2, received.get(1).value);
+        assertFalse(received.get(1).active);
     }
 
     @Test
@@ -255,12 +259,12 @@ public class ClientCallableBeanSupportTest {
 
         // Verify the nested bean was properly deserialized
         NestedBean received = component.getReceivedNestedBean();
-        Assert.assertNotNull("Nested bean should be received", received);
-        Assert.assertEquals("OuterBean", received.title);
-        Assert.assertNotNull("Inner bean should be present", received.simple);
-        Assert.assertEquals("InnerBean", received.simple.name);
-        Assert.assertEquals(456, received.simple.value);
-        Assert.assertFalse(received.simple.active);
+        assertNotNull(received, "Nested bean should be received");
+        assertEquals("OuterBean", received.title);
+        assertNotNull(received.simple, "Inner bean should be present");
+        assertEquals("InnerBean", received.simple.name);
+        assertEquals(456, received.simple.value);
+        assertFalse(received.simple.active);
     }
 
     @Test
@@ -284,10 +288,10 @@ public class ClientCallableBeanSupportTest {
 
         // Verify the integer list was properly deserialized
         List<Integer> received = component.getReceivedIntegerList();
-        Assert.assertNotNull("Integer list should be received", received);
-        Assert.assertEquals("Should have 3 integers", 3, received.size());
-        Assert.assertEquals(Integer.valueOf(10), received.get(0));
-        Assert.assertEquals(Integer.valueOf(20), received.get(1));
-        Assert.assertEquals(Integer.valueOf(30), received.get(2));
+        assertNotNull(received, "Integer list should be received");
+        assertEquals(3, received.size(), "Should have 3 integers");
+        assertEquals(Integer.valueOf(10), received.get(0));
+        assertEquals(Integer.valueOf(20), received.get(1));
+        assertEquals(Integer.valueOf(30), received.get(2));
     }
 }

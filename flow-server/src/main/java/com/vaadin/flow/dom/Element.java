@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -29,6 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -48,6 +50,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -61,8 +64,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -260,7 +263,7 @@ public class Element extends Node<Element> {
      * <p>
      * While a Signal is bound to an attribute, any attempt to set or remove
      * attribute value manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Binding style or class attribute to a Signal is not supported.
@@ -272,15 +275,14 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindAttribute("mol", signal);
-     * signal.value("42"); // The element now has attribute mol="42"
+     * signal.set("42"); // The element now has attribute mol="42"
      * </pre>
      *
      * @param attribute
      *            the name of the attribute
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
      */
@@ -854,8 +856,7 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the given property and keeps the
      * property value synchronized with the signal value while the element is in
      * attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * changes have no effect.
      * <p>
      * Same rules apply for the property name and value from the bound Signal as
      * in {@link #setProperty(String, String)}.
@@ -871,29 +872,40 @@ public class Element extends Node<Element> {
      * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
      * {@code Signal<Map<?,?>}.
      * <p>
+     * While a Signal is bound to a property and the element is in attached
+     * state, when a property change originates from the client (e.g., via a
+     * synchronized property change listener), the write callback will be
+     * invoked to propagate the value back.
+     * <p>
+     * If the write callback is <code>null</code>, the binding is read-only.
+     * <p>
      * Example of usage:
      *
      * <pre>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
-     * Element element = new Element("span");
+     * Element element = new Element("input");
      * getElement().appendChild(element);
-     * element.bindProperty("mol", signal);
-     * signal.value("42"); // The element now has property mol="42"
+     * element.bindProperty("value", signal, null);
+     * signal.set("Hello"); // The element property value="Hello"
      * </pre>
      *
      * @param name
      *            the name of the property
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @param writeCallback
+     *            the callback to propagate value changes originated from the
+     *            client back, or <code>null</code> for a read-only binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public void bindProperty(String name, Signal<?> signal) {
+    public <T extends @Nullable Object> void bindProperty(String name,
+            Signal<T> signal, SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
-        getStateProvider().bindPropertySignal(this, name, signal);
+        getStateProvider().bindPropertySignal(this, name, signal,
+                writeCallback);
     }
 
     /**
@@ -1319,12 +1331,11 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the text content of this element and
      * keeps the text content synchronized with the signal value while the
      * element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * While a Signal is bound to a property, any attempt to set the text
      * content manually throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -1334,31 +1345,27 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindText(signal);
-     * signal.value("text"); // The element text content is set to "text"
+     * signal.set("text"); // The element text content is set to "text"
      * </pre>
      *
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
      */
     public void bindText(Signal<String> signal) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
 
-        if (signal == null) {
-            feature.removeBinding();
-        } else {
-            if (feature.hasBinding() && getNode().isAttached()) {
-                throw new BindingActiveException();
-            }
-
-            Registration registration = ElementEffect.bind(this, signal,
-                    (element, value) -> setTextContent(value));
-            feature.setBinding(registration, signal);
+        if (feature.hasBinding() && getNode().isAttached()) {
+            throw new BindingActiveException();
         }
+
+        Registration registration = ElementEffect.bind(this, signal,
+                (element, value) -> setTextContent(value));
+        feature.setBinding(registration, signal);
     }
 
     /**
@@ -1431,6 +1438,38 @@ public class Element extends Node<Element> {
      */
     public ClassList getClassList() {
         return getStateProvider().getClassList(getNode());
+    }
+
+    /**
+     * Temporarily adds a CSS class to this element to trigger a CSS animation,
+     * then automatically removes it when the animation ends. This is useful for
+     * "flash" effects such as highlighting a value that changed in the
+     * background.
+     * <p>
+     * The method works by removing the class (if present), forcing a DOM
+     * reflow, and then re-adding it. This restarts any CSS animation associated
+     * with the class. An {@code animationend} listener automatically removes
+     * the class when the animation completes. If no CSS animation is defined
+     * for the class, it is removed immediately.
+     * <p>
+     * Example CSS to define a flash animation:
+     *
+     * <pre>
+     * .highlight {
+     *     animation: flash 0.5s ease-out;
+     * }
+     * &#64;keyframes flash {
+     *     from { background-color: yellow; }
+     *     to { background-color: transparent; }
+     * }
+     * </pre>
+     *
+     * @param className
+     *            the CSS class name to flash, not <code>null</code>
+     */
+    public void flashClass(String className) {
+        Objects.requireNonNull(className, "className cannot be null");
+        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
     }
 
     /**
@@ -1804,12 +1843,11 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the <code>visible</code> property of
      * this element and keeps property synchronized with the signal value while
      * the element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -1819,17 +1857,17 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindVisible(signal);
-     * signal.value(false); // The element is set hidden
+     * signal.set(false); // The element is set hidden
      * </pre>
      *
      * @param visibleSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
     public void bindVisible(Signal<Boolean> visibleSignal) {
+        Objects.requireNonNull(visibleSignal, "Signal cannot be null");
         getStateProvider().bindVisibleSignal(this, visibleSignal);
     }
 
@@ -1862,12 +1900,11 @@ public class Element extends Node<Element> {
      * Binds a {@link Signal}'s value to the enabled state of this element and
      * keeps the state synchronized with the signal value while the element is
      * in attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * changes have no effect.
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
      * Example of usage:
@@ -1877,32 +1914,28 @@ public class Element extends Node<Element> {
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindEnabled(signal);
-     * signal.value(false); // The element is disabled
+     * signal.set(false); // The element is disabled
      * </pre>
      *
      * @param enabledSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
      */
     public void bindEnabled(Signal<Boolean> enabledSignal) {
+        Objects.requireNonNull(enabledSignal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
                 .getFeature(SignalBindingFeature.class);
 
-        if (enabledSignal == null) {
-            feature.removeBinding(SignalBindingFeature.ENABLED);
-        } else {
-            if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
-                throw new BindingActiveException();
-            }
-
-            Registration registration = ElementEffect.bind(this, enabledSignal,
-                    (element, value) -> setEnabledInternal(value));
-            feature.setBinding(SignalBindingFeature.ENABLED, registration,
-                    enabledSignal);
+        if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
+            throw new BindingActiveException();
         }
+
+        Registration registration = ElementEffect.bind(this, enabledSignal,
+                (element, value) -> setEnabledInternal(value));
+        feature.setBinding(SignalBindingFeature.ENABLED, registration,
+                enabledSignal);
     }
 
     private void setEnabledInternal(final Boolean enabled) {

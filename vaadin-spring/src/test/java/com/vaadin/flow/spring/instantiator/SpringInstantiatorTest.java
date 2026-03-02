@@ -27,9 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.atmosphere.cpr.AtmosphereFramework;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -44,7 +43,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
@@ -64,7 +63,16 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ExtendWith(SpringExtension.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)
 public class SpringInstantiatorTest {
 
@@ -114,7 +122,7 @@ public class SpringInstantiatorTest {
         boolean called;
 
         @EventListener
-        public void init(ServiceInitEvent event) {
+        void init(ServiceInitEvent event) {
             called = true;
         }
     }
@@ -136,68 +144,66 @@ public class SpringInstantiatorTest {
     }
 
     @Test
-    public void createRouteTarget_pojo_instanceIsCreated()
-            throws ServletException {
+    void createRouteTarget_pojo_instanceIsCreated() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         RouteTarget1 target1 = instantiator
                 .createRouteTarget(RouteTarget1.class, null);
-        Assert.assertNotNull(target1);
+        assertNotNull(target1);
     }
 
     @Test
-    public void getServiceInitListeners_springManagedBeanAndJavaSPI_bothClassesAreInStream()
+    void getServiceInitListeners_springManagedBeanAndJavaSPI_bothClassesAreInStream()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         Set<?> set = instantiator.getServiceInitListeners()
                 .map(Object::getClass).collect(Collectors.toSet());
 
-        Assert.assertTrue(set.contains(TestVaadinServiceInitListener.class));
-        Assert.assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
+        assertTrue(set.contains(TestVaadinServiceInitListener.class));
+        assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
     }
 
     @Test
-    public void getServiceInitListeners_springEventListener()
-            throws ServletException {
+    void getServiceInitListeners_springEventListener() throws ServletException {
         getInstantiator(context);
 
-        Assert.assertTrue(context
+        assertTrue(context
                 .getBean(ServiceInitListenerWithSpringEvent.class).called);
     }
 
     @Test
-    public void createRouteTarget_springManagedBean_instanceIsCreated()
+    void createRouteTarget_springManagedBean_instanceIsCreated()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         RouteTarget2 singleton = context.getBean(RouteTarget2.class);
 
-        Assert.assertEquals(singleton,
+        assertEquals(singleton,
                 instantiator.createRouteTarget(RouteTarget2.class, null));
     }
 
     @Test
-    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
+    void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(I18NTestProvider.class,
+        assertNotNull(instantiator.getI18NProvider());
+        assertEquals(I18NTestProvider.class,
                 instantiator.getI18NProvider().getClass());
     }
 
     @Test
-    public void createComponent_componentIsCreatedOnEveryCall()
+    void createComponent_componentIsCreatedOnEveryCall()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         RouteTarget2 component = instantiator
                 .createComponent(RouteTarget2.class);
-        Assert.assertNotNull(component);
+        assertNotNull(component);
 
         RouteTarget2 anotherComponent = instantiator
                 .createComponent(RouteTarget2.class);
-        Assert.assertNotEquals(component, anotherComponent);
+        assertNotEquals(component, anotherComponent);
     }
 
     public static VaadinService getService(ApplicationContext context,
@@ -276,7 +282,7 @@ public class SpringInstantiatorTest {
     }
 
     @Test
-    public void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
+    void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(context.getBean(Number.class))
@@ -290,15 +296,15 @@ public class SpringInstantiatorTest {
         try {
             instantiator.getOrCreate(Number.class);
         } catch (BeanInstantiationException e) {
-            Assert.assertNotNull(e.getMessage());
-            Assert.assertFalse(e.getMessage().contains("[HINT]"));
+            assertNotNull(e.getMessage());
+            assertFalse(e.getMessage().contains("[HINT]"));
             return;
         }
-        Assert.fail();
+        fail();
     }
 
     @Test
-    public void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
+    void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(context.getBean(Number.class))
@@ -312,15 +318,15 @@ public class SpringInstantiatorTest {
         try {
             instantiator.getOrCreate(Number.class);
         } catch (BeanInstantiationException e) {
-            Assert.assertNotNull(e.getMessage());
-            Assert.assertTrue(e.getMessage().contains("[HINT]"));
+            assertNotNull(e.getMessage());
+            assertTrue(e.getMessage().contains("[HINT]"));
             return;
         }
-        Assert.fail();
+        fail();
     }
 
     @Test
-    public void getOrCreateBean_oneBeanGiven_noException() {
+    void getOrCreateBean_oneBeanGiven_noException() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class);
         Mockito.when(context.getBeanNamesForType(Number.class))
                 .thenReturn(new String[] { "one" });
@@ -329,11 +335,11 @@ public class SpringInstantiatorTest {
 
         Number bean = instantiator.getOrCreate(Number.class);
 
-        Assert.assertEquals(0, bean);
+        assertEquals(0, bean);
     }
 
     @Test
-    public void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
+    void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(context.getBean(String.class))
@@ -344,40 +350,40 @@ public class SpringInstantiatorTest {
 
         String bean = instantiator.getOrCreate(String.class);
 
-        Assert.assertEquals("string", bean);
+        assertEquals("string", bean);
     }
 
     @Test
-    public void getApplicationClass_regularClass_getsSameClass()
+    void getApplicationClass_regularClass_getsSameClass()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         RouteTarget1 instance = instantiator.getOrCreate(RouteTarget1.class);
-        Assert.assertSame(RouteTarget1.class,
+        assertSame(RouteTarget1.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(RouteTarget1.class,
+        assertSame(RouteTarget1.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_scopedBean_getsApplicationClass()
+    void getApplicationClass_scopedBean_getsApplicationClass()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         RouteTarget2 instance = context.getBean(RouteTarget2.class);
-        Assert.assertSame(RouteTarget2.class,
+        assertSame(RouteTarget2.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(RouteTarget2.class,
+        assertSame(RouteTarget2.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_proxiedBean_getsApplicationClass()
+    void getApplicationClass_proxiedBean_getsApplicationClass()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         TestConfiguration instance = context.getBean(TestConfiguration.class);
-        Assert.assertNotSame(TestConfiguration.class, instance.getClass());
-        Assert.assertSame(TestConfiguration.class,
+        assertNotSame(TestConfiguration.class, instance.getClass());
+        assertSame(TestConfiguration.class,
                 instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestConfiguration.class,
+        assertSame(TestConfiguration.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 

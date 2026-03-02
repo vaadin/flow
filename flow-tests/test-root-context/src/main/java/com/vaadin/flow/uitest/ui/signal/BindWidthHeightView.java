@@ -20,8 +20,8 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.local.ValueSignal;
 
 /**
  * View for testing binding width and height state to a Signal.
@@ -54,20 +54,19 @@ public class BindWidthHeightView extends Div {
         target.bindHeight(heightSignal);
 
         NativeButton setWidth100Button = new NativeButton(
-                "widthSignal.value(\"100%\")", e -> widthSignal.value("100%"));
+                "widthSignal.set(\"100%\")", e -> widthSignal.set("100%"));
         setWidth100Button.setId("width-100-pct");
 
         NativeButton setWidthNullButton = new NativeButton(
-                "widthSignal.value(null)", e -> widthSignal.value(null));
+                "widthSignal.set(null)", e -> widthSignal.set(null));
         setWidthNullButton.setId("width-null");
 
         NativeButton setHeight100Button = new NativeButton(
-                "heightSignal.value(\"100%\")",
-                e -> heightSignal.value("100%"));
+                "heightSignal.set(\"100%\")", e -> heightSignal.set("100%"));
         setHeight100Button.setId("height-100-pct");
 
         NativeButton setHeightNullButton = new NativeButton(
-                "heightSignal.value(null)", e -> heightSignal.value(null));
+                "heightSignal.set(null)", e -> heightSignal.set(null));
         setHeightNullButton.setId("height-null");
 
         add(target, new Div(setWidth100Button, setWidthNullButton,

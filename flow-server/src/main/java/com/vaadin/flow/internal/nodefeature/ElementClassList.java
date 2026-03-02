@@ -15,15 +15,19 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Handles CSS class names for an element.
@@ -86,24 +90,66 @@ public class ElementClassList extends SerializableNodeList<String> {
         @Override
         public void bind(String name, Signal<Boolean> signal) {
             validate(name);
+            Objects.requireNonNull(signal, "Signal cannot be null");
             SignalBindingFeature feature = getNode()
                     .getFeature(SignalBindingFeature.class);
 
-            if (signal == null) {
-                feature.removeBinding(SignalBindingFeature.CLASSES + name);
-            } else {
-                if (feature.hasBinding(SignalBindingFeature.CLASSES + name)) {
-                    throw new BindingActiveException("Class name '" + name
-                            + "' is already bound to a signal");
-                }
-
-                Registration registration = ElementEffect.bind(
-                        Element.get(getNode()), signal,
-                        (element, value) -> internalSetPresence(name,
-                                Boolean.TRUE.equals(value)));
-                feature.setBinding(SignalBindingFeature.CLASSES + name,
-                        registration, signal);
+            if (feature.hasBinding(SignalBindingFeature.CLASSES + name)) {
+                throw new BindingActiveException("Class name '" + name
+                        + "' is already bound to a signal");
             }
+
+            Registration registration = ElementEffect.bind(
+                    Element.get(getNode()), signal,
+                    (element, value) -> internalSetPresence(name,
+                            Boolean.TRUE.equals(value)));
+            feature.setBinding(SignalBindingFeature.CLASSES + name,
+                    registration, signal);
+        }
+
+        @Override
+        public void bind(Signal<List<String>> names) {
+            Objects.requireNonNull(names, "Signal cannot be null");
+            SignalBindingFeature feature = getNode()
+                    .getFeature(SignalBindingFeature.class);
+
+            if (feature.hasBinding(SignalBindingFeature.CLASS_GROUP)) {
+                throw new BindingActiveException(
+                        "A group class name binding is already active");
+            }
+
+            Set<String> previousNames = new HashSet<>();
+
+            Registration registration = ElementEffect
+                    .effect(Element.get(getNode()), () -> {
+                        List<String> signalNames = names.get();
+                        Set<String> newNames = new HashSet<>();
+                        if (signalNames != null) {
+                            for (String name : signalNames) {
+                                if (name != null && !name.isEmpty()) {
+                                    newNames.add(name);
+                                }
+                            }
+                        }
+
+                        // Remove names no longer in the list
+                        for (String old : previousNames) {
+                            if (!newNames.contains(old)) {
+                                internalSetPresence(old, false);
+                            }
+                        }
+                        // Add new names
+                        for (String name : newNames) {
+                            if (!previousNames.contains(name)) {
+                                internalSetPresence(name, true);
+                            }
+                        }
+
+                        previousNames.clear();
+                        previousNames.addAll(newNames);
+                    });
+            feature.setBinding(SignalBindingFeature.CLASS_GROUP, registration,
+                    names);
         }
 
         @Override

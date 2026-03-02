@@ -41,11 +41,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
@@ -57,10 +55,20 @@ import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-public class VaadinSessionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+class VaadinSessionTest {
 
     /**
      * Event fired before a connector is detached from the application.
@@ -104,7 +112,7 @@ public class VaadinSessionTest {
     private UI ui;
     private Lock httpSessionLock;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         httpSessionLock = new ReentrantLock();
         mockService = new MockVaadinServletService();
@@ -123,12 +131,9 @@ public class VaadinSessionTest {
                 Object res;
                 try {
                     Thread.sleep(100); // for deadlock testing
-                    org.junit.Assert.assertTrue("Deadlock detected",
-                            httpSessionLock.tryLock(5, TimeUnit.SECONDS)); // simulates
-                                                                           // servlet
-                                                                           // container's
-                                                                           // session
-                                                                           // locking
+                    // simulates servlet container's session locking
+                    assertTrue(httpSessionLock.tryLock(5, TimeUnit.SECONDS),
+                            "Deadlock detected");
                     String lockAttribute = mockService.getServiceName()
                             + ".lock";
                     if (lockAttribute.equals(name)) {
@@ -251,7 +256,7 @@ public class VaadinSessionTest {
                 napper.run();
 
             // Command #2 should not have seen command #1's UI
-            Assert.assertNull(uiRef.get());
+            assertNull(uiRef.get());
         } finally {
             session.lock();
         }
@@ -261,7 +266,7 @@ public class VaadinSessionTest {
      * This reproduces #14452 situation with deadlock - see diagram
      */
     @Test
-    @Category(SlowTests.class)
+    @Tag("com.vaadin.flow.testcategory.SlowTests")
     public void testInvalidationDeadlock() {
 
         // this simulates servlet container's session invalidation from another
@@ -296,10 +301,10 @@ public class VaadinSessionTest {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(e -> {
             detachCalled.set(true);
-            Assert.assertEquals(ui, UI.getCurrent());
-            Assert.assertEquals(session, VaadinSession.getCurrent());
-            Assert.assertEquals(mockService, VaadinService.getCurrent());
-            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
+            assertEquals(ui, UI.getCurrent());
+            assertEquals(session, VaadinSession.getCurrent());
+            assertEquals(mockService, VaadinService.getCurrent());
+            assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
 
         session.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
@@ -309,19 +314,19 @@ public class VaadinSessionTest {
                                                     // VaadinService.fireSessionDestroy,
                                                     // we need to run the
                                                     // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
+        assertTrue(detachCalled.get());
     }
 
     @Test
-    @Category(SlowTests.class)
+    @Tag("com.vaadin.flow.testcategory.SlowTests")
     public void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(e -> {
             detachCalled.set(true);
-            Assert.assertEquals(ui, UI.getCurrent());
-            Assert.assertEquals(session, VaadinSession.getCurrent());
-            Assert.assertEquals(mockService, VaadinService.getCurrent());
-            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
+            assertEquals(ui, UI.getCurrent());
+            assertEquals(session, VaadinSession.getCurrent());
+            assertEquals(mockService, VaadinService.getCurrent());
+            assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
         CurrentInstance.clearAll();
         session.close();
@@ -332,7 +337,7 @@ public class VaadinSessionTest {
                                                     // VaadinService.fireSessionDestroy,
                                                     // we need to run the
                                                     // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
+        assertTrue(detachCalled.get());
     }
 
     @Test
@@ -340,16 +345,14 @@ public class VaadinSessionTest {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
         vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
-        org.junit.Assert.assertEquals(
-                "'valueUnbound' method doesn't call 'close' for the session", 1,
-                vaadinSession.getCloseCount());
+        assertEquals(1, vaadinSession.getCloseCount(),
+                "'valueUnbound' method doesn't call 'close' for the session");
 
         vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
-        org.junit.Assert.assertEquals(
+        assertEquals(1, vaadinSession.getCloseCount(),
                 "'valueUnbound' method may not call 'close' "
-                        + "method for closing session",
-                1, vaadinSession.getCloseCount());
+                        + "method for closing session");
     }
 
     private static class SerializationPushConnection
@@ -369,7 +372,7 @@ public class VaadinSessionTest {
     }
 
     @Test
-    @Category(SlowTests.class)
+    @Tag("com.vaadin.flow.testcategory.SlowTests")
     public void threadLocalsWhenDeserializing() throws Exception {
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -383,8 +386,8 @@ public class VaadinSessionTest {
         VaadinSession.setCurrent(session);
         session.lock();
         SerializationPushConnection pc = new SerializationPushConnection(ui);
-        Assert.assertEquals("Session should be set when instance is created",
-                session, pc.session);
+        assertEquals(session, pc.session,
+                "Session should be set when instance is created");
         ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
         ui.getInternals().setPushConnection(pc);
         int uiId = ui.getUIId();
@@ -403,11 +406,10 @@ public class VaadinSessionTest {
 
         VaadinSession deserializedSession = (VaadinSession) in.readObject();
 
-        Assert.assertNull("Current session shouldn't leak from deserialisation",
-                VaadinSession.getCurrent());
+        assertNull(VaadinSession.getCurrent(),
+                "Current session shouldn't leak from deserialisation");
 
-        Assert.assertNotSame("Should get a new session", session,
-                deserializedSession);
+        assertNotSame(session, deserializedSession, "Should get a new session");
 
         // Restore http session and service instance so the session can be
         // locked
@@ -418,9 +420,8 @@ public class VaadinSessionTest {
         SerializationPushConnection deserializedPc = (SerializationPushConnection) deserializedUi
                 .getInternals().getPushConnection();
 
-        Assert.assertEquals(
-                "Current session should be available in SerializationTestLabel.readObject",
-                deserializedSession, deserializedPc.session);
+        assertEquals(deserializedSession, deserializedPc.session,
+                "Current session should be available in SerializationTestLabel.readObject");
         deserializedSession.unlock();
     }
 
@@ -434,7 +435,7 @@ public class VaadinSessionTest {
 
         session.addUI(anotherUI);
 
-        Assert.assertEquals(2, session.getUIs().size());
+        assertEquals(2, session.getUIs().size());
 
         Set<Locale> locales = session.getUIs().stream().map(UI::getLocale)
                 .collect(Collectors.toSet());
@@ -449,8 +450,8 @@ public class VaadinSessionTest {
         Locale expectedlocale = newLocale.get();
 
         Iterator<UI> uis = session.getUIs().iterator();
-        Assert.assertEquals(expectedlocale, uis.next().getLocale());
-        Assert.assertEquals(expectedlocale, uis.next().getLocale());
+        assertEquals(expectedlocale, uis.next().getLocale());
+        assertEquals(expectedlocale, uis.next().getLocale());
     }
 
     @Test
@@ -485,7 +486,7 @@ public class VaadinSessionTest {
             vaadinSession
                     .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
-            Assert.assertNotNull(vaadinSession.getSession());
+            assertNotNull(vaadinSession.getSession());
         } finally {
             CurrentInstance.clearAll();
         }
@@ -520,7 +521,7 @@ public class VaadinSessionTest {
             vaadinSession
                     .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
-            Assert.assertNull(vaadinSession.getSession());
+            assertNull(vaadinSession.getSession());
         } finally {
             CurrentInstance.clearAll();
         }
@@ -544,7 +545,7 @@ public class VaadinSessionTest {
         vaadinSession.setState(VaadinSessionState.CLOSING);
         vaadinSession.setState(VaadinSessionState.CLOSED);
 
-        Assert.assertNull(vaadinSession.getSession());
+        assertNull(vaadinSession.getSession());
     }
 
     @Test
@@ -583,25 +584,29 @@ public class VaadinSessionTest {
         int nodeId = testComponent.getElement().getNode().getId();
         int uiId = testComponent.getUI().get().getUIId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        Assert.assertSame(testComponent,
+        assertSame(testComponent,
                 session.findElement(uiId, nodeId).getComponent().get());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void findComponent_nonExistingNodeIdThrows() {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         int uiId = testComponent.getUI().get().getUIId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        session.findElement(uiId, nodeId * 10);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> session.findElement(uiId, nodeId * 10));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void findComponent_nonExistingAppIdThrows() {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         VaadinSession session = testComponent.getUI().get().getSession();
-        session.findElement(123, nodeId);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> session.findElement(123, nodeId));
     }
 
     private TestComponent createTestComponentInSession() {
@@ -612,9 +617,9 @@ public class VaadinSessionTest {
 
     @Test
     public void checkHasLock_noCheckInDevMode() {
-        Assume.assumeTrue(session.hasLock());
-        Assume.assumeFalse(session.getConfiguration().isProductionMode());
-        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+        assumeTrue(session.hasLock());
+        assumeFalse(session.getConfiguration().isProductionMode());
+        assertEquals(SessionLockCheckStrategy.ASSERT,
                 session.getConfiguration().getSessionLockCheckStrategy());
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
@@ -624,7 +629,7 @@ public class VaadinSessionTest {
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         session.mockLogger.clearLogs();
         session.checkHasLock();
-        Assert.assertEquals("", session.mockLogger.getLogs());
+        assertEquals("", session.mockLogger.getLogs());
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
         session.checkHasLock();
@@ -638,7 +643,7 @@ public class VaadinSessionTest {
         session.lock();
         session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
-        Assume.assumeFalse(session.hasLock());
+        assumeFalse(session.hasLock());
 
         try {
             // this should throw AssertionError since assertions are enabled
@@ -660,12 +665,12 @@ public class VaadinSessionTest {
         session.lock();
         session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
-        Assume.assumeFalse(session.hasLock());
+        assumeFalse(session.hasLock());
 
         try {
             // this should throw IllegalStateException
             session.checkHasLock();
-            Assert.fail("Should have thrown IllegalStateException");
+            fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException ex) {
             // okay
         }
@@ -680,15 +685,14 @@ public class VaadinSessionTest {
         session.lock();
         session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
-        Assume.assumeFalse(session.hasLock());
+        assumeFalse(session.hasLock());
 
         // this should log a warning message into the logger, including the
         // stacktrace.
         session.checkHasLock();
-        Assert.assertTrue(session.mockLogger.getLogs().trim(),
-                session.mockLogger.getLogs().contains(
-                        "[Warning] Cannot access state in VaadinSession or UI without locking the session.\n"
-                                + "java.lang.IllegalStateException: Cannot access state in VaadinSession or UI without locking the session.\n"
-                                + "\tat com.vaadin.flow.server.SessionLockCheckStrategy$2.checkHasLock(SessionLockCheckStrategy.java:"));
+        assertTrue(session.mockLogger.getLogs().contains(
+                "[Warning] Cannot access state in VaadinSession or UI without locking the session.\n"
+                        + "java.lang.IllegalStateException: Cannot access state in VaadinSession or UI without locking the session.\n"
+                        + "\tat com.vaadin.flow.server.SessionLockCheckStrategy$2.checkHasLock(SessionLockCheckStrategy.java:"));
     }
 }

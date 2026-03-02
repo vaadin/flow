@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,7 +28,9 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class AttachExistingElementRpcHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class AttachExistingElementRpcHandlerTest {
 
     @Test
     public void handleNode_error() {
@@ -147,9 +148,9 @@ public class AttachExistingElementRpcHandlerTest {
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,
             AttachExistingElementFeature feature) {
         Mockito.verify(requested).setParent(null);
-        Assert.assertNull(feature.getParent(requested));
-        Assert.assertNull(feature.getCallback(requested));
-        Assert.assertNull(feature.getPreviousSibling(node));
+        assertNull(feature.getParent(requested));
+        assertNull(feature.getCallback(requested));
+        assertNull(feature.getPreviousSibling(node));
     }
 
 }

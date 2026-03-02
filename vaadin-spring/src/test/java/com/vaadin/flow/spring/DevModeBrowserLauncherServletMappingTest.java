@@ -15,21 +15,22 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @TestPropertySource(properties = { "server.port = 1235" })
-public class DevModeBrowserLauncherServletMappingTest
+class DevModeBrowserLauncherServletMappingTest
         extends AbstractDevModeBrowserLauncherTest {
 
     @Test
-    public void getUrl_withContextPath_givesUrlWithContextPathAndNoUrlMapping() {
+    void getUrl_withContextPath_givesUrlWithContextPathAndNoUrlMapping() {
         MockServletContext ctx = (MockServletContext) app.getServletContext();
         ctx.setContextPath("/contextpath");
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1235/contextpath/", url);
+        assertEquals("http://localhost:1235/contextpath/", url);
     }
 
 }

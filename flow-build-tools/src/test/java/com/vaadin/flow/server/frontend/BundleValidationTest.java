@@ -1050,7 +1050,7 @@ public class BundleValidationTest {
         ((ArrayNode) (ArrayNode) stats.get(BUNDLE_IMPORTS))
                 .add("Frontend/generated/jar-resources/TodoTemplate.js");
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
-                "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
+                "wrongHash");
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
@@ -1794,6 +1794,39 @@ public class BundleValidationTest {
                 false, true, "deleted-component-stylesheet.css");
         Assert.assertTrue(
                 "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed",
+                needsBuild);
+    }
+
+    @Test
+    public void projectThemeComponentsCSS_noThemeJson_bundleRebuild()
+            throws IOException {
+        // Theme has components/ folder with CSS but no theme.json
+        String cssTemplate = "[part=\"input-field\"]{background: %s; }";
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+
+        // Create components CSS file without creating theme.json
+        String themeLocation = "themes/my-theme/components/";
+        File stylesheetFile = new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
+        FileUtils.forceMkdir(stylesheetFile.getParentFile());
+        FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        final ThemeDefinition themeDefinition = Mockito
+                .mock(ThemeDefinition.class);
+        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
+        Mockito.when(depScanner.getThemeDefinition())
+                .thenReturn(themeDefinition);
+
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Should rebuild when theme has components CSS but no theme.json",
                 needsBuild);
     }
 

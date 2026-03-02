@@ -75,27 +75,6 @@ public class StyleBindIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void manualSetRemove_bindingRemoved_setsAndRemoves() {
-        open("com.vaadin.flow.uitest.ui.StyleBindView");
-
-        SpanElement status = $(SpanElement.class).id("status");
-        NativeButtonElement manualSet = $(NativeButtonElement.class)
-                .id("manual-set");
-        NativeButtonElement manualRemove = $(NativeButtonElement.class)
-                .id("manual-remove");
-        NativeButtonElement removeBinding = $(NativeButtonElement.class)
-                .id("remove-binding");
-
-        removeBinding.click();
-
-        manualSet.click();
-        waitUntil(d -> "manual-set-ok".equals(status.getText()));
-
-        manualRemove.click();
-        waitUntil(d -> "manual-remove-ok".equals(status.getText()));
-    }
-
-    @Test
     public void detachAttach_noUpdatesWhileDetached_thenAppliesOnReattach() {
         open("com.vaadin.flow.uitest.ui.StyleBindView");
 

@@ -22,8 +22,8 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.
@@ -101,7 +101,7 @@ public class BasicElementStyle implements Style {
         ElementUtil.validateStylePropertyName(name);
         String attribute = StyleUtil.stylePropertyToAttribute(name);
         Element owner = Element.get(propertyMap.getNode());
-        propertyMap.bindSignal(owner, attribute, signal);
+        propertyMap.bindSignal(owner, attribute, signal, null);
         return this;
     }
 

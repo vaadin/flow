@@ -39,10 +39,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -80,11 +79,15 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class UploadHandlerTest {
+class UploadHandlerTest {
 
     public static final String MULTIPART_STREAM_CONTENT = """
             -------bound
@@ -110,7 +113,7 @@ public class UploadHandlerTest {
     private Element element;
     private TestComponent component;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
         ui = new MockUI() {
@@ -148,7 +151,7 @@ public class UploadHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         CurrentInstance.clearAll();
     }
@@ -180,7 +183,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Assert.assertEquals("test.txt", capturedFilename[0]);
+        assertEquals("test.txt", capturedFilename[0]);
     }
 
     @Test
@@ -198,7 +201,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Assert.assertEquals("my file åäö.txt", capturedFilename[0]);
+        assertEquals("my file åäö.txt", capturedFilename[0]);
     }
 
     @Test
@@ -216,7 +219,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Assert.assertEquals("text/plain", capturedContentType[0]);
+        assertEquals("text/plain", capturedContentType[0]);
     }
 
     @Test
@@ -233,7 +236,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Assert.assertEquals("unknown", capturedContentType[0]);
+        assertEquals("unknown", capturedContentType[0]);
     }
 
     @Test
@@ -277,10 +280,9 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                output);
+        assertArrayEquals(testBytes, output, "Output differed from expected");
 
-        Assert.assertEquals("", testBytes.length, amount.get());
+        assertEquals(testBytes.length, amount.get(), "");
     }
 
     @Test
@@ -298,7 +300,7 @@ public class UploadHandlerTest {
                     @Override
                     public void complete(UploadMetadata uploadMetadata,
                             byte[] bytes) {
-                        Assert.assertEquals(output.length, bytes.length);
+                        assertEquals(output.length, bytes.length);
                         System.arraycopy(bytes, 0, output, 0, bytes.length);
                     }
                 });
@@ -313,8 +315,7 @@ public class UploadHandlerTest {
         session.getPendingAccessQueue()
                 .forEach(futureAccess -> futureAccess.run());
 
-        Assert.assertArrayEquals("Output differed from expected", testBytes,
-                output);
+        assertArrayEquals(testBytes, output, "Output differed from expected");
     }
 
     @Test
@@ -338,12 +339,13 @@ public class UploadHandlerTest {
         try {
             handler.handleRequest(session, request, response);
 
-            Assert.assertEquals("Only one uploaded file expected.", 1,
-                    outputFiles.size());
+            assertEquals(1, outputFiles.size(),
+                    "Only one uploaded file expected.");
             System.out.println(outputFiles.get(0).getPath());
 
-            Assert.assertArrayEquals("Output differed from expected", testBytes,
-                    Files.readAllBytes(outputFiles.get(0).toPath()));
+            assertArrayEquals(testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()),
+                    "Output differed from expected");
         } finally {
             // Cleanup temp file after test
             for (File file : outputFiles) {
@@ -376,12 +378,13 @@ public class UploadHandlerTest {
         try {
             handler.handleRequest(session, request, response);
 
-            Assert.assertEquals("Only one uploaded file expected.", 1,
-                    outputFiles.size());
+            assertEquals(1, outputFiles.size(),
+                    "Only one uploaded file expected.");
             System.out.println(outputFiles.get(0).getPath());
 
-            Assert.assertArrayEquals("Output differed from expected", testBytes,
-                    Files.readAllBytes(outputFiles.get(0).toPath()));
+            assertArrayEquals(testBytes,
+                    Files.readAllBytes(outputFiles.get(0).toPath()),
+                    "Output differed from expected");
         } finally {
             // Cleanup temp file after test
             for (File file : outputFiles) {
@@ -419,14 +422,14 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertEquals(2, outList.size());
-        Assert.assertEquals(2, fileNames.size());
+        assertEquals(2, outList.size());
+        assertEquals(2, fileNames.size());
 
-        Assert.assertEquals("Sound", outList.get(0));
-        Assert.assertEquals("sound.txt", fileNames.get(0));
+        assertEquals("Sound", outList.get(0));
+        assertEquals("sound.txt", fileNames.get(0));
 
-        Assert.assertEquals("Bytes", outList.get(1));
-        Assert.assertEquals("bytes.txt", fileNames.get(1));
+        assertEquals("Bytes", outList.get(1));
+        assertEquals("bytes.txt", fileNames.get(1));
     }
 
     @Test
@@ -468,14 +471,14 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertEquals(2, outList.size());
-        Assert.assertEquals(2, fileNames.size());
+        assertEquals(2, outList.size());
+        assertEquals(2, fileNames.size());
 
-        Assert.assertEquals("one", outList.get(0));
-        Assert.assertEquals("one.txt", fileNames.get(0));
+        assertEquals("one", outList.get(0));
+        assertEquals("one.txt", fileNames.get(0));
 
-        Assert.assertEquals("two", outList.get(1));
-        Assert.assertEquals("two.txt", fileNames.get(1));
+        assertEquals("two", outList.get(1));
+        assertEquals("two.txt", fileNames.get(1));
     }
 
     @Test
@@ -497,9 +500,8 @@ public class UploadHandlerTest {
         UploadHandler uploadHandler = new UploadHandler() {
             @Override
             public void handleUploadRequest(UploadEvent event) {
-                Assert.assertFalse(
-                        "Handled should not be called before a upload request",
-                        handled.get());
+                assertFalse(handled.get(),
+                        "Handled should not be called before a upload request");
             }
 
             @Override
@@ -518,7 +520,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertTrue("Handled was not called at the end", handled.get());
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -530,9 +532,8 @@ public class UploadHandlerTest {
         UploadHandler uploadHandler = new UploadHandler() {
             @Override
             public void handleUploadRequest(UploadEvent event) {
-                Assert.assertFalse(
-                        "Handled should not be called before a upload request",
-                        handled.get());
+                assertFalse(handled.get(),
+                        "Handled should not be called before a upload request");
             }
 
             @Override
@@ -551,7 +552,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertTrue("Handled was not called at the end", handled.get());
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -592,7 +593,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertTrue("Handled was not called at the end", handled.get());
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -624,7 +625,7 @@ public class UploadHandlerTest {
 
         handler.handleRequest(session, request, response);
 
-        Assert.assertTrue("Handled was not called at the end", handled.get());
+        assertTrue(handled.get(), "Handled was not called at the end");
     }
 
     @Test
@@ -648,8 +649,8 @@ public class UploadHandlerTest {
         UploadHandler handler = (event) -> {
         };
         handler.handleRequest(request, response, session, element);
-        Assert.assertTrue("Start event was not fired", startFired.get());
-        Assert.assertTrue("Complete event was not fired", completeFired.get());
+        assertTrue(startFired.get(), "Start event was not fired");
+        assertTrue(completeFired.get(), "Complete event was not fired");
 
         startFired.set(false);
         completeFired.set(false);
@@ -664,10 +665,10 @@ public class UploadHandlerTest {
             // expected
         }
 
-        Assert.assertTrue("Start event was not fired before exception",
-                startFired.get());
-        Assert.assertTrue("Complete event was not fired after exception",
-                completeFired.get());
+        assertTrue(startFired.get(),
+                "Start event was not fired before exception");
+        assertTrue(completeFired.get(),
+                "Complete event was not fired after exception");
     }
 
     @Test
@@ -693,9 +694,8 @@ public class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        Assert.assertEquals("Start event was not fired", 2, startFired.get());
-        Assert.assertEquals("Complete event was not fired", 2,
-                completeFired.get());
+        assertEquals(2, startFired.get(), "Start event was not fired");
+        assertEquals(2, completeFired.get(), "Complete event was not fired");
     }
 
     @Test
@@ -729,9 +729,8 @@ public class UploadHandlerTest {
                 .thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
-        Assert.assertEquals("Start event was not fired", 2, startFired.get());
-        Assert.assertEquals("Complete event was not fired", 2,
-                completeFired.get());
+        assertEquals(2, startFired.get(), "Start event was not fired");
+        assertEquals(2, completeFired.get(), "Complete event was not fired");
     }
 
     @Test
@@ -754,6 +753,212 @@ public class UploadHandlerTest {
             ByteArrayInputStream stream = new ByteArrayInputStream(data);
             stream.close();
         });
+    }
+
+    @Test
+    public void xhrUpload_earlyRejection_returns422WithJson()
+            throws IOException {
+        UploadHandler handler = (event) -> {
+            if (!event.getFileName().endsWith(".png")) {
+                event.reject("Only PNG files are accepted");
+            }
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(request, response, session, element);
+
+        Mockito.verify(response).setStatus(422);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void xhrUpload_noRejection_returns200() throws IOException {
+        UploadHandler handler = (event) -> {
+            // Accept the file
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.png");
+
+        handler.handleRequest(request, response, session, element);
+
+        Mockito.verify(response).setStatus(200);
+    }
+
+    @Test
+    public void xhrUpload_rejectionWithDefaultMessage_usesDefaultMessage()
+            throws IOException {
+        AtomicBoolean rejected = new AtomicBoolean(false);
+
+        UploadHandler handler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject();
+                rejected.set(true);
+            }
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(request, response, session, element);
+
+        assertTrue(rejected.get(), "File should have been rejected");
+        Mockito.verify(response).setStatus(422);
+    }
+
+    @Test
+    public void multipartUpload_mixedAcceptReject_returns207WithJson()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.png", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.zip", 3));
+        parts.add(createPart(createInputStream("three"), MULTIPART_CONTENT_TYPE,
+                "file3.png", 5));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        List<String> processedFiles = new ArrayList<>();
+
+        UploadHandler uploadHandler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject("ZIP files are not allowed");
+            } else {
+                processedFiles.add(event.getFileName());
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        // Should have processed 2 PNG files
+        assertEquals(2, processedFiles.size(),
+                "Two files should have been accepted");
+        assertTrue(processedFiles.contains("file1.png"),
+                "file1.png should be in processed files");
+        assertTrue(processedFiles.contains("file3.png"),
+                "file3.png should be in processed files");
+
+        // Should return 207 Multi-Status for mixed results
+        Mockito.verify(response).setStatus(207);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void multipartUpload_allRejected_returns422()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.zip", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.exe", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        UploadHandler uploadHandler = (event) -> {
+            event.reject("File type not allowed");
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        // Should return 422 for all rejected
+        Mockito.verify(response).setStatus(422);
+        Mockito.verify(response).setContentType("application/json");
+    }
+
+    @Test
+    public void multipartUpload_allAccepted_returns200()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("one"), MULTIPART_CONTENT_TYPE,
+                "file1.png", 3));
+        parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
+                "file2.png", 3));
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        UploadHandler uploadHandler = (event) -> {
+            // Accept all files
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+
+        handler.handleRequest(session, request, response);
+
+        // Should return 200 for all accepted
+        Mockito.verify(response).setStatus(200);
+    }
+
+    @Test
+    public void multipartUpload_earlyRejection_fileNotProcessed()
+            throws IOException, ServletException {
+        List<Part> parts = new ArrayList<>();
+        Part rejectedPart = createPart(createInputStream("content"),
+                MULTIPART_CONTENT_TYPE, "file.zip", 7);
+        parts.add(rejectedPart);
+
+        Mockito.when(request.getParts()).thenReturn(parts);
+
+        AtomicBoolean inputStreamAccessed = new AtomicBoolean(false);
+
+        UploadHandler uploadHandler = (event) -> {
+            if (event.getFileName().endsWith(".zip")) {
+                event.reject("ZIP files not allowed");
+            } else {
+                // This should not be reached for rejected files
+                try {
+                    event.getInputStream().read();
+                    inputStreamAccessed.set(true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        StreamRegistration streamRegistration = streamResourceRegistry
+                .registerResource(uploadHandler);
+        AbstractStreamResource res = streamRegistration.getResource();
+
+        mockRequest(res, "testContent");
+        Mockito.when(request.getContentType())
+                .thenReturn(MULTIPART_CONTENT_TYPE);
+        Mockito.when(response.getWriter())
+                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+
+        handler.handleRequest(session, request, response);
+
+        assertFalse(inputStreamAccessed.get(),
+                "Input stream should not be accessed for rejected file");
+        Mockito.verify(response).setStatus(422);
     }
 
     private Part createPart(InputStream inputStream, String contentType,

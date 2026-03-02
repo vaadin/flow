@@ -1,0 +1,73 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.signals.function;
+
+import java.io.Serializable;
+
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.signals.local.ValueSignal;
+
+/**
+ * Creates a new outer value by merging a new inner value with the old outer
+ * value. Used with the {@link ValueSignal#updater(ValueMerger)} helper method
+ * to create write callbacks for immutable value patterns.
+ * <p>
+ * This interface is used with immutable value patterns where changing the inner
+ * value requires creating a new outer value instance.
+ * <p>
+ * Example usage with a record:
+ *
+ * <pre>
+ * record Todo(String task, boolean done) {
+ *     Todo withTask(String task) {
+ *         return new Todo(task, this.done);
+ *     }
+ *
+ *     Todo withDone(boolean done) {
+ *         return new Todo(this.task, done);
+ *     }
+ * }
+ *
+ * ValueSignal&lt;Todo&gt; todoSignal = new ValueSignal&lt;&gt;(
+ *         new Todo("Buy groceries", false));
+ * textField.bindValue(todoSignal.map(Todo::task),
+ *         todoSignal.updater(Todo::withTask));
+ * checkbox.bindValue(todoSignal.map(Todo::done),
+ *         todoSignal.updater(Todo::withDone));
+ * </pre>
+ *
+ * @param <O>
+ *            the outer (parent) signal value type
+ * @param <I>
+ *            the inner (mapped) signal value type
+ * @see ValueSignal#updater(ValueMerger)
+ */
+@FunctionalInterface
+public interface ValueMerger<O extends @Nullable Object, I extends @Nullable Object>
+        extends Serializable {
+    /**
+     * Creates a new outer value by merging the new inner value with the old
+     * outer value.
+     *
+     * @param outerValue
+     *            the current outer signal value
+     * @param newInnerValue
+     *            the new inner value to merge
+     * @return the new outer value
+     */
+    O merge(O outerValue, I newInnerValue);
+}

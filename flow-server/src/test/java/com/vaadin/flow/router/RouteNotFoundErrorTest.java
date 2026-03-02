@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -34,7 +34,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public class RouteNotFoundErrorTest {
+class RouteNotFoundErrorTest {
 
     @Tag(Tag.A)
     private static class RouteTarget extends Component {

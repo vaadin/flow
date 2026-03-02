@@ -27,11 +27,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI.ClientViewPlaceholder;
@@ -47,9 +44,11 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllClass;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminClass;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserClass;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AccessAnnotationCheckerTest {
+class AccessAnnotationCheckerTest {
     public static final Class<?>[] ENDPOINT_CLASSES = new Class<?>[] {
             AccessControlTestClasses.AnonymousAllowedClass.class,
             AccessControlTestClasses.DenyAllClass.class,
@@ -74,27 +73,25 @@ public class AccessAnnotationCheckerTest {
     };
     static final String REQUEST_URL = "http://localhost:8080/myapp/";
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     private AccessAnnotationChecker accessAnnotationChecker;
 
-    @Before
+    @BeforeEach
     public void before() {
         accessAnnotationChecker = new AccessAnnotationChecker();
     }
 
     @Test
-    public void should_Throw_When_PrivateMethodIsPassed() throws Exception {
+    void should_Throw_When_PrivateMethodIsPassed() throws Exception {
         class Test {
             private void test() {
             }
         }
 
         Method method = Test.class.getDeclaredMethod("test");
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(method.toString());
-        accessAnnotationChecker.getSecurityTarget(method);
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> accessAnnotationChecker.getSecurityTarget(method));
+        assertTrue(thrown.getMessage().contains(method.toString()));
     }
 
     @Test
@@ -151,12 +148,11 @@ public class AccessAnnotationCheckerTest {
     public void specialViewsMustBeAccessible() {
         CurrentInstance.set(VaadinRequest.class,
                 new VaadinServletRequest(createRequest(null), null));
-        Assert.assertTrue(
+        assertTrue(
                 accessAnnotationChecker.hasAccess(ClientViewPlaceholder.class));
-        Assert.assertTrue(
+        assertTrue(
                 accessAnnotationChecker.hasAccess(InternalServerError.class));
-        Assert.assertTrue(
-                accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
+        assertTrue(accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
     }
 
     @Test
@@ -332,17 +328,21 @@ public class AccessAnnotationCheckerTest {
                 false);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void hasClassAccessNoCurrentRequest() {
-        CurrentInstance.clearAll();
-        accessAnnotationChecker.hasAccess(AnonymousAllowedClass.class);
+        assertThrows(IllegalStateException.class, () -> {
+            CurrentInstance.clearAll();
+            accessAnnotationChecker.hasAccess(AnonymousAllowedClass.class);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void hasMethodAccessNoCurrentRequest() throws Exception {
-        CurrentInstance.clearAll();
-        accessAnnotationChecker
-                .hasAccess(AnonymousAllowedClass.class.getMethod("permitAll"));
+        assertThrows(IllegalStateException.class, () -> {
+            CurrentInstance.clearAll();
+            accessAnnotationChecker.hasAccess(
+                    AnonymousAllowedClass.class.getMethod("permitAll"));
+        });
     }
 
     @Test
@@ -350,8 +350,7 @@ public class AccessAnnotationCheckerTest {
         try {
             CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
                     createRequest(USER_PRINCIPAL), null));
-            Assert.assertTrue(
-                    accessAnnotationChecker.hasAccess(PermitAllClass.class));
+            assertTrue(accessAnnotationChecker.hasAccess(PermitAllClass.class));
         } finally {
             CurrentInstance.clearAll();
         }
@@ -362,7 +361,7 @@ public class AccessAnnotationCheckerTest {
         try {
             CurrentInstance.set(VaadinRequest.class, new VaadinServletRequest(
                     createRequest(USER_PRINCIPAL), null));
-            Assert.assertTrue(accessAnnotationChecker
+            assertTrue(accessAnnotationChecker
                     .hasAccess(PermitAllClass.class.getMethod("permitAll")));
         } finally {
             CurrentInstance.clearAll();
@@ -393,22 +392,23 @@ public class AccessAnnotationCheckerTest {
         for (String endpointMethod : ENDPOINT_METHODS) {
             boolean expectedResult = expectedAnonList.contains(endpointMethod);
             Method method = endpointClass.getMethod(endpointMethod);
-            Assert.assertEquals("Expected " + endpointClass.getSimpleName()
-                    + "." + endpointMethod + " to "
-                    + (expectedResult ? "be" : "NOT to be") + " accessible",
-                    expectedResult,
-                    accessAnnotationChecker.hasAccess(method, request));
+            assertEquals(expectedResult,
+                    accessAnnotationChecker.hasAccess(method, request),
+                    "Expected " + endpointClass.getSimpleName() + "."
+                            + endpointMethod + " to "
+                            + (expectedResult ? "be" : "NOT to be")
+                            + " accessible");
         }
     }
 
     private void verifyClassAccessAllowed(Class<?> cls,
             HttpServletRequest request, boolean expectedResult)
             throws Exception {
-        Assert.assertEquals(
+        assertEquals(expectedResult,
+                accessAnnotationChecker.hasAccess(cls, request),
                 "Expected " + cls.getSimpleName() + " to "
-                        + (expectedResult ? "be" : "NOT to be") + " accessible",
-                expectedResult,
-                accessAnnotationChecker.hasAccess(cls, request));
+                        + (expectedResult ? "be" : "NOT to be")
+                        + " accessible");
     }
 
 }

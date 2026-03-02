@@ -25,11 +25,8 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -41,17 +38,18 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 
-public class WebComponentExporterAwareValidatorTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class WebComponentExporterAwareValidatorTest {
 
     private static final String ERROR_HINT = "Move it to a single route/a top router layout/web component of the application";
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     private WebComponentExporterAwareValidator annotationValidator;
     private ServletContext servletContext;
 
-    @Before
+    @BeforeEach
     public void init() {
         annotationValidator = new WebComponentExporterAwareValidator();
         servletContext = Mockito.mock(ServletContext.class);
@@ -106,7 +104,7 @@ public class WebComponentExporterAwareValidatorTest {
             annotationValidator.process(
                     Collections.singleton(ThemeViewportWithParent.class),
                     servletContext);
-            Assert.fail("No exception was thrown for faulty setup.");
+            fail("No exception was thrown for faulty setup.");
         } catch (InvalidApplicationConfigurationException iace) {
             String errorMessage = iace.getMessage();
             assertHint(errorMessage, Push.class);
@@ -121,15 +119,17 @@ public class WebComponentExporterAwareValidatorTest {
     private void assertNon_linked_theme_throws(Class<? extends Component> clazz,
             Class<? extends Annotation> annotationType)
             throws ServletException {
-        expectedEx.expect(InvalidApplicationConfigurationException.class);
-        expectedEx.expectMessage(ERROR_HINT);
-        expectedEx.expectMessage(String.format(
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    annotationValidator.process(
+                            Stream.of(clazz).collect(Collectors.toSet()),
+                            servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(ERROR_HINT));
+        assertTrue(thrown.getMessage().contains(String.format(
                 "Class '%s' contains '%s', but it is not a router "
                         + "layout/top level route/web component.",
-                clazz.getName(), "@" + annotationType.getSimpleName()));
-
-        annotationValidator.process(
-                Stream.of(clazz).collect(Collectors.toSet()), servletContext);
+                clazz.getName(), "@" + annotationType.getSimpleName())));
     }
 
     private void assertHint(String msg,

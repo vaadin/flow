@@ -23,6 +23,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,12 +33,10 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -51,8 +50,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public class TranslationFileRequestHandlerTest {
+class TranslationFileRequestHandlerTest {
 
     private final VaadinService service = Mockito.mock(VaadinService.class);
 
@@ -61,10 +64,8 @@ public class TranslationFileRequestHandlerTest {
     private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
     private VaadinResponse response;
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+    @TempDir
+    Path temporaryFolder;
     private ClassLoader urlClassLoader;
 
     private TranslationFileRequestHandler handler;
@@ -81,12 +82,12 @@ public class TranslationFileRequestHandlerTest {
 
     private I18NProvider i18NProvider;
 
-    @Before
+    @BeforeEach
     public void configure() throws IOException {
         initTranslationsFolder();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         ResourceBundle.clearCache(urlClassLoader);
     }
@@ -95,7 +96,7 @@ public class TranslationFileRequestHandlerTest {
     public void pathDoesNotMatch_requestNotHandled() throws IOException {
         configure(true);
         setRequestParams(null, "other", null, null);
-        Assert.assertFalse(handler.handleRequest(session, request, response));
+        assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
@@ -285,19 +286,17 @@ public class TranslationFileRequestHandlerTest {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 requestedChunks, requestedKeys);
-        Assert.assertTrue("The request was not handled by the handler.",
-                handler.handleRequest(session, request, response));
-        Assert.assertEquals(
-                "The expected response content does not match the actual response content.",
-                expectedResponseContent, getResponseContent());
+        assertTrue(handler.handleRequest(session, request, response),
+                "The request was not handled by the handler.");
+        assertEquals(expectedResponseContent, getResponseContent(),
+                "The expected response content does not match the actual response content.");
         if (expectedResponseLanguageTag == null) {
-            Assert.assertEquals("The response language tag was not found.", 0,
-                    retrievedLocaleCapture.getAllValues().size());
+            assertEquals(0, retrievedLocaleCapture.getAllValues().size(),
+                    "The response language tag was not found.");
         } else {
-            Assert.assertEquals(
-                    "The expected response language tag does not match the actual response language tag.",
-                    expectedResponseLanguageTag,
-                    retrievedLocaleCapture.getValue());
+            assertEquals(expectedResponseLanguageTag,
+                    retrievedLocaleCapture.getValue(),
+                    "The expected response language tag does not match the actual response language tag.");
         }
     }
 
@@ -363,7 +362,8 @@ public class TranslationFileRequestHandlerTest {
     }
 
     private void initTranslationsFolder() throws IOException {
-        File resources = temporaryFolder.newFolder();
+        File resources = Files.createTempDirectory(temporaryFolder, "temp")
+                .toFile();
         translationsFolder = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
         translationsFolder.mkdirs();
@@ -419,12 +419,11 @@ public class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assert.assertTrue(
-                "handleSessionExpired should return true for i18n requests",
-                handler.handleSessionExpired(request, response));
+        assertTrue(handler.handleSessionExpired(request, response),
+                "handleSessionExpired should return true for i18n requests");
 
-        Assert.assertEquals("The expected response content does not match.",
-                "{\"title\":\"Suomi\"}", getResponseContent());
+        assertEquals("{\"title\":\"Suomi\"}", getResponseContent(),
+                "The expected response content does not match.");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
@@ -434,9 +433,8 @@ public class TranslationFileRequestHandlerTest {
         configure(true);
         setRequestParams(null, "other", null, null);
 
-        Assert.assertFalse(
-                "handleSessionExpired should return false for non-i18n requests",
-                handler.handleSessionExpired(request, response));
+        assertFalse(handler.handleSessionExpired(request, response),
+                "handleSessionExpired should return false for non-i18n requests");
     }
 
     @Test
@@ -452,8 +450,8 @@ public class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assert.assertTrue("handleSessionExpired should return true",
-                handler.handleSessionExpired(request, response));
+        assertTrue(handler.handleSessionExpired(request, response),
+                "handleSessionExpired should return true");
 
         // In dev mode, should return 501 Not Implemented error
         Mockito.verify(response).sendError(
@@ -474,8 +472,8 @@ public class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        Assert.assertTrue("handleSessionExpired should return true",
-                handler.handleSessionExpired(request, response));
+        assertTrue(handler.handleSessionExpired(request, response),
+                "handleSessionExpired should return true");
 
         // In production mode, should return 404 Not Found
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());

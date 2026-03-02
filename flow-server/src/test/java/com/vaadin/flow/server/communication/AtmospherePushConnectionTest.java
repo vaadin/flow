@@ -31,11 +31,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -44,11 +43,15 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnectionTest {
+class AtmospherePushConnectionTest {
 
     private static ExecutorService executor;
     private MockVaadinSession vaadinSession;
@@ -56,17 +59,17 @@ public class AtmospherePushConnectionTest {
     private AtmosphereResource resource;
     private AtmospherePushConnection connection;
 
-    @BeforeClass
+    @BeforeAll
     public static void initExecutor() {
         executor = Executors.newSingleThreadExecutor();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopExecutor() {
         executor.shutdown();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         vaadinSession = new MockVaadinSession();
         vaadinSession.lock();
@@ -100,7 +103,7 @@ public class AtmospherePushConnectionTest {
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
 
-        Assert.assertEquals(State.CONNECTED, connection.getState());
+        assertEquals(State.CONNECTED, connection.getState());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -109,7 +112,7 @@ public class AtmospherePushConnectionTest {
         connection = (AtmospherePushConnection) new ObjectInputStream(
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
-        Assert.assertEquals(State.DISCONNECTED, connection.getState());
+        assertEquals(State.DISCONNECTED, connection.getState());
     }
 
     @Test
@@ -132,9 +135,9 @@ public class AtmospherePushConnectionTest {
                     return null;
                 });
         connection.disconnect();
-        Assert.assertTrue("AtmospherePushConnection not disconnected",
-                latch.await(2, TimeUnit.SECONDS));
-        Assert.assertEquals(State.PUSH_PENDING, connection.getState());
+        assertTrue(latch.await(2, TimeUnit.SECONDS),
+                "AtmospherePushConnection not disconnected");
+        assertEquals(State.PUSH_PENDING, connection.getState());
         Mockito.verifyNoInteractions(broadcaster);
     }
 
@@ -166,8 +169,7 @@ public class AtmospherePushConnectionTest {
             return null;
         });
 
-        Assert.assertTrue("Push not completed",
-                latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
         Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(resource));
     }
@@ -242,10 +244,11 @@ public class AtmospherePushConnectionTest {
         if (threadError != null) {
             StringWriter sw = new StringWriter();
             threadError.printStackTrace(new PrintWriter(sw));
-            Assert.fail("Disconnection on spawned thread failed: " + sw);
+            fail("Disconnection on spawned thread failed: " + sw);
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 
@@ -300,11 +303,12 @@ public class AtmospherePushConnectionTest {
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
         if (threadError != null) {
-            Assert.fail("Disconnection on spawned thread failed: "
+            fail("Disconnection on spawned thread failed: "
                     + threadError.getMessage());
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        assertTrue(latch.await(3, TimeUnit.SECONDS),
+                "Disconnect calls not completed, missing " + latch.getCount()
+                        + " call");
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 

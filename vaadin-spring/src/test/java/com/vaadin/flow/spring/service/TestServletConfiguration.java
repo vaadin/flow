@@ -29,7 +29,7 @@ import com.vaadin.flow.server.VaadinSession;
 @Configuration
 @ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.SpringVaadinServiceExecutorTest.*"))
 @SpringBootConfiguration
-public class TestServletConfiguration {
+class TestServletConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     static class TestConfig {

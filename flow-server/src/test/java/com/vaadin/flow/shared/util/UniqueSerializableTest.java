@@ -18,10 +18,12 @@ package com.vaadin.flow.shared.util;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UniqueSerializableTest implements Serializable {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class UniqueSerializableTest implements Serializable {
 
     @Test
     public void testUniqueness() {
@@ -29,8 +31,8 @@ public class UniqueSerializableTest implements Serializable {
         };
         UniqueSerializable o2 = new UniqueSerializable() {
         };
-        Assert.assertFalse(o1 == o2);
-        Assert.assertFalse(o1.equals(o2));
+        assertFalse(o1 == o2);
+        assertFalse(o1.equals(o2));
     }
 
     @Test
@@ -39,7 +41,7 @@ public class UniqueSerializableTest implements Serializable {
         };
         UniqueSerializable d1 = (UniqueSerializable) SerializationUtils
                 .deserialize(SerializationUtils.serialize(o1));
-        Assert.assertTrue(d1.equals(o1));
+        assertTrue(d1.equals(o1));
     }
 
 }

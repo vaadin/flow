@@ -18,8 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
@@ -33,7 +32,11 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
-public class DomEventTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DomEventTest {
     @DomEvent("event")
     public static class BareAnnotation extends ComponentEvent<Component> {
         public BareAnnotation(Component source, boolean fromClient) {
@@ -83,9 +86,11 @@ public class DomEventTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void emptyPhases() {
-        getEventSettings(DebounceEmptyPhasesEvent.class);
+        assertThrows(IllegalStateException.class, () -> {
+            getEventSettings(DebounceEmptyPhasesEvent.class);
+        });
     }
 
     @DomEvent(value = "event", filter = "filter(event)", debounce = @DebounceSettings(timeout = 300, phases = DebouncePhase.TRAILING))
@@ -107,43 +112,41 @@ public class DomEventTest {
         JsonNode settings = getEventSettings(eventType);
 
         if (expectedFilter == null) {
-            Assert.assertEquals(new ArrayList<String>(0),
+            assertEquals(new ArrayList<String>(0),
                     JacksonUtils.getKeys(settings));
             return;
         }
 
-        Assert.assertEquals(new ArrayList<String>() {
+        assertEquals(new ArrayList<String>() {
             {
                 add(expectedFilter);
             }
         }, JacksonUtils.getKeys(settings));
 
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
-            Assert.assertEquals(
-                    "There should be a boolean instead of empty phase list",
-                    JsonNodeType.BOOLEAN,
-                    settings.get(expectedFilter).getNodeType());
+            assertEquals(JsonNodeType.BOOLEAN,
+                    settings.get(expectedFilter).getNodeType(),
+                    "There should be a boolean instead of empty phase list");
             boolean isFilter = settings.get(expectedFilter).booleanValue();
-            Assert.assertTrue("Expression should be used as a filter",
-                    isFilter);
+            assertTrue(isFilter, "Expression should be used as a filter");
             return;
         }
 
         ArrayNode filterSettings = (ArrayNode) settings.get(expectedFilter);
 
-        Assert.assertEquals(1, filterSettings.size());
+        assertEquals(1, filterSettings.size());
 
         ArrayNode filterSetting = (ArrayNode) filterSettings.get(0);
 
-        Assert.assertEquals("Debunce timeout should be as expected",
-                expectedTimeout, filterSetting.get(0).intValue());
+        assertEquals(expectedTimeout, filterSetting.get(0).intValue(),
+                "Debunce timeout should be as expected");
 
-        Assert.assertEquals("Number of phases should be as expected",
-                expectedPhases.length, filterSetting.size() - 1);
+        assertEquals(expectedPhases.length, filterSetting.size() - 1,
+                "Number of phases should be as expected");
 
         for (int i = 0; i < expectedPhases.length; i++) {
             String expectedIdentifier = expectedPhases[i].getIdentifier();
-            Assert.assertEquals(expectedIdentifier,
+            assertEquals(expectedIdentifier,
                     filterSetting.get(i + 1).textValue());
         }
     }
@@ -161,16 +164,16 @@ public class DomEventTest {
         List<NodeChange> changes = new ArrayList<>();
         elementListenerMap.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         MapPutChange change = (MapPutChange) changes.get(0);
-        Assert.assertEquals("event", change.getKey());
+        assertEquals("event", change.getKey());
 
         ConstantPoolKey value = (ConstantPoolKey) change.getValue();
         ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
         value.export(constantPoolUpdate);
 
         List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
-        Assert.assertEquals(1, keys.size());
+        assertEquals(1, keys.size());
 
         return constantPoolUpdate.get(keys.get(0));
     }

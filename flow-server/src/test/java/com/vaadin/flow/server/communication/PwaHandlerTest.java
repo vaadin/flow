@@ -23,8 +23,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -35,7 +34,10 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
-public class PwaHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PwaHandlerTest {
 
     private final VaadinSession session = Mockito.mock(VaadinSession.class);
 
@@ -46,7 +48,7 @@ public class PwaHandlerTest {
     @Test
     public void handleRequest_noPwaRegistry_returnsFalse() throws IOException {
         PwaHandler handler = new PwaHandler(() -> null);
-        Assert.assertFalse(handler.handleRequest(session, request, response));
+        assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
@@ -57,7 +59,7 @@ public class PwaHandlerTest {
         Mockito.when(registry.getPwaConfiguration()).thenReturn(configuration);
         Mockito.when(configuration.isEnabled()).thenReturn(false);
         PwaHandler handler = new PwaHandler(() -> registry);
-        Assert.assertFalse(handler.handleRequest(session, request, response));
+        assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
@@ -75,7 +77,7 @@ public class PwaHandlerTest {
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/sw-runtime-resources-precache.js");
-        Assert.assertTrue(handler.handleRequest(session, request, response));
+        assertTrue(handler.handleRequest(session, request, response));
     }
 
     @Test
@@ -94,8 +96,8 @@ public class PwaHandlerTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/sw-runtime-resources-precache.js");
 
-        Assert.assertTrue(handler.handleRequest(session, request, response));
-        Assert.assertTrue(handler.handleRequest(session, request, response));
+        assertTrue(handler.handleRequest(session, request, response));
+        assertTrue(handler.handleRequest(session, request, response));
 
         Mockito.verify(registry, Mockito.times(1)).getIcons();
     }
@@ -122,7 +124,7 @@ public class PwaHandlerTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/icons/icon-100x100.png");
 
-        Assert.assertTrue(handler.handleRequest(session, request, response));
+        assertTrue(handler.handleRequest(session, request, response));
     }
 
     private PwaIcon createIcon(PwaRegistry registry, int size)

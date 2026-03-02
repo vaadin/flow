@@ -18,14 +18,15 @@ package com.vaadin.flow;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.server.AbstractConfiguration;
 
-public class ComponentTrackerLocationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ComponentTrackerLocationTest {
 
     @Test
     public void findJavaFile_simpleClass() {
@@ -42,7 +43,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -60,7 +61,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -79,7 +80,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -98,7 +99,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -117,7 +118,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
     @Test
@@ -136,7 +137,7 @@ public class ComponentTrackerLocationTest {
                 .toFile();
 
         File javaFile = location.findSourceFile(configuration);
-        Assert.assertEquals(expectedFile, javaFile);
+        assertEquals(expectedFile, javaFile);
     }
 
 }

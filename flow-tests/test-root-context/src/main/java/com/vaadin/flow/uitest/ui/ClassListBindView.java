@@ -19,8 +19,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Test view for end-to-end verification of ClassList.bind. Binds a highlight
@@ -46,8 +46,8 @@ public class ClassListBindView extends Div {
         target.getElement().getClassList().bind("highlight", highlight);
 
         NativeButton toggle = new NativeButton("Toggle highlight", event -> {
-            Boolean current = highlight.value();
-            highlight.value(current == null ? Boolean.TRUE : !current);
+            Boolean current = highlight.peek();
+            highlight.set(current == null ? Boolean.TRUE : !current);
         });
         toggle.setId("toggle");
 

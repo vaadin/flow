@@ -16,139 +16,133 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.vaadin.experimental.DisabledFeatureException;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class VaadinServiceSignalsInitializationTest {
+class VaadinServiceSignalsInitializationTest {
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void clearTestEnvironment() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void init_signalsFeatureFlagOff_throwsWhenSignalUsedWithCurrentService() {
-        String signalsFeatureFlagKey = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
-                + FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId();
-        var signalsFlag = System.getProperty(signalsFeatureFlagKey);
-        try {
-            System.setProperty(signalsFeatureFlagKey, "false");
-            // VaadinService makes sure that Signal environment will fail if the
-            // feature flag is not enabled
-            MockVaadinServletService service = new MockVaadinServletService();
+    public void init_flowSignalEnvironmentInitialized()
+            throws InterruptedException, TimeoutException {
 
-            // Verify that feature flag has no impact when used outside Vaadin
-            Signal.effect(() -> {
+        var service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+
+        var phaser = new Phaser(1);
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service);
+        var ui = new MockUI(session);
+        assertSame(ui, UI.getCurrent());
+        var signal = new SharedListSignal<>(String.class);
+
+        record EffectExecution(UI ui, String threadName) {
+        }
+        var invocations = new ArrayList<EffectExecution>();
+
+        try {
+            Signal.unboundEffect(() -> {
+                invocations.add(new EffectExecution(UI.getCurrent(),
+                        Thread.currentThread().getName()));
+                signal.get();
+                phaser.arrive();
             });
 
-            VaadinService.setCurrent(service);
+            phaser.awaitAdvanceInterruptibly(0, 500, TimeUnit.MILLISECONDS);
 
-            var error = assertThrows(DisabledFeatureException.class,
-                    () -> Signal.effect(() -> {
-                    }));
-            Assert.assertTrue(error.getMessage()
-                    .contains(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()));
+            assertEquals(1, invocations.size(),
+                    "Expected effect to be executed");
+
+            var execution = invocations.get(0);
+            assertEquals(null, execution.ui,
+                    "Expected UI to not be available during effect execution");
+            assertTrue(
+                    execution.threadName
+                            .startsWith("VaadinTaskExecutor-thread-"),
+                    "Expected effect to be executed in Vaadin Executor thread");
         } finally {
-            if (signalsFlag != null) {
-                System.setProperty(signalsFeatureFlagKey, signalsFlag);
-            } else {
-                System.clearProperty(signalsFeatureFlagKey);
-            }
+            session.unlock();
+            UI.setCurrent(null);
         }
+
+        signal.insertLast("update");
+
+        phaser.awaitAdvanceInterruptibly(1, 500, TimeUnit.MILLISECONDS);
+
+        assertEquals(2, invocations.size(),
+                "Expected effect to be executed twice");
+
+        var execution = invocations.get(1);
+        assertEquals(null, execution.ui,
+                "Expected UI to not be available during effect execution");
+        assertTrue(
+                execution.threadName.startsWith("VaadinTaskExecutor-thread-"),
+                "Expected effect to be executed in Vaadin Executor thread");
     }
 
     @Test
-    public void init_signalsFeatureFlagOn_flowSignalEnvironmentInitialized()
-            throws InterruptedException, TimeoutException {
+    public void resultNotifier_ownerUiIsClosing_taskNotScheduled()
+            throws InterruptedException {
+        var service = new MockVaadinServletService();
 
-        String signalsFeatureFlagKey = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
-                + FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId();
-        var signalsFlag = System.getProperty(signalsFeatureFlagKey);
-        try {
-            System.setProperty(signalsFeatureFlagKey, "true");
-            var service = new MockVaadinServletService();
-            VaadinService.setCurrent(service);
+        VaadinService.setCurrent(service);
 
-            var phaser = new Phaser(1);
-            AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
-                    service);
-            var ui = new MockUI(session);
-            assertSame(ui, UI.getCurrent());
-            var signal = new SharedListSignal<>(String.class);
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service);
+        var ui = new MockUI(session);
+        assertSame(ui, UI.getCurrent());
 
-            record EffectExecution(UI ui, String threadName) {
-            }
-            var invocations = new ArrayList<EffectExecution>();
+        // Close the UI so that isClosing() returns true
+        ui.close();
+        assertTrue(ui.isClosing(), "UI should be closing after close()");
+        ui.getSession().removeUI(ui);
 
-            try {
-                Signal.effect(() -> {
-                    invocations.add(new EffectExecution(UI.getCurrent(),
-                            Thread.currentThread().getName()));
-                    signal.value();
-                    phaser.arrive();
-                });
+        // Obtain the result-notifier dispatcher while the closing UI is current
+        var dispatcher = SignalEnvironment.getCurrentResultNotifier();
 
-                phaser.awaitAdvanceInterruptibly(0, 500, TimeUnit.MILLISECONDS);
+        AtomicBoolean effectExecuted = new AtomicBoolean(false);
 
-                Assert.assertEquals("Expected effect to be executed", 1,
-                        invocations.size());
+        UI.setCurrent(null);
+        session.unlock();
 
-                var execution = invocations.get(0);
-                Assert.assertEquals(
-                        "Expected UI to not be available during effect execution",
-                        null, execution.ui);
-                Assert.assertTrue(
-                        "Expected effect to be executed in Vaadin Executor thread",
-                        execution.threadName
-                                .startsWith("VaadinTaskExecutor-thread-"));
-            } finally {
-                session.unlock();
-                UI.setCurrent(null);
-            }
+        CountDownLatch latch = new CountDownLatch(1);
 
-            signal.insertLast("update");
+        dispatcher.execute(() -> {
+            effectExecuted.set(true);
+            latch.countDown();
+        });
 
-            phaser.awaitAdvanceInterruptibly(1, 500, TimeUnit.MILLISECONDS);
+        latch.await(100, TimeUnit.MILLISECONDS);
 
-            Assert.assertEquals("Expected effect to be executed twice", 2,
-                    invocations.size());
-
-            var execution = invocations.get(1);
-            Assert.assertEquals(
-                    "Expected UI to not be available during effect execution",
-                    null, execution.ui);
-            Assert.assertTrue(
-                    "Expected effect to be executed in Vaadin Executor thread",
-                    execution.threadName
-                            .startsWith("VaadinTaskExecutor-thread-"));
-        } finally {
-            if (signalsFlag != null) {
-                System.setProperty(signalsFeatureFlagKey, signalsFlag);
-            } else {
-                System.clearProperty(signalsFeatureFlagKey);
-            }
-        }
+        assertFalse(effectExecuted.get(), "Expected task to not execute");
+        assertEquals(0, service.getUncaughtExecutorExceptions().size());
     }
 
 }

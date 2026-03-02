@@ -16,10 +16,11 @@
 package com.vaadin.flow.component;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents {@link Component} which has theme attribute.
@@ -165,12 +166,30 @@ public interface HasTheme extends HasElement {
      * @param name
      *            the theme name to bind, not {@code null} or blank
      * @param signal
-     *            the boolean signal to bind to, or {@code null} to unbind
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the boolean signal to bind to, not {@code null}
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
      */
     default void bindThemeName(String name, Signal<Boolean> signal) {
         getThemeNames().bind(name, signal);
+    }
+
+    /**
+     * Binds the theme names of this component to a {@link Signal} so that the
+     * theme list is dynamically updated to match the signal's value. Only one
+     * group binding is allowed per component.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings. Names that appear in both sources may appear as duplicates in
+     * the {@code theme} attribute.
+     *
+     * @param names
+     *            the signal providing the list of theme names, not {@code null}
+     * @see ThemeList#bind(Signal)
+     * @since 25.1
+     */
+    default void bindThemeNames(Signal<List<String>> names) {
+        getThemeNames().bind(names);
     }
 }

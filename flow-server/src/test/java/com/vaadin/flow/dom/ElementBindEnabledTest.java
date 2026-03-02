@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class ElementBindEnabledTest extends SignalsUnitTest {
+class ElementBindEnabledTest extends SignalsUnitTest {
 
     @Test
     public void bindEnabled_elementAttachedBefore_bindingActive() {
@@ -67,11 +67,11 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         assertFalse(element.isEnabled());
 
         // false -> true
-        signal.value(true);
+        signal.set(true);
         assertTrue(element.isEnabled());
 
         // null transforms to false
-        signal.value(null);
+        signal.set(null);
         assertFalse(element.isEnabled());
     }
 
@@ -80,7 +80,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
-        signal.value(false);
+        signal.set(false);
 
         assertTrue(element.isEnabled());
     }
@@ -92,7 +92,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
-        signal.value(false); // ignored
+        signal.set(false); // ignored
 
         assertTrue(element.isEnabled());
     }
@@ -104,7 +104,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
-        signal.value(false);
+        signal.set(false);
         UI.getCurrent().getElement().appendChild(element);
 
         assertFalse(element.isEnabled());
@@ -124,28 +124,32 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_withNullBinding_removesBinding() {
+    public void bindEnabled_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindEnabled(signal);
-        assertTrue(element.isEnabled());
 
-        element.bindEnabled(null); // remove binding
-        signal.value(false); // no effect
-        assertTrue(element.isEnabled());
+        assertThrows(NullPointerException.class,
+                () -> element.bindEnabled(null));
     }
 
     @Test
-    public void bindEnabled_withNullBinding_allowsSetEnabled() {
+    public void bindEnabled_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         assertTrue(element.isEnabled());
 
-        element.bindEnabled(null); // remove binding
+        // Remove binding via the node's SignalBindingFeature
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.removeBinding(SignalBindingFeature.ENABLED);
 
+        // Signal changes should no longer affect the element
+        signal.set(false);
+        assertTrue(element.isEnabled());
+
+        // Manual set should work without throwing
         element.setEnabled(false);
         assertFalse(element.isEnabled());
     }
@@ -157,7 +161,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         element.setEnabled(false);
         element.isEnabled();
         element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> Assert.fail(
+                .ifPresent(feature -> fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);

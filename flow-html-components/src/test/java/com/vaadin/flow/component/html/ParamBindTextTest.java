@@ -17,12 +17,12 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -37,10 +37,10 @@ public class ParamBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         param.bindName(signal);
 
-        signal.value("name-1");
+        signal.set("name-1");
         assertEquals("name-1", param.getName());
 
-        signal.value("name-2");
+        signal.set("name-2");
         assertEquals("name-2", param.getName());
     }
 
@@ -57,19 +57,11 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindName_unbindWithNull_stopsUpdates() {
+    public void bindName_nullSignal_throwsNPE() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        param.bindName(signal);
-        assertEquals("a", param.getName());
-
-        param.bindName(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", param.getName());
+        assertThrows(NullPointerException.class, () -> param.bindName(null));
     }
 
     @Test
@@ -80,10 +72,10 @@ public class ParamBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         param.bindValue(signal);
 
-        signal.value("value-1");
+        signal.set("value-1");
         assertEquals(Optional.of("value-1"), param.getValue());
 
-        signal.value("value-2");
+        signal.set("value-2");
         assertEquals(Optional.of("value-2"), param.getValue());
     }
 
@@ -100,18 +92,10 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_unbindWithNull_stopsUpdates() {
+    public void bindValue_nullSignal_throwsNPE() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        param.bindValue(signal);
-        assertEquals(Optional.of("a"), param.getValue());
-
-        param.bindValue(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals(Optional.of("a"), param.getValue());
+        assertThrows(NullPointerException.class, () -> param.bindValue(null));
     }
 }

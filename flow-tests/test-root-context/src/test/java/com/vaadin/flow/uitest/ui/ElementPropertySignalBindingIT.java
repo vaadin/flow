@@ -52,12 +52,18 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
         $(DivElement.class).id(ElementPropertySignalBindingView.TARGET_DIV_ID)
                 .dispatchEvent("change");
 
+        // change value and trigger event
         Assert.assertEquals(
                 ElementPropertySignalBindingView.TEST_PROPERTY_NAME
                         + " changed to: changed-value",
                 resultElement.getText());
         Assert.assertEquals("Signal value: changed-value",
                 signalValueElement.getText());
+        Assert.assertEquals(String.valueOf(2), listenerCountElement.getText());
+
+        // trigger event without change
+        $(DivElement.class).id(ElementPropertySignalBindingView.TARGET_DIV_ID)
+                .dispatchEvent("change");
         Assert.assertEquals(String.valueOf(2), listenerCountElement.getText());
     }
 
@@ -72,9 +78,8 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
                 .id(ElementPropertySignalBindingView.SHOULD_THROW_TARGET_DIV_ID)
                 .dispatchEvent("change");
 
-        Assert.assertTrue("Internal error expected when attempting to "
-                + "update a property bound to a (read-only) computed signal, "
-                + "but no internal error is present.",
+        Assert.assertTrue(
+                "Cannot set value on a read-only signal binding. Provide a write callback to enable two-way binding.",
                 isInternalErrorNotificationPresent());
     }
 

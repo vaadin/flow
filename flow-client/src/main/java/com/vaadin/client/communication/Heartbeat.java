@@ -82,7 +82,7 @@ public class Heartbeat {
 
         Console.debug("Sending heartbeat request...");
 
-        Xhr.post(uri, null, "text/plain; charset=utf-8", new Xhr.Callback() {
+        Xhr.post(uri, null, null, new Xhr.Callback() {
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NativeButtonTest extends ComponentTest {
+class NativeButtonTest extends ComponentTest {
 
     // Actual test methods in super class
 
@@ -28,7 +28,7 @@ public class NativeButtonTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 }

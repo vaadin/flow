@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
+class HasSizeBindWidthHeightTest extends SignalsUnitTest {
 
     @Tag("div")
     public static class HasSizeComponent extends Component implements HasSize {
@@ -67,10 +67,10 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertEquals("200px", component.getWidth());
 
         // "200px" -> "300px"
-        signal.value("300px");
+        signal.set("300px");
         assertEquals("300px", component.getWidth());
 
-        signal.value(null);
+        signal.set(null);
         assertNull(component.getWidth());
     }
 
@@ -79,7 +79,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindWidth(signal);
-        signal.value("300px");
+        signal.set("300px");
 
         assertNull(component.getWidth());
     }
@@ -91,7 +91,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindWidth(signal);
         component.removeFromParent();
-        signal.value("300px"); // ignored
+        signal.set("300px"); // ignored
 
         assertEquals("200px", component.getWidth());
     }
@@ -103,7 +103,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindWidth(signal);
         component.removeFromParent();
-        signal.value("300px");
+        signal.set("300px");
         UI.getCurrent().add(component);
 
         assertEquals("300px", component.getWidth());
@@ -142,29 +142,12 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindWidth_withNullBinding_removesBinding() {
+    public void bindWidth_nullSignal_throwsNPE() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindWidth(signal);
-        assertEquals("200px", component.getWidth());
 
-        component.bindWidth(null);
-        signal.value("300px");
-        assertEquals("200px", component.getWidth());
-    }
-
-    @Test
-    public void bindWidth_withNullBinding_allowsSetWidth() {
-        HasSizeComponent component = new HasSizeComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindWidth(signal);
-        assertEquals("200px", component.getWidth());
-
-        component.bindWidth(null);
-        component.setWidth("300px");
-        assertEquals("300px", component.getWidth());
+        assertThrows(NullPointerException.class,
+                () -> component.bindWidth(null));
     }
 
     @Test
@@ -201,7 +184,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertEquals("", component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
 
-        signal.value("200px");
+        signal.set("200px");
         assertEquals("200px", component.getWidth());
         assertNull(component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
@@ -217,7 +200,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertNull(component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
 
-        signal.value("100%");
+        signal.set("100%");
         assertEquals("100%", component.getWidth());
         assertEquals("", component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_WIDTH_FULL));
@@ -258,10 +241,10 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertEquals("200px", component.getHeight());
 
         // "200px" -> "300px"
-        signal.value("300px");
+        signal.set("300px");
         assertEquals("300px", component.getHeight());
 
-        signal.value(null);
+        signal.set(null);
         assertNull(component.getHeight());
     }
 
@@ -270,7 +253,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindHeight(signal);
-        signal.value("300px");
+        signal.set("300px");
 
         assertNull(component.getHeight());
     }
@@ -282,7 +265,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindHeight(signal);
         component.removeFromParent();
-        signal.value("300px"); // ignored
+        signal.set("300px"); // ignored
 
         assertEquals("200px", component.getHeight());
     }
@@ -294,7 +277,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindHeight(signal);
         component.removeFromParent();
-        signal.value("300px");
+        signal.set("300px");
         UI.getCurrent().add(component);
 
         assertEquals("300px", component.getHeight());
@@ -331,29 +314,12 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHeight_withNullBinding_removesBinding() {
+    public void bindHeight_nullSignal_throwsNPE() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindHeight(signal);
-        assertEquals("200px", component.getHeight());
 
-        component.bindHeight(null);
-        signal.value("300px");
-        assertEquals("200px", component.getHeight());
-    }
-
-    @Test
-    public void bindHeight_withNullBinding_allowsSetHeight() {
-        HasSizeComponent component = new HasSizeComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
-        component.bindHeight(signal);
-        assertEquals("200px", component.getHeight());
-
-        component.bindHeight(null);
-        component.setHeight("300px");
-        assertEquals("300px", component.getHeight());
+        assertThrows(NullPointerException.class,
+                () -> component.bindHeight(null));
     }
 
     @Test
@@ -390,7 +356,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertEquals("", component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
 
-        signal.value("200px");
+        signal.set("200px");
         assertEquals("200px", component.getHeight());
         assertNull(component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
@@ -406,7 +372,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertNull(component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
 
-        signal.value("100%");
+        signal.set("100%");
         assertEquals("100%", component.getHeight());
         assertEquals("", component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));

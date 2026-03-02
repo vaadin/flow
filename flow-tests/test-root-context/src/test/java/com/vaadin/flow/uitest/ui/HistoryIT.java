@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -35,7 +34,7 @@ public class HistoryIT extends ChromeBrowserTest {
     public void testHistory() throws URISyntaxException {
         open();
 
-        URI baseUrl = getCurrentUrl();
+        URI baseUrl = new URI(getDriver().getCurrentUrl());
 
         InputTextElement stateField = $(InputTextElement.class).id("state");
         InputTextElement locationField = $(InputTextElement.class)
@@ -50,17 +49,15 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.setValue("asdf");
         pushButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
+        waitForUrl(baseUrl.resolve("asdf"));
 
         // Back to original state
         backButton.click();
 
-        Assert.assertEquals(baseUrl, getCurrentUrl());
+        waitForUrl(baseUrl);
         // idx value in history state is added by react-router
-        Assert.assertEquals(
-                Arrays.asList(
-                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
-                getStatusMessages());
+        waitForStatusMessages(
+                "New location: com.vaadin.flow.uitest.ui.HistoryView");
         clearButton.click();
 
         stateField.clear();
@@ -68,21 +65,20 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.setValue("qwerty");
         replaceButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
+        waitForUrl(baseUrl.resolve("qwerty"));
 
         // Forward to originally pushed state
         forwardButton.click();
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: asdf",
-                "New state: {\"foo\":true}"), getStatusMessages());
+        waitForUrl(baseUrl.resolve("asdf"));
+        waitForStatusMessages("New location: asdf",
+                "New state: {\"foo\":true}");
         clearButton.click();
 
         // Back to the replaced state
         backButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: qwerty"),
-                getStatusMessages());
+        waitForUrl(baseUrl.resolve("qwerty"));
+        waitForStatusMessages("New location: qwerty");
 
         // Navigate to empty string should go to the context path root
         stateField.clear();
@@ -91,23 +87,31 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.clear();
         pushButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        URI expectedRoot = baseUrl.resolve(".");
+        waitForUrl(expectedRoot);
 
         // Replacing with empty string should go to the context path root
         locationField.setValue("qwerty/x");
         replaceButton.click();
         locationField.clear();
         replaceButton.click();
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        waitForUrl(expectedRoot);
     }
 
-    private URI getCurrentUrl() throws URISyntaxException {
-        URI uri = new URI(getDriver().getCurrentUrl());
-        return uri;
+    private void waitForUrl(URI expected) {
+        waitUntil(arg -> {
+            try {
+                return expected.equals(new URI(getDriver().getCurrentUrl()));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    private List<String> getStatusMessages() {
-        return findElements(By.className("status")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+    private void waitForStatusMessages(String... expectedMessages) {
+        List<String> expected = Arrays.asList(expectedMessages);
+        waitUntil(arg -> expected.equals(findElements(By.className("status"))
+                .stream().map(WebElement::getText)
+                .collect(Collectors.toList())));
     }
 }

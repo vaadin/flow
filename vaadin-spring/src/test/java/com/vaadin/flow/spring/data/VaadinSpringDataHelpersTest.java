@@ -21,8 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,30 +32,34 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
-public class VaadinSpringDataHelpersTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class VaadinSpringDataHelpersTest {
 
     @Test
-    public void toSpringDataSort_generatesAscendingAndDescendingSpringSort() {
+    void toSpringDataSort_generatesAscendingAndDescendingSpringSort() {
         List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name")
                 .thenDesc("age").build();
         Query<?, ?> query = new Query<>(0, 1, querySortOrders, null, null);
 
         Sort sort = VaadinSpringDataHelpers.toSpringDataSort(query);
 
-        Assert.assertNotNull(sort);
-        Assert.assertEquals(2L, sort.stream().count());
+        assertNotNull(sort);
+        assertEquals(2L, sort.stream().count());
 
         Sort.Order nameOrder = sort.getOrderFor("name");
-        Assert.assertNotNull(nameOrder);
-        Assert.assertTrue(nameOrder.isAscending());
+        assertNotNull(nameOrder);
+        assertTrue(nameOrder.isAscending());
 
         Sort.Order ageOrder = sort.getOrderFor("age");
-        Assert.assertNotNull(ageOrder);
-        Assert.assertTrue(ageOrder.isDescending());
+        assertNotNull(ageOrder);
+        assertTrue(ageOrder.isDescending());
     }
 
     @Test
-    public void toSpringPageRequest_generatesSpringPageRequestWithPagingAndSort() {
+    void toSpringPageRequest_generatesSpringPageRequestWithPagingAndSort() {
         List<QuerySortOrder> querySortOrders = QuerySortOrder.asc("name")
                 .build();
         Query<?, ?> query = new Query<>(100, 50, querySortOrders, null, null);
@@ -64,17 +67,17 @@ public class VaadinSpringDataHelpersTest {
         PageRequest pageRequest = VaadinSpringDataHelpers
                 .toSpringPageRequest(query);
 
-        Assert.assertNotNull(pageRequest);
-        Assert.assertEquals(50, pageRequest.getPageSize());
-        Assert.assertEquals(2, pageRequest.getPageNumber());
+        assertNotNull(pageRequest);
+        assertEquals(50, pageRequest.getPageSize());
+        assertEquals(2, pageRequest.getPageNumber());
 
         Sort.Order order = pageRequest.getSort().getOrderFor("name");
-        Assert.assertNotNull(order);
-        Assert.assertTrue(order.isAscending());
+        assertNotNull(order);
+        assertTrue(order.isAscending());
     }
 
     @Test
-    public void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
+    void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
         PagingAndSortingRepository repo = Mockito
                 .mock(PagingAndSortingRepository.class);
 
@@ -106,8 +109,8 @@ public class VaadinSpringDataHelpersTest {
                 .collect(Collectors.toList());
 
         // then the result should contain items 'Item 399'...'Item 350'.
-        Assert.assertEquals(50, result.size());
-        Assert.assertEquals("Item 399", result.get(0));
-        Assert.assertEquals("Item 350", result.get(49));
+        assertEquals(50, result.size());
+        assertEquals("Item 399", result.get(0));
+        assertEquals("Item 350", result.get(49));
     }
 }

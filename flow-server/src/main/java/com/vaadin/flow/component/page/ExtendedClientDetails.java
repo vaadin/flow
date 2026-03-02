@@ -46,8 +46,6 @@ public class ExtendedClientDetails implements Serializable {
     private final UI ui;
     private int screenWidth = -1;
     private int screenHeight = -1;
-    private int windowInnerWidth = -1;
-    private int windowInnerHeight = -1;
     private int bodyClientWidth = -1;
     private int bodyClientHeight = -1;
     private int timezoneOffset = 0;
@@ -131,12 +129,12 @@ public class ExtendedClientDetails implements Serializable {
                 this.bodyClientHeight = this.bodyClientWidth = -1;
             }
         }
-        if (windowInnerHeight != null) {
+        if (windowInnerHeight != null && ui != null) {
             try {
-                this.windowInnerHeight = Integer.parseInt(windowInnerHeight);
-                this.windowInnerWidth = Integer.parseInt(windowInnerWidth);
+                ui.getPage().setWindowSize(Integer.parseInt(windowInnerWidth),
+                        Integer.parseInt(windowInnerHeight));
             } catch (final NumberFormatException e) {
-                this.windowInnerHeight = this.windowInnerWidth = -1;
+                // ignore, signal keeps its current value
             }
         }
         if (tzOffset != null) {
@@ -217,21 +215,28 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Gets the inner height of the browser window {@code window.innerHeight} in
      * pixels. This includes the scrollbar, if it is visible.
+     * <p>
+     * Delegates to the window size signal on the {@link Page}. Returns
+     * {@code -1} if no UI is available.
      *
-     * @return the browser window inner height in pixels
+     * @return the browser window inner height in pixels, or {@code -1}
      */
     public int getWindowInnerHeight() {
-        return windowInnerHeight;
+        return ui == null ? -1
+                : ui.getPage().windowSizeSignal().peek().height();
     }
 
     /**
      * Gets the inner width of the browser window {@code window.innerWidth} in
      * pixels. This includes the scrollbar, if it is visible.
+     * <p>
+     * Delegates to the window size signal on the {@link Page}. Returns
+     * {@code -1} if no UI is available.
      *
-     * @return the browser window inner width in pixels
+     * @return the browser window inner width in pixels, or {@code -1}
      */
     public int getWindowInnerWidth() {
-        return windowInnerWidth;
+        return ui == null ? -1 : ui.getPage().windowSizeSignal().peek().width();
     }
 
     /**

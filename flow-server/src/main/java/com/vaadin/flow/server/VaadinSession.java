@@ -54,6 +54,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -83,9 +85,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Default locale of the session.
+     * Locale value used for serialization. The signal is the runtime source of
+     * truth; this field is only used to persist the value across serialization.
      */
     private Locale locale = Locale.getDefault();
+
+    private transient SharedValueSignal<Locale> localeSignal = new SharedValueSignal<>(
+            locale);
 
     /**
      * Session wide error handler which is used by default if an error is left
@@ -135,6 +141,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private long lastUnlocked;
 
     private long lastLocked;
+
+    private transient Transaction sessionScopedTransaction;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -383,7 +391,28 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Locale getLocale() {
         checkHasLock();
-        return locale;
+        return localeSignal.peek();
+    }
+
+    /**
+     * Gets a signal that holds the current locale of this session.
+     * <p>
+     * The signal is the source of truth for the locale. Use
+     * {@link SharedValueSignal#get()} to read the locale reactively (creates a
+     * dependency when called inside a signal effect). Use {@link #getLocale()}
+     * for non-reactive reads.
+     * <p>
+     * Note that writing directly to the signal will not propagate the locale
+     * change to UIs in this session. Use {@link #setLocale(Locale)} if you need
+     * the locale to be set on all UIs.
+     *
+     * @return a writable signal holding the current locale, never null
+     * @see #setLocale(Locale)
+     * @see #getLocale()
+     */
+    public SharedValueSignal<Locale> localeSignal() {
+        checkHasLock();
+        return localeSignal;
     }
 
     /**
@@ -399,7 +428,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
-        this.locale = locale;
+        localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
@@ -671,6 +700,23 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the session-scoped write-through transaction, creating it lazily if
+     * needed. The transaction provides repeatable-read guarantees for shared
+     * signal operations while the session lock is held.
+     * <p>
+     * The session lock must be held when calling this method.
+     *
+     * @return the session-scoped transaction, not <code>null</code>
+     */
+    Transaction getOrCreateSessionScopedTransaction() {
+        assert hasLock();
+        if (sessionScopedTransaction == null) {
+            sessionScopedTransaction = Transaction.createWriteThrough();
+        }
+        return sessionScopedTransaction;
+    }
+
+    /**
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
@@ -750,6 +796,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
@@ -1093,6 +1140,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
+            localeSignal = new SharedValueSignal<>(locale);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
@@ -1118,6 +1166,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 }
             }
 
+            // Sync locale field from signal for serialization
+            locale = localeSignal.peek();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);

@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -42,7 +41,12 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
-public class ServletResourceDownloadHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ServletResourceDownloadHandlerTest {
     private static final String PATH_TO_FILE = "downloads/generated_binary_file.bin";
 
     private VaadinRequest request;
@@ -54,7 +58,7 @@ public class ServletResourceDownloadHandlerTest {
     private Element owner;
     private UI ui;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, URISyntaxException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
@@ -104,8 +108,8 @@ public class ServletResourceDownloadHandlerTest {
                 PATH_TO_FILE, "download", new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        Assert.assertEquals(-1, context.contentLength());
-                        Assert.assertEquals("download", context.fileName());
+                        assertEquals(-1, context.contentLength());
+                        assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
 
@@ -113,17 +117,17 @@ public class ServletResourceDownloadHandlerTest {
                     public void onProgress(TransferContext context,
                             long transferredBytes, long totalBytes) {
                         transferredBytesRecords.add(transferredBytes);
-                        Assert.assertEquals(-1, totalBytes);
-                        Assert.assertEquals("download", context.fileName());
+                        assertEquals(-1, totalBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onProgress");
                     }
 
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        Assert.assertEquals(-1, context.contentLength());
-                        Assert.assertEquals(165000, transferredBytes);
-                        Assert.assertEquals("download", context.fileName());
+                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, transferredBytes);
+                        assertEquals("download", context.fileName());
                         invocations.add("onComplete");
                     }
 
@@ -137,14 +141,13 @@ public class ServletResourceDownloadHandlerTest {
         handler.handleDownloadRequest(downloadEvent);
 
         // Two invocations with interval of 65536 bytes for total size 165000
-        Assert.assertEquals(
+        assertEquals(
                 List.of("onStart", "onProgress", "onProgress", "onComplete"),
                 invocations);
-        Assert.assertArrayEquals(new long[] { 65536, 131072 },
-                transferredBytesRecords.stream().mapToLong(Long::longValue)
-                        .toArray());
+        assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
+                .stream().mapToLong(Long::longValue).toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
-        Assert.assertNull(downloadEvent.getException());
+        assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -186,17 +189,16 @@ public class ServletResourceDownloadHandlerTest {
                     public void onError(TransferContext context,
                             IOException reason) {
                         invocations.add("onError");
-                        Assert.assertEquals("I/O exception",
-                                reason.getMessage());
+                        assertEquals("I/O exception", reason.getMessage());
                     }
                 });
 
         try {
             handler.handleDownloadRequest(downloadEvent);
-            Assert.fail("Expected an IOException to be thrown");
+            fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        assertEquals(List.of("onStart", "onError"), invocations);
         Mockito.verify(downloadEvent)
                 .setException(Mockito.any(IOException.class));
     }

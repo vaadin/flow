@@ -47,7 +47,7 @@ public class LoadingIndicatorView extends AbstractDivView {
         add(divWithText("Third delay: "
                 + getLoadingIndicatorConfiguration().getThirdDelay()));
 
-        int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
+        int[] delays = new int[] { 50, 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (int delay : delays) {
             add(createButton("Trigger event which takes " + delay + "ms",
                     "wait" + delay, e -> delay(delay)));

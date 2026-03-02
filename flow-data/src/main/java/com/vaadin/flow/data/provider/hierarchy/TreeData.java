@@ -400,6 +400,14 @@ public class TreeData<T> implements Serializable {
                     "Item cannot be the parent of itself");
         }
 
+        // Check for cyclic reference - item cannot become descendant of its
+        // own descendant
+        if (parent != null && isAncestorOf(item, parent)) {
+            throw new IllegalArgumentException(
+                    "Setting '" + parent + "' as parent of '" + item
+                            + "' would create a cycle in the tree hierarchy");
+        }
+
         T oldParent = itemToWrapperMap.get(item).getParent();
 
         if (!Objects.equals(oldParent, parent)) {
@@ -487,5 +495,30 @@ public class TreeData<T> implements Serializable {
             addItems(item, childItems);
             addItemsRecursively(childItems, childItemProvider);
         });
+    }
+
+    /**
+     * Checks if the potential ancestor is an ancestor of the potential
+     * descendant by walking up the ancestor chain from the descendant.
+     *
+     * @param potentialAncestor
+     *            the item to check as a potential ancestor
+     * @param potentialDescendant
+     *            the item to check as a potential descendant
+     * @return true if {@code potentialAncestor} is an ancestor of
+     *         {@code potentialDescendant}
+     */
+    private boolean isAncestorOf(T potentialAncestor, T potentialDescendant) {
+        if (potentialDescendant == null) {
+            return false;
+        }
+        T current = itemToWrapperMap.get(potentialDescendant).getParent();
+        while (current != null) {
+            if (current.equals(potentialAncestor)) {
+                return true;
+            }
+            current = itemToWrapperMap.get(current).getParent();
+        }
+        return false;
     }
 }

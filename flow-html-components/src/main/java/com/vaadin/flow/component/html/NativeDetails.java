@@ -28,8 +28,9 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;details&gt;</code> element.
@@ -86,9 +87,9 @@ public class NativeDetails extends HtmlComponent
      * when the signal's value is updated.
      * <p>
      * While a binding for the summary text is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
@@ -194,23 +195,18 @@ public class NativeDetails extends HtmlComponent
      * Binds a signal's value to the summary text so that the text is updated
      * when the signal's value is updated.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the summary text. When unbinding, the current summary text is left
-     * unchanged.
-     * <p>
      * While a binding for the summary text is active, any attempt to set the
-     * text manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * The same happens when trying to bind a new Signal while one is already
-     * bound.
+     * text manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
+     * when trying to bind a new Signal while one is already bound.
      * <p>
      * Bindings are lifecycle-aware and only active while this component is in
      * the attached state; they are deactivated while the component is in the
      * detached state.
      *
      * @param summarySignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setSummaryText(String)
      * @see Element#bindText(Signal)
@@ -280,6 +276,30 @@ public class NativeDetails extends HtmlComponent
      */
     public void setOpen(boolean open) {
         getElement().setProperty("open", open);
+    }
+
+    /**
+     * Binds the open state to the given signal. Signal changes push to the DOM
+     * property. If a non-null {@code writeCallback} is provided, client-side
+     * property changes are pushed back through the callback, making the binding
+     * two-way. If {@code writeCallback} is {@code null}, the binding is
+     * read-only.
+     * <p>
+     * While a signal is bound, any attempt to set the open state manually
+     * throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     *
+     * @param signal
+     *            the signal to bind, not {@code null}
+     * @param writeCallback
+     *            callback invoked when the client-side value changes, or
+     *            {@code null} for a read-only binding
+     * @since 25.1
+     */
+    public void bindOpen(Signal<Boolean> signal,
+            SerializableConsumer<Boolean> writeCallback) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
+        getElement().bindProperty("open",
+                signal.map(v -> v == null ? Boolean.FALSE : v), writeCallback);
     }
 
     /**

@@ -26,6 +26,8 @@ import jakarta.servlet.ServletResponse;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,10 +39,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -53,10 +54,10 @@ import com.vaadin.flow.server.InitParameters;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ServletDeployerTest {
+class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
 
     private List<String> servletNames;
@@ -64,9 +65,8 @@ public class ServletDeployerTest {
     private List<Integer> servletLoadOnStartup;
 
     private boolean disableAutomaticServletRegistration = false;
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempFolder;
 
     private static class TestServlet implements Servlet {
         @Override
@@ -96,7 +96,7 @@ public class ServletDeployerTest {
     private static class ComponentWithRoute extends Component {
     }
 
-    @Before
+    @BeforeEach
     public void clearCaptures() {
         servletNames = new ArrayList<>();
         servletMappings = new ArrayList<>();
@@ -193,39 +193,36 @@ public class ServletDeployerTest {
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
-        assertEquals(String.format(
+        assertEquals(servletNames.size(), numServlets, String.format(
                 "Expected to have exactly '%d' servlets, but got '%d': '%s'",
-                numServlets, servletNames.size(), servletNames),
-                servletNames.size(), numServlets);
-        assertEquals(String.format(
+                numServlets, servletNames.size(), servletNames));
+        assertEquals(servletMappings.size(), numMappings, String.format(
                 "Expected to have exactly '%d' mappings, but got '%d': '%s'",
-                numMappings, servletMappings.size(), servletMappings),
-                servletMappings.size(), numMappings);
+                numMappings, servletMappings.size(), servletMappings));
     }
 
     private void assertMappingIsRegistered(String servletName,
             String mappedPath) {
         int servletNameIndex = servletNames.indexOf(servletName);
         int pathIndex = servletMappings.indexOf(mappedPath);
-        assertTrue(String.format(
+        assertTrue(servletNameIndex >= 0, String.format(
                 "Did not find servlet name '%s' among added servlet names: '%s'",
-                servletName, servletNames), servletNameIndex >= 0);
-        assertTrue(String.format(
-                "Did not find mapped path '%s' among added paths: '%s'",
-                mappedPath, servletMappings), pathIndex >= 0);
-        assertEquals(
-                "Expected servlet name '%s' and mapped path '%s' to be added for the same servlet in the same time",
-                pathIndex, servletNameIndex);
+                servletName, servletNames));
+        assertTrue(pathIndex >= 0,
+                String.format(
+                        "Did not find mapped path '%s' among added paths: '%s'",
+                        mappedPath, servletMappings));
+        assertEquals(pathIndex, servletNameIndex,
+                "Expected servlet name '%s' and mapped path '%s' to be added for the same servlet in the same time");
     }
 
     private void assertLoadOnStartupSet() {
-        assertEquals("Servlet loadOnStartup should be invoked only once", 1,
-                servletLoadOnStartup.size());
-        assertEquals(
+        assertEquals(1, servletLoadOnStartup.size(),
+                "Servlet loadOnStartup should be invoked only once");
+        assertEquals((Integer) 1, servletLoadOnStartup.get(0),
                 String.format(
                         "Expected servlet loadOnStartup to be '%d' but was '%d",
-                        1, servletLoadOnStartup.get(0)),
-                (Integer) 1, servletLoadOnStartup.get(0));
+                        1, servletLoadOnStartup.get(0)));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -290,7 +287,7 @@ public class ServletDeployerTest {
                 Collectors.toMap(Registration::getName, Function.identity()));
         Mockito.when(contextMock.getServletRegistrations()).thenReturn(hack);
 
-        File token = tempFolder.newFile();
+        File token = Files.createTempFile(tempFolder, "temp", null).toFile();
         FileUtils.write(token, "{}", StandardCharsets.UTF_8);
 
         Mockito.when(contextMock.getInitParameterNames())

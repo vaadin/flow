@@ -31,12 +31,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.ClassFinder;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks that any class which implements {@link ServletContainerInitializer}
@@ -44,7 +46,7 @@ import com.vaadin.flow.testutil.ClassFinder;
  * override
  * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
  */
-public class ServletContainerInitializerTest extends ClassFinder {
+class ServletContainerInitializerTest extends ClassFinder {
 
     @Test
     public void servletContextHasNoLookup_deferredServletContextInitializersAttributeIsSet_processIsNotExecuted()
@@ -66,7 +68,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
                 Mockito.eq(DeferredServletContextInitializers.class.getName()),
                 Mockito.any());
 
-        Assert.assertFalse(processIsExecuted.get());
+        assertFalse(processIsExecuted.get());
     }
 
     @Test
@@ -94,7 +96,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
                 Mockito.eq(DeferredServletContextInitializers.class.getName()),
                 Mockito.any());
 
-        Assert.assertTrue(processIsExecuted.get());
+        assertTrue(processIsExecuted.get());
     }
 
     @Test
@@ -134,16 +136,14 @@ public class ServletContainerInitializerTest extends ClassFinder {
                 // ignore
             }
         }
-        Assert.assertTrue(
-                brokenInitializers + " classes are subtypes of "
-                        + ServletContainerInitializer.class
-                        + " but either are not subtypes of "
-                        + ClassLoaderAwareServletContainerInitializer.class
-                        + " or override "
-                        + ClassLoaderAwareServletContainerInitializer.class
-                                .getName()
-                        + ".onStartup method",
-                brokenInitializers.isEmpty());
+        assertTrue(brokenInitializers.isEmpty(), brokenInitializers
+                + " classes are subtypes of "
+                + ServletContainerInitializer.class
+                + " but either are not subtypes of "
+                + ClassLoaderAwareServletContainerInitializer.class
+                + " or override "
+                + ClassLoaderAwareServletContainerInitializer.class.getName()
+                + ".onStartup method");
 
     }
 

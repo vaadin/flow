@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FooterTest extends ComponentTest {
+class FooterTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,13 +27,13 @@ public class FooterTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         super.testHasOrderedComponents();
     }
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
+    protected void testHasAriaLabelIsNotImplemented() {
         // For most assistive technology it's fine to use aria-label or
         // aria-labelledby on the <nav>, and <main> elements but not
         // on <footer>, <section>, <article>, or <header>.

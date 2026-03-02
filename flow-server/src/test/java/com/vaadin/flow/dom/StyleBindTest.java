@@ -19,61 +19,52 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.local.ValueSignal;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for Style.bind(String, Signal<String>).
  */
-public class StyleBindTest {
+class StyleBindTest {
 
     private static MockVaadinServletService service;
 
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
-        MockedStatic<FeatureFlags> staticMock = Mockito
-                .mockStatic(FeatureFlags.class);
-        featureFlagEnabled(staticMock);
         service = new MockVaadinServletService();
-        close(staticMock);
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         VaadinService.setCurrent(null);
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
-        featureFlagStaticMock = Mockito.mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
         mockLockedSessionWithErrorHandler();
     }
 
-    @After
+    @AfterEach
     public void after() {
-        close(featureFlagStaticMock);
         VaadinService.setCurrent(null);
     }
 
@@ -86,14 +77,14 @@ public class StyleBindTest {
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        assertEquals("red", element.getStyle().get("backgroundColor"));
 
-        color.value("blue");
-        Assert.assertEquals("blue", element.getStyle().get("backgroundColor"));
+        color.set("blue");
+        assertEquals("blue", element.getStyle().get("backgroundColor"));
 
         // Null removes the style
-        color.value(null);
-        Assert.assertNull(element.getStyle().get("backgroundColor"));
+        color.set(null);
+        assertNull(element.getStyle().get("backgroundColor"));
     }
 
     // Lifecycle: no updates while detached; lastApplied preserved across
@@ -105,18 +96,18 @@ public class StyleBindTest {
 
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        assertEquals("red", element.getStyle().get("backgroundColor"));
 
         // Detach
         UI.getCurrent().getElement().removeChild(element);
 
         // Change while detached -> should not apply
-        color.value("green");
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        color.set("green");
+        assertEquals("red", element.getStyle().get("backgroundColor"));
 
         // Reattach -> current signal value should be applied
         UI.getCurrent().getElement().appendChild(element);
-        Assert.assertEquals("green", element.getStyle().get("backgroundColor"));
+        assertEquals("green", element.getStyle().get("backgroundColor"));
     }
 
     // Conflict prevention: set/remove throw while binding is active
@@ -128,9 +119,9 @@ public class StyleBindTest {
         ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getStyle().set("background-color", "black"));
-        Assert.assertThrows(BindingActiveException.class,
+        assertThrows(BindingActiveException.class,
                 () -> element.getStyle().remove("background-color"));
     }
 
@@ -145,41 +136,29 @@ public class StyleBindTest {
         element.getStyle().bind("border-top-width", a);
         element.getStyle().bind("border-bottom-width", b);
 
-        Assert.assertEquals("1", element.getStyle().get("borderTopWidth"));
-        Assert.assertEquals("2", element.getStyle().get("borderBottomWidth"));
+        assertEquals("1", element.getStyle().get("borderTopWidth"));
+        assertEquals("2", element.getStyle().get("borderBottomWidth"));
 
         element.getStyle().clear();
 
         // Cleared
-        Assert.assertNull(element.getStyle().get("borderTopWidth"));
-        Assert.assertNull(element.getStyle().get("borderBottomWidth"));
+        assertNull(element.getStyle().get("borderTopWidth"));
+        assertNull(element.getStyle().get("borderBottomWidth"));
 
         // Toggling signals should have no effect
-        a.value("3");
-        b.value("4");
-        Assert.assertNull(element.getStyle().get("borderTopWidth"));
-        Assert.assertNull(element.getStyle().get("borderBottomWidth"));
+        a.set("3");
+        b.set("4");
+        assertNull(element.getStyle().get("borderTopWidth"));
+        assertNull(element.getStyle().get("borderBottomWidth"));
     }
 
-    // Unbinding via null does not force removal
     @Test
-    public void bindNull_unbindsWithoutForcingRemoval() {
+    public void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        ValueSignal<String> color = new ValueSignal<>("red");
-        element.getStyle().bind("background-color", color);
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
-
-        // Unbind
-        element.getStyle().bind("background-color", null);
-
-        // Value remains as-is
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
-
-        // Further changes do not affect
-        color.value("blue");
-        Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
+        assertThrows(NullPointerException.class,
+                () -> element.getStyle().bind("background-color", null));
     }
 
     // Getters semantics
@@ -194,29 +173,29 @@ public class StyleBindTest {
         element.getStyle().bind("margin-bottom", b);
 
         // a applied, then set b to null which should remove the style
-        Assert.assertEquals("10px", element.getStyle().get("marginTop"));
-        b.value(null);
-        Assert.assertNull(element.getStyle().get("marginBottom"));
+        assertEquals("10px", element.getStyle().get("marginTop"));
+        b.set(null);
+        assertNull(element.getStyle().get("marginBottom"));
 
         // getNames should include names that have recorded last-applied values.
         // BasicElementStyle currently exposes attribute names (dash-separated).
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
-        Assert.assertTrue(names.contains("margin-top"));
+        assertTrue(names.contains("margin-top"));
         // b has a null last-applied value, but the binding is preserved -> name
         // present
-        Assert.assertTrue(names.contains("margin-bottom"));
+        assertTrue(names.contains("margin-bottom"));
 
         // Detach before any applying for c -> bind while detached -> no value
         // applied yet, get returns null
         ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
-        Assert.assertNull(element.getStyle().get("paddingTop"));
+        assertNull(element.getStyle().get("paddingTop"));
         names = element.getStyle().getNames().collect(Collectors.toSet());
         // The current implementation records the binding name even before first
         // attach
-        Assert.assertTrue(names.contains("padding-top"));
+        assertTrue(names.contains("padding-top"));
     }
 
     @Test
@@ -226,20 +205,20 @@ public class StyleBindTest {
 
         ValueSignal<String> color = new ValueSignal<>("rgba(255, 0, 0, 1)");
         element.getStyle().bind("background-color", color);
-        Assert.assertEquals("rgba(255, 0, 0, 1)",
+        assertEquals("rgba(255, 0, 0, 1)",
                 element.getStyle().get("backgroundColor"));
 
         // Set null -> should remove the style and has() should report false
-        color.value(null);
-        Assert.assertNull(element.getStyle().get("backgroundColor"));
-        Assert.assertFalse(element.getStyle().has("background-color"));
+        color.set(null);
+        assertNull(element.getStyle().get("backgroundColor"));
+        assertFalse(element.getStyle().has("background-color"));
 
         // but it preserves the signal binding
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
-        Assert.assertTrue(names.contains("background-color"));
-        color.value("rgba(0, 0, 255, 1)");
-        Assert.assertEquals("rgba(0, 0, 255, 1)",
+        assertTrue(names.contains("background-color"));
+        color.set("rgba(0, 0, 255, 1)");
+        assertEquals("rgba(0, 0, 255, 1)",
                 element.getStyle().get("backgroundColor"));
     }
 
@@ -250,20 +229,5 @@ public class StyleBindTest {
         new MockUI(session);
         var list = new LinkedList<ErrorEvent>();
         session.setErrorHandler(list::add);
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = Mockito.mock(FeatureFlags.class);
-        Mockito.when(
-                flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        featureFlagStaticMock.close();
     }
 }

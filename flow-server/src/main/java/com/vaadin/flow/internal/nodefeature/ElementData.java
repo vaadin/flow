@@ -22,7 +22,7 @@ import tools.jackson.databind.node.BaseJsonNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.signals.Signal;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Map of basic element information.
@@ -151,20 +151,18 @@ public class ElementData extends NodeMap {
 
     /**
      * Binds the given signal to the <code>visible</code> property.
-     * <code>null</code> signal unbinds existing binding.
      *
      * @param owner
      *            the element owning the property, not <code>null</code>
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
      */
     public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
         bindSignal(owner, NodeProperties.VISIBLE, signal,
-                (element, value) -> putVisibleSignalValue(value));
+                (element, value) -> putVisibleSignalValue(value), null);
     }
 
     private void putVisibleSignalValue(Boolean value) {
@@ -172,7 +170,7 @@ public class ElementData extends NodeMap {
         if (hasSignal(NodeProperties.VISIBLE)) {
             SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
             put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
-                    b.registration(), booleanValue));
+                    b.registration(), booleanValue, null));
         } else {
             put(NodeProperties.VISIBLE, booleanValue);
         }

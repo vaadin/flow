@@ -27,10 +27,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SplitPackagesTest {
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SplitPackagesTest {
     /*
      * Modules that contain known split packages that we don't care about
      */
@@ -51,7 +52,7 @@ public class SplitPackagesTest {
         String errors = collectErrors(packageToModules);
 
         if (!errors.isEmpty()) {
-            Assert.fail(errors);
+            fail(errors);
         }
     }
 

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AbbrTest extends ComponentTest {
+class AbbrTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,7 +27,7 @@ public class AbbrTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
+    protected void testHasAriaLabelIsNotImplemented() {
         // Don't use aria-label or aria-labelledby on any other non-interactive
         // content such as p, legend, li, or ul, because it is ignored.
         // Source: https://www.w3.org/TR/using-aria/#label-support

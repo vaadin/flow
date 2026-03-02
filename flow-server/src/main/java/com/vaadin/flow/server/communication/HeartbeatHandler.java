@@ -69,10 +69,6 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             // iOS 6 Safari requires this
             // (https://github.com/vaadin/framework/issues/3226)
             response.setHeader("Cache-Control", "no-cache");
-            // If Content-Type is not set, browsers assume text/html and may
-            // complain about the empty response body
-            // (https://github.com/vaadin/framework/issues/4167)
-            response.setHeader("Content-Type", "text/plain");
         } else {
             response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "UI not found");

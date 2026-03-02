@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.junit.Ignore;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@Ignore
+@Disabled
 public class ClassInDefaultPackage {
 
 }

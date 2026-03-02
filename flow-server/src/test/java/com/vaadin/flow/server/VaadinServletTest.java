@@ -24,8 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -35,44 +34,51 @@ import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @NotThreadSafe
-public class VaadinServletTest {
+class VaadinServletTest {
 
     @Test
     public void testGetLastPathParameter() {
-        Assert.assertEquals("",
+        assertEquals("",
                 VaadinServlet.getLastPathParameter("http://myhost.com"));
-        Assert.assertEquals(";a",
+        assertEquals(";a",
                 VaadinServlet.getLastPathParameter("http://myhost.com;a"));
-        Assert.assertEquals("",
+        assertEquals("",
                 VaadinServlet.getLastPathParameter("http://myhost.com/hello"));
-        Assert.assertEquals(";b=c", VaadinServlet
+        assertEquals(";b=c", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello;b=c"));
-        Assert.assertEquals("",
+        assertEquals("",
                 VaadinServlet.getLastPathParameter("http://myhost.com/hello/"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello;a/"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello;a=1/"));
-        Assert.assertEquals(";b", VaadinServlet
+        assertEquals(";b", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello/;b"));
-        Assert.assertEquals(";b=1", VaadinServlet
+        assertEquals(";b=1", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello/;b=1"));
-        Assert.assertEquals(";b=1,c=2", VaadinServlet
+        assertEquals(";b=1,c=2", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello/;b=1,c=2"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/hello/;b=1,c=2/"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;a/"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;a=1/"));
-        Assert.assertEquals(";b", VaadinServlet
+        assertEquals(";b", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b"));
-        Assert.assertEquals(";b=1", VaadinServlet
+        assertEquals(";b=1", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1"));
-        Assert.assertEquals(";b=1,c=2", VaadinServlet
+        assertEquals(";b=1,c=2", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
-        Assert.assertEquals("", VaadinServlet
+        assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
     }
 
@@ -83,7 +89,7 @@ public class VaadinServletTest {
 
             @Override
             public void init() throws ServletException {
-                Assert.assertFalse(called.get());
+                assertFalse(called.get());
                 called.set(true);
             }
         };
@@ -91,14 +97,14 @@ public class VaadinServletTest {
         ServletConfig config = mockConfig();
         servlet.init(config);
 
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
 
         servlet.init(config);
 
-        Assert.assertSame(config, servlet.getServletConfig());
+        assertSame(config, servlet.getServletConfig());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void init_passDifferentConfigInstance_throws()
             throws ServletException {
         VaadinServlet servlet = new VaadinServlet();
@@ -106,7 +112,8 @@ public class VaadinServletTest {
         ServletConfig config = mockConfig();
         servlet.init(config);
 
-        servlet.init(mockConfig());
+        assertThrows(IllegalArgumentException.class,
+                () -> servlet.init(mockConfig()));
     }
 
     @Test
@@ -124,7 +131,7 @@ public class VaadinServletTest {
         ServletConfig config = mockConfig();
         servlet.init(config);
 
-        Assert.assertFalse(called.get());
+        assertFalse(called.get());
     }
 
     @Test
@@ -157,7 +164,7 @@ public class VaadinServletTest {
                 .thenReturn(Mockito.mock(Lookup.class));
         servlet.init(config);
 
-        Assert.assertTrue(called.get());
+        assertTrue(called.get());
     }
 
     @Test
@@ -196,9 +203,9 @@ public class VaadinServletTest {
                     .thenReturn(Mockito.mock(Lookup.class));
             servlet.init(config);
 
-            Assert.assertNull(VaadinService.getCurrent());
-            Assert.assertNull(UI.getCurrent());
-            Assert.assertNull(VaadinSession.getCurrent());
+            assertNull(VaadinService.getCurrent());
+            assertNull(UI.getCurrent());
+            assertNull(VaadinSession.getCurrent());
         } finally {
             CurrentInstance.clearAll();
         }
@@ -220,7 +227,7 @@ public class VaadinServletTest {
             ServletConfig config = mockConfig();
             servlet.init(config);
 
-            Assert.assertNull(VaadinService.getCurrent());
+            assertNull(VaadinService.getCurrent());
         } finally {
             CurrentInstance.clearAll();
         }
@@ -243,7 +250,7 @@ public class VaadinServletTest {
                 captor.capture());
 
         ApplicationClassLoaderAccess access = captor.getValue();
-        Assert.assertSame(loader, access.getClassloader());
+        assertSame(loader, access.getClassloader());
     }
 
     @Test
@@ -277,13 +284,13 @@ public class VaadinServletTest {
 
         servlet.init(config);
 
-        Assert.assertSame(config, servlet.getServletConfig());
+        assertSame(config, servlet.getServletConfig());
 
         servlet.destroy();
 
         ServletConfig newConfig = mockConfig();
         servlet.init(newConfig);
-        Assert.assertSame(newConfig, servlet.getServletConfig());
+        assertSame(newConfig, servlet.getServletConfig());
     }
 
     @Test
@@ -297,7 +304,7 @@ public class VaadinServletTest {
 
         servlet.destroy();
 
-        Assert.assertNull(servlet.getServletConfig());
+        assertNull(servlet.getServletConfig());
     }
 
     @Test
@@ -321,7 +328,7 @@ public class VaadinServletTest {
         StaticFileHandler result = servlet.createStaticFileHandler(service);
 
         Mockito.verify(factory).createHandler(service);
-        Assert.assertSame(handler, result);
+        assertSame(handler, result);
     }
 
     @Test
@@ -347,7 +354,7 @@ public class VaadinServletTest {
 
         servlet.destroy();
 
-        Assert.assertSame(config, configDuringDestroy.get());
+        assertSame(config, configDuringDestroy.get());
     }
 
     private ServletConfig mockConfig() {

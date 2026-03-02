@@ -20,26 +20,28 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.impl.Effect;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Effect;
 
 /**
  * A component to which the user can add and remove child components.
  * {@link Component} in itself provides basic support for child components that
  * are manually added as children of an element belonging to the component. This
- * interface provides an explicit API for components that explicitly supports
+ * interface provides an explicit API for components that explicitly support
  * adding and removing arbitrary child components.
  * <p>
  * {@link HasComponents} is generally implemented by layouts or components whose
- * primary function is to host child components. It isn't for example
+ * primary function is to host child components. It isn't, for example,
  * implemented by non-layout components such as fields.
  * <p>
  * The default implementations assume that children are attached to
@@ -75,14 +77,16 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
-        getElement().getNode()
-                .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
-                        throw new BindingActiveException(
-                                "add is not allowed while a binding for children exists.");
-                    }
-                });
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to add cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "add is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         components.stream()
                 .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
@@ -96,7 +100,23 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the text to add, not <code>null</code>
      */
     default void add(String text) {
+        throwIfChildrenBindingIsActive("add");
         add(new Text(text));
+    }
+
+    /**
+     * Checks whether a children binding is currently active on this component's
+     * element.
+     *
+     * @return {@code true} if a children binding is active, {@code false}
+     *         otherwise
+     */
+    private boolean hasChildrenBinding() {
+        return getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .map(feature -> feature
+                        .hasBinding(SignalBindingFeature.CHILDREN))
+                .orElse(false);
     }
 
     /**
@@ -124,14 +144,16 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
-        getElement().getNode()
-                .getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
-                        throw new BindingActiveException(
-                                "remove is not allowed while a binding for children exists.");
-                    }
-                });
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to remove cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "remove is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
@@ -154,17 +176,18 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Removes all contents from this component, this includes child components,
+     * Removes all contents from this component, including child components,
      * text content as well as child elements that have been added directly to
-     * this component using the {@link Element} API. it also removes the
-     * children that were added only at the client-side.
+     * this component using the {@link Element} API. It also removes the
+     * children added only at the client-side.
      */
     default void removeAll() {
+        throwIfChildrenBindingIsActive("removeAll");
         getElement().removeAllChildren();
     }
 
     /**
-     * Adds the given component as child of this component at the specific
+     * Adds the given component as a child of this component at the specific
      * index.
      * <p>
      * In case the specified component has already been added to another parent,
@@ -178,6 +201,11 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void addComponentAtIndex(int index, Component component) {
         Objects.requireNonNull(component, "Component should not be null");
+        if (hasChildrenBinding()
+                && component.getElement().getAttribute("slot") == null) {
+            throw new BindingActiveException(
+                    "addComponentAtIndex is not allowed for default-slot components while a binding for children exists.");
+        }
         if (index < 0) {
             throw new IllegalArgumentException(
                     "Cannot add a component with a negative index");
@@ -209,17 +237,19 @@ public interface HasComponents extends HasElement, HasEnabled {
      * list. Changes to the list, such as additions, removals, or reordering,
      * will update this component's children accordingly.
      * <p>
-     * This component must not contain any children that are not part of the
-     * list. If this component has existing children when this method is called,
-     * or if it contains unrelated children after the list changes, an
-     * {@link IllegalStateException} will be thrown.
+     * This component must not contain any children in the default slot (i.e.
+     * without a {@code slot} attribute) that are not part of the list. If this
+     * component has existing default-slot children when this method is called,
+     * or if it contains unrelated default-slot children after the list changes,
+     * an {@link IllegalStateException} will be thrown. Named-slot children are
+     * allowed and can be added or removed freely while the binding is active.
      * <p>
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a {@link Signal}
      * from the list and returns a corresponding {@link Component}. It shouldn't
      * return <code>null</code>. The {@link Signal} can be further bound to the
      * returned component as needed. Note that <code>childFactory</code> is run
-     * inside a {@link Effect}, and therefore {@link Signal#value()} calls makes
+     * inside a {@link Effect}, and therefore {@link Signal#get()} calls makes
      * effect re-run automatically on signal value change.
      * <p>
      * Example of usage:
@@ -231,6 +261,12 @@ public interface HasComponents extends HasElement, HasEnabled {
      *
      * component.bindChildren(taskList, ListItem::new);
      * </pre>
+     * <p>
+     * Note: The default implementation adds children directly to the
+     * component’s element using the Element API and does not invoke
+     * {@link #add(Component...)}. Components that override {@code add} or
+     * manage children indirectly must override this method to provide a
+     * suitable implementation or explicitly disable it.
      *
      * @param list
      *            list signal to bind to the parent, must not be
@@ -241,26 +277,43 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the value type of the {@link Signal}s in the list
      * @param <S>
      *            the type of the {@link Signal}s in the list
-     * @return a registration that can be used to remove the binding
      * @throws IllegalStateException
-     *             thrown if this component isn't empty
+     *             thrown if this component has default-slot children, or if the
+     *             child factory produces elements with a {@code slot} attribute
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
      */
-    default <T, S extends Signal<T>> Registration bindChildren(
+    default <T extends @Nullable Object, S extends Signal<T>> void bindChildren(
             Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
-        Objects.requireNonNull(list, "ListSignal cannot be null");
-        Objects.requireNonNull(childFactory,
-                "Child element factory cannot be null");
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
         var feature = node.getFeature(SignalBindingFeature.class);
         if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
             throw new BindingActiveException();
         }
-        var binding = ComponentEffect.bindChildren(self, list, childFactory);
+        Objects.requireNonNull(list, "Signal cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child component factory cannot be null");
+        var binding = ElementEffect.bindChildren(self.getElement(), list,
+                // wrap childFactory to convert Component to Element
+                signalValue -> Optional
+                        .ofNullable(childFactory.apply(signalValue))
+                        .map(Component::getElement)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "HasComponents.bindChildren childFactory must not return null")));
+
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
-        return () -> feature.removeBinding(SignalBindingFeature.CHILDREN);
+    }
+
+    private void throwIfChildrenBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for children exists.");
+                    }
+                });
     }
 }
