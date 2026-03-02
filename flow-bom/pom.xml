@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-bom</artifactId>
-  <version>25.1-SNAPSHOT</version>
+  <version>25.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow Bill of Materials</name>
   <description>Flow Bill of Materials</description>

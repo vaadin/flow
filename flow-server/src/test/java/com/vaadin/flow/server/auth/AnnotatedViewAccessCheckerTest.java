@@ -60,6 +60,8 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnnotatedViewAccessCheckerTest {
 
@@ -562,12 +564,10 @@ class AnnotatedViewAccessCheckerTest {
                     false);
             viewAccessChecker.check(context);
         });
-        Assert.assertTrue(
-                "Expected WARN log for misconfiguration, got: " + logOutput,
-                logOutput.contains("WARN"));
-        Assert.assertTrue(
-                "Expected 'configuration error' in log, got: " + logOutput,
-                logOutput.contains("configuration error"));
+        assertTrue(logOutput.contains("WARN"),
+                "Expected WARN log for misconfiguration, got: " + logOutput);
+        assertTrue(logOutput.contains("configuration error"),
+                "Expected 'configuration error' in log, got: " + logOutput);
     }
 
     @Test
@@ -581,15 +581,14 @@ class AnnotatedViewAccessCheckerTest {
                     false);
             viewAccessChecker.check(context);
         });
-        Assert.assertTrue(
+        assertTrue(logOutput.contains("INFO"),
                 "Expected INFO log for dev-mode navigation denial, got: "
-                        + logOutput,
-                logOutput.contains("INFO"));
-        Assert.assertFalse(
-                "Should not log WARN when access levels are equal, got: "
-                        + logOutput,
+                        + logOutput);
+        assertFalse(
                 logOutput.contains("WARN")
-                        && logOutput.contains("configuration error"));
+                        && logOutput.contains("configuration error"),
+                "Should not log WARN when access levels are equal, got: "
+                        + logOutput);
     }
 
     @Test
@@ -603,13 +602,11 @@ class AnnotatedViewAccessCheckerTest {
                     false);
             viewAccessChecker.check(context);
         });
-        Assert.assertFalse(
-                "Security probe should not produce WARN, got: " + logOutput,
-                logOutput.contains("WARN") && logOutput.contains("layout"));
-        Assert.assertFalse(
+        assertFalse(logOutput.contains("WARN") && logOutput.contains("layout"),
+                "Security probe should not produce WARN, got: " + logOutput);
+        assertFalse(logOutput.contains("INFO") && logOutput.contains("layout"),
                 "Security probe should not produce INFO about layout, got: "
-                        + logOutput,
-                logOutput.contains("INFO") && logOutput.contains("layout"));
+                        + logOutput);
     }
 
     @Test
@@ -622,13 +619,11 @@ class AnnotatedViewAccessCheckerTest {
                     AccessControlTestClasses.PermitAllLayout.class, true, true);
             viewAccessChecker.check(context);
         });
-        Assert.assertFalse(
-                "Production mode should not produce WARN, got: " + logOutput,
-                logOutput.contains("WARN") && logOutput.contains("layout"));
-        Assert.assertFalse(
+        assertFalse(logOutput.contains("WARN") && logOutput.contains("layout"),
+                "Production mode should not produce WARN, got: " + logOutput);
+        assertFalse(logOutput.contains("INFO") && logOutput.contains("layout"),
                 "Production mode should not produce INFO about layout, got: "
-                        + logOutput,
-                logOutput.contains("INFO") && logOutput.contains("layout"));
+                        + logOutput);
     }
 
     @Test
@@ -642,12 +637,10 @@ class AnnotatedViewAccessCheckerTest {
                     false);
             viewAccessChecker.check(context);
         });
-        Assert.assertTrue(
-                "Expected WARN log for misconfiguration, got: " + logOutput,
-                logOutput.contains("WARN"));
-        Assert.assertTrue(
-                "Expected 'configuration error' in log, got: " + logOutput,
-                logOutput.contains("configuration error"));
+        assertTrue(logOutput.contains("WARN"),
+                "Expected WARN log for misconfiguration, got: " + logOutput);
+        assertTrue(logOutput.contains("configuration error"),
+                "Expected 'configuration error' in log, got: " + logOutput);
     }
 
     /**
