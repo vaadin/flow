@@ -103,6 +103,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
     private static final ObjectMapper OBJECT_MAPPER;
     static {
         OBJECT_MAPPER = new ObjectMapper();
+        UsageStatistics.markAsUsed("flow/shared-signal", null);
     }
 
     /**
@@ -128,8 +129,6 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      */
     protected AbstractSignal(SignalTree tree, Id id,
             CommandValidator validator) {
-        UsageStatistics.markAsUsed("flow/signal", null);
-        UsageStatistics.markAsUsed("flow/shared-signal", null);
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
         this.id = Objects.requireNonNull(id);

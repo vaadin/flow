@@ -21,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -52,7 +51,6 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
      *            the initial value
      */
     protected AbstractLocalSignal(T initialValue) {
-        UsageStatistics.markAsUsed("flow/signal", null);
         this.signalValue = initialValue;
     }
 

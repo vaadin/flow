@@ -25,6 +25,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
@@ -39,6 +40,10 @@ import com.vaadin.flow.signals.function.EffectAction;
  * based the signals read during the most recent invocation.
  */
 public class Effect implements Serializable {
+    static {
+        UsageStatistics.markAsUsed("flow/signal", null);
+    }
+
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
