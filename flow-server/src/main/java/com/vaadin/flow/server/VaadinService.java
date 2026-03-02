@@ -59,6 +59,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
@@ -373,10 +374,14 @@ public abstract class VaadinService implements Serializable {
                         task.run();
                     } else {
                         try {
-                            if (!owner.isClosing()) {
-                                getExecutor()
-                                        .execute(() -> owner.access(task::run));
-                            }
+                            getExecutor().execute(() -> {
+                                try {
+                                    owner.access(task::run);
+                                } catch (UIDetachedException e) {
+                                    // UI got detached while we were
+                                    // waiting to access it, ignore
+                                }
+                            });
                         } catch (Exception e) {
                             // submitted when executor is shut down, ignore
                         }

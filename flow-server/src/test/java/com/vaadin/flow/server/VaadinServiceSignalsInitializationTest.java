@@ -122,6 +122,7 @@ class VaadinServiceSignalsInitializationTest {
         // Close the UI so that isClosing() returns true
         ui.close();
         assertTrue(ui.isClosing(), "UI should be closing after close()");
+        ui.getSession().removeUI(ui);
 
         // Obtain the result-notifier dispatcher while the closing UI is current
         var dispatcher = SignalEnvironment.getCurrentResultNotifier();
@@ -141,6 +142,7 @@ class VaadinServiceSignalsInitializationTest {
         latch.await(100, TimeUnit.MILLISECONDS);
 
         assertFalse(effectExecuted.get(), "Expected task to not execute");
+        assertEquals(0, service.getUncaughtExecutorExceptions().size());
     }
 
 }
