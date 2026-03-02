@@ -1544,6 +1544,7 @@ public class UIInternals implements Serializable {
     public void createWrapperElement() {
         if (wrapperElement == null) {
             this.wrapperElement = new Element(getContainerTag());
+            getUI().wrapperElement = this.wrapperElement;
         }
     }
 

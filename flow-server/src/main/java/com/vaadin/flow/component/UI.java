@@ -1743,6 +1743,17 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
+    /**
+     * Reference to the client outlet element wrapper.
+     * <p>
+     * This field should not be set directly for any reason; assigning a new
+     * value has no effect on the application. It is maintained internally and
+     * will be removed in a future version.
+     *
+     * @deprecated Use {@link #getWrapperElement()} instead.
+     */
+    @Deprecated(forRemoval = true)
+    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
@@ -1868,6 +1879,15 @@ public class UI extends Component
             super(source, true);
             this.refreshRouteChain = refreshRouteChain;
         }
+    }
+
+    /**
+     * Get outlet element reference wrapper if set.
+     *
+     * @return wrapperElement if set else {@code null}
+     */
+    public Element getWrapperElement() {
+        return getInternals().getWrapperElement();
     }
 
     /**
