@@ -128,10 +128,10 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
         Registration registration = ElementEffect
                 .effect(Element.get(element.getNode()), () -> {
-                    List<String> current = names.get();
+                    List<String> signalNames = names.get();
                     Set<String> newNames = new HashSet<>();
-                    if (current != null) {
-                        for (String name : current) {
+                    if (signalNames != null) {
+                        for (String name : signalNames) {
                             if (name != null && !name.isEmpty()) {
                                 newNames.add(name);
                             }
