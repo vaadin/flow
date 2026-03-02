@@ -1423,7 +1423,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void uiInit_registersUIRefreshClientSideEvent() {
+    public void uiInit_tracksSession() {
         VaadinSession session = createMockVaadinSession();
         RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
                 MyLayoutWithChild.class);
@@ -1432,8 +1432,8 @@ public class HotswapperTest {
             session.lock();
             UIInitEvent event = new UIInitEvent(ui, service);
             hotswapper.uiInit(event);
-            Assert.assertTrue(
-                    "Expected Hotswapper to register client side refresh event listener ",
+            Assert.assertFalse(
+                    "Expected Hotswapper not to register client side refresh event listener (moved to TypeScript)",
                     ui.refreshUIClientListenerRegistered);
         } finally {
             session.unlock();

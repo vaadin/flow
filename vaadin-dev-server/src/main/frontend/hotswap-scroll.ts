@@ -53,6 +53,42 @@ export function captureScrollPositions(): ScrollSnapshot {
  * Polls Flow client isActive() to wait until UIDL processing is done,
  * then uses requestAnimationFrame to restore all captured scroll positions.
  */
+/**
+ * Captures scroll positions, sends a ui-refresh event to all Flow clients,
+ * and restores scroll positions once the clients are idle.
+ * Used by both the Push-based (vaadin-refresh-ui event) and WebSocket-based
+ * hot-swap paths.
+ */
+export function refreshWithScrollPreservation(fullRefresh: boolean): void {
+  const snapshot = captureScrollPositions();
+  const anyVaadin = (window as any).Vaadin;
+  Object.keys(anyVaadin?.Flow?.clients || {})
+    .filter((key) => key !== 'TypeScript')
+    .map((id) => anyVaadin.Flow.clients[id])
+    .forEach((client: any) => {
+      if (client.sendEventMessage) {
+        client.sendEventMessage(1, 'ui-refresh', { fullRefresh });
+      }
+    });
+  restoreScrollPositions(snapshot);
+}
+
+let refreshUIHandlerRegistered = false;
+
+/**
+ * Registers a window event listener for 'vaadin-refresh-ui' that triggers
+ * a scroll-preserving UI refresh. Guards against double-registration.
+ */
+export function registerRefreshUIHandler(): void {
+  if (refreshUIHandlerRegistered) {
+    return;
+  }
+  refreshUIHandlerRegistered = true;
+  window.addEventListener('vaadin-refresh-ui', (ev: any) => {
+    refreshWithScrollPreservation(ev.detail?.fullRefresh === true);
+  });
+}
+
 export function restoreScrollPositions(snapshot: ScrollSnapshot): void {
   if (Object.keys(snapshot).length === 0) {
     return;

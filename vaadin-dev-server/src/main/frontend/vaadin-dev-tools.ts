@@ -87,7 +87,13 @@ type DevToolsConf = {
 // @ts-ignore
 const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 
-import { captureScrollPositions, restoreScrollPositions, ScrollSnapshot } from './hotswap-scroll';
+import {
+  captureScrollPositions,
+  refreshWithScrollPreservation,
+  registerRefreshUIHandler,
+  restoreScrollPositions,
+  ScrollSnapshot
+} from './hotswap-scroll';
 
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
@@ -653,25 +659,10 @@ export class VaadinDevTools extends LitElement {
     }
     const onConnectionError = (msg: string) => console.error(msg);
     const onReload = (strategy: string = 'reload') => {
-      const scrollSnapshot = captureScrollPositions();
       if (strategy === 'refresh' || strategy === 'full-refresh') {
-        const anyVaadin = window.Vaadin as any;
-        // TODO: do it in Flow client. Maybe raise a custom vaadin-refresh-ui event
-        //  and handle it in Flow client?
-        Object.keys(anyVaadin.Flow.clients)
-          .filter((key) => key !== 'TypeScript')
-          .map((id) => anyVaadin.Flow.clients[id])
-          .forEach((client) => {
-            if (client.sendEventMessage) {
-              client.sendEventMessage(1, 'ui-refresh', {
-                fullRefresh: strategy === 'full-refresh'
-              });
-            } else {
-              console.warn('Ignoring ui-refresh event for application ', id);
-            }
-          });
-        restoreScrollPositions(scrollSnapshot);
+        refreshWithScrollPreservation(strategy === 'full-refresh');
       } else {
+        const scrollSnapshot = captureScrollPositions();
         window.sessionStorage.setItem('vaadin-hotswap-scroll', JSON.stringify(scrollSnapshot));
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
@@ -837,6 +828,8 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.removeItem('vaadin-hotswap-scroll');
       restoreScrollPositions(JSON.parse(savedScroll) as ScrollSnapshot);
     }
+
+    registerRefreshUIHandler();
 
     this.transitionDuration = parseInt(
       window.getComputedStyle(this).getPropertyValue('--dev-tools-transition-duration'),
