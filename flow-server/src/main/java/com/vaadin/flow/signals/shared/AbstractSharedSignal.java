@@ -56,7 +56,7 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractSignal<T extends @Nullable Object>
+public abstract class AbstractSharedSignal<T extends @Nullable Object>
         implements Signal<T> {
     /**
      * Converts a command result into a specific value type.
@@ -85,7 +85,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      *            the child signal type
      */
     @FunctionalInterface
-    protected interface ChildSignalFactory<I extends AbstractSignal<?>> {
+    protected interface ChildSignalFactory<I extends AbstractSharedSignal<?>> {
         /**
          * Creates a child signal instance for the given node ID.
          *
@@ -127,7 +127,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected AbstractSignal(SignalTree tree, Id id,
+    protected AbstractSharedSignal(SignalTree tree, Id id,
             CommandValidator validator) {
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
@@ -372,7 +372,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      *            operation, not <code>null</code>
      * @return the created insert operation, not <code>null</code>
      */
-    protected <I extends AbstractSignal<?>> InsertOperation<I> submitInsert(
+    protected <I extends AbstractSharedSignal<?>> InsertOperation<I> submitInsert(
             SignalCommand command, ChildSignalFactory<I> childFactory) {
         return submitVoidOperation(command, new InsertOperation<>(
                 childFactory.create(command.commandId())));
@@ -556,7 +556,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
      *
      * @return the created signal operation instance, not <code>null</code>
      */
-    protected SignalOperation<Void> remove(AbstractSignal<?> child) {
+    protected SignalOperation<Void> remove(AbstractSharedSignal<?> child) {
         return submit(
                 new SignalCommand.RemoveCommand(Id.random(), child.id(), id()));
     }

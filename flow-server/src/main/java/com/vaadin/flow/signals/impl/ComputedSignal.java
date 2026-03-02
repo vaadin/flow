@@ -32,7 +32,7 @@ import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedNodeSignal;
 import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
@@ -50,7 +50,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  *            the value type
  */
 public class ComputedSignal<T extends @Nullable Object>
-        extends AbstractSignal<T> {
+        extends AbstractSharedSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to
