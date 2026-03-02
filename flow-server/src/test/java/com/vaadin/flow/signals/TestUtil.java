@@ -25,7 +25,7 @@ import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.operations.SignalOperation.Result;
 import com.vaadin.flow.signals.operations.SignalOperation.ResultOrError;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SignalUtils;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -90,7 +90,7 @@ public class TestUtil {
     /*
      * Helper to run package-private tree getter from tests in sub packages.
      */
-    public static SignalTree tree(AbstractSignal<?> signal) {
+    public static SignalTree tree(AbstractSharedSignal<?> signal) {
         return SignalUtils.treeOf(signal);
     }
 }

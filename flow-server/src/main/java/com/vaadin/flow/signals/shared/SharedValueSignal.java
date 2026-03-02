@@ -44,7 +44,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *            the signal value type
  */
 public class SharedValueSignal<T extends @Nullable Object>
-        extends AbstractSignal<T> {
+        extends AbstractSharedSignal<T> {
     private final Class<T> valueType;
 
     /**

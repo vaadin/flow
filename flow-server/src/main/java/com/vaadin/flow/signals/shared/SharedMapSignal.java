@@ -46,8 +46,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedMapSignal<T extends @Nullable Object>
-        extends AbstractSignal<@NonNull Map<String, SharedValueSignal<T>>> {
+public class SharedMapSignal<T extends @Nullable Object> extends
+        AbstractSharedSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -250,7 +250,7 @@ public class SharedMapSignal<T extends @Nullable Object>
      * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKey(String key,
-            AbstractSignal<?> expectedChild) {
+            AbstractSharedSignal<?> expectedChild) {
         return submitKeyCondition(Objects.requireNonNull(key),
                 expectedChild.id());
     }
