@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Effect;
@@ -77,6 +78,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("add");
         if (hasChildrenBinding()) {
             for (Component component : components) {
                 Objects.requireNonNull(component,
@@ -100,6 +102,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the text to add, not <code>null</code>
      */
     default void add(String text) {
+        throwIfTextBindingIsActive("add");
         throwIfChildrenBindingIsActive("add");
         add(new Text(text));
     }
@@ -144,6 +147,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("remove");
         if (hasChildrenBinding()) {
             for (Component component : components) {
                 Objects.requireNonNull(component,
@@ -182,6 +186,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * children added only at the client-side.
      */
     default void removeAll() {
+        throwIfTextBindingIsActive("removeAll");
         throwIfChildrenBindingIsActive("removeAll");
         getElement().removeAllChildren();
     }
@@ -201,6 +206,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void addComponentAtIndex(int index, Component component) {
         Objects.requireNonNull(component, "Component should not be null");
+        throwIfTextBindingIsActive("addComponentAtIndex");
         if (hasChildrenBinding()
                 && component.getElement().getAttribute("slot") == null) {
             throw new BindingActiveException(
@@ -286,6 +292,7 @@ public interface HasComponents extends HasElement, HasEnabled {
     default <T extends @Nullable Object, S extends Signal<T>> void bindChildren(
             Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
+        throwIfTextBindingIsActive("bindChildren");
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
         var feature = node.getFeature(SignalBindingFeature.class);
@@ -304,6 +311,16 @@ public interface HasComponents extends HasElement, HasEnabled {
                                 "HasComponents.bindChildren childFactory must not return null")));
 
         feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
+    }
+
+    private void throwIfTextBindingIsActive(String methodName) {
+        getElement().getNode().getFeatureIfInitialized(TextBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding()) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for text exists.");
+                    }
+                });
     }
 
     private void throwIfChildrenBindingIsActive(String methodName) {

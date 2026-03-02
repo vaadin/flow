@@ -21,9 +21,11 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -403,6 +405,37 @@ class HasComponentsTest {
         assertThrows(BindingActiveException.class,
                 () -> container.remove(child),
                 "remove should throw while binding is active");
+    }
+
+    @Test
+    public void textBindingActive_addThrows() {
+        TestComponent container = new TestComponent();
+        TextBindingFeature feature = container.getElement().getNode()
+                .getFeature(TextBindingFeature.class);
+        feature.setBinding(() -> {
+        }, new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent()),
+                "add should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_bindChildrenThrows() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        TextBindingFeature feature = container.getElement().getNode()
+                .getFeature(TextBindingFeature.class);
+        feature.setBinding(() -> {
+        }, new ValueSignal<>(""));
+
+        ListSignal<String> items = new ListSignal<>();
+        assertThrows(BindingActiveException.class,
+                () -> container.bindChildren(items,
+                        item -> new TestComponent(item.get())),
+                "bindChildren should throw while text binding is active");
     }
 
 }

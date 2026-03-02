@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -121,6 +122,7 @@ public interface HasText extends HasElement {
      *            the text content to set
      */
     default void setText(String text) {
+        throwIfChildrenBindingIsActive("setText");
         getElement().setText(text);
     }
 
@@ -191,6 +193,18 @@ public interface HasText extends HasElement {
      * @see #setText(String)
      */
     default void bindText(Signal<String> textSignal) {
+        throwIfChildrenBindingIsActive("bindText");
         getElement().bindText(textSignal);
+    }
+
+    private void throwIfChildrenBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for children exists.");
+                    }
+                });
     }
 }
