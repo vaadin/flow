@@ -23,7 +23,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.signals.BindingActiveException;
-import com.vaadin.flow.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -197,7 +197,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
         items.insertLast("second");
         items.insertLast("third");
@@ -219,7 +219,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
         container.bindChildren(items, item -> new TestComponent(item.get()));
@@ -231,7 +231,7 @@ class HasComponentsTest {
         assertEquals("second",
                 container.getChildren().toList().get(1).getId().orElse(null));
 
-        items.remove(items.get().get(0));
+        items.remove(items.peek().get(0));
         assertEquals(1, container.getChildren().count());
         assertEquals("second",
                 container.getChildren().toList().get(0).getId().orElse(null));
@@ -243,7 +243,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
         container.bindChildren(items, item -> new TestComponent(item.get()));
@@ -276,7 +276,7 @@ class HasComponentsTest {
         new MockUI().add(container);
         container.add(new TestComponent("existing"));
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
 
         assertThrows(IllegalStateException.class, () -> container
                 .bindChildren(items, item -> new TestComponent(item.get())));
@@ -288,15 +288,87 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
 
         container.bindChildren(items, item -> new TestComponent(item.get()));
 
-        SharedListSignal<String> otherItems = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> otherItems = new ListSignal<>();
         assertThrows(BindingActiveException.class,
                 () -> container.bindChildren(otherItems,
                         item -> new TestComponent(item.get())));
+    }
+
+    @Test
+    public void bindChildren_addSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        // signal child + slotted child
+        assertEquals(2, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_removeSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        // Add a slotted child before binding
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        // Remove slotted child - should succeed
+        container.remove(slotted);
+
+        // Only signal child remains
+        assertEquals(1, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_parentHasOnlySlottedChildren_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+
+        // Should not throw even though container has a child
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+    }
+
+    @Test
+    public void bindChildren_removeAllThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        assertThrows(BindingActiveException.class, () -> container.removeAll(),
+                "removeAll should throw while binding is active");
     }
 
     @Test
@@ -305,7 +377,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
         container.bindChildren(items, item -> new TestComponent(item.get()));
@@ -321,7 +393,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
         container.bindChildren(items, item -> new TestComponent(item.get()));

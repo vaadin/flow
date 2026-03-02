@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -899,8 +900,8 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public <T> void bindProperty(String name, Signal<T> signal,
-            SerializableConsumer<T> writeCallback) {
+    public <T extends @Nullable Object> void bindProperty(String name,
+            Signal<T> signal, SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
         getStateProvider().bindPropertySignal(this, name, signal,
@@ -1437,6 +1438,38 @@ public class Element extends Node<Element> {
      */
     public ClassList getClassList() {
         return getStateProvider().getClassList(getNode());
+    }
+
+    /**
+     * Temporarily adds a CSS class to this element to trigger a CSS animation,
+     * then automatically removes it when the animation ends. This is useful for
+     * "flash" effects such as highlighting a value that changed in the
+     * background.
+     * <p>
+     * The method works by removing the class (if present), forcing a DOM
+     * reflow, and then re-adding it. This restarts any CSS animation associated
+     * with the class. An {@code animationend} listener automatically removes
+     * the class when the animation completes. If no CSS animation is defined
+     * for the class, it is removed immediately.
+     * <p>
+     * Example CSS to define a flash animation:
+     *
+     * <pre>
+     * .highlight {
+     *     animation: flash 0.5s ease-out;
+     * }
+     * &#64;keyframes flash {
+     *     from { background-color: yellow; }
+     *     to { background-color: transparent; }
+     * }
+     * </pre>
+     *
+     * @param className
+     *            the CSS class name to flash, not <code>null</code>
+     */
+    public void flashClass(String className) {
+        Objects.requireNonNull(className, "className cannot be null");
+        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
     }
 
     /**

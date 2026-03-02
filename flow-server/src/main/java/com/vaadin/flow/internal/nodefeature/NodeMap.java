@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -565,7 +567,8 @@ public abstract class NodeMap extends NodeFeature {
      *             given key
      *
      */
-    protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
+    protected <T extends @Nullable Object> void bindSignal(Element owner,
+            String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter,
             SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");

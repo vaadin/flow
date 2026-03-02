@@ -24,6 +24,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
@@ -55,7 +56,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractSignal<T> implements Signal<T> {
+public abstract class AbstractSharedSignal<T extends @Nullable Object>
+        implements Signal<T> {
     /**
      * Converts a command result into a specific value type.
      *
@@ -63,7 +65,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the result value type
      */
     @FunctionalInterface
-    protected interface ResultConverter<T> extends Serializable {
+    protected interface ResultConverter<T extends @Nullable Object>
+            extends Serializable {
         /**
          * Converts an accepted command result into a result value.
          *
@@ -82,7 +85,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the child signal type
      */
     @FunctionalInterface
-    protected interface ChildSignalFactory<I extends AbstractSignal<?>> {
+    protected interface ChildSignalFactory<I extends AbstractSharedSignal<?>> {
         /**
          * Creates a child signal instance for the given node ID.
          *
@@ -100,6 +103,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     private static final ObjectMapper OBJECT_MAPPER;
     static {
         OBJECT_MAPPER = new ObjectMapper();
+        UsageStatistics.markAsUsed("flow/shared-signal", null);
     }
 
     /**
@@ -123,7 +127,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected AbstractSignal(SignalTree tree, Id id,
+    protected AbstractSharedSignal(SignalTree tree, Id id,
             CommandValidator validator) {
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
@@ -154,8 +158,17 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return data(transaction.read(tree()));
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T get() {
+    public T get() {
+        if (!UsageTracker.isGetAllowed() && !Transaction.inTransaction()) {
+            throw new IllegalStateException(
+                    "Signal.get() was called outside a reactive context. "
+                            + "Use peek() to read the value without setting up "
+                            + "dependency tracking, or use "
+                            + "Signal.untracked(() -> signal.get()) to "
+                            + "explicitly opt out.");
+        }
         Transaction transaction = Transaction.getCurrent();
         Data data = data(transaction);
 
@@ -179,8 +192,9 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return value;
     }
 
+    @SuppressWarnings("NullAway")
     @Override
-    public @Nullable T peek() {
+    public T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }
 
@@ -191,7 +205,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the confirmed signal value
      */
-    public @Nullable T peekConfirmed() {
+    @SuppressWarnings("NullAway")
+    public T peekConfirmed() {
         return extractValue(data(tree().confirmed()));
     }
 
@@ -357,7 +372,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            operation, not <code>null</code>
      * @return the created insert operation, not <code>null</code>
      */
-    protected <I extends AbstractSignal<?>> InsertOperation<I> submitInsert(
+    protected <I extends AbstractSharedSignal<?>> InsertOperation<I> submitInsert(
             SignalCommand command, ChildSignalFactory<I> childFactory) {
         return submitVoidOperation(command, new InsertOperation<>(
                 childFactory.create(command.commandId())));
@@ -541,7 +556,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the created signal operation instance, not <code>null</code>
      */
-    protected SignalOperation<Void> remove(AbstractSignal<?> child) {
+    protected SignalOperation<Void> remove(AbstractSharedSignal<?> child) {
         return submit(
                 new SignalCommand.RemoveCommand(Id.random(), child.id(), id()));
     }

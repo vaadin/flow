@@ -26,11 +26,14 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UsageTrackerTest extends SignalTestBase {
@@ -286,6 +289,103 @@ public class UsageTrackerTest extends SignalTestBase {
 
         assertEquals(1, a.listeners.size());
         assertEquals(1, b.listeners.size());
+    }
+
+    @Test
+    void get_outsideTrackingContext_throwsIllegalStateException() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertThrows(IllegalStateException.class, signal::get);
+    }
+
+    @Test
+    void get_insideTrack_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        UsageTracker.track(() -> {
+            assertEquals("value", signal.get());
+        });
+    }
+
+    @Test
+    void get_insideUntracked_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertEquals("value", Signal.untracked(() -> signal.get()));
+    }
+
+    @Test
+    void get_insideUntrackedInsideTrack_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        UsageTracker.track(() -> {
+            assertEquals("value", Signal.untracked(() -> signal.get()));
+        });
+    }
+
+    @Test
+    void peek_outsideTrackingContext_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertEquals("value", signal.peek());
+    }
+
+    @Test
+    void peek_onLambdaSignal_outsideTrackingContext_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+
+        Signal<String> mapped = signal.map(v -> v.toUpperCase());
+        assertDoesNotThrow(() -> mapped.peek());
+        assertEquals("HELLO", mapped.peek());
+
+        Signal<String> readonly = signal.map(v -> v);
+        assertDoesNotThrow(() -> readonly.peek());
+        assertEquals("hello", readonly.peek());
+    }
+
+    @Test
+    void isGetAllowed_outsideContext_false() {
+        assertFalse(UsageTracker.isGetAllowed());
+    }
+
+    @Test
+    void isGetAllowed_insideTrack_true() {
+        UsageTracker.track(() -> {
+            assertTrue(UsageTracker.isGetAllowed());
+        });
+    }
+
+    @Test
+    void isGetAllowed_insideUntracked_true() {
+        Signal.untracked(() -> {
+            assertTrue(UsageTracker.isGetAllowed());
+            return null;
+        });
+    }
+
+    @Test
+    void isGetAllowed_insideUntrackedInsideTrack_true() {
+        UsageTracker.track(() -> {
+            Signal.untracked(() -> {
+                assertTrue(UsageTracker.isGetAllowed());
+                return null;
+            });
+        });
+    }
+
+    @Test
+    void isActive_insideUntracked_false() {
+        Signal.untracked(() -> {
+            assertFalse(UsageTracker.isActive());
+            return null;
+        });
+    }
+
+    @Test
+    void get_sharedSignal_outsideTrackingContext_throws() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        assertThrows(IllegalStateException.class, signal::get);
+    }
+
+    @Test
+    void peek_sharedSignal_outsideTrackingContext_succeeds() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        assertEquals("value", signal.peek());
     }
 
     private static class TestUsage implements Usage {

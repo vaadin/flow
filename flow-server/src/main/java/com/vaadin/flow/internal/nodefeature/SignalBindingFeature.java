@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -33,11 +35,14 @@ import com.vaadin.flow.signals.Signal;
 public class SignalBindingFeature extends ServerSideFeature {
 
     public static final String CLASSES = "classes/";
+    public static final String CLASS_GROUP = "classes/*";
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
     public static final String THEMES = "themes/";
+    public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
+    public static final String ITEMS = "items";
 
     private Map<String, SignalBinding> values;
 
@@ -174,7 +179,8 @@ public class SignalBindingFeature extends ServerSideFeature {
      *            the type of the signal value
      * @return the signal bound to the given key, or null if no signal is bound
      */
-    public <T> Signal<T> getSignal(String key) {
+    @SuppressWarnings("unchecked")
+    public <T extends @Nullable Object> Signal<T> getSignal(String key) {
         if (values == null) {
             return null;
         }
@@ -208,8 +214,9 @@ public class SignalBindingFeature extends ServerSideFeature {
      * @param <T>
      *            the type of the signal value
      */
-    public <T> boolean updateSignalByWriteCallback(String key, T oldValue,
-            T newValue, SerializableBiPredicate<T, T> valueEquals,
+    public <T extends @Nullable Object> boolean updateSignalByWriteCallback(
+            String key, T oldValue, T newValue,
+            SerializableBiPredicate<T, T> valueEquals,
             SerializableConsumer<T> revertCallback) {
         SerializableConsumer<T> callback = getWriteCallback(key);
         Signal<T> signal = getSignal(key);

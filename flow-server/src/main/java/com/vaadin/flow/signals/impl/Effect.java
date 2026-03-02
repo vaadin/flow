@@ -25,7 +25,9 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.EffectAction;
 
@@ -38,6 +40,10 @@ import com.vaadin.flow.signals.function.EffectAction;
  * based the signals read during the most recent invocation.
  */
 public class Effect implements Serializable {
+    static {
+        UsageStatistics.markAsUsed("flow/signal", null);
+    }
+
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
@@ -117,7 +123,9 @@ public class Effect implements Serializable {
 
         activeEffects.get().add(this);
         try {
+            boolean[] hasSignalUsage = { false };
             UsageTracker.track(action, usage -> {
+                hasSignalUsage[0] = true;
                 // avoid lambda to allow proper deserialization
                 TransientListener usageListener = new TransientListener() {
                     @Override
@@ -127,6 +135,10 @@ public class Effect implements Serializable {
                 };
                 registrations.add(usage.onNextChange(usageListener));
             });
+            if (!hasSignalUsage[0]) {
+                throw new MissingSignalUsageException(
+                        "Effect action must read at least one signal value.");
+            }
         } finally {
             Effect removed = activeEffects.get().removeLast();
             assert removed == this;

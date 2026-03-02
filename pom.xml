@@ -99,13 +99,13 @@
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-    <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
-    <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
+    <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
+    <maven.failsafe.plugin.version>3.5.5</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
-    <testbench.version>10.1.0-alpha3</testbench.version>
+    <testbench.version>10.1.0-beta1</testbench.version>
     <jetty.version>12.1.5</jetty.version>
     <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
@@ -248,7 +248,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.21.0</version>
+        <version>5.22.0</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>

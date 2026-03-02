@@ -74,6 +74,7 @@ class AppShellRegistryAuraAutoLoadTest {
                 .thenReturn(deploymentConfig);
         Mockito.when(service.getInstantiator()).thenReturn(
                 Mockito.mock(com.vaadin.flow.di.Instantiator.class));
+        Mockito.when(service.getContext()).thenReturn(context);
     }
 
     @AfterEach

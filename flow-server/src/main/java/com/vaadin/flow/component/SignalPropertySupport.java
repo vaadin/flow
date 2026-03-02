@@ -18,6 +18,8 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -65,7 +67,8 @@ import com.vaadin.flow.signals.Signal;
  * @param <T>
  *            the type of the property
  */
-public class SignalPropertySupport<T> implements Serializable {
+public class SignalPropertySupport<T extends @Nullable Object>
+        implements Serializable {
 
     private final SerializableConsumer<T> valueChangeConsumer;
 
@@ -104,8 +107,8 @@ public class SignalPropertySupport<T> implements Serializable {
      * @return a new instance of SignalPropertySupport
      * @see #bind(Signal)
      */
-    public static <T> SignalPropertySupport<T> create(Component owner,
-            SerializableConsumer<T> valueChangeConsumer) {
+    public static <T extends @Nullable Object> SignalPropertySupport<T> create(
+            Component owner, SerializableConsumer<T> valueChangeConsumer) {
         return new SignalPropertySupport<>(owner, valueChangeConsumer);
     }
 

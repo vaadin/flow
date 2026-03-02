@@ -139,7 +139,7 @@ public class Html extends Component {
         if (htmlSignal == null) {
             throw new IllegalArgumentException("HTML signal cannot be null");
         }
-        String outerHtml = htmlSignal.get();
+        String outerHtml = htmlSignal.peek();
         if (outerHtml == null || outerHtml.isEmpty()) {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
