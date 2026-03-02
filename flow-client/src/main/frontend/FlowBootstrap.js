@@ -54,8 +54,9 @@ const init = function (appInitResponse) {
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-  /*
-   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+  /**
+   * Triggers a CSS animation on an element by adding a class, then
+   * removes the class when the animation ends.
    */
   window.Vaadin.Flow.flashClass = function (element, className) {
     element.classList.remove(className);
@@ -78,6 +79,9 @@ const init = function (appInitResponse) {
     });
   };
 
+  /**
+   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+   */
   window.Vaadin.Flow.tryCatchWrapper = function (originalFunction, component) {
     return function () {
       try {
@@ -97,6 +101,10 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
   if (!window.Vaadin.Flow.initApplication) {
     window.Vaadin.Flow.clients = window.Vaadin.Flow.clients || {};
 
+    /**
+     * Initializes a Flow application with the given ID and configuration,
+     * and triggers the widgetset callback to start the client engine.
+     */
     window.Vaadin.Flow.initApplication = function (appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
 
@@ -179,6 +187,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
 
       return app;
     };
+    /** Returns an array of all registered application IDs */
     window.Vaadin.Flow.getAppIds = function () {
       var ids = [];
       for (var id in apps) {
@@ -188,9 +197,14 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       }
       return ids;
     };
+    /** Returns the application object for the given ID */
     window.Vaadin.Flow.getApp = function (appId) {
       return apps[appId];
     };
+    /**
+     * Registers a widgetset callback and starts any applications
+     * that are waiting for it.
+     */
     window.Vaadin.Flow.registerWidgetset = function (widgetset, callback) {
       log('Widgetset registered', widgetset);
       var ws = widgetsets[widgetset];

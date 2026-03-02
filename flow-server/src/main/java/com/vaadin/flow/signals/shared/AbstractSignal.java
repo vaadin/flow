@@ -24,6 +24,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
@@ -102,6 +103,7 @@ public abstract class AbstractSignal<T extends @Nullable Object>
     private static final ObjectMapper OBJECT_MAPPER;
     static {
         OBJECT_MAPPER = new ObjectMapper();
+        UsageStatistics.markAsUsed("flow/shared-signal", null);
     }
 
     /**
