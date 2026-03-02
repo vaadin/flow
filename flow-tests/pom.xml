@@ -448,6 +448,8 @@
                     <include>tsconfig.json</include>
                     <include>pnpm-lock.yaml</include>
                     <include>bun.lockb</include>
+                    <include>vite.config.ts</include>
+                    <include>vite.generated.ts</include>
                     <include>node_modules/**</include>
                   </includes>
                 </fileset>
