@@ -87,6 +87,8 @@ type DevToolsConf = {
 // @ts-ignore
 const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 
+import { captureScrollPositions, restoreScrollPositions, ScrollSnapshot } from './hotswap-scroll';
+
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   unhandledMessages: ServerMessage[] = [];
@@ -651,6 +653,7 @@ export class VaadinDevTools extends LitElement {
     }
     const onConnectionError = (msg: string) => console.error(msg);
     const onReload = (strategy: string = 'reload') => {
+      const scrollSnapshot = captureScrollPositions();
       if (strategy === 'refresh' || strategy === 'full-refresh') {
         const anyVaadin = window.Vaadin as any;
         // TODO: do it in Flow client. Maybe raise a custom vaadin-refresh-ui event
@@ -667,7 +670,9 @@ export class VaadinDevTools extends LitElement {
               console.warn('Ignoring ui-refresh event for application ', id);
             }
           });
+        restoreScrollPositions(scrollSnapshot);
       } else {
+        window.sessionStorage.setItem('vaadin-hotswap-scroll', JSON.stringify(scrollSnapshot));
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
         window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
@@ -825,6 +830,12 @@ export class VaadinDevTools extends LitElement {
         -2
       )}:${`0${now.getSeconds()}`.slice(-2)}`;
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
+    }
+
+    const savedScroll = window.sessionStorage.getItem('vaadin-hotswap-scroll');
+    if (savedScroll !== null) {
+      window.sessionStorage.removeItem('vaadin-hotswap-scroll');
+      restoreScrollPositions(JSON.parse(savedScroll) as ScrollSnapshot);
     }
 
     this.transitionDuration = parseInt(
