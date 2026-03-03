@@ -29,8 +29,8 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
 @StyleSheet("context://aura/fake-aura.css")
-@StyleSheet("styles/stylesheet.css")
-@StyleSheet("styles.css")
+@StyleSheet("context://styles/stylesheet.css")
+@StyleSheet("context://styles.css")
 @CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 public class AppShell implements AppShellConfigurator {
 }

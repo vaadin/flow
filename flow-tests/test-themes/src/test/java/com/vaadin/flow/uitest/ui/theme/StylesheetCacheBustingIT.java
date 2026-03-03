@@ -51,9 +51,9 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
                 !auraLinks.isEmpty() && HASH_PARAM_PATTERN
                         .matcher(auraLinks.get(0).getAttribute("href")).find());
 
-        // Verify bare-path stylesheets also have cache-busting hashes
-        assertLinkHasHash("appShell-styles/stylesheet.css");
-        assertLinkHasHash("appShell-styles.css");
+        // Verify context:// stylesheets also have cache-busting hashes
+        assertLinkHasHash("appShell-context://styles/stylesheet.css");
+        assertLinkHasHash("appShell-context://styles.css");
     }
 
     @Test
