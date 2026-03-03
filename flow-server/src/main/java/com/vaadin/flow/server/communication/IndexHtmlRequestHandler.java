@@ -87,6 +87,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
+
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
 
     @Override
@@ -583,8 +584,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 indexDocument.head(), request);
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
-        elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + initialJson.toString() + ";"));
+        elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};"
+                + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
+                + BootstrapHandler.WHEN_READY_JS + "window.Vaadin.TypeScript= "
+                + initialJson.toString() + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
