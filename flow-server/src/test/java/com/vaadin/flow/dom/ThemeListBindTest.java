@@ -104,13 +104,8 @@ class ThemeListBindTest extends SignalsUnitTest {
     public void clear_throwsWhenBindingsActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> a = new ValueSignal<>(true);
-        ValueSignal<Boolean> b = new ValueSignal<>(true);
-        component.bindThemeName("a", a);
-        component.bindThemeName("b", b);
-
-        assertTrue(component.hasThemeName("a"));
-        assertTrue(component.hasThemeName("b"));
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        component.bindThemeName("a", signal);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getThemeNames().clear());

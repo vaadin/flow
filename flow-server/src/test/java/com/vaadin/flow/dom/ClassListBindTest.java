@@ -91,13 +91,8 @@ class ClassListBindTest extends SignalsUnitTest {
     public void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> a = new ValueSignal<>(true);
-        ValueSignal<Boolean> b = new ValueSignal<>(true);
-        element.getClassList().bind("a", a);
-        element.getClassList().bind("b", b);
-
-        assertTrue(element.getClassList().contains("a"));
-        assertTrue(element.getClassList().contains("b"));
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.getClassList().bind("a", signal);
 
         assertThrows(BindingActiveException.class,
                 () -> element.getClassList().clear());

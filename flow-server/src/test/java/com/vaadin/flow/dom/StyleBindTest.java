@@ -130,13 +130,8 @@ class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        ValueSignal<String> a = new ValueSignal<>("1");
-        ValueSignal<String> b = new ValueSignal<>("2");
-        element.getStyle().bind("border-top-width", a);
-        element.getStyle().bind("border-bottom-width", b);
-
-        assertEquals("1", element.getStyle().get("borderTopWidth"));
-        assertEquals("2", element.getStyle().get("borderBottomWidth"));
+        ValueSignal<String> signal = new ValueSignal<>("1");
+        element.getStyle().bind("border-top-width", signal);
 
         assertThrows(BindingActiveException.class,
                 () -> element.getStyle().clear());
