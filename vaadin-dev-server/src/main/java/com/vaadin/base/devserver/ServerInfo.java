@@ -15,7 +15,10 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +77,57 @@ public class ServerInfo implements Serializable {
         return EndpointRequestUtil.isHillaAvailable()
                 ? Platform.getHillaVersion().orElse("?")
                 : "-";
+    }
+
+    /**
+     * Detects if the application is running inside a container and returns the
+     * container runtime name.
+     *
+     * @return the container runtime name (e.g. "docker", "podman",
+     *         "kubernetes"), or {@code null} if no container is detected
+     */
+    public static String fetchContainerInfo() {
+        // Docker creates this file inside containers
+        if (Files.exists(Path.of("/.dockerenv"))) {
+            return "docker";
+        }
+
+        // Podman creates this file inside containers
+        if (Files.exists(Path.of("/run/.containerenv"))) {
+            return "podman";
+        }
+
+        // Kubernetes sets this env var in all pods
+        if (System.getenv("KUBERNETES_SERVICE_HOST") != null) {
+            return "kubernetes";
+        }
+
+        // systemd-nspawn and some runtimes set the "container" env var
+        String containerEnv = System.getenv("container");
+        if (containerEnv != null && !containerEnv.isEmpty()) {
+            return containerEnv;
+        }
+
+        // Fall back to scanning /proc/self/cgroup for container indicators
+        try {
+            Path cgroupPath = Path.of("/proc/self/cgroup");
+            if (Files.exists(cgroupPath)) {
+                String content = Files.readString(cgroupPath);
+                if (content.contains("docker")) {
+                    return "docker";
+                }
+                if (content.contains("lxc")) {
+                    return "lxc";
+                }
+                if (content.contains("kubepods")) {
+                    return "kubernetes";
+                }
+            }
+        } catch (IOException e) {
+            // Ignore read errors
+        }
+
+        return null;
     }
 
     public List<NameAndVersion> getVersions() {

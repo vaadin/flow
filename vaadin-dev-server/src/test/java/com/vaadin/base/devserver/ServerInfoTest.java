@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -93,5 +94,28 @@ public class ServerInfoTest {
     @Test
     public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
         assertEquals("-", ServerInfo.fetchVaadinVersion());
+    }
+
+    @Test
+    public void fetchContainerInfoDoesNotThrow() {
+        // Should return a string or null, but never throw
+        String result = ServerInfo.fetchContainerInfo();
+        assertTrue("Expected null or non-empty string",
+                result == null || !result.isEmpty());
+    }
+
+    @Test
+    public void fetchContainerInfoDetectsContainer() {
+        String result = ServerInfo.fetchContainerInfo();
+        // This test environment runs inside a Docker container,
+        // so container detection should find it
+        if (java.nio.file.Files.exists(java.nio.file.Path.of("/.dockerenv"))
+                || java.nio.file.Files
+                        .exists(java.nio.file.Path.of("/run/.containerenv"))
+                || System.getenv("KUBERNETES_SERVICE_HOST") != null
+                || System.getenv("container") != null) {
+            assertTrue("Should detect container runtime",
+                    result != null && !result.isEmpty());
+        }
     }
 }
