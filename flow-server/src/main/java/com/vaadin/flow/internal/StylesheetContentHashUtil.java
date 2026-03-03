@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -75,13 +76,6 @@ public class StylesheetContentHashUtil {
             String resourceUrl) {
         try (InputStream stream = openResource(service, resourceUrl)) {
             if (stream == null) {
-                logger.debug(
-                        "Could not compute cache-busting hash for '{}': "
-                                + "resource not found. Tried via {} "
-                                + "(service class: {}). The stylesheet URL "
-                                + "will not have a ?v-c=<hash> parameter.",
-                        resourceUrl, describeAttempts(resourceUrl),
-                        service.getClass().getName());
                 return null;
             }
             byte[] bytes = stream.readAllBytes();
@@ -100,78 +94,29 @@ public class StylesheetContentHashUtil {
         }
     }
 
-    private static String describeAttempts(String resourceUrl) {
-        if (resourceUrl.startsWith("/") || resourceUrl.contains("://")) {
-            return "getResourceAsStream(\"" + resourceUrl + "\")";
-        }
-        return "getResourceAsStream(\"" + resourceUrl
-                + "\") and getResourceAsStream(\"/" + resourceUrl + "\")";
-    }
-
-    /**
-     * Spring Boot static resource prefixes to search on the classpath when
-     * {@code servletContext.getResourceAsStream()} fails. This covers the
-     * standard locations where Spring Boot serves static content from.
-     */
-    private static final String[] CLASSPATH_PREFIXES = { "META-INF/resources/",
-            "static/", "public/", "resources/" };
-
     private static InputStream openResource(VaadinService service,
             String resourceUrl) {
         String resolved = service.resolveResource(resourceUrl);
-        InputStream stream = service.getResourceAsStream(resourceUrl);
-        if (stream != null) {
-            logger.debug("Resolved '{}' -> '{}' (found)", resourceUrl,
-                    resolved);
-            return stream;
-        }
-        logger.debug("Resolved '{}' -> '{}' (not found)", resourceUrl,
-                resolved);
+        URL url = service.getStaticResource(resolved);
         // Bare paths (e.g. "styles.css") may not resolve in the servlet
-        // context which requires a leading '/'. Try with '/' prefix as
-        // fallback.
-        if (!resourceUrl.startsWith("/") && !resourceUrl.contains("://")) {
-            String withSlash = "/" + resourceUrl;
-            stream = service.getResourceAsStream(withSlash);
-            if (stream != null) {
-                logger.debug("Resolved '{}' (found via '/' prefix fallback)",
-                        resourceUrl);
-                return stream;
-            }
+        // context which requires a leading '/'. Try with '/' prefix.
+        if (url == null && !resolved.startsWith("/")
+                && !resolved.contains("://")) {
+            url = service.getStaticResource("/" + resolved);
         }
-        // servletContext.getResourceAsStream() does not find resources in
-        // Spring Boot's static resource locations (static/, public/, etc.)
-        // when running from a packaged jar. Fall back to classpath lookup.
-        stream = openResourceFromClasspath(resourceUrl);
-        return stream;
-    }
-
-    private static InputStream openResourceFromClasspath(String resourceUrl) {
-        String path = resourceUrl;
-        if (path.startsWith("/")) {
-            path = path.substring(1);
+        if (url == null) {
+            logger.debug(
+                    "Could not find static resource for '{}' "
+                            + "(resolved: '{}', service: {})",
+                    resourceUrl, resolved, service.getClass().getName());
+            return null;
         }
-        if (path.contains("://")) {
-            // Strip context:// or similar protocol prefixes
-            path = path.substring(path.indexOf("://") + 3);
+        try {
+            return url.openStream();
+        } catch (IOException e) {
+            logger.debug("Failed to open stream for '{}'", resourceUrl, e);
+            return null;
         }
-        ClassLoader classLoader = Thread.currentThread()
-                .getContextClassLoader();
-        if (classLoader == null) {
-            classLoader = StylesheetContentHashUtil.class.getClassLoader();
-        }
-        for (String prefix : CLASSPATH_PREFIXES) {
-            String classpathPath = prefix + path;
-            InputStream stream = classLoader.getResourceAsStream(classpathPath);
-            if (stream != null) {
-                logger.debug("Resolved '{}' via classpath '{}'", resourceUrl,
-                        classpathPath);
-                return stream;
-            }
-        }
-        logger.debug("'{}' not found on classpath (tried prefixes: {})",
-                resourceUrl, String.join(", ", CLASSPATH_PREFIXES));
-        return null;
     }
 
 }

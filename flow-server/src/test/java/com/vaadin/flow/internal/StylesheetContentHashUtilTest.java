@@ -15,17 +15,24 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.ByteArrayInputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinService;
 
 public class StylesheetContentHashUtilTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     private VaadinService service;
 
@@ -34,12 +41,21 @@ public class StylesheetContentHashUtilTest {
         service = Mockito.mock(VaadinService.class);
     }
 
+    private URL createTempResource(String content) throws Exception {
+        Path file = tempFolder.newFile("test.css").toPath();
+        Files.writeString(file, content, StandardCharsets.UTF_8);
+        return file.toUri().toURL();
+    }
+
     @Test
-    public void getContentHash_knownContent_returnsExpectedHash() {
+    public void getContentHash_knownContent_returnsExpectedHash()
+            throws Exception {
         byte[] content = "body { color: red; }"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(service.getResourceAsStream("styles.css"))
-                .thenReturn(new ByteArrayInputStream(content));
+        URL url = createTempResource("body { color: red; }");
+        Mockito.when(service.resolveResource("styles.css"))
+                .thenReturn("styles.css");
+        Mockito.when(service.getStaticResource("styles.css")).thenReturn(url);
 
         String hash = StylesheetContentHashUtil.getContentHash(service,
                 "styles.css");
@@ -47,7 +63,6 @@ public class StylesheetContentHashUtilTest {
         Assert.assertNotNull(hash);
         Assert.assertEquals(8, hash.length());
 
-        // Verify it matches the first 8 chars of SHA-256
         String expectedHash = MessageDigestUtil.sha256Hex(content).substring(0,
                 8);
         Assert.assertEquals(expectedHash, hash);
@@ -85,9 +100,10 @@ public class StylesheetContentHashUtilTest {
 
     @Test
     public void getContentHash_missingResource_returnsNull() {
-        Mockito.when(service.getResourceAsStream("missing.css"))
-                .thenReturn(null);
-        Mockito.when(service.getResourceAsStream("/missing.css"))
+        Mockito.when(service.resolveResource("missing.css"))
+                .thenReturn("missing.css");
+        Mockito.when(service.getStaticResource("missing.css")).thenReturn(null);
+        Mockito.when(service.getStaticResource("/missing.css"))
                 .thenReturn(null);
 
         Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
@@ -95,14 +111,13 @@ public class StylesheetContentHashUtilTest {
     }
 
     @Test
-    public void getContentHash_barePath_fallsBackToSlashPrefixed() {
-        // Bare path "styles.css" may not resolve in servlet context.
-        // The utility should fall back to "/styles.css".
-        byte[] content = "body { color: blue; }"
-                .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(service.getResourceAsStream("bare.css")).thenReturn(null);
-        Mockito.when(service.getResourceAsStream("/bare.css"))
-                .thenReturn(new ByteArrayInputStream(content));
+    public void getContentHash_barePath_fallsBackToSlashPrefixed()
+            throws Exception {
+        URL url = createTempResource("body { color: blue; }");
+        Mockito.when(service.resolveResource("bare.css"))
+                .thenReturn("bare.css");
+        Mockito.when(service.getStaticResource("bare.css")).thenReturn(null);
+        Mockito.when(service.getStaticResource("/bare.css")).thenReturn(url);
 
         String hash = StylesheetContentHashUtil.getContentHash(service,
                 "bare.css");
@@ -111,10 +126,11 @@ public class StylesheetContentHashUtilTest {
     }
 
     @Test
-    public void getContentHash_cachedAfterFirstCall() {
-        byte[] content = "body {}".getBytes(StandardCharsets.UTF_8);
-        Mockito.when(service.getResourceAsStream("cached.css"))
-                .thenReturn(new ByteArrayInputStream(content));
+    public void getContentHash_cachedAfterFirstCall() throws Exception {
+        URL url = createTempResource("body {}");
+        Mockito.when(service.resolveResource("cached.css"))
+                .thenReturn("cached.css");
+        Mockito.when(service.getStaticResource("cached.css")).thenReturn(url);
 
         String hash1 = StylesheetContentHashUtil.getContentHash(service,
                 "cached.css");
@@ -122,26 +138,9 @@ public class StylesheetContentHashUtilTest {
                 "cached.css");
 
         Assert.assertEquals(hash1, hash2);
-        // Resource should only be read once due to caching
+        // Resource URL should only be looked up once due to caching
         Mockito.verify(service, Mockito.times(1))
-                .getResourceAsStream("cached.css");
-    }
-
-    @Test
-    public void getContentHash_servletContextFails_fallsBackToClasspath() {
-        // Simulates Spring Boot packaged jar where
-        // servletContext.getResourceAsStream() can't find resources in
-        // static/, but the classloader can.
-        Mockito.when(service.getResourceAsStream("classpath-test.css"))
-                .thenReturn(null);
-        Mockito.when(service.getResourceAsStream("/classpath-test.css"))
-                .thenReturn(null);
-
-        String hash = StylesheetContentHashUtil.getContentHash(service,
-                "classpath-test.css");
-        Assert.assertNotNull(
-                "Should find resource via classpath static/ fallback", hash);
-        Assert.assertEquals(8, hash.length());
+                .getStaticResource("cached.css");
     }
 
 }
