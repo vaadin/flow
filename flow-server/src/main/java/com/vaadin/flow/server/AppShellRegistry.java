@@ -44,6 +44,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.StylesheetContentHashUtil;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
@@ -440,8 +441,7 @@ public class AppShellRegistry implements Serializable {
             if (config.isProductionMode()) {
                 String hash = StylesheetContentHashUtil.getContentHash(service,
                         sourcePath);
-                linkHref = StylesheetContentHashUtil.appendHashToUrl(href,
-                        hash);
+                linkHref = UrlUtil.appendQueryParameter(href, "v-c", hash);
             }
             Map<String, String> attributes = Map.of("rel", "stylesheet",
                     "data-file-path", sourcePath, "data-id",

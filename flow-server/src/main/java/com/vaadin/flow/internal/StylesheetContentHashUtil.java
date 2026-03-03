@@ -174,22 +174,4 @@ public class StylesheetContentHashUtil {
         return null;
     }
 
-    /**
-     * Appends a version query parameter to the given URL using the provided
-     * hash. Returns the original URL unchanged if the hash is {@code null}.
-     *
-     * @param url
-     *            the original URL
-     * @param hash
-     *            the content hash, or {@code null}
-     * @return the URL with {@code ?v-c=<hash>} or {@code &v-c=<hash>} appended,
-     *         or the original URL if hash is {@code null}
-     */
-    public static String appendHashToUrl(String url, String hash) {
-        if (hash == null) {
-            return url;
-        }
-        char separator = url.contains("?") ? '&' : '?';
-        return url + separator + "v-c=" + hash;
-    }
 }

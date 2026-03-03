@@ -50,6 +50,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.StylesheetContentHashUtil;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -251,8 +252,9 @@ public class UidlWriter implements Serializable {
             String hash = StylesheetContentHashUtil
                     .getContentHash(context.getService(), dependency.getUrl());
             if (hash != null) {
-                dependencyJson.put(Dependency.KEY_URL, StylesheetContentHashUtil
-                        .appendHashToUrl(dependency.getUrl(), hash));
+                dependencyJson.put(Dependency.KEY_URL,
+                        UrlUtil.appendQueryParameter(dependency.getUrl(), "v-c",
+                                hash));
             }
         }
         return dependencyJson;
