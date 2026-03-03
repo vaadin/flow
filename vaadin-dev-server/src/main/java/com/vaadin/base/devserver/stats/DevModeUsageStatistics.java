@@ -135,11 +135,8 @@ public class DevModeUsageStatistics {
                     ServerInfo.fetchOperatingSystem());
             globalData.setValue(StatisticsConstants.FIELD_JVM,
                     ServerInfo.fetchJavaVersion());
-            String container = ServerInfo.fetchContainerInfo();
-            if (container != null) {
-                globalData.setValue(StatisticsConstants.FIELD_CONTAINER,
-                        container);
-            }
+            globalData.setValue(StatisticsConstants.FIELD_CONTAINER,
+                    ServerInfo.fetchContainerInfo());
             globalData.setValue(StatisticsConstants.FIELD_PROKEY,
                     ProjectHelpers.getProKey());
             globalData.setValue(StatisticsConstants.FIELD_USER_KEY,

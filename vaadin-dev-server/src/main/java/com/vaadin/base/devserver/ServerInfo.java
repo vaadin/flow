@@ -84,7 +84,7 @@ public class ServerInfo implements Serializable {
      * container runtime name.
      *
      * @return the container runtime name (e.g. "docker", "podman",
-     *         "kubernetes"), or {@code null} if no container is detected
+     *         "kubernetes"), or "-" if no container is detected
      */
     public static String fetchContainerInfo() {
         // Docker creates this file inside containers
@@ -143,7 +143,7 @@ public class ServerInfo implements Serializable {
             // Ignore read errors
         }
 
-        return null;
+        return "-";
     }
 
     public List<NameAndVersion> getVersions() {

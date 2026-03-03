@@ -98,10 +98,9 @@ public class ServerInfoTest {
 
     @Test
     public void fetchContainerInfoDoesNotThrow() {
-        // Should return a string or null, but never throw
+        // Should return a non-empty string, never null or empty
         String result = ServerInfo.fetchContainerInfo();
-        assertTrue("Expected null or non-empty string",
-                result == null || !result.isEmpty());
+        assertTrue("Expected non-empty string", !result.isEmpty());
     }
 
     @Test
@@ -113,8 +112,8 @@ public class ServerInfoTest {
                 || System.getenv("KUBERNETES_SERVICE_HOST") != null
                 || System.getenv("container") != null || Files.exists(Path.of(
                         "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
-            assertTrue("Should detect container runtime",
-                    result != null && !result.isEmpty());
+            assertTrue("Should detect container runtime, not return dash",
+                    !"-".equals(result));
         }
     }
 }
