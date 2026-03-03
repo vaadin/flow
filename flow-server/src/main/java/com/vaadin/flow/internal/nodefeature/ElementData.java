@@ -169,8 +169,8 @@ public class ElementData extends NodeMap {
         boolean booleanValue = (value != null) ? value : Boolean.FALSE;
         if (hasSignal(NodeProperties.VISIBLE)) {
             SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
-            put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
-                    b.registration(), booleanValue, null));
+            put(NodeProperties.VISIBLE,
+                    new SignalBinding(b.signal(), booleanValue, null));
         } else {
             put(NodeProperties.VISIBLE, booleanValue);
         }
