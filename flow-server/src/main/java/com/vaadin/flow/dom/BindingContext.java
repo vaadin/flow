@@ -50,6 +50,8 @@ public class BindingContext<T extends @Nullable Object> extends EffectContext {
      *
      * @param initialRun
      *            whether this is the first execution of the binding effect
+     * @param backgroundChange
+     *            whether this update was triggered by a background thread
      * @param oldValue
      *            the previous value (same as newValue on initial run)
      * @param newValue
@@ -57,9 +59,9 @@ public class BindingContext<T extends @Nullable Object> extends EffectContext {
      * @param element
      *            the target element of the binding
      */
-    public BindingContext(boolean initialRun, T oldValue, T newValue,
-            Element element) {
-        super(initialRun);
+    public BindingContext(boolean initialRun, boolean backgroundChange,
+            T oldValue, T newValue, Element element) {
+        super(initialRun, backgroundChange);
         this.oldValue = oldValue;
         this.newValue = newValue;
         this.element = element;

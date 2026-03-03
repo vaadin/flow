@@ -72,7 +72,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bind(String name, Signal<Boolean> signal) {
+    default SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     }

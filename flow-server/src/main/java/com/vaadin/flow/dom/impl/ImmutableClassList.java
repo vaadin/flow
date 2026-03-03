@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -73,7 +74,7 @@ public class ImmutableClassList extends AbstractSet<String>
      * because they do not support styling in general.
      */
     @Override
-    public void bind(String name, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 

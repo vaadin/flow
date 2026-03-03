@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -94,7 +95,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     @Override
-    public void bind(String name, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -104,10 +105,12 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "Theme name '" + name + "' is already bound to a signal");
         }
 
-        ElementEffect.bind(Element.get(element.getNode()), signal,
+        SignalBinding<Boolean> binding = ElementEffect.bind(
+                Element.get(element.getNode()), signal,
                 (element, value) -> internalSetPresence(name,
                         Boolean.TRUE.equals(value)));
         feature.setBinding(SignalBindingFeature.THEMES + name, signal);
+        return binding;
     }
 
     @Override

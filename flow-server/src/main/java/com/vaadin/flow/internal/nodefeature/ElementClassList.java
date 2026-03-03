@@ -24,6 +24,7 @@ import java.util.Set;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
@@ -87,7 +88,8 @@ public class ElementClassList extends SerializableNodeList<String> {
         }
 
         @Override
-        public void bind(String name, Signal<Boolean> signal) {
+        public SignalBinding<Boolean> bind(String name,
+                Signal<Boolean> signal) {
             validate(name);
             Objects.requireNonNull(signal, "Signal cannot be null");
             SignalBindingFeature feature = getNode()
@@ -98,10 +100,12 @@ public class ElementClassList extends SerializableNodeList<String> {
                         + "' is already bound to a signal");
             }
 
-            ElementEffect.bind(Element.get(getNode()), signal,
+            SignalBinding<Boolean> binding = ElementEffect.bind(
+                    Element.get(getNode()), signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
             feature.setBinding(SignalBindingFeature.CLASSES + name, signal);
+            return binding;
         }
 
         @Override

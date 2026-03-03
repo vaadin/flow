@@ -23,7 +23,6 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Represents an active binding between a signal and an element property (text,
@@ -45,36 +44,12 @@ import com.vaadin.flow.shared.Registration;
  */
 public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
-    private final List<SerializableConsumer<BindingContext<T>>> changeCallbacks = new ArrayList<>();
-    private transient Registration effectRegistration;
+    private List<SerializableConsumer<BindingContext<T>>> changeCallbacks;
 
     /**
      * Creates a new signal binding.
      */
     SignalBinding() {
-    }
-
-    /**
-     * Sets the registration that controls the lifecycle of the underlying
-     * effect.
-     *
-     * @param registration
-     *            the registration to set
-     */
-    void setEffectRegistration(Registration registration) {
-        this.effectRegistration = registration;
-    }
-
-    /**
-     * Gets the registration that controls the lifecycle of the underlying
-     * effect. Removing the registration stops the effect from running.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @return the effect registration, or {@code null} if not set
-     */
-    public Registration getEffectRegistration() {
-        return effectRegistration;
     }
 
     /**
@@ -103,7 +78,11 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
      */
     public SignalBinding<T> onChange(
             SerializableConsumer<BindingContext<T>> action) {
-        changeCallbacks.add(Objects.requireNonNull(action));
+        Objects.requireNonNull(action);
+        if (changeCallbacks == null) {
+            changeCallbacks = new ArrayList<>();
+        }
+        changeCallbacks.add(action);
         return this;
     }
 
@@ -114,7 +93,26 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
      * @param context
      *            the binding context for this execution
      */
+    /**
+     * Returns whether any onChange callbacks have been registered.
+     *
+     * @return true if there are callbacks, false otherwise
+     */
+    boolean hasCallbacks() {
+        return changeCallbacks != null;
+    }
+
+    /**
+     * Fires all registered onChange callbacks with the given context. Called
+     * internally by the binding effect after the setter has been applied.
+     *
+     * @param context
+     *            the binding context for this execution
+     */
     void fireOnChange(BindingContext<T> context) {
+        if (changeCallbacks == null) {
+            return;
+        }
         for (SerializableConsumer<BindingContext<T>> callback : changeCallbacks) {
             callback.accept(context);
         }
