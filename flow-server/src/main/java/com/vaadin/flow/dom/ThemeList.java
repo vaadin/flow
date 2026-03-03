@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -53,22 +54,21 @@ public interface ThemeList extends Set<String>, Serializable {
      * {@link #add(Object)}, {@link #remove(Object)},
      * {@link #set(String, boolean)}, {@link #addAll(Collection)},
      * {@link #retainAll(Collection)} or {@link #removeAll(Collection)} for that
-     * name will throw a {@code com.vaadin.flow.dom.BindingActiveException}.
-     * Bindings are lifecycle-aware and only active while the owning
-     * {@link Element} is in attached state; they are deactivated while the
-     * element is in detached state.
+     * name will throw a {@link BindingActiveException}. Bindings are
+     * lifecycle-aware and only active while the owning {@link Element} is in
+     * attached state; they are deactivated while the element is in detached
+     * state.
      * <p>
      * Bulk operations that indiscriminately replace or clear the theme list
      * (for example {@link #clear()} or setting the {@code theme} attribute via
      * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) throw a
-     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
-     * active.
+     * {@link BindingActiveException} if any binding is active.
      *
      * @param name
      *            the theme name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
-     * @throws com.vaadin.flow.signals.BindingActiveException
+     * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
      */
@@ -92,12 +92,11 @@ public interface ThemeList extends Set<String>, Serializable {
      * Bulk operations that indiscriminately replace or clear the theme list
      * (for example {@link #clear()} or setting the {@code theme} attribute via
      * {@link com.vaadin.flow.component.HasTheme#setThemeName(String)}) throw a
-     * {@code com.vaadin.flow.signals.BindingActiveException} if any binding is
-     * active.
+     * {@link BindingActiveException} if any binding is active.
      *
      * @param names
      *            the signal providing the list of theme names, not {@code null}
-     * @throws com.vaadin.flow.signals.BindingActiveException
+     * @throws BindingActiveException
      *             thrown when there is already an existing group binding
      * @since 25.1
      */
