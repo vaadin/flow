@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.signals.Signal;
@@ -73,6 +74,17 @@ public class ImmutableClassList extends AbstractSet<String>
      */
     @Override
     public void bind(String name, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Text nodes do not support binding a {@link Signal} to stylesheet classes,
+     * because they do not support styling in general.
+     */
+    @Override
+    public void bind(Signal<List<String>> names) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 }

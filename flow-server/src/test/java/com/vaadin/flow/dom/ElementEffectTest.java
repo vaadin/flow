@@ -18,7 +18,10 @@ package com.vaadin.flow.dom;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,18 +38,22 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -143,6 +150,63 @@ class ElementEffectTest {
 
         assertSame(Thread.currentThread(), currentThread.get());
         assertSame(ui, currentUI.get());
+    }
+
+    @Test
+    public void contextAwareEffect_receivesEffectContext() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Signal.effect(ui, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        assertEquals(1, initialRuns.size());
+        assertTrue(initialRuns.get(0), "First execution should be initial run");
+
+        signal.set("world");
+
+        assertEquals(2, initialRuns.size());
+        assertFalse(initialRuns.get(1),
+                "Subsequent execution should not be initial run");
+    }
+
+    @Test
+    public void contextAwareEffect_detectsBackgroundChange() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Signal.effect(ui, ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0),
+                "Initial run should not be a background change");
+
+        // Change signal with VaadinRequest present (simulates user request)
+        signal.set("from request");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with VaadinRequest should not be a background change");
+
+        // Clear VaadinRequest to simulate background change
+        CurrentInstance.set(VaadinRequest.class, null);
+
+        signal.set("from background");
+
+        assertEquals(3, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(2),
+                "Change without VaadinRequest should be a background change");
     }
 
     @Test
@@ -345,8 +409,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_nullArguments_throws() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
         new MockUI();
 
@@ -359,8 +422,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_emptySharedListSignal_emptyParent() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
         parentComponent.bindChildren(taskList,
@@ -371,8 +433,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_emptySharedListSignalWithNotInitiallyEmptyParent_throw() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
         var initialComponent = new TestComponent("initial");
 
@@ -391,8 +452,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_listSignalWithItem_parentUpdated() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
 
         TestLayout parentComponent = new TestLayout();
@@ -415,8 +475,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_addItem_parentUpdated() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
@@ -448,8 +507,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_removeItem_parentUpdated() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
@@ -487,8 +545,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_moveItem_parentUpdated() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
@@ -502,8 +559,7 @@ class ElementEffectTest {
                 "Parent component children count is wrong");
 
         // move last to first
-        taskList.moveTo(taskList.peek().get(2),
-                SharedListSignal.ListPosition.first());
+        taskList.moveTo(taskList.peek().get(2), 0);
 
         assertEquals(3, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -512,15 +568,13 @@ class ElementEffectTest {
                         .getValue());
 
         // move it back to last
-        taskList.moveTo(taskList.peek().get(0),
-                SharedListSignal.ListPosition.last());
+        taskList.moveTo(taskList.peek().get(0), 2);
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(2))
                         .getValue());
 
-        // move last between first and last
-        taskList.moveTo(taskList.peek().get(2), SharedListSignal.ListPosition
-                .between(taskList.peek().get(0), taskList.peek().get(1)));
+        // move last between first and middle
+        taskList.moveTo(taskList.peek().get(2), 1);
         assertEquals("last",
                 ((TestComponent) parentComponent.getChildren().toList().get(1))
                         .getValue());
@@ -529,8 +583,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
@@ -538,8 +591,7 @@ class ElementEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move last to first
-        taskList.moveTo(taskList.peek().get(2),
-                SharedListSignal.ListPosition.first());
+        taskList.moveTo(taskList.peek().get(2), 0);
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
@@ -555,8 +607,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
@@ -564,8 +615,7 @@ class ElementEffectTest {
         TestLayout parentComponent = prepareTestLayout(taskList);
 
         // move first to last
-        taskList.moveTo(taskList.peek().get(0),
-                SharedListSignal.ListPosition.last());
+        taskList.moveTo(taskList.peek().get(0), 2);
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
@@ -581,17 +631,15 @@ class ElementEffectTest {
     @Test
     public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
 
         TestLayout parentComponent = prepareTestLayout(taskList);
 
-        // move last between first and second
-        taskList.moveTo(taskList.peek().get(2), SharedListSignal.ListPosition
-                .between(taskList.peek().get(0), taskList.peek().get(1)));
+        // move last between first and middle
+        taskList.moveTo(taskList.peek().get(2), 1);
 
         List<TestComponent> children = parentComponent.getChildren()
                 .map(TestComponent.class::cast).toList();
@@ -612,8 +660,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         TestLayout parentComponent = new TestLayout();
 
@@ -654,8 +701,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertLast("first");
         taskList.insertLast("middle");
         TestLayout parentComponent = new TestLayout();
@@ -706,8 +752,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertLast("first");
         taskList.insertLast("middle");
         TestLayout parentComponent = new TestLayout();
@@ -754,8 +799,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertLast("first");
         taskList.insertLast("middle");
         TestLayout parentComponent = new TestLayout();
@@ -804,8 +848,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertLast("first");
         taskList.insertLast("middle");
         taskList.insertLast("last");
@@ -862,7 +905,7 @@ class ElementEffectTest {
 
         Mockito.clearInvocations(expectedMockedElements.toArray());
         Mockito.clearInvocations(parentComponent.getElement());
-        Signal.runInTransaction(() -> {
+        var op = Signal.runInTransaction(() -> {
             taskList.insertFirst("first");
             taskList.insertLast("last");
 
@@ -872,6 +915,14 @@ class ElementEffectTest {
 
             taskList.remove(taskList.get().get(0));
         });
+
+        // Wait for async confirmation to complete
+        try {
+            op.result().get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException
+                | TimeoutException e) {
+            // Ignore - we only need to wait for the confirmation
+        }
 
         // getChildren() should be called twice per bindChildren effect call
         verify(parentComponent.getElement(), times(2)).getChildren();
@@ -892,8 +943,7 @@ class ElementEffectTest {
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         TestLayout parentComponent = new TestLayout();
 
@@ -914,8 +964,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_registrationRemove_effectRemoved() {
         CurrentInstance.clearAll();
-        SharedListSignal<String> taskList = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
         taskList.insertLast("second");
 
@@ -998,7 +1047,170 @@ class ElementEffectTest {
         assertEquals(0, parentComponent.getComponentCount());
     }
 
-    private TestLayout prepareTestLayout(SharedListSignal<String> listSignal) {
+    @Test
+    public void bindChildren_parentWithSlottedChild_succeeds() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        // Add a slotted child before binding
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "title");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Should not throw
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+        assertEquals(0, parentComponent.getComponentCount());
+    }
+
+    @Test
+    public void bindChildren_parentWithDefaultSlotChild_throws() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        TestLayout parentComponent = new TestLayout();
+        parentComponent.add(new TestComponent("default"));
+        new MockUI().add(parentComponent);
+
+        assertThrows(IllegalStateException.class, () -> {
+            parentComponent.bindChildren(taskList, valueSignal -> {
+                fail("Should not call element factory");
+                return null;
+            });
+        });
+    }
+
+    @Test
+    public void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> new TestComponent(valueSignal.get())
+                        .getElement());
+
+        assertEquals(1, parentComponent.getComponentCount());
+
+        // Add a slotted child via Element API
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "title");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Total children includes slotted
+        assertEquals(2, parentComponent.getElement().getChildCount());
+
+        // Add another signal item - slotted child should be preserved
+        taskList.insertLast("second");
+
+        // signal children + slotted child
+        Element parent = parentComponent.getElement();
+        assertEquals(3, parent.getChildCount());
+        // Verify DOM indices: "first" at 0, "second" at 1, slotted at 2
+        assertEquals("first", parent.getChild(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("second", parent.getChild(1).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("title", parent.getChild(2).getAttribute("slot"));
+    }
+
+    @Test
+    public void bindChildren_factoryReturnsSlottedElement_throws() {
+        CurrentInstance.clearAll();
+        LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
+        UI ui = UI.getCurrent();
+
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        ui.add(parentComponent);
+
+        ElementEffect.bindChildren(parentComponent.getElement(), taskList,
+                valueSignal -> {
+                    Element el = new Element("div");
+                    el.setAttribute("slot", "title");
+                    return el;
+                });
+
+        ErrorEvent event = events.pollFirst();
+        assertNotNull(event);
+        assertEquals(IllegalStateException.class,
+                event.getThrowable().getClass());
+        assertEquals(
+                "Children created by the bindChildren factory must not have a slot attribute set",
+                event.getThrowable().getMessage());
+    }
+
+    @Test
+    public void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        taskList.insertLast("middle");
+        taskList.insertLast("last");
+
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+
+        // Add a slotted child via Element API
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "header");
+        parentComponent.getElement().appendChild(slotted);
+
+        // Move last to first
+        taskList.moveTo(taskList.peek().get(2), 0);
+
+        // Verify DOM indices: "last" at 0, "first" at 1, "middle" at 2,
+        // slotted at 3
+        Element parent = parentComponent.getElement();
+        assertEquals(4, parent.getChildCount());
+        assertEquals("last", parent.getChild(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("first", parent.getChild(1).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("middle", parent.getChild(2).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("header", parent.getChild(3).getAttribute("slot"));
+    }
+
+    @Test
+    public void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
+        CurrentInstance.clearAll();
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        taskList.insertLast("second");
+
+        TestLayout parentComponent = new TestLayout();
+        new MockUI().add(parentComponent);
+
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+
+        // Add a slotted child
+        Element slotted = new Element("span");
+        slotted.setAttribute("slot", "footer");
+        parentComponent.getElement().appendChild(slotted);
+
+        assertEquals(3, parentComponent.getElement().getChildCount());
+
+        // Remove an item from the signal list
+        taskList.remove(taskList.peek().get(0));
+
+        // Verify DOM indices: "second" at 0, slotted at 1
+        Element parent = parentComponent.getElement();
+        assertEquals(2, parent.getChildCount());
+        assertEquals("second", parent.getChild(0).getComponent()
+                .map(c -> ((TestComponent) c).getValue()).orElse(null));
+        assertEquals("footer", parent.getChild(1).getAttribute("slot"));
+    }
+
+    private TestLayout prepareTestLayout(ListSignal<String> listSignal) {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 

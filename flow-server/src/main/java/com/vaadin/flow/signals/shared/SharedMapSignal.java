@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -49,8 +46,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedMapSignal<T extends @Nullable Object>
-        extends AbstractSignal<@NonNull Map<String, SharedValueSignal<T>>> {
+public class SharedMapSignal<T extends @Nullable Object> extends
+        AbstractSharedSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -253,7 +250,7 @@ public class SharedMapSignal<T extends @Nullable Object>
      * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKey(String key,
-            AbstractSignal<?> expectedChild) {
+            AbstractSharedSignal<?> expectedChild) {
         return submitKeyCondition(Objects.requireNonNull(key),
                 expectedChild.id());
     }
@@ -371,11 +368,5 @@ public class SharedMapSignal<T extends @Nullable Object>
         return value.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue().peek())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedMapSignal.class).warn(
-                "Serializing SharedMapSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

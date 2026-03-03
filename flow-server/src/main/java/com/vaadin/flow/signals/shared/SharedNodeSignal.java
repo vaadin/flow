@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
@@ -59,7 +56,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * applying some specific operation.
  */
 public class SharedNodeSignal
-        extends AbstractSignal<SharedNodeSignal.SharedNodeSignalState> {
+        extends AbstractSharedSignal<SharedNodeSignal.SharedNodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.
@@ -348,7 +345,7 @@ public class SharedNodeSignal
      *            the target list location, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAt(AbstractSignal<?> node,
+    public SignalOperation<Void> adoptAt(AbstractSharedSignal<?> node,
             ListPosition at) {
         return submit(new SignalCommand.AdoptAtCommand(Id.random(), id(),
                 node.id(), Objects.requireNonNull(at)));
@@ -366,7 +363,8 @@ public class SharedNodeSignal
      *            the key to use, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAs(AbstractSignal<?> signal, String key) {
+    public SignalOperation<Void> adoptAs(AbstractSharedSignal<?> signal,
+            String key) {
         return submit(new SignalCommand.AdoptAsCommand(Id.random(), id(),
                 signal.id(), Objects.requireNonNull(key)));
     }
@@ -488,11 +486,5 @@ public class SharedNodeSignal
 
         builder.append(']');
         return builder.toString();
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedNodeSignal.class).warn(
-                "Serializing SharedNodeSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

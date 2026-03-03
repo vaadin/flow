@@ -29,7 +29,7 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -343,7 +343,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void unsuppotedOperations_runOperations_throws() {
-        AbstractSignal<Object> signal = (AbstractSignal<Object>) Signal
+        AbstractSharedSignal<Object> signal = (AbstractSharedSignal<Object>) Signal
                 .computed(() -> null);
 
         assertThrows(UnsupportedOperationException.class, () -> {
