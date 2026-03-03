@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
@@ -166,9 +167,10 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    public void bindSignal(Element owner, String name, Signal<?> signal,
+    public SignalBinding<?> bindSignal(Element owner,
+            String name, Signal<?> signal,
             SerializableConsumer<?> writeCallback) {
-        super.bindSignal(owner, name, signal,
+        return super.bindSignal(owner, name, signal,
                 (element, value) -> setPropertyFromSignal(name, value),
                 writeCallback);
     }

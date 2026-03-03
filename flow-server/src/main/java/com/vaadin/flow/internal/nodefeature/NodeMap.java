@@ -30,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import SignalBinding;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -565,8 +566,8 @@ public abstract class NodeMap extends NodeFeature {
      *             given key
      *
      */
-    protected <T extends @Nullable Object> void bindSignal(Element owner,
-            String key, Signal<T> signal,
+    protected <T extends @Nullable Object> SignalBinding<T> bindSignal(
+            Element owner, String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter,
             SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");
@@ -581,8 +582,10 @@ public abstract class NodeMap extends NodeFeature {
             throw new BindingActiveException();
         }
 
-        ElementEffect.bind(owner, signal, setter);
+        SignalBinding<T> domBinding = ElementEffect
+                .bind(owner, signal, setter);
         put(key, new SignalBinding(signal, get(key), writeCallback), false);
+        return domBinding;
     }
 
     /**

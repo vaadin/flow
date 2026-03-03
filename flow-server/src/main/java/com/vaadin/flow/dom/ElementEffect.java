@@ -171,12 +171,14 @@ public final class ElementEffect implements Serializable {
      *
      * <pre>
      * Element mySpan = new Element("span");
-     * Registration effect = ElementEffect.bind(mySpan, stringSignal,
+     * SignalBinding&lt;String&gt; binding = ElementEffect.bind(mySpan, stringSignal,
      *         Element::setText);
-     * effect.remove(); // to remove the effect when no longer needed
      *
-     * ElementEffect.bind(mySpan, stringSignal.map(value -> !value.isEmpty()),
-     *         Element::setVisible);
+     * binding.onChange(ctx -&gt; {
+     *     if (ctx.isBackgroundChange()) {
+     *         ctx.getElement().flashClass("highlight");
+     *     }
+     * });
      * </pre>
      *
      * @see Signal#unboundEffect(EffectAction)
@@ -189,16 +191,27 @@ public final class ElementEffect implements Serializable {
      * @param setter
      *            the setter function that defines how the signal value is
      *            applied to the element, must not be <code>null</code>
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @param <T>
      *            the type of the signal value
      */
-    public static <T extends @Nullable Object> Registration bind(Element owner,
-            Signal<T> signal, SerializableBiConsumer<Element, T> setter) {
-        return effect(owner, () -> {
-            setter.accept(owner, signal.get());
+    public static <T extends @Nullable Object> SignalBinding<T> bind(
+            Element owner, Signal<T> signal,
+            SerializableBiConsumer<Element, T> setter) {
+        SignalBinding<T> binding = new SignalBinding<>();
+        @SuppressWarnings("unchecked")
+        T[] previousValue = (T[]) new Object[] { signal.peek() };
+        ElementEffect effect = new ElementEffect(owner, ctx -> {
+            T newValue = signal.get();
+            T oldValue = previousValue[0];
+            setter.accept(owner, newValue);
+            binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
+                    oldValue, newValue, owner));
+            previousValue[0] = newValue;
         });
+        binding.setEffectRegistration(effect::close);
+        return binding;
     }
 
     private void enableEffect(Element owner) {

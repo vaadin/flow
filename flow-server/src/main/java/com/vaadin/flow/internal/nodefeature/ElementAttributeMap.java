@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -93,9 +94,9 @@ public class ElementAttributeMap extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             given attribute
      */
-    public void bindSignal(Element owner, String attribute,
-            Signal<String> signal) {
-        bindSignal(owner, attribute, signal,
+    public SignalBinding<String> bindSignal(Element owner,
+            String attribute, Signal<String> signal) {
+        return bindSignal(owner, attribute, signal,
                 (element, value) -> doSet(attribute, value), null);
     }
 
