@@ -45,7 +45,7 @@ public class SignalBindingFeature extends ServerSideFeature {
     public static final String CHILDREN = "children";
     public static final String ITEMS = "items";
 
-    private @Nullable Map<String, SignalBinding> values;
+    private final Map<String, SignalBinding> values = new HashMap<>();
 
     private record SignalBinding(Signal<?> signal,
             @Nullable SerializableConsumer<?> writeCallback)
@@ -88,25 +88,18 @@ public class SignalBindingFeature extends ServerSideFeature {
      */
     public void setBinding(String key, Signal<?> signal,
             @Nullable SerializableConsumer<?> writeCallback) {
-        if (values == null) {
-            values = new HashMap<>();
-        }
         values.put(key, new SignalBinding(signal, writeCallback));
     }
 
     /**
      * Checks whether there is a binding for the given key.
-     * 
+     *
      * @param key
      *            the key
      * @return true if there is a binding for the given key, false otherwise
      */
     public boolean hasBinding(String key) {
-        if (values == null) {
-            return false;
-        }
-        SignalBinding binding = values.get(key);
-        return binding != null;
+        return values.containsKey(key);
     }
 
     /**
@@ -119,9 +112,6 @@ public class SignalBindingFeature extends ServerSideFeature {
      *         prefix, false otherwise
      */
     public boolean hasAnyBinding(String keyPrefix) {
-        if (values == null) {
-            return false;
-        }
         return values.keySet().stream()
                 .anyMatch(key -> key.startsWith(keyPrefix));
     }
@@ -138,9 +128,6 @@ public class SignalBindingFeature extends ServerSideFeature {
      */
     @SuppressWarnings("unchecked")
     public <T> @Nullable SerializableConsumer<T> getWriteCallback(String key) {
-        if (values == null) {
-            return null;
-        }
         SignalBinding binding = values.get(key);
         return binding != null ? (SerializableConsumer<T>) binding.writeCallback
                 : null;
@@ -158,9 +145,6 @@ public class SignalBindingFeature extends ServerSideFeature {
     @SuppressWarnings("unchecked")
     public <T extends @Nullable Object> @Nullable Signal<T> getSignal(
             String key) {
-        if (values == null) {
-            return null;
-        }
         SignalBinding binding = values.get(key);
         return binding != null ? (Signal<T>) binding.signal : null;
     }
@@ -172,7 +156,7 @@ public class SignalBindingFeature extends ServerSideFeature {
      * value. If the signal value differs from the expected new value after the
      * callback, the revert callback will be invoked with the current signal
      * value to revert the change.
-     * 
+     *
      * @param key
      *            the key for which to update the signal value
      * @param oldValue
@@ -196,10 +180,6 @@ public class SignalBindingFeature extends ServerSideFeature {
             String key, T oldValue, T newValue,
             SerializableBiPredicate<T, T> valueEquals,
             SerializableConsumer<T> revertCallback) {
-        if (values == null) {
-            throw new IllegalStateException(
-                    "No signal bindings registered for key: " + key);
-        }
         SignalBinding binding = values.get(key);
         if (binding == null || binding.writeCallback == null) {
             // Read-only binding: revert and throw
