@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -93,5 +94,27 @@ public class ServerInfoTest {
     @Test
     public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
         assertEquals("-", ServerInfo.fetchVaadinVersion());
+    }
+
+    @Test
+    public void fetchContainerInfoDoesNotThrow() {
+        ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
+        assertTrue("Expected non-null enum value", result != null);
+    }
+
+    @Test
+    public void fetchContainerInfoDetectsContainer() {
+        ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
+        // If any known container indicator exists, detection should find it
+        if (Files.exists(Path.of("/.dockerenv"))
+                || Files.exists(Path.of("/run/.containerenv"))
+                || System.getenv("KUBERNETES_SERVICE_HOST") != null
+                || System.getenv("container") != null || Files.exists(Path.of(
+                        "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
+            assertTrue("Should detect container runtime, not NONE",
+                    result != ServerInfo.ContainerInfo.NONE);
+        } else {
+            assertEquals(ServerInfo.ContainerInfo.NONE, result);
+        }
     }
 }
