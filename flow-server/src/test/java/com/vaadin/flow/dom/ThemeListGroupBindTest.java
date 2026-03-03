@@ -149,7 +149,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsGroupBindingAndAllThemes() {
+    public void clear_throwsWhenGroupBindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -158,14 +158,8 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
 
         assertTrue(component.hasThemeName("a"));
 
-        component.getThemeNames().clear();
-
-        assertFalse(component.hasThemeName("a"));
-        assertFalse(component.hasThemeName("b"));
-
-        // Binding is cleared, signal changes have no effect
-        signal.set(List.of("c"));
-        assertFalse(component.hasThemeName("c"));
+        assertThrows(BindingActiveException.class,
+                () -> component.getThemeNames().clear());
     }
 
     @Test

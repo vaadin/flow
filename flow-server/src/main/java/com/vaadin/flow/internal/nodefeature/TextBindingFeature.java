@@ -16,7 +16,6 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -35,24 +34,13 @@ public class TextBindingFeature extends ServerSideFeature {
         super(node);
     }
 
-    private Registration registration;
     private Signal<String> textSignal;
 
-    public void setBinding(Registration registration,
-            Signal<String> textSignal) {
-        this.registration = registration;
+    public void setBinding(Signal<String> textSignal) {
         this.textSignal = textSignal;
     }
 
     public boolean hasBinding() {
-        return textSignal != null && registration != null;
-    }
-
-    public void removeBinding() {
-        if (registration != null) {
-            registration.remove();
-        }
-        registration = null;
-        textSignal = null;
+        return textSignal != null;
     }
 }

@@ -287,8 +287,8 @@ public class ElementAttributeMap extends NodeMap {
         unregisterResource(attribute);
         if (hasSignal(attribute)) {
             SignalBinding binding = (SignalBinding) super.get(attribute);
-            put(attribute, new SignalBinding(binding.signal(),
-                    binding.registration(), (String) value, null));
+            put(attribute,
+                    new SignalBinding(binding.signal(), (String) value, null));
         } else if (value == null) {
             super.remove(attribute);
         } else {

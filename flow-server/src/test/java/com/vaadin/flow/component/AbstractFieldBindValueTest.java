@@ -148,29 +148,6 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        TestInput input = new TestInput();
-        UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal, signal::set);
-        assertEquals("foo", input.getValue());
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = input.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.VALUE);
-
-        // Signal changes should no longer affect the component
-        signal.set("bar");
-        assertEquals("foo", input.getValue());
-
-        // Manual set should work and not update the signal
-        input.setValue("baz");
-        assertEquals("baz", input.getValue());
-        assertEquals("bar", signal.peek());
-    }
-
-    @Test
     public void bindValue_lazyInitSignalBindingFeature() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
