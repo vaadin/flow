@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinService;
 
-public class StylesheetContentHashUtilTest {
+public class ResourceContentHashTest {
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -57,8 +57,7 @@ public class StylesheetContentHashUtilTest {
                 .thenReturn("styles.css");
         Mockito.when(service.getStaticResource("styles.css")).thenReturn(url);
 
-        String hash = StylesheetContentHashUtil.getContentHash(service,
-                "styles.css");
+        String hash = ResourceContentHash.getContentHash(service, "styles.css");
 
         Assert.assertNotNull(hash);
         Assert.assertEquals(8, hash.length());
@@ -70,32 +69,30 @@ public class StylesheetContentHashUtilTest {
 
     @Test
     public void getContentHash_externalHttpUrl_returnsNull() {
-        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+        Assert.assertNull(ResourceContentHash.getContentHash(service,
                 "http://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalHttpsUrl_returnsNull() {
-        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+        Assert.assertNull(ResourceContentHash.getContentHash(service,
                 "https://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalUrlMixedCase_returnsNull() {
-        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
+        Assert.assertNull(ResourceContentHash.getContentHash(service,
                 "HTTPS://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_nullUrl_returnsNull() {
-        Assert.assertNull(
-                StylesheetContentHashUtil.getContentHash(service, null));
+        Assert.assertNull(ResourceContentHash.getContentHash(service, null));
     }
 
     @Test
     public void getContentHash_blankUrl_returnsNull() {
-        Assert.assertNull(
-                StylesheetContentHashUtil.getContentHash(service, "  "));
+        Assert.assertNull(ResourceContentHash.getContentHash(service, "  "));
     }
 
     @Test
@@ -106,8 +103,8 @@ public class StylesheetContentHashUtilTest {
         Mockito.when(service.getStaticResource("/missing.css"))
                 .thenReturn(null);
 
-        Assert.assertNull(StylesheetContentHashUtil.getContentHash(service,
-                "missing.css"));
+        Assert.assertNull(
+                ResourceContentHash.getContentHash(service, "missing.css"));
     }
 
     @Test
@@ -119,8 +116,7 @@ public class StylesheetContentHashUtilTest {
         Mockito.when(service.getStaticResource("bare.css")).thenReturn(null);
         Mockito.when(service.getStaticResource("/bare.css")).thenReturn(url);
 
-        String hash = StylesheetContentHashUtil.getContentHash(service,
-                "bare.css");
+        String hash = ResourceContentHash.getContentHash(service, "bare.css");
         Assert.assertNotNull(hash);
         Assert.assertEquals(8, hash.length());
     }
@@ -132,9 +128,9 @@ public class StylesheetContentHashUtilTest {
                 .thenReturn("cached.css");
         Mockito.when(service.getStaticResource("cached.css")).thenReturn(url);
 
-        String hash1 = StylesheetContentHashUtil.getContentHash(service,
+        String hash1 = ResourceContentHash.getContentHash(service,
                 "cached.css");
-        String hash2 = StylesheetContentHashUtil.getContentHash(service,
+        String hash2 = ResourceContentHash.getContentHash(service,
                 "cached.css");
 
         Assert.assertEquals(hash1, hash2);

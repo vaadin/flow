@@ -26,24 +26,25 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Computes and caches content-based hashes for stylesheet resources, enabling
- * cache-busting by appending {@code ?v-c=<hash>} to stylesheet URLs. The hash
- * changes only when file content changes, allowing aggressive browser caching.
+ * Computes and caches content-based hashes for static resources, enabling
+ * cache-busting by appending a version query parameter to resource URLs. The
+ * hash changes only when file content changes, allowing aggressive browser
+ * caching.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */
-public class StylesheetContentHashUtil {
+public class ResourceContentHash {
 
     private static final int HASH_LENGTH = 8;
 
     private static final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     private static final Logger logger = LoggerFactory
-            .getLogger(StylesheetContentHashUtil.class);
+            .getLogger(ResourceContentHash.class);
 
-    private StylesheetContentHashUtil() {
+    private ResourceContentHash() {
     }
 
     /**

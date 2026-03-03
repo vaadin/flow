@@ -43,7 +43,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
-import com.vaadin.flow.internal.StylesheetContentHashUtil;
+import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -439,7 +439,7 @@ public class AppShellRegistry implements Serializable {
         stylesheets.forEach((href, sourcePath) -> {
             String linkHref = href;
             if (config.isProductionMode()) {
-                String hash = StylesheetContentHashUtil.getContentHash(service,
+                String hash = ResourceContentHash.getContentHash(service,
                         sourcePath);
                 linkHref = UrlUtil.appendQueryParameter(href, "v-c", hash);
             }
