@@ -20,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -240,38 +239,6 @@ class HasComponentsTest {
     }
 
     @Test
-    public void bindChildren_removeBindingViaFeature_stopsUpdatesAndAllowsManualAddRemove() {
-        CurrentInstance.clearAll();
-        TestComponent container = new TestComponent();
-        new MockUI().add(container);
-
-        ListSignal<String> items = new ListSignal<>();
-        items.insertFirst("first");
-
-        container.bindChildren(items, item -> new TestComponent(item.get()));
-
-        assertEquals(1, container.getChildren().count());
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = container.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.CHILDREN);
-
-        // Signal changes should no longer affect children
-        items.insertLast("second");
-        assertEquals(1, container.getChildren().count());
-
-        // Manual add and remove should work without throwing
-        TestComponent newChild = new TestComponent("manual");
-        container.add(newChild);
-        assertEquals(2, container.getChildren().count());
-
-        Component firstChild = container.getChildren().toList().get(0);
-        container.remove(firstChild);
-        assertEquals(1, container.getChildren().count());
-    }
-
-    @Test
     public void bindChildren_throwsIfContainerNotEmpty() {
         CurrentInstance.clearAll();
         TestComponent container = new TestComponent();
@@ -424,8 +391,7 @@ class HasComponentsTest {
 
         TextBindingFeature feature = container.getElement().getNode()
                 .getFeature(TextBindingFeature.class);
-        feature.setBinding(() -> {
-        }, new ValueSignal<>(""));
+        feature.setBinding(new ValueSignal<>(""));
 
         assertThrows(BindingActiveException.class,
                 () -> container.remove(child),
@@ -457,8 +423,7 @@ class HasComponentsTest {
 
         TextBindingFeature feature = container.getElement().getNode()
                 .getFeature(TextBindingFeature.class);
-        feature.setBinding(() -> {
-        }, new ValueSignal<>(""));
+        feature.setBinding(new ValueSignal<>(""));
 
         ListSignal<String> items = new ListSignal<>();
         assertThrows(BindingActiveException.class,
@@ -471,8 +436,7 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         TextBindingFeature feature = container.getElement().getNode()
                 .getFeature(TextBindingFeature.class);
-        feature.setBinding(() -> {
-        }, new ValueSignal<>(""));
+        feature.setBinding(new ValueSignal<>(""));
         return container;
     }
 

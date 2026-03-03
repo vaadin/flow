@@ -302,7 +302,7 @@ public interface HasComponents extends HasElement, HasEnabled {
         Objects.requireNonNull(list, "Signal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
-        var binding = ElementEffect.bindChildren(self.getElement(), list,
+        ElementEffect.bindChildren(self.getElement(), list,
                 // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
@@ -310,7 +310,7 @@ public interface HasComponents extends HasElement, HasEnabled {
                         .orElseThrow(() -> new IllegalStateException(
                                 "HasComponents.bindChildren childFactory must not return null")));
 
-        feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
+        feature.setBinding(SignalBindingFeature.CHILDREN, list);
     }
 
     private void throwIfTextBindingIsActive(String methodName) {

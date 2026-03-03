@@ -75,8 +75,8 @@ class HasTextTest {
     public void setText_throwsWhenChildrenBindingActive() {
         SignalBindingFeature feature = hasText.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
-        feature.setBinding(SignalBindingFeature.CHILDREN, () -> {
-        }, new ValueSignal<>(""));
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
 
         assertThrows(BindingActiveException.class,
                 () -> hasText.setText("test"));
@@ -86,8 +86,8 @@ class HasTextTest {
     public void bindText_throwsWhenChildrenBindingActive() {
         SignalBindingFeature feature = hasText.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
-        feature.setBinding(SignalBindingFeature.CHILDREN, () -> {
-        }, new ValueSignal<>(""));
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
 
         assertThrows(BindingActiveException.class,
                 () -> hasText.bindText(new ValueSignal<>("")));
