@@ -113,7 +113,7 @@ public class ServerInfoTest {
                 || System.getenv("container") != null || Files.exists(Path.of(
                         "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
             assertTrue("Should detect container runtime, not return dash",
-                    !"-".equals(result));
+                    !ServerInfo.ContainerInfo.NONE.getValue().equals(result));
         }
     }
 }

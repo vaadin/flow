@@ -31,6 +31,33 @@ import com.vaadin.flow.server.Version;
  */
 public class ServerInfo implements Serializable {
 
+    /**
+     * Known container runtime types that can be detected.
+     */
+    public enum ContainerInfo {
+        DOCKER("docker"),
+        PODMAN("podman"),
+        KUBERNETES("kubernetes"),
+        APPLE("apple"),
+        LXC("lxc"),
+        NONE("-");
+
+        private final String value;
+
+        ContainerInfo(String value) {
+            this.value = value;
+        }
+
+        /**
+         * Returns the string value reported in usage statistics.
+         *
+         * @return the container runtime identifier
+         */
+        public String getValue() {
+            return value;
+        }
+    }
+
     public record NameAndVersion(String name,
             String version) implements Serializable {
     };
@@ -89,17 +116,17 @@ public class ServerInfo implements Serializable {
     public static String fetchContainerInfo() {
         // Docker creates this file inside containers
         if (Files.exists(Path.of("/.dockerenv"))) {
-            return "docker";
+            return ContainerInfo.DOCKER.getValue();
         }
 
         // Podman creates this file inside containers
         if (Files.exists(Path.of("/run/.containerenv"))) {
-            return "podman";
+            return ContainerInfo.PODMAN.getValue();
         }
 
         // Kubernetes sets this env var in all pods
         if (System.getenv("KUBERNETES_SERVICE_HOST") != null) {
-            return "kubernetes";
+            return ContainerInfo.KUBERNETES.getValue();
         }
 
         // systemd-nspawn and some runtimes set the "container" env var
@@ -117,7 +144,7 @@ public class ServerInfo implements Serializable {
             if (Files.exists(hypervisorCompat)) {
                 String compatible = Files.readString(hypervisorCompat).trim();
                 if (compatible.contains("apple")) {
-                    return "apple";
+                    return ContainerInfo.APPLE.getValue();
                 }
             }
         } catch (IOException e) {
@@ -130,20 +157,20 @@ public class ServerInfo implements Serializable {
             if (Files.exists(cgroupPath)) {
                 String content = Files.readString(cgroupPath);
                 if (content.contains("docker")) {
-                    return "docker";
+                    return ContainerInfo.DOCKER.getValue();
                 }
                 if (content.contains("lxc")) {
-                    return "lxc";
+                    return ContainerInfo.LXC.getValue();
                 }
                 if (content.contains("kubepods")) {
-                    return "kubernetes";
+                    return ContainerInfo.KUBERNETES.getValue();
                 }
             }
         } catch (IOException e) {
             // Ignore read errors
         }
 
-        return "-";
+        return ContainerInfo.NONE.getValue();
     }
 
     public List<NameAndVersion> getVersions() {
