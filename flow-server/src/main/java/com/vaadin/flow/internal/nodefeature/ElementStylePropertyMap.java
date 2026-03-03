@@ -22,6 +22,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStyle;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.signals.BindingActiveException;
 
 /**
  * Map for element style values.
@@ -96,13 +97,10 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
     @Override
     public void removeAllProperties() {
-        // Dispose of any effect registrations and forget bindings
         for (String key : getPropertyNames().toList()) {
             Serializable raw = super.get(key);
-            if (raw instanceof SignalBinding binding) {
-                if (binding.registration() != null) {
-                    binding.registration().remove();
-                }
+            if (raw instanceof SignalBinding) {
+                throw new BindingActiveException();
             }
         }
         super.removeAllProperties();
