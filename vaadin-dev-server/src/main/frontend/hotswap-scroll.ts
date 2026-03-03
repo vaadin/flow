@@ -1,5 +1,9 @@
 export type ScrollSnapshot = Record<string, { scrollTop: number; scrollLeft: number }>;
 
+// Matches ROOT_NODE_ID in Flow.ts / StateTree.java
+const ROOT_NODE_ID = 1;
+const REFRESH_UI_EVENT = 'vaadin-refresh-ui';
+
 /**
  * Builds a CSS selector path for an element. Uses the element's ID if present,
  * otherwise walks up the DOM building nth-of-type selectors, stopping at the
@@ -28,6 +32,13 @@ function getElementPath(el: Element): string {
   return parts.length > 0 ? parts.join(' > ') : '';
 }
 
+function getFlowClients(): any[] {
+  const anyVaadin = (window as any).Vaadin;
+  return Object.keys(anyVaadin?.Flow?.clients || {})
+    .filter((key) => key !== 'TypeScript')
+    .map((id) => anyVaadin.Flow.clients[id]);
+}
+
 /**
  * Captures scroll positions of the window and all scrolled elements.
  * Elements are keyed by CSS selector path so they can be found after DOM rebuild.
@@ -49,11 +60,6 @@ export function captureScrollPositions(): ScrollSnapshot {
 }
 
 /**
- * Restores scroll positions after a hot-swap UI refresh completes.
- * Polls Flow client isActive() to wait until UIDL processing is done,
- * then uses requestAnimationFrame to restore all captured scroll positions.
- */
-/**
  * Captures scroll positions, sends a ui-refresh event to all Flow clients,
  * and restores scroll positions once the clients are idle.
  * Used by both the Push-based (vaadin-refresh-ui event) and WebSocket-based
@@ -61,15 +67,11 @@ export function captureScrollPositions(): ScrollSnapshot {
  */
 export function refreshWithScrollPreservation(fullRefresh: boolean): void {
   const snapshot = captureScrollPositions();
-  const anyVaadin = (window as any).Vaadin;
-  Object.keys(anyVaadin?.Flow?.clients || {})
-    .filter((key) => key !== 'TypeScript')
-    .map((id) => anyVaadin.Flow.clients[id])
-    .forEach((client: any) => {
-      if (client.sendEventMessage) {
-        client.sendEventMessage(1, 'ui-refresh', { fullRefresh });
-      }
-    });
+  getFlowClients().forEach((client: any) => {
+    if (client.sendEventMessage) {
+      client.sendEventMessage(ROOT_NODE_ID, 'ui-refresh', { fullRefresh });
+    }
+  });
   restoreScrollPositions(snapshot);
 }
 
@@ -84,35 +86,48 @@ export function registerRefreshUIHandler(): void {
     return;
   }
   refreshUIHandlerRegistered = true;
-  window.addEventListener('vaadin-refresh-ui', (ev: any) => {
+  window.addEventListener(REFRESH_UI_EVENT, (ev: any) => {
     refreshWithScrollPreservation(ev.detail?.fullRefresh === true);
   });
 }
 
+/**
+ * Restores scroll positions after a hot-swap UI refresh completes.
+ * Polls Flow client isActive() to wait until UIDL processing is done,
+ * then uses requestAnimationFrame to restore all captured scroll positions.
+ */
 export function restoreScrollPositions(snapshot: ScrollSnapshot): void {
   if (Object.keys(snapshot).length === 0) {
     return;
   }
-  const anyVaadin = (window as any).Vaadin;
-  const poll = () => {
-    const clients = Object.keys(anyVaadin?.Flow?.clients || {})
-      .filter((key) => key !== 'TypeScript')
-      .map((id) => anyVaadin.Flow.clients[id]);
-    const allIdle = clients.length > 0 && clients.every((c: any) => !c.isActive());
-    if (allIdle) {
-      requestAnimationFrame(() => {
-        for (const [key, pos] of Object.entries(snapshot)) {
-          if (key === '__window__') {
-            window.scrollTo(pos.scrollLeft, pos.scrollTop);
-          } else {
-            const el = document.querySelector(key);
-            if (el) {
-              el.scrollTop = pos.scrollTop;
-              el.scrollLeft = pos.scrollLeft;
-            }
+  const MAX_POLL_ATTEMPTS = 200; // 200 * 50ms = 10 seconds
+  let attempts = 0;
+
+  const applyScroll = () => {
+    requestAnimationFrame(() => {
+      for (const [key, pos] of Object.entries(snapshot)) {
+        if (key === '__window__') {
+          window.scrollTo(pos.scrollLeft, pos.scrollTop);
+        } else {
+          const el = document.querySelector(key);
+          if (el) {
+            el.scrollTop = pos.scrollTop;
+            el.scrollLeft = pos.scrollLeft;
           }
         }
-      });
+      }
+    });
+  };
+
+  const poll = () => {
+    const clients = getFlowClients();
+    if (clients.length === 0) {
+      applyScroll();
+      return;
+    }
+    const allIdle = clients.every((c: any) => !c.isActive());
+    if (allIdle || ++attempts >= MAX_POLL_ATTEMPTS) {
+      applyScroll();
     } else {
       setTimeout(poll, 50);
     }
