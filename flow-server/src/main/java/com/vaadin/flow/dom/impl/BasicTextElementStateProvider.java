@@ -54,9 +54,9 @@ public class BasicTextElementStateProvider
         assert text != null;
 
         StateNode node = new StateNode(
-                List.of(TextNodeMap.class, TextBindingFeature.class,
-                        SignalBindingFeature.class),
-                ComponentMapping.class, ReturnChannelMap.class);
+                List.of(TextNodeMap.class, TextBindingFeature.class),
+                ComponentMapping.class, ReturnChannelMap.class,
+                SignalBindingFeature.class);
         node.getFeature(TextNodeMap.class).setText(text);
 
         return node;
