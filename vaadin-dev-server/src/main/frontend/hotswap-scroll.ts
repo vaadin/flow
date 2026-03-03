@@ -121,11 +121,7 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot): void {
 
   const poll = () => {
     const clients = getFlowClients();
-    if (clients.length === 0) {
-      applyScroll();
-      return;
-    }
-    const allIdle = clients.every((c: any) => !c.isActive());
+    const allIdle = clients.length > 0 && clients.every((c: any) => !c.isActive());
     if (allIdle || ++attempts >= MAX_POLL_ATTEMPTS) {
       applyScroll();
     } else {
