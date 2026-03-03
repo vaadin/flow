@@ -108,6 +108,22 @@ public class ServerInfo implements Serializable {
             return containerEnv;
         }
 
+        // Apple Containers run each container in a lightweight VM using
+        // Apple's Virtualization.framework. The device tree hypervisor node
+        // identifies it with "apple" in the compatible string.
+        try {
+            Path hypervisorCompat = Path
+                    .of("/sys/firmware/devicetree/base/hypervisor/compatible");
+            if (Files.exists(hypervisorCompat)) {
+                String compatible = Files.readString(hypervisorCompat).trim();
+                if (compatible.contains("apple")) {
+                    return "apple";
+                }
+            }
+        } catch (IOException e) {
+            // Ignore read errors
+        }
+
         // Fall back to scanning /proc/self/cgroup for container indicators
         try {
             Path cgroupPath = Path.of("/proc/self/cgroup");

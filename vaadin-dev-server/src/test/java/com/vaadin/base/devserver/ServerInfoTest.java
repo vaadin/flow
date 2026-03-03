@@ -107,13 +107,12 @@ public class ServerInfoTest {
     @Test
     public void fetchContainerInfoDetectsContainer() {
         String result = ServerInfo.fetchContainerInfo();
-        // This test environment runs inside a Docker container,
-        // so container detection should find it
-        if (java.nio.file.Files.exists(java.nio.file.Path.of("/.dockerenv"))
-                || java.nio.file.Files
-                        .exists(java.nio.file.Path.of("/run/.containerenv"))
+        // If any known container indicator exists, detection should find it
+        if (Files.exists(Path.of("/.dockerenv"))
+                || Files.exists(Path.of("/run/.containerenv"))
                 || System.getenv("KUBERNETES_SERVICE_HOST") != null
-                || System.getenv("container") != null) {
+                || System.getenv("container") != null || Files.exists(Path.of(
+                        "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
             assertTrue("Should detect container runtime",
                     result != null && !result.isEmpty());
         }
