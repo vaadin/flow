@@ -113,6 +113,8 @@ public class ServerInfoTest {
                         "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
             assertTrue("Should detect container runtime, not NONE",
                     result != ServerInfo.ContainerInfo.NONE);
+        } else {
+            assertEquals(ServerInfo.ContainerInfo.NONE, result);
         }
     }
 }
