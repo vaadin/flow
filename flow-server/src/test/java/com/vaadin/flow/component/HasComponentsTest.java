@@ -409,15 +409,44 @@ class HasComponentsTest {
 
     @Test
     public void textBindingActive_addThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent()),
+                "add should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_removeThrows() {
         TestComponent container = new TestComponent();
+        TestComponent child = new TestComponent();
+        container.add(child);
+
         TextBindingFeature feature = container.getElement().getNode()
                 .getFeature(TextBindingFeature.class);
         feature.setBinding(() -> {
         }, new ValueSignal<>(""));
 
         assertThrows(BindingActiveException.class,
-                () -> container.add(new TestComponent()),
-                "add should throw while text binding is active");
+                () -> container.remove(child),
+                "remove should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_removeAllThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class, container::removeAll,
+                "removeAll should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_addComponentAtIndexThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.addComponentAtIndex(0, new TestComponent()),
+                "addComponentAtIndex should throw while text binding is active");
     }
 
     @Test
@@ -436,6 +465,15 @@ class HasComponentsTest {
                 () -> container.bindChildren(items,
                         item -> new TestComponent(item.get())),
                 "bindChildren should throw while text binding is active");
+    }
+
+    private TestComponent createContainerWithTextBinding() {
+        TestComponent container = new TestComponent();
+        TextBindingFeature feature = container.getElement().getNode()
+                .getFeature(TextBindingFeature.class);
+        feature.setBinding(() -> {
+        }, new ValueSignal<>(""));
+        return container;
     }
 
 }
