@@ -136,7 +136,7 @@ public class DevModeUsageStatistics {
             globalData.setValue(StatisticsConstants.FIELD_JVM,
                     ServerInfo.fetchJavaVersion());
             globalData.setValue(StatisticsConstants.FIELD_CONTAINER,
-                    ServerInfo.fetchContainerInfo());
+                    ServerInfo.fetchContainerInfo().getValue());
             globalData.setValue(StatisticsConstants.FIELD_PROKEY,
                     ProjectHelpers.getProKey());
             globalData.setValue(StatisticsConstants.FIELD_USER_KEY,

@@ -98,22 +98,21 @@ public class ServerInfoTest {
 
     @Test
     public void fetchContainerInfoDoesNotThrow() {
-        // Should return a non-empty string, never null or empty
-        String result = ServerInfo.fetchContainerInfo();
-        assertTrue("Expected non-empty string", !result.isEmpty());
+        ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
+        assertTrue("Expected non-null enum value", result != null);
     }
 
     @Test
     public void fetchContainerInfoDetectsContainer() {
-        String result = ServerInfo.fetchContainerInfo();
+        ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
         // If any known container indicator exists, detection should find it
         if (Files.exists(Path.of("/.dockerenv"))
                 || Files.exists(Path.of("/run/.containerenv"))
                 || System.getenv("KUBERNETES_SERVICE_HOST") != null
                 || System.getenv("container") != null || Files.exists(Path.of(
                         "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
-            assertTrue("Should detect container runtime, not return dash",
-                    !ServerInfo.ContainerInfo.NONE.getValue().equals(result));
+            assertTrue("Should detect container runtime, not NONE",
+                    result != ServerInfo.ContainerInfo.NONE);
         }
     }
 }
