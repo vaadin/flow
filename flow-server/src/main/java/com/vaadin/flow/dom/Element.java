@@ -1363,9 +1363,9 @@ public class Element extends Node<Element> {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(this, signal,
+        ElementEffect.bind(this, signal,
                 (element, value) -> setTextContent(value));
-        feature.setBinding(registration, signal);
+        feature.setBinding(signal);
     }
 
     /**
@@ -1932,10 +1932,9 @@ public class Element extends Node<Element> {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(this, enabledSignal,
+        ElementEffect.bind(this, enabledSignal,
                 (element, value) -> setEnabledInternal(value));
-        feature.setBinding(SignalBindingFeature.ENABLED, registration,
-                enabledSignal);
+        feature.setBinding(SignalBindingFeature.ENABLED, enabledSignal);
     }
 
     private void setEnabledInternal(final Boolean enabled) {

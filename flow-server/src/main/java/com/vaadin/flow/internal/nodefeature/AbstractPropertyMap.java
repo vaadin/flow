@@ -64,8 +64,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
 
         if (hasSignal(name)) {
             SignalBinding b = (SignalBinding) super.get(name);
-            put(name, new SignalBinding(b.signal(), b.registration(), value,
-                    b.writeCallback()), emitChange);
+            put(name, new SignalBinding(b.signal(), value, b.writeCallback()),
+                    emitChange);
         } else {
             put(name, value, emitChange);
         }
@@ -143,8 +143,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {
             SignalBinding b = (SignalBinding) super.get(key);
-            super.updateFromClient(key, new SignalBinding(b.signal(),
-                    b.registration(), value, b.writeCallback()));
+            super.updateFromClient(key,
+                    new SignalBinding(b.signal(), value, b.writeCallback()));
         } else {
             super.updateFromClient(key, value);
         }

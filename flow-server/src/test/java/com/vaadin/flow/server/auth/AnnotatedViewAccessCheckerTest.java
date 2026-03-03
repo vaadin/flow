@@ -637,9 +637,13 @@ class AnnotatedViewAccessCheckerTest {
                     false);
             viewAccessChecker.check(context);
         });
-        assertTrue(logOutput.contains("WARN"),
+        assertTrue(
+
+                logOutput.contains("WARN"),
                 "Expected WARN log for misconfiguration, got: " + logOutput);
-        assertTrue(logOutput.contains("configuration error"),
+        assertTrue(
+
+                logOutput.contains("configuration error"),
                 "Expected 'configuration error' in log, got: " + logOutput);
     }
 
