@@ -223,7 +223,7 @@ public final class DataViewUtils {
         List<Registration> innerEffectRegistrations = new ArrayList<>();
 
         // Outer effect: tracks changes to the list structure
-        Registration outerEffect = Signal.effect(component, () -> {
+        Signal.effect(component, () -> {
             List<? extends Signal<T>> currentSignals = Objects
                     .requireNonNull(itemsSignal.get());
 
@@ -243,8 +243,7 @@ public final class DataViewUtils {
         });
 
         // Store the binding in SignalBindingFeature to track active binding
-        bindingFeature.setBinding(SignalBindingFeature.ITEMS, outerEffect,
-                itemsSignal);
+        bindingFeature.setBinding(SignalBindingFeature.ITEMS, itemsSignal);
 
         return dataView;
     }

@@ -157,7 +157,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsGroupBindingAndAllClasses() {
+    public void clear_throwsWhenGroupBindingActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -166,14 +166,8 @@ class ClassListGroupBindTest extends SignalsUnitTest {
 
         assertTrue(element.getClassList().contains("a"));
 
-        element.getClassList().clear();
-
-        assertFalse(element.getClassList().contains("a"));
-        assertFalse(element.getClassList().contains("b"));
-
-        // Binding is cleared, signal changes have no effect
-        signal.set(List.of("c"));
-        assertFalse(element.getClassList().contains("c"));
+        assertThrows(BindingActiveException.class,
+                () -> element.getClassList().clear());
     }
 
     @Test
