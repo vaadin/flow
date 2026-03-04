@@ -1750,7 +1750,8 @@ public class UI extends Component
      * value has no effect on the application. It is maintained internally and
      * will be removed in a future version.
      *
-     * @deprecated Use {@link #getWrapperElement()} instead.
+     * @deprecated Use {@link UIInternals#getWrapperElement()} through
+     *             {@code getInternals().getWrapperElement()} instead.
      */
     @Deprecated(forRemoval = true)
     public Element wrapperElement;
@@ -1879,15 +1880,6 @@ public class UI extends Component
             super(source, true);
             this.refreshRouteChain = refreshRouteChain;
         }
-    }
-
-    /**
-     * Get outlet element reference wrapper if set.
-     *
-     * @return wrapperElement if set else {@code null}
-     */
-    public Element getWrapperElement() {
-        return getInternals().getWrapperElement();
     }
 
     /**
