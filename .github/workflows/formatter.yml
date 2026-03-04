@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
     # spotless available in 25.x
-    branches: [main]
+    branches: [25.1]
 
 # Cancel previous runs if a new one is triggered
 concurrency:
