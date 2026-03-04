@@ -40,16 +40,9 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
         getDriver()
                 .get(getRootURL() + "/view/" + CssLoadingView.class.getName());
         waitForDevServer();
-
-        // In production mode, data-id keeps the original annotation value
-        // including the context:// prefix. Use findElements to avoid throwing
-        // NoSuchElementException in dev mode where the prefix is stripped.
-        List<WebElement> auraLinks = getDriver().findElements(By.cssSelector(
-                "link[data-id='appShell-context://aura/fake-aura.css']"));
         Assume.assumeTrue(
                 "Skipping: cache-busting is only applied in production mode",
-                !auraLinks.isEmpty() && HASH_PARAM_PATTERN
-                        .matcher(auraLinks.get(0).getAttribute("href")).find());
+                isProductionMode());
 
         // Verify context:// stylesheet also has cache-busting hash
         assertLinkHasHash("appShell-context://styles.css");
@@ -60,18 +53,14 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
         getDriver()
                 .get(getRootURL() + "/view/" + CssLoadingView.class.getName());
         waitForDevServer();
+        Assume.assumeTrue(
+                "Skipping: cache-busting is only applied in production mode",
+                isProductionMode());
 
         List<WebElement> appShellLinks = getDriver().findElements(
                 By.cssSelector("link[rel='stylesheet'][data-id^='appShell-']"));
         Assert.assertFalse("Expected at least one appShell stylesheet link",
                 appShellLinks.isEmpty());
-
-        // Check if production mode by looking at the first link
-        Assume.assumeTrue(
-                "Skipping: cache-busting is only applied in production mode",
-                HASH_PARAM_PATTERN
-                        .matcher(appShellLinks.get(0).getAttribute("href"))
-                        .find());
 
         for (WebElement link : appShellLinks) {
             String href = link.getAttribute("href");
@@ -91,6 +80,11 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
                             + "' should have ?v-c=<hash> but href was: " + href,
                     HASH_PARAM_PATTERN.matcher(href).find());
         }
+    }
+
+    private boolean isProductionMode() {
+        return getDriver().findElements(By.tagName("vaadin-dev-tools"))
+                .isEmpty();
     }
 
     private void assertLinkHasHash(String dataId) {
