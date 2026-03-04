@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -123,7 +124,9 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(4, links.size());
 
-        Pattern hashPattern = Pattern.compile("\\?v=[0-9a-f]{8}$");
+        Pattern hashPattern = Pattern
+                .compile("\\?" + ApplicationConstants.CONTENT_HASH_PARAMETER
+                        + "=[0-9a-f]{8}$");
 
         // In production mode, data-file-path uses the original annotation
         // value (no stripping like dev mode does)
@@ -175,9 +178,10 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        // The links should still be present, just without ?v= hash
+        // The links should still be present, just without hash
         for (Element link : links) {
-            assertFalse(link.attr("href").contains("?v="),
+            assertFalse(link.attr("href").contains(
+                    "?" + ApplicationConstants.CONTENT_HASH_PARAMETER + "="),
                     "Missing resource href should not have hash: "
                             + link.attr("href"));
         }

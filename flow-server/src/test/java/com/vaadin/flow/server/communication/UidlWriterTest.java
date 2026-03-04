@@ -386,7 +386,8 @@ class UidlWriterTest {
                 .findFirst().orElse(null);
         assertNotNull(eagerCss, "Should have an eager stylesheet dependency");
         String eagerUrl = eagerCss.get(Dependency.KEY_URL).textValue();
-        assertTrue(eagerUrl.matches("eager\\.css\\?v=[0-9a-f]{8}"),
+        assertTrue(eagerUrl.matches("eager\\.css\\?"
+                + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
                 "Eager stylesheet URL should contain hash: " + eagerUrl);
 
         // LAZY stylesheet should have hash
@@ -399,7 +400,8 @@ class UidlWriterTest {
                 .findFirst().orElse(null);
         assertNotNull(lazyCss, "Should have a lazy stylesheet dependency");
         String lazyUrl = lazyCss.get(Dependency.KEY_URL).textValue();
-        assertTrue(lazyUrl.matches("lazy\\.css\\?v=[0-9a-f]{8}"),
+        assertTrue(lazyUrl.matches("lazy\\.css\\?"
+                + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
                 "Lazy stylesheet URL should contain hash: " + lazyUrl);
 
         // INLINE dependency should NOT have a URL (it has contents instead)
