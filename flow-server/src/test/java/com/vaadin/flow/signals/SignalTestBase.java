@@ -69,21 +69,13 @@ public class SignalTestBase {
     private static Runnable environmentRegistration;
 
     @BeforeAll
-    static void setupTransactionFallback() {
+    static void setup() {
         Transaction.setTransactionFallback(() -> {
             SerializableSupplier<Transaction> supplier = currentTransactionFallback
                     .get();
             return supplier != null ? supplier.get() : null;
         });
-    }
 
-    @AfterAll
-    static void teardownTransactionFallback() {
-        Transaction.setTransactionFallback(null);
-    }
-
-    @BeforeAll
-    static void setupEnvironment() {
         environmentRegistration = SignalEnvironment
                 .register(new SignalEnvironment() {
                     @Override
@@ -104,7 +96,8 @@ public class SignalTestBase {
     }
 
     @AfterAll
-    static void closeEnvironment() {
+    static void teardown() {
+        Transaction.setTransactionFallback(null);
         environmentRegistration.run();
     }
 
