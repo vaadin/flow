@@ -251,11 +251,9 @@ public class UidlWriter implements Serializable {
                 .getService().getDeploymentConfiguration().isProductionMode()) {
             String hash = ResourceContentHash
                     .getContentHash(context.getService(), dependency.getUrl());
-            if (hash != null) {
-                dependencyJson.put(Dependency.KEY_URL,
-                        UrlUtil.appendQueryParameter(dependency.getUrl(), "v-c",
-                                hash));
-            }
+            dependencyJson.put(Dependency.KEY_URL,
+                    UrlUtil.appendQueryParameter(dependency.getUrl(),
+                            ApplicationConstants.CONTENT_HASH_PARAMETER, hash));
         }
         return dependencyJson;
     }

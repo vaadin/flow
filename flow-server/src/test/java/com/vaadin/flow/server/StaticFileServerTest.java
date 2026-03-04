@@ -71,6 +71,7 @@ import com.vaadin.flow.WarURLStreamHandlerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.TestUtil;
 
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -798,7 +799,9 @@ class StaticFileServerTest implements Serializable {
     @Test
     public void productionMode_writeCacheHeaders_withVersionParam_oneYearCache() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(request.getParameter("v-c")).thenReturn("abcd1234");
+        Mockito.when(request
+                .getParameter(ApplicationConstants.CONTENT_HASH_PARAMETER))
+                .thenReturn("abcd1234");
 
         fileServer.writeCacheHeaders("/folder/myfile.css", request, response);
         assertEquals("max-age=31536000, immutable",

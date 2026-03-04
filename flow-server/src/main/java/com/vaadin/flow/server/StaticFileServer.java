@@ -50,6 +50,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -579,7 +580,8 @@ public class StaticFileServer implements StaticFileHandler {
         String cacheControl;
         if (!deploymentConfiguration.isProductionMode()) {
             cacheControl = "no-cache";
-        } else if (request != null && request.getParameter("v-c") != null) {
+        } else if (request != null && request.getParameter(
+                ApplicationConstants.CONTENT_HASH_PARAMETER) != null) {
             cacheControl = "max-age=31536000, immutable";
         } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;

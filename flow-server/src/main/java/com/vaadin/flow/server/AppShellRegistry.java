@@ -441,7 +441,8 @@ public class AppShellRegistry implements Serializable {
             if (config.isProductionMode()) {
                 String hash = ResourceContentHash.getContentHash(service,
                         sourcePath);
-                linkHref = UrlUtil.appendQueryParameter(href, "v-c", hash);
+                linkHref = UrlUtil.appendQueryParameter(href,
+                        ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
             }
             Map<String, String> attributes = Map.of("rel", "stylesheet",
                     "data-file-path", sourcePath, "data-id",
