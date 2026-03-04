@@ -63,7 +63,6 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SessionInitListener;
-import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -1423,24 +1422,6 @@ public class HotswapperTest {
     }
 
     @Test
-    public void uiInit_registersUIRefreshClientSideEvent() {
-        VaadinSession session = createMockVaadinSession();
-        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
-                MyLayoutWithChild.class);
-
-        try {
-            session.lock();
-            UIInitEvent event = new UIInitEvent(ui, service);
-            hotswapper.uiInit(event);
-            Assert.assertTrue(
-                    "Expected Hotswapper to register client side refresh event listener ",
-                    ui.refreshUIClientListenerRegistered);
-        } finally {
-            session.unlock();
-        }
-    }
-
-    @Test
     public void instanceCreation_hotswappersInitialized() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         new Hotswapper(service);
@@ -1638,10 +1619,7 @@ public class HotswapperTest {
         private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
                 .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
                         + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
-        private static final String ADD_CLIENT_UI_REFRESH_LISTENER = "window.addEventListener('"
-                + REFRESH_EVENT_NAME + "',";
         private Boolean refreshRouteChainRequested;
-        private boolean refreshUIClientListenerRegistered;
 
         private final Page pageSpy;
 
@@ -1656,9 +1634,6 @@ public class HotswapperTest {
                 if (matcher.matches()) {
                     refreshRouteChainRequested = Boolean
                             .parseBoolean(matcher.group(1));
-                } else if (expression
-                        .contains(ADD_CLIENT_UI_REFRESH_LISTENER)) {
-                    refreshUIClientListenerRegistered = true;
                 }
                 return null;
             }).when(pageSpy).executeJs(Mockito.anyString(),

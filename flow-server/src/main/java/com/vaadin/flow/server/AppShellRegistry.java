@@ -242,7 +242,7 @@ public class AppShellRegistry implements Serializable {
             String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                     + AURA_STYLESHEET;
             VaadinService service = request.getService();
-            if (service.isResourceAvailable(AURA_STYLESHEET)) {
+            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
                 String auraHref = resolveStyleSheetHref(defaultStylesheet,
                         request);
                 if (auraHref != null) {

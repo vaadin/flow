@@ -23,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.function.SignalMapper;
@@ -159,6 +160,40 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      */
     static <C extends Component> Registration effect(C owner,
             EffectAction effectFunction) {
+        return ElementEffect.effect(owner.getElement(), effectFunction);
+    }
+
+    /**
+     * Creates a context-aware component-scoped signal effect. The effect is
+     * enabled when the component is attached and automatically disabled when it
+     * is detached. The action receives an {@link EffectContext} providing
+     * information about why the effect is running (initial render, effect
+     * owner's request, or background change).
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Signal.effect(this, ctx -&gt; {
+     *     span.getElement().setText("$" + price.get());
+     *     if (ctx.isBackgroundChange()) {
+     *         span.getElement().flashClass("highlight");
+     *     }
+     * });
+     * </pre>
+     *
+     * @param <C>
+     *            the type of the component
+     * @param owner
+     *            the owner component for which the effect is applied, must not
+     *            be <code>null</code>
+     * @param effectFunction
+     *            the context-aware effect function, must not be
+     *            <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    static <C extends Component> Registration effect(C owner,
+            ContextualEffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 

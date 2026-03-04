@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.1-SNAPSHOT</version>
+  <version>25.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -111,7 +111,7 @@
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.12</maven.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
-    <spotless.plugin.version>3.2.1</spotless.plugin.version>
+    <spotless.plugin.version>3.3.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
 
@@ -201,7 +201,7 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.5</version>
+        <version>1.18.7</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
@@ -431,6 +431,7 @@
                 <Implementation-Version>${project.version}</Implementation-Version>
               </manifestEntries>
             </archive>
+            <packagingExcludes>%regex[WEB-INF/lib/flow-build-tools-.*(?&lt;!-shaded)\.jar]</packagingExcludes>
           </configuration>
         </plugin>
         <plugin>
