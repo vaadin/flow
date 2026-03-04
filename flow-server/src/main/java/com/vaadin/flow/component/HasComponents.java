@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Effect;
@@ -62,7 +63,6 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Component... components) {
-        throwIfChildrenBindingIsActive("add");
         Objects.requireNonNull(components, "Components should not be null");
         add(Arrays.asList(components));
     }
@@ -77,8 +77,18 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Collection<Component> components) {
-        throwIfChildrenBindingIsActive("add");
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("add");
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to add cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "add is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         components.stream()
                 .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
@@ -92,8 +102,24 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the text to add, not <code>null</code>
      */
     default void add(String text) {
+        throwIfTextBindingIsActive("add");
         throwIfChildrenBindingIsActive("add");
         add(new Text(text));
+    }
+
+    /**
+     * Checks whether a children binding is currently active on this component's
+     * element.
+     *
+     * @return {@code true} if a children binding is active, {@code false}
+     *         otherwise
+     */
+    private boolean hasChildrenBinding() {
+        return getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .map(feature -> feature
+                        .hasBinding(SignalBindingFeature.CHILDREN))
+                .orElse(false);
     }
 
     /**
@@ -106,7 +132,6 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             this component
      */
     default void remove(Component... components) {
-        throwIfChildrenBindingIsActive("remove");
         Objects.requireNonNull(components, "Components should not be null");
         remove(Arrays.asList(components));
     }
@@ -121,8 +146,18 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             this component
      */
     default void remove(Collection<Component> components) {
-        throwIfChildrenBindingIsActive("remove");
         Objects.requireNonNull(components, "Components should not be null");
+        throwIfTextBindingIsActive("remove");
+        if (hasChildrenBinding()) {
+            for (Component component : components) {
+                Objects.requireNonNull(component,
+                        "Component to remove cannot be null");
+                if (component.getElement().getAttribute("slot") == null) {
+                    throw new BindingActiveException(
+                            "remove is not allowed for default-slot components while a binding for children exists.");
+                }
+            }
+        }
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
@@ -151,6 +186,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * children added only at the client-side.
      */
     default void removeAll() {
+        throwIfTextBindingIsActive("removeAll");
         throwIfChildrenBindingIsActive("removeAll");
         getElement().removeAllChildren();
     }
@@ -169,8 +205,13 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the component to add, value should not be null
      */
     default void addComponentAtIndex(int index, Component component) {
-        throwIfChildrenBindingIsActive("addComponentAtIndex");
         Objects.requireNonNull(component, "Component should not be null");
+        throwIfTextBindingIsActive("addComponentAtIndex");
+        if (hasChildrenBinding()
+                && component.getElement().getAttribute("slot") == null) {
+            throw new BindingActiveException(
+                    "addComponentAtIndex is not allowed for default-slot components while a binding for children exists.");
+        }
         if (index < 0) {
             throw new IllegalArgumentException(
                     "Cannot add a component with a negative index");
@@ -190,7 +231,6 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the component to add, value should not be null
      */
     default void addComponentAsFirst(Component component) {
-        throwIfChildrenBindingIsActive("addComponentAsFirst");
         addComponentAtIndex(0, component);
     }
 
@@ -203,10 +243,12 @@ public interface HasComponents extends HasElement, HasEnabled {
      * list. Changes to the list, such as additions, removals, or reordering,
      * will update this component's children accordingly.
      * <p>
-     * This component must not contain any children that are not part of the
-     * list. If this component has existing children when this method is called,
-     * or if it contains unrelated children after the list changes, an
-     * {@link IllegalStateException} will be thrown.
+     * This component must not contain any children in the default slot (i.e.
+     * without a {@code slot} attribute) that are not part of the list. If this
+     * component has existing default-slot children when this method is called,
+     * or if it contains unrelated default-slot children after the list changes,
+     * an {@link IllegalStateException} will be thrown. Named-slot children are
+     * allowed and can be added or removed freely while the binding is active.
      * <p>
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a {@link Signal}
@@ -242,13 +284,15 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param <S>
      *            the type of the {@link Signal}s in the list
      * @throws IllegalStateException
-     *             thrown if this component isn't empty
+     *             thrown if this component has default-slot children, or if the
+     *             child factory produces elements with a {@code slot} attribute
      * @throws BindingActiveException
      *             thrown if a binding for children already exists
      */
     default <T extends @Nullable Object, S extends Signal<T>> void bindChildren(
             Signal<List<S>> list,
             SerializableFunction<S, Component> childFactory) {
+        throwIfTextBindingIsActive("bindChildren");
         var self = (Component & HasComponents) this;
         var node = self.getElement().getNode();
         var feature = node.getFeature(SignalBindingFeature.class);
@@ -258,7 +302,7 @@ public interface HasComponents extends HasElement, HasEnabled {
         Objects.requireNonNull(list, "Signal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
-        var binding = ElementEffect.bindChildren(self.getElement(), list,
+        ElementEffect.bindChildren(self.getElement(), list,
                 // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
@@ -266,7 +310,17 @@ public interface HasComponents extends HasElement, HasEnabled {
                         .orElseThrow(() -> new IllegalStateException(
                                 "HasComponents.bindChildren childFactory must not return null")));
 
-        feature.setBinding(SignalBindingFeature.CHILDREN, binding, list);
+        feature.setBinding(SignalBindingFeature.CHILDREN, list);
+    }
+
+    private void throwIfTextBindingIsActive(String methodName) {
+        getElement().getNode().getFeatureIfInitialized(TextBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding()) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for text exists.");
+                    }
+                });
     }
 
     private void throwIfChildrenBindingIsActive(String methodName) {

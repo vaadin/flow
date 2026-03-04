@@ -162,6 +162,18 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns whether browserless mode is enabled. In browserless mode, the
+     * application runs without a browser connection, typically for UI unit
+     * testing. Dev server related warnings are suppressed.
+     *
+     * @return {@code true} if browserless mode is enabled, {@code false}
+     *         otherwise
+     */
+    default boolean isBrowserless() {
+        return getBooleanProperty(InitParameters.BROWSERLESS, false);
+    }
+
+    /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.

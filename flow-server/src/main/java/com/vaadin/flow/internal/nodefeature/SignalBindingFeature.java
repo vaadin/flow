@@ -24,7 +24,6 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -35,15 +34,18 @@ import com.vaadin.flow.signals.Signal;
 public class SignalBindingFeature extends ServerSideFeature {
 
     public static final String CLASSES = "classes/";
+    public static final String CLASS_GROUP = "classes/*";
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
     public static final String THEMES = "themes/";
+    public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
+    public static final String ITEMS = "items";
 
     private Map<String, SignalBinding> values;
 
-    private record SignalBinding(Signal<?> signal, Registration registration,
+    private record SignalBinding(Signal<?> signal,
             SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
@@ -62,14 +64,11 @@ public class SignalBindingFeature extends ServerSideFeature {
      *
      * @param key
      *            the key
-     * @param registration
-     *            the registration
      * @param signal
      *            the signal
      */
-    public void setBinding(String key, Registration registration,
-            Signal<?> signal) {
-        setBinding(key, registration, signal, null);
+    public void setBinding(String key, Signal<?> signal) {
+        setBinding(key, signal, null);
     }
 
     /**
@@ -77,18 +76,16 @@ public class SignalBindingFeature extends ServerSideFeature {
      *
      * @param key
      *            the key
-     * @param registration
-     *            the registration
      * @param signal
      *            the signal
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
      */
-    public void setBinding(String key, Registration registration,
-            Signal<?> signal, SerializableConsumer<?> writeCallback) {
+    public void setBinding(String key, Signal<?> signal,
+            SerializableConsumer<?> writeCallback) {
         ensureValues();
-        values.put(key, new SignalBinding(signal, registration, writeCallback));
+        values.put(key, new SignalBinding(signal, writeCallback));
     }
 
     /**
@@ -103,48 +100,30 @@ public class SignalBindingFeature extends ServerSideFeature {
             return false;
         }
         SignalBinding binding = values.get(key);
-        return binding != null && binding.signal != null
-                && binding.registration != null;
+        return binding != null && binding.signal != null;
     }
 
     /**
-     * Clears all bindings with keys starting with the given prefix.
+     * Checks whether there is any binding with a key starting with the given
+     * prefix.
      *
      * @param keyPrefix
      *            the key prefix
+     * @return true if there is any binding with a key starting with the given
+     *         prefix, false otherwise
      */
-    public void clearBindings(String keyPrefix) {
+    public boolean hasAnyBinding(String keyPrefix) {
         if (values == null) {
-            return;
+            return false;
         }
-        values.entrySet().removeIf(entry -> {
+        return values.entrySet().stream().anyMatch(entry -> {
             String key = entry.getKey();
             if (key.startsWith(keyPrefix)) {
                 SignalBinding binding = entry.getValue();
-                if (binding != null && binding.registration != null) {
-                    binding.registration.remove();
-                }
-                return true;
+                return binding != null && binding.signal != null;
             }
             return false;
         });
-    }
-
-    /**
-     * Removes the binding for the given key.
-     * 
-     * @param key
-     *            the key
-     */
-    public void removeBinding(String key) {
-        if (values == null) {
-            return;
-        }
-        SignalBinding binding = values.get(key);
-        if (binding != null && binding.registration != null) {
-            binding.registration.remove();
-        }
-        values.remove(key);
     }
 
     /**

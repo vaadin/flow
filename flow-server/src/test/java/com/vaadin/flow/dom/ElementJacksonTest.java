@@ -178,6 +178,9 @@ class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("bindText");
         ignore.add("bindVisible");
 
+        // returns void
+        ignore.add("flashClass");
+
         assertMethodsReturnType(Element.class, ignore);
     }
 
