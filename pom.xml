@@ -431,6 +431,7 @@
                 <Implementation-Version>${project.version}</Implementation-Version>
               </manifestEntries>
             </archive>
+            <packagingExcludes>%regex[WEB-INF/lib/flow-build-tools-.*(?&lt;!-shaded)\.jar]</packagingExcludes>
           </configuration>
         </plugin>
         <plugin>
