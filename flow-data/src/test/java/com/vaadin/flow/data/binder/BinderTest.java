@@ -1833,6 +1833,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void asRequired_setBeanBeforeBind_fieldNotInvalidOnAttach() {
+        TestTextField field = new TestTextField();
+        // Do not attach the field yet — binding is created before attach
+        Binder<Person> freshBinder = new Binder<>(Person.class);
+        freshBinder.setBean(item);
+        freshBinder.forField(field).asRequired("Required field")
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        // Simulate attach
+        UI ui = new UI();
+        ui.add(field);
+
+        assertFalse("Field should not be invalid after attach",
+                field.isInvalid());
+    }
+
+    @Test
     public void two_asRequired_fields_without_initial_values_readBean() {
         binder.forField(nameField).asRequired("Empty name").bind(p -> "",
                 (p, s) -> {
