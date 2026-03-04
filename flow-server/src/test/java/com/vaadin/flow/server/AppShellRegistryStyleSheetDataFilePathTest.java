@@ -134,7 +134,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         // 1) Absolute path: href has hash appended, data-file-path unchanged
         Element abs = links.get(0);
         assertTrue(hashPattern.matcher(abs.attr("href")).find(),
-                "Absolute href should contain ?v=<hash>");
+                "Absolute href should contain hash parameter");
         assertTrue(abs.attr("href").startsWith("/absolute.css"),
                 "Absolute href should start with /absolute.css");
         assertEquals("/absolute.css", abs.attr("data-file-path"));
@@ -142,7 +142,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         // 2) Relative path: href has hash appended, data-file-path unchanged
         Element rel = links.get(1);
         assertTrue(hashPattern.matcher(rel.attr("href")).find(),
-                "Relative href should contain ?v=<hash>");
+                "Relative href should contain hash parameter");
         assertTrue(rel.attr("href").startsWith("/ctx/relative/path.css"),
                 "Relative href should start with /ctx/");
         assertEquals("./relative/path.css", rel.attr("data-file-path"));
@@ -150,7 +150,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         // 3) Context path: href has hash appended, data-file-path unchanged
         Element ctx = links.get(2);
         assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
-                "Context href should contain ?v=<hash>");
+                "Context href should contain hash parameter");
         assertTrue(ctx.attr("href").startsWith("/ctx/from-context.css"),
                 "Context href should start with /ctx/");
         assertEquals("context://from-context.css", ctx.attr("data-file-path"));
