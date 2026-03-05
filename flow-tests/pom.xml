@@ -173,6 +173,12 @@
           <configuration>
             <webApp>
               <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+              <!-- Exclude overlay WAR JARs from scanning to avoid
+                   "scanned from multiple locations" warnings. Jetty extracts
+                   overlay WARs to jetty_overlays/ AND resolves the same deps
+                   from Maven, causing duplicates. This pattern includes all
+                   JARs except those in the jetty_overlays directory. -->
+              <webInfIncludeJarPattern>(?!.*jetty_overlays).*</webInfIncludeJarPattern>
             </webApp>
             <httpConnector>
               <port>${server.port}</port>
