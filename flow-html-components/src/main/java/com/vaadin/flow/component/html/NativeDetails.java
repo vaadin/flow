@@ -280,19 +280,22 @@ public class NativeDetails extends HtmlComponent
 
     /**
      * Binds the open state to the given signal. Signal changes push to the DOM
-     * property. If a non-null {@code writeCallback} is provided, client-side
-     * property changes are pushed back through the callback, making the binding
-     * two-way. If {@code writeCallback} is {@code null}, the binding is
-     * read-only.
+     * property. If a non-null {@code writeCallback} is provided, property
+     * changes are pushed back through the callback, making the binding two-way.
+     * If {@code writeCallback} is {@code null}, the binding is read-only.
      * <p>
-     * While a signal is bound, any attempt to set the open state manually
-     * throws {@link com.vaadin.flow.signals.BindingActiveException}.
+     * Trying to bind a new Signal while one is already bound, or any attempt to
+     * set the open state manually for read-only binding throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}.
      *
      * @param signal
      *            the signal to bind, not {@code null}
      * @param writeCallback
      *            callback invoked when the client-side value changes, or
      *            {@code null} for a read-only binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding or any
+     *             attempt to set the open state manually for read-only binding
      * @since 25.1
      */
     public void bindOpen(Signal<Boolean> signal,

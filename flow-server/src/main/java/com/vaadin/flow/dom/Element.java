@@ -699,12 +699,22 @@ public class Element extends Node<Element> {
      * The "innerHTML" property has an impact on the descendants structure of
      * the element. So setting the "innerHTML" property removes all the
      * children.
+     * <p>
+     * If the property has an active signal binding (see
+     * {@link #bindProperty(String, Signal, SerializableConsumer)}), the
+     * behavior depends on the write callback: if the write callback is
+     * non-null, the value is propagated to the signal via the write callback
+     * instead of throwing. If the write callback is <code>null</code> (a
+     * read-only binding), a
+     * {@link com.vaadin.flow.signals.BindingActiveException} is thrown.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param value
      *            the property value
      * @return this element
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             if the property has an active read-only signal binding
      */
     public Element setProperty(String name, String value) {
         return setRawProperty(name, value);
@@ -718,12 +728,21 @@ public class Element extends Node<Element> {
      * unless configured using
      * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * <p>
+     * If the property has an active signal binding (see
+     * {@link #bindProperty(String, Signal, SerializableConsumer)}), the value
+     * is propagated to the signal via the write callback when the write
+     * callback is non-null. A
+     * {@link com.vaadin.flow.signals.BindingActiveException} is thrown for a
+     * read-only (null write callback) binding.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param value
      *            the property value
      * @return this element
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             if the property has an active read-only signal binding
      */
     public Element setProperty(String name, boolean value) {
         return setRawProperty(name, Boolean.valueOf(value));
@@ -737,12 +756,21 @@ public class Element extends Node<Element> {
      * unless configured using
      * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
      * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * <p>
+     * If the property has an active signal binding (see
+     * {@link #bindProperty(String, Signal, SerializableConsumer)}), the value
+     * is propagated to the signal via the write callback when the write
+     * callback is non-null. A
+     * {@link com.vaadin.flow.signals.BindingActiveException} is thrown for a
+     * read-only (null write callback) binding.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param value
      *            the property value
      * @return this element
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             if the property has an active read-only signal binding
      */
     public Element setProperty(String name, double value) {
         return setRawProperty(name, Double.valueOf(value));
@@ -860,10 +888,6 @@ public class Element extends Node<Element> {
      * Same rules apply for the property name and value from the bound Signal as
      * in {@link #setProperty(String, String)}.
      * <p>
-     * While a Signal is bound to a property, any attempt to set the property
-     * value manually throws {@link BindingActiveException}. Same happens when
-     * trying to bind a new Signal while one is already bound.
-     * <p>
      * Supported data types for the signal are the same as for the various
      * {@code setProperty} methods in this class: {@link String},
      * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
@@ -871,14 +895,26 @@ public class Element extends Node<Element> {
      * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
      * {@code Signal<Map<?,?>}.
      * <p>
-     * While a Signal is bound to a property and the element is in attached
-     * state, when a property change originates from the client (e.g., via a
-     * synchronized property change listener), the write callback will be
-     * invoked to propagate the value back.
+     * Trying to bind a new Signal while one is already bound throws
+     * {@link BindingActiveException}.
      * <p>
-     * If the write callback is <code>null</code>, the binding is read-only.
+     * <strong>Read-only binding</strong> ({@code writeCallback} is
+     * {@code null}): the property value is driven entirely by the signal. Any
+     * attempt to set the property via {@link #setProperty(String, String)} (or
+     * any other {@code setProperty} overload) while the binding is active
+     * throws {@link BindingActiveException}.
      * <p>
-     * Example of usage:
+     * <strong>Two-way binding</strong> ({@code writeCallback} is
+     * non-{@code null}): in addition to the signal driving the property value,
+     * changes can originate from both the server side (via {@code setProperty})
+     * and the client side (e.g., via a synchronized property change listener).
+     * In both cases the write callback is invoked with the new value so it can
+     * propagate the change back to the signal. After the callback, the signal
+     * is re-consulted: if its value differs from what was being set (e.g., the
+     * callback applied a transformation), the signal's updated value wins and
+     * the property is reverted to it.
+     * <p>
+     * Example of a read-only binding:
      *
      * <pre>
      * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
@@ -886,6 +922,18 @@ public class Element extends Node<Element> {
      * getElement().appendChild(element);
      * element.bindProperty("value", signal, null);
      * signal.set("Hello"); // The element property value="Hello"
+     * // element.setProperty("value", "x"); // throws BindingActiveException
+     * </pre>
+     *
+     * Example of a two-way binding:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("input");
+     * getElement().appendChild(element);
+     * element.bindProperty("value", signal, signal::set);
+     * signal.set("Hello"); // property becomes "Hello"
+     * element.setProperty("value", "World"); // callback sets signal to "World"
      * </pre>
      *
      * @param name
@@ -893,8 +941,11 @@ public class Element extends Node<Element> {
      * @param signal
      *            the signal to bind, not <code>null</code>
      * @param writeCallback
-     *            the callback to propagate value changes originated from the
-     *            client back, or <code>null</code> for a read-only binding
+     *            the callback to propagate value changes back to the signal, or
+     *            <code>null</code> for a read-only binding. When non-null,
+     *            calling {@link #setProperty(String, String)} (or any overload)
+     *            on the bound property will invoke this callback instead of
+     *            throwing.
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
