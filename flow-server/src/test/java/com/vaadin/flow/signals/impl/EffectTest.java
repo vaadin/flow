@@ -605,6 +605,49 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void passivateActivate_racyChangeDuringReRegister_isInitialRunTrue() {
+        AtomicBoolean injectChange = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Registration onNextChange(
+                            TransientListener listener) {
+                        if (injectChange.compareAndSet(true, false)) {
+                            set("sneaky");
+                        }
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+        assertEquals(List.of(true), initialRuns);
+
+        effect.passivate();
+        injectChange.set(true);
+        effect.activate();
+
+        assertEquals(List.of(true, true), initialRuns,
+                "Change during activation should run with isInitialRun=true");
+    }
+
+    @Test
     void infiniteLoopDetection_concurrentSignalWrite_notDetectedAsLoop() {
         TestExecutor dispatcher = useTestEffectDispatcher();
         List<String> invocations = new ArrayList<>();

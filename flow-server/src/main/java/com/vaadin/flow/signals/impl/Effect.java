@@ -264,17 +264,25 @@ public class Effect implements Serializable {
             return;
         }
         passivated = false;
+        firstRun = true;
 
         if (usages.isEmpty()
                 || usages.stream().anyMatch(UsageTracker.Usage::hasChanges)) {
             // Something changed while passivated, do a full revalidation
-            firstRun = true;
             usages.clear();
             revalidate();
         } else {
-            // Nothing changed, just re-register listeners
+            // Nothing changed, just re-register listeners. A change
+            // listener may still fire immediately if a change sneaks in
+            // between the hasChanges check and the onNextChange call,
+            // in which case firstRun is already set to true above.
             for (UsageTracker.Usage usage : usages) {
                 registrations.add(usage.onNextChange(this::onDependencyChange));
+            }
+            if (!invalidateScheduled.get()) {
+                // No listener fired, so this is not an
+                // activation-triggered run. Reset for normal tracking.
+                firstRun = false;
             }
         }
     }
