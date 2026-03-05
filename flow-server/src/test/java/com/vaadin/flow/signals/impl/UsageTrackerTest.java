@@ -383,6 +383,18 @@ public class UsageTrackerTest extends SignalTestBase {
     }
 
     @Test
+    void get_sharedSignal_withFallbackTransaction_throws() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        Transaction fallback = Transaction.createWriteThrough();
+        Transaction.setTransactionFallback(() -> fallback);
+        try {
+            assertThrows(IllegalStateException.class, signal::get);
+        } finally {
+            Transaction.setTransactionFallback(null);
+        }
+    }
+
+    @Test
     void peek_sharedSignal_outsideTrackingContext_succeeds() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("value");
         assertEquals("value", signal.peek());
