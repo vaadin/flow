@@ -44,7 +44,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  *            the element type
  */
 public class SharedListSignal<T extends @Nullable Object>
-        extends AbstractSignal<@NonNull List<SharedValueSignal<T>>> {
+        extends AbstractSharedSignal<@NonNull List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -97,7 +97,8 @@ public class SharedListSignal<T extends @Nullable Object>
          *            first
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition after(@Nullable AbstractSignal<?> after) {
+        public static ListPosition after(
+                @Nullable AbstractSharedSignal<?> after) {
             return new ListPosition(idOf(after), null);
         }
 
@@ -111,7 +112,8 @@ public class SharedListSignal<T extends @Nullable Object>
          *            insert last
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition before(@Nullable AbstractSignal<?> before) {
+        public static ListPosition before(
+                @Nullable AbstractSharedSignal<?> before) {
             return new ListPosition(null, idOf(before));
         }
 
@@ -131,12 +133,13 @@ public class SharedListSignal<T extends @Nullable Object>
          * @return a list position between the given signals, not
          *         <code>null</code>
          */
-        public static ListPosition between(@Nullable AbstractSignal<?> after,
-                @Nullable AbstractSignal<?> before) {
+        public static ListPosition between(
+                @Nullable AbstractSharedSignal<?> after,
+                @Nullable AbstractSharedSignal<?> before) {
             return new ListPosition(idOf(after), idOf(before));
         }
 
-        private static Id idOf(@Nullable AbstractSignal<?> signal) {
+        private static Id idOf(@Nullable AbstractSharedSignal<?> signal) {
             if (signal == null) {
                 return Id.EDGE;
             } else {
@@ -286,7 +289,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the position to move to, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> moveTo(AbstractSignal<T> child,
+    public SignalOperation<Void> moveTo(AbstractSharedSignal<T> child,
             ListPosition to) {
         var verifyChild = new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), new ListPosition(null, null));
@@ -336,7 +339,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the expected position of the child, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyPosition(AbstractSignal<?> child,
+    public SignalOperation<Void> verifyPosition(AbstractSharedSignal<?> child,
             ListPosition expectedPosition) {
         return submit(new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), Objects.requireNonNull(expectedPosition)));
@@ -354,7 +357,7 @@ public class SharedListSignal<T extends @Nullable Object>
      *            the child to look for test, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyChild(AbstractSignal<?> child) {
+    public SignalOperation<Void> verifyChild(AbstractSharedSignal<?> child) {
         return verifyPosition(child, new ListPosition(null, null));
     }
 

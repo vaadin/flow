@@ -56,7 +56,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * applying some specific operation.
  */
 public class SharedNodeSignal
-        extends AbstractSignal<SharedNodeSignal.SharedNodeSignalState> {
+        extends AbstractSharedSignal<SharedNodeSignal.SharedNodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.
@@ -345,7 +345,7 @@ public class SharedNodeSignal
      *            the target list location, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAt(AbstractSignal<?> node,
+    public SignalOperation<Void> adoptAt(AbstractSharedSignal<?> node,
             ListPosition at) {
         return submit(new SignalCommand.AdoptAtCommand(Id.random(), id(),
                 node.id(), Objects.requireNonNull(at)));
@@ -363,7 +363,8 @@ public class SharedNodeSignal
      *            the key to use, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAs(AbstractSignal<?> signal, String key) {
+    public SignalOperation<Void> adoptAs(AbstractSharedSignal<?> signal,
+            String key) {
         return submit(new SignalCommand.AdoptAsCommand(Id.random(), id(),
                 signal.id(), Objects.requireNonNull(key)));
     }

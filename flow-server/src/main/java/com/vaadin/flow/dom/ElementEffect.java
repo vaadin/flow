@@ -33,8 +33,10 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.impl.Effect;
 
@@ -53,12 +55,16 @@ import com.vaadin.flow.signals.impl.Effect;
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
-    private final EffectAction effectFunction;
+    private final ContextualEffectAction effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
+        this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
+    }
+
+    public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -116,6 +122,47 @@ public final class ElementEffect implements Serializable {
     }
 
     /**
+     * Creates a context-aware Signal effect that is owned by a given element.
+     * The effect is enabled when the element is attached and automatically
+     * disabled when it is detached. The effect action receives an
+     * {@link EffectContext} providing information about why the effect is
+     * running, allowing the callback to distinguish between the initial
+     * execution, updates triggered by the effect owner's requests, and updates
+     * triggered by background changes (such as a background thread or another
+     * user modifying a shared signal).
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Registration effect = ElementEffect.effect(myElement, ctx -&gt; {
+     *     span.setText("$" + priceSignal.get());
+     *     if (ctx.isBackgroundChange()) {
+     *         span.getElement().executeJs("this.classList.add('highlight')");
+     *     }
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @see Signal#unboundEffect(EffectAction)
+     * @see EffectContext#isInitialRun()
+     * @see EffectContext#isBackgroundChange()
+     * @param owner
+     *            the owner element for which the effect is applied, must not be
+     *            <code>null</code>
+     * @param effectFunction
+     *            the context-aware effect function to be executed when any
+     *            dependency is changed, receiving an {@link EffectContext} with
+     *            information about the trigger, must not be <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    public static Registration effect(Element owner,
+            ContextualEffectAction effectFunction) {
+        ElementEffect effect = new ElementEffect(owner, effectFunction);
+        return effect::close;
+    }
+
+    /**
      * Binds a <code>signal</code>'s value to a given owner element in a way
      * defined in <code>setter</code> function and creates a Signal effect
      * function executing the setter whenever the signal value changes.
@@ -163,9 +210,9 @@ public final class ElementEffect implements Serializable {
                 .get();
         UI ui = parentComponent.getUI().get();
 
-        EffectAction errorHandlingEffectFunction = () -> {
+        ContextualEffectAction errorHandlingEffectFunction = ctx -> {
             try {
-                effectFunction.execute();
+                effectFunction.execute(ctx);
             } catch (Exception e) {
                 ui.getSession().getErrorHandler()
                         .error(new ErrorEvent(e, owner.getNode()));

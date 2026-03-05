@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.1-SNAPSHOT</version>
+    <version>25.2-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -466,6 +466,8 @@
                     <include>tsconfig.json</include>
                     <include>pnpm-lock.yaml</include>
                     <include>bun.lockb</include>
+                    <include>vite.config.ts</include>
+                    <include>vite.generated.ts</include>
                     <include>node_modules/**</include>
                   </includes>
                 </fileset>

@@ -88,7 +88,7 @@ class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource availability
-        Mockito.when(service.isResourceAvailable("aura/aura.css"))
+        Mockito.when(service.isResourceAvailable("/aura/aura.css"))
                 .thenReturn(true);
 
         VaadinServletRequest request = createRequest("/", "");
@@ -110,7 +110,7 @@ class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource NOT available
-        Mockito.when(service.isResourceAvailable("aura/aura.css"))
+        Mockito.when(service.isResourceAvailable("/aura/aura.css"))
                 .thenReturn(false);
 
         VaadinServletRequest request = createRequest("/", "");

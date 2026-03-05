@@ -25,7 +25,6 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -99,12 +98,10 @@ public class ElementClassList extends SerializableNodeList<String> {
                         + "' is already bound to a signal");
             }
 
-            Registration registration = ElementEffect.bind(
-                    Element.get(getNode()), signal,
+            ElementEffect.bind(Element.get(getNode()), signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
-            feature.setBinding(SignalBindingFeature.CLASSES + name,
-                    registration, signal);
+            feature.setBinding(SignalBindingFeature.CLASSES + name, signal);
         }
 
         @Override
@@ -120,36 +117,34 @@ public class ElementClassList extends SerializableNodeList<String> {
 
             Set<String> previousNames = new HashSet<>();
 
-            Registration registration = ElementEffect
-                    .effect(Element.get(getNode()), () -> {
-                        List<String> current = names.get();
-                        Set<String> newNames = new HashSet<>();
-                        if (current != null) {
-                            for (String name : current) {
-                                if (name != null && !name.isEmpty()) {
-                                    newNames.add(name);
-                                }
-                            }
+            ElementEffect.effect(Element.get(getNode()), () -> {
+                List<String> signalNames = names.get();
+                Set<String> newNames = new HashSet<>();
+                if (signalNames != null) {
+                    for (String name : signalNames) {
+                        if (name != null && !name.isEmpty()) {
+                            newNames.add(name);
                         }
+                    }
+                }
 
-                        // Remove names no longer in the list
-                        for (String old : previousNames) {
-                            if (!newNames.contains(old)) {
-                                internalSetPresence(old, false);
-                            }
-                        }
-                        // Add new names
-                        for (String name : newNames) {
-                            if (!previousNames.contains(name)) {
-                                internalSetPresence(name, true);
-                            }
-                        }
+                // Remove names no longer in the list
+                for (String old : previousNames) {
+                    if (!newNames.contains(old)) {
+                        internalSetPresence(old, false);
+                    }
+                }
+                // Add new names
+                for (String name : newNames) {
+                    if (!previousNames.contains(name)) {
+                        internalSetPresence(name, true);
+                    }
+                }
 
-                        previousNames.clear();
-                        previousNames.addAll(newNames);
-                    });
-            feature.setBinding(SignalBindingFeature.CLASS_GROUP, registration,
-                    names);
+                previousNames.clear();
+                previousNames.addAll(newNames);
+            });
+            feature.setBinding(SignalBindingFeature.CLASS_GROUP, names);
         }
 
         @Override
@@ -168,22 +163,12 @@ public class ElementClassList extends SerializableNodeList<String> {
 
         @Override
         public void clear() {
-            clearBindings();
+            getSignalBindingFeatureIfInitialized().ifPresent(feature -> {
+                if (feature.hasAnyBinding(SignalBindingFeature.CLASSES)) {
+                    throw new BindingActiveException();
+                }
+            });
             super.clear();
-        }
-
-        // Bulk operations in AbstractCollection ultimately delegate to
-        // add/remove
-        // which are guarded above. No need to override
-        // addAll/removeAll/retainAll
-        // unless optimization is required.
-
-        /**
-         * Clears all signal bindings.
-         */
-        public void clearBindings() {
-            getSignalBindingFeatureIfInitialized().ifPresent(feature -> feature
-                    .clearBindings(SignalBindingFeature.CLASSES));
         }
 
         private void throwIfBound(String className) {

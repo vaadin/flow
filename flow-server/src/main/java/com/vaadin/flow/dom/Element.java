@@ -54,7 +54,6 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -1293,12 +1292,13 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
-            if (feature.hasBinding()) {
-                throw new BindingActiveException(
-                        "setText is not allowed while a binding for text exists.");
-            }
-        });
+        getNode().getFeatureIfInitialized(TextBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding()) {
+                        throw new BindingActiveException(
+                                "setText is not allowed while a binding for text exists.");
+                    }
+                });
         setTextContent(textContent);
 
         return this;
@@ -1363,9 +1363,9 @@ public class Element extends Node<Element> {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(this, signal,
+        ElementEffect.bind(this, signal,
                 (element, value) -> setTextContent(value));
-        feature.setBinding(registration, signal);
+        feature.setBinding(signal);
     }
 
     /**
@@ -1932,10 +1932,9 @@ public class Element extends Node<Element> {
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(this, enabledSignal,
+        ElementEffect.bind(this, enabledSignal,
                 (element, value) -> setEnabledInternal(value));
-        feature.setBinding(SignalBindingFeature.ENABLED, registration,
-                enabledSignal);
+        feature.setBinding(SignalBindingFeature.ENABLED, enabledSignal);
     }
 
     private void setEnabledInternal(final Boolean enabled) {
@@ -1953,7 +1952,7 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element setEnabled(final boolean enabled) {
-        getFeatureIfInitialized(SignalBindingFeature.class)
+        getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
                     if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
                         throw new BindingActiveException(
@@ -2073,14 +2072,5 @@ public class Element extends Node<Element> {
         executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
                 + options + ");}, 0);");
         return getSelf();
-    }
-
-    private <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
-            Class<T> featureClass) {
-        try {
-            return getNode().getFeatureIfInitialized(featureClass);
-        } catch (IllegalStateException e) {
-            return Optional.empty();
-        }
     }
 }
