@@ -140,6 +140,24 @@ public abstract class AbstractPropertyMap extends NodeMap {
                 || StateNode.class.isAssignableFrom(type);
     }
 
+    /**
+     * Checks whether the signal binding for the given property has a non-null
+     * write callback, indicating a two-way (writable) binding.
+     *
+     * @param name
+     *            the name of the property
+     * @return <code>true</code> if there is an active signal binding for the
+     *         property with a non-null write callback; <code>false</code>
+     *         otherwise
+     */
+    public boolean hasWriteCallbackForSignal(String name) {
+        if (!hasSignal(name)) {
+            return false;
+        }
+        InternalSignalBinding binding = (InternalSignalBinding) super.get(name);
+        return binding != null && binding.writeCallback() != null;
+    }
+
     @Override
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {

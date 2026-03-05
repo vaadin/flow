@@ -22,6 +22,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
@@ -54,7 +55,8 @@ public class BasicTextElementStateProvider
 
         StateNode node = new StateNode(
                 List.of(TextNodeMap.class, TextBindingFeature.class),
-                ComponentMapping.class, ReturnChannelMap.class);
+                ComponentMapping.class, ReturnChannelMap.class,
+                SignalBindingFeature.class);
         node.getFeature(TextNodeMap.class).setText(text);
 
         return node;
