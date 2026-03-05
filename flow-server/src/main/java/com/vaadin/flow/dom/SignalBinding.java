@@ -48,8 +48,10 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
     /**
      * Creates a new signal binding.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      */
-    SignalBinding() {
+    public SignalBinding() {
     }
 
     /**
@@ -88,21 +90,25 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
     /**
      * Returns whether any onChange callbacks have been registered.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      *
      * @return true if there are callbacks, false otherwise
      */
-    boolean hasCallbacks() {
+    public boolean hasCallbacks() {
         return changeCallbacks != null;
     }
 
     /**
      * Fires all registered onChange callbacks with the given context. Called
      * internally by the binding effect after the setter has been applied.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      *
      * @param context
      *            the binding context for this execution
      */
-    void fireOnChange(BindingContext<T> context) {
+    public void fireOnChange(BindingContext<T> context) {
         if (changeCallbacks == null) {
             return;
         }
