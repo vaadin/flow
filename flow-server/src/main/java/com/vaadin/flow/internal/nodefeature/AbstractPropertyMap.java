@@ -153,8 +153,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
         if (!hasSignal(name)) {
             return false;
         }
-        SignalBinding b = (SignalBinding) super.get(name);
-        return b != null && b.writeCallback() != null;
+        SignalBinding binding = (SignalBinding) super.get(name);
+        return binding != null && binding.writeCallback() != null;
     }
 
     @Override
