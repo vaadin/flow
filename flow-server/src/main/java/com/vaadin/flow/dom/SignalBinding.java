@@ -87,13 +87,6 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
     }
 
     /**
-     * Fires all registered onChange callbacks with the given context. Called
-     * internally by the binding effect after the setter has been applied.
-     *
-     * @param context
-     *            the binding context for this execution
-     */
-    /**
      * Returns whether any onChange callbacks have been registered.
      *
      * @return true if there are callbacks, false otherwise

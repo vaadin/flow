@@ -123,8 +123,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding) {
-            return ((SignalBinding) value).value();
+        if (value instanceof InternalSignalBinding) {
+            return ((InternalSignalBinding) value).value();
         } else {
             return value;
         }
@@ -613,7 +613,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         PutResult putResult = null;
         if (hasSignal(key)) {
-            SignalBinding binding = (SignalBinding) super.get(key);
+            InternalSignalBinding binding = (InternalSignalBinding) super.get(
+                    key);
 
             AtomicReference<Serializable> putValue = new AtomicReference<>(
                     value);
@@ -627,7 +628,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             // never trigger change event here since the change event will be
             // triggered by the signal update
             Serializable oldValue = super.put(key,
-                    new SignalBinding(binding.signal(), putValue.get(),
+                    new InternalSignalBinding(binding.signal(), putValue.get(),
                             binding.writeCallback()),
                     false);
             putResult = new PutResult(oldValue, null);

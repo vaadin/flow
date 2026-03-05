@@ -21,6 +21,7 @@ import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.signals.Signal;
 
@@ -48,8 +49,8 @@ public class ElementData extends NodeMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding) {
-            return ((SignalBinding) value).value();
+        if (value instanceof InternalSignalBinding) {
+            return ((InternalSignalBinding) value).value();
         } else {
             return value;
         }
@@ -121,7 +122,7 @@ public class ElementData extends NodeMap {
     public boolean isVisible() {
         var value = get(NodeProperties.VISIBLE);
         return !Boolean.FALSE
-                .equals(value instanceof SignalBinding signalBinding
+                .equals(value instanceof InternalSignalBinding signalBinding
                         ? signalBinding.value()
                         : value);
     }
@@ -160,8 +161,8 @@ public class ElementData extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property
      */
-    public com.vaadin.flow.dom.SignalBinding<Boolean> bindVisibleSignal(
-            Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         return bindSignal(owner, NodeProperties.VISIBLE, signal,
                 (element, value) -> putVisibleSignalValue(value), null);
     }
@@ -169,9 +170,10 @@ public class ElementData extends NodeMap {
     private void putVisibleSignalValue(Boolean value) {
         boolean booleanValue = (value != null) ? value : Boolean.FALSE;
         if (hasSignal(NodeProperties.VISIBLE)) {
-            SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
+            InternalSignalBinding b = (InternalSignalBinding) super.get(
+                    NodeProperties.VISIBLE);
             put(NodeProperties.VISIBLE,
-                    new SignalBinding(b.signal(), booleanValue, null));
+                    new InternalSignalBinding(b.signal(), booleanValue, null));
         } else {
             put(NodeProperties.VISIBLE, booleanValue);
         }

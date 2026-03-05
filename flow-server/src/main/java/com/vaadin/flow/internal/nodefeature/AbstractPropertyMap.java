@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
@@ -63,9 +64,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
         assert isValidValueType(value);
 
         if (hasSignal(name)) {
-            SignalBinding b = (SignalBinding) super.get(name);
-            put(name, new SignalBinding(b.signal(), value, b.writeCallback()),
-                    emitChange);
+            InternalSignalBinding b = (InternalSignalBinding) super.get(name);
+            put(name, new InternalSignalBinding(b.signal(), value,
+                    b.writeCallback()), emitChange);
         } else {
             put(name, value, emitChange);
         }
@@ -142,9 +143,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
     @Override
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {
-            SignalBinding b = (SignalBinding) super.get(key);
-            super.updateFromClient(key,
-                    new SignalBinding(b.signal(), value, b.writeCallback()));
+            InternalSignalBinding b = (InternalSignalBinding) super.get(key);
+            super.updateFromClient(key, new InternalSignalBinding(b.signal(),
+                    value, b.writeCallback()));
         } else {
             super.updateFromClient(key, value);
         }
@@ -166,9 +167,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    public com.vaadin.flow.dom.SignalBinding<?> bindSignal(Element owner,
-            String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+    public SignalBinding<?> bindSignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         return super.bindSignal(owner, name, signal,
                 (element, value) -> setPropertyFromSignal(name, value),
                 writeCallback);

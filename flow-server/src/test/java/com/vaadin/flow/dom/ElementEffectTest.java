@@ -235,6 +235,9 @@ class ElementEffectTest {
         // onChange is registered after bind, so the initial execution is missed
         span.bindText(signal).onChange(contexts::add);
 
+        // No callbacks yet since initial run already happened before onChange
+        assertEquals(0, contexts.size());
+
         // Trigger a subsequent update
         signal.set("updated");
 
@@ -244,6 +247,47 @@ class ElementEffectTest {
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
         assertSame(span, ctx.getElement());
+
+        // Trigger another update and verify context tracks correctly
+        signal.set("final");
+
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx2 = contexts.get(1);
+        assertFalse(ctx2.isInitialRun());
+        assertEquals("updated", ctx2.getOldValue());
+        assertEquals("final", ctx2.getNewValue());
+        assertSame(span, ctx2.getElement());
+    }
+
+    @Test
+    public void signalBinding_onChange_bindThenAttach() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // Bind before attaching to UI
+        span.bindText(signal).onChange(contexts::add);
+        assertEquals(0, contexts.size());
+
+        // Attach — effect runs and fires initial callback
+        ui.getElement().appendChild(span);
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> initialCtx = contexts.get(0);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getNewValue());
+
+        // Trigger an update after attach
+        signal.set("updated");
+
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
     }
 
     @Test
