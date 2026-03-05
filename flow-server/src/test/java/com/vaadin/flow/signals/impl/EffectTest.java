@@ -549,6 +549,62 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void passivateActivate_noChanges_callbackNotReRun() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+        signal.set("initial"); // no-op change
+        effect.activate();
+        assertEquals(List.of("initial"), invocations,
+                "Callback should not re-run when nothing changed");
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), invocations,
+                "Effect should remain active after activate");
+    }
+
+    @Test
+    void passivateActivate_withChanges_callbackReRun() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+        signal.set("changed");
+        effect.activate();
+        assertEquals(List.of("initial", "changed"), invocations,
+                "Callback should re-run when dependency changed");
+    }
+
+    @Test
+    void passivateActivate_noChanges_nextChangeTracked() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+
+        effect.passivate();
+        effect.activate();
+        assertEquals(List.of("initial"), invocations);
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), invocations,
+                "Changes after activate should still trigger the effect");
+    }
+
+    @Test
     void infiniteLoopDetection_concurrentSignalWrite_notDetectedAsLoop() {
         TestExecutor dispatcher = useTestEffectDispatcher();
         List<String> invocations = new ArrayList<>();
