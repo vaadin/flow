@@ -294,8 +294,8 @@ public class NativeDetails extends HtmlComponent
      *            callback invoked when the client-side value changes, or
      *            {@code null} for a read-only binding
      * @throws com.vaadin.flow.signals.BindingActiveException
-     *             thrown when there is already an existing binding or any attempt to
-     *             set the open state manually for read-only binding
+     *             thrown when there is already an existing binding or any
+     *             attempt to set the open state manually for read-only binding
      * @since 25.1
      */
     public void bindOpen(Signal<Boolean> signal,
