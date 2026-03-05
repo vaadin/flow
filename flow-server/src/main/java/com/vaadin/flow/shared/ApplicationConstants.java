@@ -175,6 +175,12 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
 
     /**
+     * Query parameter appended to static resource URLs for content-based
+     * cache-busting (e.g. {@code ?v-c=abcd1234}).
+     */
+    public static final String CONTENT_HASH_PARAMETER = "v-c";
+
+    /**
      * Request type parameter value indicating an init request.
      */
     public static final String REQUEST_TYPE_INIT = "init";
