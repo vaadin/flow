@@ -191,7 +191,8 @@ public interface HasTheme extends HasElement {
      * @see ThemeList#bind(Signal)
      * @since 25.1
      */
-    default void bindThemeNames(Signal<List<String>> names) {
-        getThemeNames().bind(names);
+    default SignalBinding<List<String>> bindThemeNames(
+            Signal<List<String>> names) {
+        return getThemeNames().bind(names);
     }
 }

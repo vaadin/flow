@@ -85,7 +85,7 @@ public class ImmutableClassList extends AbstractSet<String>
      * because they do not support styling in general.
      */
     @Override
-    public void bind(Signal<List<String>> names) {
+    public SignalBinding<List<String>> bind(Signal<List<String>> names) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 }

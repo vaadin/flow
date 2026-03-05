@@ -197,8 +197,9 @@ public interface HasStyle extends HasElement {
      * @see ClassList#bind(Signal)
      * @since 25.1
      */
-    default void bindClassNames(Signal<List<String>> names) {
-        getClassNames().bind(names);
+    default SignalBinding<List<String>> bindClassNames(
+            Signal<List<String>> names) {
+        return getClassNames().bind(names);
     }
 
     /**

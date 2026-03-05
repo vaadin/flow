@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
@@ -109,7 +110,7 @@ public class ElementClassList extends SerializableNodeList<String> {
         }
 
         @Override
-        public void bind(Signal<List<String>> names) {
+        public SignalBinding<List<String>> bind(Signal<List<String>> names) {
             Objects.requireNonNull(names, "Signal cannot be null");
             SignalBindingFeature feature = getNode()
                     .getFeature(SignalBindingFeature.class);
@@ -119,9 +120,13 @@ public class ElementClassList extends SerializableNodeList<String> {
                         "A group class name binding is already active");
             }
 
+            SignalBinding<List<String>> binding = new SignalBinding<>();
             Set<String> previousNames = new HashSet<>();
+            @SuppressWarnings("unchecked")
+            List<String>[] previousValue = new List[] { names.peek() };
+            Element element = Element.get(getNode());
 
-            ElementEffect.effect(Element.get(getNode()), () -> {
+            ElementEffect.effect(element, ctx -> {
                 List<String> signalNames = names.get();
                 Set<String> newNames = new HashSet<>();
                 if (signalNames != null) {
@@ -147,8 +152,16 @@ public class ElementClassList extends SerializableNodeList<String> {
 
                 previousNames.clear();
                 previousNames.addAll(newNames);
+
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(new BindingContext<>(
+                            ctx.isInitialRun(), ctx.isBackgroundChange(),
+                            previousValue[0], signalNames, element));
+                }
+                previousValue[0] = signalNames;
             });
             feature.setBinding(SignalBindingFeature.CLASS_GROUP, names);
+            return binding;
         }
 
         @Override

@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.SignalBinding;
@@ -114,7 +115,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     @Override
-    public void bind(Signal<List<String>> names) {
+    public SignalBinding<List<String>> bind(Signal<List<String>> names) {
         Objects.requireNonNull(names, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -124,9 +125,13 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "A group theme name binding is already active");
         }
 
+        SignalBinding<List<String>> binding = new SignalBinding<>();
         Set<String> previousNames = new HashSet<>();
+        @SuppressWarnings("unchecked")
+        List<String>[] previousValue = new List[] { names.peek() };
+        Element ownerElement = Element.get(element.getNode());
 
-        ElementEffect.effect(Element.get(element.getNode()), () -> {
+        ElementEffect.effect(ownerElement, ctx -> {
             List<String> signalNames = names.get();
             Set<String> newNames = new HashSet<>();
             if (signalNames != null) {
@@ -152,8 +157,16 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
             previousNames.clear();
             previousNames.addAll(newNames);
+
+            if (binding.hasCallbacks()) {
+                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), previousValue[0], signalNames,
+                        ownerElement));
+            }
+            previousValue[0] = signalNames;
         });
         feature.setBinding(SignalBindingFeature.THEME_GROUP, names);
+        return binding;
     }
 
     private void internalSetPresence(String name, boolean set) {

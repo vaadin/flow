@@ -100,7 +100,7 @@ public interface ThemeList extends Set<String>, Serializable {
      *             thrown when there is already an existing group binding
      * @since 25.1
      */
-    default void bind(Signal<List<String>> names) {
+    default SignalBinding<List<String>> bind(Signal<List<String>> names) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     }
