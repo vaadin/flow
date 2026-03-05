@@ -288,6 +288,10 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         ElementPropertyMap propertyFeature = getPropertyFeature(node);
 
         if (propertyFeature.hasSignal(name)) {
+            if (propertyFeature.hasWriteCallbackForSignal(name)) {
+                propertyFeature.setPropertyWithWriteCallback(name, value);
+                return;
+            }
             throw new BindingActiveException(String.format(
                     "setProperty is not allowed while a binding for the property '%s' exists.",
                     name));
