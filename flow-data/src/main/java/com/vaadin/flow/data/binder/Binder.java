@@ -1734,7 +1734,7 @@ public class Binder<BEAN> implements Serializable {
                 signalRegistration = Signal.effect(component, ctx -> {
                     usageGuard.get();
                     Result<TARGET> result = executeConversionChain();
-                    if (!valueInit && !ctx.isInitialRun()) {
+                    if (!ctx.isInitialRun()) {
                         BindingValidationStatus<TARGET> status = toValidationStatus(
                                 result);
                         fireValidationEvents(status);
