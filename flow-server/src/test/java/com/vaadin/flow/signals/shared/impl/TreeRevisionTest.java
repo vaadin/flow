@@ -132,6 +132,8 @@ public class TreeRevisionTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // deliberately creates invalid tree with null
+                                  // parent
     void assertValidTree_childWithoutParentPointer_fails() {
         MutableTestRevision revision = new MutableTestRevision();
 

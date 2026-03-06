@@ -20,9 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
+import com.vaadin.flow.signals.impl.UsageTracker;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,6 +36,13 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(null);
     }
 
+    private static <T> T getTracked(Signal<T> signal) {
+        @SuppressWarnings("unchecked")
+        T[] holder = (T[]) new Object[1];
+        UsageTracker.track(() -> holder[0] = signal.get());
+        return holder[0];
+    }
+
     // ValueSignal - same session
 
     @Test
@@ -41,9 +51,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(session);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
 
-        assertDoesNotThrow(() -> signal.get());
+        assertDoesNotThrow(() -> getTracked(signal));
     }
 
     @Test
@@ -53,8 +62,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
-        assertDoesNotThrow(() -> signal.get());
         assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
         assertDoesNotThrow(() -> signal.update(v -> v));
@@ -71,13 +80,13 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
 
         // All operations should throw when accessed from different session
-        assertThrows(IllegalStateException.class, () -> signal.get());
         assertThrows(IllegalStateException.class, () -> signal.peek());
+        assertThrows(IllegalStateException.class, () -> getTracked(signal));
         assertThrows(IllegalStateException.class, () -> signal.set("world"));
         assertThrows(IllegalStateException.class,
                 () -> signal.replace("hello", "world"));
@@ -92,8 +101,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     void valueSignal_noSession_works() {
         ValueSignal<String> signal = new ValueSignal<>("hello");
 
-        assertDoesNotThrow(() -> signal.get());
         assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
         assertDoesNotThrow(() -> signal.set("world"));
         assertDoesNotThrow(() -> signal.replace("world", "foo"));
         assertDoesNotThrow(() -> signal.update(v -> v));
@@ -110,13 +119,14 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class, () -> signal.get());
+                IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
+        assertNotNull(message);
         assertTrue(message.contains("ValueSignal"));
         assertTrue(message.contains("SharedValueSignal"));
         assertTrue(message.contains("static field"));
@@ -131,8 +141,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         ListSignal<String> signal = new ListSignal<>();
 
-        assertDoesNotThrow(() -> signal.get());
         assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
 
         ValueSignal<String> entry = signal.insertFirst("first");
         assertDoesNotThrow(() -> signal.insertLast("last"));
@@ -155,7 +165,7 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
         VaadinSession.setCurrent(session2);
 
         // All operations should throw when accessed from different session
-        assertThrows(IllegalStateException.class, () -> signal.get());
+        assertThrows(IllegalStateException.class, () -> signal.peek());
         assertThrows(IllegalStateException.class,
                 () -> signal.insertFirst("value"));
         assertThrows(IllegalStateException.class,
@@ -175,13 +185,14 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
 
         VaadinSession.setCurrent(session1);
         ListSignal<String> signal = new ListSignal<>();
-        signal.get();
+        signal.peek();
 
         VaadinSession.setCurrent(session2);
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class, () -> signal.get());
+                IllegalStateException.class, () -> signal.peek());
 
         String message = exception.getMessage();
+        assertNotNull(message);
         assertTrue(message.contains("ListSignal"));
         assertTrue(message.contains("static field"));
     }
@@ -192,8 +203,8 @@ public class LocalSignalSessionCheckTest extends SignalTestBase {
     void listSignal_noSession_works() {
         ListSignal<String> signal = new ListSignal<>();
 
-        assertDoesNotThrow(() -> signal.get());
         assertDoesNotThrow(() -> signal.peek());
+        assertDoesNotThrow(() -> getTracked(signal));
 
         ValueSignal<String> entry = signal.insertFirst("first");
         assertDoesNotThrow(() -> signal.insertLast("last"));

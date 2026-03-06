@@ -16,9 +16,12 @@
 package com.vaadin.flow.component;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.ThemeList;
+import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -64,7 +67,7 @@ public interface HasTheme extends HasElement {
      *            string to remove all theme names
      */
     default void setThemeName(String themeName) {
-        getThemeNames().clear(); // clears bound signals
+        getThemeNames().clear();
         getElement().setAttribute("theme", themeName);
     }
 
@@ -153,10 +156,9 @@ public interface HasTheme extends HasElement {
      * {@link #setThemeName(String, boolean)},
      * {@link #addThemeNames(String...)}, {@link #removeThemeNames(String...)}
      * or equivalents in {@link ThemeList} for that name will throw a
-     * {@code com.vaadin.flow.dom.BindingActiveException}. Bindings are
-     * lifecycle-aware and only active while the owning {@link Element} is in
-     * attached state; they are deactivated while the element is in detached
-     * state.
+     * {@link BindingActiveException}. Bindings are lifecycle-aware and only
+     * active while the owning {@link Element} is in attached state; they are
+     * deactivated while the element is in detached state.
      * <p>
      * Bulk operations that indiscriminately replace or clear the theme list
      * (for example {@link ThemeList#clear()} or setting the {@code theme}
@@ -166,11 +168,31 @@ public interface HasTheme extends HasElement {
      *            the theme name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
-     * @throws com.vaadin.flow.signals.BindingActiveException
+     * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bindThemeName(String name, Signal<Boolean> signal) {
-        getThemeNames().bind(name, signal);
+    default SignalBinding<Boolean> bindThemeName(String name,
+            Signal<Boolean> signal) {
+        return getThemeNames().bind(name, signal);
+    }
+
+    /**
+     * Binds the theme names of this component to a {@link Signal} so that the
+     * theme list is dynamically updated to match the signal's value. Only one
+     * group binding is allowed per component.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings. Names that appear in both sources may appear as duplicates in
+     * the {@code theme} attribute.
+     *
+     * @param names
+     *            the signal providing the list of theme names, not {@code null}
+     * @see ThemeList#bind(Signal)
+     * @since 25.1
+     */
+    default SignalBinding<List<String>> bindThemeNames(
+            Signal<List<String>> names) {
+        return getThemeNames().bind(names);
     }
 }

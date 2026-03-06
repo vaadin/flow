@@ -183,4 +183,25 @@ class UrlUtilTest {
         String result = UrlUtil.decodeURIComponent("simple.txt");
         assertEquals("simple.txt", result);
     }
+
+    @Test
+    public void appendQueryParameter_noExistingParams_usesQuestionMark() {
+        String result = UrlUtil.appendQueryParameter("/styles.css", "v-c",
+                "abcd1234");
+        assertEquals("/styles.css?v-c=abcd1234", result);
+    }
+
+    @Test
+    public void appendQueryParameter_existingParams_usesAmpersand() {
+        String result = UrlUtil.appendQueryParameter("/styles.css?theme=dark",
+                "v-c", "abcd1234");
+        assertEquals("/styles.css?theme=dark&v-c=abcd1234", result);
+    }
+
+    @Test
+    public void appendQueryParameter_nullValue_returnsOriginalUrl() {
+        String result = UrlUtil.appendQueryParameter("/styles.css", "v-c",
+                null);
+        assertEquals("/styles.css", result);
+    }
 }
