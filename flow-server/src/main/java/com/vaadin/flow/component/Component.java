@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
