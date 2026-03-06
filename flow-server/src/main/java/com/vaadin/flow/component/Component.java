@@ -338,19 +338,7 @@ public abstract class Component
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        // This should not ever be called for a Composite as it will return
-        // wrong results
-        assert !(this instanceof Composite);
-
-        if (!getElement().getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "You cannot use getChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
-        }
-
-        Builder<Component> childComponents = Stream.builder();
-        getElement().getChildren().forEach(childElement -> ComponentUtil
-                .findComponents(childElement, childComponents::add));
-        return childComponents.build();
+        return ComponentUtil.getChildren(this);
     }
 
     /**
