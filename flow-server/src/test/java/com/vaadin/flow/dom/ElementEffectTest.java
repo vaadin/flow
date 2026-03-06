@@ -210,6 +210,106 @@ class ElementEffectTest {
     }
 
     @Test
+    public void bindText_returnsSignalBinding() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalBinding<String> binding = span.bindText(signal);
+
+        assertNotNull(binding);
+    }
+
+    @Test
+    public void signalBinding_onChange_receivesBindingContext() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // onChange is registered after bind, so the initial execution is missed
+        span.bindText(signal).onChange(contexts::add);
+
+        // No callbacks yet since initial run already happened before onChange
+        assertEquals(0, contexts.size());
+
+        // Trigger a subsequent update
+        signal.set("updated");
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        assertSame(span, ctx.getElement());
+
+        // Trigger another update and verify context tracks correctly
+        signal.set("final");
+
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx2 = contexts.get(1);
+        assertFalse(ctx2.isInitialRun());
+        assertEquals("updated", ctx2.getOldValue());
+        assertEquals("final", ctx2.getNewValue());
+        assertSame(span, ctx2.getElement());
+    }
+
+    @Test
+    public void signalBinding_onChange_bindThenAttach() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // Bind before attaching to UI
+        span.bindText(signal).onChange(contexts::add);
+        assertEquals(0, contexts.size());
+
+        // Attach — effect runs and fires initial callback
+        ui.getElement().appendChild(span);
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> initialCtx = contexts.get(0);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getNewValue());
+
+        // Trigger an update after attach
+        signal.set("updated");
+
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    public void bindingContext_getComponent_returnsNearestComponent() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+
+        ValueSignal<String> signal = new ValueSignal<>("test");
+        AtomicReference<Component> componentRef = new AtomicReference<>();
+
+        // Bind directly on the UI's element so it has a component mapping
+        ui.getElement().bindText(signal).onChange(ctx -> {
+            componentRef.set(ctx.getComponent());
+        });
+
+        signal.set("changed");
+
+        assertNotNull(componentRef.get());
+        assertSame(ui, componentRef.get());
+    }
+
+    @Test
     public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);

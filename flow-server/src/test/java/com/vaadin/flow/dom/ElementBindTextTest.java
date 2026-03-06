@@ -29,7 +29,7 @@ import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -230,14 +230,14 @@ class ElementBindTextTest {
         element.setText("text2");
         element.getText();
 
-        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> fail(
                         "TextBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
-        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .orElseThrow(() -> new AssertionError(
                         "TextBindingFeature should be initialized after binding a signal"));
     }

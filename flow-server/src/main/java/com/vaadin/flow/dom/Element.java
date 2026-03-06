@@ -55,7 +55,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -285,7 +284,8 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
      */
-    public void bindAttribute(String attribute, Signal<String> signal) {
+    public SignalBinding<String> bindAttribute(String attribute,
+            Signal<String> signal) {
         String validAttribute = validateAttribute(attribute);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
@@ -294,7 +294,7 @@ public class Element extends Node<Element> {
             throw new UnsupportedOperationException(
                     "Binding style or class attribute to a Signal is not supported.");
         } else {
-            getStateProvider().bindAttributeSignal(this, validAttribute,
+            return getStateProvider().bindAttributeSignal(this, validAttribute,
                     signal);
         }
     }
@@ -950,12 +950,14 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public <T extends @Nullable Object> void bindProperty(String name,
-            Signal<T> signal, SerializableConsumer<T> writeCallback) {
+    @SuppressWarnings("unchecked")
+    public <T extends @Nullable Object> SignalBinding<T> bindProperty(
+            String name, Signal<T> signal,
+            SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
-        getStateProvider().bindPropertySignal(this, name, signal,
-                writeCallback);
+        return (SignalBinding<T>) getStateProvider().bindPropertySignal(this,
+                name, signal, writeCallback);
     }
 
     /**
@@ -1343,9 +1345,9 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding()) {
+                    if (feature.hasBinding(SignalBindingFeature.TEXT)) {
                         throw new BindingActiveException(
                                 "setText is not allowed while a binding for text exists.");
                     }
@@ -1405,18 +1407,20 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setText(String)
      */
-    public void bindText(Signal<String> signal) {
+    public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
 
-        if (feature.hasBinding() && getNode().isAttached()) {
+        if (feature.hasBinding(SignalBindingFeature.TEXT)
+                && getNode().isAttached()) {
             throw new BindingActiveException();
         }
 
-        ElementEffect.bind(this, signal,
+        SignalBinding<String> binding = ElementEffect.bind(this, signal,
                 (element, value) -> setTextContent(value));
-        feature.setBinding(signal);
+        feature.setBinding(SignalBindingFeature.TEXT, signal);
+        return binding;
     }
 
     /**
@@ -1917,9 +1921,9 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
-    public void bindVisible(Signal<Boolean> visibleSignal) {
+    public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
-        getStateProvider().bindVisibleSignal(this, visibleSignal);
+        return getStateProvider().bindVisibleSignal(this, visibleSignal);
     }
 
     /**
@@ -1974,7 +1978,7 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
      */
-    public void bindEnabled(Signal<Boolean> enabledSignal) {
+    public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -1983,9 +1987,10 @@ public class Element extends Node<Element> {
             throw new BindingActiveException();
         }
 
-        ElementEffect.bind(this, enabledSignal,
+        SignalBinding<Boolean> binding = ElementEffect.bind(this, enabledSignal,
                 (element, value) -> setEnabledInternal(value));
         feature.setBinding(SignalBindingFeature.ENABLED, enabledSignal);
+        return binding;
     }
 
     private void setEnabledInternal(final Boolean enabled) {

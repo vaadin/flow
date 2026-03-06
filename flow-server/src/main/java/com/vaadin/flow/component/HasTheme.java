@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
@@ -171,8 +172,9 @@ public interface HasTheme extends HasElement {
      *             thrown when there is already an existing binding
      * @since 25.1
      */
-    default void bindThemeName(String name, Signal<Boolean> signal) {
-        getThemeNames().bind(name, signal);
+    default SignalBinding<Boolean> bindThemeName(String name,
+            Signal<Boolean> signal) {
+        return getThemeNames().bind(name, signal);
     }
 
     /**
@@ -189,7 +191,8 @@ public interface HasTheme extends HasElement {
      * @see ThemeList#bind(Signal)
      * @since 25.1
      */
-    default void bindThemeNames(Signal<List<String>> names) {
-        getThemeNames().bind(names);
+    default SignalBinding<List<String>> bindThemeNames(
+            Signal<List<String>> names) {
+        return getThemeNames().bind(names);
     }
 }
