@@ -237,10 +237,7 @@ public final class DataViewUtils {
         }
 
         bindItemsInternal(component, itemsSignal, items -> {
-            List<T> backingList = new ArrayList<>(
-                    Objects.requireNonNull(itemsSignal.peek()).size());
-            ListDataProvider<T> dataProvider = DataProvider
-                    .ofCollection(backingList);
+            ListDataProvider<T> dataProvider = DataProvider.ofCollection(items);
             hasDataProvider.setDataProvider(dataProvider);
             // a dummy implementation of data view for just to delegate items
             // refresh to the backed data provider
