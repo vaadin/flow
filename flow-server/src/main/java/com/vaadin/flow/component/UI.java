@@ -16,16 +16,14 @@
 package com.vaadin.flow.component;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.*;
+import com.vaadin.flow.shared.communication.PushMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -72,14 +70,6 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.ErrorHandlingCommand;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
@@ -109,7 +99,9 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 @JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
-        implements PollNotifier, HasComponents, RouterLayout {
+        implements PollNotifier, HasComponents, RouterLayout, AccessSupport {
+
+    private static final String UI_NOT_LOCKED_MESSAGE = "Cannot access state in UI without locking the UI.";
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
 
@@ -140,6 +132,17 @@ public class UI extends Component
      * generator.
      */
     private final String csrfToken = UUID.randomUUID().toString();
+
+    private long lastUnlocked;
+
+    private long lastLocked;
+
+    private transient Lock lock = new ReentrantLock();
+
+    private transient ConcurrentLinkedQueue<AbstractFutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
+
+    private UILockCheckStrategy uiLockCheckStrategy = UILockCheckStrategy.ASSERT;
+
 
     /**
      * Creates a new empty UI.
@@ -373,10 +376,7 @@ public class UI extends Component
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
 
-            // Can't use UI.push() directly since it checks for a valid session
-            if (getSession() != null) {
-                getSession().getService().runPendingAccessTasks(getSession());
-            }
+            this.runPendingAccessTasks();
             pushConnection.push();
         }
 
@@ -479,36 +479,140 @@ public class UI extends Component
      */
     private void accessSynchronously(Command command,
             SerializableRunnable detachHandler) {
-
-        Map<Class<?>, CurrentInstance> old = null;
-
-        VaadinSession session = getSession();
-
-        if (session == null) {
+        if (!this.isAttached()) {
             handleAccessDetach(detachHandler);
             return;
         }
-
-        VaadinService.verifyNoOtherSessionLocked(session);
-
-        session.lock();
+        this.checkHasLock();
+        this.lock();
         try {
-            if (getSession() == null) {
+            if (!this.isAttached()) {
                 // UI was detached after fetching the session but before we
                 // acquired the lock.
                 handleAccessDetach(detachHandler);
                 return;
             }
-            old = CurrentInstance.setCurrent(this);
             command.execute();
         } finally {
-            session.unlock();
-            if (old != null) {
-                CurrentInstance.restoreInstances(old);
-            }
+            this.unlock();
         }
 
     }
+
+
+    @Override
+    public Lock getLockInstance() {
+        return this.lock;
+    }
+
+
+    @Override
+    public void lock() {
+        VaadinService.verifyNoOtherUILocked(this);
+        this.getLockInstance().lock();
+        this.lastLocked = System.currentTimeMillis();
+    }
+
+
+    @Override
+    public void unlock() {
+        this.checkHasLock();
+        try {
+            /*
+             * Run pending tasks and push if the reentrant lock will actually be
+             * released by this unlock() invocation.
+             */
+            if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
+                if (this.getPushConfiguration().getPushMode() == PushMode.AUTOMATIC) {
+                    this.push();
+                    /*
+                     * If the session is locked when a new access task is added, it is
+                     * assumed that the queue will be purged when the lock is released. This
+                     * might however not happen if a task is enqueued between the moment
+                     * when unlock() purges the queue and the moment when the lock is
+                     * actually released. This means that the queue should be purged again
+                     * if it is not empty after unlocking.
+                     */
+                    if (!getPendingAccessQueue().isEmpty()) {
+                        this.ensureAccessQueuePurged();
+                    }
+                }
+                this.lastUnlocked = System.currentTimeMillis();
+            }
+        } finally {
+            getLockInstance().unlock();
+        }
+    }
+
+
+    @Override
+    public void checkHasLock() {
+        checkHasLock(UI_NOT_LOCKED_MESSAGE);
+    }
+
+
+    @Override
+    public void checkHasLock(String message) {
+        uiLockCheckStrategy.checkHasLock(this, message);
+    }
+
+
+    @Override
+    public void runPendingAccessTasks() {
+        this.checkHasLock();
+
+        if (this.getPendingAccessQueue().isEmpty()) {
+            return;
+        }
+
+        AbstractFutureAccess pendingAccess;
+        while ((pendingAccess = this.getPendingAccessQueue()
+                .poll()) != null) {
+            if (!pendingAccess.isCancelled()) {
+                pendingAccess.run();
+
+                try {
+                    pendingAccess.get();
+
+                } catch (CancellationException ignored) { // NOSONAR
+                    // Ignore canceled UI access tasks exceptions and don't
+                    // let it to be processed by the error handler and shown
+                    // on the UI
+                } catch (Exception exception) {
+                    pendingAccess.handleError(exception);
+                }
+            }
+        }
+    }
+
+
+    @Override
+    public void ensureAccessQueuePurged() {
+        /*
+         * If no thread is currently holding the lock, pending changes for UIs
+         * with automatic push would not be processed and pushed until the next
+         * time there is a request or someone does an explicit push call.
+         *
+         * To remedy this, we try to get the lock at this point. If the lock is
+         * currently held by another thread, we just back out as the queue will
+         * get purged once it is released. If the lock is held by the current
+         * thread, we just release it knowing that the queue gets purged once
+         * the lock is ultimately released. If the lock is not held by any
+         * thread and we acquire it, we just release it again to purge the queue
+         * right away.
+         */
+        try {
+            // tryLock() would be shorter, but it does not guarantee fairness
+            if (this.getLockInstance().tryLock(0, TimeUnit.SECONDS)) {
+                // unlock triggers runPendingAccessTasks
+                this.unlock();
+            }
+        } catch (InterruptedException e) {
+            // Restore the interrupted flag
+            Thread.currentThread().interrupt();
+        }
+    }
+
 
     /**
      * Provides exclusive access to this UI from outside a request handling
@@ -549,10 +653,30 @@ public class UI extends Component
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
+    @Override
     public Future<Void> access(final Command command) {
         // null detach handler -> throw UIDetachEvent
         return access(command, null);
     }
+
+
+    @Override
+    public Queue<AbstractFutureAccess> getPendingAccessQueue() {
+        return this.pendingAccessQueue;
+    }
+
+
+    @Override
+    public long getLastLocked() {
+        return this.lastLocked;
+    }
+
+
+    @Override
+    public long getLastUnlocked() {
+        return this.lastUnlocked;
+    }
+
 
     /*
      * Yes, we are mixing legacy Command with newer SerializableRunnable. This
@@ -561,14 +685,7 @@ public class UI extends Component
      */
     private Future<Void> access(Command command,
             SerializableRunnable detachHandler) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            handleAccessDetach(detachHandler);
-            return null;
-        }
-
-        return session.access(new ErrorHandlingCommand() {
+        UIFutureAccess uiFutureAccess = new UIFutureAccess(this, new ErrorHandlingCommand() {
             @Override
             public void execute() {
                 accessSynchronously(command, detachHandler);
@@ -609,6 +726,9 @@ public class UI extends Component
                 }
             }
         });
+        pendingAccessQueue.add(uiFutureAccess);
+        ensureAccessQueuePurged();
+        return uiFutureAccess;
     }
 
     /**
@@ -730,12 +850,13 @@ public class UI extends Component
      *
      */
     public void push() {
+        VaadinService.verifyNoOtherUILocked(this);
         VaadinSession session = getSession();
 
         if (session == null) {
             throw new UIDetachedException("Cannot push a detached UI");
         }
-        session.checkHasLock();
+        this.checkHasLock();
 
         if (!getPushConfiguration().getPushMode().isEnabled()) {
             throw new IllegalStateException("Push not enabled");
@@ -749,7 +870,7 @@ public class UI extends Component
          * when the push would otherwise be ignored because there are no changes
          * to push.
          */
-        session.getService().runPendingAccessTasks(session);
+        this.runPendingAccessTasks();
 
         if (!getInternals().isDirty()
                 || getInternals().getStateTree().isPreparingForResync()) {
@@ -784,7 +905,7 @@ public class UI extends Component
         return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
-    Logger getLogger() {
+    public Logger getLogger() {
         return LoggerFactory.getLogger(UI.class.getName());
     }
 

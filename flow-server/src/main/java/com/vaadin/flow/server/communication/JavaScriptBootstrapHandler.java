@@ -153,7 +153,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(UI.class, request,
+        BootstrapContext context = super.createAndInitUI(uiClass, request,
                 response, session);
         ObjectNode config = context.getApplicationParameters();
 
