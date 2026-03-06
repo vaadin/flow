@@ -55,7 +55,6 @@ import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -90,7 +89,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class, TextBindingFeature.class,
+            ReturnChannelMap.class, InertData.class,
             SignalBindingFeature.class };
 
     private BasicElementStateProvider() {
@@ -288,6 +287,10 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         ElementPropertyMap propertyFeature = getPropertyFeature(node);
 
         if (propertyFeature.hasSignal(name)) {
+            if (propertyFeature.hasWriteCallbackForSignal(name)) {
+                propertyFeature.setPropertyWithWriteCallback(name, value);
+                return;
+            }
             throw new BindingActiveException(String.format(
                     "setProperty is not allowed while a binding for the property '%s' exists.",
                     name));
