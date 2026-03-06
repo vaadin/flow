@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.shared.impl.StagedTransaction;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -94,7 +95,9 @@ public class ListSignal<T extends @Nullable Object>
         assertLockHeld();
         super.checkPreconditions();
 
-        if (Transaction.inExplicitTransaction()) {
+        if (Transaction.inExplicitTransaction() && !(Transaction
+                .getCurrent() instanceof StagedTransaction stagedTransaction
+                && stagedTransaction.isCommitting())) {
             throw new IllegalStateException(
                     "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
         }

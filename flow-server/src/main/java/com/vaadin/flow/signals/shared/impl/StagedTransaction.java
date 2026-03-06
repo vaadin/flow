@@ -47,6 +47,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree.PendingCommit;
  * commands.
  */
 public class StagedTransaction extends Transaction {
+
     /**
      * Submits a successful result if all registered dependencies submit
      * successful results and an error result if any dependency submits an
@@ -156,6 +157,16 @@ public class StagedTransaction extends Transaction {
     public StagedTransaction(Transaction outer) {
         assert outer != null;
         this.outer = outer;
+    }
+
+    /**
+     * Checks if this transaction is currently committing.
+     * 
+     * @return <code>true</code> if this transaction is currently committing,
+     *         <code>false</code> otherwise
+     */
+    public boolean isCommitting() {
+        return committing;
     }
 
     @Override

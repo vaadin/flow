@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.function.ValueMerger;
 import com.vaadin.flow.signals.function.ValueModifier;
 import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.shared.impl.StagedTransaction;
 
 /**
  * A local writable signal that holds a reference to an object.
@@ -98,7 +99,9 @@ public class ValueSignal<T extends @Nullable Object>
         assertLockHeld();
         super.checkPreconditions();
 
-        if (Transaction.inExplicitTransaction()) {
+        if (Transaction.inExplicitTransaction() && !(Transaction
+                .getCurrent() instanceof StagedTransaction stagedTransaction
+                && stagedTransaction.isCommitting())) {
             throw new IllegalStateException(
                     "ValueSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedValueSignal instead.");
         }
