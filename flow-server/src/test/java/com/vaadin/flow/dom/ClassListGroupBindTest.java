@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -225,6 +226,29 @@ class ClassListGroupBindTest extends SignalsUnitTest {
         signal.set(List.of("z"));
         assertFalse(component.hasClassName("x"));
         assertTrue(component.hasClassName("z"));
+    }
+
+    @Test
+    public void bind_onChange_receivesBindingContext() {
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<List<String>> signal = new ValueSignal<>(List.of("a", "b"));
+        List<BindingContext<List<String>>> contexts = new ArrayList<>();
+
+        element.getClassList().bind(signal).onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set(List.of("c"));
+
+        assertEquals(1, contexts.size());
+        BindingContext<List<String>> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals(List.of("a", "b"), ctx.getOldValue());
+        assertEquals(List.of("c"), ctx.getNewValue());
+        assertEquals(element, ctx.getElement());
     }
 
     @Tag("div")
