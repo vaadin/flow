@@ -51,6 +51,9 @@ const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
+const localWebComponentsDir = path.resolve(__dirname, 'web-components');
+const localWebComponentsNodeModulesPath = path.resolve(localWebComponentsDir, 'node_modules');
+const hasLocalWebComponents = existsSync(localWebComponentsNodeModulesPath);
 const webComponentTags = '#webComponentTags#';
 
 const projectIndexHtml = path.resolve(frontendFolder, 'index.html');
@@ -393,6 +396,29 @@ function runWatchDog(watchDogPort: number, watchDogHost: string | undefined) {
 
 const allowedFrontendFolders = [frontendFolder, nodeModulesFolder];
 
+function useLocalWebComponents(): PluginOption {
+  return {
+    name: 'vaadin:use-local-web-components',
+    enforce: 'pre',
+    config(config) {
+      console.info('Using local web components from ' + localWebComponentsDir);
+      config.server = config.server ?? {};
+      config.server.fs = config.server.fs ?? {};
+      config.server.fs.allow = config.server.fs.allow ?? [];
+      config.server.fs.allow.push(localWebComponentsNodeModulesPath);
+      config.server.watch = config.server.watch ?? {};
+      config.server.watch.ignored = [`!${localWebComponentsNodeModulesPath}/**`];
+      config.optimizeDeps = config.optimizeDeps ?? {};
+      config.optimizeDeps.exclude = [...(config.optimizeDeps.exclude ?? []), '@vaadin', '@polymer'];
+    },
+    resolveId(id) {
+      if (/^(@polymer|@vaadin)/.test(id)) {
+        return this.resolve(path.join(localWebComponentsNodeModulesPath, id));
+      }
+    },
+  };
+}
+
 function showRecompileReason(): PluginOption {
   return {
     name: 'vaadin:why-you-compile',
@@ -524,6 +550,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       productionMode && brotli(),
       devMode && showRecompileReason(),
+      devMode && hasLocalWebComponents && useLocalWebComponents(),
       settings.offlineEnabled && serviceWorkerPlugin({
         srcPath: settings.clientServiceWorkerSource,
       }),
