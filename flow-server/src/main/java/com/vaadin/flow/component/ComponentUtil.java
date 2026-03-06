@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.Component.MapToExistingElement;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -745,6 +746,39 @@ public class ComponentUtil {
             return getRouteComponent(component.getParent().get());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Gets the child components of assumed parent component.
+     * <p>
+     * The default implementation finds child components by traversing each
+     * child {@link Element} tree.
+     * <p>
+     * If the component is injected to a PolymerTemplate using the
+     * <code>@Id</code> annotation the getChildren method will only return
+     * children added from the server side and will not return any children
+     * declared in the template file.
+     *
+     * @param parent
+     *            the parent component from which to get the child components
+     * @see Id
+     *
+     * @return the child components of the given parent component
+     */
+    public static Stream<Component> getChildren(Component parent) {
+        // This should not ever be called for a Composite as it will return
+        // wrong results
+        assert !(parent instanceof Composite);
+
+        if (!parent.getElement().getComponent().isPresent()) {
+            throw new IllegalStateException(
+                    "You cannot use getChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
+        }
+
+        Builder<Component> childComponents = Stream.builder();
+        parent.getElement().getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, childComponents::add));
+        return childComponents.build();
     }
 
 }
