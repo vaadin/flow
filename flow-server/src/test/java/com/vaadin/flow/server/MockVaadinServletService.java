@@ -19,6 +19,7 @@ import jakarta.servlet.ServletException;
 
 import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,8 @@ public class MockVaadinServletService extends VaadinServletService {
     private DeploymentConfiguration configuration;
 
     private Lookup lookup;
+
+    private final List<Throwable> uncaughtExecutorExceptions = new ArrayList<>();
 
     private static class MockVaadinServlet extends VaadinServlet {
 
@@ -109,6 +112,10 @@ public class MockVaadinServletService extends VaadinServletService {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         return Collections.emptyList();
+    }
+
+    public List<Throwable> getUncaughtExecutorExceptions() {
+        return uncaughtExecutorExceptions;
     }
 
     public void init(Instantiator instantiator) {
@@ -181,6 +188,7 @@ public class MockVaadinServletService extends VaadinServletService {
     OfVirtual defaultExecutorFactory() {
         return super.defaultExecutorFactory()
                 .uncaughtExceptionHandler((t, e) -> {
+                    uncaughtExecutorExceptions.add(e);
                     LoggerFactory.getLogger(getClass()).error(
                             "An uncaught exception occurred in thread {}",
                             t.getName(), e);

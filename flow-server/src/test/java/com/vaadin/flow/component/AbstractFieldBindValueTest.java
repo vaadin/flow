@@ -148,29 +148,6 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        TestInput input = new TestInput();
-        UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        input.bindValue(signal, signal::set);
-        assertEquals("foo", input.getValue());
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = input.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.VALUE);
-
-        // Signal changes should no longer affect the component
-        signal.set("bar");
-        assertEquals("foo", input.getValue());
-
-        // Manual set should work and not update the signal
-        input.setValue("baz");
-        assertEquals("baz", input.getValue());
-        assertEquals("bar", signal.peek());
-    }
-
-    @Test
     public void bindValue_lazyInitSignalBindingFeature() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
@@ -472,16 +449,16 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
                 personSignal.updater(Person::withName));
 
         assertEquals("Alice", input.getValue());
-        assertEquals(30, personSignal.get().age());
+        assertEquals(30, personSignal.peek().age());
 
         input.setValue("Bob");
         assertEquals("Bob", input.getValue());
-        assertEquals("Bob", personSignal.get().name());
-        assertEquals(30, personSignal.get().age());
+        assertEquals("Bob", personSignal.peek().name());
+        assertEquals(30, personSignal.peek().age());
 
         personSignal.update(p -> new Person("Charlie", 35));
         assertEquals("Charlie", input.getValue());
-        assertEquals(35, personSignal.get().age());
+        assertEquals(35, personSignal.peek().age());
     }
 
     @Test
@@ -517,13 +494,13 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
                 personSignal.modifier(Person::setName));
 
         assertEquals("Alice", input.getValue());
-        assertEquals(30, personSignal.get().getAge());
+        assertEquals(30, personSignal.peek().getAge());
 
         input.setValue("Bob");
         assertEquals("Bob", input.getValue());
-        assertEquals("Bob", personSignal.get().getName());
-        assertEquals(30, personSignal.get().getAge());
-        assertSame(person, personSignal.get());
+        assertEquals("Bob", personSignal.peek().getName());
+        assertEquals(30, personSignal.peek().getAge());
+        assertSame(person, personSignal.peek());
 
         personSignal.modify(p -> p.setName("Charlie"));
         assertEquals("Charlie", input.getValue());

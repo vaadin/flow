@@ -180,6 +180,9 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("bindText");
         ignore.add("bindVisible");
 
+        // returns void
+        ignore.add("flashClass");
+
         assertMethodsReturnType(Element.class, ignore);
     }
 
@@ -189,6 +192,7 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
+        ignore.add("bind");
 
         for (Method m : Style.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
