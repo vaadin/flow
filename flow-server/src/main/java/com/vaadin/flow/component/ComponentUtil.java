@@ -761,7 +761,6 @@ public class ComponentUtil {
      *
      * @param parent
      *            the parent component from which to get the child components
-     * @see Id
      *
      * @return the child components of the given parent component
      */
