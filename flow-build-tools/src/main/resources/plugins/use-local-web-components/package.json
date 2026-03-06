@@ -1,0 +1,16 @@
+{
+  "description": "Vite plugin for using a local checkout of Vaadin web components",
+  "repository": "vaadin/flow",
+  "name": "@vaadin/use-local-web-components",
+  "version": "1.0.0",
+  "main": "use-local-web-components.js",
+  "private": true,
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "use-local-web-components.js"
+  ]
+}
