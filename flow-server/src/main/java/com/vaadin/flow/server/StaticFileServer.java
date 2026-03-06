@@ -50,6 +50,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -371,7 +372,7 @@ public class StaticFileServer implements StaticFileHandler {
         // There is a resource!
 
         // Intentionally writing cache headers also for 304 responses
-        writeCacheHeaders(filenameWithPath, response);
+        writeCacheHeaders(filenameWithPath, request, response);
 
         long timestamp = writeModificationTimestamp(resourceUrl, request,
                 response);
@@ -559,10 +560,29 @@ public class StaticFileServer implements StaticFileHandler {
      */
     protected void writeCacheHeaders(String filenameWithPath,
             HttpServletResponse response) {
+        writeCacheHeaders(filenameWithPath, null, response);
+    }
+
+    /**
+     * Writes cache headers for the file into the response, taking the request
+     * into account for content-hash based cache busting.
+     *
+     * @param filenameWithPath
+     *            the name and path of the file being sent
+     * @param request
+     *            the request object, or {@code null}
+     * @param response
+     *            the response object
+     */
+    protected void writeCacheHeaders(String filenameWithPath,
+            HttpServletRequest request, HttpServletResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
         if (!deploymentConfiguration.isProductionMode()) {
             cacheControl = "no-cache";
+        } else if (request != null && request.getParameter(
+                ApplicationConstants.CONTENT_HASH_PARAMETER) != null) {
+            cacheControl = "max-age=31536000, immutable";
         } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;
         } else {

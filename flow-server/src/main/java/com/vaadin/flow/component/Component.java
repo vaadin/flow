@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -615,8 +616,8 @@ public abstract class Component
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
-    public void bindVisible(Signal<Boolean> visibleSignal) {
-        getElement().bindVisible(visibleSignal);
+    public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
+        return getElement().bindVisible(visibleSignal);
     }
 
     /**

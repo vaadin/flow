@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -205,6 +207,30 @@ class StyleBindTest {
         color.set("rgba(0, 0, 255, 1)");
         assertEquals("rgba(0, 0, 255, 1)",
                 element.getStyle().get("backgroundColor"));
+    }
+
+    @Test
+    public void bind_onChange_receivesBindingContext() {
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<String> signal = new ValueSignal<>("red");
+        List<BindingContext<?>> contexts = new ArrayList<>();
+
+        element.getStyle().bind("background-color", signal)
+                .onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set("blue");
+
+        assertEquals(1, contexts.size());
+        BindingContext<?> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("red", ctx.getOldValue());
+        assertEquals("blue", ctx.getNewValue());
+        assertEquals(element, ctx.getElement());
     }
 
     private void mockLockedSessionWithErrorHandler() {
