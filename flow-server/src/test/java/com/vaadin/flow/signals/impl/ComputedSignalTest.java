@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -339,6 +341,103 @@ public class ComputedSignalTest extends SignalTestBase {
          */
         assertEquals("value", signal.peek());
         assertEquals(3, count.get());
+    }
+
+    @Test
+    void lambda_getLocalValueSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ValueSignal<>(2);
+
+        Signal<Integer> computed = () -> shared.get() + local.get();
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ValueSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void computed_getLocalValueSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ValueSignal<>(2);
+
+        Signal<Integer> computed = Signal
+                .computed(() -> shared.get() + local.get());
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ValueSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void lambda_getLocalListSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ListSignal<Integer>();
+        local.insertFirst(2);
+
+        Signal<Integer> computed = () -> shared.get()
+                + local.get().get(0).get();
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ListSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void computed_getLocalListSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ListSignal<Integer>();
+        local.insertFirst(2);
+
+        Signal<Integer> computed = Signal
+                .computed(() -> shared.get() + local.get().get(0).peek());
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ListSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
     }
 
     @Test
