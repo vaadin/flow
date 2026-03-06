@@ -57,6 +57,7 @@ abstract class ComponentTest {
             InvocationTargetException, NoSuchMethodException {
         component = createComponent();
         whitelistProperty("visible");
+        whitelistProperty("testId");
         addProperties();
         BeanInfo componentInfo = Introspector.getBeanInfo(component.getClass());
         Stream.of(componentInfo.getPropertyDescriptors()).filter(
