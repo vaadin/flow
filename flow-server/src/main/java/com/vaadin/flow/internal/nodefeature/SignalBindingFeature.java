@@ -33,6 +33,7 @@ import com.vaadin.flow.signals.Signal;
  */
 public class SignalBindingFeature extends ServerSideFeature {
 
+    public static final String TEXT = "text";
     public static final String CLASSES = "classes/";
     public static final String CLASS_GROUP = "classes/*";
     public static final String ENABLED = "enabled";

@@ -55,7 +55,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -1343,9 +1342,9 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding()) {
+                    if (feature.hasBinding(SignalBindingFeature.TEXT)) {
                         throw new BindingActiveException(
                                 "setText is not allowed while a binding for text exists.");
                     }
@@ -1407,16 +1406,17 @@ public class Element extends Node<Element> {
      */
     public void bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
 
-        if (feature.hasBinding() && getNode().isAttached()) {
+        if (feature.hasBinding(SignalBindingFeature.TEXT)
+                && getNode().isAttached()) {
             throw new BindingActiveException();
         }
 
         ElementEffect.bind(this, signal,
                 (element, value) -> setTextContent(value));
-        feature.setBinding(signal);
+        feature.setBinding(SignalBindingFeature.TEXT, signal);
     }
 
     /**
