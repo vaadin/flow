@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
@@ -192,9 +193,9 @@ public interface HasText extends HasElement {
      *             thrown when there is already an existing binding
      * @see #setText(String)
      */
-    default void bindText(Signal<String> textSignal) {
+    default SignalBinding<String> bindText(Signal<String> textSignal) {
         throwIfChildrenBindingIsActive("bindText");
-        getElement().bindText(textSignal);
+        return getElement().bindText(textSignal);
     }
 
     private void throwIfChildrenBindingIsActive(String methodName) {

@@ -29,6 +29,7 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
@@ -257,7 +258,7 @@ public class Html extends Component {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
-    public void bindHtmlContent(Signal<String> htmlSignal) {
+    public SignalBinding<String> bindHtmlContent(Signal<String> htmlSignal) {
         Objects.requireNonNull(htmlSignal, "Signal cannot be null");
         SignalBindingFeature feature = getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -266,8 +267,9 @@ public class Html extends Component {
             throw new BindingActiveException();
         }
 
-        ElementEffect.bind(getElement(), htmlSignal,
-                (element, value) -> setOuterHtml(value, true));
+        SignalBinding<String> binding = ElementEffect.bind(getElement(),
+                htmlSignal, (element, value) -> setOuterHtml(value, true));
         feature.setBinding(SignalBindingFeature.HTML_CONTENT, htmlSignal);
+        return binding;
     }
 }

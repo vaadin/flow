@@ -123,8 +123,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding) {
-            return ((SignalBinding) value).value();
+        if (value instanceof InternalSignalBinding) {
+            return ((InternalSignalBinding) value).value();
         } else {
             return value;
         }
@@ -153,7 +153,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         assert hasSignal(name)
                 : "Expected an active signal binding for '" + name + "'";
 
-        SignalBinding binding = (SignalBinding) super.get(name);
+        InternalSignalBinding binding = (InternalSignalBinding) super.get(name);
         Serializable resolvedValue = writeSignalValue(name, value, binding);
 
         // Store the resolved value (may differ if signal reverted)
@@ -161,8 +161,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         // the signal's own effect will fire the change event; if it reverted,
         // the signal's effect will fire the change event for the reverted
         // value.
-        super.put(name, new SignalBinding(binding.signal(), resolvedValue,
-                binding.writeCallback()), false);
+        super.put(name, new InternalSignalBinding(binding.signal(),
+                resolvedValue, binding.writeCallback()), false);
     }
 
     @Override
@@ -233,7 +233,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     private Serializable writeSignalValue(String name, Serializable value,
-            SignalBinding binding) {
+            InternalSignalBinding binding) {
         AtomicReference<Serializable> resolvedValue = new AtomicReference<>(
                 value);
 
@@ -663,14 +663,15 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         PutResult putResult = null;
         if (hasSignal(key)) {
-            SignalBinding binding = (SignalBinding) super.get(key);
+            InternalSignalBinding binding = (InternalSignalBinding) super.get(
+                    key);
 
             Serializable resolvedValue = writeSignalValue(key, value, binding);
 
             // never trigger change event here since the change event will be
             // triggered by the signal update
             Serializable oldValue = super.put(key,
-                    new SignalBinding(binding.signal(), resolvedValue,
+                    new InternalSignalBinding(binding.signal(), resolvedValue,
                             binding.writeCallback()),
                     false);
             putResult = new PutResult(oldValue, null);

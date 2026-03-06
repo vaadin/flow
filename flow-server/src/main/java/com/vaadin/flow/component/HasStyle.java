@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.signals.Signal;
 
@@ -178,8 +179,9 @@ public interface HasStyle extends HasElement {
      * @see ClassList#bind(String, Signal)
      * @since 25.1
      */
-    default void bindClassName(String className, Signal<Boolean> signal) {
-        getClassNames().bind(className, signal);
+    default SignalBinding<Boolean> bindClassName(String className,
+            Signal<Boolean> signal) {
+        return getClassNames().bind(className, signal);
     }
 
     /**
@@ -195,8 +197,9 @@ public interface HasStyle extends HasElement {
      * @see ClassList#bind(Signal)
      * @since 25.1
      */
-    default void bindClassNames(Signal<List<String>> names) {
-        getClassNames().bind(names);
+    default SignalBinding<List<String>> bindClassNames(
+            Signal<List<String>> names) {
+        return getClassNames().bind(names);
     }
 
     /**
