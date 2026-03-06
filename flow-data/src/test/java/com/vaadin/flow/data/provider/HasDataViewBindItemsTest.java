@@ -465,4 +465,49 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
         // Verify the data is updated
         assertEquals("Updated Item 1", dataView.getItem(0));
     }
+
+    @Test
+    public void bindItems_getItems_returnsAllItems() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+        itemsSignal.insertLast("Item 2");
+        itemsSignal.insertLast("Item 3");
+
+        TestDataView dataView = component.bindItems(itemsSignal);
+
+        List<String> items = dataView.getItems().toList();
+        assertEquals(3, items.size());
+        assertEquals("Item 1", items.get(0));
+        assertEquals("Item 2", items.get(1));
+        assertEquals("Item 3", items.get(2));
+    }
+
+    @Test
+    public void bindItems_getItems_reflectsSignalChanges() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+        itemsSignal.insertLast("Item 2");
+
+        TestDataView dataView = component.bindItems(itemsSignal);
+
+        // Initial items
+        assertEquals(2, dataView.getItems().count());
+
+        // Add item
+        itemsSignal.insertLast("Item 3");
+        assertEquals(3, dataView.getItems().count());
+
+        // Update inner signal
+        ValueSignal<String> item1Signal = itemsSignal.peek().getFirst();
+        item1Signal.set("Updated Item 1");
+
+        List<String> items = dataView.getItems().toList();
+        assertEquals("Updated Item 1", items.getFirst());
+    }
 }
