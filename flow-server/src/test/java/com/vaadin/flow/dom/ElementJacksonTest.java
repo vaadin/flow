@@ -190,6 +190,7 @@ class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
+        ignore.add("bind");
 
         for (Method m : Style.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
