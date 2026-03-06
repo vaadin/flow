@@ -82,9 +82,6 @@ public abstract class Component
     private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("id", "");
 
-    private static final PropertyDescriptor<String, Optional<String>> testIdDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("data-testid", "");
-
     private static final PropertyChangeListener NOOP_PROPERTY_LISTENER = event -> {
         // NOOP
     };
@@ -481,7 +478,11 @@ public abstract class Component
      *            previously set test id
      */
     public void setTestId(String testId) {
-        set(testIdDescriptor, testId == null ? "" : testId);
+        if (testId == null) {
+            getElement().removeAttribute("data-testid");
+        } else {
+            getElement().setAttribute("data-testid", testId);
+        }
     }
 
     /**
@@ -493,7 +494,7 @@ public abstract class Component
      * @return the test id, or {@code null} if no test id has been set
      */
     public String getTestId() {
-        return get(testIdDescriptor).orElse(null);
+        return getElement().getAttribute("data-testid");
     }
 
     /**
