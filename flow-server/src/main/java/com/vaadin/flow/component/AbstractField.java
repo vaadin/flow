@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -262,8 +263,8 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     }
 
     @Override
-    public void bindValue(Signal<T> valueSignal,
+    public SignalBinding<T> bindValue(Signal<T> valueSignal,
             SerializableConsumer<T> writeCallback) {
-        fieldSupport.bindValue(valueSignal, writeCallback);
+        return fieldSupport.bindValue(valueSignal, writeCallback);
     }
 }
