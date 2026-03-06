@@ -23,8 +23,12 @@ import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class HasTextTest {
 
@@ -37,6 +41,8 @@ class HasTextTest {
 
         Mockito.doCallRealMethod().when(hasText).setWhiteSpace(Mockito.any());
         Mockito.doCallRealMethod().when(hasText).getWhiteSpace();
+        Mockito.doCallRealMethod().when(hasText).setText(Mockito.any());
+        Mockito.doCallRealMethod().when(hasText).bindText(Mockito.any());
     }
 
     @Test
@@ -63,6 +69,28 @@ class HasTextTest {
         hasText.getElement().getStyle().set("white-space", "foo");
 
         assertEquals(null, hasText.getWhiteSpace());
+    }
+
+    @Test
+    public void setText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.setText("test"));
+    }
+
+    @Test
+    public void bindText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.bindText(new ValueSignal<>("")));
     }
 
 }

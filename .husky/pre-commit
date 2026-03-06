@@ -6,20 +6,13 @@ if [ -n "$STAGED_FILES" ]; then
     UPSTREAM_REF="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)" || exit 0
     BASE_SHA="$(git merge-base HEAD "$UPSTREAM_REF")"
 
-    # Stash unstaged changes to avoid re-staging partial hunks
-    git stash push --keep-index --quiet --message "pre-commit-hook-unstaged"
-
     echo "Formatting with Spotless..."
     if ! mvn spotless:apply -q -Dspotless.ratchetFrom="$BASE_SHA"; then
         echo "Spotless formatting failed."
-        git stash pop --quiet 2>/dev/null || true
         exit 1
     fi
 
     echo "$STAGED_FILES" | xargs git add
-
-    # Restore unstaged changes
-    git stash pop --quiet 2>/dev/null || true
 
     echo "Formatting complete."
 fi

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.signals.Signal;
 
@@ -445,15 +446,19 @@ public interface HasSize extends HasElement {
      *
      * @param widthSignal
      *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setWidth(String)
      */
-    default void bindWidth(Signal<String> widthSignal) {
+    default SignalBinding<?> bindWidth(Signal<String> widthSignal) {
         Objects.requireNonNull(widthSignal, "Signal cannot be null");
-        getElement().getStyle().bind(STYLE_WIDTH, widthSignal);
+        SignalBinding<?> binding = getElement().getStyle().bind(STYLE_WIDTH,
+                widthSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_WIDTH_FULL,
                 widthSignal.map(value -> "100%".equals(value) ? "" : null));
+        return binding;
     }
 
     /**
@@ -481,15 +486,19 @@ public interface HasSize extends HasElement {
      *
      * @param heightSignal
      *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setHeight(String)
      */
-    default void bindHeight(Signal<String> heightSignal) {
+    default SignalBinding<?> bindHeight(Signal<String> heightSignal) {
         Objects.requireNonNull(heightSignal, "Signal cannot be null");
-        getElement().getStyle().bind(STYLE_HEIGHT, heightSignal);
+        SignalBinding<?> binding = getElement().getStyle().bind(STYLE_HEIGHT,
+                heightSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_HEIGHT_FULL,
                 heightSignal.map(value -> "100%".equals(value) ? "" : null));
+        return binding;
     }
 
     /**

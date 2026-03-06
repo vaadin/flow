@@ -17,25 +17,15 @@ package com.vaadin.flow.signals.shared;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SharedSignalSerializationTest {
-
-    private <T> T assertSerializeAndDeserialize(T obj) {
-        try {
-            return serializeAndDeserialize(obj);
-        } catch (Throwable e) {
-            fail("Not Serializable: " + e.getClass().getName() + ": "
-                    + e.getMessage());
-            return null;
-        }
-    }
+class SharedSignalSerializationTest {
 
     /**
      * Performs actual serialization/deserialization
@@ -49,7 +39,7 @@ public class SharedSignalSerializationTest {
      *             if something goes wrong.
      */
     @SuppressWarnings({ "UnusedReturnValue", "WeakerAccess" })
-    public <T> T serializeAndDeserialize(T instance) throws Throwable {
+    <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
@@ -64,50 +54,38 @@ public class SharedSignalSerializationTest {
     }
 
     @Test
-    public void sharedValueSignal_serializable() {
+    void sharedValueSignal_notSerializable() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
-        assertSerializeAndDeserialize(signal);
-
-        signal.set("Test");
-        assertSerializeAndDeserialize(signal);
+        assertThrows(NotSerializableException.class,
+                () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedListSignal_serializable() {
+    void sharedListSignal_notSerializable() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
-        assertSerializeAndDeserialize(signal);
+        assertThrows(NotSerializableException.class,
+                () -> serializeAndDeserialize(signal));
 
-        signal.insertFirst("Test");
-        assertSerializeAndDeserialize(signal);
     }
 
     @Test
-    void sharedMapSignal_serializable() {
+    void sharedMapSignal_notSerializable() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
-        assertSerializeAndDeserialize(signal);
-
-        signal.put("key", "Test");
-        assertSerializeAndDeserialize(signal);
+        assertThrows(NotSerializableException.class,
+                () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedNodeSignal_serializable() {
+    void sharedNodeSignal_notSerializable() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        assertSerializeAndDeserialize(signal);
-
-        signal.putChildWithValue("key", "Test");
-        signal = assertSerializeAndDeserialize(signal);
-
-        Assert.assertEquals("Test", signal.get().mapChildren().get("key").get()
-                .value(String.class));
+        assertThrows(NotSerializableException.class,
+                () -> serializeAndDeserialize(signal));
     }
 
     @Test
-    void sharedNumberSignal_serializable() {
+    void sharedNumberSignal_notSerializable() {
         SharedNumberSignal signal = new SharedNumberSignal(0.0);
-        assertSerializeAndDeserialize(signal);
-
-        signal.set(123.45);
-        assertSerializeAndDeserialize(signal);
+        assertThrows(NotSerializableException.class,
+                () -> serializeAndDeserialize(signal));
     }
 }

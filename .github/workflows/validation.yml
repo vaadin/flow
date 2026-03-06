@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '25.0', '24.9', '24.8', '23.6']
+    branches: [main, '25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened]
@@ -263,10 +263,33 @@ jobs:
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
+  auto-merge:
+    needs: api-diff-labeling
+    if: github.event_name == 'pull_request' && github.base_ref != 'main'
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: vaadin/platform-build-script
+          ref: main
+          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.9.0'
+      - name: Auto-merge PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
+          GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: node scripts/autoMerge.js
   api-diff-labeling:
     environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     if: github.event_name == 'pull_request_target'
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-24.04
     permissions:
       contents: read

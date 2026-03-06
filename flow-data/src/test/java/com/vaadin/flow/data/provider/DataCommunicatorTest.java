@@ -468,6 +468,42 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void dataProviderReturnsLessItemsThanSize_noIndexOutOfBounds(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        // Data provider where size() always returns 50 but fetch() only
+        // returns 45 items, simulating items deleted between count and fetch
+        AbstractDataProvider<Item, Object> dataProvider = new AbstractDataProvider<>() {
+            @Override
+            public int size(Query<Item, Object> query) {
+                return 50;
+            }
+
+            @Override
+            public Stream<Item> fetch(Query<Item, Object> query) {
+                int end = Math.min(query.getOffset() + query.getLimit(), 45);
+                if (end <= query.getOffset()) {
+                    return Stream.empty();
+                }
+                return asParallelIfRequired(
+                        IntStream.range(query.getOffset(), end))
+                        .mapToObj(Item::new);
+            }
+
+            @Override
+            public boolean isInMemory() {
+                return false;
+            }
+        };
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setViewportRange(0, 50);
+        // Should not throw IndexOutOfBoundsException
+        fakeClientCommunication();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void setSizeCallback_usedForDataSize(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;

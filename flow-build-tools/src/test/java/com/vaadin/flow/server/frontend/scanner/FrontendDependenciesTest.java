@@ -340,8 +340,8 @@ public class FrontendDependenciesTest {
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
-        DepsTests.assertImports(dependencies.getModules(), "reference.js",
-                "@vaadin/common-frontend/ConnectionIndicator.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "reference.js");
     }
 
     @Test // 20074
@@ -358,8 +358,8 @@ public class FrontendDependenciesTest {
                 .findAny();
         Assert.assertTrue("MainLayout should be visited",
                 layoutEndpointData.isPresent());
-        DepsTests.assertImports(dependencies.getModules(), "reference.js",
-                "@vaadin/common-frontend/ConnectionIndicator.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "reference.js");
     }
 
     @Test // #9861
@@ -378,8 +378,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
 
-        DepsTests.assertImports(dependencies.getModules(), "reference.js",
-                "@vaadin/common-frontend/ConnectionIndicator.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "reference.js");
     }
 
     @Test // #9861

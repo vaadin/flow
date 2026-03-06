@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -31,8 +33,10 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.impl.Effect;
 
@@ -51,12 +55,16 @@ import com.vaadin.flow.signals.impl.Effect;
  * @since 25.0
  */
 public final class ElementEffect implements Serializable {
-    private final EffectAction effectFunction;
+    private final ContextualEffectAction effectFunction;
     private boolean closed = false;
     private Effect effect = null;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
+        this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
+    }
+
+    public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
@@ -114,6 +122,47 @@ public final class ElementEffect implements Serializable {
     }
 
     /**
+     * Creates a context-aware Signal effect that is owned by a given element.
+     * The effect is enabled when the element is attached and automatically
+     * disabled when it is detached. The effect action receives an
+     * {@link EffectContext} providing information about why the effect is
+     * running, allowing the callback to distinguish between the initial
+     * execution, updates triggered by the effect owner's requests, and updates
+     * triggered by background changes (such as a background thread or another
+     * user modifying a shared signal).
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Registration effect = ElementEffect.effect(myElement, ctx -&gt; {
+     *     span.setText("$" + priceSignal.get());
+     *     if (ctx.isBackgroundChange()) {
+     *         span.getElement().executeJs("this.classList.add('highlight')");
+     *     }
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @see Signal#unboundEffect(EffectAction)
+     * @see EffectContext#isInitialRun()
+     * @see EffectContext#isBackgroundChange()
+     * @param owner
+     *            the owner element for which the effect is applied, must not be
+     *            <code>null</code>
+     * @param effectFunction
+     *            the context-aware effect function to be executed when any
+     *            dependency is changed, receiving an {@link EffectContext} with
+     *            information about the trigger, must not be <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    public static Registration effect(Element owner,
+            ContextualEffectAction effectFunction) {
+        ElementEffect effect = new ElementEffect(owner, effectFunction);
+        return effect::close;
+    }
+
+    /**
      * Binds a <code>signal</code>'s value to a given owner element in a way
      * defined in <code>setter</code> function and creates a Signal effect
      * function executing the setter whenever the signal value changes.
@@ -122,12 +171,14 @@ public final class ElementEffect implements Serializable {
      *
      * <pre>
      * Element mySpan = new Element("span");
-     * Registration effect = ElementEffect.bind(mySpan, stringSignal,
+     * SignalBinding&lt;String&gt; binding = ElementEffect.bind(mySpan, stringSignal,
      *         Element::setText);
-     * effect.remove(); // to remove the effect when no longer needed
      *
-     * ElementEffect.bind(mySpan, stringSignal.map(value -> !value.isEmpty()),
-     *         Element::setVisible);
+     * binding.onChange(ctx -&gt; {
+     *     if (ctx.isBackgroundChange()) {
+     *         ctx.getElement().flashClass("highlight");
+     *     }
+     * });
      * </pre>
      *
      * @see Signal#unboundEffect(EffectAction)
@@ -140,16 +191,28 @@ public final class ElementEffect implements Serializable {
      * @param setter
      *            the setter function that defines how the signal value is
      *            applied to the element, must not be <code>null</code>
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @param <T>
      *            the type of the signal value
      */
-    public static <T> Registration bind(Element owner, Signal<T> signal,
+    public static <T extends @Nullable Object> SignalBinding<T> bind(
+            Element owner, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter) {
-        return effect(owner, () -> {
-            setter.accept(owner, signal.get());
+        SignalBinding<T> binding = new SignalBinding<>();
+        @SuppressWarnings("unchecked")
+        T[] previousValue = (T[]) new Object[] { signal.peek() };
+        new ElementEffect(owner, ctx -> {
+            T newValue = signal.get();
+            T oldValue = previousValue[0];
+            setter.accept(owner, newValue);
+            if (binding.hasCallbacks()) {
+                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, owner));
+            }
+            previousValue[0] = newValue;
         });
+        return binding;
     }
 
     private void enableEffect(Element owner) {
@@ -161,9 +224,9 @@ public final class ElementEffect implements Serializable {
                 .get();
         UI ui = parentComponent.getUI().get();
 
-        EffectAction errorHandlingEffectFunction = () -> {
+        ContextualEffectAction errorHandlingEffectFunction = ctx -> {
             try {
-                effectFunction.execute();
+                effectFunction.execute(ctx);
             } catch (Exception e) {
                 ui.getSession().getErrorHandler()
                         .error(new ErrorEvent(e, owner.getNode()));
@@ -211,10 +274,13 @@ public final class ElementEffect implements Serializable {
      * the list signal. Changes to the list, such as additions, removals, or
      * reordering, will update the parent's children accordingly.
      * <p>
-     * The parent component must not contain any children that are not part of
-     * the list signal. If the parent has existing children when this method is
-     * called, or if it contains unrelated children after the list changes, an
-     * {@link IllegalStateException} will be thrown.
+     * The parent element must not contain any children in the default slot
+     * (i.e. without a {@code slot} attribute) that are not part of the list
+     * signal. If the parent has existing default-slot children when this method
+     * is called, or if it contains unrelated default-slot children after the
+     * list changes, an {@link IllegalStateException} will be thrown. Named-slot
+     * children are allowed and will be preserved. The child factory must not
+     * produce elements with a {@code slot} attribute.
      * <p>
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a signal from the
@@ -237,9 +303,10 @@ public final class ElementEffect implements Serializable {
      * @param <S>
      *            the type of the {@link Signal}s in the list
      * @throws IllegalStateException
-     *             thrown if parent element isn't empty
+     *             thrown if parent element has default-slot children, or if the
+     *             child factory produces elements with a {@code slot} attribute
      */
-    public static <T, S extends Signal<T>> Registration bindChildren(
+    public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,
             SerializableFunction<S, Element> childFactory) {
         Objects.requireNonNull(parentElement, "Parent element cannot be null");
@@ -248,9 +315,11 @@ public final class ElementEffect implements Serializable {
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
-        if (parentElement.getChildCount() > 0) {
+        boolean hasDefaultSlotChildren = parentElement.getChildren()
+                .anyMatch(child -> child.getAttribute("slot") == null);
+        if (hasDefaultSlotChildren) {
             throw new IllegalStateException(
-                    "Parent element must not have children when binding a list signal to it");
+                    "Parent element must not have children in the default slot when binding a list signal to it");
         }
         // Create a child element cache outside the effect to persist elements
         // created by the child factory and avoid recreating them each time the
@@ -263,11 +332,11 @@ public final class ElementEffect implements Serializable {
                         valueSignalToChildCache)))::close;
     }
 
-    private static <T, S extends Signal<T>> void runEffect(
+    private static <T extends @Nullable Object, S extends Signal<T>> void runEffect(
             BindChildrenEffectContext<T, S> context) {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
-                .parentChildrenToLinkedList();
+                .parentDefaultSlotChildrenList();
         // Cache the children in a HashSet for O(1) lookups and removals
         HashSet<Element> remainingChildrenSet = new HashSet<>(
                 remainingChildren);
@@ -291,9 +360,9 @@ public final class ElementEffect implements Serializable {
      * Validate that parent element has no children not belonging to the list of
      * child signals.
      */
-    private static <T, S extends Signal<T>> void validate(
+    private static <T extends @Nullable Object, S extends Signal<T>> void validate(
             BindChildrenEffectContext<T, S> context) {
-        LinkedList<Element> children = context.parentChildrenToLinkedList();
+        LinkedList<Element> children = context.parentDefaultSlotChildrenList();
         int index = 0;
         for (Element actualElement : children) {
             if (index >= context.childSignalsList.size()) {
@@ -321,7 +390,7 @@ public final class ElementEffect implements Serializable {
      * Remove all existing children in valueSignalToChildCache map that are no
      * longer present in the list of child signals.
      */
-    private static <T, S extends Signal<T>> void removeNotPresentChildren(
+    private static <T extends @Nullable Object, S extends Signal<T>> void removeNotPresentChildren(
             BindChildrenEffectContext<T, S> context,
             HashSet<Element> remainingChildrenSet) {
         var toRemove = new HashSet<>(context.valueSignalToChildCache.keySet());
@@ -339,7 +408,7 @@ public final class ElementEffect implements Serializable {
      * removing any existing elements. Creates new elements with the element
      * factory if not found from the cache.
      */
-    private static <T, S extends Signal<T>> void updateByChildSignals(
+    private static <T extends @Nullable Object, S extends Signal<T>> void updateByChildSignals(
             BindChildrenEffectContext<T, S> context,
             LinkedList<Element> remainingChildren,
             HashSet<Element> remainingChildrenSet) {
@@ -350,7 +419,8 @@ public final class ElementEffect implements Serializable {
             Element expectedChild = context.getElement(item);
             if (remainingChildrenSet.isEmpty() || !Objects
                     .equals(expectedChild.getParent(), context.parentElement)) {
-                context.parentElement.insertChild(i, expectedChild);
+                context.parentElement.insertChild(context.toActualIndex(i),
+                        expectedChild);
                 continue;
             }
 
@@ -381,7 +451,8 @@ public final class ElementEffect implements Serializable {
                     remainingChildren.pollFirst();
                 } else {
                     // Move expected child from a later position
-                    context.parentElement.insertChild(i, expectedChild);
+                    context.parentElement.insertChild(context.toActualIndex(i),
+                            expectedChild);
 
                     remainingChildrenSet.remove(expectedChild);
 
@@ -410,7 +481,7 @@ public final class ElementEffect implements Serializable {
      * @param <S>
      *            the type of the signal in the list
      */
-    private record BindChildrenEffectContext<T, S extends Signal<T>>(
+    private record BindChildrenEffectContext<T extends @Nullable Object, S extends Signal<T>>(
             Element parentElement, List<S> childSignalsList,
             SerializableFunction<S, Element> childElementFactory,
             HashMap<S, Element> valueSignalToChildCache)
@@ -424,8 +495,14 @@ public final class ElementEffect implements Serializable {
          *             if child factory adds or removes unexpected child
          */
         private Element getElement(S item) {
-            return valueSignalToChildCache.computeIfAbsent(item,
-                    childElementFactory);
+            return valueSignalToChildCache.computeIfAbsent(item, signal -> {
+                Element element = childElementFactory.apply(signal);
+                if (element.getAttribute("slot") != null) {
+                    throw new IllegalStateException(
+                            "Children created by the bindChildren factory must not have a slot attribute set");
+                }
+                return element;
+            });
         }
 
         /**
@@ -436,8 +513,28 @@ public final class ElementEffect implements Serializable {
             return valueSignalToChildCache.size();
         }
 
-        private LinkedList<Element> parentChildrenToLinkedList() {
+        /**
+         * Translates a logical index among default-slot children to the actual
+         * DOM child index, skipping over slotted children.
+         */
+        private int toActualIndex(int defaultSlotIndex) {
+            int actualIndex = 0;
+            int defaultSlotCount = 0;
+            int totalChildren = parentElement.getChildCount();
+            while (actualIndex < totalChildren
+                    && defaultSlotCount < defaultSlotIndex) {
+                if (parentElement.getChild(actualIndex)
+                        .getAttribute("slot") == null) {
+                    defaultSlotCount++;
+                }
+                actualIndex++;
+            }
+            return actualIndex;
+        }
+
+        private LinkedList<Element> parentDefaultSlotChildrenList() {
             return parentElement.getChildren()
+                    .filter(child -> child.getAttribute("slot") == null)
                     .collect(Collectors.toCollection(LinkedList::new));
         }
     }

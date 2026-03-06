@@ -18,7 +18,6 @@ package com.vaadin.flow.spring;
 import java.util.Set;
 
 import org.atmosphere.cpr.ApplicationConfig;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,9 +27,12 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.vaadin.flow.server.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 @TestPropertySource(properties = { "vaadin.urlMapping = /zing/*" })
-public class SpringBootAutoConfigurationUrlMappedTest {
+class SpringBootAutoConfigurationUrlMappedTest {
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> servletRegistrationBean;
@@ -38,12 +40,12 @@ public class SpringBootAutoConfigurationUrlMappedTest {
     private Environment environment;
 
     @Test
-    public void urlMappingPassedToAtmosphere() {
-        Assert.assertFalse(RootMappedCondition
+    void urlMappingPassedToAtmosphere() {
+        assertFalse(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(Set.of("/zing/*"),
+        assertEquals(Set.of("/zing/*"),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("/zing/" + Constants.PUSH_MAPPING,
+        assertEquals("/zing/" + Constants.PUSH_MAPPING,
                 servletRegistrationBean.getInitParameters()
                         .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }

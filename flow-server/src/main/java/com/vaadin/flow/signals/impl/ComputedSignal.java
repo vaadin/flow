@@ -25,13 +25,14 @@ import tools.jackson.databind.node.POJONode;
 
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedNodeSignal;
 import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
@@ -48,7 +49,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the value type
  */
-public class ComputedSignal<T> extends AbstractSignal<T> {
+public class ComputedSignal<T extends @Nullable Object>
+        extends AbstractSharedSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to
@@ -205,6 +207,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                     holder[1] = e;
                 }
             });
+            if (dependencies == UsageTracker.NO_USAGE) {
+                throw new MissingSignalUsageException(
+                        "Signal computation must read at least one signal value.");
+            }
             @Nullable
             Object value = holder[0];
             @Nullable
@@ -269,12 +275,6 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
 
     @Override
     public T peekConfirmed() {
-        throw new UnsupportedOperationException(
-                "Cannot peek a computed signal");
-    }
-
-    @Override
-    public T peek() {
         throw new UnsupportedOperationException(
                 "Cannot peek a computed signal");
     }

@@ -16,8 +16,10 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -54,26 +56,54 @@ public interface ClassList extends Set<String>, Serializable {
      * While a binding for the given class name is active, manual calls to
      * {@link #add(Object)}, {@link #remove(Object)} or
      * {@link #set(String, boolean)} for that name will throw a
-     * {@code com.vaadin.flow.dom.BindingActiveException}. Bindings are
-     * lifecycle-aware and only active while the owning {@link Element} is in
-     * attached state; they are deactivated while the element is in detached
-     * state.
+     * {@link BindingActiveException}. Bindings are lifecycle-aware and only
+     * active while the owning {@link Element} is in attached state; they are
+     * deactivated while the element is in detached state.
      * <p>
      * Bulk operations that indiscriminately replace or clear the class list
      * (for example {@link #clear()} or setting the {@code class} attribute via
-     * {@link Element#setAttribute(String, String)}) clear all bindings.
+     * {@link Element#setAttribute(String, String)}) throw a
+     * {@link BindingActiveException} if any binding is active.
      *
      * @param name
      *            the class name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
-     * @throws com.vaadin.flow.signals.BindingActiveException
+     * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.0
      */
-    default void bind(String name, Signal<Boolean> signal) {
+    default SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     };
+
+    /**
+     * Binds the class names to the provided signal so that the class list is
+     * dynamically updated to match the signal's value. Only one group binding
+     * is allowed per class list.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings. Names that appear in both sources are deduplicated by the
+     * underlying classList (Set behavior).
+     * <p>
+     * Null or empty entries in the list and a {@code null} list value are
+     * silently ignored.
+     * <p>
+     * Bulk operations that indiscriminately replace or clear the class list
+     * (for example {@link #clear()} or setting the {@code class} attribute via
+     * {@link Element#setAttribute(String, String)}) throw a
+     * {@link BindingActiveException} if any binding is active.
+     *
+     * @param names
+     *            the signal providing the list of class names, not {@code null}
+     * @throws BindingActiveException
+     *             thrown when there is already an existing group binding
+     * @since 25.1
+     */
+    default SignalBinding<List<String>> bind(Signal<List<String>> names) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    }
 
 }

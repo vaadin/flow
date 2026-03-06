@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -128,7 +129,7 @@ public interface HasEnabled extends HasElement {
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
      */
-    default void bindEnabled(Signal<Boolean> enabledSignal) {
-        getElement().bindEnabled(enabledSignal);
+    default SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
+        return getElement().bindEnabled(enabledSignal);
     }
 }

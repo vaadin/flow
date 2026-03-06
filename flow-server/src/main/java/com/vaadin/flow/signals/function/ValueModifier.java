@@ -31,12 +31,13 @@ import org.jspecify.annotations.Nullable;
  *            the value type
  */
 @FunctionalInterface
-public interface ValueModifier<T> extends Serializable {
+public interface ValueModifier<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Modifies the provided value in place.
      *
      * @param value
-     *            the value to modify, may be <code>null</code>
+     *            the value to modify
      */
-    void modify(@Nullable T value);
+    void modify(T value);
 }

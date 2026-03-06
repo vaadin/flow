@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -138,9 +139,9 @@ public final class JacksonSerializer {
     private static ArrayNode toJsonArray(Object javaArray) {
         int length = Array.getLength(javaArray);
         ArrayNode array = JacksonUtils.createArrayNode();
-        for (int i = 0; i < length; i++) {
-            array.set(i, toJson(Array.get(javaArray, i)));
-        }
+
+        IntStream.range(0, length).mapToObj(i -> Array.get(javaArray, i))
+                .map(JacksonSerializer::toJson).forEach(array::add);
         return array;
     }
 
@@ -202,6 +203,10 @@ public final class JacksonSerializer {
 
         if (Collection.class.isAssignableFrom(type)) {
             return toCollection(type, genericType, json);
+        }
+
+        if (type.isArray()) {
+            return toArray(type, json);
         }
 
         if (type.isRecord()) {
@@ -307,6 +312,19 @@ public final class JacksonSerializer {
                     (List) toObjects(parameterizedClass, (ArrayNode) json));
         }
         return (T) collection;
+    }
+
+    private static <T> T toArray(Class<T> type, JsonNode json) {
+        if (json.getNodeType() != JsonNodeType.ARRAY) {
+            return null;
+        }
+        ArrayNode arrayNode = (ArrayNode) json;
+        Class<?> componentType = type.getComponentType();
+        Object array = Array.newInstance(componentType, arrayNode.size());
+        for (int i = 0; i < arrayNode.size(); i++) {
+            Array.set(array, i, toObject(componentType, arrayNode.get(i)));
+        }
+        return (T) array;
     }
 
     /**

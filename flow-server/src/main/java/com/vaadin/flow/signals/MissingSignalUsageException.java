@@ -13,16 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testcategory;
+package com.vaadin.flow.signals;
 
 /**
- * Tests which test container implementations should be marked using
- * {@code @Category(ContainerTests.class)}. They are currently excluded by
- * default to speed up testing.
- *
- * @author Vaadin Ltd
- * @since 1.0
+ * Thrown when a computed signal or effect action does not read any signal
+ * values. Computed signals and effects must read at least one signal to
+ * establish reactive dependencies, otherwise they will never recompute or
+ * re-run.
  */
-public interface ContainerTests {
-
+public class MissingSignalUsageException extends IllegalStateException {
+    /**
+     * Creates a new exception with the given message.
+     *
+     * @param message
+     *            a message describing the context, not <code>null</code>
+     */
+    public MissingSignalUsageException(String message) {
+        super(message);
+    }
 }
