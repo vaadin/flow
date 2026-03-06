@@ -460,8 +460,11 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @return the children components of this component
      */
     default Stream<Component> getChildren() {
-        return getElement().getChildren()
-                .map(el -> el.getComponent().orElse(null))
-                .filter(Objects::nonNull);
+        if (this instanceof Component parent) {
+            return ComponentUtil.getChildren(parent);
+        } else {
+            throw new UnsupportedOperationException(
+                    "getChildren is not supported for non-Component HasComponents");
+        }
     }
 }
