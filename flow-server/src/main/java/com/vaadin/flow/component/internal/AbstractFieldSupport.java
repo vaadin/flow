@@ -27,6 +27,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -211,7 +212,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * @see #setValue(Object)
      * @see #setModelValue(Object, boolean)
      */
-    public void bindValue(Signal<T> valueSignal,
+    public SignalBinding<T> bindValue(Signal<T> valueSignal,
             SerializableConsumer<T> writeCallback) {
         Objects.requireNonNull(valueSignal, "Signal cannot be null");
         SignalBindingFeature feature = component.getElement().getNode()
@@ -221,10 +222,11 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             throw new BindingActiveException();
         }
 
-        Registration registration = ElementEffect.bind(component.getElement(),
+        SignalBinding<T> binding = ElementEffect.bind(component.getElement(),
                 valueSignal, (element, value) -> setValueFromSignal(value));
-        feature.setBinding(SignalBindingFeature.VALUE, registration,
-                valueSignal, writeCallback);
+        feature.setBinding(SignalBindingFeature.VALUE, valueSignal,
+                writeCallback);
+        return binding;
     }
 
     private void setValueFromSignal(T value) {

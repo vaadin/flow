@@ -518,7 +518,8 @@ public class VaadinServletContextInitializer
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(new VaadinServletContext(event.getServletContext()));
 
-            if (config == null || config.isProductionMode()) {
+            if (config == null || config.isProductionMode()
+                    || config.isBrowserless()) {
                 return;
             }
 

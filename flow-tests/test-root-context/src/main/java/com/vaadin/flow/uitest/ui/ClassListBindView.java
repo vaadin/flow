@@ -46,7 +46,7 @@ public class ClassListBindView extends Div {
         target.getElement().getClassList().bind("highlight", highlight);
 
         NativeButton toggle = new NativeButton("Toggle highlight", event -> {
-            Boolean current = highlight.get();
+            Boolean current = highlight.peek();
             highlight.set(current == null ? Boolean.TRUE : !current);
         });
         toggle.setId("toggle");

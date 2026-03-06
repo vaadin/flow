@@ -62,7 +62,6 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SessionInitListener;
-import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -1631,10 +1630,7 @@ class HotswapperTest {
         private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
                 .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
                         + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
-        private static final String ADD_CLIENT_UI_REFRESH_LISTENER = "window.addEventListener('"
-                + REFRESH_EVENT_NAME + "',";
         private Boolean refreshRouteChainRequested;
-        private boolean refreshUIClientListenerRegistered;
 
         private final Page pageSpy;
 
@@ -1649,9 +1645,6 @@ class HotswapperTest {
                 if (matcher.matches()) {
                     refreshRouteChainRequested = Boolean
                             .parseBoolean(matcher.group(1));
-                } else if (expression
-                        .contains(ADD_CLIENT_UI_REFRESH_LISTENER)) {
-                    refreshUIClientListenerRegistered = true;
                 }
                 return null;
             }).when(pageSpy).executeJs(Mockito.anyString(),
