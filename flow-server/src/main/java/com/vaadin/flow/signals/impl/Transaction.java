@@ -269,8 +269,14 @@ public abstract class Transaction implements Serializable {
      */
     public static boolean inExplicitTransaction() {
         Transaction transaction = currentTransaction.get();
-        return transaction != null && transaction != EXPLICITLY_NO_TRANSACTION
-                && !transaction.isCommitting();
+        if (transaction == null || transaction == EXPLICITLY_NO_TRANSACTION) {
+            return false;
+        }
+        if (transaction instanceof StagedTransaction staged
+                && staged.isCommitting()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -490,19 +496,6 @@ public abstract class Transaction implements Serializable {
      *            transaction operation, not <code>null</code>
      */
     protected abstract void commit(Consumer<ResultOrError<Void>> resultHandler);
-
-    /**
-     * Checks whether this transaction is currently in its commit phase,
-     * publishing changes and notifying listeners. During the commit phase, the
-     * transaction is no longer accepting user commands and should not be
-     * considered an active explicit transaction for the purpose of local signal
-     * precondition checks.
-     *
-     * @return {@code true} if this transaction is committing
-     */
-    protected boolean isCommitting() {
-        return false;
-    }
 
     /**
      * Rolls back any staged commands in this transaction and notifies the
