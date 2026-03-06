@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ListSignal;
@@ -389,9 +389,9 @@ class HasComponentsTest {
         TestComponent child = new TestComponent();
         container.add(child);
 
-        TextBindingFeature feature = container.getElement().getNode()
-                .getFeature(TextBindingFeature.class);
-        feature.setBinding(new ValueSignal<>(""));
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
 
         assertThrows(BindingActiveException.class,
                 () -> container.remove(child),
@@ -421,9 +421,9 @@ class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        TextBindingFeature feature = container.getElement().getNode()
-                .getFeature(TextBindingFeature.class);
-        feature.setBinding(new ValueSignal<>(""));
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
 
         ListSignal<String> items = new ListSignal<>();
         assertThrows(BindingActiveException.class,
@@ -434,9 +434,9 @@ class HasComponentsTest {
 
     private TestComponent createContainerWithTextBinding() {
         TestComponent container = new TestComponent();
-        TextBindingFeature feature = container.getElement().getNode()
-                .getFeature(TextBindingFeature.class);
-        feature.setBinding(new ValueSignal<>(""));
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
         return container;
     }
 
