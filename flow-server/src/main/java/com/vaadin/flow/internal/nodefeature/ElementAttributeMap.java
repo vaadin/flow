@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -93,9 +94,9 @@ public class ElementAttributeMap extends NodeMap {
      *             thrown when there is already an existing binding for the
      *             given attribute
      */
-    public void bindSignal(Element owner, String attribute,
+    public SignalBinding<String> bindSignal(Element owner, String attribute,
             Signal<String> signal) {
-        bindSignal(owner, attribute, signal,
+        return bindSignal(owner, attribute, signal,
                 (element, value) -> doSet(attribute, value), null);
     }
 
@@ -110,7 +111,8 @@ public class ElementAttributeMap extends NodeMap {
     public boolean has(String attribute) {
         if (contains(attribute)) {
             if (hasSignal(attribute)) {
-                SignalBinding binding = (SignalBinding) super.get(attribute);
+                InternalSignalBinding binding = (InternalSignalBinding) super.get(
+                        attribute);
                 return binding.value() != null;
             }
             return true;
@@ -154,9 +156,9 @@ public class ElementAttributeMap extends NodeMap {
             return node.get(NodeProperties.URI_ATTRIBUTE).asString();
         } else {
             // If the value is not a string or JsonNode then current impl only
-            // uses SignalBinding
-            assert value instanceof SignalBinding;
-            return (String) ((SignalBinding) value).value();
+            // uses InternalSignalBinding
+            assert value instanceof InternalSignalBinding;
+            return (String) ((InternalSignalBinding) value).value();
         }
     }
 
@@ -286,9 +288,10 @@ public class ElementAttributeMap extends NodeMap {
     private void doSet(String attribute, Serializable value) {
         unregisterResource(attribute);
         if (hasSignal(attribute)) {
-            SignalBinding binding = (SignalBinding) super.get(attribute);
-            put(attribute,
-                    new SignalBinding(binding.signal(), (String) value, null));
+            InternalSignalBinding binding = (InternalSignalBinding) super.get(
+                    attribute);
+            put(attribute, new InternalSignalBinding(binding.signal(),
+                    (String) value, null));
         } else if (value == null) {
             super.remove(attribute);
         } else {

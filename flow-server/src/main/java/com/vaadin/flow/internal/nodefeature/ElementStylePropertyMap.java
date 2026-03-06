@@ -56,7 +56,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     public void setPropertyFromSignal(String name, Object value) {
         Serializable currentRaw = super.get(name);
         Serializable currentEffective;
-        if (currentRaw instanceof SignalBinding binding) {
+        if (currentRaw instanceof InternalSignalBinding binding) {
             currentEffective = binding.value();
         } else {
             currentEffective = currentRaw;
@@ -72,7 +72,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
         if (value == null) {
             // Emit empty string so that a client removes the style property,
-            // but keep the SignalBinding on the server side.
+            // but keep the InternalSignalBinding on the server side.
             super.setProperty(name, "", true);
         } else {
             // Delegate to validated setter for non-null values
@@ -83,7 +83,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding binding) {
+        if (value instanceof InternalSignalBinding binding) {
             Serializable signalValue = binding.value();
             if (signalValue instanceof String stringValue
                     && stringValue.isEmpty()) {
@@ -99,7 +99,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     public void removeAllProperties() {
         for (String key : getPropertyNames().toList()) {
             Serializable raw = super.get(key);
-            if (raw instanceof SignalBinding) {
+            if (raw instanceof InternalSignalBinding) {
                 throw new BindingActiveException();
             }
         }
@@ -109,7 +109,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     @Override
     public boolean hasProperty(String name) {
         Serializable raw = super.get(name);
-        if (raw instanceof SignalBinding binding) {
+        if (raw instanceof InternalSignalBinding binding) {
             Serializable signalValue = binding.value();
             if (signalValue instanceof String stringValue
                     && stringValue.isEmpty()) {
