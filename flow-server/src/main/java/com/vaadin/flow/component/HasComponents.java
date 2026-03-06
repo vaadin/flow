@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Effect;
@@ -314,9 +313,10 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     private void throwIfTextBindingIsActive(String methodName) {
-        getElement().getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding()) {
+                    if (feature.hasBinding(SignalBindingFeature.TEXT)) {
                         throw new BindingActiveException(methodName
                                 + " is not allowed while a binding for text exists.");
                     }
