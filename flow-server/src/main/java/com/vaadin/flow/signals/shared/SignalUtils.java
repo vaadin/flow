@@ -41,7 +41,7 @@ public class SignalUtils {
      *            the signal to get the tree of, not <code>null</code>
      * @return the signal tree instance, not <code>null</code>
      */
-    public static SignalTree treeOf(AbstractSignal<?> signal) {
+    public static SignalTree treeOf(AbstractSharedSignal<?> signal) {
         return signal.tree();
     }
 
@@ -61,7 +61,7 @@ public class SignalUtils {
      * @return <code>true</code> if the command is valid, <code>false</code>
      *         otherwise
      */
-    public static boolean isValid(AbstractSignal<?> signal,
+    public static boolean isValid(AbstractSharedSignal<?> signal,
             SignalCommand command) {
         return signal.isValid(command);
     }

@@ -69,14 +69,15 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @see ValueSignal#modifier(SignalModifier)
  */
 @FunctionalInterface
-public interface SignalModifier<P, C> extends Serializable {
+public interface SignalModifier<P extends @Nullable Object, C extends @Nullable Object>
+        extends Serializable {
     /**
      * Modifies the parent value in place with the new child value.
      *
      * @param parentValue
-     *            the parent signal value to modify, may be <code>null</code>
+     *            the parent signal value to modify
      * @param newChildValue
-     *            the new child value to apply, may be <code>null</code>
+     *            the new child value to apply
      */
-    void modify(@Nullable P parentValue, @Nullable C newChildValue);
+    void modify(P parentValue, C newChildValue);
 }

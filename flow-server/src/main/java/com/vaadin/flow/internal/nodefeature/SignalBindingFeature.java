@@ -19,10 +19,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -30,19 +32,26 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
+@NullMarked
 public class SignalBindingFeature extends ServerSideFeature {
 
+    public static final String TEXT = "text";
     public static final String CLASSES = "classes/";
+    public static final String CLASS_GROUP = "classes/*";
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
     public static final String THEMES = "themes/";
+    public static final String THEME_GROUP = "themes/*";
     public static final String HTML_CONTENT = "htmlContent";
     public static final String CHILDREN = "children";
+    public static final String ITEMS = "items";
 
-    private Map<String, SignalBinding> values;
+    private final Map<String, SignalBinding> values = new HashMap<>();
 
-    private record SignalBinding(Signal<?> signal, Registration registration,
-            SerializableConsumer<?> writeCallback) implements Serializable {
+    private record SignalBinding(Signal<?> signal,
+            @Nullable SerializableConsumer<?> writeCallback)
+            implements
+                Serializable {
     }
 
     /**
@@ -60,14 +69,11 @@ public class SignalBindingFeature extends ServerSideFeature {
      *
      * @param key
      *            the key
-     * @param registration
-     *            the registration
      * @param signal
      *            the signal
      */
-    public void setBinding(String key, Registration registration,
-            Signal<?> signal) {
-        setBinding(key, registration, signal, null);
+    public void setBinding(String key, Signal<?> signal) {
+        setBinding(key, signal, null);
     }
 
     /**
@@ -75,74 +81,40 @@ public class SignalBindingFeature extends ServerSideFeature {
      *
      * @param key
      *            the key
-     * @param registration
-     *            the registration
      * @param signal
      *            the signal
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
      */
-    public void setBinding(String key, Registration registration,
-            Signal<?> signal, SerializableConsumer<?> writeCallback) {
-        ensureValues();
-        values.put(key, new SignalBinding(signal, registration, writeCallback));
+    public void setBinding(String key, Signal<?> signal,
+            @Nullable SerializableConsumer<?> writeCallback) {
+        values.put(key, new SignalBinding(signal, writeCallback));
     }
 
     /**
      * Checks whether there is a binding for the given key.
-     * 
+     *
      * @param key
      *            the key
      * @return true if there is a binding for the given key, false otherwise
      */
     public boolean hasBinding(String key) {
-        if (values == null) {
-            return false;
-        }
-        SignalBinding binding = values.get(key);
-        return binding != null && binding.signal != null
-                && binding.registration != null;
+        return values.containsKey(key);
     }
 
     /**
-     * Clears all bindings with keys starting with the given prefix.
+     * Checks whether there is any binding with a key starting with the given
+     * prefix.
      *
      * @param keyPrefix
      *            the key prefix
+     * @return true if there is any binding with a key starting with the given
+     *         prefix, false otherwise
      */
-    public void clearBindings(String keyPrefix) {
-        if (values == null) {
-            return;
-        }
-        values.entrySet().removeIf(entry -> {
-            String key = entry.getKey();
-            if (key.startsWith(keyPrefix)) {
-                SignalBinding binding = entry.getValue();
-                if (binding != null && binding.registration != null) {
-                    binding.registration.remove();
-                }
-                return true;
-            }
-            return false;
-        });
-    }
-
-    /**
-     * Removes the binding for the given key.
-     * 
-     * @param key
-     *            the key
-     */
-    public void removeBinding(String key) {
-        if (values == null) {
-            return;
-        }
-        SignalBinding binding = values.get(key);
-        if (binding != null && binding.registration != null) {
-            binding.registration.remove();
-        }
-        values.remove(key);
+    public boolean hasAnyBinding(String keyPrefix) {
+        return values.keySet().stream()
+                .anyMatch(key -> key.startsWith(keyPrefix));
     }
 
     /**
@@ -156,10 +128,7 @@ public class SignalBindingFeature extends ServerSideFeature {
      *         set
      */
     @SuppressWarnings("unchecked")
-    public <T> SerializableConsumer<T> getWriteCallback(String key) {
-        if (values == null) {
-            return null;
-        }
+    public <T> @Nullable SerializableConsumer<T> getWriteCallback(String key) {
         SignalBinding binding = values.get(key);
         return binding != null ? (SerializableConsumer<T>) binding.writeCallback
                 : null;
@@ -174,12 +143,11 @@ public class SignalBindingFeature extends ServerSideFeature {
      *            the type of the signal value
      * @return the signal bound to the given key, or null if no signal is bound
      */
-    public <T> Signal<T> getSignal(String key) {
-        if (values == null) {
-            return null;
-        }
+    @SuppressWarnings("unchecked")
+    public <T extends @Nullable Object> @Nullable Signal<T> getSignal(
+            String key) {
         SignalBinding binding = values.get(key);
-        return binding != null ? (Signal<T>) values.get(key).signal : null;
+        return binding != null ? (Signal<T>) binding.signal : null;
     }
 
     /**
@@ -189,7 +157,7 @@ public class SignalBindingFeature extends ServerSideFeature {
      * value. If the signal value differs from the expected new value after the
      * callback, the revert callback will be invoked with the current signal
      * value to revert the change.
-     * 
+     *
      * @param key
      *            the key for which to update the signal value
      * @param oldValue
@@ -208,35 +176,29 @@ public class SignalBindingFeature extends ServerSideFeature {
      * @param <T>
      *            the type of the signal value
      */
-    public <T> boolean updateSignalByWriteCallback(String key, T oldValue,
-            T newValue, SerializableBiPredicate<T, T> valueEquals,
+    @SuppressWarnings("unchecked")
+    public <T extends @Nullable Object> boolean updateSignalByWriteCallback(
+            String key, T oldValue, T newValue,
+            SerializableBiPredicate<T, T> valueEquals,
             SerializableConsumer<T> revertCallback) {
-        SerializableConsumer<T> callback = getWriteCallback(key);
-        Signal<T> signal = getSignal(key);
-        if (callback != null) {
-            callback.accept(newValue);
-            // Re-consult the signal after the callback
-            T signalValue = signal.peek();
-            if (!valueEquals.test(signalValue, newValue)) {
-                // Signal value differs, revert
-                revertCallback.accept(signalValue);
-                // no need to fire event, signal change triggered that
-                return false;
-            }
-        } else {
+        SignalBinding binding = values.get(key);
+        if (binding == null || binding.writeCallback == null) {
             // Read-only binding: revert and throw
             revertCallback.accept(oldValue);
             throw new IllegalStateException(
                     "Cannot set value on a read-only signal binding. "
                             + "Provide a write callback to enable two-way binding.");
         }
-        return true;
-    }
-
-    private void ensureValues() {
-        if (values == null) {
-            values = new HashMap<>();
+        ((SerializableConsumer<T>) binding.writeCallback).accept(newValue);
+        // Re-consult the signal after the callback
+        T signalValue = ((Signal<T>) binding.signal).peek();
+        if (!valueEquals.test(signalValue, newValue)) {
+            // Signal value differs, revert
+            revertCallback.accept(signalValue);
+            // no need to fire event, signal change triggered that
+            return false;
         }
+        return true;
     }
 
 }
