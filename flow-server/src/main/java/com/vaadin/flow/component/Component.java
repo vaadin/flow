@@ -81,6 +81,9 @@ public abstract class Component
     private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("id", "");
 
+    private static final PropertyDescriptor<String, Optional<String>> testIdDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("data-testid", "");
+
     private static final PropertyChangeListener NOOP_PROPERTY_LISTENER = event -> {
         // NOOP
     };
@@ -465,6 +468,31 @@ public abstract class Component
      */
     public Optional<String> getId() {
         return get(idDescriptor);
+    }
+
+    /**
+     * Sets the {@code data-testid} attribute of the root element of this
+     * component. This attribute is used by testing frameworks such as
+     * Playwright to locate elements in the DOM.
+     *
+     * @param testId
+     *            the test id to set, or <code>null</code> to remove any
+     *            previously set test id
+     */
+    public void setTestId(String testId) {
+        set(testIdDescriptor, testId == null ? "" : testId);
+    }
+
+    /**
+     * Gets the {@code data-testid} attribute of the root element of this
+     * component.
+     *
+     * @see #setTestId(String)
+     *
+     * @return the test id, or {@code null} if no test id has been set
+     */
+    public String getTestId() {
+        return get(testIdDescriptor).orElse(null);
     }
 
     /**
