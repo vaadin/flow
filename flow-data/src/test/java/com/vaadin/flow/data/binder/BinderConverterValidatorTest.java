@@ -232,37 +232,36 @@ class BinderConverterValidatorTest
 
     @Test
     void convertInvalidDataToField() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestTextField field = new TestTextField();
-            StatusBean bean = new StatusBean();
-            bean.setStatus("1");
-            Binder<StatusBean> binder = new Binder<>();
+        TestTextField field = new TestTextField();
+        StatusBean bean = new StatusBean();
+        bean.setStatus("1");
+        Binder<StatusBean> binder = new Binder<>();
 
-            BindingBuilder<StatusBean, String> binding = binder.forField(field)
-                    .withConverter(presentation -> {
-                        if (presentation.equals("OK")) {
-                            return "1";
-                        } else if (presentation.equals("NOTOK")) {
-                            return "2";
-                        }
+        BindingBuilder<StatusBean, String> binding = binder.forField(field)
+                .withConverter(presentation -> {
+                    if (presentation.equals("OK")) {
+                        return "1";
+                    } else if (presentation.equals("NOTOK")) {
+                        return "2";
+                    }
+                    throw new IllegalArgumentException(
+                            "Value must be OK or NOTOK");
+                }, model -> {
+                    if (model.equals("1")) {
+                        return "OK";
+                    } else if (model.equals("2")) {
+                        return "NOTOK";
+                    } else {
                         throw new IllegalArgumentException(
-                                "Value must be OK or NOTOK");
-                    }, model -> {
-                        if (model.equals("1")) {
-                            return "OK";
-                        } else if (model.equals("2")) {
-                            return "NOTOK";
-                        } else {
-                            throw new IllegalArgumentException(
-                                    "Value in model must be 1 or 2");
-                        }
-                    });
-            binding.bind(StatusBean::getStatus, StatusBean::setStatus);
-            binder.setBean(bean);
+                                "Value in model must be 1 or 2");
+                    }
+                });
+        binding.bind(StatusBean::getStatus, StatusBean::setStatus);
+        binder.setBean(bean);
 
-            bean.setStatus("3");
-            binder.readBean(bean);
-        });
+        bean.setStatus("3");
+        assertThrows(IllegalArgumentException.class,
+                () -> binder.readBean(bean));
     }
 
     @Test
@@ -456,24 +455,18 @@ class BinderConverterValidatorTest
 
     @Test
     void save_fieldValidationErrors() throws ValidationException {
-        assertThrows(ValidationException.class, () -> {
-            Binder<Person> binder = new Binder<>();
-            String msg = "foo";
-            binder.forField(nameField)
-                    .withValidator(new NotEmptyValidator<>(msg))
-                    .bind(Person::getFirstName, Person::setFirstName);
+        Binder<Person> binder = new Binder<>();
+        String msg = "foo";
+        binder.forField(nameField).withValidator(new NotEmptyValidator<>(msg))
+                .bind(Person::getFirstName, Person::setFirstName);
 
-            Person person = new Person();
-            String firstName = "foo";
-            person.setFirstName(firstName);
-            nameField.setValue("");
-            try {
-                binder.writeBean(person);
-            } finally {
-                // Bean should not have been updated
-                assertEquals(firstName, person.getFirstName());
-            }
-        });
+        Person person = new Person();
+        String firstName = "foo";
+        person.setFirstName(firstName);
+        nameField.setValue("");
+        assertThrows(ValidationException.class, () -> binder.writeBean(person));
+        // Bean should not have been updated
+        assertEquals(firstName, person.getFirstName());
     }
 
     @Test
@@ -750,24 +743,17 @@ class BinderConverterValidatorTest
 
     @Test
     void save_beanValidationErrorsWithConverter() throws ValidationException {
-        assertThrows(ValidationException.class, () -> {
-            Binder<Person> binder = new Binder<>();
-            binder.forField(ageField)
-                    .withConverter(
-                            new StringToIntegerConverter("Can't convert"))
-                    .bind(Person::getAge, Person::setAge);
+        Binder<Person> binder = new Binder<>();
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
 
-            binder.withValidator(Validator.from(person -> false, "b"));
+        binder.withValidator(Validator.from(person -> false, "b"));
 
-            Person person = new Person();
-            ageField.setValue("1");
-            try {
-                binder.writeBean(person);
-            } finally {
-                // Bean should have been updated for item validation but
-                // reverted
-                assertEquals(0, person.getAge());
-            }
-        });
+        Person person = new Person();
+        ageField.setValue("1");
+        assertThrows(ValidationException.class, () -> binder.writeBean(person));
+        // Bean should have been updated for item validation but reverted
+        assertEquals(0, person.getAge());
     }
 }

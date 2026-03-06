@@ -1015,20 +1015,19 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     void settingAsRequiredEnabledFalseWhenNoAsRequired() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestTextField textField = new TestTextField();
+        TestTextField textField = new TestTextField();
 
-            BindingBuilder<Person, String> bindingBuilder = binder
-                    .forField(textField);
-            Binding<Person, String> binding = bindingBuilder
-                    .bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> bindingBuilder = binder
+                .forField(textField);
+        Binding<Person, String> binding = bindingBuilder
+                .bind(Person::getFirstName, Person::setFirstName);
 
-            binder.readBean(item);
+        binder.readBean(item);
 
-            // TextField input is not set required, this should trigger
-            // IllegalStateExceptipon
-            binding.setAsRequiredEnabled(false);
-        });
+        // TextField input is not set required, this should trigger
+        // IllegalStateException
+        assertThrows(IllegalStateException.class,
+                () -> binding.setAsRequiredEnabled(false));
     }
 
     @Test
@@ -2093,11 +2092,10 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     void bindWithNullSetterSetReadWrite() {
-        assertThrows(IllegalStateException.class, () -> {
-            Binding<Person, String> binding = binder.bind(nameField,
-                    Person::getFirstName, null);
-            binding.setReadOnly(false);
-        });
+        Binding<Person, String> binding = binder.bind(nameField,
+                Person::getFirstName, null);
+        assertThrows(IllegalStateException.class,
+                () -> binding.setReadOnly(false));
     }
 
     @Test
@@ -2622,184 +2620,170 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     void readBean_converterThrows_readBean_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
-            setExceptionHandler();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            binder.forField(testField).withConverter(Converter
-                    .<String, String> from(name -> Result.ok(name), name -> {
-                        throw new NullPointerException();
-                    })).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(testField).withConverter(Converter
+                .<String, String> from(name -> Result.ok(name), name -> {
+                    throw new NullPointerException();
+                })).bind(Person::getFirstName, Person::setFirstName);
 
-            binder.readBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.readBean(new Person()));
     }
 
     @Test
     void readBean_getterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            setExceptionHandler();
+        binder.forField(testField).bind(person -> {
+            throw new NullPointerException();
+        }, Person::setFirstName);
 
-            binder.forField(testField).bind(person -> {
-                throw new NullPointerException();
-            }, Person::setFirstName);
-
-            binder.readBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.readBean(new Person()));
     }
 
     @Test
     void setBean_converterThrows_setBean_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            setExceptionHandler();
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName);
 
-            binder.forField(testField)
-                    .withConverter(Converter.<String, String> from(name -> {
-                        throw new NullPointerException();
-                    }, name -> name))
-                    .bind(Person::getFirstName, Person::setFirstName);
-
-            binder.setBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.setBean(new Person()));
     }
 
     @Test
     void setBean_setterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
-            setExceptionHandler();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            binder.forField(testField).bind(Person::getFirstName,
-                    (person, field) -> {
-                        throw new NullPointerException();
-                    });
+        binder.forField(testField).bind(Person::getFirstName,
+                (person, field) -> {
+                    throw new NullPointerException();
+                });
 
-            binder.setBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.setBean(new Person()));
     }
 
     @Test
     void setBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new ThrowingSetter();
-            setExceptionHandler();
+        TestTextField testField = new ThrowingSetter();
+        setExceptionHandler();
 
-            binder.forField(testField).bind(Person::getFirstName,
-                    Person::setFirstName);
+        binder.forField(testField).bind(Person::getFirstName,
+                Person::setFirstName);
 
-            binder.setBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.setBean(new Person()));
     }
 
     @Test
     void writeBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown()
             throws ValidationException {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            setExceptionHandler();
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName);
 
-            binder.forField(testField)
-                    .withConverter(Converter.<String, String> from(name -> {
-                        throw new NullPointerException();
-                    }, name -> name))
-                    .bind(Person::getFirstName, Person::setFirstName);
-
-            binder.writeBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.writeBean(new Person()));
     }
 
     @Test
     void writeBean_setterThrows_exceptionHandlerSet_bindingExceptionIsThrown()
             throws ValidationException {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
-            setExceptionHandler();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            binder.forField(testField).bind(Person::getFirstName,
-                    (person, field) -> {
-                        throw new NullPointerException();
-                    });
+        binder.forField(testField).bind(Person::getFirstName,
+                (person, field) -> {
+                    throw new NullPointerException();
+                });
 
-            Person person = new Person();
-            person.setFirstName("foo");
-            binder.writeBean(person);
-        });
+        Person person = new Person();
+        person.setFirstName("foo");
+        assertThrows(BindingException.class, () -> binder.writeBean(person));
     }
 
     @Test
     void writeBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown()
             throws ValidationException {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new ThrowingSetter();
-            setExceptionHandler();
+        TestTextField testField = new ThrowingSetter();
+        setExceptionHandler();
 
-            binder.forField(testField)
-                    .withConverter(Converter.<String, String> from(
-                            name -> Result.ok(name), name -> "foo"))
-                    .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(testField)
+                .withConverter(Converter.<String, String> from(
+                        name -> Result.ok(name), name -> "foo"))
+                .bind(Person::getFirstName, Person::setFirstName);
 
-            binder.writeBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.writeBean(new Person()));
     }
 
     @Test
     void writeBean_getValueThrows_exceptionHandlerSet_bindingExceptionIsThrown()
             throws ValidationException {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new ThrowingGetter();
-            setExceptionHandler();
+        TestTextField testField = new ThrowingGetter();
+        setExceptionHandler();
 
-            binder.forField(testField).bind(Person::getFirstName,
-                    Person::setFirstName);
+        binder.forField(testField).bind(Person::getFirstName,
+                Person::setFirstName);
 
-            binder.writeBean(new Person());
-        });
+        assertThrows(BindingException.class,
+                () -> binder.writeBean(new Person()));
     }
 
     @Test
     void readBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
-            setExceptionHandler();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            binder.forField(testField)
-                    .withConverter(Converter.<String, String> from(name -> {
-                        throw new NullPointerException();
-                    }, name -> name))
-                    .bind(Person::getFirstName, Person::setFirstName)
-                    .read(new Person());
-        });
+        Binding<Person, String> binding = binder.forField(testField)
+                .withConverter(Converter.<String, String> from(name -> {
+                    throw new NullPointerException();
+                }, name -> name))
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        assertThrows(BindingException.class, () -> binding.read(new Person()));
     }
 
     @Test
     void bindingReadBean_setValueThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new ThrowingSetter();
-            setExceptionHandler();
+        TestTextField testField = new ThrowingSetter();
+        setExceptionHandler();
 
-            binder.forField(testField)
-                    .bind(Person::getFirstName, Person::setFirstName)
-                    .read(new Person());
-        });
+        Binding<Person, String> binding = binder.forField(testField)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        assertThrows(BindingException.class, () -> binding.read(new Person()));
     }
 
     @Test
     void bindingReadBean_converterThrows_exceptionHandlerSet_bindingExceptionIsThrown() {
-        assertThrows(BindingException.class, () -> {
-            TestTextField testField = new TestTextField();
-            setExceptionHandler();
+        TestTextField testField = new TestTextField();
+        setExceptionHandler();
 
-            binder.forField(testField).withConverter(Converter
-                    .<String, String> from(name -> Result.ok(name), name -> {
-                        throw new NullPointerException();
-                    })).bind(Person::getFirstName, Person::setFirstName)
-                    .read(new Person());
-        });
+        Binding<Person, String> binding = binder.forField(testField)
+                .withConverter(Converter.<String, String> from(
+                        name -> Result.ok(name), name -> {
+                            throw new NullPointerException();
+                        }))
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        assertThrows(BindingException.class, () -> binding.read(new Person()));
     }
 
     @Test

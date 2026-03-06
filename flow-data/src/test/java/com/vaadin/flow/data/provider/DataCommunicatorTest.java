@@ -547,10 +547,9 @@ public class DataCommunicatorTest {
     @ValueSource(booleans = { true, false })
     void setSizeCallback_null_throws(boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        assertThrows(IllegalArgumentException.class, () -> {
-            dataCommunicator.setDataProvider(createDataProvider(), null);
-            dataCommunicator.setCountCallback(null);
-        });
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        assertThrows(IllegalArgumentException.class,
+                () -> dataCommunicator.setCountCallback(null));
     }
 
     @ParameterizedTest

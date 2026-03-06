@@ -85,10 +85,11 @@ class TreeDataProviderTest
 
     @Test
     void treeData_add_item_already_in_hierarchy_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            StrBean bean = new StrBean("", 0, 0);
-            new TreeData<>().addItem(null, bean).addItem(null, bean);
-        });
+        StrBean bean = new StrBean("", 0, 0);
+        TreeData<StrBean> treeData = new TreeData<>();
+        treeData.addItem(null, bean);
+        assertThrows(IllegalArgumentException.class,
+                () -> treeData.addItem(null, bean));
     }
 
     @Test
@@ -170,12 +171,11 @@ class TreeDataProviderTest
 
     @Test
     void treeData_move_after_sibling_different_parents() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            StrBean root0 = rootData.get(0);
-            StrBean wrongSibling = data.getChildren(root0).get(0);
+        StrBean root0 = rootData.get(0);
+        StrBean wrongSibling = data.getChildren(root0).get(0);
 
-            data.moveAfterSibling(root0, wrongSibling);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> data.moveAfterSibling(root0, wrongSibling));
     }
 
     @Test

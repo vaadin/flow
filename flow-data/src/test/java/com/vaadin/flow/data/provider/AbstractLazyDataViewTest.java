@@ -150,26 +150,23 @@ class AbstractLazyDataViewTest {
 
     @Test
     void dataViewAPIUsed_beforeSettingDataProvider_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
-                    new DataCommunicator<>((item, jsonObject) -> {
-                    }, null, null, component.getElement().getNode()),
-                    component) {
-            };
+        AbstractLazyDataView<String> dataView = new AbstractLazyDataView<String>(
+                new DataCommunicator<>((item, jsonObject) -> {
+                }, null, null, component.getElement().getNode()), component) {
+        };
 
-            // Check that the verification not passed for any 'lazy load'
-            // specific method
-            dataView.setItemCountUnknown();
-        });
+        // Check that the verification not passed for any 'lazy load'
+        // specific method
+        assertThrows(IllegalStateException.class,
+                () -> dataView.setItemCountUnknown());
     }
 
     @Test
     void existingDataView_dataProviderIsChangedToInMemory_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            dataCommunicator.setDataProvider(badProvider, null);
-            // any method call should be enough to trigger the check for type
-            dataView.setItemCountUnknown();
-        });
+        dataCommunicator.setDataProvider(badProvider, null);
+        // any method call should be enough to trigger the check for type
+        assertThrows(IllegalStateException.class,
+                () -> dataView.setItemCountUnknown());
     }
 
     @Test

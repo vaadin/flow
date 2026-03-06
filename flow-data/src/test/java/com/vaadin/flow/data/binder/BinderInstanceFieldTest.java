@@ -267,11 +267,10 @@ class BinderInstanceFieldTest {
 
     @Test
     void bind_instanceFields_noArgsConstructor() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindAllFields form = new BindAllFields();
-            Binder<Person> binder = new Binder<>();
-            binder.bindInstanceFields(form);
-        });
+        BindAllFields form = new BindAllFields();
+        Binder<Person> binder = new Binder<>();
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
@@ -328,56 +327,50 @@ class BinderInstanceFieldTest {
 
     @Test
     void bindInstanceFields_genericFieldWithWrongTypeParameter() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindGenericWrongTypeParameterField form = new BindGenericWrongTypeParameterField();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindGenericWrongTypeParameterField form = new BindGenericWrongTypeParameterField();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
     void bindInstanceFields_generic() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindGeneric<String> form = new BindGeneric<>();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindGeneric<String> form = new BindGeneric<>();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
     void bindInstanceFields_rawFieldType() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindRaw form = new BindRaw();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindRaw form = new BindRaw();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
     void bindInstanceFields_abstractFieldType() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindAbstract form = new BindAbstract();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindAbstract form = new BindAbstract();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
     void bindInstanceFields_noInstantiatableFieldType() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindNonInstantiatableType form = new BindNonInstantiatableType();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindNonInstantiatableType form = new BindNonInstantiatableType();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test
     void bindInstanceFields_wrongFieldType() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindWrongTypeParameterField form = new BindWrongTypeParameterField();
-            Binder<Person> binder = new Binder<>(Person.class);
-            binder.bindInstanceFields(form);
-        });
+        BindWrongTypeParameterField form = new BindWrongTypeParameterField();
+        Binder<Person> binder = new Binder<>(Person.class);
+        assertThrows(IllegalStateException.class,
+                () -> binder.bindInstanceFields(form));
     }
 
     @Test

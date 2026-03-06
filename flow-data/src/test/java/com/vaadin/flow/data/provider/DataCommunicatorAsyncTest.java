@@ -146,13 +146,12 @@ class DataCommunicatorAsyncTest {
     void asyncExcutorPushDisabledThrows(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        assertThrows(IllegalStateException.class, () -> {
-            ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
-            dataCommunicator.setDataProvider(createDataProvider(), null);
-            dataCommunicator.enablePushUpdates(executor);
-            dataCommunicator.setViewportRange(0, 50);
-            fakeClientCommunication();
-        });
+        ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.enablePushUpdates(executor);
+        dataCommunicator.setViewportRange(0, 50);
+        assertThrows(IllegalStateException.class,
+                () -> fakeClientCommunication());
     }
 
     @ParameterizedTest

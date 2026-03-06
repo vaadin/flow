@@ -234,33 +234,30 @@ class BeanBinderTest
 
     @Test
     void bindInstanceFields_does_not_automatically_bind_incomplete_forField_bindings() {
-        assertThrows(IllegalStateException.class, () -> {
-            Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
-            TestClass testClass = new TestClass();
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
 
-            otherBinder.forField(testClass.number)
-                    .withConverter(new StringToIntegerConverter(""));
+        otherBinder.forField(testClass.number)
+                .withConverter(new StringToIntegerConverter(""));
 
-            // bindInstanceFields does not throw exceptions for incomplete
-            // bindings
-            // because bindings they can be completed after the call.
-            otherBinder.bindInstanceFields(testClass);
-            // Should throw an IllegalStateException since the binding for
-            // number is
-            // not completed with bind
-            otherBinder.setBean(new TestBean());
-        });
+        // bindInstanceFields does not throw exceptions for incomplete
+        // bindings
+        // because bindings they can be completed after the call.
+        otherBinder.bindInstanceFields(testClass);
+        // Should throw an IllegalStateException since the binding for
+        // number is not completed with bind
+        assertThrows(IllegalStateException.class,
+                () -> otherBinder.setBean(new TestBean()));
     }
 
     @Test
     void bindInstanceFields_throw_if_no_fields_bound() {
-        assertThrows(IllegalStateException.class, () -> {
-            Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
-            TestClassWithoutFields testClass = new TestClassWithoutFields();
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClassWithoutFields testClass = new TestClassWithoutFields();
 
-            // Should throw an IllegalStateException no fields are bound
-            otherBinder.bindInstanceFields(testClass);
-        });
+        // Should throw an IllegalStateException no fields are bound
+        assertThrows(IllegalStateException.class,
+                () -> otherBinder.bindInstanceFields(testClass));
     }
 
     @Test
@@ -285,17 +282,16 @@ class BeanBinderTest
 
     @Test
     void incomplete_forMemberField_bindings() {
-        assertThrows(IllegalStateException.class, () -> {
-            Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
-            TestClass testClass = new TestClass();
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
 
-            otherBinder.forMemberField(testClass.number)
-                    .withConverter(new StringToIntegerConverter(""));
+        otherBinder.forMemberField(testClass.number)
+                .withConverter(new StringToIntegerConverter(""));
 
-            // Should throw an IllegalStateException since the forMemberField
-            // binding has not been completed
-            otherBinder.setBean(new TestBean());
-        });
+        // Should throw an IllegalStateException since the forMemberField
+        // binding has not been completed
+        assertThrows(IllegalStateException.class,
+                () -> otherBinder.setBean(new TestBean()));
     }
 
     @Test
@@ -424,25 +420,21 @@ class BeanBinderTest
 
     @Test
     void fieldWithIncompatibleTypeBound_bindBean_throws() {
-        assertThrows(ClassCastException.class, () -> {
-            binder.bind(ageField, "age");
-            binder.setBean(item);
-        });
+        binder.bind(ageField, "age");
+        assertThrows(ClassCastException.class, () -> binder.setBean(item));
     }
 
     @Test
     void fieldWithIncompatibleTypeBound_loadBean_throws() {
-        assertThrows(ClassCastException.class, () -> {
-            binder.bind(ageField, "age");
-            binder.readBean(item);
-        });
+        binder.bind(ageField, "age");
+        assertThrows(ClassCastException.class, () -> binder.readBean(item));
     }
 
     @Test
     void fieldWithIncompatibleTypeBound_saveBean_throws() throws Throwable {
+        binder.bind(ageField, "age");
         assertThrows(ClassCastException.class, () -> {
             try {
-                binder.bind(ageField, "age");
                 binder.writeBean(item);
             } catch (RuntimeException e) {
                 throw e.getCause();
@@ -461,13 +453,9 @@ class BeanBinderTest
 
     @Test
     void fieldWithInvalidConverterBound_bindBean_fieldValueUpdated() {
-        assertThrows(ClassCastException.class, () -> {
-            binder.forField(ageField)
-                    .withConverter(Float::valueOf, String::valueOf).bind("age");
-            binder.setBean(item);
-
-            assertEquals("32", ageField.getValue());
-        });
+        binder.forField(ageField).withConverter(Float::valueOf, String::valueOf)
+                .bind("age");
+        assertThrows(ClassCastException.class, () -> binder.setBean(item));
     }
 
     @Test

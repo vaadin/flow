@@ -286,15 +286,14 @@ class BeanPropertySetTest {
 
     @Test
     void nestedPropertyDefinition_propertyChainBroken() {
-        assertThrows(NullPointerException.class, () -> {
-            PropertyDefinition<FatherAndSon, ?> definition = BeanPropertySet
-                    .get(FatherAndSon.class).getProperty("father.firstName")
-                    .orElseThrow(RuntimeException::new);
+        PropertyDefinition<FatherAndSon, ?> definition = BeanPropertySet
+                .get(FatherAndSon.class).getProperty("father.firstName")
+                .orElseThrow(RuntimeException::new);
 
-            ValueProvider<FatherAndSon, ?> getter = definition.getGetter();
+        ValueProvider<FatherAndSon, ?> getter = definition.getGetter();
 
-            getter.apply(new FatherAndSon("Jon", "Doe", null, null));
-        });
+        assertThrows(NullPointerException.class,
+                () -> getter.apply(new FatherAndSon("Jon", "Doe", null, null)));
     }
 
     @Test

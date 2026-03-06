@@ -57,14 +57,13 @@ class AbstractComponentDataGeneratorTest {
 
     @Test
     void registerRenderedComponent_containerHasUi_componentHasDifferentUi_throws() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestComponentDataGenerator generator = new TestComponentDataGenerator();
+        TestComponentDataGenerator generator = new TestComponentDataGenerator();
 
-            Component component = new Text("bar");
-            UI ui = new UI();
-            ui.add(component);
-            generator.registerRenderedComponent("foo", component);
-        });
+        Component component = new Text("bar");
+        UI ui = new UI();
+        ui.add(component);
+        assertThrows(IllegalStateException.class,
+                () -> generator.registerRenderedComponent("foo", component));
     }
 
 }

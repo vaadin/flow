@@ -160,64 +160,55 @@ class BinderValidationStatusTest
 
     @Test
     void bindingWithStatusHandler_addAfterBound() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindingBuilder<Person, String> binding = binder.forField(nameField)
-                    .withValidator(notEmpty);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField)
+                .withValidator(notEmpty);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binding.withValidationStatusHandler(evt -> fail());
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withValidationStatusHandler(evt -> fail()));
     }
 
     @Test
     void bindingWithStatusLabel_addAfterBound() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField)
-                    .withValidator(notEmpty);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField)
+                .withValidator(notEmpty);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binding.withStatusLabel(label);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withStatusLabel(label));
     }
 
     @Test
     void bindingWithStatusLabel_setAfterHandler() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField);
+        BindingBuilder<Person, String> binding = binder.forField(nameField);
+        binding.withValidationStatusHandler(NOOP);
 
-            binding.withValidationStatusHandler(NOOP);
-
-            binding.withStatusLabel(label);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withStatusLabel(label));
     }
 
     @Test
     void bindingWithStatusHandler_setAfterLabel() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField);
+        BindingBuilder<Person, String> binding = binder.forField(nameField);
+        binding.withStatusLabel(label);
 
-            binding.withStatusLabel(label);
-
-            binding.withValidationStatusHandler(NOOP);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withValidationStatusHandler(NOOP));
     }
 
     @Test
     void bindingWithStatusHandler_setAfterOtherHandler() {
-        assertThrows(IllegalStateException.class, () -> {
+        BindingBuilder<Person, String> binding = binder.forField(nameField);
+        binding.withValidationStatusHandler(NOOP);
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField);
-
-            binding.withValidationStatusHandler(NOOP);
-
-            binding.withValidationStatusHandler(NOOP);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withValidationStatusHandler(NOOP));
     }
 
     //
@@ -424,56 +415,52 @@ class BinderValidationStatusTest
 
     @Test
     void binderWithStatusHandler_addAfterBound() {
-        assertThrows(IllegalStateException.class, () -> {
-            BindingBuilder<Person, String> binding = binder.forField(nameField)
-                    .withValidator(notEmpty);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField)
+                .withValidator(notEmpty);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binding.withValidationStatusHandler(evt -> fail());
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withValidationStatusHandler(evt -> fail()));
     }
 
     @Test
     void binderWithStatusLabel_addAfterBound() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField)
-                    .withValidator(notEmpty);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField)
+                .withValidator(notEmpty);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binding.withStatusLabel(label);
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binding.withStatusLabel(label));
     }
 
     @Test
     void binderWithStatusLabel_setAfterHandler() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binder.setValidationStatusHandler(event -> {
-            });
-
-            binder.setStatusLabel(label);
+        binder.setValidationStatusHandler(event -> {
         });
+
+        assertThrows(IllegalStateException.class,
+                () -> binder.setStatusLabel(label));
     }
 
     @Test
     void binderWithStatusHandler_setAfterLabel() {
-        assertThrows(IllegalStateException.class, () -> {
-            TestLabel label = new TestLabel();
+        TestLabel label = new TestLabel();
 
-            BindingBuilder<Person, String> binding = binder.forField(nameField);
-            binding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> binding = binder.forField(nameField);
+        binding.bind(Person::getFirstName, Person::setFirstName);
 
-            binder.setStatusLabel(label);
+        binder.setStatusLabel(label);
 
-            binder.setValidationStatusHandler(event -> {
-            });
-        });
+        assertThrows(IllegalStateException.class,
+                () -> binder.setValidationStatusHandler(event -> {
+                }));
     }
 
     @Test
