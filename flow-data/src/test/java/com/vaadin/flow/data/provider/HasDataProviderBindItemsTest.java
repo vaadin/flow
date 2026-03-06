@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -63,6 +64,11 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
         component.bindItems(itemsSignal);
 
         assertNotNull(component.getDataProvider());
+        var items = component.getDataProvider().fetch(new Query<>()).toList();
+        assertEquals(3, items.size());
+        assertEquals("Item 1", items.get(0));
+        assertEquals("Item 2", items.get(1));
+        assertEquals("Item 3", items.get(2));
     }
 
     @Test
@@ -75,6 +81,8 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
         component.bindItems(itemsSignal);
 
         assertNotNull(component.getDataProvider());
+        var items = component.getDataProvider().fetch(new Query<>()).toList();
+        assertEquals(0, items.size());
     }
 
     @Test
@@ -117,6 +125,10 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
         component.bindItems(itemsSignal);
 
         assertNotNull(component.getDataProvider());
+        var items = component.getDataProvider().fetch(new Query<>()).toList();
+        assertEquals(2, items.size());
+        assertEquals("Item 1", items.get(0));
+        assertEquals("Item 2", items.get(1));
     }
 
     @Test
@@ -133,5 +145,9 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
         component.bindItems(itemsSignal);
 
         assertNotNull(component.getDataProvider());
+        var items = component.getDataProvider().fetch(new Query<>()).toList();
+        assertEquals(2, items.size());
+        assertEquals("Item 1", items.get(0));
+        assertEquals("Item 2", items.get(1));
     }
 }
