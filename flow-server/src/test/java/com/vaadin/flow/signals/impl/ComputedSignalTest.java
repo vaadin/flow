@@ -29,6 +29,7 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -339,6 +340,21 @@ public class ComputedSignalTest extends SignalTestBase {
          */
         assertEquals("value", signal.peek());
         assertEquals(3, count.get());
+    }
+
+    @Test
+    void computed_localSignalReadDuringSharedSignalUpdate_succeeds() {
+        SharedValueSignal<String> shared = new SharedValueSignal<>("shared");
+        ValueSignal<String> local = new ValueSignal<>("local");
+
+        Signal<String> computed = Signal
+                .computed(() -> shared.get() + "+" + local.get());
+
+        assertEquals("shared+local", computed.peek());
+
+        shared.update(old -> "updated");
+
+        assertEquals("updated+local", computed.peek());
     }
 
     @Test

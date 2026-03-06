@@ -145,6 +145,11 @@ public class StagedTransaction extends Transaction {
      */
     private boolean committing = false;
 
+    @Override
+    protected boolean isCommitting() {
+        return committing;
+    }
+
     private final Transaction outer;
 
     /**
