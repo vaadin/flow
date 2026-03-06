@@ -50,6 +50,16 @@ public class DndUtil {
     public static final String DRAG_SOURCE_DATA_KEY = "drag-source-data";
 
     /**
+     * Key for storing drag start offset X coordinate.
+     */
+    public static final String DRAG_START_OFFSET_X_KEY = "drag-start-offset-x";
+
+    /**
+     * Key for storing drag start offset Y coordinate.
+     */
+    public static final String DRAG_START_OFFSET_Y_KEY = "drag-start-offset-y";
+
+    /**
      * Key for storing server side drag image for a
      * {@link com.vaadin.flow.component.dnd.DragSource}.
      */
