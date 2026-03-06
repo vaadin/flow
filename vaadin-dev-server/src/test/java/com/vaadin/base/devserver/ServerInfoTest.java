@@ -33,8 +33,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
