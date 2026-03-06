@@ -72,8 +72,6 @@ public class NodeFeatureRegistry {
                 NodeFeatures.BASIC_TYPE_VALUE);
 
         /* Signal binding features */
-        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
-                NodeFeatures.TEXT_BINDING);
         registerFeature(SignalBindingFeature.class, SignalBindingFeature::new,
                 NodeFeatures.SIGNAL_BINDING);
 
