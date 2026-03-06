@@ -38,12 +38,12 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return Runnable::run;
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return Runnable::run;
             }
         };
 
@@ -76,12 +76,12 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return Runnable::run;
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return Runnable::run;
             }
         };
 

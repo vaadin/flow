@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -303,7 +304,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      */
-    default void bindValue(Signal<V> valueSignal,
+    default SignalBinding<V> bindValue(Signal<V> valueSignal,
             SerializableConsumer<V> writeCallback) {
         throw new UnsupportedOperationException(
                 "Binding value to a Signal is not supported by "
@@ -337,7 +338,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)
      */
-    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
+    default SignalBinding<Boolean> bindReadOnly(
+            Signal<Boolean> readOnlySignal) {
         throw new UnsupportedOperationException(
                 "Binding read only state to a Signal is not supported by "
                         + getClass().getSimpleName());
@@ -371,7 +373,8 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *             thrown when there is already an existing binding
      * @see #setRequiredIndicatorVisible(boolean)
      */
-    default void bindRequiredIndicatorVisible(Signal<Boolean> requiredSignal) {
+    default SignalBinding<Boolean> bindRequiredIndicatorVisible(
+            Signal<Boolean> requiredSignal) {
         throw new UnsupportedOperationException(
                 "Binding required indicator visible state to a Signal is not supported by "
                         + getClass().getSimpleName());

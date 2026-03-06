@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,7 +48,7 @@ public class SharedMapSignalTest extends SignalTestBase {
     void constructor_initialValue_isEmpty() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
 
-        int size = signal.get().size();
+        int size = signal.peek().size();
 
         assertEquals(0, size);
     }
@@ -72,17 +73,19 @@ public class SharedMapSignalTest extends SignalTestBase {
     void put_existingKey_oldEntryUpdated() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "initial");
-        SharedValueSignal<String> child = signal.get().get("key");
+        SharedValueSignal<String> child = signal.peek().get("key");
+        assertNotNull(child);
 
         SignalOperation<String> operation = signal.put("key", "update");
 
         String resultValue = assertSuccess(operation);
         assertEquals("initial", resultValue);
-        assertEquals("update", child.get());
+        assertEquals("update", child.peek());
         assertChildren(signal, "key", "update");
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void put_multiplePuts_insertionOrderPreserved() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
 
@@ -100,7 +103,7 @@ public class SharedMapSignalTest extends SignalTestBase {
             signal.put(key, "update");
         }
 
-        List<String> keyOrder = List.copyOf(signal.get().keySet());
+        List<String> keyOrder = List.copyOf(signal.peek().keySet());
         assertEquals(insertOrder, keyOrder);
     }
 
@@ -115,7 +118,7 @@ public class SharedMapSignalTest extends SignalTestBase {
                 operation);
         assertTrue(result.created());
         SharedValueSignal<String> child = result.entry();
-        assertEquals("value", child.get());
+        assertEquals("value", child.peek());
         assertChildren(signal, "key", "value");
 
         child.set("update");
@@ -126,7 +129,8 @@ public class SharedMapSignalTest extends SignalTestBase {
     void putIfAbsent_existingKey_noUpdateAndEntryUnchanged() {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "value");
-        SharedValueSignal<String> child = signal.get().get("key");
+        SharedValueSignal<String> child = signal.peek().get("key");
+        assertNotNull(child);
 
         SignalOperation<PutIfAbsentResult<SharedValueSignal<String>>> operation = signal
                 .putIfAbsent("key", "update");
@@ -136,7 +140,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertFalse(result.created());
         SharedValueSignal<String> resultChild = result.entry();
 
-        assertEquals("value", resultChild.get());
+        assertEquals("value", resultChild.peek());
         assertChildren(signal, "key", "value");
         assertEquals(child.id(), resultChild.id());
     }
@@ -180,8 +184,9 @@ public class SharedMapSignalTest extends SignalTestBase {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "value");
 
-        SignalOperation<Void> operation = signal.verifyKey("key",
-                signal.get().get("key"));
+        SharedValueSignal<String> child = signal.peek().get("key");
+        assertNotNull(child);
+        SignalOperation<Void> operation = signal.verifyKey("key", child);
 
         assertSuccess(operation);
     }
@@ -192,8 +197,9 @@ public class SharedMapSignalTest extends SignalTestBase {
         signal.put("key", "value");
         signal.put("key2", "value2");
 
-        SignalOperation<Void> operation = signal.verifyKey("key",
-                signal.get().get("key2"));
+        SharedValueSignal<String> child2 = signal.peek().get("key2");
+        assertNotNull(child2);
+        SignalOperation<Void> operation = signal.verifyKey("key", child2);
 
         assertFailure(operation);
     }
@@ -243,7 +249,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "value");
 
-        Map<String, SharedValueSignal<String>> value = signal.get();
+        Map<String, SharedValueSignal<String>> value = signal.peek();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.put("key", new SharedValueSignal<>("update"));
@@ -261,7 +267,7 @@ public class SharedMapSignalTest extends SignalTestBase {
         SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         signal.put("key", "value");
 
-        Map<String, SharedValueSignal<String>> value = signal.get();
+        Map<String, SharedValueSignal<String>> value = signal.peek();
 
         signal.put("key2", "value2");
 
@@ -284,7 +290,9 @@ public class SharedMapSignalTest extends SignalTestBase {
         assertInstanceOf(SignalCommand.PutCommand.class,
                 validatedCommands.get(0));
 
-        wrapper.get().get("key").set("update");
+        SharedValueSignal<String> wrapperChild = wrapper.peek().get("key");
+        assertNotNull(wrapperChild);
+        wrapperChild.set("update");
         assertEquals(2, validatedCommands.size());
         assertInstanceOf(SignalCommand.ValueCommand.class,
                 validatedCommands.get(1));
@@ -296,7 +304,8 @@ public class SharedMapSignalTest extends SignalTestBase {
         signal.put("key", "value");
 
         SharedMapSignal<String> readonly = signal.asReadonly();
-        SharedValueSignal<String> readonlyChild = readonly.get().get("key");
+        SharedValueSignal<String> readonlyChild = readonly.peek().get("key");
+        assertNotNull(readonlyChild);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -351,10 +360,13 @@ public class SharedMapSignalTest extends SignalTestBase {
         signal.putIfAbsent("child", "value");
         signal.putIfAbsent("other", "other");
 
-        SharedValueSignal<String> child = signal.get().get("child");
-        SharedValueSignal<String> other = signal.get().get("other");
+        SharedValueSignal<String> child = signal.peek().get("child");
+        assertNotNull(child);
+        SharedValueSignal<String> other = signal.peek().get("other");
+        assertNotNull(other);
 
-        SharedValueSignal<String> valueChild = signal.get().get("child");
+        SharedValueSignal<String> valueChild = signal.peek().get("child");
+        assertNotNull(valueChild);
 
         assertEquals(child, valueChild);
         assertEquals(child.hashCode(), valueChild.hashCode());
@@ -376,7 +388,7 @@ public class SharedMapSignalTest extends SignalTestBase {
             String... expectedKeyValuePairs) {
         assertEquals(0, expectedKeyValuePairs.length % 2);
 
-        Map<String, SharedValueSignal<String>> value = signal.get();
+        Map<String, SharedValueSignal<String>> value = signal.peek();
 
         assertEquals(expectedKeyValuePairs.length / 2, value.size());
 
@@ -385,7 +397,9 @@ public class SharedMapSignalTest extends SignalTestBase {
             String expextedValue = expectedKeyValuePairs[i + 1];
 
             assertTrue(value.containsKey(key));
-            assertEquals(expextedValue, value.get(key).get());
+            SharedValueSignal<String> entry = value.get(key);
+            assertNotNull(entry);
+            assertEquals(expextedValue, entry.peek());
         }
     }
 

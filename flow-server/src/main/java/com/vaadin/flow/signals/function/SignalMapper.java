@@ -35,14 +35,14 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#map(SignalMapper)
  */
 @FunctionalInterface
-public interface SignalMapper<T, R> extends Serializable {
+public interface SignalMapper<T extends @Nullable Object, R extends @Nullable Object>
+        extends Serializable {
     /**
      * Applies this mapper to transform a signal value.
      *
      * @param value
-     *            the input value, may be <code>null</code>
-     * @return the transformed value, may be <code>null</code>
+     *            the input value
+     * @return the transformed value
      */
-    @Nullable
-    R map(@Nullable T value);
+    R map(T value);
 }

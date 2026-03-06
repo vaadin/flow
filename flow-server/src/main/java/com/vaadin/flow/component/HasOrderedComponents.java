@@ -54,8 +54,16 @@ public interface HasOrderedComponents extends HasComponents {
                 .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
                     if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
-                        throw new BindingActiveException(
-                                "replace is not allowed while a binding for children exists.");
+                        boolean oldIsDefaultSlot = oldComponent != null
+                                && oldComponent.getElement()
+                                        .getAttribute("slot") == null;
+                        boolean newIsDefaultSlot = newComponent != null
+                                && newComponent.getElement()
+                                        .getAttribute("slot") == null;
+                        if (oldIsDefaultSlot || newIsDefaultSlot) {
+                            throw new BindingActiveException(
+                                    "replace is not allowed for default-slot components while a binding for children exists.");
+                        }
                     }
                 });
         if (oldComponent == null && newComponent == null) {

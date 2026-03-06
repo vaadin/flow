@@ -67,7 +67,7 @@ public class SharedValueSignalView extends Div {
                 SHARED_SIGNAL.set(newValue);
             });
 
-            String firstRead = SHARED_SIGNAL.get();
+            String firstRead = SHARED_SIGNAL.peek();
             firstReadValue.setText(firstRead);
 
             try {
@@ -76,7 +76,7 @@ public class SharedValueSignalView extends Div {
                 throw new RuntimeException(ex);
             }
 
-            String secondRead = SHARED_SIGNAL.get();
+            String secondRead = SHARED_SIGNAL.peek();
             secondReadValue.setText(secondRead);
             secondPeekConfirmedValue.setText(SHARED_SIGNAL.peekConfirmed());
         });
@@ -84,7 +84,8 @@ public class SharedValueSignalView extends Div {
         NativeButton printSignalButton = new NativeButton("Print signal value");
         printSignalButton.setId("print-signal-button");
         printSignalButton.addClickListener(e -> {
-            signalValue.setText("Current signal value: " + SHARED_SIGNAL.get());
+            signalValue
+                    .setText("Current signal value: " + SHARED_SIGNAL.peek());
         });
 
         add(sharedButton, printSignalButton, firstReadValue, secondReadValue,
