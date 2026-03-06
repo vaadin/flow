@@ -18,10 +18,8 @@ package com.vaadin.flow.component;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -173,10 +171,7 @@ class TextTest {
     }
 
     @Test
-    public void missingSignalBindingFeatureDoNotThrow() {
-        // getFeatureIfInitialized may throw IllegalStateException if the
-        // feature is not known, but it should not be thrown for
-        // SignalBindingFeature.
+    public void lazyInitSignalBindingFeature() {
         Text text = new Text("text");
         text.getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
@@ -185,15 +180,9 @@ class TextTest {
 
         text.bindText(new ValueSignal<>("text"));
 
-        assertFalse(
-                "SignalBindingFeature should not be initialized before binding a signal",
-                text.getElement().getNode()
-                        .getFeatureIfInitialized(SignalBindingFeature.class)
-                        .isPresent());
-
         text.getElement().getNode()
-                .getFeatureIfInitialized(TextBindingFeature.class)
+                .getFeatureIfInitialized(SignalBindingFeature.class)
                 .orElseThrow(() -> new AssertionError(
-                        "TextBindingFeature should be initialized after binding a signal"));
+                        "SignalBindingFeature should be initialized after binding a signal"));
     }
 }
