@@ -34,11 +34,13 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -501,5 +503,78 @@ class PageTest {
 
         page.setColorScheme(ColorScheme.Value.NORMAL);
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    }
+
+    @Test
+    public void requestFullscreen_executesDocumentFullscreenJs() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.requestFullscreen();
+
+        String js = capturedExpression.get();
+        assertTrue(js.contains(
+                "window.Vaadin.Flow.fullscreen.requestPageFullscreen()"),
+                "Should call the fullscreen connector");
+    }
+
+    @Test
+    public void exitFullscreen_executesExitFullscreenJs() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.exitFullscreen();
+
+        assertEquals("document.exitFullscreen()", capturedExpression.get());
+    }
+
+    @Test
+    public void isFullscreenEnabled_executesCorrectJs() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.isFullscreenEnabled();
+
+        assertEquals("return document.fullscreenEnabled === true",
+                capturedExpression.get());
+    }
+
+    @Test
+    public void addFullscreenChangeListener_nullListener_throws() {
+        Page page = new Page(new MockUI());
+        assertThrows(NullPointerException.class,
+                () -> page.addFullscreenChangeListener(null));
+    }
+
+    @Test
+    public void addFullscreenChangeListener_returnsRegistration() {
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI);
+
+        Registration registration = page.addFullscreenChangeListener(event -> {
+        });
+
+        assertNotNull(registration);
     }
 }
