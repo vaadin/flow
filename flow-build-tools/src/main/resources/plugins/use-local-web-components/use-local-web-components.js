@@ -4,7 +4,7 @@ import path from 'path';
 // Vite resolves dependencies from where they are imported, so these would be bundled twice.
 // To avoid that, use dedupe. Dedupe only works for non-optimized dependencies, so they also
 // need to be excluded from optimization / pre-bundling.
-const sharedDeps = ['lit', 'lit-html', 'ol'];
+const sharedDeps = ['lit', 'lit-html', 'ol', '@polymer/polymer'];
 
 export default function useLocalWebComponents(webComponentsDir = 'web-components') {
   const nodeModulesPath = path.resolve(webComponentsDir, 'node_modules');
@@ -23,7 +23,7 @@ export default function useLocalWebComponents(webComponentsDir = 'web-components
           }
         },
         optimizeDeps: {
-          exclude: ['@vaadin', '@polymer', ...sharedDeps]
+          exclude: ['@vaadin', ...sharedDeps]
         },
         resolve: {
           dedupe: sharedDeps
@@ -31,7 +31,7 @@ export default function useLocalWebComponents(webComponentsDir = 'web-components
       };
     },
     resolveId(id) {
-      if (/^(@polymer|@vaadin)/.test(id)) {
+      if (/^@vaadin/.test(id)) {
         return this.resolve(path.join(nodeModulesPath, id));
       }
     }
