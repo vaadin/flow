@@ -69,17 +69,14 @@ class CompositeTest {
 
     @Test
     void getContent_compositeIsKeyNotifier() {
-        assertThrows(IllegalStateException.class, () -> {
-            KeyNotifierComposite composite = new KeyNotifierComposite();
-            composite.getContent();
-        });
+        KeyNotifierComposite composite = new KeyNotifierComposite();
+        assertThrows(IllegalStateException.class, () -> composite.getContent());
     }
 
     /*
      * This is just a test for #1181.
      */
     @Test
-    // @Disabled("Failing after adding connect client generators")
     void templateInsideComposite_compositeCanBeAdded() {
         class MyComponent extends Composite<MyTemplate> {
 

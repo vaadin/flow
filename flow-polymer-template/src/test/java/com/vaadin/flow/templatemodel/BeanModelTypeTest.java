@@ -342,16 +342,15 @@ class BeanModelTypeTest {
 
     @Test
     void importBean_incompatibleBean() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
-                    PropertyFilter.ACCEPT_ALL, false);
+        BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
+                PropertyFilter.ACCEPT_ALL, false);
 
-            ElementPropertyMap model = createEmptyModel();
+        ElementPropertyMap model = createEmptyModel();
 
-            DifferentBean bean = new DifferentBean(3);
+        DifferentBean bean = new DifferentBean(3);
 
-            beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
-        });
+        assertThrows(IllegalArgumentException.class, () -> beanType
+                .importProperties(model, bean, PropertyFilter.ACCEPT_ALL));
     }
 
     @Test

@@ -160,17 +160,16 @@ class PolymerPublishedEventRpcHandlerTest {
 
     @Test
     void templateNotConnectedToUI_throws() throws NoSuchMethodException {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TestModule instance = new TestModule();
+        TestModule instance = new TestModule();
 
-            ObjectNode json = JacksonUtils.createObjectNode();
-            json.put("nodeId", 0);
-            json.put("message", "bar");
-            final Type messageType = ModelClass.class
-                    .getMethod("setMessage", String.class)
-                    .getGenericParameterTypes()[0];
+        ObjectNode json = JacksonUtils.createObjectNode();
+        json.put("nodeId", 0);
+        json.put("message", "bar");
+        final Type messageType = ModelClass.class
+                .getMethod("setMessage", String.class)
+                .getGenericParameterTypes()[0];
 
-            handler.getTemplateItem(instance, json, messageType);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.getTemplateItem(instance, json, messageType));
     }
 }

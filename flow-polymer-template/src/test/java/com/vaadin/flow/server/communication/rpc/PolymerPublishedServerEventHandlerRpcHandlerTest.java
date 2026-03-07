@@ -238,33 +238,30 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     void methodWithoutArgs_argsProvided() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            ArrayNode args = JacksonUtils.createArrayNode();
-            args.add(true);
-            ComponentWithMethod component = new ComponentWithMethod();
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "method", args, -1);
-        });
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(true);
+        ComponentWithMethod component = new ComponentWithMethod();
+        assertThrows(IllegalArgumentException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, component.getClass(), "method", args, -1));
     }
 
     @Test
     void twoEventHandlerMethodsWithTheSameName() {
-        assertThrows(IllegalStateException.class, () -> {
-            ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "intMethod",
-                    JacksonUtils.createArrayNode(), -1);
-        });
+        ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
+        assertThrows(IllegalStateException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, component.getClass(), "intMethod",
+                        JacksonUtils.createArrayNode(), -1));
     }
 
     @Test
     void methodWithParametersInvokedWithoutParameters() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            MethodWithParameters component = new MethodWithParameters();
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "intMethod",
-                    JacksonUtils.createArrayNode(), -1);
-        });
+        MethodWithParameters component = new MethodWithParameters();
+        assertThrows(IllegalArgumentException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, component.getClass(), "intMethod",
+                        JacksonUtils.createArrayNode(), -1));
     }
 
     @Test
@@ -481,22 +478,20 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     void noEventHandlerMethodException() {
-        assertThrows(IllegalStateException.class, () -> {
-            ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "operation",
-                    JacksonUtils.createArrayNode(), -1);
-        });
+        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+        assertThrows(IllegalStateException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, component.getClass(), "operation",
+                        JacksonUtils.createArrayNode(), -1));
     }
 
     @Test
     void noMethodException() {
-        assertThrows(IllegalStateException.class, () -> {
-            ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "operation1",
-                    JacksonUtils.createArrayNode(), -1);
-        });
+        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+        assertThrows(IllegalStateException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, component.getClass(), "operation1",
+                        JacksonUtils.createArrayNode(), -1));
     }
 
     @Test

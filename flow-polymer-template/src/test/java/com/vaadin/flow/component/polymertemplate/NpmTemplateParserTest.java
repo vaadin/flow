@@ -162,10 +162,9 @@ class NpmTemplateParserTest {
 
     @Test
     void should_throwException_when_LocalFileNotFound() {
-        assertThrows(IllegalStateException.class, () -> {
-            TemplateParser instance = NpmTemplateParser.getInstance();
-            instance.getTemplateContent(FooView.class, "foo-view", service);
-        });
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        assertThrows(IllegalStateException.class, () -> instance
+                .getTemplateContent(FooView.class, "foo-view", service));
     }
 
     @Test

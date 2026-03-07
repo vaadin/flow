@@ -755,56 +755,83 @@ public class TemplateModelTest extends HasCurrentService {
 
     @Test
     void testUnsupportedPrimitiveSetter() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.setLong(0L);
+        });
     }
 
     @Test
     void testUnsupportedPrimitiveGetter() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.getLong();
+        });
     }
 
     @Test
     void testGetterVoid() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.getFoo();
+        });
     }
 
     @Test
     void testGetterWithParam() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.getFoo(0);
+        });
     }
 
     @Test
     void testSetterReturns() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.setFoo(0);
+        });
     }
 
     @Test
     void testSetterNoParam() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.setFoo();
+        });
     }
 
     @Test
     void testSetterTwoParams() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.setFoo(1, 2);
+        });
     }
 
     @Test
     void testInvalidSetterMethodName() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.setfoo(1);
+        });
     }
 
     @Test
     void testInvalidGetterMethodName() {
-        assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+        assertThrows(InvalidTemplateModelException.class, () -> {
+            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
+            NotSupportedModel model = template.getModel();
+            model.isbar();
+        });
     }
 
     @Test

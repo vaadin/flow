@@ -141,13 +141,13 @@ class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     @Test
     void noDefaultConstructor_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            EmptyModelTemplate template = new EmptyModelTemplate();
+        EmptyModelTemplate template = new EmptyModelTemplate();
 
-            TemplateModelProxyHandler.createModelProxy(
-                    template.getElement().getNode(), new BeanModelType<>(
-                            BadModel.class, PropertyFilter.ACCEPT_ALL, false));
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> TemplateModelProxyHandler.createModelProxy(
+                        template.getElement().getNode(),
+                        new BeanModelType<>(BadModel.class,
+                                PropertyFilter.ACCEPT_ALL, false)));
     }
 
     // https://github.com/vaadin/flow/issues/1205
@@ -156,14 +156,13 @@ class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     @Test
     void nonStaticNestedClass_throwsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            EmptyModelTemplate template = new EmptyModelTemplate();
+        EmptyModelTemplate template = new EmptyModelTemplate();
 
-            TemplateModelProxyHandler.createModelProxy(
-                    template.getElement().getNode(),
-                    new BeanModelType<>(NotStaticModel.class,
-                            PropertyFilter.ACCEPT_ALL, false));
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> TemplateModelProxyHandler.createModelProxy(
+                        template.getElement().getNode(),
+                        new BeanModelType<>(NotStaticModel.class,
+                                PropertyFilter.ACCEPT_ALL, false)));
     }
 
     @Test
