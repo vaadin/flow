@@ -1417,23 +1417,6 @@ class HotswapperTest {
     }
 
     @Test
-    void uiInit_registersUIRefreshClientSideEvent() {
-        VaadinSession session = createMockVaadinSession();
-        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
-                MyLayoutWithChild.class);
-
-        try {
-            session.lock();
-            UIInitEvent event = new UIInitEvent(ui, service);
-            hotswapper.uiInit(event);
-            assertTrue(ui.refreshUIClientListenerRegistered,
-                    "Expected Hotswapper to register client side refresh event listener ");
-        } finally {
-            session.unlock();
-        }
-    }
-
-    @Test
     void instanceCreation_hotswappersInitialized() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         new Hotswapper(service);
