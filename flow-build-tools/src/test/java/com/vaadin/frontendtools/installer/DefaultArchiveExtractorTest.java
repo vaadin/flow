@@ -102,21 +102,21 @@ class DefaultArchiveExtractorTest {
     @Test
     void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
             throws IOException, ArchiveExtractionException {
-        assertThrows(ArchiveExtractionException.class, () -> {
-            File archiveFile = new File(baseDir, "archive.zip");
-            archiveFile.createNewFile();
-            Path tempArchive = archiveFile.toPath();
+        File archiveFile = new File(baseDir, "archive.zip");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
 
-            try (OutputStream fo = Files.newOutputStream(tempArchive);
-                    OutputStream gzo = new GzipCompressorOutputStream(fo);
-                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-                o.putArchiveEntry(
-                        o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
-                o.closeArchiveEntry();
-            }
+        try (OutputStream fo = Files.newOutputStream(tempArchive);
+                OutputStream gzo = new GzipCompressorOutputStream(fo);
+                ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+            o.putArchiveEntry(
+                    o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
+            o.closeArchiveEntry();
+        }
 
-            new DefaultArchiveExtractor().extract(archiveFile, targetDir);
-        });
+        assertThrows(ArchiveExtractionException.class,
+                () -> new DefaultArchiveExtractor().extract(archiveFile,
+                        targetDir));
     }
 
     @Test

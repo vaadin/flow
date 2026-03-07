@@ -74,13 +74,13 @@ class NodeTasksViteTest {
     }
 
     @BeforeAll
-    public static void setupBeforeClass() {
+    static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
         globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
     }
 
     @AfterAll
-    public static void tearDownAfterClass() {
+    static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
     }

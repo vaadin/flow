@@ -269,7 +269,7 @@ class FrontendUtilsTest {
     }
 
     @Test
-    public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
+    synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
             throws IOException {
         String originalHome = System.getProperty(USER_HOME);
         File home = Files.createTempDirectory(tmpDir.toPath(), "tmp").toFile();
@@ -292,24 +292,22 @@ class FrontendUtilsTest {
     }
 
     @Test
-    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+    synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
             throws IOException {
-        assertThrows(IllegalStateException.class, () -> {
-            String originalHome = System.getProperty(USER_HOME);
-            File home = Files.createTempDirectory(tmpDir.toPath(), "tmp")
-                    .toFile();
-            System.setProperty(USER_HOME, home.getPath());
-            try {
-                File vaadinDir = new File(home, ".vaadin");
-                if (vaadinDir.exists()) {
-                    FileUtils.deleteDirectory(vaadinDir);
-                }
-                vaadinDir.createNewFile();
-                FrontendUtils.getVaadinHomeDirectory();
-            } finally {
-                System.setProperty(USER_HOME, originalHome);
+        String originalHome = System.getProperty(USER_HOME);
+        File home = Files.createTempDirectory(tmpDir.toPath(), "tmp").toFile();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
             }
-        });
+            vaadinDir.createNewFile();
+            assertThrows(IllegalStateException.class,
+                    () -> FrontendUtils.getVaadinHomeDirectory());
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
     }
 
     @Test
@@ -353,11 +351,10 @@ class FrontendUtilsTest {
 
     @Test
     void deleteNodeModules_throwsIfNotNamedNodeModules() throws IOException {
-        assertThrows(IOException.class, () -> {
-            File myModules = new File(tmpDir, "my_modules");
-            myModules.mkdirs();
-            FrontendUtils.deleteNodeModules(myModules);
-        });
+        File myModules = new File(tmpDir, "my_modules");
+        myModules.mkdirs();
+        assertThrows(IOException.class,
+                () -> FrontendUtils.deleteNodeModules(myModules));
     }
 
     @Test

@@ -72,11 +72,9 @@ class FrontendAnnotatedClassVisitorTest {
 
     @Test
     void getValue_multipleAnnotationsFound_shouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            // Multiple annotations found, so getValue should throw an exception
-            visitor.visitClass(AnnotatedClass.class.getName());
-            visitor.getValue("value");
-        });
+        visitor.visitClass(AnnotatedClass.class.getName());
+        assertThrows(IllegalArgumentException.class,
+                () -> visitor.getValue("value"));
     }
 
     @Test

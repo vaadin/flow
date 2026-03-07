@@ -423,7 +423,7 @@ class FrontendToolsTest {
     }
 
     @Test
-    public synchronized void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnAllProxies()
+    synchronized void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnAllProxies()
             throws IOException {
         File test2Dir = new File(tmpDirWithNpmrc, "test2");
         test2Dir.mkdirs();
@@ -509,7 +509,7 @@ class FrontendToolsTest {
     }
 
     @Test
-    public synchronized void getProxies_npmrcWithProxySettingNoNoproxy_shouldReturnNullNoproxy()
+    synchronized void getProxies_npmrcWithProxySettingNoNoproxy_shouldReturnNullNoproxy()
             throws IOException {
         File test1Dir = new File(tmpDirWithNpmrc, "test1");
         test1Dir.mkdirs();
@@ -551,7 +551,7 @@ class FrontendToolsTest {
     }
 
     @Test
-    public synchronized void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
+    synchronized void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
             throws IOException {
         File test1Dir = new File(tmpDirWithNpmrc, "test1");
         test1Dir.mkdirs();
@@ -795,36 +795,27 @@ class FrontendToolsTest {
 
     @Test
     void nodeFolder_invalidFolder_throwsException() throws IOException {
-        assertThrows(IllegalStateException.class, () -> {
-            File emptyFolder = new File(tmpDir, "empty-node-folder");
-            emptyFolder.mkdirs();
-            settings.setNodeFolder(emptyFolder.getAbsolutePath());
-            tools = new FrontendTools(settings);
+        File emptyFolder = new File(tmpDir, "empty-node-folder");
+        emptyFolder.mkdirs();
+        settings.setNodeFolder(emptyFolder.getAbsolutePath());
+        tools = new FrontendTools(settings);
 
-            // This should throw IllegalStateException because folder has no
-            // node
-            // binary
-            tools.getNodeExecutable();
-        });
+        assertThrows(IllegalStateException.class,
+                () -> tools.getNodeExecutable());
     }
 
     @Test
     void nodeFolder_missingNpm_throwsException() throws IOException {
-        assertThrows(IllegalStateException.class, () -> {
-            // Create only node binary, no npm
-            // createStubNode creates node/ subdirectory, so we need to point to
-            // that
-            File customNodeBase = new File(tmpDir, "node-without-npm");
-            customNodeBase.mkdirs();
-            createStubNode(true, false, customNodeBase.getAbsolutePath());
-            File customNodeFolder = new File(customNodeBase, "node");
+        File customNodeBase = new File(tmpDir, "node-without-npm");
+        customNodeBase.mkdirs();
+        createStubNode(true, false, customNodeBase.getAbsolutePath());
+        File customNodeFolder = new File(customNodeBase, "node");
 
-            settings.setNodeFolder(customNodeFolder.getAbsolutePath());
-            tools = new FrontendTools(settings);
+        settings.setNodeFolder(customNodeFolder.getAbsolutePath());
+        tools = new FrontendTools(settings);
 
-            // This should throw IllegalStateException because npm is missing
-            tools.getNodeExecutable();
-        });
+        assertThrows(IllegalStateException.class,
+                () -> tools.getNodeExecutable());
     }
 
     @Test

@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
@@ -38,18 +37,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FrontendResourcesAreCopiedAfterCleaningTest {
 
     @TempDir
-    File temporaryFolder;
-
-    private File npmFolder;
+    File npmFolder;
 
     private File testJar = TestUtils
             .getTestJar("jar-with-frontend-resources.jar");
-
-    @BeforeEach
-    void setup() throws IOException, ExecutionFailedException {
-        npmFolder = temporaryFolder;
-
-    }
 
     @Test
     void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
