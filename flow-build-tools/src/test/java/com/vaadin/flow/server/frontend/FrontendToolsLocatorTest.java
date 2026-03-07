@@ -18,43 +18,41 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.util.Optional;
 
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-public class FrontendToolsLocatorTest {
+class FrontendToolsLocatorTest {
     private final FrontendToolsLocator locator = new FrontendToolsLocator();
 
     @Test
-    public void toolLocated() {
+    void toolLocated() {
         Optional<File> echoLocation = locator.tryLocateTool("mvn");
-        assertTrue("Should be able to find 'mvn' binary",
-                echoLocation.isPresent());
+        assertTrue(echoLocation.isPresent(),
+                "Should be able to find 'mvn' binary");
     }
 
     @Test
-    public void toolLocated_verificationFailed() {
-        Assume.assumeFalse("Cannot run the test on Windows",
-                locator.isWindows());
+    void toolLocated_verificationFailed() {
+        assumeFalse(locator.isWindows(), "Cannot run the test on Windows");
         Optional<File> sedLocation = locator.tryLocateTool("sed");
-        assertFalse(
-                "Sed location should not be available due to lack of '-v' flag support",
-                sedLocation.isPresent());
+        assertFalse(sedLocation.isPresent(),
+                "Sed location should not be available due to lack of '-v' flag support");
     }
 
     @Test
-    public void toolNotLocated() {
+    void toolNotLocated() {
         Optional<File> unknownToolLocation = locator
                 .tryLocateTool("sdhajgsdiasg!");
-        assertFalse("Unknown tool should not be found in the system",
-                unknownToolLocation.isPresent());
+        assertFalse(unknownToolLocation.isPresent(),
+                "Unknown tool should not be found in the system");
     }
 
     @Test
-    public void nonExistentTool_notVerified() {
-        assertFalse("Non-existent tool should not be a valid one",
-                locator.verifyTool(new File("whatever!")));
+    void nonExistentTool_notVerified() {
+        assertFalse(locator.verifyTool(new File("whatever!")),
+                "Non-existent tool should not be a valid one");
     }
 }

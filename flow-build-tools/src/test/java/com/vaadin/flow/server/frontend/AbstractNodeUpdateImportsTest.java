@@ -31,12 +31,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -48,16 +45,14 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
+abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    @TempDir
+    File temporaryFolder;
 
     private File importsFile;
     private File frontendDirectory;
@@ -66,9 +61,9 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     private MockLogger logger;
 
-    @Before
-    public void setup() throws Exception {
-        File tmpRoot = temporaryFolder.getRoot();
+    @BeforeEach
+    void setup() throws Exception {
+        File tmpRoot = temporaryFolder;
 
         logger = new MockLogger();
 
@@ -104,7 +99,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
             ClassFinder finder);
 
     @Test
-    public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
+    void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
         List<String> expectedLines = new ArrayList<>();
         expectedLines.addAll(getExpectedImports());
@@ -170,7 +165,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void noChanges_generatedJsFileIsNotUpdated() throws Exception {
+    void noChanges_generatedJsFileIsNotUpdated() throws Exception {
         updater.execute();
         long timestamp1 = importsFile.lastModified();
 
@@ -179,11 +174,11 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         updater.execute();
         long timestamp2 = importsFile.lastModified();
 
-        Assert.assertEquals(timestamp1, timestamp2);
+        assertEquals(timestamp1, timestamp2);
     }
 
     @Test
-    public void removeJsModuleImportFromFile_importIsReadedAfterRegeneration()
+    void removeJsModuleImportFromFile_importIsReadedAfterRegeneration()
             throws Exception {
         updater.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
@@ -197,7 +192,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void addModuleImportManuallyIntoGeneratedFile_importIsRemovedAfterRegeneration()
+    void addModuleImportManuallyIntoGeneratedFile_importIsRemovedAfterRegeneration()
             throws Exception {
         updater.execute();
         addImports("./added-import.js");
@@ -208,7 +203,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void addAndRemoveJsModuleImports_addedImportIsNotPreseredAfterRegeneration()
+    void addAndRemoveJsModuleImports_addedImportIsNotPreseredAfterRegeneration()
             throws Exception {
         updater.execute();
 
@@ -243,9 +238,9 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
                     + importString + " IN: \n" + content;
             if (contains) {
-                assertTrue(message, result);
+                assertTrue(result, message);
             } else {
-                assertFalse(message, result);
+                assertFalse(result, message);
             }
         }
     }
@@ -257,9 +252,9 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         for (String line : imports) {
             String prefixed = addFrontendAlias(line);
             int nextIndex = content.indexOf(prefixed);
-            assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
-            assertTrue("import '" + prefixed + "' appears in the wrong order",
-                    curIndex <= nextIndex);
+            assertTrue(nextIndex != -1, "import '" + prefixed + "' not found");
+            assertTrue(curIndex <= nextIndex,
+                    "import '" + prefixed + "' appears in the wrong order");
             curIndex = nextIndex;
         }
     }

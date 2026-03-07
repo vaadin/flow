@@ -21,11 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -37,10 +35,13 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateIndexTsTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateIndexTsTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendFolder;
     private File generatedImports;
@@ -48,107 +49,101 @@ public class TaskGenerateIndexTsTest {
 
     private Options options;
 
-    @Before
-    public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
+    @BeforeEach
+    void setUp() throws IOException {
+        frontendFolder = new File(temporaryFolder, FRONTEND);
+        File generatedFolder = new File(new File(temporaryFolder, TARGET),
+                FRONTEND);
+        generatedFolder.mkdirs();
         generatedImports = new File(generatedFolder,
                 "flow-generated-imports.js");
         generatedImports.createNewFile();
-        options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withFrontendDirectory(frontendFolder)
+        options = new Options(Mockito.mock(Lookup.class), temporaryFolder)
+                .withFrontendDirectory(frontendFolder)
                 .withBuildDirectory(TARGET);
 
         taskGenerateIndexTs = new TaskGenerateIndexTs(options);
     }
 
     @Test
-    public void should_reported_routing_client_when_IndexJsExists()
-            throws Exception {
+    void should_reported_routing_client_when_IndexJsExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
         taskGenerateIndexTs.execute();
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
     }
 
     @Test
-    public void should_reported_routing_client_when_IndexTsExists()
-            throws Exception {
+    void should_reported_routing_client_when_IndexTsExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
         taskGenerateIndexTs.execute();
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
     }
 
     @Test
-    public void should_reported_routing_client_when_IndexTsxExists()
-            throws Exception {
+    void should_reported_routing_client_when_IndexTsxExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TSX).toPath());
         taskGenerateIndexTs.execute();
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+        assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
     }
 
     @Test
-    public void should_not_reported_routing_client() throws Exception {
+    void should_not_reported_routing_client() throws Exception {
         taskGenerateIndexTs.execute();
-        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+        assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
     }
 
     @Test
-    public void should_notGenerateIndexTs_IndexJsExists() throws Exception {
+    void should_notGenerateIndexTs_IndexJsExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
         taskGenerateIndexTs.execute();
-        Assert.assertFalse(
+        assertFalse(taskGenerateIndexTs.shouldGenerate(),
                 "Should not generate index.ts when index.js exists in"
-                        + " the frontend folder",
-                taskGenerateIndexTs.shouldGenerate());
-        Assert.assertFalse("The generated file should not exists",
-                taskGenerateIndexTs.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertFalse(taskGenerateIndexTs.getGeneratedFile().exists(),
+                "The generated file should not exists");
     }
 
     @Test
-    public void should_notGenerateIndexTs_IndexTsExists() throws Exception {
+    void should_notGenerateIndexTs_IndexTsExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
         taskGenerateIndexTs.execute();
-        Assert.assertFalse(
+        assertFalse(taskGenerateIndexTs.shouldGenerate(),
                 "Should not generate index.ts when index.ts exists in"
-                        + " the frontend folder",
-                taskGenerateIndexTs.shouldGenerate());
-        Assert.assertFalse("The generated file should not exists",
-                taskGenerateIndexTs.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertFalse(taskGenerateIndexTs.getGeneratedFile().exists(),
+                "The generated file should not exists");
     }
 
     @Test
-    public void should_generateIndexJs_IndexJsNotExist() throws Exception {
+    void should_generateIndexJs_IndexJsNotExist() throws Exception {
 
         taskGenerateIndexTs.execute();
-        Assert.assertTrue(
+        assertTrue(taskGenerateIndexTs.shouldGenerate(),
                 "Should generate index.ts when it doesn't exist in"
-                        + " the frontend folder",
-                taskGenerateIndexTs.shouldGenerate());
-        Assert.assertTrue("The generated file should exists",
-                taskGenerateIndexTs.getGeneratedFile().exists());
+                        + " the frontend folder");
+        assertTrue(taskGenerateIndexTs.getGeneratedFile().exists(),
+                "The generated file should exists");
 
-        Assert.assertEquals("Should have default content of index.ts",
-                taskGenerateIndexTs.getFileContent(),
+        assertEquals(taskGenerateIndexTs.getFileContent(),
                 IOUtils.toString(taskGenerateIndexTs.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "Should have default content of index.ts");
     }
 
     @Test
-    public void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
+    void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
         String customPath = TaskGenerateIndexTs.ensureValidRelativePath(
                 "../custom-frontend/generated-flow-imports.js");
-        Assert.assertEquals(
-                "Should not append './' if it is already a relative path",
-                "../custom-frontend/generated-flow-imports.js", customPath);
+        assertEquals("../custom-frontend/generated-flow-imports.js", customPath,
+                "Should not append './' if it is already a relative path");
 
         customPath = TaskGenerateIndexTs.ensureValidRelativePath(
                 "custom-frontend/generated-flow-imports.js");
-        Assert.assertEquals(
-                "Should append './' if it doesn't start with a relative path",
-                "./custom-frontend/generated-flow-imports.js", customPath);
+        assertEquals("./custom-frontend/generated-flow-imports.js", customPath,
+                "Should append './' if it doesn't start with a relative path");
     }
 }

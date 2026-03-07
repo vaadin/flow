@@ -22,14 +22,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
@@ -40,22 +41,24 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.testcategory.SlowTests;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-@Category(SlowTests.class)
-public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
+@Tag("com.vaadin.flow.testcategory.SlowTests")
+class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
     private static final List<String> POSTINSTALL_PACKAGES = Collections
             .singletonList("esbuild");
 
     @Override
-    @Before
-    public void setUp() throws IOException, NoSuchFieldException {
+    @BeforeEach
+    void setUp() throws IOException, NoSuchFieldException {
         super.setUp();
 
         // create an empty package.json so as pnpm can be run without
@@ -66,7 +69,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     @Test
-    public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
+    void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = options.getNodeModulesFolder();
         FileUtils.forceMkdir(nodeModules);
@@ -79,12 +82,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        Assert.assertFalse(fakeFile.exists());
+        assertFalse(fakeFile.exists());
     }
 
     @Override
     @Test
-    public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
+    void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
             throws ExecutionFailedException, IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -107,11 +110,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        Assert.assertTrue(fakeFile.exists());
+        assertTrue(fakeFile.exists());
     }
 
     @Test
-    public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
+    void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
             throws IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -119,7 +122,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // Write package json file
         FileUtils.write(packageJson, "{}", StandardCharsets.UTF_8);
 
-        File versions = temporaryFolder.newFile();
+        File versions = File.createTempFile("tmp", null, temporaryFolder);
         // Platform defines a pinned version
         // @formatter:off
         FileUtils.write(versions, String.format(
@@ -132,15 +135,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:on
 
         JsonNode object = getGeneratedVersionsContent(versions, packageJson);
-        Assert.assertTrue(object.has("@vaadin/vaadin-overlay"));
+        assertTrue(object.has("@vaadin/vaadin-overlay"));
 
         // Platform version takes precedence over dev deps
-        Assert.assertEquals(PINNED_VERSION,
+        assertEquals(PINNED_VERSION,
                 object.get("@vaadin/vaadin-overlay").asString());
     }
 
     @Test
-    public void generateVersionsJson_userDefinedVersions_versionOnlyPinnedForNotAddedDependencies()
+    void generateVersionsJson_userDefinedVersions_versionOnlyPinnedForNotAddedDependencies()
             throws IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -179,7 +182,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
-        File versions = temporaryFolder.newFile();
+        File versions = File.createTempFile("tmp", null, temporaryFolder);
         // @formatter:off
         FileUtils.write(versions,String.format(
                 "{"
@@ -207,29 +210,29 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonNode generatedVersions = getGeneratedVersionsContent(versions,
                 packageJson);
 
-        Assert.assertEquals("Login version is the same for user and platform.",
-                loginVersion,
-                generatedVersions.get("@vaadin/vaadin-login").asString());
-        Assert.assertEquals("Notification version should use platform",
-                versionsNotificationVersion, generatedVersions
-                        .get("@vaadin/vaadin-notification").asString());
+        assertEquals(loginVersion,
+                generatedVersions.get("@vaadin/vaadin-login").asString(),
+                "Login version is the same for user and platform.");
+        assertEquals(versionsNotificationVersion,
+                generatedVersions.get("@vaadin/vaadin-notification").asString(),
+                "Notification version should use platform");
     }
 
     @Test
-    public void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
+    void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File npmRcFile = new File(npmFolder, ".npmrc");
-        Assert.assertTrue(npmRcFile.exists());
+        assertTrue(npmRcFile.exists());
         String content = FileUtils.readFileToString(npmRcFile,
                 StandardCharsets.UTF_8);
-        Assert.assertTrue(content.contains("shamefully-hoist"));
+        assertTrue(content.contains("shamefully-hoist"));
     }
 
     @Test
-    public void runPnpmInstall_npmRcFileGeneratedByVaadinFound_npmRcFileIsGenerated()
+    void runPnpmInstall_npmRcFileGeneratedByVaadinFound_npmRcFileIsGenerated()
             throws IOException, ExecutionFailedException {
         File oldNpmRcFile = new File(npmFolder, ".npmrc");
         // @formatter:off
@@ -244,15 +247,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
-        Assert.assertTrue(newNpmRcFile.exists());
+        assertTrue(newNpmRcFile.exists());
         String content = FileUtils.readFileToString(newNpmRcFile,
                 StandardCharsets.UTF_8);
-        Assert.assertTrue(content.contains("shamefully-hoist"));
-        Assert.assertFalse(content.contains("symlink=true"));
+        assertTrue(content.contains("shamefully-hoist"));
+        assertFalse(content.contains("symlink=true"));
     }
 
     @Test
-    public void runPnpmInstall_customNpmRcFileFound_npmRcFileIsNotGenerated()
+    void runPnpmInstall_customNpmRcFileFound_npmRcFileIsNotGenerated()
             throws IOException, ExecutionFailedException {
         File oldNpmRcFile = new File(npmFolder, ".npmrc");
         // @formatter:off
@@ -266,14 +269,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
-        Assert.assertTrue(newNpmRcFile.exists());
+        assertTrue(newNpmRcFile.exists());
         String content = FileUtils.readFileToString(newNpmRcFile,
                 StandardCharsets.UTF_8);
-        Assert.assertEquals(originalContent, content);
+        assertEquals(originalContent, content);
     }
 
     @Test
-    public void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+    void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -310,43 +313,48 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // The resulting version should be the one specified by the user
         JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(customOverlayVersion,
+        assertEquals(customOverlayVersion,
                 overlayPackage.get("version").asString());
     }
 
     @Test
-    public void runPnpmInstall_postInstall_runOnlyForDefaultPackages()
+    void runPnpmInstall_postInstall_runOnlyForDefaultPackages()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
         TaskRunNpmInstall task = createTask();
         task.execute();
 
-        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+        assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "esbuild"),
-                        "postinstall-file.txt").exists());
-        Assert.assertFalse("Postinstall for 'foo' should not have been run",
+                        "postinstall-file.txt").exists(),
+                "Postinstall for 'esbuild' was not run");
+        assertFalse(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
-                        "postinstall-file.txt").exists());
+                        "postinstall-file.txt").exists(),
+                "Postinstall for 'foo' should not have been run");
     }
 
     @Test
-    public void runPnpmInstall_postInstall_runForDefinedAdditionalPackages()
+    void runPnpmInstall_postInstall_runForDefinedAdditionalPackages()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
         TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
         task.execute();
 
-        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+        assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "esbuild"),
-                        "postinstall-file.txt").exists());
-        Assert.assertTrue("Postinstall for 'foo' was not run",
+                        "postinstall-file.txt").exists(),
+                "Postinstall for 'esbuild' was not run");
+        assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
-                        "postinstall-file.txt").exists());
+                        "postinstall-file.txt").exists(),
+                "Postinstall for 'foo' was not run");
     }
 
     // https://github.com/vaadin/flow/issues/17663
-    @Test(timeout = 30000)
-    public void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
+    @Test
+    @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+    void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
 
@@ -364,13 +372,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
         task.execute();
 
-        Assert.assertTrue("Postinstall for 'foo' was not run",
+        assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
-                        "postinstall-console-file.txt").exists());
+                        "postinstall-console-file.txt").exists(),
+                "Postinstall for 'foo' was not run");
     }
 
     @Test
-    public void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
+    void runPnpmInstallAndCi_emptyDir_pnpmInstallAndCiIsExecuted()
             throws ExecutionFailedException, IOException {
         TaskRunNpmInstall task = createTask();
 
