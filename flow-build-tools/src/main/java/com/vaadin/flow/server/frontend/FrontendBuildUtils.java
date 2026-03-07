@@ -122,8 +122,7 @@ public class FrontendBuildUtils {
                     .get(NodeUpdater.VAADIN_VERSION).asString());
             FrontendVersion platformsVersion = new FrontendVersion(
                     platformVersion.get());
-            return jsonVersion.getMajorVersion() != platformsVersion
-                    .getMajorVersion();
+            return !jsonVersion.isEqualTo(platformsVersion);
         }
         return false;
     }
