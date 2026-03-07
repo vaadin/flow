@@ -258,9 +258,8 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.unbind();
 
-        assertThrows(IllegalStateException.class, () -> {
-            binding.hasChanges();
-        }, "Expect unbound binding to throw exception");
+        assertThrows(IllegalStateException.class, () -> binding.hasChanges(),
+                "Expect unbound binding to throw exception");
     }
 
     @Test
@@ -2854,9 +2853,7 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         // Check that invalid record writing fails
         ageField.setValue("invalid value");
-        assertThrows(ValidationException.class, () -> {
-            TestRecord failedRecord = binder.writeRecord();
-        });
+        assertThrows(ValidationException.class, () -> binder.writeRecord());
     }
 
     private TestTextField createNullRejectingFieldWithEmptyValue(

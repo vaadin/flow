@@ -298,10 +298,8 @@ class BeanPropertySetTest {
 
     @Test
     void nestedPropertyDefinition_invalidPropertyNameInChain() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            BeanPropertySet.get(FatherAndSon.class)
-                    .getProperty("grandfather.firstName");
-        });
+        assertThrows(IllegalArgumentException.class, () -> BeanPropertySet
+                .get(FatherAndSon.class).getProperty("grandfather.firstName"));
     }
 
     @Test
