@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TemplateModelTest extends HasCurrentService {
+class TemplateModelTest extends HasCurrentService {
 
     public interface EmptyModel extends TemplateModel {
     }
@@ -185,7 +185,7 @@ public class TemplateModelTest extends HasCurrentService {
 
     public static class SuperBean {
 
-        void setSubBean(SubSubBean bean) {
+        public void setSubBean(SubSubBean bean) {
 
         }
 
@@ -204,11 +204,11 @@ public class TemplateModelTest extends HasCurrentService {
             return visible;
         }
 
-        void setVisible(boolean visible) {
+        public void setVisible(boolean visible) {
             this.visible = visible;
         }
 
-        void setBean(SubSubBeanIface bean) {
+        public void setBean(SubSubBeanIface bean) {
 
         }
 
@@ -224,7 +224,7 @@ public class TemplateModelTest extends HasCurrentService {
             return null;
         }
 
-        void setValue(Double value) {
+        public void setValue(Double value) {
 
         }
     }
@@ -526,7 +526,7 @@ public class TemplateModelTest extends HasCurrentService {
             return null;
         }
 
-        void setName(String name) {
+        public void setName(String name) {
 
         }
     }

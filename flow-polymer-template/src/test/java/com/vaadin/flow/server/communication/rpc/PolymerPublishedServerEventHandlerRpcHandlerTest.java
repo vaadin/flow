@@ -166,7 +166,7 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
         /**
          * No {@link EventHandler} annotation.
          */
-        void operation() {
+        public void operation() {
         }
     }
 

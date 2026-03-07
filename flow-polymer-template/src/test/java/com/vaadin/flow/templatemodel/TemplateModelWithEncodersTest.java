@@ -359,7 +359,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return stringValue;
         }
 
-        void setStringValue(String stringValue) {
+        public void setStringValue(String stringValue) {
             this.stringValue = stringValue;
         }
     }
@@ -381,7 +381,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return longValue;
         }
 
-        void setLongValue(long longValue) {
+        public void setLongValue(long longValue) {
             this.longValue = longValue;
         }
 
@@ -390,7 +390,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return date;
         }
 
-        void setDate(Date date) {
+        public void setDate(Date date) {
             this.date = date;
         }
     }
@@ -411,7 +411,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return longValue;
         }
 
-        void setLongValue(long longValue) {
+        public void setLongValue(long longValue) {
             this.longValue = longValue;
         }
     }
@@ -435,7 +435,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return day;
         }
 
-        void setDay(int day) {
+        public void setDay(int day) {
             this.day = day;
         }
 
@@ -444,7 +444,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return month;
         }
 
-        void setMonth(int month) {
+        public void setMonth(int month) {
             this.month = month;
         }
 
@@ -453,7 +453,7 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
             return year;
         }
 
-        void setYear(int year) {
+        public void setYear(int year) {
             this.year = year;
         }
     }
@@ -700,16 +700,15 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
 
     @Test
     void brokenModelType_throws() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TemplateWithDate template = new TemplateWithDate();
+        TemplateWithDate template = new TemplateWithDate();
 
-            StateNode node = template.getElement().getNode();
+        StateNode node = template.getElement().getNode();
 
-            ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
-                    .resolveModelMap("date");
+        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
+                .resolveModelMap("date");
 
-            map.setProperty("day", "foo");
-            template.getModel().getDate();
-        });
+        map.setProperty("day", "foo");
+        assertThrows(IllegalArgumentException.class,
+                () -> template.getModel().getDate());
     }
 }

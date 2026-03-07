@@ -49,7 +49,7 @@ class BeanModelTypeTest {
             return intValue;
         }
 
-        void setIntValue(double intValue) {
+        public void setIntValue(double intValue) {
             this.intValue = intValue;
         }
 
@@ -57,11 +57,11 @@ class BeanModelTypeTest {
             return string;
         }
 
-        void setString(String string) {
+        public void setString(String string) {
             this.string = string;
         }
 
-        void setDate(Date date) {
+        public void setDate(Date date) {
             this.date = date;
         }
 

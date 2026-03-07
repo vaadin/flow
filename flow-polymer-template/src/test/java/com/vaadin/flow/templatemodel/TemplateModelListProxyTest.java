@@ -25,7 +25,7 @@ class TemplateModelListProxyTest {
             return field;
         }
 
-        void setField(String field) {
+        public void setField(String field) {
             this.field = field;
         }
     }
@@ -41,7 +41,7 @@ class TemplateModelListProxyTest {
             return field;
         }
 
-        void setField(String field) {
+        public void setField(String field) {
             this.field = field;
         }
     }
