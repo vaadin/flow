@@ -248,11 +248,8 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     void twoEventHandlerMethodsWithTheSameName() {
-        ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
         assertThrows(IllegalStateException.class,
-                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
-                        component, component.getClass(), "intMethod",
-                        JacksonUtils.createArrayNode(), -1));
+                () -> new ComponentWithTwoEventHandlerMethodSameName());
     }
 
     @Test
