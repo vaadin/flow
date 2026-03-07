@@ -52,6 +52,7 @@ public class Effect implements Serializable {
 
     private SerializableExecutor dispatcher;
     private final List<Registration> registrations = new ArrayList<>();
+    private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
     private @Nullable SerializableRunnable action;
@@ -60,6 +61,7 @@ public class Effect implements Serializable {
 
     private boolean firstRun = true;
     private volatile boolean invalidatedFromBackground = false;
+    private boolean passivated = false;
 
     /**
      * Creates a signal effect with the given action and the default dispatcher.
@@ -160,16 +162,19 @@ public class Effect implements Serializable {
     private void revalidate() {
         assert registrations.isEmpty();
 
-        if (action == null) {
-            // closed
+        if (action == null || passivated) {
+            // closed or passivated
             return;
         }
+
+        usages.clear();
 
         activeEffects.get().add(this);
         try {
             boolean[] hasSignalUsage = { false };
             UsageTracker.track(action, usage -> {
                 hasSignalUsage[0] = true;
+                usages.add(usage);
                 // avoid lambda to allow proper deserialization
                 TransientListener usageListener = new TransientListener() {
                     @Override
@@ -237,11 +242,58 @@ public class Effect implements Serializable {
     }
 
     /**
+     * Passivates this effect by removing all dependency listeners while
+     * preserving the tracked usages. The effect can later be re-activated with
+     * {@link #activate()}, which will check if any tracked values have changed
+     * and only re-run the callback if needed.
+     */
+    public synchronized void passivate() {
+        clearRegistrations();
+        passivated = true;
+    }
+
+    /**
+     * Re-activates a previously passivated effect. If any tracked signal has
+     * changed since passivation, the effect callback is re-run with
+     * {@link EffectContext#isInitialRun()} returning {@code true}. If nothing
+     * has changed, the effect simply re-registers its dependency listeners
+     * without running the callback.
+     */
+    public synchronized void activate() {
+        if (action == null || !passivated) {
+            return;
+        }
+        passivated = false;
+        firstRun = true;
+
+        if (usages.isEmpty()
+                || usages.stream().anyMatch(UsageTracker.Usage::hasChanges)) {
+            // Something changed while passivated, do a full revalidation
+            usages.clear();
+            revalidate();
+        } else {
+            // Nothing changed, just re-register listeners. A change
+            // listener may still fire immediately if a change sneaks in
+            // between the hasChanges check and the onNextChange call,
+            // in which case firstRun is already set to true above.
+            for (UsageTracker.Usage usage : usages) {
+                registrations.add(usage.onNextChange(this::onDependencyChange));
+            }
+            if (!invalidateScheduled.get()) {
+                // No listener fired, so this is not an
+                // activation-triggered run. Reset for normal tracking.
+                firstRun = false;
+            }
+        }
+    }
+
+    /**
      * Disposes this effect by unregistering all current dependencies and
      * preventing the action from running again.
      */
     public synchronized void dispose() {
         clearRegistrations();
+        usages.clear();
         action = null;
     }
 

@@ -220,6 +220,12 @@ public final class ElementEffect implements Serializable {
             return;
         }
 
+        if (effect != null) {
+            // Re-activating after passivation
+            effect.activate();
+            return;
+        }
+
         Component parentComponent = ComponentUtil.findParentComponent(owner)
                 .get();
         UI ui = parentComponent.getUI().get();
@@ -233,7 +239,6 @@ public final class ElementEffect implements Serializable {
             }
         };
 
-        assert effect == null;
         effect = new Effect(errorHandlingEffectFunction, command -> {
             if (UI.getCurrent() == ui) {
                 // Run immediately if on the same UI
@@ -255,13 +260,15 @@ public final class ElementEffect implements Serializable {
 
     private void disableEffect() {
         if (effect != null) {
-            effect.dispose();
-            effect = null;
+            effect.passivate();
         }
     }
 
     public void close() {
-        disableEffect();
+        if (effect != null) {
+            effect.dispose();
+            effect = null;
+        }
         closed = true;
     }
 
