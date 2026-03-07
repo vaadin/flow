@@ -19,9 +19,9 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -37,14 +37,17 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 
-public class LitTemplateParserImplTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class LitTemplateParserImplTest {
 
     private MockVaadinServletService service;
     @Mock
     DeploymentConfiguration configuration;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
@@ -74,178 +77,179 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
-    public void getTemplateContent_rootElementParsed() {
+    void getTemplateContent_rootElementParsed() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance
                 .getTemplateContent(MyLitElement.class, "my-element", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-element",
-                templateContent.getTemplateElement().parent().id());
+        assertEquals("my-element",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(2, templateContent.getTemplateElement().childNodeSize(),
+                "Expected template element to have 2 children");
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'test'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("test").tag().toString());
+        assertEquals("div",
+                templateContent.getTemplateElement().getElementById("test")
+                        .tag().toString(),
+                "Template element should have contained a div element with the id 'test'");
     }
 
     @Test
-    public void getTemplateContent_templateParsedGreedly_rootElementParsed() {
+    void getTemplateContent_templateParsedGreedly_rootElementParsed() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
                 MyGreedyLitElement.class, "my-greedy-element", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-greedy-element",
-                templateContent.getTemplateElement().parent().id());
+        assertEquals("my-greedy-element",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(2, templateContent.getTemplateElement().childNodeSize(),
+                "Expected template element to have 2 children");
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'test'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("test").tag().toString());
+        assertEquals("div",
+                templateContent.getTemplateElement().getElementById("test")
+                        .tag().toString(),
+                "Template element should have contained a div element with the id 'test'");
     }
 
     @Test
-    public void getTemplateContent_localFileTemplateExists_useLocalFileContent() {
+    void getTemplateContent_localFileTemplateExists_useLocalFileContent() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
                 MyLitElementView.class, "my-lit-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-lit-element-view",
-                templateContent.getTemplateElement().parent().id());
+        assertEquals("my-lit-element-view",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
 
-        Assert.assertEquals("Expected template element to have 3 children", 3,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(3, templateContent.getTemplateElement().childNodeSize(),
+                "Expected template element to have 3 children");
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'label'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("label").tag().toString());
+        assertEquals("div",
+                templateContent.getTemplateElement().getElementById("label")
+                        .tag().toString(),
+                "Template element should have contained a div element with the id 'label'");
     }
 
     @Test
-    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+    void getTypescriptTemplateContent_templateExists_getTemplateContent() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(MyForm.class,
                 "my-form", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-form", templateContent.getTemplateElement().parent().id());
+        assertEquals("my-form",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(2, templateContent.getTemplateElement().childNodeSize(),
+                "Expected template element to have 2 children");
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'label'",
-                "vaadin-text-field", templateContent.getTemplateElement()
-                        .getElementById("nameField").tag().toString());
+        assertEquals("vaadin-text-field",
+                templateContent.getTemplateElement().getElementById("nameField")
+                        .tag().toString(),
+                "Template element should have contained a div element with the id 'label'");
     }
 
     @Test
-    public void getTemplateContent_localFileNotFound_returnsNull() {
+    void getTemplateContent_localFileNotFound_returnsNull() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenReturn("META-INF/resources/foo-bar.json");
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
-        Assert.assertNull(instance.getTemplateContent(FooView.class, "foo-view",
+        assertNull(instance.getTemplateContent(FooView.class, "foo-view",
                 service));
     }
 
     @Test
-    public void getTemplateContent_sourceNotFoundInStatsFile_returnsNull() {
+    void getTemplateContent_sourceNotFoundInStatsFile_returnsNull() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
-        Assert.assertNull(instance.getTemplateContent(FooView.class, "foo-view",
+        assertNull(instance.getTemplateContent(FooView.class, "foo-view",
                 service));
     }
 
     @Test
-    public void getTemplateContent_sourceFileWithFaultyTemplateGetter_returnsNull() {
+    void getTemplateContent_sourceFileWithFaultyTemplateGetter_returnsNull() {
         // If the template getter can not be found it should result in no
         // template element children
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance()
                 .getTemplateContent(MyFaulty.class, "my-element", service);
 
-        Assert.assertNull(templateContent);
+        assertNull(templateContent);
     }
 
     @Test
-    public void getTemplateContent_renderIsDefinedInSuperClass_returnsNull() {
+    void getTemplateContent_renderIsDefinedInSuperClass_returnsNull() {
         // If the template getter can not be found it should result in no
         // template element children
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(MyFaulty.class,
                         "my-super-lit-element", service);
 
-        Assert.assertNull(templateContent);
+        assertNull(templateContent);
     }
 
     @Test
-    public void getTemplateContent_nonLocalTemplate_rootElementParsed() {
+    void getTemplateContent_nonLocalTemplate_rootElementParsed() {
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(HelloWorld.class,
                         HelloWorld.class.getAnnotation(Tag.class).value(),
                         service);
 
-        Assert.assertEquals("Template should contain one child", 2,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(2, templateContent.getTemplateElement().childNodeSize(),
+                "Template should contain one child");
 
-        Assert.assertEquals("Template should have 3 divs", 3, templateContent
-                .getTemplateElement().getElementsByTag("div").size());
+        assertEquals(3, templateContent.getTemplateElement()
+                .getElementsByTag("div").size(), "Template should have 3 divs");
     }
 
     @Test
-    public void getTemplateContent_nonLocalTemplateInTargetFolder_rootElementParsed() {
+    void getTemplateContent_nonLocalTemplateInTargetFolder_rootElementParsed() {
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(HelloWorld2.class,
                         HelloWorld2.class.getAnnotation(Tag.class).value(),
                         service);
 
-        Assert.assertEquals("Template should contain one child", 2,
-                templateContent.getTemplateElement().childNodeSize());
+        assertEquals(2, templateContent.getTemplateElement().childNodeSize(),
+                "Template should contain one child");
 
-        Assert.assertEquals("Template should have 3 divs", 3, templateContent
-                .getTemplateElement().getElementsByTag("div").size());
+        assertEquals(3, templateContent.getTemplateElement()
+                .getElementsByTag("div").size(), "Template should have 3 divs");
     }
 
     @Test
-    public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
+    void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         LitTemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(BrokenJsModuleAnnotation.class,
                         "my-lit-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-lit-element-view",
-                templateContent.getTemplateElement().parent().id());
+        assertEquals("my-lit-element-view",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
     }
 
     @Test
-    public void severalJsModuleAnnotations_parserSelectsByName() {
+    void severalJsModuleAnnotations_parserSelectsByName() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         LitTemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(SeveralJsModuleAnnotations.class,
                         "my-lit-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-lit-element-view",
-                templateContent.getTemplateElement().parent().id());
+        assertEquals("my-lit-element-view",
+                templateContent.getTemplateElement().parent().id(),
+                "Parent element ID not the expected one.");
 
         // Two JS module annotations with almost the same content.
         // The first one contains a string "Tag name doesn't match the JS module
         // name", the second one doesn't contain this string.
         // The second module should be chosen since its name matches the tag
         // name
-        Assert.assertThat(templateContent.getTemplateElement().html(),
+        MatcherAssert.assertThat(templateContent.getTemplateElement().html(),
                 CoreMatchers.not(CoreMatchers.containsString(
                         "Tag name doesn't match the JS module name")));
     }
