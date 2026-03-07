@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -22,10 +22,9 @@ import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -55,14 +54,16 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class PolymerTemplateTest extends HasCurrentService {
+class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
@@ -465,8 +466,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @SuppressWarnings("serial")
-    @Before
-    public void setUp() throws SecurityException, IllegalArgumentException {
+    @BeforeEach
+    void setUp() throws SecurityException, IllegalArgumentException {
         executionOrder.clear();
         executionParams.clear();
 
@@ -500,8 +501,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         UI.setCurrent(ui);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         UI.setCurrent(null);
     }
 
@@ -526,14 +527,14 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void tagIsCorrect() {
+    void tagIsCorrect() {
         TestPolymerTemplate template = new TestPolymerTemplate();
 
         assertEquals(TAG, template.getElement().getTag());
     }
 
     @Test
-    public void stateNodeIsInitialised() {
+    void stateNodeIsInitialised() {
         TestPolymerTemplate template = new TestPolymerTemplate();
         StateNode stateNode = template.getStateNode();
 
@@ -551,7 +552,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void updateOneOfModelValues() {
+    void updateOneOfModelValues() {
         String message = "message";
         TestPolymerTemplate template = new TestPolymerTemplate();
         ModelClass model = template.getModel();
@@ -574,24 +575,25 @@ public class PolymerTemplateTest extends HasCurrentService {
         });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void noAnnotationTemplate() {
-        new TemplateWithoutTagAnnotation();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void noModelTemplate() {
-        new NoModelTemplate();
+    @Test
+    void noAnnotationTemplate() {
+        assertThrows(IllegalStateException.class,
+                () -> new TemplateWithoutTagAnnotation());
     }
 
     @Test
-    public void parseTemplate_hasIdChild_childIsRegisteredInFeature() {
+    void noModelTemplate() {
+        assertThrows(IllegalStateException.class, () -> new NoModelTemplate());
+    }
+
+    @Test
+    void parseTemplate_hasIdChild_childIsRegisteredInFeature() {
         doParseTemplate_hasIdChild_childIsRegisteredInFeature(
                 new IdChildTemplate());
     }
 
     @Test
-    public void parseCachedTemplate_hasIdChild_childIsRegisteredInFeature() {
+    void parseCachedTemplate_hasIdChild_childIsRegisteredInFeature() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
@@ -610,7 +612,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void parseCachedTemplate_twoTemplatesWithInjetions_injectionsAreRegisteredInFeature() {
+    void parseCachedTemplate_twoTemplatesWithInjetions_injectionsAreRegisteredInFeature() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         AtomicInteger parserCallCount = new AtomicInteger();
@@ -669,30 +671,32 @@ public class PolymerTemplateTest extends HasCurrentService {
         assertAnotherTemplateInitialization(template2);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void parseTemplate_hasWrongIdChild_exceptionIsThrown() {
-        new IdWrongChildTemplate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void parseTemplate_hasWrongIdChildElement_exceptionIsThrown() {
-        new IdWrongElementTemplate();
+    @Test
+    void parseTemplate_hasWrongIdChild_exceptionIsThrown() {
+        assertThrows(IllegalStateException.class,
+                () -> new IdWrongChildTemplate());
     }
 
     @Test
-    public void parseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
+    void parseTemplate_hasWrongIdChildElement_exceptionIsThrown() {
+        assertThrows(IllegalStateException.class,
+                () -> new IdWrongElementTemplate());
+    }
+
+    @Test
+    void parseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
         doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 new TemplateInTemplate());
     }
 
     @Test
-    public void parseBundledTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
+    void parseBundledTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
         doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
                 new BundledTemplateInTemplate());
     }
 
     @Test
-    public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementIsCreatedAndSetAsVirtualChild() {
+    void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementIsCreatedAndSetAsVirtualChild() {
         // Make a new HTML template which contains style on the top
         TemplateInTemplate template = new TemplateInTemplate(
                 new TestTemplateParser(tag -> "<dom-module id='" + tag
@@ -704,7 +708,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void parseCachedTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
+    void parseCachedTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
@@ -726,13 +730,13 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void parseTemplate_hasTextNodesInTemplate_correctRequestIsSent() {
+    void parseTemplate_hasTextNodesInTemplate_correctRequestIsSent() {
         doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
                 new TextNodesInHtmlTemplate());
     }
 
     @Test
-    public void parseCachedTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
+    void parseCachedTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
@@ -750,19 +754,20 @@ public class PolymerTemplateTest extends HasCurrentService {
                 template);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void parseTemplate_hasChildTemplateInsideDomRepeat_cantParse() {
-        new TemplateWithChildInDomRepeat();
+    @Test
+    void parseTemplate_hasChildTemplateInsideDomRepeat_cantParse() {
+        assertThrows(IllegalStateException.class,
+                () -> new TemplateWithChildInDomRepeat());
     }
 
     @Test
-    public void parseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
+    void parseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
         doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
                 new TemplateWithDomRepeat());
     }
 
     @Test
-    public void parseCachedTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
+    void parseCachedTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
@@ -780,18 +785,20 @@ public class PolymerTemplateTest extends HasCurrentService {
                 template);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void injectIdComponent_wrongTag_throw() {
-        new IdWrongTagChildTemplate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void injectIdElement_wrongTag_throw() {
-        new IdWrongElementTemplate();
+    @Test
+    void injectIdComponent_wrongTag_throw() {
+        assertThrows(IllegalStateException.class,
+                () -> new IdWrongTagChildTemplate());
     }
 
     @Test
-    public void attachExistingElement_elementIsCreatedAndSetAsVirtualChild() {
+    void injectIdElement_wrongTag_throw() {
+        assertThrows(IllegalStateException.class,
+                () -> new IdWrongElementTemplate());
+    }
+
+    @Test
+    void attachExistingElement_elementIsCreatedAndSetAsVirtualChild() {
         IdElementTemplate template = new IdElementTemplate();
 
         VirtualChildrenList feature = template.getStateNode()
@@ -812,66 +819,64 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingElementWithAttributeValue_elementHasPropertyAndAttribute() {
+    void attachExistingElementWithAttributeValue_elementHasPropertyAndAttribute() {
         IdElementTemplate template = new IdElementTemplate();
 
-        Assert.assertTrue(template.label.hasAttribute("id"));
-        Assert.assertEquals("labelId", template.label.getAttribute("id"));
+        assertTrue(template.label.hasAttribute("id"));
+        assertEquals("labelId", template.label.getAttribute("id"));
 
-        Assert.assertTrue(template.label.hasProperty("someattribute"));
-        Assert.assertNotNull(template.label.getProperty("someattribute"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        assertTrue(template.label.hasProperty("someattribute"));
+        assertNotNull(template.label.getProperty("someattribute"));
+        assertEquals(Boolean.TRUE.toString(),
                 template.label.getProperty("someattribute"));
 
-        Assert.assertFalse(template.label.hasProperty("property-binding"));
-        Assert.assertFalse(template.label.hasProperty("propertyBinding"));
+        assertFalse(template.label.hasProperty("property-binding"));
+        assertFalse(template.label.hasProperty("propertyBinding"));
 
-        Assert.assertFalse(template.label.hasProperty("another-binding"));
-        Assert.assertFalse(template.label.hasProperty("anotherBinding"));
+        assertFalse(template.label.hasProperty("another-binding"));
+        assertFalse(template.label.hasProperty("anotherBinding"));
 
-        Assert.assertFalse(template.label.hasProperty("attribute-binding"));
-        Assert.assertFalse(template.label.hasProperty("attributeBinding"));
-        Assert.assertFalse(template.label.hasProperty("attribute-binding$"));
-        Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
+        assertFalse(template.label.hasProperty("attribute-binding"));
+        assertFalse(template.label.hasProperty("attributeBinding"));
+        assertFalse(template.label.hasProperty("attribute-binding$"));
+        assertFalse(template.label.hasProperty("attributeBinding$"));
 
-        Assert.assertTrue(template.label.hasProperty("another-attribute"));
-        Assert.assertEquals("baz",
-                template.label.getProperty("another-attribute"));
+        assertTrue(template.label.hasProperty("another-attribute"));
+        assertEquals("baz", template.label.getProperty("another-attribute"));
 
-        Assert.assertTrue(template.label.hasAttribute("hidden"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
+        assertTrue(template.label.hasAttribute("hidden"));
+        assertEquals(Boolean.TRUE.toString(),
                 template.label.getAttribute("hidden"));
     }
 
     @Test
-    public void attachExistingElementWithAttributeValue_elementIsDisabled() {
+    void attachExistingElementWithAttributeValue_elementIsDisabled() {
         DisabledElementTemplate template = new DisabledElementTemplate();
 
-        Assert.assertTrue("Element is missing id",
-                template.label.hasAttribute("id"));
-        Assert.assertTrue("Server side element should be enabled",
-                template.label.isEnabled());
-        Assert.assertTrue("Element should contain 'disabled' property",
-                template.label.hasProperty("disabled"));
+        assertTrue(template.label.hasAttribute("id"), "Element is missing id");
+        assertTrue(template.label.isEnabled(),
+                "Server side element should be enabled");
+        assertTrue(template.label.hasProperty("disabled"),
+                "Element should contain 'disabled' property");
     }
 
     @Test
-    public void attachExistingElementWithoutChidlrenWithText_elementHasNoText() {
+    void attachExistingElementWithoutChidlrenWithText_elementHasNoText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 
         // see #10106
-        Assert.assertEquals("", template.label.getText());
+        assertEquals("", template.label.getText());
     }
 
     @Test
-    public void attachExistingElementWithChidlrenWithText_elementHasNoText() {
+    void attachExistingElementWithChidlrenWithText_elementHasNoText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 
-        Assert.assertEquals("", template.div.getText());
+        assertEquals("", template.div.getText());
     }
 
     @Test
-    public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
+    void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
         TemplateInjectTemplate template = new TemplateInjectTemplate();
 
         VirtualChildrenList feature = template.getStateNode()
@@ -889,13 +894,13 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingComponent_elementIsCreatedAndSetAsVirtualChild() {
+    void attachExistingComponent_elementIsCreatedAndSetAsVirtualChild() {
         IdChildTemplate template = new IdChildTemplate();
         attachComponentAndVerifyChild(template, template.child);
     }
 
     @Test
-    public void attachExistingComponent_idWithNoValue_elementIsCreatedAndSetAsVirtualChild() {
+    void attachExistingComponent_idWithNoValue_elementIsCreatedAndSetAsVirtualChild() {
         IdWithNoValueChildTemplate template = new IdWithNoValueChildTemplate();
         attachComponentAndVerifyChild(template, template.child);
     }
@@ -927,7 +932,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void initModel_onlyExplicitelySetPropertiesAreSet() {
+    void initModel_onlyExplicitelySetPropertiesAreSet() {
         InitModelTemplate template = new InitModelTemplate();
 
         template.getModel().setMessage("foo");
@@ -936,19 +941,19 @@ public class PolymerTemplateTest extends HasCurrentService {
                 .getFeature(ElementPropertyMap.class);
 
         // message has been explicitly set
-        Assert.assertTrue(map.hasProperty("message"));
-        Assert.assertNotNull(map.getProperty("message"));
+        assertTrue(map.hasProperty("message"));
+        assertNotNull(map.getProperty("message"));
         // "list" is represented by StateNode so it's considered as explicitly
         // set
-        Assert.assertTrue(map.hasProperty("list"));
-        Assert.assertNotNull(map.getProperty("list"));
+        assertTrue(map.hasProperty("list"));
+        assertNotNull(map.getProperty("list"));
 
         // title has not been
-        Assert.assertFalse(map.hasProperty("title"));
+        assertFalse(map.hasProperty("title"));
     }
 
     @Test
-    public void initModel_requestPopulateModel_onlyUnsetPropertiesAreSent() {
+    void initModel_requestPopulateModel_onlyUnsetPropertiesAreSent() {
         UI ui = UI.getCurrent();
         InitModelTemplate template = new InitModelTemplate();
 
@@ -958,18 +963,18 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assert.assertEquals(2, executionOrder.size());
-        Assert.assertEquals("this.populateModelProperties($0, $1)",
+        assertEquals(2, executionOrder.size());
+        assertEquals("this.populateModelProperties($0, $1)",
                 executionOrder.get(1));
 
         Object[] params = executionParams.get(1);
         ArrayNode properties = (ArrayNode) params[1];
-        Assert.assertEquals(1, properties.size());
-        Assert.assertEquals("title", properties.get(0).asString());
+        assertEquals(1, properties.size());
+        assertEquals("title", properties.get(0).asString());
     }
 
     @Test
-    public void initModel_sendUpdatableProperties() {
+    void initModel_sendUpdatableProperties() {
         UI ui = UI.getCurrent();
         InitModelTemplate template = new InitModelTemplate();
 
@@ -977,24 +982,24 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assert.assertEquals(2, executionOrder.size());
-        Assert.assertEquals("this.registerUpdatableModelProperties($0, $1)",
+        assertEquals(2, executionOrder.size());
+        assertEquals("this.registerUpdatableModelProperties($0, $1)",
                 executionOrder.get(0));
 
         Object[] params = executionParams.get(0);
         ArrayNode properties = (ArrayNode) params[1];
-        Assert.assertEquals(2, properties.size());
+        assertEquals(2, properties.size());
 
         Set<String> props = new HashSet<>();
         props.add(properties.get(0).asString());
         props.add(properties.get(1).asString());
         // all model properties except 'list' which has no getter
-        Assert.assertTrue(props.contains("message"));
-        Assert.assertTrue(props.contains("title"));
+        assertTrue(props.contains("message"));
+        assertTrue(props.contains("title"));
     }
 
     @Test
-    public void licenseCheck_devMode_licenseCheckedOnce()
+    void licenseCheck_devMode_licenseCheckedOnce()
             throws NoSuchFieldException, IllegalAccessException {
         Field licenseChecked = PolymerTemplate.class
                 .getDeclaredField("licenseChecked");
@@ -1020,16 +1025,16 @@ public class PolymerTemplateTest extends HasCurrentService {
 
             licenseCheckedHolder.set(false);
             new TestPolymerTemplate(service);
-            Assert.assertEquals(1, counter.get());
+            assertEquals(1, counter.get());
             new TestPolymerTemplate(service);
-            Assert.assertEquals(1, counter.get());
+            assertEquals(1, counter.get());
         } finally {
             licenseCheckedHolder.compareAndSet(true, licenseCheckedInitValue);
         }
     }
 
     @Test
-    public void licenseCheck_prodMode_licenseNotChecked() {
+    void licenseCheck_prodMode_licenseNotChecked() {
         try (MockedStatic<LicenseChecker> checker = Mockito
                 .mockStatic(LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
@@ -1046,7 +1051,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                     .thenReturn(configuration);
 
             new TestPolymerTemplate(service);
-            Assert.assertEquals(0, counter.get());
+            assertEquals(0, counter.get());
         }
     }
 
@@ -1110,19 +1115,17 @@ public class PolymerTemplateTest extends HasCurrentService {
             String payload) {
         JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertEquals(type, object.get(NodeProperties.TYPE).asString());
-        Assert.assertEquals(payload,
-                object.get(NodeProperties.PAYLOAD).asString());
+        assertEquals(type, object.get(NodeProperties.TYPE).asString());
+        assertEquals(payload, object.get(NodeProperties.PAYLOAD).asString());
     }
 
     private void assertTemplateInTempalte(StateNode node) {
         JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
+        assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
                 object.get(NodeProperties.TYPE).asString());
 
-        Assert.assertTrue(
-                object.get(NodeProperties.PAYLOAD) instanceof ArrayNode);
+        assertTrue(object.get(NodeProperties.PAYLOAD) instanceof ArrayNode);
     }
 
     private void assertTemplateInitialization(TemplateInitialization template) {
@@ -1133,13 +1136,13 @@ public class PolymerTemplateTest extends HasCurrentService {
         Optional<Component> child = com.vaadin.flow.dom.Element
                 .get(feature.get(0)).getComponent();
 
-        Assert.assertTrue(child.isPresent());
-        Assert.assertEquals(TestPolymerTemplate.class, child.get().getClass());
+        assertTrue(child.isPresent());
+        assertEquals(TestPolymerTemplate.class, child.get().getClass());
 
         child = com.vaadin.flow.dom.Element.get(feature.get(1)).getComponent();
 
-        Assert.assertTrue(child.isPresent());
-        Assert.assertEquals(TemplateChild.class, child.get().getClass());
+        assertTrue(child.isPresent());
+        assertEquals(TemplateChild.class, child.get().getClass());
     }
 
     private void assertAnotherTemplateInitialization(
@@ -1151,12 +1154,12 @@ public class PolymerTemplateTest extends HasCurrentService {
         Optional<Component> child = com.vaadin.flow.dom.Element
                 .get(feature.get(0)).getComponent();
 
-        Assert.assertTrue(child.isPresent());
-        Assert.assertEquals(TemplateChild.class, child.get().getClass());
+        assertTrue(child.isPresent());
+        assertEquals(TemplateChild.class, child.get().getClass());
 
         child = com.vaadin.flow.dom.Element.get(feature.get(1)).getComponent();
 
-        Assert.assertTrue(child.isPresent());
-        Assert.assertEquals(TestPolymerTemplate.class, child.get().getClass());
+        assertTrue(child.isPresent());
+        assertEquals(TestPolymerTemplate.class, child.get().getClass());
     }
 }
