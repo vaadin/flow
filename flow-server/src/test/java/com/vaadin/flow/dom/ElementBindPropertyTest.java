@@ -125,17 +125,140 @@ class ElementBindPropertyTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWhileBindingIsActive_throwException() {
+    public void bindProperty_setPropertyWhileReadOnlyBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        component.getElement().bindProperty("foo", signal, signal::set);
+        // null write callback = read-only binding -> must still throw
+        component.getElement().bindProperty("foo", signal, null);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setProperty("foo", "baz"));
         assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo", signal, signal::set);
+
+        // Should NOT throw; should propagate through the write callback
+        component.getElement().setProperty("foo", "baz");
+
+        // Signal value should have been updated by the write callback
+        assertEquals("baz", signal.peek());
+        // Property value should reflect the signal's new value
+        assertEquals("baz", component.getElement().getProperty("foo"));
+    }
+
+    @Test
+    public void bindProperty_setPropertySignalReverts_propertyRevertedToSignalValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        // Write callback that always forces the signal to uppercase
+        component.getElement().bindProperty("foo", signal,
+                v -> signal.set(v.toUpperCase()));
+
+        component.getElement().setProperty("foo", "baz");
+
+        // Signal should have been set to "BAZ" by the write callback
+        assertEquals("BAZ", signal.peek());
+        // Property should reflect the signal's value (BAZ wins)
+        assertEquals("BAZ", component.getElement().getProperty("foo"));
+    }
+
+    @Test
+    public void bindProperty_setPropertyWithNoopWritableBinding_propertyRevertedToSignalValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        // Write callback that doesn't set signal value
+        component.getElement().bindProperty("foo", signal, v -> {
+        });
+
+        component.getElement().setProperty("foo", "baz");
+
+        // Signal should stay "bar"
+        assertEquals("bar", signal.peek());
+        // Property should revert to signal's "bar"
+        assertEquals("bar", component.getElement().getProperty("foo"));
+    }
+
+    @Test
+    public void bindProperty_setPropertyWriteCallbackThrows_exceptionPropagated() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo", signal, value -> {
+            throw new RuntimeException("write-callback-error");
+        });
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> component.getElement().setProperty("foo", "baz"));
+        assertEquals("write-callback-error", ex.getMessage());
+        // Signal value should be unchanged
+        assertEquals("bar", signal.peek());
+    }
+
+    @Test
+    public void bindBooleanProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
+        component.getElement().bindProperty("foo", signal, signal::set);
+
+        component.getElement().setProperty("foo", true);
+
+        assertEquals(Boolean.TRUE, signal.peek());
+        assertTrue(component.getElement().getProperty("foo", false));
+    }
+
+    @Test
+    public void bindDoubleProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Double> signal = new ValueSignal<>(1.0d);
+        component.getElement().bindProperty("foo", signal, signal::set);
+
+        component.getElement().setProperty("foo", 2.0d);
+
+        assertEquals(2.0d, signal.peek(), 0.0d);
+        assertEquals(2.0d, component.getElement().getProperty("foo", -1.0d),
+                0.0d);
+    }
+
+    @Test
+    public void bindProperty_setPropertyWhileWritableBindingIsActive_propertyChangeEventFired() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo", signal, signal::set);
+
+        AtomicReference<Serializable> eventValue = new AtomicReference<>();
+        AtomicInteger counter = new AtomicInteger(0);
+        component.getElement().addPropertyChangeListener("foo", "change",
+                event -> {
+                    eventValue.set(event.getValue());
+                    counter.incrementAndGet();
+                });
+
+        component.getElement().setProperty("foo", "baz");
+
+        // The signal update triggers the property change event
+        assertEquals("baz", eventValue.get());
+        assertEquals(1, counter.get());
     }
 
     @Test
@@ -193,7 +316,11 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Signal<?> computedSignal = Signal.computed(() -> null);
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal<?> computedSignal = Signal.computed(() -> {
+            dependency.get();
+            return null;
+        });
         component.getElement().bindProperty("foo", computedSignal, null);
         assertEquals(JacksonUtils.nullNode(),
                 component.getElement().getPropertyRaw("foo"));
@@ -205,8 +332,11 @@ class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        Signal<?> computedSignal = Signal
-                .computed(JacksonUtils::createObjectNode);
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal<?> computedSignal = Signal.computed(() -> {
+            dependency.get();
+            return JacksonUtils.createObjectNode();
+        });
         component.getElement().bindProperty("bar", computedSignal, null);
         assertEquals(JacksonUtils.createObjectNode(),
                 component.getElement().getPropertyRaw("bar"));

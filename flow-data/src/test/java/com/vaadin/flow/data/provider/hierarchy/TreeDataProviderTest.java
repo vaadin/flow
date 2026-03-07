@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,6 +29,7 @@ import org.junit.Test;
 import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializablePredicate;
 
 import static org.junit.Assert.assertEquals;
@@ -339,6 +341,40 @@ public class TreeDataProviderTest
     public void notPresentItem_getParent_returnsNull() {
         var itemNotPresentInProvider = new StrBean("Not present", -1, 0);
         assertNull(getDataProvider().getParent(itemNotPresentInProvider));
+    }
+
+    @Test
+    public void flattenedFormat_filterMatchesNestedDescendant_nothingExpanded_showsOnlyAncestorRoot() {
+        TreeData<String> treeData = new TreeData<>();
+        treeData.addRootItems("Item 0", "Item 1");
+        treeData.addItem("Item 0", "Item 0-0");
+        treeData.addItem("Item 0-0", "Item 0-0-0");
+
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
+                treeData, HierarchyFormat.FLATTENED);
+        treeDataProvider.setFilter(folder -> folder.equals("Item 0-0-0"));
+
+        assertEquals(List.of("Item 0"),
+                treeDataProvider
+                        .fetchChildren(
+                                new HierarchicalQuery<>(null, Set.of(), null))
+                        .toList());
+    }
+
+    @Test
+    public void flattenedFormat_filterMatchesNestedDescendant_allAncestorsExpanded_showsFullPathToMatch() {
+        TreeData<String> treeData = new TreeData<>();
+        treeData.addRootItems("Item 0", "Item 1");
+        treeData.addItem("Item 0", "Item 0-0");
+        treeData.addItem("Item 0-0", "Item 0-0-0");
+
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
+                treeData, HierarchyFormat.FLATTENED);
+        treeDataProvider.setFilter(folder -> folder.equals("Item 0-0-0"));
+
+        assertEquals(List.of("Item 0", "Item 0-0", "Item 0-0-0"),
+                treeDataProvider.fetchChildren(new HierarchicalQuery<>(null,
+                        Set.of("Item 0", "Item 0-0"), null)).toList());
     }
 
     @Override

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.signals.operations;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
@@ -23,7 +25,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <T>
  *            the result type
  */
-public class CancelableOperation<T> extends SignalOperation<T> {
+public class CancelableOperation<T extends @Nullable Object>
+        extends SignalOperation<T> {
     private volatile boolean cancelled = false;
 
     /**

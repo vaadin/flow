@@ -18,6 +18,11 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.dom.BindingContext;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -65,7 +70,8 @@ import com.vaadin.flow.signals.Signal;
  * @param <T>
  *            the type of the property
  */
-public class SignalPropertySupport<T> implements Serializable {
+public class SignalPropertySupport<T extends @Nullable Object>
+        implements Serializable {
 
     private final SerializableConsumer<T> valueChangeConsumer;
 
@@ -104,8 +110,8 @@ public class SignalPropertySupport<T> implements Serializable {
      * @return a new instance of SignalPropertySupport
      * @see #bind(Signal)
      */
-    public static <T> SignalPropertySupport<T> create(Component owner,
-            SerializableConsumer<T> valueChangeConsumer) {
+    public static <T extends @Nullable Object> SignalPropertySupport<T> create(
+            Component owner, SerializableConsumer<T> valueChangeConsumer) {
         return new SignalPropertySupport<>(owner, valueChangeConsumer);
     }
 
@@ -121,19 +127,33 @@ public class SignalPropertySupport<T> implements Serializable {
      *
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
-    public void bind(Signal<T> signal) {
+    public SignalBinding<T> bind(Signal<T> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         if (this.signal != null) {
             throw new BindingActiveException();
         }
         this.signal = signal;
-        registration = Signal.effect(owner, () -> {
-            value = signal.get();
-            valueChangeConsumer.accept(value);
+        SignalBinding<T> binding = new SignalBinding<>();
+        @SuppressWarnings("unchecked")
+        T[] previousValue = (T[]) new Object[] { signal.peek() };
+        Element element = owner.getElement();
+        registration = Signal.effect(owner, ctx -> {
+            T newValue = signal.get();
+            T oldValue = previousValue[0];
+            value = newValue;
+            valueChangeConsumer.accept(newValue);
+            if (binding.hasCallbacks()) {
+                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, element));
+            }
+            previousValue[0] = newValue;
         });
+        return binding;
     }
 
     /**

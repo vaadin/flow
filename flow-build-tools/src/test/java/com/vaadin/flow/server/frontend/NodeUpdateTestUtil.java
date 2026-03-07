@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.DepsTests;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -109,6 +110,13 @@ class NodeUpdateTestUtil {
         for (String expectedImport : getExpectedImports()) {
             createExpectedImport(directoryWithImportsJs, nodeModulesPath,
                     expectedImport);
+        }
+        // Local UI imports (./xxx.js) resolve to generated/jar-resources/
+        for (String uiImport : DepsTests.UI_IMPORTS) {
+            if (uiImport.startsWith("./")) {
+                createExpectedImport(directoryWithImportsJs, nodeModulesPath,
+                        "./generated/jar-resources/" + uiImport.substring(2));
+            }
         }
     }
 

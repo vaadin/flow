@@ -80,7 +80,7 @@ public interface ElementStateProvider extends Serializable {
      * @param signal
      *            the signal to bind, not <code>null</code>
      */
-    void bindAttributeSignal(Element owner, String attribute,
+    SignalBinding<String> bindAttributeSignal(Element owner, String attribute,
             Signal<String> signal);
 
     /**
@@ -235,6 +235,12 @@ public interface ElementStateProvider extends Serializable {
 
     /**
      * Sets the given property to the given value.
+     * <p>
+     * If the property has an active signal binding with a non-null write
+     * callback, the new value is propagated to the signal via that callback
+     * instead of being stored directly. If the write callback is
+     * <code>null</code> (read-only binding), a
+     * {@link com.vaadin.flow.signals.BindingActiveException} is thrown.
      *
      * @param node
      *            the node containing the data
@@ -245,8 +251,8 @@ public interface ElementStateProvider extends Serializable {
      * @param emitChange
      *            true to create a change event for the client side
      * @throws com.vaadin.flow.signals.BindingActiveException
-     *             thrown when there is an existing binding for the given
-     *             property
+     *             thrown when there is an existing read-only signal binding for
+     *             the given property
      */
     void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange);
@@ -281,8 +287,8 @@ public interface ElementStateProvider extends Serializable {
      *             thrown when there is already an existing binding for the
      *             given property
      */
-    void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback);
+    SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback);
 
     /**
      * Checks if the given property has been set.
@@ -470,7 +476,8 @@ public interface ElementStateProvider extends Serializable {
      * @param signal
      *            the signal to bind, not <code>null</code>
      */
-    void bindVisibleSignal(Element owner, Signal<Boolean> signal);
+    SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal);
 
     /**
      * Sets the {@code node} visibility.

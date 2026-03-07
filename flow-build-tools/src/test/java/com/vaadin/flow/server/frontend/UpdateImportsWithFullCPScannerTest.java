@@ -22,7 +22,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 class UpdateImportsWithFullCPScannerTest extends AbstractUpdateImportsTest {
@@ -47,7 +46,6 @@ class UpdateImportsWithFullCPScannerTest extends AbstractUpdateImportsTest {
         expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
         expectedJsModuleImports.add("import 'jsmodule/h.js';");
         expectedJsModuleImports.add("import 'jsmodule/g.js';");
-        expectedJsModuleImports.add("import '" + DepsTests.UI_IMPORT + "';");
-        super.assertFullSortOrder(false, expectedJsModuleImports);
+        super.assertFullSortOrder(expectedJsModuleImports);
     }
 }

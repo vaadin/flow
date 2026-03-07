@@ -70,6 +70,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
+                "com\\.vaadin\\.flow\\.internal\\.ResourceContentHash",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
                 "com\\.vaadin\\.flow\\.signals\\..*",

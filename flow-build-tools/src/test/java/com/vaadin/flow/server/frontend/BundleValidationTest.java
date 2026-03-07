@@ -1084,7 +1084,7 @@ class BundleValidationTest {
         ((ArrayNode) (ArrayNode) stats.get(BUNDLE_IMPORTS))
                 .add("Frontend/generated/jar-resources/TodoTemplate.js");
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
-                "dea5180dd21d2f18d1472074cd5305f60b824e557dae480fb66cdf3ea73edc65");
+                "wrongHash");
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))

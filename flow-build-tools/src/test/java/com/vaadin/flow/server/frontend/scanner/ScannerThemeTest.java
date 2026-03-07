@@ -67,7 +67,8 @@ class ScannerThemeTest {
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
-        DepsTests.assertImportCount(6, deps.getModules());
+        DepsTests.assertImportCount(5 + DepsTests.UI_IMPORTS.size(),
+                deps.getModules());
         assertEquals(1, deps.getPackages().size());
         DepsTests.assertImportCount(5, deps.getScripts());
 
@@ -81,7 +82,8 @@ class ScannerThemeTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        DepsTests.assertImportCount(5, deps.getModules());
+        DepsTests.assertImportCount(4 + DepsTests.UI_IMPORTS.size(),
+                deps.getModules());
         assertEquals(0, deps.getPackages().size());
         DepsTests.assertImportCount(2, deps.getScripts());
     }

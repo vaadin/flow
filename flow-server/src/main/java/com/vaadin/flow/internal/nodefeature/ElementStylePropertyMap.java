@@ -22,6 +22,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStyle;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.signals.BindingActiveException;
 
 /**
  * Map for element style values.
@@ -55,7 +56,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     public void setPropertyFromSignal(String name, Object value) {
         Serializable currentRaw = super.get(name);
         Serializable currentEffective;
-        if (currentRaw instanceof SignalBinding binding) {
+        if (currentRaw instanceof InternalSignalBinding binding) {
             currentEffective = binding.value();
         } else {
             currentEffective = currentRaw;
@@ -71,7 +72,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
         if (value == null) {
             // Emit empty string so that a client removes the style property,
-            // but keep the SignalBinding on the server side.
+            // but keep the InternalSignalBinding on the server side.
             super.setProperty(name, "", true);
         } else {
             // Delegate to validated setter for non-null values
@@ -82,7 +83,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
-        if (value instanceof SignalBinding binding) {
+        if (value instanceof InternalSignalBinding binding) {
             Serializable signalValue = binding.value();
             if (signalValue instanceof String stringValue
                     && stringValue.isEmpty()) {
@@ -96,13 +97,10 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
     @Override
     public void removeAllProperties() {
-        // Dispose of any effect registrations and forget bindings
         for (String key : getPropertyNames().toList()) {
             Serializable raw = super.get(key);
-            if (raw instanceof SignalBinding binding) {
-                if (binding.registration() != null) {
-                    binding.registration().remove();
-                }
+            if (raw instanceof InternalSignalBinding) {
+                throw new BindingActiveException();
             }
         }
         super.removeAllProperties();
@@ -111,7 +109,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
     @Override
     public boolean hasProperty(String name) {
         Serializable raw = super.get(name);
-        if (raw instanceof SignalBinding binding) {
+        if (raw instanceof InternalSignalBinding binding) {
             Serializable signalValue = binding.value();
             if (signalValue instanceof String stringValue
                     && stringValue.isEmpty()) {

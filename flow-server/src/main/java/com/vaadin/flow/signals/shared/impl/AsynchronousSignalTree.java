@@ -73,17 +73,24 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             confirmed = new Snapshot(builder);
 
+            /*
+             * Check if the confirmed commands were at the head of
+             * unconfirmedCommands. If so, the same commands were already
+             * applied during latency compensation with the same results, so
+             * submitted doesn't change and we can skip re-applying and
+             * notifying observers.
+             */
+            boolean confirmedFromHead = wereAtHead(
+                    unconfirmedCommands.getCommands(), commands);
+
             // Remove any pending commands that are now confirmed from the queue
             unconfirmedCommands.removeHandledCommands(results.keySet());
 
             Snapshot oldSubmitted = submitted;
 
-            /*
-             * TODO: could skip this part if the newly confirmed commands were
-             * at the head of unconfirmedCommands since submitted doesn't change
-             * in that case
-             */
-            if (!unconfirmedCommands.isEmpty()) {
+            if (confirmedFromHead) {
+                // submitted doesn't change so no need to rebuild or notify
+            } else if (!unconfirmedCommands.isEmpty()) {
                 // Re-apply pending commands that remain in the queue
                 builder.apply(unconfirmedCommands.getCommands());
 
@@ -92,12 +99,48 @@ public abstract class AsynchronousSignalTree extends SignalTree {
                 submitted = confirmed;
             }
 
-            notifyObservers(oldSubmitted, submitted);
+            if (!confirmedFromHead) {
+                notifyObservers(oldSubmitted, submitted);
+            }
 
             unconfirmedCommands.notifyResultHandlers(results, commands);
 
             notifyProcessedCommandSubscribers(commands, results);
         });
+    }
+
+    /**
+     * Checks whether all confirmed commands appear at the head of the
+     * unconfirmed command list. This means the confirmed commands were the
+     * first commands submitted to this tree and no reordering or external
+     * commands were involved. Uses the top-level command list to determine the
+     * count rather than the results key set, since results may also include
+     * sub-command IDs from transaction commands.
+     * <p>
+     * When this returns {@code true} and there are additional unconfirmed
+     * commands beyond the confirmed ones, submitted still doesn't need to be
+     * rebuilt. If unconfirmed was [A, B, C] and confirmed is [A], then the
+     * current submitted was built as {@code old_confirmed + A + B + C}. After
+     * confirming A, the new confirmed is {@code old_confirmed + A}, so
+     * rebuilding would give {@code (old_confirmed + A) + B + C} which is the
+     * same as the current submitted.
+     */
+    private static boolean wereAtHead(List<SignalCommand> unconfirmedCommands,
+            List<SignalCommand> confirmedCommands) {
+        int confirmedCount = confirmedCommands.size();
+        if (confirmedCount == 0) {
+            return true;
+        }
+        if (confirmedCount > unconfirmedCommands.size()) {
+            return false;
+        }
+        for (int i = 0; i < confirmedCount; i++) {
+            if (!unconfirmedCommands.get(i).commandId()
+                    .equals(confirmedCommands.get(i).commandId())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

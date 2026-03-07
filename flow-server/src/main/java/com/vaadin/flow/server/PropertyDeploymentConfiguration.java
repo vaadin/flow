@@ -196,6 +196,14 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public boolean isBrowserless() {
+        if (isOwnProperty(InitParameters.BROWSERLESS)) {
+            return super.isBrowserless();
+        }
+        return parentConfig.isBrowserless();
+    }
+
+    @Override
     public boolean isXsrfProtectionEnabled() {
         if (isOwnProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)) {
             return super.isXsrfProtectionEnabled();

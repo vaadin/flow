@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.util.LinkedList;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +29,7 @@ import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -148,10 +149,10 @@ class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_initialNullSignalValue_treatAsBlank() {
+    public void bindText_initialEmptySignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>();
+        ValueSignal<@Nullable String> signal = new ValueSignal<>(null);
         element.bindText(signal);
         assertEquals("", element.getText());
         assertTrue(events.isEmpty());
@@ -193,28 +194,6 @@ class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        Element element = new Element("span");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>("text");
-        element.bindText(signal);
-        assertEquals("text", element.getText());
-
-        // Remove binding via the node's TextBindingFeature
-        TextBindingFeature feature = element.getNode()
-                .getFeature(TextBindingFeature.class);
-        feature.removeBinding();
-
-        // Signal changes should no longer affect the element
-        signal.set("text2");
-        assertEquals("text", element.getText());
-
-        // Manual set should work without throwing
-        element.setText("manual");
-        assertEquals("manual", element.getText());
-    }
-
-    @Test
     public void bindText_nullSignal_throwsNPE() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
@@ -251,14 +230,14 @@ class ElementBindTextTest {
         element.setText("text2");
         element.getText();
 
-        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> fail(
                         "TextBindingFeature should not be initialized before binding a signal"));
 
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
-        element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
+        element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .orElseThrow(() -> new AssertionError(
                         "TextBindingFeature should be initialized after binding a signal"));
     }
