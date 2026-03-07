@@ -60,6 +60,7 @@ class DevModeEndpointTest extends AbstractDevModeTest {
     }
 
     @BeforeEach
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         super.setup();
