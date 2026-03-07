@@ -79,7 +79,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    public void refreshAllThroughDataProvider_resetMethodCalled() {
+    void refreshAllThroughDataProvider_resetMethodCalled() {
         var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
 
         // Set data provider again to ensure spied DataCommunicator
@@ -271,7 +271,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    public void refreshItemsWithChildren_dataGeneratorDestroyItemCalledForChildren() {
+    void refreshItemsWithChildren_dataGeneratorDestroyItemCalledForChildren() {
         populateTreeData(treeData, 1, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
@@ -337,7 +337,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     @SuppressWarnings("unchecked")
-    public void refreshAllItems_dataGeneratorDestroyAllDataCalled() {
+    void refreshAllItems_dataGeneratorDestroyAllDataCalled() {
         populateTreeData(treeData, 6, 1, 1);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));

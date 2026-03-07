@@ -37,7 +37,7 @@ import com.vaadin.flow.data.provider.DataCommunicatorTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract public class AbstractHierarchicalDataCommunicatorTest {
+abstract class AbstractHierarchicalDataCommunicatorTest {
     public static class Item {
         private String name;
         private String state;

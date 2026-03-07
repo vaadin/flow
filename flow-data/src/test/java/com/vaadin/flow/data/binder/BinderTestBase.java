@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 1.0.
  *
  */
-public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
+abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
         implements Serializable {
 
     protected static final String NEGATIVE_ERROR_MESSAGE = "Value must be non-negative";
