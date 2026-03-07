@@ -25,10 +25,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -40,7 +39,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,16 +48,16 @@ import static org.mockito.ArgumentMatchers.eq;
  * Verifies that PublicResourcesLiveUpdater reacts to a CSS change and bundles
  * imported files, pushing the merged result via BrowserLiveReload.update.
  */
-public class PublicResourcesLiveUpdaterTest {
+class PublicResourcesLiveUpdaterTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private MockedStatic<ApplicationConfiguration> appConfigStatic;
     private MockedStatic<BrowserLiveReloadAccessor> liveReloadAccessorStatic;
 
-    @After
-    public void cleanupStatics() {
+    @AfterEach
+    void cleanupStatics() {
         if (appConfigStatic != null) {
             appConfigStatic.close();
         }
@@ -68,10 +67,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_triggersBundlingAndUpdate_forActiveUrl()
-            throws Exception {
+    void cssChange_triggersBundlingAndUpdate_forActiveUrl() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project");
+        File project = new File(temporaryFolder, "project");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -138,10 +137,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_triggersUpdates_forMultipleActiveUrls()
-            throws Exception {
+    void cssChange_triggersUpdates_forMultipleActiveUrls() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project2");
+        File project = new File(temporaryFolder, "project2");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -200,10 +199,10 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssTempFiles_areIgnored_noLiveReloadInteractions()
-            throws Exception {
+    void cssTempFiles_areIgnored_noLiveReloadInteractions() throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project3");
+        File project = new File(temporaryFolder, "project3");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -246,10 +245,11 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void cssChange_ignoresVaadinThemeUrls_noLiveReloadUpdates()
+    void cssChange_ignoresVaadinThemeUrls_noLiveReloadUpdates()
             throws Exception {
         // Arrange a fake project structure with public resources
-        File project = temporaryFolder.newFolder("project4");
+        File project = new File(temporaryFolder, "project4");
+        project.mkdirs();
         File publicRoot = new File(project, "src/main/resources/public");
         assertTrue(publicRoot.mkdirs());
 
@@ -300,10 +300,11 @@ public class PublicResourcesLiveUpdaterTest {
     }
 
     @Test
-    public void vaadinThemeUrls_areNotBundled_whenCssChangesDetected()
+    void vaadinThemeUrls_areNotBundled_whenCssChangesDetected()
             throws Exception {
         // Prepare a temp directory to watch
-        File root = temporaryFolder.newFolder("watched-root");
+        File root = new File(temporaryFolder, "watched-root");
+        root.mkdirs();
 
         // Mocks for Vaadin context and configuration (dev mode)
         VaadinContext ctx = Mockito.mock(VaadinContext.class);
