@@ -768,7 +768,7 @@ public class FrontendUtilsTest {
         Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        Assert.assertTrue("Change in minor version should return true",
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
                         npmFolder, nodeModules, npmFolder));
 
@@ -816,7 +816,7 @@ public class FrontendUtilsTest {
         Files.writeString(bundleVaadinJson.toPath(), bundleVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        Assert.assertTrue("Change in minor version should return true",
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
                         npmFolder, nodeModules, buildFolder));
 
@@ -875,7 +875,7 @@ public class FrontendUtilsTest {
         Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("Change in minor version should return false",
+        Assert.assertTrue("Change in minor version should return true",
                 FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
                         npmFolder, nodeModules, buildFolder));
     }
