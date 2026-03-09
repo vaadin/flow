@@ -41,6 +41,7 @@ import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -74,6 +75,9 @@ import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 class DevModeInitializerTest extends DevModeInitializerTestBase {
+
+    @TempDir
+    File devModeTempDir;
 
     @JsModule("foo")
     public static class Visited {
@@ -487,8 +491,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(null);
-        File tmp = Files.createTempDirectory("devmode-test").toFile();
-        baseDir = tmp.getPath();
+        baseDir = devModeTempDir.getPath();
 
         String originalUserDirValue = null;
         try {
@@ -509,9 +512,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(null);
-        File tmp = Files.createTempDirectory("devmode-test").toFile();
-        new File(tmp, "pom.xml").createNewFile();
-        baseDir = tmp.getPath();
+        new File(devModeTempDir, "pom.xml").createNewFile();
+        baseDir = devModeTempDir.getPath();
 
         String originalUserDirValue = null;
         try {
@@ -530,9 +532,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(null);
-        File tmp = Files.createTempDirectory("devmode-test").toFile();
-        new File(tmp, "build.gradle").createNewFile();
-        baseDir = tmp.getPath();
+        new File(devModeTempDir, "build.gradle").createNewFile();
+        baseDir = devModeTempDir.getPath();
 
         String originalUserDirValue = null;
         try {

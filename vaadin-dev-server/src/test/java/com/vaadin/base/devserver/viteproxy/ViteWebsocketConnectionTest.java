@@ -35,6 +35,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -63,6 +64,7 @@ class ViteWebsocketConnectionTest {
         httpServer.start();
     }
 
+    @AfterEach
     void tearDown() throws Exception {
         if (httpServer != null) {
             httpServer.stop(0);
