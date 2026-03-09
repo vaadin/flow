@@ -30,14 +30,16 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <T>
  *            the result type
  */
-public class SignalOperation<T> implements Serializable {
+public class SignalOperation<T extends @Nullable Object>
+        implements Serializable {
     /**
      * The result of a signal operation.
      *
      * @param <T>
      *            the result type in case the operation was successful
      */
-    public sealed interface ResultOrError<T> extends Serializable {
+    public sealed interface ResultOrError<T extends @Nullable Object>
+            extends Serializable {
         /**
          * Checks whether this instance represents successfully applied signal
          * operation.
@@ -56,7 +58,8 @@ public class SignalOperation<T> implements Serializable {
      * @param value
      *            the result value
      */
-    public record Result<T>(@Nullable T value) implements ResultOrError<T> {
+    public record Result<T extends @Nullable Object>(
+            @Nullable T value) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return true;
@@ -71,7 +74,8 @@ public class SignalOperation<T> implements Serializable {
      * @param reason
      *            the error reason message
      */
-    public record Error<T>(String reason) implements ResultOrError<T> {
+    public record Error<T extends @Nullable Object>(
+            String reason) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return false;

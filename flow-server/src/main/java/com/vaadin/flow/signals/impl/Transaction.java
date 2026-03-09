@@ -269,7 +269,14 @@ public abstract class Transaction implements Serializable {
      */
     public static boolean inExplicitTransaction() {
         Transaction transaction = currentTransaction.get();
-        return transaction != null && transaction != EXPLICITLY_NO_TRANSACTION;
+        if (transaction == null || transaction == EXPLICITLY_NO_TRANSACTION) {
+            return false;
+        }
+        if (transaction instanceof StagedTransaction staged
+                && staged.isCommitting()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -288,7 +295,7 @@ public abstract class Transaction implements Serializable {
      * @return the operation object that wraps the supplier value, not
      *         <code>null</code>
      */
-    public static <T> TransactionOperation<T> runInTransaction(
+    public static <T extends @Nullable Object> TransactionOperation<T> runInTransaction(
             ValueSupplier<T> transactionTask) {
         return runInTransaction(transactionTask, Type.STAGED);
     }
@@ -307,7 +314,7 @@ public abstract class Transaction implements Serializable {
      * @return the operation object that wraps the supplier value, not
      *         <code>null</code>
      */
-    public static <T> TransactionOperation<T> runInTransaction(
+    public static <T extends @Nullable Object> TransactionOperation<T> runInTransaction(
             ValueSupplier<T> transactionTask, Type transactionType) {
         Transaction previousThreadLocal = currentTransaction.get();
         Transaction outer = getCurrent();
@@ -334,6 +341,7 @@ public abstract class Transaction implements Serializable {
         }
     }
 
+    @SuppressWarnings("NullAway")
     private static ValueSupplier<Void> asSupplier(TransactionTask task) {
         return () -> {
             task.execute();
@@ -388,7 +396,8 @@ public abstract class Transaction implements Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> @Nullable T runWithoutTransaction(ValueSupplier<T> task) {
+    public static <T extends @Nullable Object> T runWithoutTransaction(
+            ValueSupplier<T> task) {
         Transaction previousTransaction = currentTransaction.get();
         try {
             currentTransaction.set(EXPLICITLY_NO_TRANSACTION);

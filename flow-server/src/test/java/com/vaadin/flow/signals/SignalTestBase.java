@@ -25,6 +25,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
+import com.vaadin.flow.signals.local.ValueSignal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -97,6 +99,14 @@ public class SignalTestBase {
         return dispatcher;
     }
 
+    /**
+     * Creates a signal that can be used as a dummy dependency in reactive
+     * callbacks that need to register at least one signal read.
+     */
+    protected static ValueSignal<Integer> createDependency() {
+        return new ValueSignal<>(0);
+    }
+
     protected TestExecutor useTestEffectDispatcher() {
         TestExecutor dispatcher = new TestExecutor();
 
@@ -114,8 +124,8 @@ public class SignalTestBase {
     }
 
     protected void assertUncaughtException(
-            Class<? extends Throwable> expetedType) {
-        assertUncaughtException(e -> e.getClass() == expetedType);
+            Class<? extends Throwable> expectedType) {
+        assertUncaughtException(expectedType::isInstance);
     }
 
     protected void assertUncaughtException(Predicate<Throwable> predicate) {

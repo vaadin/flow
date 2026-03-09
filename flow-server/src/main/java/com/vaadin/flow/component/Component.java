@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -468,6 +469,35 @@ public abstract class Component
     }
 
     /**
+     * Sets the {@code data-testid} attribute of the root element of this
+     * component. This attribute is used by testing frameworks such as
+     * Playwright to locate elements in the DOM.
+     *
+     * @param testId
+     *            the test id to set, or <code>null</code> to remove any
+     *            previously set test id
+     */
+    public void setTestId(String testId) {
+        if (testId == null) {
+            getElement().removeAttribute("data-testid");
+        } else {
+            getElement().setAttribute("data-testid", testId);
+        }
+    }
+
+    /**
+     * Gets the {@code data-testid} attribute of the root element of this
+     * component.
+     *
+     * @see #setTestId(String)
+     *
+     * @return the test id, or {@code null} if no test id has been set
+     */
+    public String getTestId() {
+        return getElement().getAttribute("data-testid");
+    }
+
+    /**
      * Called when the component is attached to a UI.
      * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
@@ -615,8 +645,8 @@ public abstract class Component
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
-    public void bindVisible(Signal<Boolean> visibleSignal) {
-        getElement().bindVisible(visibleSignal);
+    public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
+        return getElement().bindVisible(visibleSignal);
     }
 
     /**

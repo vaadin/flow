@@ -17,6 +17,7 @@ package com.vaadin.flow.signals;
 
 import java.util.concurrent.ExecutionException;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
@@ -24,7 +25,7 @@ import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.operations.SignalOperation.Result;
 import com.vaadin.flow.signals.operations.SignalOperation.ResultOrError;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SignalUtils;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
 
@@ -46,18 +47,20 @@ public class TestUtil {
         return new SignalCommand.SetCommand(Id.random(), Id.random(), null);
     }
 
-    public static JsonNode readConfirmedRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readConfirmedRootValue(SignalTree tree) {
         return tree.confirmed().data(Id.ZERO).get().value();
     }
 
-    public static JsonNode readSubmittedRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readSubmittedRootValue(SignalTree tree) {
         return tree.submitted().data(Id.ZERO).get().value();
     }
 
-    public static JsonNode readTransactionRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readTransactionRootValue(SignalTree tree) {
         return Transaction.getCurrent().read(tree).data(Id.ZERO).get().value();
     }
 
+    // Result.value() is @Nullable T but successful results always have a value
+    @SuppressWarnings("NullAway")
     public static <T> T assertSuccess(SignalOperation<T> operation) {
         if (assertCompleted(operation) instanceof Result<T> result) {
             return result.value();
@@ -87,7 +90,7 @@ public class TestUtil {
     /*
      * Helper to run package-private tree getter from tests in sub packages.
      */
-    public static SignalTree tree(AbstractSignal<?> signal) {
+    public static SignalTree tree(AbstractSharedSignal<?> signal) {
         return SignalUtils.treeOf(signal);
     }
 }
