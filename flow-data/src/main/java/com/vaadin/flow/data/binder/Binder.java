@@ -1731,10 +1731,10 @@ public class Binder<BEAN> implements Serializable {
                 // Satisfies the signal usage requirement for bindings
                 // without signal-using validators in the chain.
                 var usageGuard = new ValueSignal<Void>(null);
-                signalRegistration = Signal.effect(component, () -> {
+                signalRegistration = Signal.effect(component, ctx -> {
                     usageGuard.get();
                     Result<TARGET> result = executeConversionChain();
-                    if (!valueInit) {
+                    if (!ctx.isInitialRun()) {
                         BindingValidationStatus<TARGET> status = toValidationStatus(
                                 result);
                         fireValidationEvents(status);

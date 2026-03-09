@@ -161,7 +161,8 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
     @SuppressWarnings("NullAway")
     @Override
     public T get() {
-        if (!UsageTracker.isGetAllowed() && !Transaction.inTransaction()) {
+        if (!UsageTracker.isGetAllowed()
+                && !Transaction.inExplicitTransaction()) {
             throw new IllegalStateException(
                     "Signal.get() was called outside a reactive context. "
                             + "Use peek() to read the value without setting up "

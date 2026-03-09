@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -149,7 +150,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsGroupBindingAndAllThemes() {
+    public void clear_throwsWhenGroupBindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -158,14 +159,8 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
 
         assertTrue(component.hasThemeName("a"));
 
-        component.getThemeNames().clear();
-
-        assertFalse(component.hasThemeName("a"));
-        assertFalse(component.hasThemeName("b"));
-
-        // Binding is cleared, signal changes have no effect
-        signal.set(List.of("c"));
-        assertFalse(component.hasThemeName("c"));
+        assertThrows(BindingActiveException.class,
+                () -> component.getThemeNames().clear());
     }
 
     @Test
@@ -212,6 +207,29 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
         group.set(List.of());
         assertFalse(component.hasThemeName("toggled"));
         assertFalse(component.hasThemeName("grouped"));
+    }
+
+    @Test
+    public void bind_onChange_receivesBindingContext() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<List<String>> signal = new ValueSignal<>(List.of("a", "b"));
+        List<BindingContext<List<String>>> contexts = new ArrayList<>();
+
+        component.getThemeNames().bind(signal).onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set(List.of("c"));
+
+        assertEquals(1, contexts.size());
+        BindingContext<List<String>> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals(List.of("a", "b"), ctx.getOldValue());
+        assertEquals(List.of("c"), ctx.getNewValue());
+        assertEquals(component.getElement(), ctx.getElement());
     }
 
     @Tag("span")

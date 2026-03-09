@@ -157,10 +157,12 @@ public interface Style extends Serializable {
     /**
      * Removes all set style properties.
      * <p>
-     * This method silently clears all style signal bindings (unsubscribe and
-     * forget recorded values) in addition to clearing style values.
+     * Throws a {@link BindingActiveException} if any style signal binding is
+     * active.
      *
      * @return this style instance
+     * @throws BindingActiveException
+     *             if any style signal binding is active
      * @see #bind(String, Signal)
      */
     Style clear();
@@ -217,7 +219,8 @@ public interface Style extends Serializable {
      *            the style property name, not {@code null}
      * @param signal
      *            the signal that provides the style value, not {@code null}
-     * @return this style instance
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #set(String, String)
@@ -228,7 +231,7 @@ public interface Style extends Serializable {
      *
      * @since 25.0
      */
-    default Style bind(String name, Signal<String> signal) {
+    default SignalBinding<?> bind(String name, Signal<String> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     };

@@ -27,7 +27,7 @@ import java.io.File
  */
 abstract class AbstractGradleTest {
 
-    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "25.1-SNAPSHOT"
+    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "25.2-SNAPSHOT"
     val slf4jVersion = "2.0.3"
 
     /**
