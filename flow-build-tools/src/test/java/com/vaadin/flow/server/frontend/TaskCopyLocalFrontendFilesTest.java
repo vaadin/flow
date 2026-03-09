@@ -37,6 +37,7 @@ class TaskCopyLocalFrontendFilesTest {
         final File sourceFolder = createReadOnlySource();
 
         final File outFolder = new File(temporaryFolder, "out");
+        outFolder.mkdirs();
 
         TaskCopyLocalFrontendFiles.copyLocalResources(sourceFolder, outFolder);
 
@@ -52,6 +53,7 @@ class TaskCopyLocalFrontendFilesTest {
         final File sourceFolder = createReadOnlySource();
 
         final File outFolder = new File(temporaryFolder, "out");
+        outFolder.mkdirs();
 
         TaskCopyLocalFrontendFiles.copyLocalResources(sourceFolder, outFolder);
 
@@ -63,6 +65,7 @@ class TaskCopyLocalFrontendFilesTest {
         final File sourceFolder = createReadOnlySource();
 
         final File outFolder = new File(temporaryFolder, "out");
+        outFolder.mkdirs();
 
         Options options = new MockOptions(temporaryFolder)
                 .withJarFrontendResourcesFolder(outFolder)
