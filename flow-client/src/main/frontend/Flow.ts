@@ -179,13 +179,9 @@ export class Flow {
       'click',
       (_e) => {
         if (_e.target) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          if (_e.target.hasAttribute('router-link')) {
+          if (_e.composedPath().some((node) => node instanceof HTMLElement && node.hasAttribute('router-link'))) {
             this.navigation = 'link';
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+          } else if (_e.composedPath().some((node) => (node as Element).nodeName === 'A')) {
             this.navigation = 'client';
           }
         }
