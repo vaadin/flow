@@ -43,6 +43,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
 
         @Override
         public void setDataProvider(DataProvider<String, ?> dataProvider) {
+            DataViewUtils.checkNoActiveItemsBinding(this);
             this.dataProvider = dataProvider;
         }
 
@@ -149,5 +150,48 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
         assertEquals(2, items.size());
         assertEquals("Item 1", items.get(0));
         assertEquals("Item 2", items.get(1));
+    }
+
+    @Test
+    public void setDataProvider_afterBindItems_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+
+        component.bindItems(itemsSignal);
+
+        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
+                () -> component
+                        .setDataProvider(DataProvider.ofItems("Item 2")));
+    }
+
+    @Test
+    public void setItems_collection_afterBindItems_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+
+        component.bindItems(itemsSignal);
+
+        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
+                () -> component.setItems(List.of("Item 2")));
+    }
+
+    @Test
+    public void setItems_varargs_afterBindItems_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ListSignal<String> itemsSignal = new ListSignal<>();
+        itemsSignal.insertLast("Item 1");
+
+        component.bindItems(itemsSignal);
+
+        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
+                () -> component.setItems("Item 2", "Item 3"));
     }
 }
