@@ -39,6 +39,14 @@ public class NavigationTriggerView extends AbstractDivView
                 .createRouterLink(CLASS_NAME + "/routerlink/", "Router link");
         routerLink.setAttribute("id", "routerlink");
 
+        Element routerLinkWithButton = ElementFactory
+                .createRouterLink(CLASS_NAME + "/routerlink-button/", null);
+        routerLinkWithButton.setAttribute("id", "routerlink-with-button");
+        Element nestedButton = ElementFactory
+                .createButton("Router link button");
+        nestedButton.setAttribute("id", "routerlink-button");
+        routerLinkWithButton.appendChild(nestedButton);
+
         Element navigateButton = ElementFactory.createButton("UI.navigate");
         navigateButton.addEventListener("click",
                 e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
@@ -54,8 +62,8 @@ public class NavigationTriggerView extends AbstractDivView
                 .navigate(NavigationTriggerView.class, "reroute"));
         rerouteButton.setAttribute("id", "rerouteButton");
 
-        getElement().appendChild(routerLink, navigateButton, forwardButton,
-                rerouteButton);
+        getElement().appendChild(routerLink, routerLinkWithButton,
+                navigateButton, forwardButton, rerouteButton);
     }
 
     public static String buildMessage(String path, NavigationTrigger trigger,
