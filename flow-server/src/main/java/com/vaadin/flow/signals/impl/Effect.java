@@ -280,8 +280,11 @@ public class Effect implements Serializable {
                 registrations.add(usage.onNextChange(this::onDependencyChange));
             }
             if (!invalidateScheduled.get()) {
-                // No listener fired, so this is not an
-                // activation-triggered run. Reset for normal tracking.
+                // No invalidation was scheduled, so no change was
+                // detected during re-registration. Reset firstRun for
+                // normal tracking. If an invalidation was scheduled,
+                // firstRun stays true and will be reset by the
+                // eventual revalidation.
                 firstRun = false;
             }
         }

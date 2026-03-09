@@ -587,21 +587,47 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void passivateActivate_noChanges_nextChangeTracked() {
+    void passivateActivate_asyncDispatcher_noChanges_callbackNotReRun() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
 
         Effect effect = new Effect(() -> {
             invocations.add(signal.get());
         });
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("initial"), invocations);
 
         effect.passivate();
         effect.activate();
-        assertEquals(List.of("initial"), invocations);
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("initial"), invocations,
+                "Callback should not re-run when nothing changed");
 
         signal.set("update");
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial", "update"), invocations,
-                "Changes after activate should still trigger the effect");
+                "Effect should remain active after activate");
+    }
+
+    @Test
+    void passivateActivate_asyncDispatcher_withChanges_callbackReRun() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+        signal.set("changed");
+        effect.activate();
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("initial", "changed"), invocations,
+                "Callback should re-run when dependency changed");
     }
 
     @Test

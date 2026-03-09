@@ -56,8 +56,8 @@ import com.vaadin.flow.signals.impl.Effect;
  */
 public final class ElementEffect implements Serializable {
     private final ContextualEffectAction effectFunction;
-    private boolean closed = false;
     private Effect effect = null;
+    private Registration attachRegistration;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
@@ -69,7 +69,7 @@ public final class ElementEffect implements Serializable {
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
-        owner.addAttachListener(attach -> {
+        attachRegistration = owner.addAttachListener(attach -> {
             enableEffect(attach.getSource());
 
             detachRegistration = owner.addDetachListener(detach -> {
@@ -216,16 +216,13 @@ public final class ElementEffect implements Serializable {
     }
 
     private void enableEffect(Element owner) {
-        if (closed) {
-            return;
-        }
-
         if (effect != null) {
             // Re-activating after passivation
             effect.activate();
             return;
         }
 
+        // One-time initialization
         Component parentComponent = ComponentUtil.findParentComponent(owner)
                 .get();
         UI ui = parentComponent.getUI().get();
@@ -269,7 +266,14 @@ public final class ElementEffect implements Serializable {
             effect.dispose();
             effect = null;
         }
-        closed = true;
+        if (attachRegistration != null) {
+            attachRegistration.remove();
+            attachRegistration = null;
+        }
+        if (detachRegistration != null) {
+            detachRegistration.remove();
+            detachRegistration = null;
+        }
     }
 
     /**
