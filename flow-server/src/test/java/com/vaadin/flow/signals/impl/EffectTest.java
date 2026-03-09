@@ -587,47 +587,22 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void passivateActivate_asyncDispatcher_noChanges_callbackNotReRun() {
-        TestExecutor dispatcher = useTestEffectDispatcher();
+    void passivateActivate_noChanges_nextChangeIsNotInitialRun() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        ArrayList<String> invocations = new ArrayList<>();
+        List<Boolean> initialRuns = new ArrayList<>();
 
-        Effect effect = new Effect(() -> {
-            invocations.add(signal.get());
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
         });
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial"), invocations);
+        assertEquals(List.of(true), initialRuns);
 
         effect.passivate();
         effect.activate();
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial"), invocations,
-                "Callback should not re-run when nothing changed");
 
         signal.set("update");
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial", "update"), invocations,
-                "Effect should remain active after activate");
-    }
-
-    @Test
-    void passivateActivate_asyncDispatcher_withChanges_callbackReRun() {
-        TestExecutor dispatcher = useTestEffectDispatcher();
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        ArrayList<String> invocations = new ArrayList<>();
-
-        Effect effect = new Effect(() -> {
-            invocations.add(signal.get());
-        });
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial"), invocations);
-
-        effect.passivate();
-        signal.set("changed");
-        effect.activate();
-        dispatcher.runPendingTasks();
-        assertEquals(List.of("initial", "changed"), invocations,
-                "Callback should re-run when dependency changed");
+        assertEquals(List.of(true, false), initialRuns,
+                "Change after activate without changes should not be initial run");
     }
 
     @Test
@@ -671,6 +646,54 @@ public class EffectTest extends SignalTestBase {
 
         assertEquals(List.of(true, true), initialRuns,
                 "Change during activation should run with isInitialRun=true");
+    }
+
+    @Test
+    void passivateActivate_asyncDispatcher_racyChange_isInitialRunTrue() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        AtomicBoolean injectChange = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Registration onNextChange(
+                            TransientListener listener) {
+                        if (injectChange.compareAndSet(true, false)) {
+                            set("sneaky");
+                        }
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+        dispatcher.runPendingTasks();
+        assertEquals(List.of(true), initialRuns);
+
+        effect.passivate();
+        injectChange.set(true);
+        effect.activate();
+        // Revalidation is dispatched asynchronously; firstRun must not
+        // be reset before the dispatcher runs.
+        dispatcher.runPendingTasks();
+
+        assertEquals(List.of(true, true), initialRuns,
+                "Racy change with async dispatcher should run with isInitialRun=true");
     }
 
     @Test
