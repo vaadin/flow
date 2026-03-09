@@ -20,12 +20,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.testutil.TestUtils;
 
-public abstract class AbstractStatisticsTest {
+abstract class AbstractStatisticsTest {
 
     protected static final String DEFAULT_SERVER_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"\"}";
     protected static final String SERVER_MESSAGE_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"Hello\"}";
@@ -55,8 +55,8 @@ public abstract class AbstractStatisticsTest {
         return result;
     }
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         storage = Mockito.spy(new StatisticsStorage());
         storage.usageStatisticsFile = File.createTempFile("test-storage",
                 "json");
