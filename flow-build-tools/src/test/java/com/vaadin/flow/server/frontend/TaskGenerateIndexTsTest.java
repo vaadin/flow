@@ -52,6 +52,7 @@ class TaskGenerateIndexTsTest {
     @BeforeEach
     void setUp() throws IOException {
         frontendFolder = new File(temporaryFolder, FRONTEND);
+        frontendFolder.mkdirs();
         File generatedFolder = new File(new File(temporaryFolder, TARGET),
                 FRONTEND);
         generatedFolder.mkdirs();

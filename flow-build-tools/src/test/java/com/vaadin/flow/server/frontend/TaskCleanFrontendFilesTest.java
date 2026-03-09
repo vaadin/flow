@@ -103,6 +103,7 @@ class TaskCleanFrontendFilesTest {
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
 
         final File nodeModules = new File(rootFolder, "node_modules");
+        nodeModules.mkdirs();
         new File(nodeModules, "file").createNewFile();
         final File directory = new File(nodeModules, "directory");
         directory.mkdir();
@@ -120,6 +121,7 @@ class TaskCleanFrontendFilesTest {
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
 
         final File nodeModules = new File(rootFolder, "node_modules");
+        nodeModules.mkdirs();
         new File(nodeModules, "file").createNewFile();
         final File directory = new File(nodeModules, "directory");
         directory.mkdir();
@@ -142,6 +144,7 @@ class TaskCleanFrontendFilesTest {
         }
 
         final File nodeModules = new File(rootFolder, "node_modules");
+        nodeModules.mkdirs();
         new File(nodeModules, "file").createNewFile();
         final File directory = new File(nodeModules, "directory");
         directory.mkdir();
@@ -175,7 +178,8 @@ class TaskCleanFrontendFilesTest {
 
     private void createFiles(Set<String> filesToCreate) throws IOException {
         for (String file : filesToCreate) {
-            new File(rootFolder, file);
+            File f = new File(rootFolder, file);
+            f.mkdirs();
         }
     }
 

@@ -337,8 +337,8 @@ class TaskRunNpmInstallTest {
         String fileContent = FileUtils.readFileToString(localHashFile,
                 UTF_8.name());
         JsonNode localHash = JacksonUtils.readTree(fileContent);
-        assertNotEquals(localHash.get(HASH_KEY).asString(),
-                "We should have a non empty hash key", "");
+        assertNotEquals("", localHash.get(HASH_KEY).asString(),
+                "We should have a non empty hash key");
 
         // Update package json and hash as if someone had pushed to code repo.
         packageJson = getNodeUpdater().getPackageJson();

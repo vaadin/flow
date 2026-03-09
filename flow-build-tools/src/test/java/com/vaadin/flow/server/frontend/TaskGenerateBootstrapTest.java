@@ -77,6 +77,7 @@ class TaskGenerateBootstrapTest {
                 .createScanner(false, finder, false, null, true);
 
         frontendFolder = new File(temporaryFolder, FRONTEND);
+        frontendFolder.mkdirs();
         options = new MockOptions(finder, null)
                 .withFrontendDirectory(frontendFolder).withProductionMode(true);
 

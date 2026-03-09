@@ -425,8 +425,8 @@ class TaskUpdatePackagesNpmTest {
         packageJson = getOrCreatePackageJson();
 
         assertTrue(packageJson.has("type"), "Type should have been addded.");
-        assertEquals(packageJson.get("type").asString(),
-                "Type should be module", "module");
+        assertEquals("module", packageJson.get("type").asString(),
+                "Type should be module");
     }
 
     @Test
@@ -448,8 +448,8 @@ class TaskUpdatePackagesNpmTest {
 
         assertTrue(packageJson.has("type"),
                 "Type should not have been removed");
-        assertEquals(packageJson.get("type").asString(),
-                "Type should have been updated to 'module'", "module");
+        assertEquals("module", packageJson.get("type").asString(),
+                "Type should have been updated to 'module'");
     }
 
     @Test

@@ -201,10 +201,9 @@ class VersionsJsonFilterTest {
         expectedValues.put("@vaadin/vaadin-tabs", "3.0.5");
 
         for (Map.Entry<String, String> entry : expectedValues.entrySet()) {
-            assertEquals(
-                    String.format("Got wrong version for '%s'", entry.getKey()),
-                    entry.getValue(),
-                    filteredJson.get(entry.getKey()).asString());
+            assertEquals(entry.getValue(),
+                    filteredJson.get(entry.getKey()).asString(), String.format(
+                            "Got wrong version for '%s'", entry.getKey()));
         }
     }
 

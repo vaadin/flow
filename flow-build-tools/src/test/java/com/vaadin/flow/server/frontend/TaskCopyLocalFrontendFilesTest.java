@@ -85,6 +85,7 @@ class TaskCopyLocalFrontendFilesTest {
 
     private File createReadOnlySource() throws IOException {
         final File sourceFolder = new File(temporaryFolder, "source");
+        sourceFolder.mkdirs();
         File readOnly = new File(sourceFolder, "readOnly.txt");
         readOnly.createNewFile();
         assertTrue(readOnly.setReadOnly(), "Could not make file read-only");
