@@ -268,19 +268,19 @@ class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_computedSignal_bindingActive() {
+    public void bindAttribute_cachedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
         ValueSignal<Void> dependency = new ValueSignal<>(null);
-        Signal<String> signal = Signal.computed(() -> {
+        Signal<String> signal = Signal.cached(() -> {
             dependency.get();
             return "bar";
         });
-        Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.get());
+        Signal<String> cachedSignal = Signal
+                .cached(() -> "computed-" + signal.get());
 
-        component.getElement().bindAttribute("foo", computedSignal);
+        component.getElement().bindAttribute("foo", cachedSignal);
 
         assertEquals("computed-bar",
                 component.getElement().getAttribute("foo"));

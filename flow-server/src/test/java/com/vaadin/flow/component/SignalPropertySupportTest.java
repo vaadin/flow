@@ -193,7 +193,7 @@ class SignalPropertySupportTest {
                 .create(component, lastValue::set);
         ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport
-                .bind(Signal.computed(() -> "computed-" + signal.get()));
+                .bind(Signal.cached(() -> "computed-" + signal.get()));
         assertEquals("computed-foo", signalPropertySupport.get());
         assertEquals("computed-foo", lastValue.get());
     }

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Compile-time nullability tests for {@link Signal} interface methods
- * ({@code map}, {@code computed}, {@code not}).
+ * ({@code map}, {@code cached}, {@code not}).
  * <p>
  * Each test method exercises a nullability pattern that NullAway checks at
  * compile time. The file compiling without errors IS the test. If nullability
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-public class ComputedSignalNullabilityTest extends SignalTestBase {
+public class CachedSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void map_returnsNullable() {
@@ -63,15 +63,15 @@ public class ComputedSignalNullabilityTest extends SignalTestBase {
     }
 
     @Test
-    void computed_returnsNullable() {
+    void cached_returnsNullable() {
         var signal = new ValueSignal<>("hello");
-        Signal<Integer> computed = Signal.computed(() -> {
+        Signal<Integer> cached = Signal.cached(() -> {
             @Nullable
             String value = signal.get();
             return value != null ? value.length() : 0;
         });
         @Nullable
-        Integer length = computed.peek();
+        Integer length = cached.peek();
         // get() returns @Nullable T — NullAway enforces a null-check
         if (length != null) {
             assertEquals(5, (int) length);

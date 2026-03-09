@@ -25,11 +25,10 @@ import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
-import com.vaadin.flow.signals.impl.ComputedSignal;
+import com.vaadin.flow.signals.impl.CachedSignal;
 import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -47,9 +46,8 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  * {@link #untracked(ValueSupplier)} can be used to read the value within an
  * effect without registering a dependency.
  * <p>
- * This interface can be used for creating simple computed signals as a lambda
- * function that uses other signals. This kind of signal is more limited than
- * {@link #computed(SignalComputation)} since it doesn't cache its value.
+ * This interface can be used for creating computed signals as a lambda function
+ * that uses other signals.
  *
  * @param <T>
  *            the signal value type
@@ -68,11 +66,11 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * signal value is changed concurrently.
      * <p>
      * Reading the value inside an {@link #unboundEffect(EffectAction)} or
-     * {@link #computed(SignalComputation)} callback sets up that effect or
-     * computed signal to depend on the signal.
+     * {@link #cached(SignalComputation)} signals sets up that effect or cached
+     * signal to depend on the signal.
      * <p>
      * This method must only be called within a reactive context such as an
-     * effect, a computed signal, an explicit {@link #untracked(ValueSupplier)}
+     * effect, a cached signal, an explicit {@link #untracked(ValueSupplier)}
      * block, or a {@link #runInTransaction(TransactionTask) transaction}.
      * Calling it outside such a context throws an
      * {@link IllegalStateException}. Use {@link #peek()} for one-time reads
@@ -87,7 +85,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
     /**
      * Reads the value without setting up any dependencies. This method returns
      * the same value as {@link #get()} but without creating a dependency when
-     * used inside a transaction, effect or computed signal.
+     * used inside a transaction, effect or cached signal.
      * <p>
      * Unlike {@link #get()}, this method can be called outside a reactive
      * context and is the recommended way to read a signal value for one-time
@@ -108,12 +106,6 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * passed the value of this signal. If the mapper function accesses other
      * signal values, then the computed signal will also depend on those
      * signals.
-     * <p>
-     * The computed signal does not perform any caching but will instead run the
-     * callback every time the signal value is read. Use
-     * {@link #computed(SignalComputation)} to create a computed signal that
-     * caches the result of running the callback until the value of any
-     * dependency changes.
      *
      * @param <C>
      *            the computed signal type
@@ -226,28 +218,28 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
     }
 
     /**
-     * Creates a new computed signal with the given computation callback. A
-     * computed signal behaves like a regular signal except that the value is
-     * not directly set but instead computed from other signals. The computed
-     * signal is automatically updated if any of the used signals are updated.
-     * The computation is lazy so that it only runs when its value is accessed
-     * and only if the previously computed value might have been invalidated by
-     * dependent signal changes. If the computation callback throws a
-     * {@link RuntimeException}, then that exception will be re-thrown when
-     * accessing the signal value. An {@link Signal#unboundEffect(EffectAction)
-     * effect} or computed signal that uses the value from a computed signal
-     * will not be invalidated if the computation is run again but produces the
-     * same value as before.
+     * Creates a new cached signal based on the given inner signal. The inner
+     * signal is typically a computed signal performing an expensive computation
+     * based on other signal values. When getting the value of this signal, a
+     * previously cached value will be used if available as long as that value
+     * is still valid. The cached value remains valid until the value changes
+     * for any of the inner signals.
+     * <p>
+     * If a {@link RuntimeException} is thrown when getting the value of the
+     * inner signal, then that exception will be re-thrown when accessing the
+     * value of this signal. An {@link Signal#unboundEffect(EffectAction)
+     * effect} or outer cached signal that uses the value from a cached signal
+     * will not be invalidated if the inner signal is invalidated but holds the
+     * same value as before invalidation.
      *
      * @param <T>
      *            the signal type
-     * @param computation
-     *            the computation callback, not <code>null</code>
-     * @return the computed signal, not <code>null</code>
+     * @param signal
+     *            the inner signal, not <code>null</code>
+     * @return the cached signal, not <code>null</code>
      */
-    static <T extends @Nullable Object> Signal<T> computed(
-            SignalComputation<T> computation) {
-        return new ComputedSignal<>(computation);
+    static <T extends @Nullable Object> Signal<T> cached(Signal<T> signal) {
+        return new CachedSignal<>(signal);
     }
 
     /**

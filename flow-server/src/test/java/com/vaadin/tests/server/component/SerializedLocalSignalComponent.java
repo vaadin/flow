@@ -43,7 +43,7 @@ class SerializedLocalSignalComponent extends Component {
         getElement().bindProperty("prop", signal, null);
         getElement().bindEnabled(
                 signal.map(value -> value != null && !value.isEmpty()));
-        getElement().bindVisible(Signal.computed(() -> signal.get() != null));
+        getElement().bindVisible(Signal.cached(() -> signal.get() != null));
 
         // Use updater helper for explicit two-way binding
         getElement().bindProperty("two-way-prop",

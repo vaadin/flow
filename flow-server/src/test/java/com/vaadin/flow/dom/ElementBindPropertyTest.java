@@ -287,14 +287,14 @@ class ElementBindPropertyTest {
     }
 
     @Test
-    public void bindPropertyComputedSignal_getPropertyValue_returnsCorrectValue() {
+    public void bindPropertyCachedSignal_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
-        Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.get());
-        component.getElement().bindProperty("foo", computedSignal, null);
+        Signal<String> cachedSignal = Signal
+                .cached(() -> "computed-" + signal.get());
+        component.getElement().bindProperty("foo", cachedSignal, null);
 
         assertEquals("computed-bar",
                 component.getElement().getProperty("foo", "default"));
@@ -319,11 +319,11 @@ class ElementBindPropertyTest {
         UI.getCurrent().add(component);
 
         ValueSignal<Void> dependency = new ValueSignal<>(null);
-        Signal<?> computedSignal = Signal.computed(() -> {
+        Signal<?> cachedSignal = Signal.cached(() -> {
             dependency.get();
             return null;
         });
-        component.getElement().bindProperty("foo", computedSignal, null);
+        component.getElement().bindProperty("foo", cachedSignal, null);
         assertEquals(JacksonUtils.nullNode(),
                 component.getElement().getPropertyRaw("foo"));
         assertEquals(null, component.getElement().getProperty("foo"));
@@ -335,11 +335,11 @@ class ElementBindPropertyTest {
         UI.getCurrent().add(component);
 
         ValueSignal<Void> dependency = new ValueSignal<>(null);
-        Signal<?> computedSignal = Signal.computed(() -> {
+        Signal<?> cachedSignal = Signal.cached(() -> {
             dependency.get();
             return JacksonUtils.createObjectNode();
         });
-        component.getElement().bindProperty("bar", computedSignal, null);
+        component.getElement().bindProperty("bar", cachedSignal, null);
         assertEquals(JacksonUtils.createObjectNode(),
                 component.getElement().getPropertyRaw("bar"));
         assertEquals("{}", component.getElement().getProperty("bar"));

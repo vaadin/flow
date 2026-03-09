@@ -86,14 +86,14 @@ class ElementBindTextTest {
     }
 
     @Test
-    public void bindTextComputedSignal_getText_returnsCorrectValue() {
+    public void bindTextCachedSignal_getText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
         ValueSignal<String> signal = new ValueSignal<>("text");
-        Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.get());
-        element.bindText(computedSignal);
+        Signal<String> cachedSignal = Signal
+                .cached(() -> "computed-" + signal.get());
+        element.bindText(cachedSignal);
 
         assertEquals("computed-text", element.getText());
     }
