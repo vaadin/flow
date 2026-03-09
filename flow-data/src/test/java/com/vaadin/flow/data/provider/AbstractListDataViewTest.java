@@ -45,6 +45,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tests.data.bean.Item;
 
 import static com.vaadin.flow.tests.server.ClassesSerializableUtils.serializeAndDeserialize;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -438,7 +440,7 @@ class AbstractListDataViewTest {
     void addItemBefore_itemNotInCollection_throwsException() {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> dataView.addItemBefore("newItem", "notExistent"));
-        assertTrue(ex.getMessage().contains(
+        assertThat(ex.getMessage(), containsString(
                 "Item to insert before is not available in the data"));
     }
 
@@ -494,8 +496,8 @@ class AbstractListDataViewTest {
     void addItemAfter_itemNotInCollection_throwsException() {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> dataView.addItemAfter("newItem", "notExistent"));
-        assertTrue(ex.getMessage()
-                .contains("Item to insert after is not available in the data"));
+        assertThat(ex.getMessage(), containsString(
+                "Item to insert after is not available in the data"));
     }
 
     @Test
@@ -530,7 +532,8 @@ class AbstractListDataViewTest {
     void addItems_nullCollectionPassed_throwsException() {
         var ex = assertThrows(NullPointerException.class,
                 () -> dataView.addItems(null));
-        assertTrue(ex.getMessage().contains("Items collection cannot be null"));
+        assertThat(ex.getMessage(),
+                containsString("Items collection cannot be null"));
     }
 
     @Test
@@ -588,15 +591,16 @@ class AbstractListDataViewTest {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> dataView.addItemsAfter(
                         Collections.singletonList("newItem"), "notExistent"));
-        assertTrue(ex.getMessage()
-                .contains("Item to insert after is not available in the data"));
+        assertThat(ex.getMessage(), containsString(
+                "Item to insert after is not available in the data"));
     }
 
     @Test
     void addItemsAfter_nullCollectionPassed_throwsException() {
         var ex = assertThrows(NullPointerException.class,
                 () -> dataView.addItemsAfter(null, "any"));
-        assertTrue(ex.getMessage().contains("Items collection cannot be null"));
+        assertThat(ex.getMessage(),
+                containsString("Items collection cannot be null"));
     }
 
     @Test
@@ -665,7 +669,7 @@ class AbstractListDataViewTest {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> dataView.addItemsBefore(
                         Collections.singletonList("newItem"), "notExistent"));
-        assertTrue(ex.getMessage().contains(
+        assertThat(ex.getMessage(), containsString(
                 "Item to insert before is not available in the data"));
     }
 
@@ -673,7 +677,8 @@ class AbstractListDataViewTest {
     void addItemsBefore_nullCollectionPassed_throwsException() {
         var ex = assertThrows(NullPointerException.class,
                 () -> dataView.addItemsBefore(null, "any"));
-        assertTrue(ex.getMessage().contains("Items collection cannot be null"));
+        assertThat(ex.getMessage(),
+                containsString("Items collection cannot be null"));
     }
 
     @Test
@@ -705,7 +710,8 @@ class AbstractListDataViewTest {
     void removeItems_nullCollectionPassed_throwsException() {
         var ex = assertThrows(NullPointerException.class,
                 () -> dataView.removeItems(null));
-        assertTrue(ex.getMessage().contains("Items collection cannot be null"));
+        assertThat(ex.getMessage(),
+                containsString("Items collection cannot be null"));
     }
 
     @Test
@@ -719,7 +725,8 @@ class AbstractListDataViewTest {
     void setItems_nullCollectionPassed_throwsException() {
         var ex = assertThrows(NullPointerException.class,
                 () -> dataView.setItems(null));
-        assertTrue(ex.getMessage().contains("Items collection cannot be null"));
+        assertThat(ex.getMessage(),
+                containsString("Items collection cannot be null"));
     }
 
     @Test
@@ -904,7 +911,7 @@ class AbstractListDataViewTest {
     void getItem_negativeIndex_throwsException() {
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataView.getItem(-1));
-        assertTrue(ex.getMessage().contains(
+        assertThat(ex.getMessage(), containsString(
                 "Given index -1 is outside of the accepted range '0 - 2'"));
     }
 
@@ -913,8 +920,8 @@ class AbstractListDataViewTest {
         dataProvider = DataProvider.ofItems();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataView.getItem(0));
-        assertTrue(
-                ex.getMessage().contains("Requested index 0 on empty data."));
+        assertThat(ex.getMessage(),
+                containsString("Requested index 0 on empty data."));
     }
 
     @Test

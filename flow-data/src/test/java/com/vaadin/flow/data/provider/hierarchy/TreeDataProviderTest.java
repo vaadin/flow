@@ -32,6 +32,8 @@ import com.vaadin.flow.data.provider.StrBean;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializablePredicate;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -190,9 +192,10 @@ class TreeDataProviderTest
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> data.setParent(parent, child));
-        assertTrue(exception.getMessage().contains("would create a cycle"));
-        assertTrue(exception.getMessage().contains(parent.toString()));
-        assertTrue(exception.getMessage().contains(child.toString()));
+        assertThat(exception.getMessage(),
+                containsString("would create a cycle"));
+        assertThat(exception.getMessage(), containsString(parent.toString()));
+        assertThat(exception.getMessage(), containsString(child.toString()));
     }
 
     @Test
@@ -206,9 +209,10 @@ class TreeDataProviderTest
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> data.setParent(itemA, itemC));
-        assertTrue(exception.getMessage().contains("would create a cycle"));
-        assertTrue(exception.getMessage().contains(itemA.toString()));
-        assertTrue(exception.getMessage().contains(itemC.toString()));
+        assertThat(exception.getMessage(),
+                containsString("would create a cycle"));
+        assertThat(exception.getMessage(), containsString(itemA.toString()));
+        assertThat(exception.getMessage(), containsString(itemC.toString()));
     }
 
     @Test

@@ -31,6 +31,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -292,7 +294,8 @@ class AbstractLazyDataViewTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataView.getItem(-1));
-        assertTrue(ex.getMessage().contains("Index must be non-negative"));
+        assertThat(ex.getMessage(),
+                containsString("Index must be non-negative"));
     }
 
     @Test
@@ -307,8 +310,8 @@ class AbstractLazyDataViewTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataView.getItem(0));
-        assertTrue(
-                ex.getMessage().contains("Requested index 0 on empty data."));
+        assertThat(ex.getMessage(),
+                containsString("Requested index 0 on empty data."));
     }
 
     @Test
@@ -323,7 +326,7 @@ class AbstractLazyDataViewTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataView.getItem(3));
-        assertTrue(ex.getMessage().contains(
+        assertThat(ex.getMessage(), containsString(
                 "Given index 3 is outside of the accepted range '0 - 2'"));
     }
 

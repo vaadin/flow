@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -53,6 +52,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -338,7 +338,7 @@ public class DataCommunicatorTest {
         var ex = assertThrows(IllegalStateException.class,
                 () -> dataCommunicator.fetchFromProvider(0, 1));
         assertThat(ex.getMessage(),
-                CoreMatchers.containsString(
+                containsString(
                         "The data provider hasn't ever called getLimit() or "
                                 + "getPageSize()"));
     }
@@ -361,7 +361,7 @@ public class DataCommunicatorTest {
 
         var ex = assertThrows(IllegalStateException.class,
                 () -> dataCommunicator.fetchFromProvider(1, 1));
-        assertThat(ex.getMessage(), CoreMatchers.containsString(
+        assertThat(ex.getMessage(), containsString(
                 "The data provider hasn't ever called getOffset() or getPage()"));
     }
 
@@ -409,7 +409,7 @@ public class DataCommunicatorTest {
         var ex = assertThrows(IllegalStateException.class,
                 () -> stream.forEach(item -> {
                 }));
-        assertThat(ex.getMessage(), CoreMatchers.containsString(
+        assertThat(ex.getMessage(), containsString(
                 "exceeds the limit specified by the query (4)."));
     }
 
@@ -863,7 +863,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataCommunicator.getItem(-1));
-        assertTrue(ex.getMessage().contains("Index must be non-negative"));
+        assertThat(ex.getMessage(),
+                containsString("Index must be non-negative"));
     }
 
     @ParameterizedTest
@@ -881,8 +882,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataCommunicator.getItem(0));
-        assertTrue(
-                ex.getMessage().contains("Requested index 0 on empty data."));
+        assertThat(ex.getMessage(),
+                containsString("Requested index 0 on empty data."));
     }
 
     @ParameterizedTest
@@ -900,7 +901,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataCommunicator.getItem(3));
-        assertTrue(ex.getMessage().contains(
+        assertThat(ex.getMessage(), containsString(
                 "Given index 3 is outside of the accepted range '0 - 2'"));
     }
 
@@ -1081,7 +1082,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         var ex = assertThrows(IndexOutOfBoundsException.class,
                 () -> dataCommunicator.getItem(-1));
-        assertTrue(ex.getMessage().contains("Index must be non-negative"));
+        assertThat(ex.getMessage(),
+                containsString("Index must be non-negative"));
     }
 
     @ParameterizedTest

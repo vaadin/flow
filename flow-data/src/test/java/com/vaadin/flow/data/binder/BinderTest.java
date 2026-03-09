@@ -2230,7 +2230,7 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         var ex = assertThrows(IllegalStateException.class,
                 () -> binder.readBean(new AtomicReference<>()));
-        assertTrue(ex.getMessage().contains("null representation"));
+        assertThat(ex.getMessage(), containsString("null representation"));
         assertInstanceOf(NullPointerException.class, ex.getCause());
     }
 
@@ -2243,7 +2243,7 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         var ex = assertThrows(IllegalArgumentException.class, () -> binder
                 .readBean(new AtomicReference<>(Integer.valueOf(42))));
-        assertTrue(ex.getMessage().contains("42"));
+        assertThat(ex.getMessage(), containsString("42"));
     }
 
     @Test
