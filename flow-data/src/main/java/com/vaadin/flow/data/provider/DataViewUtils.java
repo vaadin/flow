@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -169,17 +170,16 @@ public final class DataViewUtils {
     }
 
     /**
-     * Binds a signal containing a list of item signals to a component, enabling
-     * fine-grained reactive updates. This is a helper method used by
-     * {@link HasDataView#bindItems(Signal)}.
+     * Binds a signal containing a list of item signals to a {@link HasDataView}
+     * component, enabling fine-grained reactive updates.
      *
      * @param hasDataView
-     *            the component that implements HasDataView, not {@code null}
+     *            the component that implements HasDataView not {@code null}
      * @param itemsSignal
      *            the signal containing a list of item signals, not {@code null}
      * @param dataProviderSetter
-     *            function that sets the data provider and returns a DataView,
-     *            not {@code null}
+     *            the function that sets the generated data provider and returns
+     *            a DataView object, not {@code null}
      * @param <T>
      *            item type
      * @param <V>
@@ -194,7 +194,8 @@ public final class DataViewUtils {
             HasDataView<T, ?, V> hasDataView,
             Signal<? extends List<? extends Signal<T>>> itemsSignal,
             SerializableFunction<List<T>, V> dataProviderSetter) {
-        Objects.requireNonNull(hasDataView, "HasDataView cannot be null");
+        Objects.requireNonNull(hasDataView,
+                "HasDataView component cannot be null");
         Objects.requireNonNull(itemsSignal, "Items signal cannot be null");
         Objects.requireNonNull(dataProviderSetter,
                 "Data provider setter cannot be null");
@@ -204,6 +205,71 @@ public final class DataViewUtils {
                     "bindItems can only be used with Component instances");
         }
 
+        return bindItemsInternal(component, itemsSignal, dataProviderSetter);
+    }
+
+    /**
+     * Binds a signal containing a list of item signals to a
+     * {@link HasDataProvider} component, enabling fine-grained reactive
+     * updates.
+     *
+     * @param hasDataProvider
+     *            the component that implements HasDataProvider, not
+     *            {@code null}
+     * @param itemsSignal
+     *            the signal containing a list of item signals, not {@code null}
+     * @param <T>
+     *            item type
+     * @throws IllegalArgumentException
+     *             if hasDataProvider is not a Component instance
+     * @throws BindingActiveException
+     *             if there is already an active items binding
+     */
+    public static <T> void bindItems(HasDataProvider<T> hasDataProvider,
+            Signal<? extends List<? extends Signal<T>>> itemsSignal) {
+        Objects.requireNonNull(hasDataProvider,
+                "HasDataProvider component cannot be null");
+        Objects.requireNonNull(itemsSignal, "Items signal cannot be null");
+
+        if (!(hasDataProvider instanceof Component component)) {
+            throw new IllegalArgumentException(
+                    "bindItems can only be used with Component instances");
+        }
+
+        bindItemsInternal(component, itemsSignal, items -> {
+            ListDataProvider<T> dataProvider = DataProvider.ofCollection(items);
+            hasDataProvider.setDataProvider(dataProvider);
+            // a dummy implementation of data view for just to delegate items
+            // refresh to the backed data provider
+            return new AbstractListDataView<T>(() -> dataProvider, component,
+                    (filter, comparator) -> {
+                    }) {
+            };
+        });
+    }
+
+    /**
+     * Internal implementation for binding items to a component with reactive
+     * updates.
+     *
+     * @param component
+     *            the component to bind to
+     * @param itemsSignal
+     *            the signal containing a list of item signals
+     * @param dataProviderSetter
+     *            function that sets the data provider and returns a DataView
+     * @param <T>
+     *            item type
+     * @param <V>
+     *            DataView type
+     * @return the DataView providing access to the items
+     * @throws BindingActiveException
+     *             if there is already an active items binding
+     */
+    private static <T, V extends DataView<T>> V bindItemsInternal(
+            Component component,
+            Signal<? extends List<? extends Signal<T>>> itemsSignal,
+            SerializableFunction<List<T>, V> dataProviderSetter) {
         // Check if there's already an active binding
         SignalBindingFeature bindingFeature = component.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -219,6 +285,36 @@ public final class DataViewUtils {
         // Create and set the data provider using the provided setter
         V dataView = dataProviderSetter.apply(backingList);
 
+        setupItemsEffect(component, itemsSignal, backingList,
+                dataView::refreshAll, dataView::refreshItem);
+
+        // Store the binding in SignalBindingFeature to track active binding
+        bindingFeature.setBinding(SignalBindingFeature.ITEMS, itemsSignal);
+
+        return dataView;
+    }
+
+    /**
+     * Internal implementation for setting up the effect to track changes in the
+     * items signal.
+     *
+     * @param component
+     *            the component to bind to
+     * @param itemsSignal
+     *            the signal containing a list of item signals
+     * @param backingList
+     *            the backing list to update
+     * @param refreshAll
+     *            callback to refresh all items
+     * @param refreshItem
+     *            callback to refresh a single item
+     * @param <T>
+     *            item type
+     */
+    private static <T> void setupItemsEffect(Component component,
+            Signal<? extends List<? extends Signal<T>>> itemsSignal,
+            List<T> backingList, Runnable refreshAll,
+            SerializableConsumer<T> refreshItem) {
         // List to store inner effect registrations
         List<Registration> innerEffectRegistrations = new ArrayList<>();
 
@@ -235,17 +331,51 @@ public final class DataViewUtils {
             updateBackingList(currentSignals, backingList);
 
             // Refresh all data
-            dataView.refreshAll();
+            refreshAll.run();
 
             // Set up new inner effects for each signal
-            createInnerEffects(component, currentSignals, backingList, dataView,
-                    innerEffectRegistrations);
+            for (int i = 0; i < currentSignals.size(); i++) {
+                Signal<T> itemSignal = currentSignals.get(i);
+                Registration innerEffect = createItemEffect(component,
+                        itemSignal, i, backingList, refreshItem);
+                innerEffectRegistrations.add(innerEffect);
+            }
         });
+    }
 
-        // Store the binding in SignalBindingFeature to track active binding
-        bindingFeature.setBinding(SignalBindingFeature.ITEMS, itemsSignal);
+    /**
+     * Creates an effect for a single item signal that updates the backing list
+     * and refreshes the item when it changes. Skips the first execution to
+     * avoid redundant refresh after refreshAll.
+     *
+     * @param component
+     *            the component to bind the effect to
+     * @param itemSignal
+     *            the signal for a single item
+     * @param index
+     *            the index of the item in the backing list
+     * @param backingList
+     *            the backing list to update
+     * @param refreshItem
+     *            callback to refresh the item
+     * @param <T>
+     *            item type
+     * @return the registration for the effect
+     */
+    private static <T> Registration createItemEffect(Component component,
+            Signal<T> itemSignal, int index, List<T> backingList,
+            SerializableConsumer<T> refreshItem) {
+        return Signal.effect(component, context -> {
+            // register a dependency on the initial run
+            T newValue = itemSignal.get();
 
-        return dataView;
+            // Skip refreshItem on the first run since refreshAll was just
+            // called
+            if (!context.isInitialRun()) {
+                backingList.set(index, newValue);
+                refreshItem.accept(newValue);
+            }
+        });
     }
 
     /**
@@ -267,75 +397,4 @@ public final class DataViewUtils {
         }
     }
 
-    /**
-     * Creates inner effects for each item signal to track individual item
-     * changes.
-     *
-     * @param component
-     *            the component to bind effects to
-     * @param currentSignals
-     *            list of signals containing item values
-     * @param backingList
-     *            the backing list to update
-     * @param dataView
-     *            the data view to refresh
-     * @param innerEffectRegistrations
-     *            list to store the effect registrations
-     * @param <T>
-     *            item type
-     * @param <V>
-     *            DataView type
-     */
-    private static <T, V extends DataView<T>> void createInnerEffects(
-            Component component, List<? extends Signal<T>> currentSignals,
-            List<T> backingList, V dataView,
-            List<Registration> innerEffectRegistrations) {
-        for (int i = 0; i < currentSignals.size(); i++) {
-            Signal<T> itemSignal = currentSignals.get(i);
-
-            Registration innerEffect = createItemEffect(component, itemSignal,
-                    i, backingList, dataView);
-
-            innerEffectRegistrations.add(innerEffect);
-        }
-    }
-
-    /**
-     * Creates an effect for a single item signal that updates the backing list
-     * and refreshes the item when it changes. Skips the first execution to
-     * avoid redundant refresh after refreshAll.
-     *
-     * @param component
-     *            the component to bind the effect to
-     * @param itemSignal
-     *            the signal for a single item
-     * @param index
-     *            the index of the item in the backing list
-     * @param backingList
-     *            the backing list to update
-     * @param dataView
-     *            the data view to refresh
-     * @param <T>
-     *            item type
-     * @param <V>
-     *            DataView type
-     * @return the registration for the effect
-     */
-    private static <T, V extends DataView<T>> Registration createItemEffect(
-            Component component, Signal<T> itemSignal, int index,
-            List<T> backingList, V dataView) {
-        // Track whether this is the first run of the effect
-        AtomicBoolean isFirstRun = new AtomicBoolean(true);
-        return Signal.effect(component, () -> {
-            T newValue = itemSignal.get();
-
-            // Skip refreshItem on the first run since refreshAll was just
-            // called
-            if (!isFirstRun.get()) {
-                backingList.set(index, newValue);
-                dataView.refreshItem(newValue);
-            }
-            isFirstRun.set(false);
-        });
-    }
 }
