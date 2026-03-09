@@ -18,8 +18,7 @@ package com.vaadin.base.devserver.hotswap;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -28,17 +27,19 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class HotswapEventTest {
+class HotswapEventTest {
 
     private final VaadinService service = new MockVaadinServletService(false);
 
     @Test
-    public void merge_reloadThenRefresh_keepsReload() {
+    void merge_reloadThenRefresh_keepsReload() {
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
         event1.triggerUpdate(UIUpdateStrategy.RELOAD);
@@ -48,11 +49,11 @@ public class HotswapEventTest {
         event2.triggerUpdate(UIUpdateStrategy.REFRESH);
 
         event1.merge(event2);
-        Assert.assertTrue(event1.requiresPageReload());
+        assertTrue(event1.requiresPageReload());
     }
 
     @Test
-    public void merge_refreshThenReload_keepsReload() {
+    void merge_refreshThenReload_keepsReload() {
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
         event1.triggerUpdate(UIUpdateStrategy.REFRESH);
@@ -62,11 +63,11 @@ public class HotswapEventTest {
         event2.triggerUpdate(UIUpdateStrategy.RELOAD);
 
         event1.merge(event2);
-        Assert.assertTrue(event1.requiresPageReload());
+        assertTrue(event1.requiresPageReload());
     }
 
     @Test
-    public void merge_unsetThenUIRefresh_keepsRefresh() {
+    void merge_unsetThenUIRefresh_keepsRefresh() {
         UI ui = new MockUI();
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
@@ -77,12 +78,12 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        assertTrue(strategy.isPresent());
+        assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
     }
 
     @Test
-    public void merge_uiRefreshThenUnset_keepsRefresh() {
+    void merge_uiRefreshThenUnset_keepsRefresh() {
         UI ui = new MockUI();
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
@@ -93,12 +94,12 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
+        assertTrue(strategy.isPresent());
+        assertEquals(UIUpdateStrategy.REFRESH, strategy.get());
     }
 
     @Test
-    public void merge_uiReloadThenUIRefresh_keepsReload() {
+    void merge_uiReloadThenUIRefresh_keepsReload() {
         UI ui = new MockUI();
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
@@ -110,12 +111,12 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        assertTrue(strategy.isPresent());
+        assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
     }
 
     @Test
-    public void merge_uiRefreshThenUiReload_keepsReload() {
+    void merge_uiRefreshThenUiReload_keepsReload() {
         UI ui = new MockUI();
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
@@ -127,12 +128,12 @@ public class HotswapEventTest {
 
         event1.merge(event2);
         Optional<UIUpdateStrategy> strategy = event1.getUIUpdateStrategy(ui);
-        Assert.assertTrue(strategy.isPresent());
-        Assert.assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
+        assertTrue(strategy.isPresent());
+        assertEquals(UIUpdateStrategy.RELOAD, strategy.get());
     }
 
     @Test
-    public void merge_updateCommands_keepAll() {
+    void merge_updateCommands_keepAll() {
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
 
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
