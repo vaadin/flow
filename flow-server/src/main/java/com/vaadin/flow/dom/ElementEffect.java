@@ -217,12 +217,13 @@ public final class ElementEffect implements Serializable {
 
     private void enableEffect(Element owner) {
         if (effect != null) {
-            // Re-activating after passivation
             effect.activate();
-            return;
+        } else {
+            createEffect(owner);
         }
+    }
 
-        // One-time initialization
+    private void createEffect(Element owner) {
         Component parentComponent = ComponentUtil.findParentComponent(owner)
                 .get();
         UI ui = parentComponent.getUI().get();
