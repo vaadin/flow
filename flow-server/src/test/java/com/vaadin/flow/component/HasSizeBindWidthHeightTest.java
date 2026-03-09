@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -376,5 +381,51 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         assertEquals("100%", component.getHeight());
         assertEquals("", component.getElement()
                 .getAttribute(Constants.ATTRIBUTE_HEIGHT_FULL));
+    }
+
+    @Test
+    public void bindWidth_onChange_receivesBindingContext() {
+        HasSizeComponent component = new HasSizeComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("200px");
+        List<BindingContext<?>> contexts = new ArrayList<>();
+
+        component.bindWidth(signal).onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set("300px");
+
+        assertEquals(1, contexts.size());
+        BindingContext<?> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("200px", ctx.getOldValue());
+        assertEquals("300px", ctx.getNewValue());
+        assertEquals(component.getElement(), ctx.getElement());
+    }
+
+    @Test
+    public void bindHeight_onChange_receivesBindingContext() {
+        HasSizeComponent component = new HasSizeComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("200px");
+        List<BindingContext<?>> contexts = new ArrayList<>();
+
+        component.bindHeight(signal).onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set("300px");
+
+        assertEquals(1, contexts.size());
+        BindingContext<?> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("200px", ctx.getOldValue());
+        assertEquals("300px", ctx.getNewValue());
+        assertEquals(component.getElement(), ctx.getElement());
     }
 }

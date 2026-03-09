@@ -145,6 +145,19 @@ public class StagedTransaction extends Transaction {
      */
     private boolean committing = false;
 
+    /**
+     * Checks whether this transaction is currently in its commit phase,
+     * publishing changes and notifying listeners. During the commit phase, the
+     * transaction is no longer accepting user commands and should not be
+     * considered an active explicit transaction for the purpose of local signal
+     * precondition checks.
+     *
+     * @return {@code true} if this transaction is committing
+     */
+    public boolean isCommitting() {
+        return committing;
+    }
+
     private final Transaction outer;
 
     /**

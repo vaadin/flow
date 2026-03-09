@@ -1167,7 +1167,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             }
 
             // Sync locale field from signal for serialization
-            locale = localeSignal.get();
+            locale = localeSignal.peek();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);
