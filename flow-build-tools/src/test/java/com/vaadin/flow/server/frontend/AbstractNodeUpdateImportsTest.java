@@ -63,16 +63,14 @@ abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @BeforeEach
     void setup() throws Exception {
-        File tmpRoot = temporaryFolder;
-
         logger = new MockLogger();
 
-        frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
-        nodeModulesPath = new File(tmpRoot, NODE_MODULES);
+        frontendDirectory = new File(temporaryFolder, DEFAULT_FRONTEND_DIR);
+        nodeModulesPath = new File(temporaryFolder, NODE_MODULES);
         importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         ClassFinder classFinder = getClassFinder();
-        Options options = new MockOptions(classFinder, tmpRoot)
+        Options options = new MockOptions(classFinder, temporaryFolder)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true)
                 .withBundleBuild(true);

@@ -33,12 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ProdBundleUtilsTest {
 
     @TempDir
-    File temporaryFolder;
+    File projectBase;
 
     @Test
     void compressProdBundle_decompressProdBundle_filesHasSameHash()
             throws IOException {
-        File projectBase = temporaryFolder;
         File prodFolder = new File(projectBase,
                 "target/classes/META-INF/VAADIN");
         prodFolder.mkdirs();

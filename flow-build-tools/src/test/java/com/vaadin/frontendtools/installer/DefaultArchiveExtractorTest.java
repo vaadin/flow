@@ -134,10 +134,10 @@ class DefaultArchiveExtractorTest {
             zipOutputStream.closeEntry();
         }
 
+        DefaultArchiveExtractor extractor = new DefaultArchiveExtractor();
         ArchiveExtractionException archiveExtractionException = assertThrows(
                 ArchiveExtractionException.class,
-                () -> new DefaultArchiveExtractor().extract(archiveFile,
-                        targetDir));
+                () -> extractor.extract(archiveFile, targetDir));
 
         assertEquals("Entry is outside of the target dir: ../root.file",
                 archiveExtractionException.getCause().getMessage());

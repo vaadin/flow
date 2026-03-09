@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -462,7 +461,7 @@ class TaskRunNpmInstallTest {
 
     // https://github.com/vaadin/flow/issues/17663
     @Test
-    @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(30)
     void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
             throws ExecutionFailedException, IOException {
         setupEsbuildAndFooInstallation();
