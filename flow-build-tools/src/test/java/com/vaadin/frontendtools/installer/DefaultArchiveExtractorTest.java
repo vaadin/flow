@@ -114,9 +114,9 @@ class DefaultArchiveExtractorTest {
             o.closeArchiveEntry();
         }
 
+        DefaultArchiveExtractor extractor = new DefaultArchiveExtractor();
         assertThrows(ArchiveExtractionException.class,
-                () -> new DefaultArchiveExtractor().extract(archiveFile,
-                        targetDir));
+                () -> extractor.extract(archiveFile, targetDir));
     }
 
     @Test
