@@ -1075,6 +1075,36 @@ public class ComponentTest {
     }
 
     @Test
+    public void setTestId_setsDataTestIdAttribute() {
+        TestButton button = new TestButton();
+        button.setTestId("my-button");
+        assertEquals("my-button",
+                button.getElement().getAttribute("data-testid"));
+    }
+
+    @Test
+    public void getTestId_notSet_returnsNull() {
+        TestButton button = new TestButton();
+        assertNull(button.getTestId());
+    }
+
+    @Test
+    public void getTestId_set_returnsValue() {
+        TestButton button = new TestButton();
+        button.setTestId("my-button");
+        assertEquals("my-button", button.getTestId());
+    }
+
+    @Test
+    public void setTestId_null_removesAttribute() {
+        TestButton button = new TestButton();
+        button.setTestId("my-button");
+        button.setTestId(null);
+        assertNull(button.getTestId());
+        assertNull(button.getElement().getAttribute("data-testid"));
+    }
+
+    @Test
     public void mapToExistingComponent() {
         TestButton button = new TestButton();
         assertThrows(IllegalArgumentException.class,

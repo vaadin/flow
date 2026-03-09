@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -36,6 +39,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -250,6 +254,54 @@ class SignalPropertySupportTest {
         assertEquals("foo", signalPropertySupport.get());
         UI.getCurrent().add(component);
         assertEquals("bar", signalPropertySupport.get());
+    }
+
+    @Test
+    public void bind_onChange_receivesBindingContext() {
+        var component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        signalPropertySupport.bind(signal).onChange(contexts::add);
+
+        // Initial run already happened before onChange was registered
+        assertEquals(0, contexts.size());
+
+        signal.set("updated");
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> ctx = contexts.get(0);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        assertEquals(component.getElement(), ctx.getElement());
+    }
+
+    @Test
+    public void bind_onChange_bindThenAttach() {
+        var component = new TestComponent();
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        signalPropertySupport.bind(signal).onChange(contexts::add);
+        assertEquals(0, contexts.size());
+
+        // Attach — effect runs and fires initial callback
+        UI.getCurrent().add(component);
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> initialCtx = contexts.get(0);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getNewValue());
     }
 
     @Tag("div")

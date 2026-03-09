@@ -956,4 +956,16 @@ public class BinderSignalTest extends SignalsUnitTest {
         binderSetup.accept(person);
         assertFalse(prevStatus.get());
     }
+
+    @Test
+    public void asRequired_setBeanBeforeBind_fieldNotInvalidOnAttach() {
+        var field = new TestTextField();
+        binder.setBean(item);
+        binder.forField(field).asRequired("Required field")
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        UI.getCurrent().add(field);
+
+        assertFalse(field.isInvalid());
+    }
 }

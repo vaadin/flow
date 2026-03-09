@@ -30,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -153,7 +154,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    public record SignalBinding(Signal<?> signal, Serializable value,
+    public record InternalSignalBinding(Signal<?> signal, Serializable value,
             SerializableConsumer<?> writeCallback) implements Serializable {
     }
 
@@ -439,7 +440,7 @@ public abstract class NodeMap extends NodeFeature {
             } else if (containsNow
                     && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
-                if (currentValue instanceof SignalBinding binding) {
+                if (currentValue instanceof InternalSignalBinding binding) {
                     currentValue = binding.value();
                 }
                 // New or changed value
@@ -565,24 +566,25 @@ public abstract class NodeMap extends NodeFeature {
      *             given key
      *
      */
-    protected <T extends @Nullable Object> void bindSignal(Element owner,
-            String key, Signal<T> signal,
+    protected <T extends @Nullable Object> SignalBinding<T> bindSignal(
+            Element owner, String key, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter,
             SerializableConsumer<?> writeCallback) {
         Objects.requireNonNull(signal, "Signal cannot be null");
-        SignalBinding previousSignalBinding;
-        if (doGet(key) instanceof SignalBinding binding) {
-            previousSignalBinding = binding;
+        InternalSignalBinding previousBinding;
+        if (doGet(key) instanceof InternalSignalBinding binding) {
+            previousBinding = binding;
         } else {
-            previousSignalBinding = null;
+            previousBinding = null;
         }
-        if (previousSignalBinding != null
-                && previousSignalBinding.signal() != null) {
+        if (previousBinding != null && previousBinding.signal() != null) {
             throw new BindingActiveException();
         }
 
-        ElementEffect.bind(owner, signal, setter);
-        put(key, new SignalBinding(signal, get(key), writeCallback), false);
+        SignalBinding<T> domBinding = ElementEffect.bind(owner, signal, setter);
+        put(key, new InternalSignalBinding(signal, get(key), writeCallback),
+                false);
+        return domBinding;
     }
 
     /**
@@ -593,7 +595,7 @@ public abstract class NodeMap extends NodeFeature {
      * @return true if there is an active signal binding, false otherwise
      */
     public boolean hasSignal(String key) {
-        return doGet(key) instanceof SignalBinding binding
+        return doGet(key) instanceof InternalSignalBinding binding
                 && binding.signal() != null;
     }
 }

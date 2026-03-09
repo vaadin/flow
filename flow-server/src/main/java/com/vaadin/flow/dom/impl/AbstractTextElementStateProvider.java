@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.PropertyChangeListener;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -63,8 +64,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindAttributeSignal(Element owner, String attribute,
-            Signal<String> signal) {
+    public SignalBinding<String> bindAttributeSignal(Element owner,
+            String attribute, Signal<String> signal) {
         throw new UnsupportedOperationException();
     }
 
@@ -136,8 +137,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+    public SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         throw new UnsupportedOperationException();
     }
 
@@ -206,7 +207,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         throw new UnsupportedOperationException();
     }
 
