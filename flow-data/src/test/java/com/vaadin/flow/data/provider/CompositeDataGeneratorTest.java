@@ -20,21 +20,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class CompositeDataGeneratorTest {
+class CompositeDataGeneratorTest {
 
     private static class MockDataGenerator implements DataGenerator<String> {
 
@@ -82,7 +83,7 @@ public class CompositeDataGeneratorTest {
     }
 
     @Test
-    public void generateData_innerGeneratorsAreInvoked() {
+    void generateData_innerGeneratorsAreInvoked() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock1", "value1");
@@ -96,16 +97,16 @@ public class CompositeDataGeneratorTest {
         ObjectNode json = JacksonUtils.createObjectNode();
         composite.generateData("item1", json);
 
-        Assert.assertEquals("value1", json.get("mock1").asString());
-        Assert.assertEquals("value2", json.get("mock2").asString());
-        Assert.assertEquals("value3", json.get("mock3").asString());
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertEquals("value1", json.get("mock1").asString());
+        assertEquals("value2", json.get("mock2").asString());
+        assertEquals("value3", json.get("mock3").asString());
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
     }
 
     @Test
-    public void refreshData_innerGeneratorsAreInvoked() {
+    void refreshData_innerGeneratorsAreInvoked() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock1", "value1");
@@ -118,13 +119,13 @@ public class CompositeDataGeneratorTest {
 
         composite.refreshData("item1");
 
-        Assert.assertThat(mock1.getRefreshed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getRefreshed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock3.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock1.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getRefreshed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock3.getRefreshed(), CoreMatchers.hasItem("item1"));
     }
 
     @Test
-    public void destroyData_innerGeneratorsAreInvoked() {
+    void destroyData_innerGeneratorsAreInvoked() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock1", "value1");
@@ -141,19 +142,19 @@ public class CompositeDataGeneratorTest {
         composite.refreshData("item2");
         composite.destroyData("item1");
 
-        Assert.assertThat(mock1.getProcessed(),
+        assertThat(mock1.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock2.getProcessed(),
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock2.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item2"));
-        Assert.assertThat(mock3.getProcessed(),
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock3.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item2"));
+        assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item2"));
     }
 
     @Test
-    public void destroyAllData_innerGeneratorsAreInvoked() {
+    void destroyAllData_innerGeneratorsAreInvoked() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock1", "value1");
@@ -170,13 +171,13 @@ public class CompositeDataGeneratorTest {
         composite.refreshData("item2");
         composite.destroyAllData();
 
-        Assert.assertTrue(mock1.getProcessed().isEmpty());
-        Assert.assertTrue(mock2.getProcessed().isEmpty());
-        Assert.assertTrue(mock3.getProcessed().isEmpty());
+        assertTrue(mock1.getProcessed().isEmpty());
+        assertTrue(mock2.getProcessed().isEmpty());
+        assertTrue(mock3.getProcessed().isEmpty());
     }
 
     @Test
-    public void dataGeneratorRegistration_remove_dataIsDestroyed() {
+    void dataGeneratorRegistration_remove_dataIsDestroyed() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock", "value1");
@@ -185,21 +186,21 @@ public class CompositeDataGeneratorTest {
         Registration registration2 = composite.addDataGenerator(mock2);
 
         composite.generateData("item1", JacksonUtils.createObjectNode());
-        Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration1.remove();
-        Assert.assertThat(mock1.getProcessed(),
+        assertThat(mock1.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
-        Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
+        assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
         registration2.remove();
-        Assert.assertThat(mock2.getProcessed(),
+        assertThat(mock2.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
     }
 
     @Test
-    public void addDataGenerator_orderIsPreserved() {
+    void addDataGenerator_orderIsPreserved() {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
         DataGenerator<String> dg1 = (String, ObjectNode) -> {
         };
