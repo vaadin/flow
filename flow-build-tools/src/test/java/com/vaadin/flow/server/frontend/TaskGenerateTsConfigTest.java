@@ -26,11 +26,9 @@ import java.util.Objects;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -40,25 +38,29 @@ import com.vaadin.flow.internal.MockLogger;
 
 import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
-public class TaskGenerateTsConfigTest {
+class TaskGenerateTsConfigTest {
     private static final CharSequence DEFAULT_ES_TARGET = "es2023";
     private static final CharSequence NEWER_ES_TARGET = "es2024";
 
     static private String LATEST_VERSION = "9.1";
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private File npmFolder;
     private TaskGenerateTsConfig taskGenerateTsConfig;
 
     private FeatureFlags featureFlags;
 
-    @Before
-    public void setUp() throws IOException {
-        npmFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
+                .toFile();
         featureFlags = Mockito.mock(FeatureFlags.class);
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withFeatureFlags(featureFlags);
@@ -68,33 +70,32 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_generateTsConfig_TsConfigNotExist() throws Exception {
+    void should_generateTsConfig_TsConfigNotExist() throws Exception {
         taskGenerateTsConfig.execute();
-        Assert.assertFalse(
+        assertFalse(taskGenerateTsConfig.shouldGenerate(),
                 "Should generate tsconfig.json when "
-                        + "tsconfig.json doesn't exist",
-                taskGenerateTsConfig.shouldGenerate());
-        Assert.assertTrue("The generated tsconfig.json should not exist",
-                taskGenerateTsConfig.getGeneratedFile().exists());
-        Assert.assertEquals(
-                "The generated content should be equals the default content",
-                taskGenerateTsConfig.getFileContent(),
+                        + "tsconfig.json doesn't exist");
+        assertTrue(taskGenerateTsConfig.getGeneratedFile().exists(),
+                "The generated tsconfig.json should not exist");
+        assertEquals(taskGenerateTsConfig.getFileContent(),
                 IOUtils.toString(
                         taskGenerateTsConfig.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "The generated content should be equals the default content");
     }
 
     @Test
-    public void viteShouldNotUseEs2019() throws Exception {
+    void viteShouldNotUseEs2019() throws Exception {
         taskGenerateTsConfig.execute();
-        Assert.assertFalse("The config file should not use es2019", IOUtils
+        assertFalse(IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2019\""));
+                .contains("\"target\": \"es2019\""),
+                "The config file should not use es2019");
     }
 
     @Test
-    public void viteShouldUpgradeFromEs2019() throws Exception {
+    void viteShouldUpgradeFromEs2019() throws Exception {
         // Write a file with es2019
         taskGenerateTsConfig.execute();
         String content = IOUtils.toString(
@@ -106,22 +107,22 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8)) {
             fw.write(content);
         }
-        Assert.assertTrue("The config file should use es2019", IOUtils
+        assertTrue(IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2019\""));
+                .contains("\"target\": \"es2019\""),
+                "The config file should use es2019");
         taskGenerateTsConfig.execute();
-        Assert.assertFalse(
-                "Vite should have upgraded the config file to not use es2019",
-                IOUtils.toString(
-                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+        assertFalse(IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"es2019\""));
+                .contains("\"target\": \"es2019\""),
+                "Vite should have upgraded the config file to not use es2019");
 
     }
 
     @Test
-    public void viteShouldUpgradeFromEs2020() throws Exception {
+    void viteShouldUpgradeFromEs2020() throws Exception {
         // Write a file with es2019
         taskGenerateTsConfig.execute();
         String content = IOUtils.toString(
@@ -133,22 +134,22 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8)) {
             fw.write(content);
         }
-        Assert.assertTrue("The config file should use es2020", IOUtils
+        assertTrue(IOUtils
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                .contains("\"target\": \"es2020\""));
+                .contains("\"target\": \"es2020\""),
+                "The config file should use es2020");
         taskGenerateTsConfig.execute();
-        Assert.assertFalse(
-                "Vite should have upgraded the config file to not use es2020",
-                IOUtils.toString(
-                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+        assertFalse(IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"es2020\""));
+                .contains("\"target\": \"es2020\""),
+                "Vite should have upgraded the config file to not use es2020");
 
     }
 
     @Test
-    public void viteShouldNotDowngradeFromNewerEsVersion() throws Exception {
+    void viteShouldNotDowngradeFromNewerEsVersion() throws Exception {
         // Write a file with es2020
         taskGenerateTsConfig.execute();
         String content = IOUtils.toString(
@@ -160,36 +161,34 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8)) {
             fw.write(content);
         }
-        Assert.assertTrue("The config file should use " + NEWER_ES_TARGET,
-                IOUtils.toString(
-                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+        assertTrue(IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
+                .contains("\"target\": \"" + NEWER_ES_TARGET + "\""),
+                "The config file should use " + NEWER_ES_TARGET);
         taskGenerateTsConfig.execute();
-        Assert.assertTrue("Vite should not have changed the config file",
-                IOUtils.toString(
-                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+        assertTrue(IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
-                        .contains("\"target\": \"" + NEWER_ES_TARGET + "\""));
+                .contains("\"target\": \"" + NEWER_ES_TARGET + "\""),
+                "Vite should not have changed the config file");
 
     }
 
     @Test
-    public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
+    void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Path tsconfig = Files
                 .createFile(new File(npmFolder, "tsconfig.json").toPath());
         Files.writeString(tsconfig, "text", UTF_8);
         taskGenerateTsConfig.execute();
-        Assert.assertFalse(
-                "Should not generate tsconfig.json when tsconfig.json exists",
-                taskGenerateTsConfig.shouldGenerate());
-        Assert.assertTrue("The tsconfig.json should already exist",
-                taskGenerateTsConfig.getGeneratedFile().exists());
+        assertFalse(taskGenerateTsConfig.shouldGenerate(),
+                "Should not generate tsconfig.json when tsconfig.json exists");
+        assertTrue(taskGenerateTsConfig.getGeneratedFile().exists(),
+                "The tsconfig.json should already exist");
     }
 
     @Test
-    public void tsConfigUpdated_remindsUpdateVersionAndTemplates()
-            throws IOException {
+    void tsConfigUpdated_remindsUpdateVersionAndTemplates() throws IOException {
         File tsconfig = new File(npmFolder, "tsconfig.json");
         Files.createFile(tsconfig.toPath());
         FileUtils.writeStringToFile(tsconfig, "{}", UTF_8);
@@ -207,18 +206,18 @@ public class TaskGenerateTsConfigTest {
                         .getResourceAsStream("tsconfig-reference.json")),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("tsconfig.json content has been updated. "
-                + "Please also: 1. Increment version in tsconfig.json (\"_version\" property) "
-                + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
-                + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
-                + "4. put a new content in tsconfig-reference.json in tests "
-                + "5. update LATEST_VERSION in TaskGenerateTsConfigTest",
-                testTsConfig, tsConfigLatest);
+        assertEquals(testTsConfig, tsConfigLatest,
+                "tsconfig.json content has been updated. "
+                        + "Please also: 1. Increment version in tsconfig.json (\"_version\" property) "
+                        + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
+                        + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
+                        + "4. put a new content in tsconfig-reference.json in tests "
+                        + "5. update LATEST_VERSION in TaskGenerateTsConfigTest");
 
     }
 
     @Test
-    public void tsConfigHasLatestVersion_noUpdates()
+    void tsConfigHasLatestVersion_noUpdates()
             throws IOException, ExecutionFailedException {
         File tsconfig = new File(npmFolder, "tsconfig.json");
         Files.createFile(tsconfig.toPath());
@@ -236,11 +235,11 @@ public class TaskGenerateTsConfigTest {
                         StandardCharsets.UTF_8)
                 .replace("latest", LATEST_VERSION);
 
-        Assert.assertEquals(expected, tsConfigString);
+        assertEquals(expected, tsConfigString);
     }
 
     @Test
-    public void tsConfigHasCustomCodes_updatesAndLogsWarning()
+    void tsConfigHasCustomCodes_updatesAndLogsWarning()
             throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
@@ -253,13 +252,13 @@ public class TaskGenerateTsConfigTest {
             taskGenerateTsConfig.execute();
         }
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
-        Assert.assertTrue(tsConfigString.contains(
+        assertTrue(tsConfigString.contains(
                 "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
-        Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+        assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
     }
 
     @Test
-    public void warningIsLoggedOnlyOncePerRun()
+    void warningIsLoggedOnlyOncePerRun()
             throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
@@ -270,32 +269,32 @@ public class TaskGenerateTsConfigTest {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsConfig.execute();
-            Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+            assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
             logger.clearLogs();
             tsconfig.delete();
             writeTestTsConfigContent("tsconfig-custom-content.json");
             taskGenerateTsConfig.execute();
-            Assert.assertFalse(logger.getLogs().contains(ERROR_MESSAGE));
+            assertFalse(logger.getLogs().contains(ERROR_MESSAGE));
         }
     }
 
     @Test
-    public void defaultTsConfig_updatesSilently()
+    void defaultTsConfig_updatesSilently()
             throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent("tsconfig-default.json");
         taskGenerateTsConfig.execute();
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
-        Assert.assertTrue(tsConfigString.contains(
+        assertTrue(tsConfigString.contains(
                 "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
     }
 
     @Test
-    public void olderTsConfig_updatesSilently()
+    void olderTsConfig_updatesSilently()
             throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent("tsconfig-older.json");
         taskGenerateTsConfig.execute();
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
-        Assert.assertTrue(tsConfigString.contains(
+        assertTrue(tsConfigString.contains(
                 "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
     }
 
@@ -311,13 +310,13 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void testIsOlder() {
-        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2019", "es2020"));
-        Assert.assertTrue(TaskGenerateTsConfig.isOlder("es2020", "es2021"));
-        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2020"));
-        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2019"));
-        Assert.assertFalse(TaskGenerateTsConfig.isOlder("es2021", "es2019"));
+    void testIsOlder() {
+        assertTrue(TaskGenerateTsConfig.isOlder("es2019", "es2020"));
+        assertTrue(TaskGenerateTsConfig.isOlder("es2020", "es2021"));
+        assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2020"));
+        assertFalse(TaskGenerateTsConfig.isOlder("es2020", "es2019"));
+        assertFalse(TaskGenerateTsConfig.isOlder("es2021", "es2019"));
 
-        Assert.assertTrue(TaskGenerateTsConfig.isOlder("2019", "2021"));
+        assertTrue(TaskGenerateTsConfig.isOlder("2019", "2021"));
     }
 }

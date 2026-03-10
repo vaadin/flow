@@ -17,16 +17,17 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 
-public class HierarchicalDataCommunicatorDataGenerationTest
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class HierarchicalDataCommunicatorDataGenerationTest
         extends AbstractHierarchicalDataCommunicatorTest {
     private TreeData<Item> treeData = new TreeData<>();
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
@@ -37,8 +38,8 @@ public class HierarchicalDataCommunicatorDataGenerationTest
     @Mock
     private DataGenerator<Item> dataGenerator;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         super.init();
 
         var compositeDataGenerator = new CompositeDataGenerator<Item>();
@@ -53,16 +54,15 @@ public class HierarchicalDataCommunicatorDataGenerationTest
         Mockito.doAnswer((invocation) -> {
             Item item = invocation.getArgument(0);
 
-            Assert.assertTrue(
-                    "Item should be in keyMapper when generateData is called",
-                    dataCommunicator.getKeyMapper().has(item));
+            assertTrue(dataCommunicator.getKeyMapper().has(item),
+                    "Item should be in keyMapper when generateData is called");
 
             return null;
         }).when(dataGenerator).destroyData(Mockito.any());
     }
 
     @Test
-    public void changeViewportRangeBackAndForth_generateDataCalledForVisibleItems() {
+    void changeViewportRangeBackAndForth_generateDataCalledForVisibleItems() {
         populateTreeData(treeData, 100, 2);
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 4);
@@ -95,7 +95,7 @@ public class HierarchicalDataCommunicatorDataGenerationTest
     }
 
     @Test
-    public void changeViewportRangeBackAndForth_destroyDataCalledForNoLongerVisibleItemsAfterConfirmation() {
+    void changeViewportRangeBackAndForth_destroyDataCalledForNoLongerVisibleItemsAfterConfirmation() {
         populateTreeData(treeData, 100, 2);
         dataCommunicator.expand(new Item("Item 0"));
 
@@ -145,7 +145,7 @@ public class HierarchicalDataCommunicatorDataGenerationTest
     }
 
     @Test
-    public void collapseItems_destroyDataCalledForCollapsedChildrenInKeyMapper() {
+    void collapseItems_destroyDataCalledForCollapsedChildrenInKeyMapper() {
         populateTreeData(treeData, 4, 2, 2);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));

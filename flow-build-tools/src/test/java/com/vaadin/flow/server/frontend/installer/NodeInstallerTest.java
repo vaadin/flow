@@ -28,11 +28,9 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -41,21 +39,24 @@ import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.frontend.FrontendTools;
 
 import static com.vaadin.flow.internal.Platform.ALPINE_RELEASE_FILE_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NodeInstallerTest {
+class NodeInstallerTest {
 
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    File tmpDir;
 
     private String baseDir;
 
-    @Before
-    public void setup() {
-        baseDir = tmpDir.getRoot().getAbsolutePath();
+    @BeforeEach
+    void setup() {
+        baseDir = tmpDir.getAbsolutePath();
     }
 
     @Test
-    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
+    void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
             throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
@@ -66,10 +67,10 @@ public class NodeInstallerTest {
 
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse(
-                "Clean test should not contain a installation folder",
-                targetDir.exists());
-        File downloadDir = tmpDir.newFolder(FrontendTools.DEFAULT_NODE_VERSION);
+        assertFalse(targetDir.exists(),
+                "Clean test should not contain a installation folder");
+        File downloadDir = new File(tmpDir, FrontendTools.DEFAULT_NODE_VERSION);
+        downloadDir.mkdirs();
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
@@ -93,7 +94,8 @@ public class NodeInstallerTest {
         } else {
             // Create actual temp directory structure to create proper archive
             // entries
-            File tempDir = tmpDir.newFolder("archiveContent");
+            File tempDir = new File(tmpDir, "archiveContent");
+            tempDir.mkdirs();
             File nodeDir = new File(tempDir, prefix);
             File binDir = new File(nodeDir, "bin");
             File libDir = new File(nodeDir, "lib");
@@ -162,17 +164,17 @@ public class NodeInstallerTest {
         String nodeInstallPath = platform.isWindows()
                 ? versionedNodeDir + "/" + nodeExec
                 : versionedNodeDir + "/bin/" + nodeExec;
-        Assert.assertTrue("node should have been installed",
-                new File(targetDir, nodeInstallPath).exists());
+        assertTrue(new File(targetDir, nodeInstallPath).exists(),
+                "node should have been installed");
         String npmInstallPath = platform.isWindows()
                 ? versionedNodeDir + "/node_modules/npm/bin/npm"
                 : versionedNodeDir + "/lib/node_modules/npm/bin/npm";
-        Assert.assertTrue("npm should have been copied to node_modules",
-                new File(targetDir, npmInstallPath).exists());
+        assertTrue(new File(targetDir, npmInstallPath).exists(),
+                "npm should have been copied to node_modules");
         String npmBinPath = platform.isWindows() ? versionedNodeDir + "/npm.cmd"
                 : versionedNodeDir + "/bin/npm";
-        Assert.assertTrue("npm should be available in bin",
-                new File(targetDir, npmBinPath).exists());
+        assertTrue(new File(targetDir, npmBinPath).exists(),
+                "npm should be available in bin");
         // Note: old installation cleanup is verified by the fact that the
         // entire
         // installation directory is deleted and replaced with the new
@@ -180,7 +182,7 @@ public class NodeInstallerTest {
     }
 
     @Test
-    public void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
+    void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
         try (MockedStatic<Platform.OS> os = Mockito
                 .mockStatic(Platform.OS.class);
                 MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
@@ -194,55 +196,55 @@ public class NodeInstallerTest {
                     .thenReturn(true);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
+            assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
             FrontendVersion frontendVersion = Mockito
                     .mock(FrontendVersion.class);
-            Assert.assertTrue(platform.getNodeClassifier(frontendVersion)
+            assertTrue(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
     }
 
     @Test
-    public void testGuess_whenOsIsLinuxAndAlpineReleaseFileDoesNotExist_officialNodeDownloadPathReturned() {
+    void testGuess_whenOsIsLinuxAndAlpineReleaseFileDoesNotExist_officialNodeDownloadPathReturned() {
         try (MockedStatic<Platform.OS> os = Mockito
                 .mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
             FrontendVersion frontendVersion = Mockito
                     .mock(FrontendVersion.class);
-            Assert.assertFalse(platform.getNodeClassifier(frontendVersion)
+            assertFalse(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
     }
 
     @Test
-    public void testGuess_whenOsIsAnythingOtherThanLinuxAlpineRelease_officialNodeDownloadPathReturned() {
+    void testGuess_whenOsIsAnythingOtherThanLinuxAlpineRelease_officialNodeDownloadPathReturned() {
         try (MockedStatic<Platform.OS> os = Mockito
                 .mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.WINDOWS);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.MAC);
 
             platform = Platform.guess();
-            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.SUN_OS);
 
             platform = Platform.guess();
-            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
         }
     }

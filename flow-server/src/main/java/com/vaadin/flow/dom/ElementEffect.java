@@ -56,8 +56,8 @@ import com.vaadin.flow.signals.impl.Effect;
  */
 public final class ElementEffect implements Serializable {
     private final ContextualEffectAction effectFunction;
-    private boolean closed = false;
     private Effect effect = null;
+    private Registration attachRegistration;
     private Registration detachRegistration;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
@@ -69,7 +69,7 @@ public final class ElementEffect implements Serializable {
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
-        owner.addAttachListener(attach -> {
+        attachRegistration = owner.addAttachListener(attach -> {
             enableEffect(attach.getSource());
 
             detachRegistration = owner.addDetachListener(detach -> {
@@ -216,10 +216,14 @@ public final class ElementEffect implements Serializable {
     }
 
     private void enableEffect(Element owner) {
-        if (closed) {
-            return;
+        if (effect != null) {
+            effect.activate();
+        } else {
+            createEffect(owner);
         }
+    }
 
+    private void createEffect(Element owner) {
         Component parentComponent = ComponentUtil.findParentComponent(owner)
                 .get();
         UI ui = parentComponent.getUI().get();
@@ -233,7 +237,6 @@ public final class ElementEffect implements Serializable {
             }
         };
 
-        assert effect == null;
         effect = new Effect(errorHandlingEffectFunction, command -> {
             if (UI.getCurrent() == ui) {
                 // Run immediately if on the same UI
@@ -255,14 +258,23 @@ public final class ElementEffect implements Serializable {
 
     private void disableEffect() {
         if (effect != null) {
-            effect.dispose();
-            effect = null;
+            effect.passivate();
         }
     }
 
     public void close() {
-        disableEffect();
-        closed = true;
+        if (effect != null) {
+            effect.dispose();
+            effect = null;
+        }
+        if (attachRegistration != null) {
+            attachRegistration.remove();
+            attachRegistration = null;
+        }
+        if (detachRegistration != null) {
+            detachRegistration.remove();
+            detachRegistration = null;
+        }
     }
 
     /**

@@ -15,8 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -25,48 +24,52 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-public class BrowserLiveReloadAccessorImplTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class BrowserLiveReloadAccessorImplTest {
 
     private BrowserLiveReloadAccessorImpl access = new BrowserLiveReloadAccessorImpl();
 
     @Test
-    public void getLiveReload_productionMode_nullIsReturned() {
+    void getLiveReload_productionMode_nullIsReturned() {
         VaadinService service = mockConfiguration(true, false);
 
-        Assert.assertNull(access.getLiveReload(service));
+        assertNull(access.getLiveReload(service));
     }
 
     @Test
-    public void getLiveReload_liveReloadDisabled_instanceIsCreated() {
+    void getLiveReload_liveReloadDisabled_instanceIsCreated() {
         VaadinService service = mockConfiguration(false, false);
         VaadinContext context = service.getContext();
         Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
                 Mockito.any()))
                 .thenReturn(Mockito.mock(BrowserLiveReload.class));
 
-        Assert.assertNotNull(access.getLiveReload(service));
+        assertNotNull(access.getLiveReload(service));
     }
 
     @Test
-    public void getLiveReload_devMode_contextHasNoReloadInstance_instanceIsCreated() {
+    void getLiveReload_devMode_contextHasNoReloadInstance_instanceIsCreated() {
         VaadinService service = mockConfiguration(false, true);
         VaadinContext context = service.getContext();
         Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
                 Mockito.any()))
                 .thenReturn(Mockito.mock(BrowserLiveReload.class));
 
-        Assert.assertNotNull(access.getLiveReload(service));
+        assertNotNull(access.getLiveReload(service));
     }
 
     @Test
-    public void getLiveReload_devMode_contextHasReloadInstance_instanceIsReturned() {
+    void getLiveReload_devMode_contextHasReloadInstance_instanceIsReturned() {
         VaadinService service = mockConfiguration(false, true);
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
         Mockito.when(service.getContext().getAttribute(
                 Mockito.eq(BrowserLiveReload.class), Mockito.any()))
                 .thenReturn(reload);
 
-        Assert.assertSame(reload, access.getLiveReload(service));
+        assertSame(reload, access.getLiveReload(service));
     }
 
     private VaadinService mockConfiguration(boolean productionMode,
