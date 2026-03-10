@@ -471,6 +471,81 @@ class ElementEffectTest {
     }
 
     @Test
+    public void effect_reattachWithoutChanges_effectNotReRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get(), "Effect should run on attach");
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(1, count.get(),
+                "Effect should not re-run on reattach when nothing changed");
+
+        signal.set("changed");
+        assertEquals(2, count.get(),
+                "Effect should still respond to changes after reattach");
+    }
+
+    @Test
+    public void effect_reattachWithChanges_effectReRunWithInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        signal.set("update");
+        assertEquals(List.of(true, false), initialRuns);
+
+        ui.remove(component);
+        signal.set("changed while detached");
+        ui.add(component);
+        assertEquals(List.of(true, false, true), initialRuns,
+                "Reattach with changes should run with isInitialRun=true");
+    }
+
+    @Test
+    public void effect_reattachWithoutChanges_nextChangeNotInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns,
+                "No re-run on reattach without changes");
+
+        signal.set("changed after reattach");
+        assertEquals(List.of(true, false), initialRuns,
+                "Normal change after reattach should not be initial run");
+    }
+
+    @Test
     public void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
