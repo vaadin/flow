@@ -24,11 +24,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
@@ -40,43 +38,46 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskUpdateViteTest {
+class TaskUpdateViteTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private ClassFinder finder;
 
     private Options options;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        options = new MockOptions(finder, temporaryFolder.getRoot())
+        options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory("build");
     }
 
     @Test
-    public void generatedTemplate_correctSettingsPath() throws IOException {
+    void generatedTemplate_correctSettingsPath() throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
-        File configFile = new File(temporaryFolder.getRoot(),
+        File configFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertTrue("Settings file folder was not correctly updated.",
-                template.contains("./build/" + DEV_SETTINGS_FILE));
+        assertTrue(template.contains("./build/" + DEV_SETTINGS_FILE),
+                "Settings file folder was not correctly updated.");
     }
 
     @Test
-    public void configFileExists_fileNotOverwritten() throws IOException {
-        File configFile = new File(temporaryFolder.getRoot(),
-                FrontendUtils.VITE_CONFIG);
+    void configFileExists_fileNotOverwritten() throws IOException {
+        File configFile = new File(temporaryFolder, FrontendUtils.VITE_CONFIG);
         final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
@@ -85,14 +86,13 @@ public class TaskUpdateViteTest {
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Settings file content was changed", importString,
-                template);
+        assertEquals(importString, template,
+                "Settings file content was changed");
     }
 
     @Test
-    public void generatedConfigFileExists_alwaysOverwritten()
-            throws IOException {
-        File generatedConfigFile = new File(temporaryFolder.getRoot(),
+    void generatedConfigFileExists_alwaysOverwritten() throws IOException {
+        File generatedConfigFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
         final String importString = "Hello Fake generated configuration";
         FileUtils.write(generatedConfigFile, importString,
@@ -103,30 +103,29 @@ public class TaskUpdateViteTest {
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertNotEquals("Generated file should have been overwritten",
-                importString, template);
+        assertNotEquals(importString, template,
+                "Generated file should have been overwritten");
     }
 
     @Test
-    public void usedSettings_matchThoseCreatedToSettingsFile()
-            throws IOException {
+    void usedSettings_matchThoseCreatedToSettingsFile() throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
-        File generatedConfigFile = new File(temporaryFolder.getRoot(),
+        File generatedConfigFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
         options.withFrontendDirectory(
-                temporaryFolder.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR))
+                new File(temporaryFolder, FrontendUtils.DEFAULT_FRONTEND_DIR))
                 .withBuildDirectory("target").withJarFrontendResourcesFolder(
-                        temporaryFolder.newFolder("resources"));
+                        new File(temporaryFolder, "resources"));
 
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 options, "theme", new PwaConfiguration());
         updateSettings.execute();
-        File settings = new File(temporaryFolder.getRoot(),
+        File settings = new File(temporaryFolder,
                 "target/" + DEV_SETTINGS_FILE);
         ObjectNode settingsJson = JacksonUtils.readTree(
                 IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
@@ -140,14 +139,13 @@ public class TaskUpdateViteTest {
                 faulty.append(matcher.group(1)).append('\n');
             }
         }
-        Assert.assertTrue(
+        assertTrue(faulty.toString().isEmpty(),
                 "Configuration uses settings keys\n" + faulty
-                        + "that are not generated in settings file.",
-                faulty.toString().isEmpty());
+                        + "that are not generated in settings file.");
     }
 
     @Test
-    public void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
+    void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
         try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
@@ -157,51 +155,53 @@ public class TaskUpdateViteTest {
             task.execute();
         }
 
-        File configFile = new File(temporaryFolder.getRoot(),
+        File configFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertTrue("vitePluginFileSystemRouter should be imported.",
+        assertTrue(
                 template.contains("import vitePluginFileSystemRouter from '"
-                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
-        Assert.assertTrue(
-                "vitePluginFileSystemRouter({isDevMode: devMode}) should be used.",
+                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"),
+                "vitePluginFileSystemRouter should be imported.");
+        assertTrue(
                 template.contains(
-                        "vitePluginFileSystemRouter({isDevMode: devMode}),"));
+                        "vitePluginFileSystemRouter({isDevMode: devMode}),"),
+                "vitePluginFileSystemRouter({isDevMode: devMode}) should be used.");
     }
 
     @Test
-    public void generatedTemplate_reactDisabled_correctFileRouterImport()
+    void generatedTemplate_reactDisabled_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(false),
                 null);
         task.execute();
 
-        File configFile = new File(temporaryFolder.getRoot(),
+        File configFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertFalse("vitePluginFileSystemRouter should not be imported.",
+        assertFalse(
                 template.contains("import vitePluginFileSystemRouter from '"
-                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
-        Assert.assertFalse("vitePluginFileSystemRouter() should be used.",
-                template.contains("vitePluginFileSystemRouter(),"));
+                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"),
+                "vitePluginFileSystemRouter should not be imported.");
+        assertFalse(template.contains("vitePluginFileSystemRouter(),"),
+                "vitePluginFileSystemRouter() should be used.");
 
     }
 
     @Test
-    public void generatedTemplate_extraFrontendExtension_addedToViteConfiguration()
+    void generatedTemplate_extraFrontendExtension_addedToViteConfiguration()
             throws IOException {
         options.withFrontendExtraFileExtensions(
                 Arrays.asList(".svg", ".ico", "png"));
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
-        File configFile = new File(temporaryFolder.getRoot(),
+        File configFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
@@ -209,20 +209,20 @@ public class TaskUpdateViteTest {
         Pattern matchSelection = Pattern
                 .compile("const projectFileExtensions = \\[(.*)];");
         Matcher matcher = matchSelection.matcher(template);
-        Assert.assertTrue("No projectFileExtensions found", matcher.find());
-        Assert.assertEquals(
-                "Extra frontend extensions should be added to vite configuration, but was not.",
+        assertTrue(matcher.find(), "No projectFileExtensions found");
+        assertEquals(
                 "'.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map', '.svg', '.ico', '.png'",
-                matcher.group(1));
+                matcher.group(1),
+                "Extra frontend extensions should be added to vite configuration, but was not.");
     }
 
     @Test
-    public void generatedTemplate_noEraFrontendExtension_viteConfigurationWithoutExtraSelections()
+    void generatedTemplate_noEraFrontendExtension_viteConfigurationWithoutExtraSelections()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
 
-        File configFile = new File(temporaryFolder.getRoot(),
+        File configFile = new File(temporaryFolder,
                 FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
@@ -230,10 +230,10 @@ public class TaskUpdateViteTest {
         Pattern matchSelection = Pattern
                 .compile("const projectFileExtensions = \\[(.*)];");
         Matcher matcher = matchSelection.matcher(template);
-        Assert.assertTrue("No projectFileExtensions found", matcher.find());
-        Assert.assertEquals(
-                "Extra frontend extensions should be added to vite configuration, but was not.",
+        assertTrue(matcher.find(), "No projectFileExtensions found");
+        assertEquals(
                 "'.js', '.js.map', '.ts', '.ts.map', '.tsx', '.tsx.map', '.css', '.css.map'",
-                matcher.group(1));
+                matcher.group(1),
+                "Extra frontend extensions should be added to vite configuration, but was not.");
     }
 }
