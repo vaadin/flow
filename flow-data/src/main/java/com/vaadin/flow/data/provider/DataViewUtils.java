@@ -249,6 +249,39 @@ public final class DataViewUtils {
     }
 
     /**
+     * Checks if a component has an active signal binding for items.
+     *
+     * @param component
+     *            the component to check
+     * @return true if the component has an active signal binding for items,
+     *         false otherwise
+     */
+    public static boolean hasActiveItemsBinding(Component component) {
+        return component.getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .map(feature -> feature.hasBinding(SignalBindingFeature.ITEMS))
+                .orElse(Boolean.FALSE);
+    }
+
+    /**
+     * Checks if there is an active signal binding for items on this component
+     * and throws an exception if there is.
+     *
+     * @param maybeComponent
+     *            a potential component to check, usually {@link HasDataView} or
+     *            {@link HasDataProvider}, but should extend {@link Component}
+     * @throws BindingActiveException
+     *             if there is an active signal binding for items
+     */
+    public static void checkNoActiveItemsBinding(Object maybeComponent) {
+        if (maybeComponent instanceof Component component
+                && hasActiveItemsBinding(component)) {
+            throw new BindingActiveException(
+                    "Cannot set items or data provider: a signal binding is already active");
+        }
+    }
+
+    /**
      * Internal implementation for binding items to a component with reactive
      * updates.
      *
@@ -273,7 +306,7 @@ public final class DataViewUtils {
         // Check if there's already an active binding
         SignalBindingFeature bindingFeature = component.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
-        if (bindingFeature.hasBinding(SignalBindingFeature.ITEMS)) {
+        if (hasActiveItemsBinding(component)) {
             throw new BindingActiveException(
                     "Cannot bind items: a binding is already active");
         }
