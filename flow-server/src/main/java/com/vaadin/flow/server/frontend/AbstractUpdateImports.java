@@ -267,7 +267,18 @@ abstract class AbstractUpdateImports implements Runnable {
                 Collections.emptyList()));
         merged.addAll(outputFiles.getOrDefault(generatedFlowImports,
                 Collections.emptyList()));
-        return merged.stream().distinct().toList();
+        List<String> result = new ArrayList<>(
+                merged.stream().distinct().toList());
+        moveImportsToTop(result);
+        return result;
+    }
+
+    // Move all import lines to the top, before any non-import lines
+    private static void moveImportsToTop(List<String> lines) {
+        List<String> imports = new ArrayList<>(lines);
+        imports.removeIf(line -> !line.startsWith("import "));
+        lines.removeIf(line -> line.startsWith("import "));
+        lines.addAll(0, imports);
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -441,11 +452,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     getCssLines(webComponentCssData, cssLineOffset));
         }
 
-        // Move all imports to the top
-        List<String> copy = new ArrayList<>(mainLines);
-        copy.removeIf(line -> !line.startsWith("import "));
-        mainLines.removeIf(line -> line.startsWith("import "));
-        mainLines.addAll(0, copy);
+        moveImportsToTop(mainLines);
 
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");

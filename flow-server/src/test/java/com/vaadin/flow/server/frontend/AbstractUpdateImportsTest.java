@@ -48,10 +48,12 @@ import org.slf4j.Logger;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -106,6 +108,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Theme(themeClass = LumoTest.class)
     @CssImport("./foo.css")
     public static class ThemeCssImport implements AppShellConfigurator {
+    }
+
+    @CssImport("./foo.css")
+    public static class CssImportExporter
+            extends WebComponentExporter<FooCssImport> {
+        public CssImportExporter() {
+            super("css-import-exporter");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<FooCssImport> webComponent,
+                FooCssImport component) {
+        }
     }
 
     protected File tmpRoot;
@@ -873,6 +888,47 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             assertTrue("import '" + prefixed + "' appears in the wrong order",
                     curIndex <= nextIndex);
             curIndex = nextIndex;
+        }
+    }
+
+    @Test
+    public void generatedFlowImports_importsAreOnTopBeforeOtherInstructions() {
+        updater.run();
+
+        List<String> lines = updater.getOutput()
+                .get(updater.generatedFlowImports);
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    public void generatedFlowWebComponentImports_importsAreOnTopBeforeOtherInstructions()
+            throws Exception {
+        Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        Assert.assertNotNull("Web component imports should have been generated",
+                lines);
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    private void assertImportsBeforeNonImportLines(List<String> lines) {
+        boolean seenNonImport = false;
+        for (String line : lines) {
+            if (line.isBlank()) {
+                continue;
+            }
+            if (!line.startsWith("import ")) {
+                seenNonImport = true;
+            } else if (seenNonImport) {
+                Assert.fail("Import line found after non-import line. "
+                        + "All import lines should be at the top.\n"
+                        + "Offending line: " + line + "\n" + "Full output:\n"
+                        + String.join("\n", lines));
+            }
         }
     }
 
