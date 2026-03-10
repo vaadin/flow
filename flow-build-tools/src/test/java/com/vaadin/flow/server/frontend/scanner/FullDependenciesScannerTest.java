@@ -214,12 +214,11 @@ class FullDependenciesScannerTest {
     @Test
     void getTheme_noThemeAndExplicitTheme_throws()
             throws ClassNotFoundException {
-        assertThrows(IllegalStateException.class, () -> {
-            setUpThemeScanner(getAnnotatedClasses(Theme.class),
-                    Collections.singleton(NoThemeComponent.class),
-                    (type, annotationType) -> findAnnotations(type,
-                            Theme.class));
-        });
+        Set<Class<?>> themeAnnotatedClasses = getAnnotatedClasses(Theme.class);
+        assertThrows(IllegalStateException.class, () -> setUpThemeScanner(
+                themeAnnotatedClasses,
+                Collections.singleton(NoThemeComponent.class),
+                (type, annotationType) -> findAnnotations(type, Theme.class)));
     }
 
     @Test
