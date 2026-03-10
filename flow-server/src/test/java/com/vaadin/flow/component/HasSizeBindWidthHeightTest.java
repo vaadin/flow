@@ -84,9 +84,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindWidth(signal);
-        signal.set("300px");
 
-        assertNull(component.getWidth());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("200px", component.getWidth());
+
+        // Signal changes while detached are ignored
+        signal.set("300px");
+        assertEquals("200px", component.getWidth());
     }
 
     @Test
@@ -258,9 +262,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindHeight(signal);
-        signal.set("300px");
 
-        assertNull(component.getHeight());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("200px", component.getHeight());
+
+        // Signal changes while detached are ignored
+        signal.set("300px");
+        assertEquals("200px", component.getHeight());
     }
 
     @Test

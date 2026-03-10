@@ -268,24 +268,53 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // Bind before attaching to UI
+        // Bind before attaching to UI: the effect runs immediately as a probe,
+        // setting the initial text. The onChange callback is registered after
+        // the probe, so it does not fire for the initial run.
         span.bindText(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size());
+        assertEquals(0, contexts.size(),
+                "onChange should not fire during probe since it was registered after bind");
 
-        // Attach — effect runs and fires initial callback
+        // Attach with no signal change: no re-run, no onChange callback
         ui.getElement().appendChild(span);
-
-        assertEquals(1, contexts.size());
-        BindingContext<String> initialCtx = contexts.get(0);
-        assertTrue(initialCtx.isInitialRun());
-        assertEquals("initial", initialCtx.getNewValue());
+        assertEquals(0, contexts.size(),
+                "onChange should not fire on attach when nothing changed since probe");
 
         // Trigger an update after attach
         signal.set("updated");
 
-        assertEquals(2, contexts.size());
-        BindingContext<String> ctx = contexts.get(1);
+        assertEquals(1, contexts.size());
+        BindingContext<String> ctx = contexts.get(0);
         assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    public void signalBinding_onChange_bindThenChangeAndAttach() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        span.bindText(signal).onChange(contexts::add);
+        assertEquals(0, contexts.size(),
+                "onChange should not fire during probe since it was registered after bind");
+
+        // Trigger an update after attach
+        signal.set("updated");
+
+        // Attach with signal change: run onChange callback with
+        // isInitialRun=true
+        ui.getElement().appendChild(span);
+
+        assertEquals(1, contexts.size(),
+                "onChange should fire on attach when changed since probe");
+        assertEquals(1, contexts.size());
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
     }
@@ -430,6 +459,34 @@ class ElementEffectTest {
     }
 
     @Test
+    public void effect_notAttached_effectRunsImmediatelyAsProbe() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction even when not attached");
+    }
+
+    @Test
+    public void effect_notAttached_noSignalRead_throwsEagerly() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+
+        assertThrows(com.vaadin.flow.signals.MissingSignalUsageException.class,
+                () -> Signal.effect(component, () -> {
+                    // no signal read
+                }),
+                "MissingSignalUsageException should be thrown eagerly at construction when no signal is read");
+    }
+
+    @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
@@ -440,34 +497,35 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached");
+        assertEquals(1, count.get(),
+                "Effect should be run once immediately as a probe even before component is attached");
 
         signal.set("test");
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached even after signal value change");
+        assertEquals(1, count.get(),
+                "Effect should not be run while detached even after signal value change");
 
         MockUI ui = new MockUI();
         ui.add(component);
 
-        assertEquals(1, count.get(),
-                "Effect should be run once component is attached");
+        assertEquals(2, count.get(),
+                "Effect should re-run on attach because signal changed while detached");
 
         signal.set("test2");
-        assertEquals(2, count.get(),
-                "Effect should be run when signal value is chaged");
+        assertEquals(3, count.get(),
+                "Effect should be run when signal value is changed");
 
         ui.remove(component);
 
         signal.set("test3");
-        assertEquals(2, count.get(), "Effect should not be run after detach");
+        assertEquals(3, count.get(), "Effect should not be run after detach");
 
         ui.add(component);
-        assertEquals(3, count.get(), "Effect should be run after attach");
+        assertEquals(4, count.get(),
+                "Effect should re-run on reattach because signal changed while detached");
 
         registration.remove();
         signal.set("test4");
-        assertEquals(3, count.get(), "Effect should not be run after remove");
+        assertEquals(4, count.get(), "Effect should not be run after remove");
     }
 
     @Test
@@ -481,9 +539,13 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction");
+
         MockUI ui = new MockUI();
         ui.add(component);
-        assertEquals(1, count.get(), "Effect should run on attach");
+        assertEquals(1, count.get(),
+                "Effect should not re-run on attach when nothing changed since probe");
 
         ui.remove(component);
         ui.add(component);
