@@ -64,8 +64,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         // Attempt to update a property value from client to a computed signal
         // should throw an exception
         Div shouldThrowTarget = createAndAddDiv(SHOULD_THROW_TARGET_DIV_ID);
-        Signal<String> computedSignal = Signal
-                .computed(() -> "computed-" + signal.get());
+        Signal<String> computedSignal = () -> "computed-" + signal.get();
         shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
                 computedSignal, null);
         shouldThrowTarget.getElement().addPropertyChangeListener(
