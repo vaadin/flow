@@ -587,6 +587,7 @@ class NodeResolver implements java.io.Serializable {
         } else {
             searchPaths.add("lib/node_modules/npm/bin/npm-cli.js");
             searchPaths.add("../lib/node_modules/npm/bin/npm-cli.js");
+            searchPaths.add("node_modules/npm/bin/npm-cli.js");
         }
 
         for (String path : searchPaths) {
