@@ -210,7 +210,7 @@ public class CachedSignal<T extends @Nullable Object>
             });
             if (dependencies == UsageTracker.NO_USAGE) {
                 throw new MissingSignalUsageException(
-                        "Reading the inner signal must read at least one signal value.");
+                        "A computing inner signal must read at least one other signal value.");
             }
             @Nullable
             Object value = holder[0];
