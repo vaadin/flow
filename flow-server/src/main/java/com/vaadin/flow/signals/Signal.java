@@ -226,13 +226,14 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * to create a signal that computes a new value only if any of the dependent
      * signals might have changed.
      * <p>
-     * A computed signal can also be defined directly as a lambda
-     * expression. Using this method enables type inference in cases where the target type isn't explicitly defined.
-     *  
+     * A computed signal can also be defined directly as a lambda expression.
+     * Using this method enables type inference in cases where the target type
+     * isn't explicitly defined.
+     * 
      * <pre>
      * // Type must be explicitly defined for a direct lambda expression
      * Signal&lt;Integer&gt; signal = () -&gt; stringSignal.get().length();
-     *   
+     * 
      * // Type can be inferred by wrapping in computed()
      * var signal = Signal.computed(() -&gt; stringSignal.get().length());
      * </pre>
