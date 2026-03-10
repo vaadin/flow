@@ -35,8 +35,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.CleanupMode;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -71,9 +69,6 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
-
-    @TempDir(cleanup = CleanupMode.NEVER)
-    File javaSourceFolder;
 
     public static class VaadinServletSubClass extends VaadinServlet {
 

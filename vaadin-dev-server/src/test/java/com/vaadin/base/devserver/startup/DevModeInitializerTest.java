@@ -80,6 +80,9 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     @TempDir(cleanup = CleanupMode.NEVER)
     File devModeTempDir;
 
+    @TempDir(cleanup = CleanupMode.NEVER)
+    File javaSourceFolder;
+
     @JsModule("foo")
     public static class Visited {
     }
