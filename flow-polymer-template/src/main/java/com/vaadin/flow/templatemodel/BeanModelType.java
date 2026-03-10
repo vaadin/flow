@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -179,13 +179,13 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass, converterLookup, clientUpdateLookup);
         }
 
-        throw new InvalidTemplateModelException(String.format(
-                "Type '%s' is not supported."
+        return new UnsupportedModelType(propertyType,
+                String.format("Type '%s' is not supported."
                         + " Used in class '%s' with property named '%s'. %s. "
                         + "Use @%s annotation to convert the type to a supported type.",
-                propertyType.toString(), declaringClass.getSimpleName(),
-                propertyName, ModelType.getSupportedTypesString(),
-                Encode.class.getSimpleName()));
+                        propertyType.toString(), declaringClass.getSimpleName(),
+                        propertyName, ModelType.getSupportedTypesString(),
+                        Encode.class.getSimpleName()));
     }
 
     static ModelType getConvertedModelType(Type propertyType,

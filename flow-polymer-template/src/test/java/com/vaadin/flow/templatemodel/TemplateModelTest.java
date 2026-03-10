@@ -95,6 +95,14 @@ class TemplateModelTest extends HasCurrentService {
         long getLong();
     }
 
+    public interface NotSupportedPrimitiveSetterModel extends TemplateModel {
+        void setLong(long l);
+    }
+
+    public interface NotSupportedPrimitiveGetterModel extends TemplateModel {
+        long getLong();
+    }
+
     public interface InvalidMethodSignatureModel extends TemplateModel {
         void setFoo();
 
@@ -466,6 +474,22 @@ class TemplateModelTest extends HasCurrentService {
         }
     }
 
+    public static class NotSupportedPrimitiveSetterModelTemplate
+            extends NoModelTemplate<NotSupportedPrimitiveSetterModel> {
+        @Override
+        public NotSupportedPrimitiveSetterModel getModel() {
+            return super.getModel();
+        }
+    }
+
+    public static class NotSupportedPrimitiveGetterModelTemplate
+            extends NoModelTemplate<NotSupportedPrimitiveGetterModel> {
+        @Override
+        public NotSupportedPrimitiveGetterModel getModel() {
+            return super.getModel();
+        }
+    }
+
     public static class InvalidMethodSignatureModelTemplate
             extends NoModelTemplate<InvalidMethodSignatureModel> {
         @Override
@@ -765,14 +789,18 @@ class TemplateModelTest extends HasCurrentService {
 
     @Test
     void testUnsupportedPrimitiveSetter() {
+        var template = new NotSupportedPrimitiveSetterModelTemplate();
+        var model = template.getModel();
         assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+                () -> model.setLong(0L));
     }
 
     @Test
     void testUnsupportedPrimitiveGetter() {
+        var template = new NotSupportedPrimitiveGetterModelTemplate();
+        var model = template.getModel();
         assertThrows(InvalidTemplateModelException.class,
-                () -> new NotSupportedModelTemplate());
+                () -> model.getLong());
     }
 
     @Test

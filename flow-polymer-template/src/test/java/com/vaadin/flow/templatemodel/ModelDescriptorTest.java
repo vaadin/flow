@@ -89,8 +89,11 @@ class ModelDescriptorTest {
 
     @Test
     void unsupported() {
+        ModelDescriptor<?> descriptor = ModelDescriptor
+                .get(NotSupportedModel.class);
+        ModelType type = descriptor.getPropertyType("long");
         assertThrows(InvalidTemplateModelException.class,
-                () -> ModelDescriptor.get(NotSupportedModel.class));
+                () -> type.applicationToModel(0L, PropertyFilter.ACCEPT_ALL));
     }
 
     @Test
