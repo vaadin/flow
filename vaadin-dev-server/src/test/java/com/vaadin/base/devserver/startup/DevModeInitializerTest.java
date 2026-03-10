@@ -41,6 +41,7 @@ import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
@@ -76,8 +77,11 @@ import static org.mockito.Mockito.times;
 @NotThreadSafe
 class DevModeInitializerTest extends DevModeInitializerTestBase {
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.NEVER)
     File devModeTempDir;
+
+    @TempDir(cleanup = CleanupMode.NEVER)
+    File javaSourceFolder;
 
     @JsModule("foo")
     public static class Visited {
