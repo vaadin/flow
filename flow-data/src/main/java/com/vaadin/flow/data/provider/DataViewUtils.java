@@ -257,9 +257,10 @@ public final class DataViewUtils {
      *         false otherwise
      */
     public static boolean hasActiveItemsBinding(Component component) {
-        SignalBindingFeature bindingFeature = component.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        return bindingFeature.hasBinding(SignalBindingFeature.ITEMS);
+        return component.getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .map(feature -> feature.hasBinding(SignalBindingFeature.ITEMS))
+                .orElse(Boolean.FALSE);
     }
 
     /**
