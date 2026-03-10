@@ -71,6 +71,7 @@ import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -894,8 +895,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater.run();
 
         List<String> lines = updater.webComponentImports;
-        Assert.assertNotNull("Web component imports should have been generated",
-                lines);
+        assertNotNull(lines,
+                "Web component imports should have been generated");
         assertImportsBeforeNonImportLines(lines);
     }
 
@@ -908,7 +909,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             if (!line.startsWith("import ")) {
                 seenNonImport = true;
             } else if (seenNonImport) {
-                Assert.fail("Import line found after non-import line. "
+                fail("Import line found after non-import line. "
                         + "All import lines should be at the top.\n"
                         + "Offending line: " + line + "\n" + "Full output:\n"
                         + String.join("\n", lines));
