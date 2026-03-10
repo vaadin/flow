@@ -17,8 +17,7 @@ package com.vaadin.flow.data.value;
 
 import java.util.EnumSet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Tag;
@@ -27,7 +26,11 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
-public class ValueChangeModeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class ValueChangeModeTest {
 
     @Tag("tag")
     private static class ValueChangeModeField
@@ -74,16 +77,16 @@ public class ValueChangeModeTest {
     }
 
     @Test
-    public void field_setMode() {
+    void field_setMode() {
         ValueChangeModeField field = new ValueChangeModeField();
 
         field.setValueChangeMode(ValueChangeMode.ON_BLUR);
         assertValueSynchronizedWithEvent(field, "blur");
 
         field.setValueChangeMode(null);
-        Assert.assertNull("value should not be a synchronized property",
-                getDisabledUpdateMode(field));
-        Assert.assertNull(field.getSynchronizationRegistration());
+        assertNull(getDisabledUpdateMode(field),
+                "value should not be a synchronized property");
+        assertNull(field.getSynchronizationRegistration());
 
         field.setValueChangeMode(ValueChangeMode.EAGER);
         assertValueSynchronizedWithEvent(field, "value-changed");
@@ -99,7 +102,7 @@ public class ValueChangeModeTest {
     }
 
     @Test
-    public void field_setValueChangeTimeout_applied() {
+    void field_setValueChangeTimeout_applied() {
         ValueChangeModeField field = new ValueChangeModeField();
         assertDebounceDisabled(field);
 
@@ -121,7 +124,7 @@ public class ValueChangeModeTest {
     }
 
     @Test
-    public void field_setValueChangeTimeout_ignored() {
+    void field_setValueChangeTimeout_ignored() {
         assertNoTimeoutApplied(ValueChangeMode.EAGER);
         assertNoTimeoutApplied(ValueChangeMode.ON_CHANGE);
         assertNoTimeoutApplied(ValueChangeMode.ON_BLUR);
@@ -136,26 +139,25 @@ public class ValueChangeModeTest {
     private void assertDebounceEquals(ValueChangeModeField field,
             EnumSet<DebouncePhase> phases, int timeout) {
         DomListenerRegistration reg = field.getSynchronizationRegistration();
-        Assert.assertEquals(timeout, reg.getDebounceTimeout());
-        Assert.assertEquals(phases, reg.getDebouncePhases());
+        assertEquals(timeout, reg.getDebounceTimeout());
+        assertEquals(phases, reg.getDebouncePhases());
     }
 
     private void assertDebounceDisabled(ValueChangeModeField field) {
-        Assert.assertEquals(0,
+        assertEquals(0,
                 field.getSynchronizationRegistration().getDebounceTimeout());
     }
 
     private void assertValueSynchronizedWithEvent(ValueChangeModeField field,
             String eventName) {
 
-        Assert.assertNotNull("value should be a synchronized property",
-                getDisabledUpdateMode(field));
+        assertNotNull(getDisabledUpdateMode(field),
+                "value should be a synchronized property");
 
         DomListenerRegistration reg = field.getSynchronizationRegistration();
 
-        Assert.assertEquals(
-                eventName + " should be the synchronized property-event",
-                eventName, reg.getEventType());
+        assertEquals(eventName, reg.getEventType(),
+                eventName + " should be the synchronized property-event");
     }
 
     private DisabledUpdateMode getDisabledUpdateMode(

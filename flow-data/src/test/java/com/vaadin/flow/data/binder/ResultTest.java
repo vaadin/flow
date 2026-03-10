@@ -15,60 +15,64 @@
  */
 package com.vaadin.flow.data.binder;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableFunction;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public class ResultTest {
+class ResultTest {
 
     @Test
-    public void testOk() {
+    void testOk() {
         String value = "foo";
         Result<String> ok = Result.ok(value);
-        Assert.assertFalse(ok.isError());
-        Assert.assertFalse(ok.getMessage().isPresent());
-        ok.ifOk(v -> Assert.assertEquals(value, v));
-        ok.ifError(msg -> Assert.fail());
+        assertFalse(ok.isError());
+        assertFalse(ok.getMessage().isPresent());
+        ok.ifOk(v -> assertEquals(value, v));
+        ok.ifError(msg -> fail());
     }
 
     @Test
-    public void testError() {
+    void testError() {
         String message = "foo";
         Result<String> error = Result.error(message);
-        Assert.assertTrue(error.isError());
-        Assert.assertTrue(error.getMessage().isPresent());
-        error.ifOk(v -> Assert.fail());
-        error.ifError(msg -> Assert.assertEquals(message, msg));
-        Assert.assertEquals(message, error.getMessage().get());
+        assertTrue(error.isError());
+        assertTrue(error.getMessage().isPresent());
+        error.ifOk(v -> fail());
+        error.ifError(msg -> assertEquals(message, msg));
+        assertEquals(message, error.getMessage().get());
     }
 
     @Test
-    public void of_noException() {
+    void of_noException() {
         Result<String> result = Result.of(() -> "", exception -> null);
-        Assert.assertTrue(result instanceof SimpleResult);
-        Assert.assertFalse(result.isError());
+        assertTrue(result instanceof SimpleResult);
+        assertFalse(result.isError());
     }
 
     @Test
-    public void of_exception() {
+    void of_exception() {
         String message = "foo";
         Result<String> result = Result.of(() -> {
             throw new RuntimeException();
         }, exception -> message);
-        Assert.assertTrue(result instanceof SimpleResult);
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals(message, result.getMessage().get());
+        assertTrue(result instanceof SimpleResult);
+        assertTrue(result.isError());
+        assertEquals(message, result.getMessage().get());
     }
 
     @SuppressWarnings("serial")
     @Test
-    public void map_norError_mapperIsApplied() {
+    void map_norError_mapperIsApplied() {
         Result<String> result = new SimpleResult<String>("foo", null) {
 
             @Override
@@ -78,17 +82,17 @@ public class ResultTest {
             }
         };
         Result<String> mapResult = result.map(value -> {
-            Assert.assertEquals("foo", value);
+            assertEquals("foo", value);
             return "bar";
         });
-        Assert.assertTrue(mapResult instanceof SimpleResult);
-        Assert.assertFalse(mapResult.isError());
-        mapResult.ifOk(v -> Assert.assertEquals("bar", v));
+        assertTrue(mapResult instanceof SimpleResult);
+        assertFalse(mapResult.isError());
+        mapResult.ifOk(v -> assertEquals("bar", v));
     }
 
     @SuppressWarnings("serial")
     @Test
-    public void map_error_mapperIsApplied() {
+    void map_error_mapperIsApplied() {
         Result<String> result = new SimpleResult<String>("foo", null) {
 
             @Override
@@ -98,11 +102,11 @@ public class ResultTest {
             }
         };
         Result<String> mapResult = result.map(value -> {
-            Assert.assertEquals("foo", value);
+            assertEquals("foo", value);
             return "somevalue";
         });
-        Assert.assertTrue(mapResult instanceof SimpleResult);
-        Assert.assertTrue(mapResult.isError());
-        mapResult.ifError(msg -> Assert.assertEquals("bar", msg));
+        assertTrue(mapResult instanceof SimpleResult);
+        assertTrue(mapResult.isError());
+        mapResult.ifError(msg -> assertEquals("bar", msg));
     }
 }
