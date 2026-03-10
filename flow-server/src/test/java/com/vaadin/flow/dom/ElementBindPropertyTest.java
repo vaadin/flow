@@ -65,6 +65,7 @@ class ElementBindPropertyTest {
 
     private static MockVaadinServletService service;
 
+    private UI ui;
     private LinkedList<ErrorEvent> events;
 
     @BeforeAll
@@ -86,6 +87,7 @@ class ElementBindPropertyTest {
     @AfterEach
     public void after() {
         CurrentInstance.clearAll();
+        ui = null;
         events = null;
     }
 
@@ -1059,7 +1061,7 @@ class ElementBindPropertyTest {
         var session = new MockVaadinSession(service);
         session.lock();
 
-        var ui = new MockUI(session);
+        ui = new MockUI(session);
         var events = new LinkedList<ErrorEvent>();
         session.setErrorHandler(events::add);
 

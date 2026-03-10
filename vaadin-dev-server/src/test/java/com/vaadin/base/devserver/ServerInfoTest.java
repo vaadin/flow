@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -22,35 +23,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ServerInfoTest {
+class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
 
-    @Rule
-    public TemporaryFolder temporary = new TemporaryFolder();
+    @TempDir
+    File temporary;
 
     private MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic;
 
-    @Before
-    public void rememberContextClassLoader() throws Exception {
+    @BeforeEach
+    void rememberContextClassLoader() throws Exception {
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         fakePlatform(false, false);
     }
 
-    @After
-    public void restoreContextClassLoader() {
+    @AfterEach
+    void restoreContextClassLoader() {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         if (endpointRequestUtilMockedStatic != null) {
             endpointRequestUtilMockedStatic.close();
@@ -67,7 +68,8 @@ public class ServerInfoTest {
 
         final LinkedList<URL> classpath = new LinkedList<>();
         if (vaadin) {
-            final Path vaadinJar = temporary.newFolder().toPath();
+            final Path vaadinJar = Files.createTempDirectory(temporary.toPath(),
+                    "tmp");
             final Path pomProperties = vaadinJar.resolve(
                     "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
             Files.createDirectories(pomProperties.getParent());
@@ -87,23 +89,23 @@ public class ServerInfoTest {
     }
 
     @Test
-    public void hillaVersionIsDashWhenNoHillaOnClasspath() {
+    void hillaVersionIsDashWhenNoHillaOnClasspath() {
         assertEquals("-", ServerInfo.fetchHillaVersion());
     }
 
     @Test
-    public void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
+    void vaadinVersionIsDashWhenNoVaadinOnClasspath() {
         assertEquals("-", ServerInfo.fetchVaadinVersion());
     }
 
     @Test
-    public void fetchContainerInfoDoesNotThrow() {
+    void fetchContainerInfoDoesNotThrow() {
         ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
-        assertTrue("Expected non-null enum value", result != null);
+        assertNotNull(result, "Expected non-null enum value");
     }
 
     @Test
-    public void fetchContainerInfoDetectsContainer() {
+    void fetchContainerInfoDetectsContainer() {
         ServerInfo.ContainerInfo result = ServerInfo.fetchContainerInfo();
         // If any known container indicator exists, detection should find it
         if (Files.exists(Path.of("/.dockerenv"))
@@ -111,8 +113,8 @@ public class ServerInfoTest {
                 || System.getenv("KUBERNETES_SERVICE_HOST") != null
                 || System.getenv("container") != null || Files.exists(Path.of(
                         "/sys/firmware/devicetree/base/hypervisor/compatible"))) {
-            assertTrue("Should detect container runtime, not NONE",
-                    result != ServerInfo.ContainerInfo.NONE);
+            assertNotEquals(ServerInfo.ContainerInfo.NONE, result,
+                    "Should detect container runtime, not NONE");
         } else {
             assertEquals(ServerInfo.ContainerInfo.NONE, result);
         }

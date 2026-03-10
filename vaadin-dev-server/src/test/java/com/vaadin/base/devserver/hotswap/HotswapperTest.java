@@ -30,9 +30,8 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -76,6 +75,11 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -85,7 +89,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
-public class HotswapperTest {
+class HotswapperTest {
 
     Hotswapper hotswapper;
     Lookup lookup;
@@ -94,8 +98,8 @@ public class HotswapperTest {
     private VaadinHotswapper hillaHotswapper;
     private BrowserLiveReload liveReload;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         service = new MockVaadinServletService();
         lookup = service.getLookup();
 
@@ -119,21 +123,21 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_nullArguments_hotswappersNotInvoked() {
+    void onHotswap_nullArguments_hotswappersNotInvoked() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(null, true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
-    public void onHotswap_emptyArguments_hotswappersNotInvoked() {
+    void onHotswap_emptyArguments_hotswappersNotInvoked() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(new String[0], true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
-    public void onHotswap_serviceDestroyed_hotswappersNotInvoked() {
+    void onHotswap_serviceDestroyed_hotswappersNotInvoked() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.serviceDestroy(new ServiceDestroyEvent(service));
         hotswapper.onHotswap(new String[] { Integer.class.getName(),
@@ -168,7 +172,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_noActiveSession_onlyGlobalHookCalled() {
+    void onHotswap_noActiveSession_onlyGlobalHookCalled() {
 
         HashSet<Class<?>> classes = new HashSet<>(
                 Set.of(Integer.class, String.class, java.io.File.class));
@@ -204,7 +208,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_sessionHookCalledOnlyForActiveSessions()
+    void onHotswap_sessionHookCalledOnlyForActiveSessions()
             throws ServiceException {
         HashSet<Class<?>> classes = new HashSet<>(
                 Set.of(Integer.class, String.class, java.io.File.class));
@@ -277,8 +281,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_hotswapperFailure_doNotFail()
-            throws ServiceException {
+    void onHotswap_hotswapperFailure_doNotFail() throws ServiceException {
         VaadinSession sessionA = createMockVaadinSession();
         VaadinSession sessionB = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, sessionA, null));
@@ -303,7 +306,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_forcedReload_liveReloadTriggered() {
+    void onHotswap_forcedReload_liveReloadTriggered() {
         Mockito.doAnswer(i -> {
             i.getArgument(0, HotswapClassEvent.class)
                     .triggerUpdate(UIUpdateStrategy.RELOAD);
@@ -314,7 +317,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_backwardCompatibility_forcedReload_liveReloadTriggered() {
+    void onHotswap_backwardCompatibility_forcedReload_liveReloadTriggered() {
         Mockito.doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
         Mockito.doCallRealMethod().when(flowHotswapper)
@@ -326,7 +329,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_backwardCompatibilitySession_forcedReload_liveReloadTriggered()
+    void onHotswap_backwardCompatibilitySession_forcedReload_liveReloadTriggered()
             throws ServiceException {
         Mockito.doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
@@ -342,7 +345,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_hotswapperRequestReload_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_hotswapperRequestReload_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -361,7 +364,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_hotswapperRequestRefresh_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_hotswapperRequestRefresh_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -380,7 +383,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_hotswapperRequestUIReload_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_hotswapperRequestUIReload_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -400,7 +403,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_hotswapperRequestUIRefresh_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_hotswapperRequestUIRefresh_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -420,7 +423,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -433,7 +436,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeClassChanged_modalComponents_UINotRefreshedButLiveReloadFullRefreshTriggered()
+    void onHotswap_pushDisabled_routeClassChanged_modalComponents_UINotRefreshedButLiveReloadFullRefreshTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -448,7 +451,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_autoLayout_classUnrelatedToUIChanged_noReload()
+    void onHotswap_pushDisabled_autoLayout_classUnrelatedToUIChanged_noReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -464,7 +467,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -478,7 +481,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_autoLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_autoLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -498,7 +501,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_autoLayoutClassFirstLoaded_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_autoLayoutClassFirstLoaded_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -519,7 +522,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_parentAutoLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_parentAutoLayoutClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
 
         @Layout("level1")
@@ -542,7 +545,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_parentAutoLayoutClassFirstLoaded_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_parentAutoLayoutClassFirstLoaded_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
 
         @Layout("level1")
@@ -566,7 +569,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeTargetChainChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeTargetChainChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -592,7 +595,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeChildClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeChildClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -607,7 +610,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushDisabled_routeChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -623,7 +626,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_layoutChildClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_layoutChildClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -638,7 +641,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_layoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushDisabled_layoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -654,7 +657,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeAndLayoutClassesChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeAndLayoutClassesChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -669,7 +672,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeAndLayoutClassesFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushDisabled_routeAndLayoutClassesFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -685,7 +688,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeAndLayoutChildClassChanged_UINotRefreshedButLiveReloadTriggered()
+    void onHotswap_pushDisabled_routeAndLayoutChildClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -700,7 +703,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_routeAndLayoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushDisabled_routeAndLayoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -717,7 +720,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_changedClassNotInUITree_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushDisabled_changedClassNotInUITree_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -732,7 +735,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_hotswapperRequestRefresh_allUIsRefreshed()
+    void onHotswap_pushEnabled_hotswapperRequestRefresh_allUIsRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -755,7 +758,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_hotswapperRequestUIRefresh_affectedUIRefreshed()
+    void onHotswap_pushEnabled_hotswapperRequestUIRefresh_affectedUIRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         RefreshTestingUI ui = initUIAndNavigateTo(session,
@@ -778,7 +781,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeClassChanged_routeRefreshed()
+    void onHotswap_pushEnabled_routeClassChanged_routeRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -794,7 +797,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeClassChanged_modalComponent_activeChainRefreshed()
+    void onHotswap_pushEnabled_routeClassChanged_modalComponent_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -812,7 +815,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeLayoutClassChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_routeLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -829,7 +832,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_autoLayoutClassChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_autoLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -851,7 +854,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_autoLayoutClassFirstLoaded_activeChainRefreshed()
+    void onHotswap_pushEnabled_autoLayoutClassFirstLoaded_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -874,7 +877,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_parentAutoLayoutClassChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_parentAutoLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
 
         @Layout("level1")
@@ -899,7 +902,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_parentAutoLayoutClassFirstLoaded_activeChainRefreshed()
+    void onHotswap_pushEnabled_parentAutoLayoutClassFirstLoaded_activeChainRefreshed()
             throws ServiceException {
 
         @Layout("level1")
@@ -925,7 +928,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeTargetChainChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_routeTargetChainChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -953,7 +956,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_autoLayout_classUnrelatedToUIChanged_noReload()
+    void onHotswap_pushEnabled_autoLayout_classUnrelatedToUIChanged_noReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -970,7 +973,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeChildrenClassChanged_routeRefreshed()
+    void onHotswap_pushEnabled_routeChildrenClassChanged_routeRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -988,7 +991,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeChildrenClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushEnabled_routeChildrenClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1006,7 +1009,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_layoutChildrenClassChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_layoutChildrenClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1024,7 +1027,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_layoutChildrenClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushEnabled_layoutChildrenClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1042,7 +1045,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeAndLayoutClassesChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_routeAndLayoutClassesChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1060,7 +1063,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeAndLayoutChildClassChanged_activeChainRefreshed()
+    void onHotswap_pushEnabled_routeAndLayoutChildClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1078,7 +1081,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_routeAndLayoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
+    void onHotswap_pushEnabled_routeAndLayoutChildClassFirstLoaded_skipLiveReloadAndUIRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1096,7 +1099,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_changedClassNotInUITree_skipRefresh()
+    void onHotswap_pushEnabled_changedClassNotInUITree_skipRefresh()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1113,7 +1116,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_mixedPushState_classInUITreeChanged_liveReloadTriggered()
+    void onHotswap_mixedPushState_classInUITreeChanged_liveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1135,7 +1138,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_forcePageReload_redefinedClass_fullReloadTriggered()
+    void onHotswap_pushDisabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1151,7 +1154,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_forcePageReload_loadedClass_notReload()
+    void onHotswap_pushDisabled_forcePageReload_loadedClass_notReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1167,7 +1170,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
+    void onHotswap_pushDisabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1193,7 +1196,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReload_redefinedClass_fullReloadTriggered()
+    void onHotswap_pushEnabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1210,7 +1213,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReload_loadedClass_noReload()
+    void onHotswap_pushEnabled_forcePageReload_loadedClass_noReload()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1227,7 +1230,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
+    void onHotswap_pushEnabled_forcePageReloadWithSystemProperty_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1254,7 +1257,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_clientUpdate_commandsSent() throws ServiceException {
+    void onHotswap_clientUpdate_commandsSent() throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
 
@@ -1305,7 +1308,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void register_developmentMode_trackingListenerInstalled() {
+    void register_developmentMode_trackingListenerInstalled() {
         AtomicBoolean sessionInitInstalled = new AtomicBoolean();
         AtomicBoolean sessionDestroyInstalled = new AtomicBoolean();
         AtomicBoolean serviceDestroyInstalled = new AtomicBoolean();
@@ -1354,22 +1357,18 @@ public class HotswapperTest {
         };
         Hotswapper.register(vaadinService);
 
-        Assert.assertTrue(
-                "Expected hotswapper SessionInitListener to be registered in development mode, but was not",
-                sessionInitInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper SessionDestroyListener to be registered in development mode, but was not",
-                sessionDestroyInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper ServiceDestroyListener to be registered in development mode, but was not",
-                serviceDestroyInstalled.get());
-        Assert.assertTrue(
-                "Expected hotswapper UIInitListener to be registered in development mode, but was not",
-                uiInitInstalled.get());
+        assertTrue(sessionInitInstalled.get(),
+                "Expected hotswapper SessionInitListener to be registered in development mode, but was not");
+        assertTrue(sessionDestroyInstalled.get(),
+                "Expected hotswapper SessionDestroyListener to be registered in development mode, but was not");
+        assertTrue(serviceDestroyInstalled.get(),
+                "Expected hotswapper ServiceDestroyListener to be registered in development mode, but was not");
+        assertTrue(uiInitInstalled.get(),
+                "Expected hotswapper UIInitListener to be registered in development mode, but was not");
     }
 
     @Test
-    public void register_productionMode_trackingListenerNotInstalled() {
+    void register_productionMode_trackingListenerNotInstalled() {
         AtomicBoolean sessionInitInstalled = new AtomicBoolean();
         AtomicBoolean sessionDestroyInstalled = new AtomicBoolean();
         AtomicBoolean serviceDestroyInstalled = new AtomicBoolean();
@@ -1407,22 +1406,18 @@ public class HotswapperTest {
         };
         Hotswapper.register(vaadinService);
 
-        Assert.assertFalse(
-                "Expected hotswapper SessionInitListener not to be registered in production mode, but it was",
-                sessionInitInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  SessionDestroyListener not to be registered in production mode, but it was",
-                sessionDestroyInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  ServiceDestroyListener not to be registered in production mode, but it was",
-                serviceDestroyInstalled.get());
-        Assert.assertFalse(
-                "Expected hotswapper  UIInitListener not to be registered in production mode, but it was",
-                uiInitInstalled.get());
+        assertFalse(sessionInitInstalled.get(),
+                "Expected hotswapper SessionInitListener not to be registered in production mode, but it was");
+        assertFalse(sessionDestroyInstalled.get(),
+                "Expected hotswapper  SessionDestroyListener not to be registered in production mode, but it was");
+        assertFalse(serviceDestroyInstalled.get(),
+                "Expected hotswapper  ServiceDestroyListener not to be registered in production mode, but it was");
+        assertFalse(uiInitInstalled.get(),
+                "Expected hotswapper  UIInitListener not to be registered in production mode, but it was");
     }
 
     @Test
-    public void instanceCreation_hotswappersInitialized() {
+    void instanceCreation_hotswappersInitialized() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         new Hotswapper(service);
         Mockito.verify(flowHotswapper).onInit(service);
@@ -1430,7 +1425,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void instanceCreation_throwingHotswapper_instantiationDoesNotFail() {
+    void instanceCreation_throwingHotswapper_instantiationDoesNotFail() {
         Mockito.reset(flowHotswapper, hillaHotswapper);
         Mockito.doThrow(new RuntimeException("BOOM")).when(flowHotswapper)
                 .onInit(any());
@@ -1440,7 +1435,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void constructor_ensureOrderAnnotationIsRespected() {
+    void constructor_ensureOrderAnnotationIsRespected() {
         List<VaadinHotswapper> hotswappers = List.of(new Last(), new First(),
                 new DefaultPriority());
         Mockito.when(lookup.lookupAll(VaadinHotswapper.class))
@@ -1450,8 +1445,7 @@ public class HotswapperTest {
 
         hotswapper = new Hotswapper(service);
 
-        Assert.assertEquals(
-                List.of(First.class, DefaultPriority.class, Last.class),
+        assertEquals(List.of(First.class, DefaultPriority.class, Last.class),
                 executionListener.executed);
     }
 
@@ -1498,9 +1492,9 @@ public class HotswapperTest {
         Mockito.verify(hotswapper)
                 .onHotswapComplete(eventArgumentCaptor.capture());
         HotswapCompleteEvent capturedEvent = eventArgumentCaptor.getValue();
-        Assert.assertEquals(event.getService(), capturedEvent.getService());
-        Assert.assertEquals(event.getClasses(), capturedEvent.getClasses());
-        Assert.assertEquals(event.isRedefined(), capturedEvent.isRedefined());
+        assertEquals(event.getService(), capturedEvent.getService());
+        assertEquals(event.getClasses(), capturedEvent.getClasses());
+        assertEquals(event.isRedefined(), capturedEvent.isRedefined());
     }
 
     @Tag("my-route")
@@ -1646,27 +1640,22 @@ public class HotswapperTest {
         }
 
         void assertNotRefreshed() {
-            Assert.assertNull(
-                    "Expecting refreshCurrentRoute not to be called, but was invoked",
-                    refreshRouteChainRequested);
+            assertNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute not to be called, but was invoked");
         }
 
         void assertRouteRefreshed() {
-            Assert.assertNotNull(
-                    "Expecting refreshCurrentRoute to be called but was not",
-                    refreshRouteChainRequested);
-            Assert.assertFalse(
-                    "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested",
-                    refreshRouteChainRequested);
+            assertNotNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            assertFalse(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested");
         }
 
         void assertChainRefreshed() {
-            Assert.assertNotNull(
-                    "Expecting refreshCurrentRoute to be called but was not",
-                    refreshRouteChainRequested);
-            Assert.assertTrue(
-                    "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested",
-                    refreshRouteChainRequested);
+            assertNotNull(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            assertTrue(refreshRouteChainRequested,
+                    "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested");
         }
 
         void enablePush() {
