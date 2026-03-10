@@ -93,7 +93,9 @@ class TemplateModelTest extends HasCurrentService {
         void setLong(long l);
 
         long getLong();
+    }
 
+    public interface InvalidMethodSignatureModel extends TemplateModel {
         void setFoo();
 
         int setFoo(int foo);
@@ -464,6 +466,14 @@ class TemplateModelTest extends HasCurrentService {
         }
     }
 
+    public static class InvalidMethodSignatureModelTemplate
+            extends NoModelTemplate<InvalidMethodSignatureModel> {
+        @Override
+        public InvalidMethodSignatureModel getModel() {
+            return super.getModel();
+        }
+    }
+
     public static class SubBeansTemplate
             extends EmptyDivTemplate<SubBeansModel> {
 
@@ -755,83 +765,67 @@ class TemplateModelTest extends HasCurrentService {
 
     @Test
     void testUnsupportedPrimitiveSetter() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.setLong(0L);
-        });
+        assertThrows(InvalidTemplateModelException.class,
+                () -> new NotSupportedModelTemplate());
     }
 
     @Test
     void testUnsupportedPrimitiveGetter() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.getLong();
-        });
+        assertThrows(InvalidTemplateModelException.class,
+                () -> new NotSupportedModelTemplate());
     }
 
     @Test
     void testGetterVoid() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.getFoo();
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> model.getFoo());
     }
 
     @Test
     void testGetterWithParam() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.getFoo(0);
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class,
+                () -> model.getFoo(0));
     }
 
     @Test
     void testSetterReturns() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.setFoo(0);
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class,
+                () -> model.setFoo(0));
     }
 
     @Test
     void testSetterNoParam() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.setFoo();
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> model.setFoo());
     }
 
     @Test
     void testSetterTwoParams() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.setFoo(1, 2);
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class,
+                () -> model.setFoo(1, 2));
     }
 
     @Test
     void testInvalidSetterMethodName() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.setfoo(1);
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class,
+                () -> model.setfoo(1));
     }
 
     @Test
     void testInvalidGetterMethodName() {
-        assertThrows(InvalidTemplateModelException.class, () -> {
-            NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-            NotSupportedModel model = template.getModel();
-            model.isbar();
-        });
+        InvalidMethodSignatureModelTemplate template = new InvalidMethodSignatureModelTemplate();
+        InvalidMethodSignatureModel model = template.getModel();
+        assertThrows(InvalidTemplateModelException.class, () -> model.isbar());
     }
 
     @Test
