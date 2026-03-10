@@ -27,11 +27,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +39,13 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_ASSETS_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskCopyNpmAssetsFilesTest {
+class TaskCopyNpmAssetsFilesTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private Options options;
     private ClassFinder classFinder;
@@ -61,11 +61,11 @@ public class TaskCopyNpmAssetsFilesTest {
     // | | | | image.gif
     // | | | - templates
     // | | | | button.template
-    @Before
-    public void setUp() throws IOException {
-        temporaryFolder.create();
+    @BeforeEach
+    void setUp() throws IOException {
+        File nodeModules = new File(temporaryFolder, "node_modules");
 
-        File nodeModules = temporaryFolder.newFolder("node_modules");
+        nodeModules.mkdirs();
         File testButtonFolder = new File(nodeModules, "test-button");
         File imageAssets = new File(testButtonFolder, "images");
         File templateAssets = new File(testButtonFolder, "templates");
@@ -81,21 +81,22 @@ public class TaskCopyNpmAssetsFilesTest {
         Files.write(new File(templateAssets, "button.template").toPath(),
                 List.of("template file"));
 
-        webappResourcesDirectory = temporaryFolder.newFolder("webapp");
-        File resourceOutputDirectory = temporaryFolder.newFolder("resource");
+        webappResourcesDirectory = new File(temporaryFolder, "webapp");
+        File resourceOutputDirectory = new File(temporaryFolder, "resource");
+        resourceOutputDirectory.mkdirs();
 
         classFinder = Mockito.mock(ClassFinder.class);
         scanner = Mockito.mock(FrontendDependenciesScanner.class);
 
         options = new Options(Mockito.mock(Lookup.class), classFinder,
-                temporaryFolder.getRoot());
+                temporaryFolder);
         options.withBuildResultFolders(webappResourcesDirectory,
                 resourceOutputDirectory)
                 .withFrontendDependenciesScanner(scanner);
     }
 
     @Test
-    public void assertFolderIsCopied() throws IOException {
+    void assertFolderIsCopied() throws IOException {
         Mockito.when(scanner.getAssets())
                 .thenReturn(Map.of("test-button", List.of("images/**:button")));
 
@@ -105,15 +106,15 @@ public class TaskCopyNpmAssetsFilesTest {
 
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
-        Assert.assertEquals(2, filesInDirectory.size());
-        Assert.assertTrue(filesInDirectory
+        assertEquals(2, filesInDirectory.size());
+        assertTrue(filesInDirectory
                 .contains("VAADIN/static/assets/button/image.jpg"));
-        Assert.assertTrue(filesInDirectory
+        assertTrue(filesInDirectory
                 .contains("VAADIN/static/assets/button/image.gif"));
     }
 
     @Test
-    public void copiedFolderStructureIsKept() throws IOException {
+    void copiedFolderStructureIsKept() throws IOException {
         Mockito.when(scanner.getAssets())
                 .thenReturn(Map.of("test-button", List.of("**:button")));
 
@@ -123,20 +124,22 @@ public class TaskCopyNpmAssetsFilesTest {
 
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
-        Assert.assertEquals(3, filesInDirectory.size());
-        Assert.assertTrue("Could not find file images/image.jpg",
+        assertEquals(3, filesInDirectory.size());
+        assertTrue(
                 filesInDirectory.contains(
-                        "VAADIN/static/assets/button/images/image.jpg"));
-        Assert.assertTrue("Could not find file images/image.gif",
+                        "VAADIN/static/assets/button/images/image.jpg"),
+                "Could not find file images/image.jpg");
+        assertTrue(
                 filesInDirectory.contains(
-                        "VAADIN/static/assets/button/images/image.gif"));
-        Assert.assertTrue("Could not find file templates/button.template",
-                filesInDirectory.contains(
-                        "VAADIN/static/assets/button/templates/button.template"));
+                        "VAADIN/static/assets/button/images/image.gif"),
+                "Could not find file images/image.gif");
+        assertTrue(filesInDirectory.contains(
+                "VAADIN/static/assets/button/templates/button.template"),
+                "Could not find file templates/button.template");
     }
 
     @Test
-    public void singleAssertFromFolderIsCopied() throws IOException {
+    void singleAssertFromFolderIsCopied() throws IOException {
         Mockito.when(scanner.getAssets()).thenReturn(
                 Map.of("test-button", List.of("images/*.jpg:copy")));
 
@@ -146,13 +149,13 @@ public class TaskCopyNpmAssetsFilesTest {
 
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
-        Assert.assertEquals(1, filesInDirectory.size());
-        Assert.assertEquals("VAADIN/static/assets/copy/image.jpg",
+        assertEquals(1, filesInDirectory.size());
+        assertEquals("VAADIN/static/assets/copy/image.jpg",
                 filesInDirectory.iterator().next());
     }
 
     @Test
-    public void allAssetsAreCopied() throws IOException {
+    void allAssetsAreCopied() throws IOException {
         Mockito.when(scanner.getAssets()).thenReturn(Map.of("test-button",
                 Arrays.asList("images/**:button", "templates/**:button")));
 
@@ -162,17 +165,17 @@ public class TaskCopyNpmAssetsFilesTest {
 
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
-        Assert.assertEquals(3, filesInDirectory.size());
-        Assert.assertTrue(filesInDirectory
+        assertEquals(3, filesInDirectory.size());
+        assertTrue(filesInDirectory
                 .contains("VAADIN/static/assets/button/image.jpg"));
-        Assert.assertTrue(filesInDirectory
+        assertTrue(filesInDirectory
                 .contains("VAADIN/static/assets/button/image.gif"));
-        Assert.assertTrue(filesInDirectory
+        assertTrue(filesInDirectory
                 .contains("VAADIN/static/assets/button/button.template"));
     }
 
     @Test
-    public void devBundleCopiesAssetsToCorrectFolder() throws IOException {
+    void devBundleCopiesAssetsToCorrectFolder() throws IOException {
         Mockito.when(scanner.getAssets()).thenReturn(
                 Map.of("test-button", List.of("templates/**:button")));
         options.withBundleBuild(true).withProductionMode(false)
@@ -188,13 +191,13 @@ public class TaskCopyNpmAssetsFilesTest {
                 "webapp/" + VAADIN_STATIC_ASSETS_PATH);
 
         Set<String> filesInDirectory = getFilesInDirectory(devBundleTarget);
-        Assert.assertEquals(1, filesInDirectory.size());
-        Assert.assertEquals("button/button.template",
+        assertEquals(1, filesInDirectory.size());
+        assertEquals("button/button.template",
                 filesInDirectory.iterator().next());
     }
 
     @Test
-    public void noAssetsCopiedWhenCopyFlagFalse() throws IOException {
+    void noAssetsCopiedWhenCopyFlagFalse() throws IOException {
         Mockito.when(scanner.getAssets()).thenReturn(Map.of("test-button",
                 Arrays.asList("images/**:button", "templates/**:button")));
         options.setCopyAssets(false);
@@ -205,8 +208,8 @@ public class TaskCopyNpmAssetsFilesTest {
 
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
-        Assert.assertEquals("Nothing should be copied for CopyAssets false", 0,
-                filesInDirectory.size());
+        assertEquals(0, filesInDirectory.size(),
+                "Nothing should be copied for CopyAssets false");
     }
 
     static Set<String> getFilesInDirectory(File targetDirectory,
