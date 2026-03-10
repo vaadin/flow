@@ -22,11 +22,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -37,11 +35,14 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.internal.FrontendUtils.TAILWIND_CSS;
 import static com.vaadin.flow.server.frontend.scanner.ChunkInfo.GLOBAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateTailwindCssTest {
+class TaskGenerateTailwindCssTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private File npmFolder;
     private File frontendGeneratedFolder;
@@ -49,9 +50,10 @@ public class TaskGenerateTailwindCssTest {
     private TaskGenerateTailwindCss taskGenerateTailwindCss;
     private FrontendDependenciesScanner frontendDependenciesScanner;
 
-    @Before
-    public void setUp() throws IOException {
-        npmFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
+                .toFile();
         File srcFolder = new File(npmFolder, "src");
         srcFolder.mkdirs();
         frontendFolder = new File(srcFolder, "frontend");
@@ -70,39 +72,36 @@ public class TaskGenerateTailwindCssTest {
     }
 
     @Test
-    public void should_haveCorrectFileContent() throws Exception {
+    void should_haveCorrectFileContent() throws Exception {
         verifyTailwindCss(taskGenerateTailwindCss.getFileContent(), false,
                 false);
     }
 
     @Test
-    public void should_generateTailwindCss() throws Exception {
+    void should_generateTailwindCss() throws Exception {
         File tailwindcss = new File(frontendGeneratedFolder, TAILWIND_CSS);
         taskGenerateTailwindCss.execute();
-        Assert.assertEquals("Should have correct tailwind.css file path",
-                tailwindcss, taskGenerateTailwindCss.getGeneratedFile());
+        assertEquals(tailwindcss, taskGenerateTailwindCss.getGeneratedFile(),
+                "Should have correct tailwind.css file path");
         verifyTailwindCss(getTailwindCssFileContent(), false, false);
-        Assert.assertTrue(
-                "Should generate tailwind.css in the frontend generated folder",
-                taskGenerateTailwindCss.shouldGenerate());
+        assertTrue(taskGenerateTailwindCss.shouldGenerate(),
+                "Should generate tailwind.css in the frontend generated folder");
     }
 
     @Test
-    public void should_updateExistingTailwindCss() throws Exception {
+    void should_updateExistingTailwindCss() throws Exception {
         File tailwindcss = new File(frontendGeneratedFolder, TAILWIND_CSS);
         Files.writeString(tailwindcss.toPath(), "OLD CONTENT");
         taskGenerateTailwindCss.execute();
-        Assert.assertTrue(
-                "Should generate tailwind.css in the frontend generated folder",
-                taskGenerateTailwindCss.shouldGenerate());
+        assertTrue(taskGenerateTailwindCss.shouldGenerate(),
+                "Should generate tailwind.css in the frontend generated folder");
         var tailwindCssContent = getTailwindCssFileContent();
-        Assert.assertEquals("Should update content in tailwind.css",
-                taskGenerateTailwindCss.getFileContent(), tailwindCssContent);
+        assertEquals(taskGenerateTailwindCss.getFileContent(),
+                tailwindCssContent, "Should update content in tailwind.css");
     }
 
     @Test
-    public void should_includeCustomImport_whenCustomFileExists()
-            throws Exception {
+    void should_includeCustomImport_whenCustomFileExists() throws Exception {
         // Create custom CSS file in the src/frontend folder (parent of
         // generated folder)
         File customCss = new File(frontendFolder, "tailwind-custom.css");
@@ -118,13 +117,12 @@ public class TaskGenerateTailwindCssTest {
 
         String content = task.getFileContent();
         verifyTailwindCss(content, true, false);
-        Assert.assertFalse("Should not contain backslashes in import path",
-                content.contains("\\"));
+        assertFalse(content.contains("\\"),
+                "Should not contain backslashes in import path");
     }
 
     @Test
-    public void should_includeThemeImport_whenThemeStylesCssExists()
-            throws Exception {
+    void should_includeThemeImport_whenThemeStylesCssExists() throws Exception {
         // Create theme folder with styles.css
         String themeName = "my-theme";
         File themesFolder = new File(frontendFolder, "themes");
@@ -147,14 +145,14 @@ public class TaskGenerateTailwindCssTest {
         TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
 
         String content = task.getFileContent();
-        Assert.assertTrue("Should have theme styles.css import",
-                content.contains("@import '../themes/my-theme/styles.css';"));
-        Assert.assertFalse("Should not contain backslashes in import path",
-                content.contains("\\"));
+        assertTrue(content.contains("@import '../themes/my-theme/styles.css';"),
+                "Should have theme styles.css import");
+        assertFalse(content.contains("\\"),
+                "Should not contain backslashes in import path");
     }
 
     @Test
-    public void should_notIncludeThemeImport_whenNoTheme() throws Exception {
+    void should_notIncludeThemeImport_whenNoTheme() throws Exception {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
@@ -166,7 +164,7 @@ public class TaskGenerateTailwindCssTest {
     }
 
     @Test
-    public void should_notIncludeThemeImport_whenThemeStylesCssNotExists()
+    void should_notIncludeThemeImport_whenThemeStylesCssNotExists()
             throws Exception {
         // Create theme folder without styles.css
         String themeName = "my-theme";
@@ -181,13 +179,12 @@ public class TaskGenerateTailwindCssTest {
         TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
 
         String content = task.getFileContent();
-        Assert.assertFalse(
-                "Should not have theme import when styles.css missing",
-                content.contains("themes/my-theme/styles.css"));
+        assertFalse(content.contains("themes/my-theme/styles.css"),
+                "Should not have theme import when styles.css missing");
     }
 
     @Test
-    public void should_includeThemeImport_whenJarPackagedThemeStylesCssExists()
+    void should_includeThemeImport_whenJarPackagedThemeStylesCssExists()
             throws Exception {
         // Create JAR resources folder with theme styles.css
         String themeName = "jar-theme";
@@ -214,16 +211,15 @@ public class TaskGenerateTailwindCssTest {
         TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
 
         String content = task.getFileContent();
-        Assert.assertTrue("Should have JAR theme styles.css import",
-                content.contains(
-                        "@import './jar-resources/themes/jar-theme/styles.css';"));
-        Assert.assertFalse("Should not contain backslashes in import path",
-                content.contains("\\"));
+        assertTrue(content.contains(
+                "@import './jar-resources/themes/jar-theme/styles.css';"),
+                "Should have JAR theme styles.css import");
+        assertFalse(content.contains("\\"),
+                "Should not contain backslashes in import path");
     }
 
     @Test
-    public void should_preferLocalTheme_overJarPackagedTheme()
-            throws Exception {
+    void should_preferLocalTheme_overJarPackagedTheme() throws Exception {
         // Create both local and JAR-packaged theme with same name
         String themeName = "shared-theme";
 
@@ -260,15 +256,18 @@ public class TaskGenerateTailwindCssTest {
 
         String content = task.getFileContent();
         // Should prefer local theme over JAR theme
-        Assert.assertTrue("Should have local theme styles.css import", content
-                .contains("@import '../themes/shared-theme/styles.css';"));
-        Assert.assertFalse("Should not have JAR theme import", content
-                .contains("./jar-resources/themes/shared-theme/styles.css"));
+        assertTrue(
+                content.contains(
+                        "@import '../themes/shared-theme/styles.css';"),
+                "Should have local theme styles.css import");
+        assertFalse(
+                content.contains(
+                        "./jar-resources/themes/shared-theme/styles.css"),
+                "Should not have JAR theme import");
     }
 
     @Test
-    public void should_includeCssImport_whenJarResourceCssExists()
-            throws Exception {
+    void should_includeCssImport_whenJarResourceCssExists() throws Exception {
         // Create theme folder without styles.css
         File generatedFolder = new File(frontendFolder, "generated");
         File jarResources = new File(generatedFolder, "jar-resources");
@@ -287,33 +286,36 @@ public class TaskGenerateTailwindCssTest {
         TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
 
         String content = task.getFileContent();
-        Assert.assertFalse("Should have add-on.css import",
-                content.contains("./jar-resources/add-on.css"));
+        assertFalse(content.contains("./jar-resources/add-on.css"),
+                "Should have add-on.css import");
     }
 
     private void verifyTailwindCss(String tailwindCssContent,
             boolean shouldHaveCustomImport, boolean shouldHaveThemeImport) {
-        Assert.assertTrue("Should have tailwindcss/theme.css import",
+        assertTrue(
+                tailwindCssContent.contains("@import 'tailwindcss/theme.css';"),
+                "Should have tailwindcss/theme.css import");
+        assertTrue(
                 tailwindCssContent
-                        .contains("@import 'tailwindcss/theme.css';"));
-        Assert.assertTrue("Should have tailwindcss/utilities.css import",
-                tailwindCssContent
-                        .contains("@import 'tailwindcss/utilities.css';"));
-        Assert.assertTrue("Should have @source directive with path",
-                tailwindCssContent.contains("@source '../..';"));
+                        .contains("@import 'tailwindcss/utilities.css';"),
+                "Should have tailwindcss/utilities.css import");
+        assertTrue(tailwindCssContent.contains("@source '../..';"),
+                "Should have @source directive with path");
         if (shouldHaveCustomImport) {
-            Assert.assertTrue("Should have custom import", tailwindCssContent
-                    .contains("@import '../tailwind-custom.css';"));
+            assertTrue(
+                    tailwindCssContent
+                            .contains("@import '../tailwind-custom.css';"),
+                    "Should have custom import");
         } else {
-            Assert.assertFalse("Should not have custom import",
-                    tailwindCssContent.contains("tailwind-custom.css"));
+            assertFalse(tailwindCssContent.contains("tailwind-custom.css"),
+                    "Should not have custom import");
         }
         if (shouldHaveThemeImport) {
-            Assert.assertTrue("Should have theme import",
-                    tailwindCssContent.contains("themes/"));
+            assertTrue(tailwindCssContent.contains("themes/"),
+                    "Should have theme import");
         } else {
-            Assert.assertFalse("Should not have theme import",
-                    tailwindCssContent.contains("themes/"));
+            assertFalse(tailwindCssContent.contains("themes/"),
+                    "Should not have theme import");
         }
     }
 

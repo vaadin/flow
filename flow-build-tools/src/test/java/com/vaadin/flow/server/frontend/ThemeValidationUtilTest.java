@@ -18,87 +18,89 @@ package com.vaadin.flow.server.frontend;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-public class ThemeValidationUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ThemeValidationUtilTest {
 
     @Test
-    public void testObjectsIncludeMethodWithSameElementsInArrays() {
+    void testObjectsIncludeMethodWithSameElementsInArrays() {
         ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
         ArrayNode projectJson = createArrayNode("a", "b", "c");
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 projectJson, missedKeys);
-        Assert.assertTrue(result);
-        Assert.assertTrue(missedKeys.isEmpty());
+        assertTrue(result);
+        assertTrue(missedKeys.isEmpty());
     }
 
     @Test
-    public void testObjectsIncludeMethodWithSameElementsInArraysDifferentOrder() {
+    void testObjectsIncludeMethodWithSameElementsInArraysDifferentOrder() {
         ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
         ArrayNode projectJson = createArrayNode("b", "a", "c");
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 projectJson, missedKeys);
-        Assert.assertTrue(result);
-        Assert.assertTrue(missedKeys.isEmpty());
+        assertTrue(result);
+        assertTrue(missedKeys.isEmpty());
     }
 
     @Test
-    public void testObjectsIncludeMethodArraysAreDifferent() {
+    void testObjectsIncludeMethodArraysAreDifferent() {
         List<String> missedKeysForBundle = new ArrayList<>();
         ArrayNode jsonFromBundle = createArrayNode("a", "c");
         ArrayNode jsonFromProject = createArrayNode("a", "b", "c");
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 jsonFromProject, missedKeysForBundle);
-        Assert.assertFalse(result);
+        assertFalse(result);
         // the missed keys should be the same as the jsonFromBundle as the other
         // array is empty
         // also because it's a ArrayNode the keys are quoted
-        Assert.assertEquals(missedKeysForBundle, List.of("\"b\""));
+        assertEquals(missedKeysForBundle, List.of("\"b\""));
 
         List<String> missedKeysForProject = new ArrayList<>();
         jsonFromBundle = createArrayNode("a", "b", "c");
         jsonFromProject = createArrayNode("a");
         result = ThemeValidationUtil.objectIncludesEntry(jsonFromProject,
                 jsonFromBundle, missedKeysForProject);
-        Assert.assertFalse(result);
-        Assert.assertEquals(missedKeysForProject, List.of("\"b\"", "\"c\""));
+        assertFalse(result);
+        assertEquals(missedKeysForProject, List.of("\"b\"", "\"c\""));
     }
 
     @Test
-    public void testObjectsIncludeMethodBothEmptyArraysAreEmpty() {
+    void testObjectsIncludeMethodBothEmptyArraysAreEmpty() {
         List<String> missedKeys = new ArrayList<>();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(
                 JacksonUtils.createArrayNode(), JacksonUtils.createArrayNode(),
                 missedKeys);
-        Assert.assertTrue(result);
-        Assert.assertTrue(missedKeys.isEmpty());
+        assertTrue(result);
+        assertTrue(missedKeys.isEmpty());
     }
 
     @Test
-    public void testObjectsIncludeMethodOneArrayIsEmpty() {
+    void testObjectsIncludeMethodOneArrayIsEmpty() {
         List<String> missedKeysFromProject = new ArrayList<>();
         ArrayNode jsonFromBundle = createArrayNode("a", "b", "c");
         ArrayNode jsonFromProjectEmpty = createArrayNode();
 
         boolean result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundle,
                 jsonFromProjectEmpty, missedKeysFromProject);
-        Assert.assertFalse(result);
+        assertFalse(result);
 
         // the missed keys should be the same as the jsonFromBundle as the other
         // array is empty
         // also because it's a ArrayNode the keys are quoted
-        Assert.assertEquals(missedKeysFromProject,
-                List.of("\"a\"", "\"b\"", "\"c\""));
+        assertEquals(missedKeysFromProject, List.of("\"a\"", "\"b\"", "\"c\""));
 
         List<String> missedKeysFromBundle = new ArrayList<>();
         ArrayNode jsonFromProject = createArrayNode("a", "b", "c");
@@ -106,9 +108,8 @@ public class ThemeValidationUtilTest {
 
         result = ThemeValidationUtil.objectIncludesEntry(jsonFromBundleEmpty,
                 jsonFromProject, missedKeysFromBundle);
-        Assert.assertFalse(result);
-        Assert.assertEquals(missedKeysFromBundle,
-                List.of("\"a\"", "\"b\"", "\"c\""));
+        assertFalse(result);
+        assertEquals(missedKeysFromBundle, List.of("\"a\"", "\"b\"", "\"c\""));
     }
 
     private ArrayNode createArrayNode(String... values) {

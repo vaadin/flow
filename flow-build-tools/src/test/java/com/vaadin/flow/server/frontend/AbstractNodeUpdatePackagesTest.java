@@ -26,11 +26,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
@@ -54,16 +52,18 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class AbstractNodeUpdatePackagesTest
-        extends NodeUpdateTestUtil {
+abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     private static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
     private static final String VAADIN_VERSION = "vaadinVersion";
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private TaskUpdatePackages packageUpdater;
     private TaskGeneratePackageJson packageCreator;
@@ -78,16 +78,17 @@ public abstract class AbstractNodeUpdatePackagesTest
     private Options options;
     private File versions;
 
-    @Before
-    public void setup() throws Exception {
-        baseDir = temporaryFolder.getRoot();
+    @BeforeEach
+    void setup() throws Exception {
+        baseDir = temporaryFolder;
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
         classFinder = Mockito.spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
         packageCreator = new TaskGeneratePackageJson(options);
-        versions = temporaryFolder.newFile();
+        versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
+                .toFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -106,32 +107,32 @@ public abstract class AbstractNodeUpdatePackagesTest
             ClassFinder finder);
 
     @Test
-    public void should_CreatePackageJson() {
-        Assert.assertFalse(packageJson.exists());
+    void should_CreatePackageJson() {
+        assertFalse(packageJson.exists());
         packageCreator.execute();
-        Assert.assertTrue(packageJson.exists());
+        assertTrue(packageJson.exists());
     }
 
     @Test
-    public void should_not_ModifyPackageJson_WhenAlreadyExists() {
+    void should_not_ModifyPackageJson_WhenAlreadyExists() {
         packageCreator.execute();
-        Assert.assertTrue(packageCreator.modified);
+        assertTrue(packageCreator.modified);
 
         packageCreator.execute();
-        Assert.assertFalse(packageCreator.modified);
+        assertFalse(packageCreator.modified);
     }
 
     @Test
-    public void should_AddNewDependencies() throws Exception {
+    void should_AddNewDependencies() throws Exception {
         packageCreator.execute();
         packageUpdater.execute();
-        Assert.assertTrue(packageCreator.modified);
-        Assert.assertTrue(packageUpdater.modified);
+        assertTrue(packageCreator.modified);
+        assertTrue(packageUpdater.modified);
         assertMainPackageJsonContent();
     }
 
     @Test
-    public void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
+    void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
@@ -157,7 +158,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void pnpmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
+    void pnpmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
@@ -183,8 +184,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void pnpmIsInUse_packageLockExists_removePackageLock()
-            throws IOException {
+    void pnpmIsInUse_packageLockExists_removePackageLock() throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
                 options);
@@ -199,12 +199,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
                 options);
         packageUpdater.execute();
-        Assert.assertFalse("npm package-lock should be removed for pnpm",
-                packageLock.exists());
+        assertFalse(packageLock.exists(),
+                "npm package-lock should be removed for pnpm");
     }
 
     @Test
-    public void npmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
+    void npmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -222,7 +222,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void npmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
+    void npmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
             throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -240,7 +240,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void npmIsInUse_packageLockJsonContainsNonPMPMDeps_packageLockNotRemoved()
+    void npmIsInUse_packageLockJsonContainsNonPMPMDeps_packageLockNotRemoved()
             throws IOException {
         // use package updater with disabled PNPM
         // Generate package json in a proper format first
@@ -250,14 +250,13 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageLock.toPath(), Collections.singletonList("{  }"));
 
         packageUpdater.execute();
-        Assert.assertTrue(packageLock.exists());
+        assertTrue(packageLock.exists());
     }
 
     // Some npm-dependency pinning tests are in TaskRunNpmInstallTest
 
     @Test
-    public void unmatchedDevDependency_devDependencyIsRemoved()
-            throws IOException {
+    void unmatchedDevDependency_devDependencyIsRemoved() throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -277,16 +276,16 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         json = packageUpdater.getPackageJson();
-        Assert.assertFalse("Old dev dependency should be removed from vaadin",
+        assertFalse(
                 json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES)
-                        .has(old_dependency));
-        Assert.assertFalse(
-                "Old dev dependency should be removed from devDependencies",
-                json.get(DEV_DEPENDENCIES).has(old_dependency));
+                        .has(old_dependency),
+                "Old dev dependency should be removed from vaadin");
+        assertFalse(json.get(DEV_DEPENDENCIES).has(old_dependency),
+                "Old dev dependency should be removed from devDependencies");
     }
 
     @Test // #10032
-    public void oldVaadinDevDependency_missmatchWithDevDependency_vaadinDependencyIsUpdated()
+    void oldVaadinDevDependency_missmatchWithDevDependency_vaadinDependencyIsUpdated()
             throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -307,17 +306,16 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
 
         json = packageUpdater.getPackageJson();
-        Assert.assertEquals(
-                "Vaadin dependency should be updated to latest DevDependency",
-                version, json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES).get(key)
-                        .asString());
-        Assert.assertEquals("DevDependency should stay the same as it was",
-                version, json.get(DEV_DEPENDENCIES).get(key).asString());
+        assertEquals(version,
+                json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES).get(key)
+                        .asString(),
+                "Vaadin dependency should be updated to latest DevDependency");
+        assertEquals(version, json.get(DEV_DEPENDENCIES).get(key).asString(),
+                "DevDependency should stay the same as it was");
     }
 
     @Test
-    public void versionsDoNotMatch_inVaadinJson_cleanUpNpm()
-            throws IOException {
+    void versionsDoNotMatch_inVaadinJson_cleanUpNpm() throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
 
@@ -333,8 +331,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void versionsDoNotMatch_inVaadinJson_cleanUpPnpm()
-            throws IOException {
+    void versionsDoNotMatch_inVaadinJson_cleanUpPnpm() throws IOException {
         options.withEnablePnpm(true);
 
         packageUpdater = new TaskUpdatePackages(
@@ -354,14 +351,14 @@ public abstract class AbstractNodeUpdatePackagesTest
                     .thenReturn(Optional.of("1.2.3"));
             packageUpdater.execute();
             // nothing is removed except package-lock
-            Assert.assertTrue(mainNodeModules.exists());
+            assertTrue(mainNodeModules.exists());
             // package-lock is removed
-            Assert.assertFalse(packageLock.exists());
+            assertFalse(packageLock.exists());
         }
     }
 
     @Test
-    public void versionsMatch_noCleanUp() throws IOException {
+    void versionsMatch_noCleanUp() throws IOException {
         // TODO: Fixme
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -389,12 +386,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         // nothing is removed
-        Assert.assertTrue(mainNodeModules.exists());
-        Assert.assertTrue(packageLock.exists());
+        assertTrue(mainNodeModules.exists());
+        assertTrue(packageLock.exists());
     }
 
     @Test
-    public void versionsMatch_forceCleanUp_cleanUp() throws IOException {
+    void versionsMatch_forceCleanUp_cleanUp() throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -413,7 +410,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void generatePackageJson_sameDependencies_updaterIsNotModified() {
+    void generatePackageJson_sameDependencies_updaterIsNotModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -435,13 +432,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         // packageCreator has not added its content
         packageUpdater.execute();
 
-        Assert.assertFalse(
-                "Modification flag should be false when no dependencies changed.",
-                packageUpdater.modified);
+        assertFalse(packageUpdater.modified,
+                "Modification flag should be false when no dependencies changed.");
     }
 
     @Test
-    public void generatePackageJson_sameDependenciesInDifferentOrder_updaterIsNotModified()
+    void generatePackageJson_sameDependenciesInDifferentOrder_updaterIsNotModified()
             throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -480,13 +476,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         // packageCreator has not added its content
         packageUpdater.execute();
 
-        Assert.assertFalse(
-                "Modification flag should be false when no dependencies changed.",
-                packageUpdater.modified);
+        assertFalse(packageUpdater.modified,
+                "Modification flag should be false when no dependencies changed.");
     }
 
     @Test
-    public void generatePackageJson_removedDependencies_updaterIsModified() {
+    void generatePackageJson_removedDependencies_updaterIsModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -510,13 +505,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         // packageCreator has not added its content
         packageUpdater.execute();
 
-        Assert.assertTrue(
-                "Modification flag should be true when dependency removed.",
-                packageUpdater.modified);
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true when dependency removed.");
     }
 
     @Test
-    public void generatePackageJson_addedDependencies_updaterIsModified() {
+    void generatePackageJson_addedDependencies_updaterIsModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -538,13 +532,12 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater.execute();
 
-        Assert.assertTrue(
-                "Modification flag should be true when dependency added.",
-                packageUpdater.modified);
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true when dependency added.");
     }
 
     @Test
-    public void generatePackageJson_noDependencies_updaterIsNotModified() {
+    void generatePackageJson_noDependencies_updaterIsNotModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -556,20 +549,18 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        Assert.assertTrue(
-                "Modification flag should be true as we have added default dependencies.",
-                packageUpdater.modified);
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true as we have added default dependencies.");
 
         // generate it one more time
         packageUpdater.execute();
 
-        Assert.assertFalse(
-                "Modification flag should be false when there has never been dependencies.",
-                packageUpdater.modified);
+        assertFalse(packageUpdater.modified,
+                "Modification flag should be false when there has never been dependencies.");
     }
 
     @Test
-    public void updatedPackageJson_noDependencies_creatorAndUpdatedIsMarkedModified() {
+    void updatedPackageJson_noDependencies_creatorAndUpdatedIsMarkedModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -581,16 +572,14 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        Assert.assertTrue(
-                "Modification flag should be true when main package was created.",
-                packageCreator.modified);
-        Assert.assertTrue(
-                "Modification flag should be true as we should have updated the hash for default dependencies.",
-                packageUpdater.modified);
+        assertTrue(packageCreator.modified,
+                "Modification flag should be true when main package was created.");
+        assertTrue(packageUpdater.modified,
+                "Modification flag should be true as we should have updated the hash for default dependencies.");
     }
 
     @Test
-    public void userAddedDependencies_notCleanedByUpdater() throws IOException {
+    void userAddedDependencies_notCleanedByUpdater() throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -615,13 +604,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
-        Assert.assertTrue(dependencies.has("@custom/timer"));
-        Assert.assertEquals("3.3.0",
-                dependencies.get("@custom/timer").asString());
+        assertTrue(dependencies.has("@custom/timer"));
+        assertEquals("3.3.0", dependencies.get("@custom/timer").asString());
     }
 
     @Test
-    public void legacyPackageJson_isCleanedCorrectly_pnpm() throws IOException {
+    void legacyPackageJson_isCleanedCorrectly_pnpm() throws IOException {
         String legacyPackageContent = getLegacyPackageContent();
 
         Files.write(packageJson.toPath(),
@@ -636,7 +624,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void legacyPackageJson_isCleanedCorrectly_npm() throws IOException {
+    void legacyPackageJson_isCleanedCorrectly_npm() throws IOException {
         String legacyPackageContent = getLegacyPackageContent();
 
         Files.write(packageJson.toPath(),
@@ -650,8 +638,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void frameworkManagedPackages_versionsAreUpdated()
-            throws IOException {
+    void frameworkManagedPackages_versionsAreUpdated() throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -671,8 +658,8 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packages.entrySet()) {
-            Assert.assertTrue(dependencies.has(entry.getKey()));
-            Assert.assertEquals(entry.getValue(),
+            assertTrue(dependencies.has(entry.getKey()));
+            assertEquals(entry.getValue(),
                     dependencies.get(entry.getKey()).asString());
         }
 
@@ -687,15 +674,14 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packages.entrySet()) {
-            Assert.assertTrue(dependencies.has(entry.getKey()));
-            Assert.assertEquals(entry.getValue(),
+            assertTrue(dependencies.has(entry.getKey()));
+            assertEquals(entry.getValue(),
                     dependencies.get(entry.getKey()).asString());
         }
     }
 
     @Test
-    public void removedFrameworkDependencies_dependencyIsRemoved()
-            throws IOException {
+    void removedFrameworkDependencies_dependencyIsRemoved() throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -716,27 +702,25 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.remove("@vaadin/vaadin-checkbox");
 
         JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
-        Assert.assertTrue("vaadin-checkbox is missing from the dependencies",
-                dependencies.has("@vaadin/vaadin-checkbox"));
+        assertTrue(dependencies.has("@vaadin/vaadin-checkbox"),
+                "vaadin-checkbox is missing from the dependencies");
 
         dependencies = getPackageJson(packageJson).get(VAADIN_DEP_KEY)
                 .get(DEPENDENCIES);
-        Assert.assertTrue("vaadin-checkbox is missing from vaadin.dependencies",
-                dependencies.has("@vaadin/vaadin-checkbox"));
+        assertTrue(dependencies.has("@vaadin/vaadin-checkbox"),
+                "vaadin-checkbox is missing from vaadin.dependencies");
 
         // generate it one more time, this should remove the checkbox
         packageUpdater.execute();
 
         dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
-        Assert.assertFalse(
-                "vaadin-checkbox is still available in the dependencies",
-                dependencies.has("@vaadin/vaadin-checkbox"));
+        assertFalse(dependencies.has("@vaadin/vaadin-checkbox"),
+                "vaadin-checkbox is still available in the dependencies");
 
         dependencies = getPackageJson(packageJson).get(VAADIN_DEP_KEY)
                 .get(DEPENDENCIES);
-        Assert.assertFalse(
-                "vaadin-checkbox is still available in vaadin.dependencies",
-                dependencies.has("@vaadin/vaadin-checkbox"));
+        assertFalse(dependencies.has("@vaadin/vaadin-checkbox"),
+                "vaadin-checkbox is still available in vaadin.dependencies");
 
     }
 
@@ -773,36 +757,35 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         // self control
-        Assert.assertTrue(mainNodeModules.exists());
-        Assert.assertTrue(packageLock.exists());
+        assertTrue(mainNodeModules.exists());
+        assertTrue(packageLock.exists());
     }
 
     private void assertCleanUp() {
-        Assert.assertFalse(mainNodeModules.exists());
-        Assert.assertTrue("package-lock should not be removed",
-                packageLock.exists());
+        assertFalse(mainNodeModules.exists());
+        assertTrue(packageLock.exists(), "package-lock should not be removed");
     }
 
     private void assertMainPackageJsonContent() throws IOException {
         JsonNode json = packageUpdater.getPackageJson();
-        Assert.assertTrue(json.has("name"));
-        Assert.assertTrue(json.has("license"));
+        assertTrue(json.has("name"));
+        assertTrue(json.has("license"));
 
         JsonNode dependencies = json.get(DEPENDENCIES);
         for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDependencies().entrySet()) {
-            Assert.assertTrue("Missing '" + entry.getKey() + "' package",
-                    dependencies.has(entry.getKey()));
+            assertTrue(dependencies.has(entry.getKey()),
+                    "Missing '" + entry.getKey() + "' package");
         }
 
         JsonNode devDependencies = json.get(DEV_DEPENDENCIES);
         for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDevDependencies().entrySet()) {
-            Assert.assertTrue("Missing '" + entry.getKey() + "' package",
-                    devDependencies.has(entry.getKey()));
+            assertTrue(devDependencies.has(entry.getKey()),
+                    "Missing '" + entry.getKey() + "' package");
         }
 
-        Assert.assertFalse(dependencies.has(DEP_NAME_FLOW_JARS));
+        assertFalse(dependencies.has(DEP_NAME_FLOW_JARS));
     }
 
     private ObjectNode getDependencies(JsonNode json) {
@@ -822,15 +805,15 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonNode packJsonNode = getPackageJson(packageJson);
         JsonNode deps = packJsonNode.get(DEPENDENCIES);
         // No Flow deps
-        Assert.assertFalse(deps.has(DEP_NAME_FLOW_DEPS));
+        assertFalse(deps.has(DEP_NAME_FLOW_DEPS));
         // No Flow resources
-        Assert.assertFalse(deps.has(DEP_NAME_FLOW_JARS));
+        assertFalse(deps.has(DEP_NAME_FLOW_JARS));
         // No old package hash
-        Assert.assertFalse(deps.has(VAADIN_APP_PACKAGE_HASH));
+        assertFalse(deps.has(VAADIN_APP_PACKAGE_HASH));
         // No initially generated default polymer dep
-        Assert.assertFalse(deps.has("@polymer/polymer"));
+        assertFalse(deps.has("@polymer/polymer"));
         // Contains new hash
-        Assert.assertTrue(packJsonNode.get("vaadin").has("hash"));
+        assertTrue(packJsonNode.get("vaadin").has("hash"));
     }
 
     JsonNode getPackageJson(File packageFile) throws IOException {

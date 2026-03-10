@@ -22,19 +22,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.file.AccumulatorPathVisitor;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -43,25 +38,16 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
  */
-@RunWith(Parameterized.class)
-public class NodeTasksExecutionTest {
+class NodeTasksExecutionTest {
 
-    private static final String DEV_SERVER_VITE = "VITE";
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<String> devServers() {
-        return List.of(DEV_SERVER_VITE);
-    }
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Parameterized.Parameter
-    public String devServerImpl;
+    @TempDir
+    File temporaryFolder;
 
     private NodeTasks nodeTasks;
     private List<FallibleCommand> commandsMock;
@@ -71,15 +57,15 @@ public class NodeTasksExecutionTest {
 
     private Options options;
 
-    @Before
-    public void init() throws Exception {
+    @BeforeEach
+    void init() throws Exception {
 
         // Make a builder that doesn't add any commands.
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
-        options = new MockOptions(finder, temporaryFolder.getRoot())
+        options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory(TARGET)
-                .withFrontendDirectory(temporaryFolder.getRoot());
+                .withFrontendDirectory(temporaryFolder);
         options.withProductionMode(false);
 
         nodeTasks = new NodeTasks(options);
@@ -93,9 +79,9 @@ public class NodeTasksExecutionTest {
         // by configuration options
         commands.clear();
 
-        Assert.assertEquals("No commands should be added initially, "
-                + "update mock builder so that we don't automatically add any tasks!",
-                0, commands.size());
+        assertEquals(0, commands.size(),
+                "No commands should be added initially, "
+                        + "update mock builder so that we don't automatically add any tasks!");
     }
 
     private static List<Class<? extends FallibleCommand>> getCommandOrder(
@@ -120,12 +106,14 @@ public class NodeTasksExecutionTest {
     }
 
     private void createFeatureFlagsFile(String contents) throws IOException {
-        Files.writeString(temporaryFolder
-                .newFile(FeatureFlags.PROPERTIES_FILENAME).toPath(), contents);
+        Files.writeString(
+                new File(temporaryFolder, FeatureFlags.PROPERTIES_FILENAME)
+                        .toPath(),
+                contents);
     }
 
     @Test
-    public void nodeTasks_notExecutedInParallel() throws Exception {
+    void nodeTasks_notExecutedInParallel() throws Exception {
         List<String> result = new ArrayList<>();
 
         FallibleCommand command1 = new FallibleCommand() {
@@ -183,12 +171,11 @@ public class NodeTasksExecutionTest {
         t1.join();
         t2.join();
 
-        Assert.assertEquals(List.of("Start 1", "End 1", "Start 2", "End 2"),
-                result);
+        assertEquals(List.of("Start 1", "End 1", "Start 2", "End 2"), result);
     }
 
     @Test
-    public void nodeTasks_alwaysExecutedInDefinedOrder()
+    void nodeTasks_alwaysExecutedInDefinedOrder()
             throws ExecutionFailedException {
 
         // Assemble the command list with random order
@@ -196,25 +183,24 @@ public class NodeTasksExecutionTest {
 
         nodeTasks.execute();
 
-        Assert.assertEquals("Amount of tasks executed was more than expected",
-                commandsOrder.size(), executionOrder.size());
-        Assert.assertEquals("Tasks were executed in an unexpected order",
-                commandsOrder, executionOrder);
+        assertEquals(commandsOrder.size(), executionOrder.size(),
+                "Amount of tasks executed was more than expected");
+        assertEquals(commandsOrder, executionOrder,
+                "Tasks were executed in an unexpected order");
     }
 
     @Test
-    public void nodeTasksContainsUnlistedCommand_throwsUnknownTaskException() {
+    void nodeTasksContainsUnlistedCommand_throwsUnknownTaskException() {
         // Assemble the command list with random order
         commands.add(commandsMock.get(0));
         commands.add(new NewTask());
 
-        Assert.assertThrows(
-                "NodeTasks execution should fail due to unknown task in execution list",
-                UnknownTaskException.class, nodeTasks::execute);
+        assertThrows(UnknownTaskException.class, nodeTasks::execute,
+                "NodeTasks execution should fail due to unknown task in execution list");
     }
 
     @Test
-    public void nodeTasks_deletesOldGeneratedFiles() throws Exception {
+    void nodeTasks_deletesOldGeneratedFiles() throws Exception {
         options.withCleanOldGeneratedFiles(true);
 
         NodeTasks spiedNodeTasks = Mockito.spy(new NodeTasks(options));
@@ -256,12 +242,11 @@ public class NodeTasksExecutionTest {
         AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
         Files.walkFileTree(options.getFrontendGeneratedFolder().toPath(),
                 visitor);
-        Assert.assertEquals(
-                "Expect exactly currently generated files to exists",
-                Set.copyOf(expectedFiles),
+        assertEquals(Set.copyOf(expectedFiles),
                 Set.copyOf(visitor.relativizeFiles(
                         options.getFrontendGeneratedFolder().toPath(), false,
-                        null)));
+                        null)),
+                "Expect exactly currently generated files to exists");
     }
 
     private FallibleCommand createGeneratedFileTask(Path relativePath) {
