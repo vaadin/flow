@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -8,11 +8,8 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import org.hamcrest.CoreMatchers;
 import org.jsoup.Jsoup;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -22,10 +19,10 @@ import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 
-public class KnownUnsupportedTypesTest extends HasCurrentService {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+class KnownUnsupportedTypesTest extends HasCurrentService {
 
     public static class LongType implements TemplateModel {
 
@@ -104,40 +101,38 @@ public class KnownUnsupportedTypesTest extends HasCurrentService {
     }
 
     @Test
-    public void long_throwUnsupportedTypeException() {
-        expectUnsupportedTypeException(Long.class);
-        new LongTemplate();
+    void long_throwUnsupportedTypeException() {
+        assertUnsupportedTypeException(Long.class, () -> new LongTemplate());
     }
 
     @Test
-    public void short_throwUnsupportedTypeException() {
-        expectUnsupportedTypeException(Short.class);
-        new ShortTemplate();
+    void short_throwUnsupportedTypeException() {
+        assertUnsupportedTypeException(Short.class, () -> new ShortTemplate());
     }
 
     @Test
-    public void float_throwUnsupportedTypeException() {
-        expectUnsupportedTypeException(Float.class);
-        new FloatTemplate();
+    void float_throwUnsupportedTypeException() {
+        assertUnsupportedTypeException(Float.class, () -> new FloatTemplate());
     }
 
     @Test
-    public void byte_throwUnsupportedTypeException() {
-        expectUnsupportedTypeException(Byte.class);
-        new ByteTemplate();
+    void byte_throwUnsupportedTypeException() {
+        assertUnsupportedTypeException(Byte.class, () -> new ByteTemplate());
     }
 
     @Test
-    public void char_throwUnsupportedTypeException() {
-        expectUnsupportedTypeException(Character.class);
-        new CharTemplate();
+    void char_throwUnsupportedTypeException() {
+        assertUnsupportedTypeException(Character.class,
+                () -> new CharTemplate());
     }
 
-    private void expectUnsupportedTypeException(Class<?> clazz) {
-        exception.expect(InvalidTemplateModelException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(clazz.getName()),
-                CoreMatchers.containsString("is not supported"), CoreMatchers
-                        .containsString("@" + Encode.class.getSimpleName())));
+    private void assertUnsupportedTypeException(Class<?> clazz,
+            Runnable action) {
+        InvalidTemplateModelException ex = assertThrows(
+                InvalidTemplateModelException.class, () -> action.run());
+        String message = ex.getMessage();
+        assertTrue(message.contains(clazz.getName()));
+        assertTrue(message.contains("is not supported"));
+        assertTrue(message.contains("@" + Encode.class.getSimpleName()));
     }
 }
