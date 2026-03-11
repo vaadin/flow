@@ -416,7 +416,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Signal<Locale> localeSignal() {
         checkHasLock();
-        return localeSignal;
+        return localeSignal.asReadonly();
     }
 
     /**

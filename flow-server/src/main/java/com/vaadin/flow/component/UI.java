@@ -834,7 +834,7 @@ public class UI extends Component
      * @see #getLocale()
      */
     public Signal<Locale> localeSignal() {
-        return localeSignal;
+        return localeSignal.asReadonly();
     }
 
     /**

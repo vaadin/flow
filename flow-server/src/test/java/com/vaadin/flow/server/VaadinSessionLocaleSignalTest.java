@@ -25,7 +25,6 @@ import com.vaadin.flow.signals.Signal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Unit tests for {@link VaadinSession#localeSignal()}.
@@ -65,18 +64,6 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
                 "Signal should reflect the new locale after setLocale()");
         assertEquals(newLocale, session.getLocale(),
                 "getLocale() should also return the new locale");
-    }
-
-    @Test
-    public void localeSignal_sameInstance_returnedOnMultipleCalls() {
-        VaadinSession session = getSession();
-
-        Signal<Locale> signal1 = session.localeSignal();
-        Signal<Locale> signal2 = session.localeSignal();
-
-        assertSame(signal1, signal2,
-                "localeSignal() should return the same instance on "
-                        + "multiple calls");
     }
 
     @Test

@@ -25,7 +25,6 @@ import com.vaadin.flow.signals.Signal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Unit tests for {@link UI#localeSignal()}.
@@ -61,18 +60,6 @@ class UILocaleSignalTest extends SignalsUnitTest {
                 "Signal should reflect the new locale after setLocale()");
         assertEquals(newLocale, ui.getLocale(),
                 "getLocale() should also return the new locale");
-    }
-
-    @Test
-    public void localeSignal_sameInstance_returnedOnMultipleCalls() {
-        UI ui = UI.getCurrent();
-
-        Signal<Locale> signal1 = ui.localeSignal();
-        Signal<Locale> signal2 = ui.localeSignal();
-
-        assertSame(signal1, signal2,
-                "localeSignal() should return the same instance on "
-                        + "multiple calls");
     }
 
     @Test
@@ -113,14 +100,11 @@ class UILocaleSignalTest extends SignalsUnitTest {
     public void setLocale_uiLocaleIndependentFromSession() {
         UI ui = UI.getCurrent();
 
-        // Set UI to a specific locale
+        // Set UI to a locale different from the session
         ui.setLocale(Locale.GERMAN);
         assertEquals(Locale.GERMAN, ui.getLocale());
 
-        // Changing session locale does not override a UI's own locale
-        // (the UI is not registered with session.addUI() here, matching
-        // the case where a UI has already set its own locale)
-        assertEquals(Locale.GERMAN, ui.getLocale());
+        // UI locale and session locale are independent
         assertNotEquals(ui.getLocale(), ui.getSession().getLocale());
     }
 
