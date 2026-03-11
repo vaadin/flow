@@ -52,13 +52,12 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -89,8 +88,8 @@ import static java.io.File.pathSeparator;
 @NotThreadSafe
 public class BuildFrontendMojoTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path tempDir;
 
     private File importsFile;
     private File nodeModulesPath;
@@ -112,11 +111,11 @@ public class BuildFrontendMojoTest {
     private Lookup lookup;
     private File frontendDirectory;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        projectBase = temporaryFolder.getRoot();
+        projectBase = tempDir.toFile();
 
-        tokenFile = new File(temporaryFolder.getRoot(),
+        tokenFile = new File(tempDir.toFile(),
                 VAADIN_SERVLET_RESOURCES + FrontendUtils.TOKEN_FILE);
 
         File npmFolder = projectBase;
@@ -148,11 +147,12 @@ public class BuildFrontendMojoTest {
                 "target/classes/com/vaadin/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "src/main/frontend/generated");
 
-        Assert.assertTrue("Failed to create a test project resources",
-                projectFrontendResourcesDirectory.mkdirs());
-        Assert.assertTrue("Failed to create a test project file",
+        Assertions.assertTrue(projectFrontendResourcesDirectory.mkdirs(),
+                "Failed to create a test project resources");
+        Assertions.assertTrue(
                 new File(projectFrontendResourcesDirectory,
-                        TEST_PROJECT_RESOURCE_JS).createNewFile());
+                        TEST_PROJECT_RESOURCE_JS).createNewFile(),
+                "Failed to create a test project file");
 
         ReflectionUtils.setVariableValueInObject(mojo,
                 "frontendResourcesDirectory",
@@ -216,7 +216,7 @@ public class BuildFrontendMojoTest {
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
 
-    @After
+    @AfterEach
     public void teardown() throws IOException {
         if (FileUtils.fileExists(packageJson)) {
             FileUtils.fileDelete(packageJson);
@@ -277,16 +277,16 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void should_generateViteConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(viteConfig));
+        Assertions.assertFalse(FileUtils.fileExists(viteConfig));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(viteConfig));
+        Assertions.assertTrue(FileUtils.fileExists(viteConfig));
     }
 
     @Test
     public void should_generateViteGeneratedConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(viteGenerated));
+        Assertions.assertFalse(FileUtils.fileExists(viteGenerated));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(viteGenerated));
+        Assertions.assertTrue(FileUtils.fileExists(viteGenerated));
     }
 
     @Test
@@ -294,9 +294,11 @@ public class BuildFrontendMojoTest {
             throws MojoExecutionException, MojoFailureException {
 
         List<File> initialFiles = gatherFiles(jarResourcesFolder);
-        initialFiles.forEach(file -> Assert.assertFalse(String.format(
-                "Test resource shouldn't exist before running mojo.", file),
-                TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
+        initialFiles.forEach(file -> Assertions.assertFalse(
+                TEST_PROJECT_RESOURCE_JS.equals(file.getName()),
+                String.format(
+                        "Test resource shouldn't exist before running mojo.",
+                        file)));
         mojo.execute();
 
         Set<String> projectFrontendResources = Stream
@@ -308,9 +310,10 @@ public class BuildFrontendMojoTest {
                 .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
-            Assert.assertTrue(String.format(
-                    "Expected the copied file '%s' to be in the project resources",
-                    fileName), filesInFlowResourcesFolder.contains(fileName));
+            Assertions.assertTrue(filesInFlowResourcesFolder.contains(fileName),
+                    String.format(
+                            "Expected the copied file '%s' to be in the project resources",
+                            fileName));
         });
     }
 
@@ -332,9 +335,11 @@ public class BuildFrontendMojoTest {
                 "build");
 
         List<File> initialFiles = gatherFiles(jarResourcesFolder);
-        initialFiles.forEach(file -> Assert.assertFalse(String.format(
-                "Test resource shouldn't exist before running mojo.", file),
-                TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
+        initialFiles.forEach(file -> Assertions.assertFalse(
+                TEST_PROJECT_RESOURCE_JS.equals(file.getName()),
+                String.format(
+                        "Test resource shouldn't exist before running mojo.",
+                        file)));
         mojo.execute();
 
         Set<String> projectFrontendResources = Stream
@@ -346,9 +351,10 @@ public class BuildFrontendMojoTest {
                 .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
-            Assert.assertTrue(String.format(
-                    "Expected the copied file '%s' to be in the project resources",
-                    fileName), filesInFlowResourcesFolder.contains(fileName));
+            Assertions.assertTrue(filesInFlowResourcesFolder.contains(fileName),
+                    String.format(
+                            "Expected the copied file '%s' to be in the project resources",
+                            fileName));
         });
 
         final Set<String> generatedFiles = Stream
@@ -358,19 +364,20 @@ public class BuildFrontendMojoTest {
 
         String generated = "'%s' should have been generated into 'build/frontend'";
 
-        Assert.assertTrue(String.format(generated, FrontendUtils.IMPORTS_NAME),
-                generatedFiles.contains(FrontendUtils.IMPORTS_NAME));
-        Assert.assertTrue(
-                String.format(generated, FrontendUtils.IMPORTS_D_TS_NAME),
-                generatedFiles.contains(FrontendUtils.IMPORTS_D_TS_NAME));
+        Assertions.assertTrue(
+                generatedFiles.contains(FrontendUtils.IMPORTS_NAME),
+                String.format(generated, FrontendUtils.IMPORTS_NAME));
+        Assertions.assertTrue(
+                generatedFiles.contains(FrontendUtils.IMPORTS_D_TS_NAME),
+                String.format(generated, FrontendUtils.IMPORTS_D_TS_NAME));
 
-        Assert.assertFalse("No 'target' directory should exist after build.",
-                target.exists());
+        Assertions.assertFalse(target.exists(),
+                "No 'target' directory should exist after build.");
     }
 
     @Test
     public void should_UpdateMainJsFile() throws Exception {
-        Assert.assertFalse(importsFile.exists());
+        Assertions.assertFalse(importsFile.exists());
 
         List<String> expectedLines = getExpectedImports();
 
@@ -378,7 +385,7 @@ public class BuildFrontendMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 new File(jarResourcesFolder, "/ExampleConnector.js").exists());
     }
 
@@ -393,7 +400,7 @@ public class BuildFrontendMojoTest {
         mojo.execute();
         long timestamp2 = importsFile.lastModified();
 
-        Assert.assertEquals(timestamp1, timestamp2);
+        Assertions.assertEquals(timestamp1, timestamp2);
     }
 
     @Test
@@ -478,10 +485,10 @@ public class BuildFrontendMojoTest {
         assertContainsPackage(dependencies, "@vaadin/button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("proj4 should have been removed",
-                dependencies.has("proj4"));
-        Assert.assertTrue("line-awesome should remain",
-                dependencies.has("line-awesome"));
+        Assertions.assertFalse(dependencies.has("proj4"),
+                "proj4 should have been removed");
+        Assertions.assertTrue(dependencies.has("line-awesome"),
+                "line-awesome should remain");
     }
 
     @Test
@@ -489,7 +496,7 @@ public class BuildFrontendMojoTest {
             throws IOException, IllegalAccessException, MojoExecutionException,
             MojoFailureException {
 
-        File projectBase = temporaryFolder.getRoot();
+        File projectBase = tempDir.toFile();
         File webpackOutputDirectory = new File(projectBase,
                 VAADIN_WEBAPP_RESOURCES);
         File resourceOutputDirectory = new File(projectBase,
@@ -521,31 +528,31 @@ public class BuildFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assert.assertNull(
-                "enable dev server token shouldn't be added " + "automatically",
-                buildInfo.get(FRONTEND_HOTDEPLOY));
-        Assert.assertNotNull("productionMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNull("npmFolder should have been removed",
-                buildInfo.get(Constants.NPM_TOKEN));
-        Assert.assertNull("frontendFolder should have been removed",
-                buildInfo.get(Constants.FRONTEND_TOKEN));
+        Assertions.assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
+                "enable dev server token shouldn't be added "
+                        + "automatically");
+        Assertions.assertNotNull(
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
+                "productionMode token should be available");
+        Assertions.assertNull(buildInfo.get(Constants.NPM_TOKEN),
+                "npmFolder should have been removed");
+        Assertions.assertNull(buildInfo.get(Constants.FRONTEND_TOKEN),
+                "frontendFolder should have been removed");
 
-        Assert.assertNull(
+        Assertions.assertNull(
+                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
-                        + "should have been removed",
-                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertNull(InitParameters.CI_BUILD + "should have been removed",
-                buildInfo.get(InitParameters.CI_BUILD));
-        Assert.assertNull(
+                        + "should have been removed");
+        Assertions.assertNull(buildInfo.get(InitParameters.CI_BUILD),
+                InitParameters.CI_BUILD + "should have been removed");
+        Assertions.assertNull(
+                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
-                        + "should have been removed",
-                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
-        Assert.assertNull(
+                        + "should have been removed");
+        Assertions.assertNull(buildInfo
+                .get(InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE),
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
-                        + "should have been removed",
-                buildInfo.get(
-                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+                        + "should have been removed");
     }
 
     @Test
@@ -571,15 +578,15 @@ public class BuildFrontendMojoTest {
                 initialBuildInfo.toPrettyString() + "\n", "UTF-8");
 
         mojo.execute();
-        Assert.assertTrue("No token file could be found", tokenFile.exists());
+        Assertions.assertTrue(tokenFile.exists(),
+                "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assert.assertEquals(
-                "Custom application identifier not written on token file",
-                expectedAppId,
-                buildInfo.get(APPLICATION_IDENTIFIER).textValue());
+        Assertions.assertEquals(expectedAppId,
+                buildInfo.get(APPLICATION_IDENTIFIER).textValue(),
+                "Custom application identifier not written on token file");
     }
 
     @Test
@@ -607,14 +614,15 @@ public class BuildFrontendMojoTest {
                 initialBuildInfo.toPrettyString() + "\n", "UTF-8");
 
         mojo.execute();
-        Assert.assertTrue("No token file could be found", tokenFile.exists());
+        Assertions.assertTrue(tokenFile.exists(),
+                "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assert.assertEquals(
-                "Custom application identifier not written on token file",
-                appId, buildInfo.get(APPLICATION_IDENTIFIER).textValue());
+        Assertions.assertEquals(appId,
+                buildInfo.get(APPLICATION_IDENTIFIER).textValue(),
+                "Custom application identifier not written on token file");
     }
 
     @Test
@@ -638,9 +646,9 @@ public class BuildFrontendMojoTest {
             String json = Files.readString(tokenFile.toPath(),
                     StandardCharsets.UTF_8);
             ObjectNode buildInfo = JacksonUtils.readTree(json);
-            Assert.assertTrue(
-                    "Commercial banner build token not written on token file",
-                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue());
+            Assertions.assertTrue(
+                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue(),
+                    "Commercial banner build token not written on token file");
         });
     }
 
@@ -651,7 +659,7 @@ public class BuildFrontendMojoTest {
         mojo.project.getArtifacts().add(commercialComponent);
 
         runWithoutLicenseKeys(() -> {
-            Throwable exception = Assert
+            Throwable exception = Assertions
                     .assertThrows(MojoFailureException.class, mojo::execute);
             exception = exception.getCause();
             // Checking exception type by name because classes are loaded from
@@ -660,10 +668,9 @@ public class BuildFrontendMojoTest {
                     .equals(LicenseException.class.getName())) {
                 exception = exception.getCause();
             }
-            Assert.assertNotNull(
-                    "Expected the build to fail because of LicenseException, but not found in stack trace",
-                    exception);
-            Assert.assertTrue(exception.getMessage()
+            Assertions.assertNotNull(exception,
+                    "Expected the build to fail because of LicenseException, but not found in stack trace");
+            Assertions.assertTrue(exception.getMessage()
                     .contains(InitParameters.COMMERCIAL_WITH_BANNER));
         });
     }
@@ -673,7 +680,7 @@ public class BuildFrontendMojoTest {
             throws MojoExecutionException, MojoFailureException {
         mojo.execute();
 
-        Assert.assertTrue(tokenFile.exists());
+        Assertions.assertTrue(tokenFile.exists());
     }
 
     @Test
@@ -695,10 +702,10 @@ public class BuildFrontendMojoTest {
                         export const router = createBrowserRouter(...routes]);
                         """);
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
     }
 
@@ -724,23 +731,23 @@ public class BuildFrontendMojoTest {
                 "connect-client.default.ts");
         File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
 
-        Assert.assertFalse(connectClientApi.exists());
-        Assert.assertFalse(endpointClientApi.exists());
+        Assertions.assertFalse(connectClientApi.exists());
+        Assertions.assertFalse(endpointClientApi.exists());
         mojo.execute();
-        Assert.assertTrue(connectClientApi.exists());
-        Assert.assertTrue(endpointClientApi.exists());
+        Assertions.assertTrue(connectClientApi.exists());
+        Assertions.assertTrue(endpointClientApi.exists());
     }
 
     static void assertContainsPackage(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> Assert
-                .assertTrue("Missing " + dep, dependencies.has(dep)));
+        Arrays.asList(packages).forEach(dep -> Assertions
+                .assertTrue(dependencies.has(dep), "Missing " + dep));
     }
 
     static void assertNotContainingPackages(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> Assert
-                .assertFalse("Not expecting " + dep, dependencies.has(dep)));
+        Arrays.asList(packages).forEach(dep -> Assertions
+                .assertFalse(dependencies.has(dep), "Not expecting " + dep));
     }
 
     private void assertContainsImports(boolean contains, String... imports)
@@ -749,14 +756,14 @@ public class BuildFrontendMojoTest {
 
         if (contains) {
             Arrays.asList(imports)
-                    .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content,
-                            content.contains(addFrontendPrefix(s))));
+                    .forEach(s -> Assertions.assertTrue(
+                            content.contains(addFrontendPrefix(s)),
+                            s + " not found in:\n" + content));
         } else {
             Arrays.asList(imports)
-                    .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content,
-                            content.contains(addFrontendPrefix(s))));
+                    .forEach(s -> Assertions.assertFalse(
+                            content.contains(addFrontendPrefix(s)),
+                            s + " found in:\n" + content));
         }
     }
 
@@ -823,12 +830,12 @@ public class BuildFrontendMojoTest {
             if (expectedImport.startsWith("./generated/jar-resources/")) {
                 File newFile = new File(jarResourcesSource, expectedImport
                         .substring("./generated/jar-resources/".length()));
-                Assert.assertTrue(newFile.createNewFile());
+                Assertions.assertTrue(newFile.createNewFile());
             } else {
                 File newFile = resolveImportFile(directoryWithImportsJs,
                         nodeModulesPath, expectedImport);
                 newFile.getParentFile().mkdirs();
-                Assert.assertTrue(newFile.createNewFile());
+                Assertions.assertTrue(newFile.createNewFile());
             }
         }
     }
@@ -908,12 +915,13 @@ public class BuildFrontendMojoTest {
         return commercialComponent;
     }
 
-    private void runWithoutLicenseKeys(ThrowingRunnable test) throws Throwable {
+    private void runWithoutLicenseKeys(Executable test) throws Throwable {
         String userHome = System.getProperty("user.home");
         File userHomeFolder = new File(userHome);
         Path vaadinHomeNodeFolder = userHomeFolder.toPath()
                 .resolve(Path.of(".vaadin", "node"));
-        File fakeUserHomeFolder = temporaryFolder.newFolder("fake-home");
+        File fakeUserHomeFolder = Files
+                .createDirectories(tempDir.resolve("fake-home")).toFile();
         // Try to speed up test by copying existing node into the fake home
         if (Files.isDirectory(vaadinHomeNodeFolder)) {
             File fakeVaadinHomeNode = fakeUserHomeFolder.toPath()
@@ -925,7 +933,7 @@ public class BuildFrontendMojoTest {
         try {
             System.setProperty("user.home",
                     fakeUserHomeFolder.getAbsolutePath());
-            test.run();
+            test.execute();
         } finally {
             System.setProperty("user.home", userHome);
         }

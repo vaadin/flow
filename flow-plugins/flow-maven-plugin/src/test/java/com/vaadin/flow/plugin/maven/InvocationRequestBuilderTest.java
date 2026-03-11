@@ -18,8 +18,8 @@ package com.vaadin.flow.plugin.maven;
 import java.util.List;
 
 import org.apache.maven.shared.invoker.InvocationRequest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class InvocationRequestBuilderTest {
 
@@ -35,12 +35,12 @@ public class InvocationRequestBuilderTest {
                 .artifactId(artifactId).version(version).goal(goal)
                 .createInvocationRequest();
         List<String> goals = request.getGoals();
-        Assert.assertEquals(1, goals.size());
+        Assertions.assertEquals(1, goals.size());
 
         String expectedGoal = String.format("%s:%s:%s:%s", groupId, artifactId,
                 version, goal);
         String actualGoal = goals.get(0);
-        Assert.assertEquals(expectedGoal, actualGoal);
+        Assertions.assertEquals(expectedGoal, actualGoal);
     }
 
 }

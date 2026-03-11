@@ -30,11 +30,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -47,13 +46,13 @@ public class ReflectionsClassFinderTest {
             + "import com.vaadin.flow.component.Component;\n" + "\n"
             + "@NpmPackage(value = \"@vaadin/something\", version = \"%s\")\n"
             + "public class %s extends Component {\n" + "}\n";
-    @Rule
-    public TemporaryFolder externalModules = new TemporaryFolder();
+    @TempDir
+    Path externalModules;
 
     URL[] urls;
     private ClassFinder.DefaultClassFinder defaultClassFinder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         urls = new URL[] {
                 createTestModule("module-1", "com.vaadin.flow.test.last",
@@ -83,8 +82,8 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getSubTypesOf(Component.class));
 
-        Assert.assertEquals(a1, a2);
-        Assert.assertEquals(a2, a3);
+        Assertions.assertEquals(a1, a2);
+        Assertions.assertEquals(a2, a3);
     }
 
     @Test
@@ -95,10 +94,10 @@ public class ReflectionsClassFinderTest {
         Set<String> result = new ReflectionsClassFinder(urls)
                 .getSubTypesOf(Component.class).stream().map(Class::getName)
                 .collect(Collectors.toSet());
-        Assert.assertFalse(
-                "Classes from know not-UI packages should be rejected by default",
+        Assertions.assertFalse(
                 result.contains(
-                        "org.springframework.feature.ui.SpringUIComponent"));
+                        "org.springframework.feature.ui.SpringUIComponent"),
+                "Classes from know not-UI packages should be rejected by default");
     }
 
     @Test
@@ -113,10 +112,10 @@ public class ReflectionsClassFinderTest {
             Set<String> result = new ReflectionsClassFinder(urls)
                     .getSubTypesOf(Component.class).stream().map(Class::getName)
                     .collect(Collectors.toSet());
-            Assert.assertTrue(
-                    "Classes from know not-UI packages should be found when default rejection is disabled",
+            Assertions.assertTrue(
                     result.contains(
-                            "org.springframework.feature.ui.SpringUIComponent"));
+                            "org.springframework.feature.ui.SpringUIComponent"),
+                    "Classes from know not-UI packages should be found when default rejection is disabled");
         } finally {
             System.clearProperty(
                     ReflectionsClassFinder.DISABLE_DEFAULT_PACKAGE_FILTER);
@@ -134,13 +133,13 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getAnnotatedClasses(NpmPackage.class));
 
-        Assert.assertEquals(a1, a2);
-        Assert.assertEquals(a2, a3);
+        Assertions.assertEquals(a1, a2);
+        Assertions.assertEquals(a2, a3);
     }
 
     @Test
     public void getSubTypesOf_order_sameAsDefaultClassFinder() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toList(defaultClassFinder.getSubTypesOf(Component.class)),
                 toList(new ReflectionsClassFinder(urls)
                         .getSubTypesOf(Component.class)));
@@ -148,7 +147,7 @@ public class ReflectionsClassFinderTest {
 
     @Test
     public void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toList(defaultClassFinder
                         .getAnnotatedClasses(NpmPackage.class)),
                 toList(new ReflectionsClassFinder(urls)
@@ -164,9 +163,8 @@ public class ReflectionsClassFinderTest {
                 notExistingDir.toUri().toURL());
         // Verify scan completed successfully (returns empty set, not null)
         Set<Class<?>> result = finder.getAnnotatedClasses(NpmPackage.class);
-        Assert.assertNotNull(
-                "Scan should complete even with non-existing directory",
-                result);
+        Assertions.assertNotNull(result,
+                "Scan should complete even with non-existing directory");
     }
 
     @Test
@@ -187,9 +185,8 @@ public class ReflectionsClassFinderTest {
         Class<?> testClass = classLoader.loadClass(
                 "com.vaadin.flow.test.repeatable.ComponentWithMultipleNpmPackages");
 
-        Assert.assertTrue(
-                "Should find class with repeatable NpmPackage annotations through container",
-                result.contains(testClass));
+        Assertions.assertTrue(result.contains(testClass),
+                "Should find class with repeatable NpmPackage annotations through container");
     }
 
     private URL createRepeatableAnnotationTestModule() throws IOException {
@@ -203,10 +200,18 @@ public class ReflectionsClassFinderTest {
                 + "@NpmPackage(value = \"@vaadin/test-package-3\", version = \"3.0.0\")\n"
                 + "public class %s extends Component {\n}\n", pkg, className);
 
-        File sources = externalModules.newFolder("repeatable-test/src");
-        File sourcePkg = externalModules
-                .newFolder("repeatable-test/src/" + pkg.replace('.', '/'));
-        File buildDir = externalModules.newFolder("repeatable-test/target");
+        File sources = Files
+                .createDirectories(
+                        externalModules.resolve("repeatable-test/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules.resolve(
+                        "repeatable-test/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve("repeatable-test/target"))
+                .toFile();
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
         Files.writeString(sourceFile, classSource, StandardCharsets.UTF_8);
@@ -221,10 +226,17 @@ public class ReflectionsClassFinderTest {
 
     private URL createTestModule(String moduleName, String pkg,
             String className, String npmPackageVersion) throws IOException {
-        File sources = externalModules.newFolder(moduleName + "/src");
-        File sourcePkg = externalModules
-                .newFolder(moduleName + "/src/" + pkg.replace('.', '/'));
-        File buildDir = externalModules.newFolder(moduleName + "/target");
+        File sources = Files
+                .createDirectories(externalModules.resolve(moduleName + "/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules
+                        .resolve(moduleName + "/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve(moduleName + "/target"))
+                .toFile();
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
         Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
@@ -237,7 +249,7 @@ public class ReflectionsClassFinderTest {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
                 "-sourcepath", sourcePath.getPath(), sourceFile.getPath());
-        Assert.assertEquals("Failed to compile " + sourceFile, 0, result);
+        Assertions.assertEquals(0, result, "Failed to compile " + sourceFile);
     }
 
 }

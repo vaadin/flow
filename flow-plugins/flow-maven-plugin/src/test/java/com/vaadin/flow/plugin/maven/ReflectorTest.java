@@ -40,9 +40,9 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.utils.FlowFileUtils;
 
@@ -56,7 +56,7 @@ public class ReflectorTest {
 
     Reflector reflector;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         URLClassLoader urlClassLoader = new URLClassLoader(
@@ -127,12 +127,12 @@ public class ReflectorTest {
     public void createMojo_incompatibleFields_fails() {
         IncompatibleFieldsMojo source = new IncompatibleFieldsMojo();
         source.fillFields();
-        NoSuchFieldException exception = Assert.assertThrows(
+        NoSuchFieldException exception = Assertions.assertThrows(
                 NoSuchFieldException.class, () -> reflector.createMojo(source));
-        Assert.assertTrue(
-                "Expected exception to be thrown because of class loader mismatch",
+        Assertions.assertTrue(
                 exception.getMessage()
-                        .contains("loaded from different class loaders"));
+                        .contains("loaded from different class loaders"),
+                "Expected exception to be thrown because of class loader mismatch");
     }
 
     @Test
@@ -199,24 +199,25 @@ public class ReflectorTest {
 
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(5, urlSet.size());
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
-        Assert.assertTrue(urlSet.contains(
+        Assertions.assertEquals(5, urlSet.size());
+        Assertions.assertTrue(
+                urlSet.contains(toURLExternalForm(outputDirectory)));
+        Assertions.assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-compile-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        Assertions.assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-provided-1.0.jar")));
-        Assert.assertTrue(urlSet
+        Assertions.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin.test-system-1.0.jar")));
-        Assert.assertTrue(urlSet
+        Assertions.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin.test-plugin-1.0.jar")));
 
         // from platform class loader
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 isolatedClassLoader.loadClass("java.net.http.HttpClient"));
         // from maven.api class loader
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 isolatedClassLoader.getResource("org/json/CookieList.class"));
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 isolatedClassLoader.loadClass("org.json.CookieList"));
     }
 
@@ -414,42 +415,44 @@ public class ReflectorTest {
         // Ensure the classloader references all dependencies
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(19, urlSet.size());
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
-        Assert.assertTrue(urlSet
+        Assertions.assertEquals(19, urlSet.size());
+        Assertions.assertTrue(
+                urlSet.contains(toURLExternalForm(outputDirectory)));
+        Assertions.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(toURLExternalForm(
+        Assertions.assertTrue(urlSet.contains(toURLExternalForm(
                 "org.springframework.boot-spring-boot-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        Assertions.assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.addon-alpha-1.0.jar")));
-        Assert.assertTrue(urlSet
+        Assertions.assertTrue(urlSet
                 .contains(toURLExternalForm("com.example.addon-beta-1.0.jar")));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 urlSet.contains(toURLExternalForm("org.test-alpha-1.0.jar")));
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
-        Assert.assertTrue(urlSet.contains(
+        Assertions.assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
         for (String url : defaultVaadinDependencies) {
-            Assert.assertTrue(urlSet.contains(toURLExternalForm(url)));
+            Assertions.assertTrue(urlSet.contains(toURLExternalForm(url)));
         }
 
         // Verify scan URLs
         urlSet = Arrays.stream(isolatedClassLoader.getUrlsToScan())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(expectedScanURLs.size(), urlSet.size());
+        Assertions.assertEquals(expectedScanURLs.size(), urlSet.size());
         for (String expectedUrl : expectedScanURLs) {
-            Assert.assertTrue("Scan URL missing in Reflector: " + expectedUrl,
-                    urlSet.contains(toURLExternalForm(expectedUrl)));
+            Assertions.assertTrue(
+                    urlSet.contains(toURLExternalForm(expectedUrl)),
+                    "Scan URL missing in Reflector: " + expectedUrl);
         }
         // verify default excluded URLs are indeed excluded
         for (String expectedExcludedUrl : defaultVaadinDependencies) {
             if (expectedScanURLs.contains(expectedExcludedUrl)) {
                 continue; // already checked as included
             }
-            Assert.assertFalse(
-                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl,
-                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)));
+            Assertions.assertFalse(
+                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)),
+                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl);
         }
 
     }
