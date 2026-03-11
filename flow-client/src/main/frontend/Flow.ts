@@ -270,7 +270,7 @@ export class Flow {
 
         // Call server side to navigate to the given route
         sendEvent('ui-navigate', {
-          route: this.getFlowRoutePath(ctx),
+          route: ctx.pathname,
           query: this.getFlowRouteQuery(ctx),
           appShellTitle: this.appShellTitle,
           historyState: history.state,
