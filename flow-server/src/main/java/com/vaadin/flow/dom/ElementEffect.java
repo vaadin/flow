@@ -249,10 +249,15 @@ public final class ElementEffect implements Serializable {
             T newValue = signal.get();
             T oldValue = previousValue[0];
             setter.accept(owner, newValue);
-            if (binding.hasCallbacks()) {
-                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
-                        ctx.isBackgroundChange(), oldValue, newValue, owner));
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, owner);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
             }
+
             previousValue[0] = newValue;
         });
         return binding;

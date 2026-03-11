@@ -232,17 +232,16 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // onChange is registered after bind, so the initial execution is missed
+        // onChange is registered after bind, executed once immediately
         span.bindText(signal).onChange(contexts::add);
 
-        // No callbacks yet since initial run already happened before onChange
-        assertEquals(0, contexts.size());
+        assertEquals(1, contexts.size());
 
         // Trigger a subsequent update
         signal.set("updated");
 
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
@@ -251,8 +250,8 @@ class ElementEffectTest {
         // Trigger another update and verify context tracks correctly
         signal.set("final");
 
-        assertEquals(2, contexts.size());
-        BindingContext<String> ctx2 = contexts.get(1);
+        assertEquals(3, contexts.size());
+        BindingContext<String> ctx2 = contexts.get(2);
         assertFalse(ctx2.isInitialRun());
         assertEquals("updated", ctx2.getOldValue());
         assertEquals("final", ctx2.getNewValue());
@@ -269,22 +268,25 @@ class ElementEffectTest {
         List<BindingContext<String>> contexts = new ArrayList<>();
 
         // Bind before attaching to UI: the effect runs immediately as a probe,
-        // setting the initial text. The onChange callback is registered after
-        // the probe, so it does not fire for the initial run.
+        // setting the initial text. The onChange callback fire for the initial
+        // run.
         span.bindText(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size(),
-                "onChange should not fire during probe since it was registered after bind");
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
 
         // Attach with no signal change: no re-run, no onChange callback
         ui.getElement().appendChild(span);
-        assertEquals(0, contexts.size(),
+        assertEquals(1, contexts.size(),
                 "onChange should not fire on attach when nothing changed since probe");
 
         // Trigger an update after attach
         signal.set("updated");
 
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
@@ -300,8 +302,8 @@ class ElementEffectTest {
         List<BindingContext<String>> contexts = new ArrayList<>();
 
         span.bindText(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size(),
-                "onChange should not fire during probe since it was registered after bind");
+        assertEquals(1, contexts.size(),
+                "onChange should fire once immediately");
 
         // Trigger an update after attach
         signal.set("updated");
@@ -310,13 +312,61 @@ class ElementEffectTest {
         // isInitialRun=true
         ui.getElement().appendChild(span);
 
-        assertEquals(1, contexts.size(),
+        assertEquals(2, contexts.size(),
                 "onChange should fire on attach when changed since probe");
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertTrue(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    public void signalBinding_onChange_calledImmediatelyInitially() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // Bind before attaching to UI
+        // The onChange callback fire immediately for the initial run
+        var signalBinding = span.bindText(signal).onChange(contexts::add);
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // The second onChange callback fire immediately for the initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(2, contexts.size(),
+                "another onChange should fire once initially");
+        ctx = contexts.get(1);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // Trigger an update
+        signal.set("updated");
+
+        // two onChange callbacks should fire for the update
+        assertEquals(4, contexts.size());
+        ctx = contexts.get(2);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        ctx = contexts.get(3);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+
+        // The new onChange callback doesn't fire immediately for the
+        // non-initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(4, contexts.size());
     }
 
     @Test

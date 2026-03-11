@@ -220,13 +220,13 @@ class StyleBindTest {
         element.getStyle().bind("background-color", signal)
                 .onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("blue");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("red", ctx.getOldValue());
         assertEquals("blue", ctx.getNewValue());

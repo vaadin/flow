@@ -401,13 +401,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
 
         component.bindWidth(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("300px");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("200px", ctx.getOldValue());
         assertEquals("300px", ctx.getNewValue());
@@ -424,13 +424,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
 
         component.bindHeight(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("300px");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("200px", ctx.getOldValue());
         assertEquals("300px", ctx.getNewValue());

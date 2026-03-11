@@ -147,9 +147,13 @@ public class SignalPropertySupport<T extends @Nullable Object>
             T oldValue = previousValue[0];
             value = newValue;
             valueChangeConsumer.accept(newValue);
-            if (binding.hasCallbacks()) {
-                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
-                        ctx.isBackgroundChange(), oldValue, newValue, element));
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, element);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
             }
             previousValue[0] = newValue;
         });
