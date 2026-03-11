@@ -179,13 +179,13 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass, converterLookup, clientUpdateLookup);
         }
 
-        return new UnsupportedModelType(propertyType,
-                String.format("Type '%s' is not supported."
+        throw new InvalidTemplateModelException(String.format(
+                "Type '%s' is not supported."
                         + " Used in class '%s' with property named '%s'. %s. "
                         + "Use @%s annotation to convert the type to a supported type.",
-                        propertyType.toString(), declaringClass.getSimpleName(),
-                        propertyName, ModelType.getSupportedTypesString(),
-                        Encode.class.getSimpleName()));
+                propertyType.toString(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString(),
+                Encode.class.getSimpleName()));
     }
 
     static ModelType getConvertedModelType(Type propertyType,

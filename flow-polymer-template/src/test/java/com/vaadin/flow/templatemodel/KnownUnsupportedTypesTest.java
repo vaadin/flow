@@ -70,33 +70,23 @@ class KnownUnsupportedTypesTest extends HasCurrentService {
     }
 
     public static class LongTemplate extends EmptyDivTemplate<LongType> {
-        public LongType getModel() {
-            return super.getModel();
-        }
+
     }
 
     public static class ShortTemplate extends EmptyDivTemplate<ShortType> {
-        public ShortType getModel() {
-            return super.getModel();
-        }
+
     }
 
     public static class FloatTemplate extends EmptyDivTemplate<FloatType> {
-        public FloatType getModel() {
-            return super.getModel();
-        }
+
     }
 
     public static class ByteTemplate extends EmptyDivTemplate<ByteType> {
-        public ByteType getModel() {
-            return super.getModel();
-        }
+
     }
 
     public static class CharTemplate extends EmptyDivTemplate<CharType> {
-        public CharType getModel() {
-            return super.getModel();
-        }
+
     }
 
     @Override
@@ -112,37 +102,28 @@ class KnownUnsupportedTypesTest extends HasCurrentService {
 
     @Test
     void long_throwUnsupportedTypeException() {
-        LongTemplate template = new LongTemplate();
-        LongType model = template.getModel();
-        assertUnsupportedTypeException(Long.class, () -> model.getSize());
+        assertUnsupportedTypeException(Long.class, () -> new LongTemplate());
     }
 
     @Test
     void short_throwUnsupportedTypeException() {
-        ShortTemplate template = new ShortTemplate();
-        ShortType model = template.getModel();
-        assertUnsupportedTypeException(Short.class, () -> model.getSize());
+        assertUnsupportedTypeException(Short.class, () -> new ShortTemplate());
     }
 
     @Test
     void float_throwUnsupportedTypeException() {
-        FloatTemplate template = new FloatTemplate();
-        FloatType model = template.getModel();
-        assertUnsupportedTypeException(Float.class, () -> model.getSize());
+        assertUnsupportedTypeException(Float.class, () -> new FloatTemplate());
     }
 
     @Test
     void byte_throwUnsupportedTypeException() {
-        ByteTemplate template = new ByteTemplate();
-        ByteType model = template.getModel();
-        assertUnsupportedTypeException(Byte.class, () -> model.getSize());
+        assertUnsupportedTypeException(Byte.class, () -> new ByteTemplate());
     }
 
     @Test
     void char_throwUnsupportedTypeException() {
-        CharTemplate template = new CharTemplate();
-        CharType model = template.getModel();
-        assertUnsupportedTypeException(Character.class, () -> model.getSize());
+        assertUnsupportedTypeException(Character.class,
+                () -> new CharTemplate());
     }
 
     private void assertUnsupportedTypeException(Class<?> clazz,
