@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -398,6 +400,68 @@ public class SharedListSignalTest extends SignalTestBase {
         signal.insertLast("two");
 
         assertEquals("SharedListSignal[one, two]", signal.toString());
+    }
+
+    @Test
+    void getValues_listWithValues_returnsValues() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = Signal.untracked(() -> {
+            return signal.getValues().toList();
+        });
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void peekValues_listWithValues_returnsValues() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = signal.peekValues().toList();
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void getValues_readingInEffect_anyChangeRunsEffectAgain() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.unboundEffect(() -> {
+            signal.getValues().toList();
+            count.incrementAndGet();
+        });
+        assertEquals(1, count.get());
+
+        SharedValueSignal<String> child = signal.insertLast("foo").signal();
+        assertEquals(2, count.get());
+
+        child.set("bar");
+        assertEquals(3, count.get());
+
+        signal.remove(child);
+        assertEquals(4, count.get());
+    }
+
+    @Test
+    void getValues_getWithoutTracking_throws() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+
+        assertThrows(IllegalStateException.class, () -> signal.getValues());
+    }
+
+    @Test
+    void getValues_iterateWithoutTracking_throws() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+
+        Stream<String> stream = Signal.untracked(() -> signal.getValues());
+
+        assertThrows(IllegalStateException.class, () -> stream.toList());
     }
 
     static void assertChildren(SharedListSignal<String> signal,
