@@ -586,6 +586,8 @@ class TaskRunNpmInstallTest {
             } else {
                 command = "ci";
             }
+        } else if ("pnpm".equals(getToolName())) {
+            command += " --no-frozen-lockfile";
         }
         return command;
     }
