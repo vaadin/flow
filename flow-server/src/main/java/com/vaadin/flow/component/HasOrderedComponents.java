@@ -25,9 +25,9 @@ package com.vaadin.flow.component;
  * compatibility, but it is not needed anymore.
  *
  * @since 1.0
- * @deprecated since 25.1.0, for removal in 26.0.0.
+ * @deprecated since 24.10.0, for removal in 26.0.0.
  */
-@Deprecated(since = "25.1.0", forRemoval = true)
+@Deprecated(since = "24.10.0", forRemoval = true)
 public interface HasOrderedComponents extends HasComponents {
 
 }
