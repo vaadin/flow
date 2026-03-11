@@ -49,7 +49,7 @@
     <script type="text/javascript">
       // Set specific flag for TB and make sure that there are no any clients.
       // It allows to work correct waitForVaadin in TB
-      window.Vaadin = { Flow: { devServerIsNotLoaded: true } };
+      window.Vaadin = { Flow: { devServerIsNotLoaded: true, whenReady: false } };
 
       const delay = 200;
       const poll = async () => {
