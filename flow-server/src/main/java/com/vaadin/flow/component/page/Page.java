@@ -57,6 +57,8 @@ public class Page implements Serializable {
     private DomListenerRegistration resizeReceiver;
     private ArrayList<BrowserWindowResizeListener> resizeListeners;
     private ValueSignal<WindowSize> windowSizeSignal;
+    private ValueSignal<ScreenOrientationData> screenOrientationSignal;
+    private DomListenerRegistration orientationReceiver;
 
     /**
      * Creates a page instance for the given UI.
@@ -474,6 +476,78 @@ public class Page implements Serializable {
                         }
                     }).addEventData("event.w").addEventData("event.h")
                     .debounce(300).allowInert();
+        }
+    }
+
+    // --- Screen Orientation API ---
+
+    /**
+     * Returns a signal that tracks the current screen orientation.
+     * <p>
+     * The signal is lazily initialized on first access and automatically
+     * updates when the screen orientation changes. The initial value defaults
+     * to {@link ScreenOrientation#PORTRAIT_PRIMARY} with angle 0.
+     * <p>
+     * The returned signal is read-only.
+     *
+     * @return a read-only signal with the current screen orientation data
+     */
+    public Signal<ScreenOrientationData> screenOrientationSignal() {
+        ensureScreenOrientationSignal();
+        return screenOrientationSignal.asReadonly();
+    }
+
+    /**
+     * Locks the screen orientation to the specified type. This requires
+     * fullscreen mode in most browsers.
+     * <p>
+     * The returned result resolves when the lock succeeds, or rejects if the
+     * browser denies the request (e.g., not in fullscreen mode).
+     *
+     * @param orientation
+     *            the orientation to lock to, not {@code null}
+     * @return a pending result that resolves when the orientation is locked
+     */
+    public PendingJavaScriptResult lockOrientation(
+            ScreenOrientation orientation) {
+        Objects.requireNonNull(orientation);
+        return executeJs("return window.Vaadin.Flow.screenOrientation.lock($0)",
+                orientation.getClientValue());
+    }
+
+    /**
+     * Unlocks the screen orientation, allowing it to rotate freely again.
+     */
+    public void unlockOrientation() {
+        executeJs("window.Vaadin.Flow.screenOrientation.unlock()");
+    }
+
+    private void ensureScreenOrientationSignal() {
+        if (screenOrientationSignal == null) {
+            screenOrientationSignal = new ValueSignal<>(
+                    new ScreenOrientationData(
+                            ScreenOrientation.PORTRAIT_PRIMARY, 0));
+        }
+        ensureOrientationListener();
+    }
+
+    private void ensureOrientationListener() {
+        if (orientationReceiver == null) {
+            ui.getElement().executeJs(
+                    "window.Vaadin.Flow.screenOrientation.init(this)");
+            orientationReceiver = ui.getElement()
+                    .addEventListener("vaadin-orientation-change", e -> {
+                        String type = e.getEventData()
+                                .get("event.orientationType").textValue();
+                        int angle = e.getEventData()
+                                .get("event.orientationAngle").intValue();
+                        if (screenOrientationSignal != null) {
+                            screenOrientationSignal.set(
+                                    new ScreenOrientationData(ScreenOrientation
+                                            .fromClientValue(type), angle));
+                        }
+                    }).addEventData("event.orientationType")
+                    .addEventData("event.orientationAngle").allowInert();
         }
     }
 
