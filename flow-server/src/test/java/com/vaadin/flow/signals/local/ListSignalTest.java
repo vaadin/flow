@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -636,6 +638,68 @@ public class ListSignalTest extends SignalTestBase {
 
         assertTrue(usage.hasChanges());
         assertTrue(invoked.get());
+    }
+
+    @Test
+    void getValues_listWithValues_returnsValues() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = Signal.untracked(() -> {
+            return signal.getValues().toList();
+        });
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void peekValues_listWithValues_returnsValues() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = signal.peekValues().toList();
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void getValues_readingInEffect_anyChangeRunsEffectAgain() {
+        ListSignal<String> signal = new ListSignal<>();
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.unboundEffect(() -> {
+            signal.getValues().toList();
+            count.incrementAndGet();
+        });
+        assertEquals(1, count.get());
+
+        ValueSignal<String> child = signal.insertLast("foo");
+        assertEquals(2, count.get());
+
+        child.set("bar");
+        assertEquals(3, count.get());
+
+        signal.remove(child);
+        assertEquals(4, count.get());
+    }
+
+    @Test
+    void getValues_getWithoutTracking_throws() {
+        ListSignal<String> signal = new ListSignal<>();
+
+        assertThrows(IllegalStateException.class, () -> signal.getValues());
+    }
+
+    @Test
+    void getValues_iterateWithoutTracking_throws() {
+        ListSignal<String> signal = new ListSignal<>();
+        signal.insertLast("one");
+
+        Stream<String> stream = Signal.untracked(() -> signal.getValues());
+
+        assertThrows(IllegalStateException.class, () -> stream.toList());
     }
 
     private static void assertValues(ListSignal<String> signal,
