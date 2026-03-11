@@ -167,11 +167,12 @@ public interface HasText extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the text content of this component and
-     * keeps the text content synchronized with the signal value while the
-     * element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * Binds a {@link Signal}'s value to the text content of this component. The
+     * text content is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes while the element is in attached state. When the element is
+     * in detached state, signal value changes have no effect. <code>null</code>
+     * signal unbinds the existing binding.
      * <p>
      * While a Signal is bound, any attempt to set the text content manually
      * throws {@link com.vaadin.flow.signals.BindingActiveException}. Same

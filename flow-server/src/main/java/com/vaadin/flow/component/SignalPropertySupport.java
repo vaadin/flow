@@ -116,10 +116,11 @@ public class SignalPropertySupport<T extends @Nullable Object>
     }
 
     /**
-     * Binds a {@link Signal}'s value to this property support and keeps the
-     * value synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to this property support. The value is set
+     * immediately with the current signal value when the binding is created,
+     * and is kept synchronized with any subsequent signal value changes while
+     * the component is in attached state. When the component is in detached
+     * state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to a property support, any attempt to set value
      * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
