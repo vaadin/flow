@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -8,21 +8,23 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PropertyFilterTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PropertyFilterTest {
 
     @Test
-    public void simpleFilter() {
+    void simpleFilter() {
         PropertyFilter filter = new PropertyFilter("accept"::equals);
 
-        Assert.assertTrue(filter.test("accept"));
-        Assert.assertFalse(filter.test("reject"));
+        assertTrue(filter.test("accept"));
+        assertFalse(filter.test("reject"));
     }
 
     @Test
-    public void filterWithAdditionalLevel() {
+    void filterWithAdditionalLevel() {
         PropertyFilter outerFilter = new PropertyFilter(
                 name -> !"middle.inner.foo".equals(name));
 
@@ -33,13 +35,13 @@ public class PropertyFilterTest {
                 name -> !"baz".equals(name));
 
         // Rejected by outer filter
-        Assert.assertFalse(innerFilter.test("foo"));
+        assertFalse(innerFilter.test("foo"));
         // Rejected by middle filter
-        Assert.assertFalse(innerFilter.test("bar"));
+        assertFalse(innerFilter.test("bar"));
         // Rejected by inner filter
-        Assert.assertFalse(innerFilter.test("baz"));
+        assertFalse(innerFilter.test("baz"));
 
         // Not rejected by any filter
-        Assert.assertTrue(innerFilter.test("foobar"));
+        assertTrue(innerFilter.test("foobar"));
     }
 }

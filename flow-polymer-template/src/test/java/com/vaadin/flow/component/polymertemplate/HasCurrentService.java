@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -8,12 +8,12 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.vaadin.flow.server.VaadinService;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Helper for test classes that need to have {@code VaadinService.getCurrent()}
@@ -27,8 +27,8 @@ public abstract class HasCurrentService {
     // test is running
     private VaadinService service;
 
-    @Before
-    public void setUpCurrentService() {
+    @BeforeEach
+    void setUpCurrentService() {
         clearCurrentService();
         assertNull(VaadinService.getCurrent());
 
@@ -38,8 +38,8 @@ public abstract class HasCurrentService {
 
     protected abstract VaadinService createService();
 
-    @After
-    public void clearCurrentService() {
+    @AfterEach
+    void clearCurrentService() {
         VaadinService.setCurrent(null);
         service = null;
     }
