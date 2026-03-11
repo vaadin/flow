@@ -19,28 +19,30 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 
-public class TaskGenerateTailwindJsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateTailwindJsTest {
+
+    @TempDir
+    File temporaryFolder;
 
     private File npmFolder;
     private File frontendGeneratedFolder;
     private TaskGenerateTailwindJs taskGenerateTailwindJs;
 
-    @Before
-    public void setUp() throws IOException {
-        npmFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
+                .toFile();
         frontendGeneratedFolder = new File(npmFolder, "src/frontend-generated");
         frontendGeneratedFolder.mkdirs();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
@@ -49,53 +51,54 @@ public class TaskGenerateTailwindJsTest {
     }
 
     @Test
-    public void should_haveCorrectFileContent() throws Exception {
+    void should_haveCorrectFileContent() throws Exception {
         verifyTailwindJs(taskGenerateTailwindJs.getFileContent());
     }
 
     @Test
-    public void should_generateTailwindCss() throws Exception {
+    void should_generateTailwindCss() throws Exception {
         File tailwindjs = new File(frontendGeneratedFolder,
                 FrontendUtils.TAILWIND_JS);
         taskGenerateTailwindJs.execute();
-        Assert.assertEquals("Should have correct tailwind.js file path",
-                tailwindjs, taskGenerateTailwindJs.getGeneratedFile());
+        assertEquals(tailwindjs, taskGenerateTailwindJs.getGeneratedFile(),
+                "Should have correct tailwind.js file path");
         verifyTailwindJs(getTailwindCssFileContent());
-        Assert.assertTrue(
-                "Should generate tailwind.js in the frontend generated folder",
-                taskGenerateTailwindJs.shouldGenerate());
+        assertTrue(taskGenerateTailwindJs.shouldGenerate(),
+                "Should generate tailwind.js in the frontend generated folder");
     }
 
     @Test
-    public void should_updateExistingTailwindCss() throws Exception {
+    void should_updateExistingTailwindCss() throws Exception {
         File tailwindcss = new File(frontendGeneratedFolder,
                 FrontendUtils.TAILWIND_JS);
         Files.writeString(tailwindcss.toPath(), "OLD CONTENT");
         taskGenerateTailwindJs.execute();
-        Assert.assertTrue(
-                "Should generate tailwind.css in the frontend generated folder",
-                taskGenerateTailwindJs.shouldGenerate());
+        assertTrue(taskGenerateTailwindJs.shouldGenerate(),
+                "Should generate tailwind.css in the frontend generated folder");
         var tailwindCssContent = getTailwindCssFileContent();
-        Assert.assertEquals("Should update content in tailwind.css",
-                taskGenerateTailwindJs.getFileContent(), tailwindCssContent);
+        assertEquals(taskGenerateTailwindJs.getFileContent(),
+                tailwindCssContent, "Should update content in tailwind.css");
     }
 
     private void verifyTailwindJs(String tailwindJsContent) {
-        Assert.assertTrue("Should have tailwind.css import",
+        assertTrue(
                 tailwindJsContent.contains(
                         "import tailwindCss from './tailwind.css?inline';"
-                                + System.lineSeparator()));
-        Assert.assertTrue("Should define applyTailwindCss function",
-                tailwindJsContent.contains("function applyTailwindCss(css)"));
-        Assert.assertTrue("Should apply Tailwind CSS",
-                tailwindJsContent.contains("applyTailwindCss(tailwindCss);"
-                        + System.lineSeparator()));
-        Assert.assertTrue("Should inject as global CSS",
+                                + System.lineSeparator()),
+                "Should have tailwind.css import");
+        assertTrue(tailwindJsContent.contains("function applyTailwindCss(css)"),
+                "Should define applyTailwindCss function");
+        assertTrue(tailwindJsContent.contains(
+                "applyTailwindCss(tailwindCss);" + System.lineSeparator()),
+                "Should apply Tailwind CSS");
+        assertTrue(tailwindJsContent.contains(
+                "injectGlobalCss(css.toString(), 'CSSImport end', document);"
+                        + System.lineSeparator()),
+                "Should inject as global CSS");
+        assertTrue(
                 tailwindJsContent.contains(
-                        "injectGlobalCss(css.toString(), 'CSSImport end', document);"
-                                + System.lineSeparator()));
-        Assert.assertTrue("Should support hot module reload", tailwindJsContent
-                .contains("import.meta.hot.accept('./tailwind.css?inline',"));
+                        "import.meta.hot.accept('./tailwind.css?inline',"),
+                "Should support hot module reload");
     }
 
     private String getTailwindCssFileContent() throws IOException {

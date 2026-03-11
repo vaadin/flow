@@ -21,74 +21,72 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskGenerateIndexHtmlTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class TaskGenerateIndexHtmlTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendFolder;
     private TaskGenerateIndexHtml taskGenerateIndexHtml;
 
-    @Before
-    public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setUp() throws IOException {
+        frontendFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder);
         taskGenerateIndexHtml = new TaskGenerateIndexHtml(options);
     }
 
     @Test
-    public void should_loadCorrectContentOfDefaultFile() throws Exception {
+    void should_loadCorrectContentOfDefaultFile() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(INDEX_HTML),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals(
-                "Should load correct default content from index.html",
-                defaultContent, taskGenerateIndexHtml.getFileContent());
+        assertEquals(defaultContent, taskGenerateIndexHtml.getFileContent(),
+                "Should load correct default content from index.html");
     }
 
     @Test
-    public void should_notOverwriteIndexHtml_IndexHtmlExists()
-            throws Exception {
+    void should_notOverwriteIndexHtml_IndexHtmlExists() throws Exception {
         File indexhtml = new File(frontendFolder, "index.html");
         Files.createFile(indexhtml.toPath());
         taskGenerateIndexHtml.execute();
-        Assert.assertFalse(
-                "Should not generate index.html while it exists in the frontend folder",
-                taskGenerateIndexHtml.shouldGenerate());
-        Assert.assertEquals("",
+        assertFalse(taskGenerateIndexHtml.shouldGenerate(),
+                "Should not generate index.html while it exists in the frontend folder");
+        assertEquals("",
                 IOUtils.toString(indexhtml.toURI(), StandardCharsets.UTF_8));
     }
 
     @Test
-    public void should_generateIndexHtml_IndexHtmlNotExist() throws Exception {
+    void should_generateIndexHtml_IndexHtmlNotExist() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(INDEX_HTML),
                 StandardCharsets.UTF_8);
-        Assert.assertTrue(
-                "Should generate index.html when it doesn't exists in the frontend folder",
-                taskGenerateIndexHtml.shouldGenerate());
+        assertTrue(taskGenerateIndexHtml.shouldGenerate(),
+                "Should generate index.html when it doesn't exists in the frontend folder");
 
         taskGenerateIndexHtml.execute();
 
-        Assert.assertTrue("The generated file should exists",
-                taskGenerateIndexHtml.getGeneratedFile().exists());
+        assertTrue(taskGenerateIndexHtml.getGeneratedFile().exists(),
+                "The generated file should exists");
 
-        Assert.assertEquals("Should have default content of index.html",
-                defaultContent,
+        assertEquals(defaultContent,
                 IOUtils.toString(
                         taskGenerateIndexHtml.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "Should have default content of index.html");
     }
 }
