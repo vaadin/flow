@@ -25,7 +25,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.JsonValue;
 
