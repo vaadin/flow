@@ -43,6 +43,8 @@ import com.vaadin.pro.licensechecker.LicenseException;
  */
 public class VaadinServletService extends VaadinService {
 
+    private static final String PROJECT_NAME = "vaadin-flow";
+
     /**
      * Should never be used directly, always use {@link #getServlet()}.
      */
