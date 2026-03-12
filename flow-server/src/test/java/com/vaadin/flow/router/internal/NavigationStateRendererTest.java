@@ -330,6 +330,47 @@ class NavigationStateRendererTest {
         }
     }
 
+    @Tag("div")
+    @Route("forward-target")
+    @ParentLayout(ForwardTargetLayout.class)
+    private static class ForwardTargetView extends Component {
+        ForwardTargetView() {
+            addAttachListener(
+                    e -> forwardTargetViewAttachCount.getAndIncrement());
+            forwardTargetViewUUID = UUID.randomUUID().toString();
+        }
+    }
+
+    @Tag("div")
+    private static class ForwardTargetLayout extends Component
+            implements RouterLayout {
+        ForwardTargetLayout() {
+            addAttachListener(
+                    e -> forwardTargetLayoutAttachCount.getAndIncrement());
+            forwardTargetLayoutUUID = UUID.randomUUID().toString();
+        }
+    }
+
+    @Tag("div")
+    @Route("forwarding")
+    private static class ForwardingView extends Component
+            implements BeforeEnterObserver {
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.forwardTo(ForwardTargetView.class);
+        }
+    }
+
+    @Tag("div")
+    @Route("rerouting")
+    private static class ReroutingView extends Component
+            implements BeforeEnterObserver {
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.rerouteTo(ForwardTargetView.class);
+        }
+    }
+
     @Route(value = "/:samplePersonID?/:action?(edit)")
     @RouteAlias(value = "")
     @Tag("div")
@@ -659,9 +700,13 @@ class NavigationStateRendererTest {
 
     private static AtomicInteger layoutAttachCount;
     private static AtomicInteger viewAttachCount;
+    private static AtomicInteger forwardTargetLayoutAttachCount;
+    private static AtomicInteger forwardTargetViewAttachCount;
     private static AtomicInteger beforeEnterCount;
     private static String layoutUUID;
     private static String viewUUID;
+    private static String forwardTargetLayoutUUID;
+    private static String forwardTargetViewUUID;
 
     @Test
     public void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
@@ -767,6 +812,100 @@ class NavigationStateRendererTest {
         assertNotEquals(currentLayoutUUID, layoutUUID);
         assertNotEquals(currentViewUUID, viewUUID);
 
+    }
+
+    @Test
+    public void handle_refreshCurrentRoute_withForwardTo_recreatesComponents() {
+        forwardTargetLayoutAttachCount = new AtomicInteger();
+        forwardTargetViewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(ForwardingView.class).withPath("forwarding")
+                        .build());
+        router.getRegistry().setRoute("forwarding", ForwardingView.class,
+                Collections.emptyList());
+        router.getRegistry().setRoute("forward-target", ForwardTargetView.class,
+                List.of(ForwardTargetLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("forwarding"),
+                ui, NavigationTrigger.PAGE_LOAD));
+
+        assertEquals(1, forwardTargetLayoutAttachCount.get());
+        assertEquals(1, forwardTargetViewAttachCount.get());
+
+        String currentLayoutUUID = forwardTargetLayoutUUID;
+        String currentViewUUID = forwardTargetViewUUID;
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Should recreate route component only
+        ui.refreshCurrentRoute(false);
+        assertEquals(1, forwardTargetLayoutAttachCount.get());
+        assertEquals(2, forwardTargetViewAttachCount.get());
+        assertEquals(currentLayoutUUID, forwardTargetLayoutUUID);
+        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
+        currentViewUUID = forwardTargetViewUUID;
+
+        // Should recreate route component and parent layout
+        ui.refreshCurrentRoute(true);
+        assertEquals(2, forwardTargetLayoutAttachCount.get());
+        assertEquals(3, forwardTargetViewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, forwardTargetLayoutUUID);
+        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
+    }
+
+    @Test
+    public void handle_refreshCurrentRoute_withRerouteTo_recreatesComponents() {
+        forwardTargetLayoutAttachCount = new AtomicInteger();
+        forwardTargetViewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(ReroutingView.class).withPath("rerouting")
+                        .build());
+        router.getRegistry().setRoute("rerouting", ReroutingView.class,
+                Collections.emptyList());
+        router.getRegistry().setRoute("forward-target", ForwardTargetView.class,
+                List.of(ForwardTargetLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("rerouting"),
+                ui, NavigationTrigger.PAGE_LOAD));
+
+        assertEquals(1, forwardTargetLayoutAttachCount.get());
+        assertEquals(1, forwardTargetViewAttachCount.get());
+
+        String currentLayoutUUID = forwardTargetLayoutUUID;
+        String currentViewUUID = forwardTargetViewUUID;
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // Should recreate route component only
+        ui.refreshCurrentRoute(false);
+        assertEquals(1, forwardTargetLayoutAttachCount.get());
+        assertEquals(2, forwardTargetViewAttachCount.get());
+        assertEquals(currentLayoutUUID, forwardTargetLayoutUUID);
+        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
+        currentViewUUID = forwardTargetViewUUID;
+
+        // Should recreate route component and parent layout
+        ui.refreshCurrentRoute(true);
+        assertEquals(2, forwardTargetLayoutAttachCount.get());
+        assertEquals(3, forwardTargetViewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, forwardTargetLayoutUUID);
+        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
     }
 
     @Test

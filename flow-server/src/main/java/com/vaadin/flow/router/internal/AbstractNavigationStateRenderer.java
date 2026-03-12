@@ -942,7 +942,9 @@ public abstract class AbstractNavigationStateRenderer
 
             return new ErrorNavigationEvent(event.getSource(),
                     event.getLocation(), event.getUI(),
-                    NavigationTrigger.PROGRAMMATIC, errorParameter);
+                    NavigationTrigger.PROGRAMMATIC, errorParameter,
+                    event.isForceInstantiation(),
+                    event.isRecreateLayoutChain());
         }
 
         String url;
@@ -983,7 +985,8 @@ public abstract class AbstractNavigationStateRenderer
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
+                NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true,
+                event.isForceInstantiation(), event.isRecreateLayoutChain());
     }
 
     /**
