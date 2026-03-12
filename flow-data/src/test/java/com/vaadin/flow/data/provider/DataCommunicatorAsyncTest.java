@@ -17,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -24,6 +25,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.test.util.MockDeploymentConfiguration
 
 import elemental.json.JsonValue;
 
@@ -230,8 +232,9 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
+                DeploymentConfiguration conf = new MockDeploymentConfiguration(); 
                 session = new AlwaysLockedVaadinSession(
-                        new VaadinServletService(new VaadinServlet(), null));
+                        new VaadinServletService(new VaadinServlet(), conf));
                 VaadinSession.setCurrent(session);
             }
             return session;
