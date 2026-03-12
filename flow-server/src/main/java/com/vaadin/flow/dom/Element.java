@@ -250,11 +250,12 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to a given attribute and keeps the
-     * attribute value synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * Binds a {@link Signal}'s value to a given attribute. The attribute is set
+     * immediately with the current signal value when the binding is created,
+     * and is kept synchronized with any subsequent signal value changes while
+     * the element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds
+     * existing binding.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
@@ -880,10 +881,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the given property and keeps the
-     * property value synchronized with the signal value while the element is in
-     * attached state. When the element is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to the given property. The property is set
+     * immediately with the current signal value when the binding is created,
+     * and is kept synchronized with any subsequent signal value changes while
+     * the element is in attached state. When the element is in detached state,
+     * signal value changes have no effect.
      * <p>
      * Same rules apply for the property name and value from the bound Signal as
      * in {@link #setProperty(String, String)}.
@@ -1381,10 +1383,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the text content of this element and
-     * keeps the text content synchronized with the signal value while the
-     * element is in attached state. When the element is in detached state,
-     * signal value changes have no effect.
+     * Binds a {@link Signal}'s value to the text content of this element. The
+     * text content is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes while the element is in attached state. When the element is
+     * in detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to a property, any attempt to set the text
      * content manually throws
@@ -1896,9 +1899,11 @@ public class Element extends Node<Element> {
 
     /**
      * Binds a {@link Signal}'s value to the <code>visible</code> property of
-     * this element and keeps property synchronized with the signal value while
-     * the element is in attached state. When the element is in detached state,
-     * signal value changes have no effect.
+     * this element. The visibility is set immediately with the current signal
+     * value when the binding is created, and is kept synchronized with any
+     * subsequent signal value changes while the element is in attached state.
+     * When the element is in detached state, signal value changes have no
+     * effect.
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws
@@ -1952,10 +1957,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the enabled state of this element and
-     * keeps the state synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to the enabled state of this element. The
+     * enabled state is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes while the element is in attached state. When the element is
+     * in detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws

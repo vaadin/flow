@@ -26,8 +26,8 @@ import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TreeRevisionTest {
     private static class MutableTestRevision extends TreeRevision {

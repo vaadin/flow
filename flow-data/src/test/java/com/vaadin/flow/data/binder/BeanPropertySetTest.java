@@ -32,8 +32,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import junit.framework.AssertionFailedError;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.BeanUtil;

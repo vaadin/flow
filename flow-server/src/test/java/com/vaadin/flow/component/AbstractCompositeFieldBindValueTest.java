@@ -74,9 +74,9 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
-        // not attached yet, so presentation value not used from the signal
-        assertEquals("", field.start.getValue());
-        assertEquals("", field.rest.getValue());
+        // Probe runs immediately at bind time even when detached
+        assertEquals("Hello", field.start.getValue());
+        assertEquals("Cool World", field.rest.getValue());
 
         // setValue doesn't update the bound signal when detached
         field.setValue("Hey You");
@@ -90,9 +90,9 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
         field.bindValue(signal, signal::set);
-        // not attached yet, so presentation value not used from the signal
-        assertEquals("", field.start.getValue());
-        assertEquals("", field.rest.getValue());
+        // Probe runs immediately at bind time even when detached
+        assertEquals("Hello", field.start.getValue());
+        assertEquals("Cool World", field.rest.getValue());
 
         // setModelValue doesn't update the bound signal when detached
         field.start.setValue("Hey");

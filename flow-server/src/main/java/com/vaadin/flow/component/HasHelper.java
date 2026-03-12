@@ -74,8 +74,10 @@ public interface HasHelper extends HasElement {
     }
 
     /**
-     * Binds a signal's value to the component's helper text so that the helper
-     * text is updated when the signal's value is updated.
+     * Binds a signal's value to the component's helper text. The helper text is
+     * set immediately with the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state.
      * <p>
      * Passing {@code null} as the {@code signal} removes any existing binding
      * for the given helper text. When unbinding, the current helper text is
@@ -86,9 +88,8 @@ public interface HasHelper extends HasElement {
      * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
      * when trying to bind a new Signal while one is already bound.
      * <p>
-     * Bindings are lifecycle-aware and only active while this component is in
-     * the attached state; they are deactivated while the component is in the
-     * detached state.
+     * When the component is in the detached state, signal value changes have no
+     * effect.
      *
      * @param helperTextSignal
      *            the signal to bind, not <code>null</code>

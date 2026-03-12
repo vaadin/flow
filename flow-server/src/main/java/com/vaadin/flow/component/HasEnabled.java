@@ -102,11 +102,12 @@ public interface HasEnabled extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the enabled state of this component and
-     * keeps the state synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * Binds a {@link Signal}'s value to the enabled state of this component.
+     * The enabled state is set immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the element is in attached state. When the
+     * element is in detached state, signal value changes have no effect.
+     * <code>null</code> signal unbinds the existing binding.
      * <p>
      * While a Signal is bound to an enabled state, any attempt to set the state
      * manually with {@link #setEnabled(boolean)} throws

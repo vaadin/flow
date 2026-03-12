@@ -22,7 +22,6 @@ import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -62,10 +61,11 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
         // Not attached yet
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
-        // No propagation while detached
-        assertNull(component.getPlaceholder());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("foo", component.getPlaceholder());
+        // Signal changes while detached are ignored (effect is passivated)
         signal.set("bar");
-        assertNull(component.getPlaceholder());
+        assertEquals("foo", component.getPlaceholder());
     }
 
     @Test
@@ -73,10 +73,12 @@ class HasPlaceholderBindTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
-        // Update before attach
+        // Probe applied "foo" immediately
+        assertEquals("foo", component.getPlaceholder());
+        // Update before attach - ignored while detached
         signal.set("bar");
-        assertNull(component.getPlaceholder());
-        // Attach -> latest value is applied
+        assertEquals("foo", component.getPlaceholder());
+        // Attach -> latest value is applied because signal changed since probe
         UI.getCurrent().add(component);
         assertEquals("bar", component.getPlaceholder());
     }
