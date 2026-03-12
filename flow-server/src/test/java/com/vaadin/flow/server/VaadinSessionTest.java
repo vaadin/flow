@@ -455,6 +455,28 @@ class VaadinSessionTest {
     }
 
     @Test
+    public void setLocale_uiLocaleOverride_sessionAndOtherUIUnaffected() {
+        UI anotherUI = new UI();
+        anotherUI.getInternals().setSession(session);
+        anotherUI.doInit(vaadinRequest, session.getNextUIid(), "foo");
+        session.addUI(anotherUI);
+
+        // Set session locale to FRENCH, which propagates to all UIs
+        session.setLocale(Locale.FRENCH);
+        assertEquals(Locale.FRENCH, ui.getLocale());
+        assertEquals(Locale.FRENCH, anotherUI.getLocale());
+
+        // One UI overrides its locale
+        anotherUI.setLocale(Locale.GERMAN);
+
+        // The overridden UI has its own locale
+        assertEquals(Locale.GERMAN, anotherUI.getLocale());
+        // Session and other UI are unaffected
+        assertEquals(Locale.FRENCH, session.getLocale());
+        assertEquals(Locale.FRENCH, ui.getLocale());
+    }
+
+    @Test
     public void valueUnbound_explicitVaadinSessionClose_wrappedSessionIsNotCleanedUp() {
         ReentrantLock lock = Mockito.mock(ReentrantLock.class);
         Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);

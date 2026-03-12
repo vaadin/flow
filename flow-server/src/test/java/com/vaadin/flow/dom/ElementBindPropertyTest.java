@@ -56,7 +56,6 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -409,7 +408,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertTrue(component.getElement().getProperty("foo", false));
+
+        // Changes while detached are ignored
+        signal.set(false);
+        assertTrue(component.getElement().getProperty("foo", false));
     }
 
     @Test
@@ -474,7 +478,14 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
+                0.0d);
+
+        // Changes while detached are ignored
+        signal.set(2.0d);
+        assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
+                0.0d);
     }
 
     @Test
@@ -544,7 +555,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals(1, component.getElement().getProperty("foo", -1));
+
+        // Changes while detached are ignored
+        signal.set(2);
+        assertEquals(1, component.getElement().getProperty("foo", -1));
     }
 
     @Test
@@ -609,7 +625,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("bar", component.getElement().getProperty("foo", null));
+
+        // Changes while detached are ignored
+        signal.set("changed");
+        assertEquals("bar", component.getElement().getProperty("foo", null));
     }
 
     @Test
@@ -675,11 +696,18 @@ class ElementBindPropertyTest {
     public void bindBeanProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
-        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(
-                createJohn());
+        JacksonUtilsTest.Person john = createJohn();
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
+
+        // Changes while detached are ignored
+        signal.set(createJack());
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
     }
 
     @Test
@@ -752,7 +780,16 @@ class ElementBindPropertyTest {
                 Arrays.asList(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal, null);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        // Changes while detached are ignored
+        signal.set(Arrays.asList(createJack(), createJohn()));
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
     }
 
     @Test
@@ -842,7 +879,16 @@ class ElementBindPropertyTest {
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal, null);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        // Changes while detached are ignored
+        signal.set(createPersonMap(createJack(), createJohn()));
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
     }
 
     @Test

@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.shared;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -192,6 +193,26 @@ public class SharedListSignal<T extends @Nullable Object>
     @Override
     public List<SharedValueSignal<T>> peek() {
         return Objects.requireNonNull(super.peek());
+    }
+
+    /**
+     * Gets a stream with all values in this signal. This registers a dependency
+     * for both the structure of the list and the values of all child signals.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> getValues() {
+        return get().stream().map(Signal::get);
+    }
+
+    /**
+     * Gets a stream with all values in this signal without registering any
+     * dependencies.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> peekValues() {
+        return peek().stream().map(Signal::peek);
     }
 
     @Override

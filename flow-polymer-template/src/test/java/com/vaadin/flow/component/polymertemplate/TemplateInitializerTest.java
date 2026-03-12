@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -14,10 +14,9 @@ import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -31,13 +30,15 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0.
  */
 @NotThreadSafe
-public class TemplateInitializerTest {
+class TemplateInitializerTest {
     private TemplateParser templateParser;
     private VaadinService service;
 
@@ -61,8 +62,8 @@ public class TemplateInitializerTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
         DeploymentConfiguration configuration = Mockito
@@ -92,29 +93,31 @@ public class TemplateInitializerTest {
                         inTemplateElementId, outsideTemplateElementId)));
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void inTemplateShouldThrowAnException() {
-        new TemplateInitializer(new InTemplateClass(), templateParser, service);
+    @Test
+    void inTemplateShouldThrowAnException() {
+        assertThrows(IllegalStateException.class,
+                () -> new TemplateInitializer(new InTemplateClass(),
+                        templateParser, service));
     }
 
     @Test
-    public void outsideTemplateShouldNotThrowAnException() {
+    void outsideTemplateShouldNotThrowAnException() {
         new TemplateInitializer(new OutsideTemplateClass(), templateParser,
                 service);
     }
 
     @Test
-    public void twoWayBindingPaths() {
+    void twoWayBindingPaths() {
         Set<String> twoWayBindingPaths = new TemplateInitializer(
                 new OutsideTemplateClass(), templateParser, service)
                 .getTwoWayBindingPaths();
 
-        Assert.assertEquals(
+        assertEquals(
                 new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")),
                 twoWayBindingPaths);
     }

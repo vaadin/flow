@@ -83,9 +83,13 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal, signal::set);
-        signal.set("bar");
 
-        assertEquals("", input.getValue());
+        // Probe runs immediately at bind time, setting the initial value
+        assertEquals("foo", input.getValue());
+
+        // Signal change while detached is ignored (effect is passivated)
+        signal.set("bar");
+        assertEquals("foo", input.getValue());
     }
 
     @Test
@@ -213,9 +217,10 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
             counter.incrementAndGet();
         });
 
-        assertEquals(0, counter.get());
+        // Both effects probe immediately at creation time
+        assertEquals(1, counter.get());
         UI.getCurrent().add(input);
-        // effect run once on attach
+        // Nothing changed since probe, so no re-run on attach
         assertEquals(1, counter.get());
 
         input.setValue("bar");
