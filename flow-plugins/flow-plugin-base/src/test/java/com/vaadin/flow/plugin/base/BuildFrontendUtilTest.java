@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -75,7 +74,13 @@ import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 import com.vaadin.pro.licensechecker.Product;
 
-public class BuildFrontendUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BuildFrontendUtilTest {
 
     @TempDir
     Path tmpDir;
@@ -89,8 +94,8 @@ public class BuildFrontendUtilTest {
     private File resourceOutput;
 
     @BeforeEach
-    public void setup() throws Exception {
-        baseDir = Files.createTempDirectory(tmpDir, "").toFile();
+    void setup() throws Exception {
+        baseDir = Files.createDirectories(tmpDir.resolve("baseDir")).toFile();
         File frontendOutput = Files
                 .createDirectories(tmpDir.resolve("frontend-output")).toFile();
 
@@ -110,9 +115,9 @@ public class BuildFrontendUtilTest {
 
         // setup: mock a vite executable
         File viteBin = new File(baseDir, "node_modules/vite/bin");
-        Assertions.assertTrue(viteBin.mkdirs());
+        assertTrue(viteBin.mkdirs());
         File viteExecutableMock = new File(viteBin, "vite.js");
-        Assertions.assertTrue(viteExecutableMock.createNewFile());
+        assertTrue(viteExecutableMock.createNewFile());
 
         resourceOutput = new File(baseDir, "resOut");
         Mockito.when(adapter.servletResourceOutputDirectory())
@@ -125,7 +130,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void should_notUseHilla_inPrepareFrontend()
+    void should_notUseHilla_inPrepareFrontend()
             throws ExecutionFailedException, IOException, URISyntaxException {
         setupPluginAdapterDefaults();
 
@@ -146,7 +151,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void should_useHillaEngine_withNodeUpdater()
+    void should_useHillaEngine_withNodeUpdater()
             throws URISyntaxException, ExecutionFailedException {
         setupPluginAdapterDefaults();
 
@@ -197,7 +202,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void detectsUsedCommercialComponents() {
+    void detectsUsedCommercialComponents() {
 
         final FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -217,19 +222,19 @@ public class BuildFrontendUtilTest {
         List<Product> components = BuildFrontendUtil
                 .findCommercialFrontendComponents(scanner, statsJsonContents);
         // Two components are included, only one is used
-        Assertions.assertEquals(1, components.size());
-        Assertions.assertEquals("comm-comp", components.get(0).getName());
-        Assertions.assertEquals("4.6.5", components.get(0).getVersion());
+        assertEquals(1, components.size());
+        assertEquals("comm-comp", components.get(0).getName());
+        assertEquals("4.6.5", components.get(0).getVersion());
     }
 
     @Test
-    public void propagateBuildInfo_tokenFileNotExisting_createTokenFile()
+    void propagateBuildInfo_tokenFileNotExisting_createTokenFile()
             throws Exception {
         prepareAndAssertTokenFile();
     }
 
     @Test
-    public void propagateBuildInfo_existingTokenFileWithDifferentContent_overwritesTokenFile()
+    void propagateBuildInfo_existingTokenFileWithDifferentContent_overwritesTokenFile()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
         long lastModified = tokenFile.lastModified();
@@ -238,12 +243,12 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.nodeVersion()).thenReturn("v1.0.0");
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
-        Assertions.assertNotEquals(lastModified, tokenFile.lastModified(),
+        assertNotEquals(lastModified, tokenFile.lastModified(),
                 "Expected token file to be updated, but was not");
     }
 
     @Test
-    public void propagateBuildInfo_existingTokenFileWithSameContent_doesNotWriteTokenFile()
+    void propagateBuildInfo_existingTokenFileWithSameContent_doesNotWriteTokenFile()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
         long lastModified = tokenFile.lastModified();
@@ -251,12 +256,12 @@ public class BuildFrontendUtilTest {
         Thread.sleep(100);
 
         BuildFrontendUtil.propagateBuildInfo(adapter);
-        Assertions.assertEquals(lastModified, tokenFile.lastModified(),
+        assertEquals(lastModified, tokenFile.lastModified(),
                 "Expected token file not to be updated, but it has been written");
     }
 
     @Test
-    public void prepareFrontend_shouldCleanUnusedGeneratedFiles()
+    void prepareFrontend_shouldCleanUnusedGeneratedFiles()
             throws Exception {
         fillAdapter();
         File frontendGeneratedFolder = new File(
@@ -287,34 +292,34 @@ public class BuildFrontendUtilTest {
         Set<Path> generatedFiles = Files.walk(frontendGeneratedFolder.toPath())
                 .filter(Files::isRegularFile).collect(Collectors.toSet());
 
-        Assertions.assertTrue(
+        assertTrue(
                 generatedFiles.stream().noneMatch(additionalFiles::contains),
                 "Files not generated by prepare frontend should not be present");
-        Assertions.assertEquals(expectedGeneratedFiles, generatedFiles,
+        assertEquals(expectedGeneratedFiles, generatedFiles,
                 "Expecting same generated files to be present");
 
     }
 
     @Test
-    public void updateBuildFile_tokenFileNotExisting_doNothing()
+    void updateBuildFile_tokenFileNotExisting_doNothing()
             throws Exception {
         fillAdapter();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
         File tokenFile = new File(resourceOutput, FrontendUtils.TOKEN_FILE);
-        Assertions.assertFalse(tokenFile.exists(),
+        assertFalse(tokenFile.exists(),
                 "Token file should not have been created");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
+    void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
         JsonNode buildInfoJsonDev = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
@@ -322,28 +327,28 @@ public class BuildFrontendUtilTest {
         Set<String> removedKeys = JacksonUtils.getKeys(buildInfoJsonDev)
                 .stream().filter(key -> !buildInfoJsonProd.has(key))
                 .collect(Collectors.toSet());
-        Assertions.assertFalse(removedKeys.isEmpty(),
+        assertFalse(removedKeys.isEmpty(),
                 "Development entries have not been removed from token file");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_applicationIdentifierAdded()
+    void updateBuildFile_tokenExisting_applicationIdentifierAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
-        Assertions.assertEquals("TEST_APP_ID",
+        assertEquals("TEST_APP_ID",
                 buildInfoJsonProd.get(InitParameters.APPLICATION_IDENTIFIER)
                         .asString(),
                 "Wrong application identifier in token file");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseRequiredAndSubscriptionKey_dauFlagAdded()
+    void updateBuildFile_tokenExisting_licenseRequiredAndSubscriptionKey_dauFlagAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
         withMockedLicenseChecker(false, () -> {
@@ -360,18 +365,18 @@ public class BuildFrontendUtilTest {
                     System.clearProperty("vaadin.subscriptionKey");
                 }
             }
-            Assertions.assertTrue(tokenFile.exists(),
+            assertTrue(tokenFile.exists(),
                     "Token file should still exist");
             JsonNode buildInfoJsonProd = JacksonUtils
                     .readTree(Files.readString(tokenFile.toPath()));
-            Assertions.assertTrue(
+            assertTrue(
                     buildInfoJsonProd.get(Constants.DAU_TOKEN).booleanValue(),
                     "DAU flag should be active in token file");
         });
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseNotRequiredAndSubscriptionKey_dauFlagNotAdded()
+    void updateBuildFile_tokenExisting_licenseNotRequiredAndSubscriptionKey_dauFlagNotAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
@@ -388,16 +393,16 @@ public class BuildFrontendUtilTest {
                 System.clearProperty("vaadin.subscriptionKey");
             }
         }
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
-        Assertions.assertFalse(buildInfoJsonProd.has(Constants.DAU_TOKEN),
+        assertFalse(buildInfoJsonProd.has(Constants.DAU_TOKEN),
                 "DAU flag should not be present in token file");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseRequiredNoSubscriptionKey_dauFlagNotAdded()
+    void updateBuildFile_tokenExisting_licenseRequiredNoSubscriptionKey_dauFlagNotAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
         withMockedLicenseChecker(false, () -> {
@@ -414,17 +419,17 @@ public class BuildFrontendUtilTest {
                     System.clearProperty("vaadin.subscriptionKey");
                 }
             }
-            Assertions.assertTrue(tokenFile.exists(),
+            assertTrue(tokenFile.exists(),
                     "Token file should still exist");
             JsonNode buildInfoJsonProd = JacksonUtils
                     .readTree(Files.readString(tokenFile.toPath()));
-            Assertions.assertFalse(buildInfoJsonProd.has(Constants.DAU_TOKEN),
+            assertFalse(buildInfoJsonProd.has(Constants.DAU_TOKEN),
                     "DAU flag should not be present in token file");
         });
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
+    void updateBuildFile_tokenExisting_licenseRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
@@ -440,11 +445,11 @@ public class BuildFrontendUtilTest {
 
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true, false);
-            Assertions.assertTrue(tokenFile.exists(),
+            assertTrue(tokenFile.exists(),
                     "Token file should still exist");
             JsonNode buildInfoJsonProd = JacksonUtils
                     .readTree(Files.readString(tokenFile.toPath()));
-            Assertions.assertTrue(
+            assertTrue(
                     buildInfoJsonProd.get(Constants.PREMIUM_FEATURES)
                             .booleanValue(),
                     Constants.PREMIUM_FEATURES
@@ -453,7 +458,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseRequiredAndIsNotPremiumLike_premiumFeaturesFlagNotAdded()
+    void updateBuildFile_tokenExisting_licenseRequiredAndIsNotPremiumLike_premiumFeaturesFlagNotAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
@@ -461,11 +466,11 @@ public class BuildFrontendUtilTest {
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true, false);
-            Assertions.assertTrue(tokenFile.exists(),
+            assertTrue(tokenFile.exists(),
                     "Token file should still exist");
             JsonNode buildInfoJsonProd = JacksonUtils
                     .readTree(Files.readString(tokenFile.toPath()));
-            Assertions.assertFalse(
+            assertFalse(
                     buildInfoJsonProd.has(Constants.PREMIUM_FEATURES),
                     Constants.PREMIUM_FEATURES
                             + " flag should not be active in token file");
@@ -473,7 +478,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_commercialBannerBuildRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
+    void updateBuildFile_tokenExisting_commercialBannerBuildRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
@@ -490,11 +495,11 @@ public class BuildFrontendUtilTest {
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true, true);
-            Assertions.assertTrue(tokenFile.exists(),
+            assertTrue(tokenFile.exists(),
                     "Token file should still exist");
             JsonNode buildInfoJsonProd = JacksonUtils
                     .readTree(Files.readString(tokenFile.toPath()));
-            Assertions.assertTrue(
+            assertTrue(
                     buildInfoJsonProd.get(Constants.PREMIUM_FEATURES)
                             .booleanValue(),
                     Constants.PREMIUM_FEATURES
@@ -503,24 +508,24 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildEnabled_commercialBannerFlagAdded()
+    void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildEnabled_commercialBannerFlagAdded()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, true);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
-        Assertions.assertTrue(
+        assertTrue(
                 buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN),
                 Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should be active in token file");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildNotEnabled_throws()
+    void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildNotEnabled_throws()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
         prepareAndAssertTokenFile();
@@ -528,46 +533,46 @@ public class BuildFrontendUtilTest {
         // If commercial banner is required but not enabled, it means there's an
         // issue
         // in the plugin license checking mechanism
-        Assertions.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> BuildFrontendUtil.updateBuildFile(adapter, true, true));
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_commercialBannerBuildNotRequired_commercialBannerBuildEnabled_commercialBannerFlagNotAdded()
+    void updateBuildFile_tokenExisting_commercialBannerBuildNotRequired_commercialBannerBuildEnabled_commercialBannerFlagNotAdded()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, false);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
-        Assertions.assertFalse(
+        assertFalse(
                 buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN),
                 Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should not be active in token file");
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseNotRequired_commercialBannerBuildRequired_commercialBannerFlagNotAdded()
+    void updateBuildFile_tokenExisting_licenseNotRequired_commercialBannerBuildRequired_commercialBannerFlagNotAdded()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, true);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
-        Assertions.assertFalse(
+        assertFalse(
                 buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN),
                 Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should not be active in token file");
     }
 
     @Test
-    public void validateLicense_commercialProducts_noLocalKeys_buildWithCommercialBannerDisabled_failsWithCommercialBannerSuggestion()
+    void validateLicense_commercialProducts_noLocalKeys_buildWithCommercialBannerDisabled_failsWithCommercialBannerSuggestion()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
 
@@ -594,24 +599,24 @@ public class BuildFrontendUtilTest {
         Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
         withMockedLicenseChecker(false, () -> {
-            LicenseException exception = Assertions.assertThrows(
+            LicenseException exception = assertThrows(
                     LicenseException.class, () -> BuildFrontendUtil
                             .validateLicenses(adapter, frontendDependencies));
-            commercialProducts.forEach(product -> Assertions.assertTrue(
+            commercialProducts.forEach(product -> assertTrue(
                     exception.getMessage().contains(product),
                     "Exception should list all commercial products but "
                             + product + " is missing"));
-            Assertions.assertTrue(
+            assertTrue(
                     exception.getMessage()
                             .contains(InitParameters.COMMERCIAL_WITH_BANNER),
                     "Expected exception message to suggest usage of commercial banner build");
-            Assertions.assertFalse(adapter.frontendOutputDirectory().exists(),
+            assertFalse(adapter.frontendOutputDirectory().exists(),
                     "Expected output directory to be deleted but was not");
         });
     }
 
     @Test
-    public void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithCommercialBannerEnabled_propagateMissingKeyException()
+    void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithCommercialBannerEnabled_propagateMissingKeyException()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         Files.createDirectories(statsJson.toPath().getParent());
@@ -633,10 +638,10 @@ public class BuildFrontendUtilTest {
         Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
         withMockedLicenseChecker(false, () -> {
-            Assertions.assertThrows(MissingLicenseKeyException.class,
+            assertThrows(MissingLicenseKeyException.class,
                     () -> BuildFrontendUtil.validateLicenses(adapter,
                             frontendDependencies));
-            Assertions.assertTrue(adapter.frontendOutputDirectory().exists(),
+            assertTrue(adapter.frontendOutputDirectory().exists(),
                     "Expected output directory to be preserved but was not");
         });
     }
@@ -677,13 +682,13 @@ public class BuildFrontendUtilTest {
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
         File tokenFile = new File(resourceOutput, FrontendUtils.TOKEN_FILE);
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "Token file should have been created");
         return tokenFile;
     }
 
     @Test
-    public void runNodeUpdater_generateFeatureFlagsJsFile() throws Exception {
+    void runNodeUpdater_generateFeatureFlagsJsFile() throws Exception {
         setupPluginAdapterDefaults();
 
         File targetDir = baseDir.toPath().resolve(adapter.buildFolder())
@@ -723,7 +728,7 @@ public class BuildFrontendUtilTest {
                 .readString(generatedFeatureFlagsFile.toPath())
                 .replace("\r\n", "\n");
 
-        Assertions.assertFalse(
+        assertFalse(
                 featureFlagsJs.contains(
                         "window.Vaadin.featureFlags.exampleFeatureFlag"),
                 "Example feature should not be set at build time");
@@ -774,10 +779,10 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
         File javaSourceFolder = new File(baseDir, "src/main/java");
-        Assertions.assertTrue(javaSourceFolder.mkdirs());
+        assertTrue(javaSourceFolder.mkdirs());
         Mockito.when(adapter.javaSourceFolder()).thenReturn(javaSourceFolder);
         File javaResourceFolder = new File(baseDir, "src/main/resources");
-        Assertions.assertTrue(javaResourceFolder.mkdirs());
+        assertTrue(javaResourceFolder.mkdirs());
         Mockito.when(adapter.javaResourceFolder())
                 .thenReturn(javaResourceFolder);
         Mockito.when(adapter.openApiJsonFile())

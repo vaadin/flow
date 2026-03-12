@@ -33,7 +33,7 @@ import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
-public class ConvertPolymerCommandTest {
+class ConvertPolymerCommandTest {
     @TempDir
     Path tmpDir;
 
@@ -52,7 +52,7 @@ public class ConvertPolymerCommandTest {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void init()
+    void init()
             throws IOException, URISyntaxException, IllegalAccessException {
         closeable = MockitoAnnotations.openMocks(this);
         TestUtil.stubPluginAdapterBase(adapter, tmpDir.toFile());
@@ -67,12 +67,12 @@ public class ConvertPolymerCommandTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         closeable.close();
     }
 
     @Test
-    public void execute() throws URISyntaxException, IOException,
+    void execute() throws URISyntaxException, IOException,
             InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, false, false)) {
@@ -105,7 +105,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void setSpecificFrontendFile_execute() throws URISyntaxException,
+    void setSpecificFrontendFile_execute() throws URISyntaxException,
             IOException, InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 "/nested/component.js", false, false)) {
@@ -128,7 +128,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void setSpecificServerFile_execute() throws URISyntaxException,
+    void setSpecificServerFile_execute() throws URISyntaxException,
             IOException, InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 "/nested/Component.java", false, false)) {
@@ -151,7 +151,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void useLit1_execute() throws URISyntaxException, IOException,
+    void useLit1_execute() throws URISyntaxException, IOException,
             InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, true, false)) {
@@ -167,7 +167,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void disableOptionalChaining_execute() throws URISyntaxException,
+    void disableOptionalChaining_execute() throws URISyntaxException,
             IOException, InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, false, true)) {

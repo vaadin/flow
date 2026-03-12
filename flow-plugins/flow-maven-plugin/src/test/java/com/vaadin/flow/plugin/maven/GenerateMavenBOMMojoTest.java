@@ -22,15 +22,16 @@ import java.nio.file.Paths;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GenerateMavenBOMMojoTest {
+class GenerateMavenBOMMojoTest {
 
     private String bomFilename;
 
@@ -42,7 +43,7 @@ public class GenerateMavenBOMMojoTest {
     private GenerateMavenBOMMojo mojo;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         this.mojo = new GenerateMavenBOMMojo();
 
         MavenProject project = Mockito.mock(MavenProject.class);
@@ -86,10 +87,10 @@ public class GenerateMavenBOMMojoTest {
     }
 
     @Test
-    public void shouldGenerateSBOM() throws Exception {
-        Assertions.assertFalse(Files.exists(Paths.get(bomFilename)));
+    void shouldGenerateSBOM() throws Exception {
+        assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
-        Assertions.assertTrue(Files.exists(Paths.get(bomFilename)));
+        assertTrue(Files.exists(Paths.get(bomFilename)));
     }
 
 }

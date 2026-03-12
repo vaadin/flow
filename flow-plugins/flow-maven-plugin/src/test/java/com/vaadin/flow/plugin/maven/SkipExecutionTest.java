@@ -29,7 +29,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class SkipExecutionTest {
+class SkipExecutionTest {
 
     @TempDir
     Path tempDir;
@@ -39,7 +39,7 @@ public class SkipExecutionTest {
     private File projectBase;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         mojo = new PrepareFrontendMojo();
         mockLog = Mockito.mock(Log.class);
         projectBase = tempDir.toFile();
@@ -57,7 +57,7 @@ public class SkipExecutionTest {
     }
 
     @Test
-    public void testSkipExecutionWhenVaadinSkipIsTrue() throws Exception {
+    void testSkipExecutionWhenVaadinSkipIsTrue() throws Exception {
         // Set the skip parameter to true
         ReflectionUtils.setVariableValueInObject(mojo, "skip", true);
 
@@ -69,7 +69,7 @@ public class SkipExecutionTest {
     }
 
     @Test
-    public void testNormalExecutionWhenVaadinSkipIsFalse() throws Exception {
+    void testNormalExecutionWhenVaadinSkipIsFalse() throws Exception {
         // Set the skip parameter to false (default)
         ReflectionUtils.setVariableValueInObject(mojo, "skip", false);
 

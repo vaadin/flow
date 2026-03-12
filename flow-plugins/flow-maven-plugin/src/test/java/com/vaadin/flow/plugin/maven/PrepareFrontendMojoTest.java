@@ -26,7 +26,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,8 +49,13 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class PrepareFrontendMojoTest {
+class PrepareFrontendMojoTest {
     @TempDir
     Path tempDir;
 
@@ -66,7 +70,7 @@ public class PrepareFrontendMojoTest {
     private File generatedTsFolder;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
 
         projectBase = tempDir.toFile();
 
@@ -121,43 +125,43 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void tokenFileShouldExist_noHotdeployTokenVisible()
+    void tokenFileShouldExist_noHotdeployTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException {
         mojo.execute();
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assertions.assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
+        assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "Default HotDeploy token should not be available");
-        Assertions.assertNotNull(
+        assertNotNull(
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
                 "productionMode token should be available");
     }
 
     @Test
-    public void tokenFileShouldExist_hotdeployIsTrueTokenVisible()
+    void tokenFileShouldExist_hotdeployIsTrueTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException,
             IllegalAccessException {
         ReflectionUtils.setVariableValueInObject(mojo, "frontendHotdeploy",
                 Boolean.TRUE);
         mojo.execute();
-        Assertions.assertTrue(tokenFile.exists(),
+        assertTrue(tokenFile.exists(),
                 "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assertions.assertNotNull(buildInfo.get(FRONTEND_HOTDEPLOY),
+        assertNotNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "HotDeploy should be written");
-        Assertions.assertTrue(buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue(),
+        assertTrue(buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue(),
                 "HotDeploy should be enabled");
     }
 
     @Test
-    public void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
+    void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
         ObjectNode initialBuildInfo = JacksonUtils.createObjectNode();
@@ -172,15 +176,15 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assertions.assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
+        assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "Default hotdeploy should not be added");
-        Assertions.assertNotNull(
+        assertNotNull(
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
                 "productionMode token should be available");
     }
 
     @Test
-    public void writeTokenFile_devModePropertiesAreWritten()
+    void writeTokenFile_devModePropertiesAreWritten()
             throws IOException, MojoExecutionException, MojoFailureException {
 
         mojo.execute();
@@ -189,65 +193,65 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         ObjectNode buildInfo = JacksonUtils.readTree(json);
 
-        Assertions.assertTrue(
+        assertTrue(
                 buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written");
-        Assertions.assertFalse(
+        assertFalse(
                 buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
                         .booleanValue(),
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been disabled");
 
-        Assertions.assertTrue(
+        assertTrue(
                 buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written");
-        Assertions.assertTrue(
+        assertTrue(
                 buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
                         .booleanValue(),
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been enabled");
 
-        Assertions.assertFalse(buildInfo
+        assertFalse(buildInfo
                 .has(InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE),
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
                         + "should not have been written");
     }
 
     @Test
-    public void mavenGoal_when_packageJsonMissing_shouldNotGenerateDefault()
+    void mavenGoal_when_packageJsonMissing_shouldNotGenerateDefault()
             throws Exception {
-        Assertions.assertFalse(FileUtils.fileExists(packageJson));
+        assertFalse(FileUtils.fileExists(packageJson));
         mojo.execute();
-        Assertions.assertFalse(FileUtils.fileExists(packageJson));
+        assertFalse(FileUtils.fileExists(packageJson));
     }
 
     @Test
-    public void mavenGoal_when_frontendGeneratedExists_shouldClearFolder()
+    void mavenGoal_when_frontendGeneratedExists_shouldClearFolder()
             throws Exception {
         if (!generatedTsFolder.mkdirs()) {
-            Assertions.fail("Failed to generate Frontend/generated folders.");
+            fail("Failed to generate Frontend/generated folders.");
         }
         final File flowFolder = new File(generatedTsFolder, "flow");
         if (!flowFolder.mkdir()) {
-            Assertions.fail("Failed to generate flow folder");
+            fail("Failed to generate flow folder");
         }
         final File oldFile = new File(flowFolder, "old.js");
         if (!oldFile.createNewFile()) {
-            Assertions.fail(
+            fail(
                     "Failed to generate old.js in Frontend/generated/flow");
         }
 
         mojo.execute();
-        Assertions.assertTrue(generatedTsFolder.exists(),
+        assertTrue(generatedTsFolder.exists(),
                 "Missing generated folder");
-        Assertions.assertFalse(oldFile.exists(),
+        assertFalse(oldFile.exists(),
                 "Old file should have been removed");
     }
 
     @Test
-    public void should_updateAndKeepDependencies_when_packageJsonExists()
+    void should_updateAndKeepDependencies_when_packageJsonExists()
             throws Exception {
         ObjectNode json = TestUtils.getInitialPackageJson();
         json.set("dependencies", JacksonUtils.createObjectNode());
@@ -261,7 +265,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void jarPackaging_copyProjectFrontendResources()
+    void jarPackaging_copyProjectFrontendResources()
             throws MojoExecutionException, MojoFailureException,
             IllegalAccessException {
         mojo.project.setPackaging("jar");

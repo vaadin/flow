@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,7 +38,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-public class ReflectionsClassFinderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ReflectionsClassFinderTest {
 
     private static final String CLASS_TEMPLATE = "package %s;\n" + "\n"
             + "import com.vaadin.flow.component.dependency.NpmPackage;\n" + "\n"
@@ -53,7 +57,7 @@ public class ReflectionsClassFinderTest {
     private ClassFinder.DefaultClassFinder defaultClassFinder;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         urls = new URL[] {
                 createTestModule("module-1", "com.vaadin.flow.test.last",
                         "ComponentN", "3.0.0"),
@@ -72,7 +76,7 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void getSubTypesOf_orderIsDeterministic() {
+    void getSubTypesOf_orderIsDeterministic() {
         List<String> a1 = toList(new ReflectionsClassFinder(urls)
                 .getSubTypesOf(Component.class));
         List<String> a2 = toList(
@@ -82,26 +86,26 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getSubTypesOf(Component.class));
 
-        Assertions.assertEquals(a1, a2);
-        Assertions.assertEquals(a2, a3);
+        assertEquals(a1, a2);
+        assertEquals(a2, a3);
     }
 
     @Test
-    public void getSubTypesOf_rejectNotVaadinKnownPackages() throws Exception {
+    void getSubTypesOf_rejectNotVaadinKnownPackages() throws Exception {
         urls = Arrays.copyOf(urls, urls.length + 1);
         urls[urls.length - 1] = createTestModule("module-4",
                 "org.springframework.feature.ui", "SpringUIComponent", "2.0.0");
         Set<String> result = new ReflectionsClassFinder(urls)
                 .getSubTypesOf(Component.class).stream().map(Class::getName)
                 .collect(Collectors.toSet());
-        Assertions.assertFalse(
+        assertFalse(
                 result.contains(
                         "org.springframework.feature.ui.SpringUIComponent"),
                 "Classes from know not-UI packages should be rejected by default");
     }
 
     @Test
-    public void getSubTypesOf_defaultRejectDisabled_scansAllPackages()
+    void getSubTypesOf_defaultRejectDisabled_scansAllPackages()
             throws Exception {
         urls = Arrays.copyOf(urls, urls.length + 1);
         urls[urls.length - 1] = createTestModule("module-4",
@@ -112,7 +116,7 @@ public class ReflectionsClassFinderTest {
             Set<String> result = new ReflectionsClassFinder(urls)
                     .getSubTypesOf(Component.class).stream().map(Class::getName)
                     .collect(Collectors.toSet());
-            Assertions.assertTrue(
+            assertTrue(
                     result.contains(
                             "org.springframework.feature.ui.SpringUIComponent"),
                     "Classes from know not-UI packages should be found when default rejection is disabled");
@@ -123,7 +127,7 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void getAnnotatedClasses_orderIsDeterministic() {
+    void getAnnotatedClasses_orderIsDeterministic() {
         List<String> a1 = toList(new ReflectionsClassFinder(urls)
                 .getAnnotatedClasses(NpmPackage.class));
         List<String> a2 = toList(
@@ -133,21 +137,21 @@ public class ReflectionsClassFinderTest {
                 new ReflectionsClassFinder(urls[1], urls[2], urls[0])
                         .getAnnotatedClasses(NpmPackage.class));
 
-        Assertions.assertEquals(a1, a2);
-        Assertions.assertEquals(a2, a3);
+        assertEquals(a1, a2);
+        assertEquals(a2, a3);
     }
 
     @Test
-    public void getSubTypesOf_order_sameAsDefaultClassFinder() {
-        Assertions.assertEquals(
+    void getSubTypesOf_order_sameAsDefaultClassFinder() {
+        assertEquals(
                 toList(defaultClassFinder.getSubTypesOf(Component.class)),
                 toList(new ReflectionsClassFinder(urls)
                         .getSubTypesOf(Component.class)));
     }
 
     @Test
-    public void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
-        Assertions.assertEquals(
+    void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
+        assertEquals(
                 toList(defaultClassFinder
                         .getAnnotatedClasses(NpmPackage.class)),
                 toList(new ReflectionsClassFinder(urls)
@@ -155,20 +159,20 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void notExistingDirectory_noExceptionThrown() throws Exception {
-        Path notExistingDir = Files.createTempDirectory("test")
-                .resolve(Path.of("target", "classes"));
+    void notExistingDirectory_noExceptionThrown() throws Exception {
+        Path notExistingDir = externalModules
+                .resolve(Path.of("not-existing", "target", "classes"));
         // ClassGraph should handle non-existing directories gracefully
         ReflectionsClassFinder finder = new ReflectionsClassFinder(
                 notExistingDir.toUri().toURL());
         // Verify scan completed successfully (returns empty set, not null)
         Set<Class<?>> result = finder.getAnnotatedClasses(NpmPackage.class);
-        Assertions.assertNotNull(result,
+        assertNotNull(result,
                 "Scan should complete even with non-existing directory");
     }
 
     @Test
-    public void getAnnotatedClasses_findsRepeatableAnnotations()
+    void getAnnotatedClasses_findsRepeatableAnnotations()
             throws Exception {
         // When a @Repeatable annotation is used multiple times, Java wraps
         // them in the container annotation. The finder should detect this and
@@ -185,7 +189,7 @@ public class ReflectionsClassFinderTest {
         Class<?> testClass = classLoader.loadClass(
                 "com.vaadin.flow.test.repeatable.ComponentWithMultipleNpmPackages");
 
-        Assertions.assertTrue(result.contains(testClass),
+        assertTrue(result.contains(testClass),
                 "Should find class with repeatable NpmPackage annotations through container");
     }
 
@@ -249,7 +253,7 @@ public class ReflectionsClassFinderTest {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
                 "-sourcepath", sourcePath.getPath(), sourceFile.getPath());
-        Assertions.assertEquals(0, result, "Failed to compile " + sourceFile);
+        assertEquals(0, result, "Failed to compile " + sourceFile);
     }
 
 }

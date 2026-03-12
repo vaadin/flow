@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,8 +40,12 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class GenerateNpmBOMMojoTest {
+class GenerateNpmBOMMojoTest {
 
     private String bomFilename;
 
@@ -59,7 +62,7 @@ public class GenerateNpmBOMMojoTest {
     private Lookup lookup;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
 
         File projectBase = tempDir.toFile();
@@ -75,7 +78,7 @@ public class GenerateNpmBOMMojoTest {
 
         nodeModulesDir = new File(tempDir.toFile(), "node_modules");
         boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
-        Assertions.assertTrue(nodeModulesDirCreated);
+        assertTrue(nodeModulesDirCreated);
 
         String manifestFilePath = new File(projectBase, PACKAGE_JSON)
                 .getAbsolutePath();
@@ -130,31 +133,31 @@ public class GenerateNpmBOMMojoTest {
     }
 
     @Test
-    public void shouldGenerateSBOM() throws Exception {
-        Assertions.assertFalse(Files.exists(Paths.get(bomFilename)));
+    void shouldGenerateSBOM() throws Exception {
+        assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
-        Assertions.assertTrue(Files.exists(Paths.get(bomFilename)));
+        assertTrue(Files.exists(Paths.get(bomFilename)));
     }
 
     @Test
-    public void shouldFailWhenNoPackageJsonIsPresent() throws Exception {
+    void shouldFailWhenNoPackageJsonIsPresent() throws Exception {
         ReflectionUtils.setVariableValueInObject(mojo, "packageManifest", "");
-        Assertions.assertThrows(MojoFailureException.class, () -> {
+        assertThrows(MojoFailureException.class, () -> {
             mojo.execute();
         });
     }
 
     @Test
-    public void shouldRunNpmInstallIfNodeModulesIsNotPresent()
+    void shouldRunNpmInstallIfNodeModulesIsNotPresent()
             throws Exception {
-        Assertions.assertTrue(nodeModulesDir.delete());
-        Assertions.assertFalse(nodeModulesDir.exists());
+        assertTrue(nodeModulesDir.delete());
+        assertFalse(nodeModulesDir.exists());
         mojo.execute();
-        Assertions.assertTrue(nodeModulesDir.exists());
+        assertTrue(nodeModulesDir.exists());
     }
 
     @Test
-    public void shouldSkipNpmInstallIfNodeModulesIsPresent() throws Exception {
+    void shouldSkipNpmInstallIfNodeModulesIsPresent() throws Exception {
         List<String> originalContent = TestUtils
                 .listFilesRecursively(nodeModulesDir);
 
@@ -162,7 +165,7 @@ public class GenerateNpmBOMMojoTest {
 
         List<String> newContent = TestUtils
                 .listFilesRecursively(nodeModulesDir);
-        Assertions.assertArrayEquals(originalContent.toArray(),
+        assertArrayEquals(originalContent.toArray(),
                 newContent.toArray());
     }
 
