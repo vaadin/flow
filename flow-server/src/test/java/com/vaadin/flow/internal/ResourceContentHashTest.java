@@ -20,29 +20,31 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class ResourceContentHashTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempDir;
 
     private VaadinService service;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         service = Mockito.mock(VaadinService.class);
     }
 
     private URL createTempResource(String content) throws Exception {
-        Path file = tempFolder.newFile("test.css").toPath();
+        Path file = tempDir.resolve("test.css");
         Files.writeString(file, content, StandardCharsets.UTF_8);
         return file.toUri().toURL();
     }
@@ -59,40 +61,40 @@ public class ResourceContentHashTest {
 
         String hash = ResourceContentHash.getContentHash(service, "styles.css");
 
-        Assert.assertNotNull(hash);
-        Assert.assertEquals(8, hash.length());
+        assertNotNull(hash);
+        assertEquals(8, hash.length());
 
         String expectedHash = MessageDigestUtil.sha256Hex(content).substring(0,
                 8);
-        Assert.assertEquals(expectedHash, hash);
+        assertEquals(expectedHash, hash);
     }
 
     @Test
     public void getContentHash_externalHttpUrl_returnsNull() {
-        Assert.assertNull(ResourceContentHash.getContentHash(service,
+        assertNull(ResourceContentHash.getContentHash(service,
                 "http://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalHttpsUrl_returnsNull() {
-        Assert.assertNull(ResourceContentHash.getContentHash(service,
+        assertNull(ResourceContentHash.getContentHash(service,
                 "https://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_externalUrlMixedCase_returnsNull() {
-        Assert.assertNull(ResourceContentHash.getContentHash(service,
+        assertNull(ResourceContentHash.getContentHash(service,
                 "HTTPS://cdn.example.com/styles.css"));
     }
 
     @Test
     public void getContentHash_nullUrl_returnsNull() {
-        Assert.assertNull(ResourceContentHash.getContentHash(service, null));
+        assertNull(ResourceContentHash.getContentHash(service, null));
     }
 
     @Test
     public void getContentHash_blankUrl_returnsNull() {
-        Assert.assertNull(ResourceContentHash.getContentHash(service, "  "));
+        assertNull(ResourceContentHash.getContentHash(service, "  "));
     }
 
     @Test
@@ -103,8 +105,7 @@ public class ResourceContentHashTest {
         Mockito.when(service.getStaticResource("/missing.css"))
                 .thenReturn(null);
 
-        Assert.assertNull(
-                ResourceContentHash.getContentHash(service, "missing.css"));
+        assertNull(ResourceContentHash.getContentHash(service, "missing.css"));
     }
 
     @Test
@@ -117,8 +118,8 @@ public class ResourceContentHashTest {
         Mockito.when(service.getStaticResource("/bare.css")).thenReturn(url);
 
         String hash = ResourceContentHash.getContentHash(service, "bare.css");
-        Assert.assertNotNull(hash);
-        Assert.assertEquals(8, hash.length());
+        assertNotNull(hash);
+        assertEquals(8, hash.length());
     }
 
     @Test
@@ -133,7 +134,7 @@ public class ResourceContentHashTest {
         String hash2 = ResourceContentHash.getContentHash(service,
                 "cached.css");
 
-        Assert.assertEquals(hash1, hash2);
+        assertEquals(hash1, hash2);
         // Resource URL should only be looked up once due to caching
         Mockito.verify(service, Mockito.times(1))
                 .getStaticResource("cached.css");
