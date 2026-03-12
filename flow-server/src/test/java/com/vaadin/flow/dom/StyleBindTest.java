@@ -173,12 +173,12 @@ class StyleBindTest {
         // present
         assertTrue(names.contains("margin-bottom"));
 
-        // Detach before any applying for c -> bind while detached -> no value
-        // applied yet, get returns null
+        // Detach before binding c -> probe runs immediately at bind time even
+        // while detached, so value IS applied right away
         ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
-        assertNull(element.getStyle().get("paddingTop"));
+        assertEquals("5px", element.getStyle().get("paddingTop"));
         names = element.getStyle().getNames().collect(Collectors.toSet());
         // The current implementation records the binding name even before first
         // attach
@@ -220,13 +220,13 @@ class StyleBindTest {
         element.getStyle().bind("background-color", signal)
                 .onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("blue");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("red", ctx.getOldValue());
         assertEquals("blue", ctx.getNewValue());

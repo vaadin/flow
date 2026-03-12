@@ -240,9 +240,11 @@ public class Html extends Component {
 
     /**
      * Binds a {@link com.vaadin.flow.signals.Signal}'s value to this
-     * component's HTML content (outer HTML) and keeps the content synchronized
-     * with the signal value while the component is attached. When the component
-     * is detached, signal value changes have no effect.
+     * component's HTML content (outer HTML). The content is set immediately
+     * with the current signal value when the binding is created, and is kept
+     * synchronized with any subsequent signal value changes while the component
+     * is attached. When the component is detached, signal value changes have no
+     * effect.
      * <p>
      * While a Signal is bound to the HTML content, any attempt to set the HTML
      * content manually via {@link #setHtmlContent(String)} throws
