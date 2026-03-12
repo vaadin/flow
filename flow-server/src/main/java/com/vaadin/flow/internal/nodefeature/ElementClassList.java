@@ -153,10 +153,14 @@ public class ElementClassList extends SerializableNodeList<String> {
                 previousNames.clear();
                 previousNames.addAll(newNames);
 
-                if (binding.hasCallbacks()) {
-                    binding.fireOnChange(new BindingContext<>(
+                if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                    var bindingContext = new BindingContext<>(
                             ctx.isInitialRun(), ctx.isBackgroundChange(),
-                            previousValue[0], signalNames, element));
+                            previousValue[0], signalNames, element);
+                    binding.setInitialContext(bindingContext);
+                    if (binding.hasCallbacks()) {
+                        binding.fireOnChange(bindingContext);
+                    }
                 }
                 previousValue[0] = signalNames;
             });

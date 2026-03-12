@@ -158,10 +158,14 @@ public class ThemeListImpl implements ThemeList, Serializable {
             previousNames.clear();
             previousNames.addAll(newNames);
 
-            if (binding.hasCallbacks()) {
-                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
                         ctx.isBackgroundChange(), previousValue[0], signalNames,
-                        ownerElement));
+                        ownerElement);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
             }
             previousValue[0] = signalNames;
         });

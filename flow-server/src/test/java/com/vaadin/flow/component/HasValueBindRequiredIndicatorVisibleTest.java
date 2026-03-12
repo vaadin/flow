@@ -79,9 +79,13 @@ class HasValueBindRequiredIndicatorVisibleTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindRequiredIndicatorVisible(signal);
-        signal.set(false);
 
-        assertFalse(component.isRequiredIndicatorVisible());
+        // Probe runs immediately at bind time even when not attached
+        assertTrue(component.isRequiredIndicatorVisible());
+
+        // Signal changes while detached are ignored
+        signal.set(false);
+        assertTrue(component.isRequiredIndicatorVisible());
     }
 
     @Test

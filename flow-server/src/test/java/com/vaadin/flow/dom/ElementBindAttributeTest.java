@@ -105,7 +105,12 @@ class ElementBindAttributeTest {
 
         component.getElement().bindAttribute("foo", signal);
 
-        assertNull(component.getElement().getAttribute("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("bar", component.getElement().getAttribute("foo"));
+
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("changed");
+        assertEquals("bar", component.getElement().getAttribute("foo"));
     }
 
     @Test

@@ -201,6 +201,11 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected Serializable put(String key, Serializable value,
             boolean emitChange) {
+        return putInternal(key, value, emitChange);
+    }
+
+    private Serializable putInternal(String key, Serializable value,
+            boolean emitChange) {
         Serializable oldValue = get(key);
         if (!producePutChange(key, contains(key), value)) {
             return oldValue;
@@ -581,10 +586,13 @@ public abstract class NodeMap extends NodeFeature {
             throw new BindingActiveException();
         }
 
-        SignalBinding<T> domBinding = ElementEffect.bind(owner, signal, setter);
-        put(key, new InternalSignalBinding(signal, get(key), writeCallback),
+        // Setter might trigger an immediate value update which requires the
+        // signal to be registered before ElementEffect.bind call.
+        putInternal(key,
+                new InternalSignalBinding(signal, get(key), writeCallback),
                 false);
-        return domBinding;
+
+        return ElementEffect.bind(owner, signal, setter);
     }
 
     /**

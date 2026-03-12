@@ -242,6 +242,19 @@ public class Effect implements Serializable {
     }
 
     /**
+     * Sets the dispatcher to use for subsequent invalidation callbacks. This
+     * can be used to change the execution context before re-activating a
+     * passivated effect.
+     *
+     * @param dispatcher
+     *            the new dispatcher to use, not <code>null</code>
+     */
+    public synchronized void setDispatcher(SerializableExecutor dispatcher) {
+        assert dispatcher != null;
+        this.dispatcher = dispatcher;
+    }
+
+    /**
      * Passivates this effect by removing all dependency listeners while
      * preserving the tracked usages. The effect can later be re-activated with
      * {@link #activate()}, which will check if any tracked values have changed

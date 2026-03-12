@@ -20,11 +20,11 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.flow.signals.Signal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Unit tests for {@link UI#localeSignal()}.
@@ -34,7 +34,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
         UI ui = UI.getCurrent();
-        ValueSignal<Locale> signal = ui.localeSignal();
+        Signal<Locale> signal = ui.localeSignal();
 
         assertNotNull(signal, "localeSignal() should never return null");
         assertEquals(ui.getLocale(), signal.peek(),
@@ -44,7 +44,7 @@ class UILocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_setLocale_signalUpdated() {
         UI ui = UI.getCurrent();
-        ValueSignal<Locale> signal = ui.localeSignal();
+        Signal<Locale> signal = ui.localeSignal();
 
         Locale initialLocale = ui.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -63,43 +63,9 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_writeToSignal_updatesGetLocale() {
-        UI ui = UI.getCurrent();
-        ValueSignal<Locale> signal = ui.localeSignal();
-
-        Locale initialLocale = ui.getLocale();
-        Locale newLocale = Locale.FRENCH;
-
-        // Ensure we're actually changing the locale
-        if (initialLocale.equals(newLocale)) {
-            newLocale = Locale.GERMAN;
-        }
-
-        signal.set(newLocale);
-
-        assertEquals(newLocale, ui.getLocale(),
-                "getLocale() should reflect the new locale after "
-                        + "writing to signal");
-        assertEquals(newLocale, signal.peek(),
-                "Signal should have the new value");
-    }
-
-    @Test
-    public void localeSignal_sameInstance_returnedOnMultipleCalls() {
-        UI ui = UI.getCurrent();
-
-        ValueSignal<Locale> signal1 = ui.localeSignal();
-        ValueSignal<Locale> signal2 = ui.localeSignal();
-
-        assertSame(signal1, signal2,
-                "localeSignal() should return the same instance on "
-                        + "multiple calls");
-    }
-
-    @Test
     public void localeSignal_multipleLocaleChanges_signalFollows() {
         UI ui = UI.getCurrent();
-        ValueSignal<Locale> signal = ui.localeSignal();
+        Signal<Locale> signal = ui.localeSignal();
 
         ui.setLocale(Locale.FRENCH);
         assertEquals(Locale.FRENCH, signal.peek());
@@ -112,17 +78,51 @@ class UILocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_multipleSignalWrites_getLocaleFollows() {
+    public void localeSignal_bindValue_updatesLocale() {
         UI ui = UI.getCurrent();
-        ValueSignal<Locale> signal = ui.localeSignal();
+        LocaleField field = new LocaleField();
+        ui.add(field);
 
-        signal.set(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, ui.getLocale());
+        field.bindValue(ui.localeSignal(), ui::setLocale);
 
-        signal.set(Locale.GERMAN);
+        assertEquals(ui.getLocale(), field.getValue());
+
+        // Simulate user picking a new locale in the field
+        field.setValueFromClient(Locale.JAPANESE);
+        assertEquals(Locale.JAPANESE, ui.getLocale());
+
+        // Programmatic setLocale propagates back to the field
+        ui.setLocale(Locale.GERMAN);
+        assertEquals(Locale.GERMAN, field.getValue());
+    }
+
+    @Test
+    public void setLocale_uiLocaleIndependentFromSession() {
+        UI ui = UI.getCurrent();
+
+        // Set UI to a locale different from the session
+        ui.setLocale(Locale.GERMAN);
         assertEquals(Locale.GERMAN, ui.getLocale());
 
-        signal.set(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, ui.getLocale());
+        // UI locale and session locale are independent
+        assertNotEquals(ui.getLocale(), ui.getSession().getLocale());
+    }
+
+    @Tag("select")
+    private static class LocaleField
+            extends AbstractField<LocaleField, Locale> {
+
+        public LocaleField() {
+            super(Locale.getDefault());
+        }
+
+        @Override
+        protected void setPresentationValue(Locale newPresentationValue) {
+            // NOP
+        }
+
+        public void setValueFromClient(Locale value) {
+            setModelValue(value, true);
+        }
     }
 }

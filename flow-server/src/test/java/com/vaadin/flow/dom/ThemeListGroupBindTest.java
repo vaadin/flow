@@ -219,13 +219,13 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
 
         component.getThemeNames().bind(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set(List.of("c"));
 
-        assertEquals(1, contexts.size());
-        BindingContext<List<String>> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<List<String>> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals(List.of("a", "b"), ctx.getOldValue());
         assertEquals(List.of("c"), ctx.getNewValue());

@@ -27,8 +27,7 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Dependencies are automatically tracked - any signal whose value is accessed
  * during the computation becomes a dependency. The computation is lazy and only
- * runs when the signal value is accessed and the previous value might have been
- * invalidated by dependent signal changes.
+ * runs when the signal value is accessed.
  *
  * @param <T>
  *            the computed value type

@@ -81,9 +81,13 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindReadOnly(signal);
-        signal.set(false);
 
-        assertFalse(component.isReadOnly());
+        // Probe runs immediately at bind time even when not attached
+        assertTrue(component.isReadOnly());
+
+        // Signal changes while detached are ignored
+        signal.set(false);
+        assertTrue(component.isReadOnly());
     }
 
     @Test
