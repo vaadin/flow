@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
@@ -394,6 +395,41 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         TaskRunNpmInstall ciTask = createCiTask();
         ciTask.execute();
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runPnpmInstall_devMode_usesNoFrozenLockfile()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+
+        task.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(
+                Mockito.eq("using '{}' for frontend package installation"),
+                captor.capture());
+        assertTrue(captor.getValue().contains("--no-frozen-lockfile"),
+                "pnpm install in dev mode should use --no-frozen-lockfile");
+    }
+
+    @Test
+    public void runPnpmInstall_ciBuild_usesFrozenLockfile()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall ciTask = createCiTask();
+        getNodeUpdater().modified = true;
+
+        ciTask.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(
+                Mockito.eq("using '{}' for frontend package installation"),
+                captor.capture());
+        String command = captor.getValue();
+        assertTrue(command.contains("--frozen-lockfile"),
+                "pnpm install in CI build should use --frozen-lockfile");
+        assertFalse(command.contains("--no-frozen-lockfile"),
+                "pnpm install in CI build should not use --no-frozen-lockfile");
     }
 
     @Override
