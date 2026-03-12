@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -32,7 +33,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public final class SignalFieldTransfer {
+public final class SignalFieldTransfer implements Serializable {
 
     private SignalFieldTransfer() {
     }
