@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -713,7 +714,7 @@ class ElementEffectTest {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
         assertEquals(0, parentComponent.getComponentCount());
     }
 
@@ -747,7 +748,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            expectedComponent.setValue(valueSignal.get());
+            expectedComponent.setValue(valueSignal.peek());
             return expectedComponent;
         });
         assertEquals(1, parentComponent.getComponentCount());
@@ -768,7 +769,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(1, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -802,7 +803,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(3, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -840,7 +841,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(3, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -954,7 +955,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         var expectedComponent = new TestComponent("added directly");
@@ -996,7 +997,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         var directlyAddedComponent1 = new TestComponent("added directly 1");
@@ -1047,7 +1048,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 // doing wrong
@@ -1094,7 +1095,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 component.addAttachListener(event -> {
@@ -1144,7 +1145,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             component.getElement().setText(value);
             if ("last".equals(value)) {
@@ -1184,7 +1185,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            var component = new TestComponent(valueSignal.get(),
+            var component = new TestComponent(valueSignal.peek(),
                     parentComponent.getElement(), null);
             expectedMockedElements.add(component.getElement());
             return component;
@@ -1249,6 +1250,27 @@ class ElementEffectTest {
     }
 
     @Test
+    public void bindChildren_signalGetInsideCallback_throws() {
+        CurrentInstance.clearAll();
+        LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
+        UI ui = UI.getCurrent();
+
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        ui.add(parentComponent);
+
+        parentComponent.bindChildren(taskList,
+                valueSignal -> new TestComponent(valueSignal.get()));
+
+        ErrorEvent event = events.pollFirst();
+        assertNotNull(event);
+        assertEquals(DeniedSignalUsageException.class,
+                event.getThrowable().getClass());
+        assertTrue(event.getThrowable().getMessage().contains("bindChildren"));
+    }
+
+    @Test
     public void bindChildren_registrationRemove_effectRemoved() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
@@ -1260,7 +1282,7 @@ class ElementEffectTest {
 
         Registration registration = ElementEffect.bindChildren(
                 parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         assertEquals(2, parentComponent.getComponentCount(),
@@ -1302,7 +1324,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(listSignal,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(1, parentComponent.getComponentCount());
         assertEquals("first",
@@ -1348,7 +1370,7 @@ class ElementEffectTest {
 
         // Should not throw
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
         assertEquals(0, parentComponent.getComponentCount());
     }
 
@@ -1377,7 +1399,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         assertEquals(1, parentComponent.getComponentCount());
@@ -1443,7 +1465,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         // Add a slotted child via Element API
         Element slotted = new Element("span");
@@ -1477,7 +1499,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         // Add a slotted child
         Element slotted = new Element("span");
@@ -1502,7 +1524,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(listSignal,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         parentComponent.getChildren().map(TestComponent.class::cast)
                 .forEach(TestComponent::resetCounters);
