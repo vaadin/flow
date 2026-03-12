@@ -143,8 +143,7 @@ class ReflectionsClassFinderTest {
 
     @Test
     void getSubTypesOf_order_sameAsDefaultClassFinder() {
-        assertEquals(
-                toList(defaultClassFinder.getSubTypesOf(Component.class)),
+        assertEquals(toList(defaultClassFinder.getSubTypesOf(Component.class)),
                 toList(new ReflectionsClassFinder(urls)
                         .getSubTypesOf(Component.class)));
     }
@@ -172,8 +171,7 @@ class ReflectionsClassFinderTest {
     }
 
     @Test
-    void getAnnotatedClasses_findsRepeatableAnnotations()
-            throws Exception {
+    void getAnnotatedClasses_findsRepeatableAnnotations() throws Exception {
         // When a @Repeatable annotation is used multiple times, Java wraps
         // them in the container annotation. The finder should detect this and
         // find classes annotated with the container when searching for the

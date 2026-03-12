@@ -103,8 +103,7 @@ class ReflectorTest {
     }
 
     @Test
-    void createMojo_subclass_createInstanceAndCopyFields()
-            throws Exception {
+    void createMojo_subclass_createInstanceAndCopyFields() throws Exception {
         SubClassMojo source = new SubClassMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
@@ -158,8 +157,7 @@ class ReflectorTest {
     }
 
     @Test
-    void reflector_fromProject_getsIsolatedClassLoader()
-            throws Exception {
+    void reflector_fromProject_getsIsolatedClassLoader() throws Exception {
         String outputDirectory = PROJECT_TARGET_FOLDER;
 
         MavenProject project = new MavenProject();
@@ -204,8 +202,7 @@ class ReflectorTest {
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
         assertEquals(5, urlSet.size());
-        assertTrue(
-                urlSet.contains(toURLExternalForm(outputDirectory)));
+        assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
         assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-compile-1.0.jar")));
         assertTrue(urlSet.contains(
@@ -221,8 +218,7 @@ class ReflectorTest {
         // from maven.api class loader
         assertNotNull(
                 isolatedClassLoader.getResource("org/json/CookieList.class"));
-        assertNotNull(
-                isolatedClassLoader.loadClass("org.json.CookieList"));
+        assertNotNull(isolatedClassLoader.loadClass("org.json.CookieList"));
     }
 
     @Test
@@ -326,8 +322,7 @@ class ReflectorTest {
     }
 
     @Test
-    void reflector_excludeTargetFolder_targetFolderExcluded()
-            throws Exception {
+    void reflector_excludeTargetFolder_targetFolderExcluded() throws Exception {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.setIncludeOutputDirectory(false);
 
@@ -420,8 +415,7 @@ class ReflectorTest {
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
         assertEquals(19, urlSet.size());
-        assertTrue(
-                urlSet.contains(toURLExternalForm(outputDirectory)));
+        assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
         assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
         assertTrue(urlSet.contains(toURLExternalForm(
@@ -432,8 +426,7 @@ class ReflectorTest {
                 .contains(toURLExternalForm("com.example.addon-beta-1.0.jar")));
         assertTrue(
                 urlSet.contains(toURLExternalForm("org.test-alpha-1.0.jar")));
-        assertTrue(
-                urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
+        assertTrue(urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
         assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
         for (String url : defaultVaadinDependencies) {
@@ -445,8 +438,7 @@ class ReflectorTest {
                 .map(URL::toExternalForm).collect(Collectors.toSet());
         assertEquals(expectedScanURLs.size(), urlSet.size());
         for (String expectedUrl : expectedScanURLs) {
-            assertTrue(
-                    urlSet.contains(toURLExternalForm(expectedUrl)),
+            assertTrue(urlSet.contains(toURLExternalForm(expectedUrl)),
                     "Scan URL missing in Reflector: " + expectedUrl);
         }
         // verify default excluded URLs are indeed excluded
@@ -454,8 +446,7 @@ class ReflectorTest {
             if (expectedScanURLs.contains(expectedExcludedUrl)) {
                 continue; // already checked as included
             }
-            assertFalse(
-                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)),
+            assertFalse(urlSet.contains(toURLExternalForm(expectedExcludedUrl)),
                     "Unexpected scan URL in Reflector: " + expectedExcludedUrl);
         }
 

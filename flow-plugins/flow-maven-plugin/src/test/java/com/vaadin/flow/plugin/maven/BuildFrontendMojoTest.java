@@ -369,11 +369,9 @@ class BuildFrontendMojoTest {
 
         String generated = "'%s' should have been generated into 'build/frontend'";
 
-        assertTrue(
-                generatedFiles.contains(FrontendUtils.IMPORTS_NAME),
+        assertTrue(generatedFiles.contains(FrontendUtils.IMPORTS_NAME),
                 String.format(generated, FrontendUtils.IMPORTS_NAME));
-        assertTrue(
-                generatedFiles.contains(FrontendUtils.IMPORTS_D_TS_NAME),
+        assertTrue(generatedFiles.contains(FrontendUtils.IMPORTS_D_TS_NAME),
                 String.format(generated, FrontendUtils.IMPORTS_D_TS_NAME));
 
         assertFalse(target.exists(),
@@ -536,22 +534,19 @@ class BuildFrontendMojoTest {
         assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "enable dev server token shouldn't be added "
                         + "automatically");
-        assertNotNull(
-                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
+        assertNotNull(buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
                 "productionMode token should be available");
         assertNull(buildInfo.get(Constants.NPM_TOKEN),
                 "npmFolder should have been removed");
         assertNull(buildInfo.get(Constants.FRONTEND_TOKEN),
                 "frontendFolder should have been removed");
 
-        assertNull(
-                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
+        assertNull(buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been removed");
         assertNull(buildInfo.get(InitParameters.CI_BUILD),
                 InitParameters.CI_BUILD + "should have been removed");
-        assertNull(
-                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
+        assertNull(buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been removed");
         assertNull(buildInfo
@@ -583,8 +578,7 @@ class BuildFrontendMojoTest {
                 initialBuildInfo.toPrettyString() + "\n", "UTF-8");
 
         mojo.execute();
-        assertTrue(tokenFile.exists(),
-                "No token file could be found");
+        assertTrue(tokenFile.exists(), "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
@@ -619,14 +613,12 @@ class BuildFrontendMojoTest {
                 initialBuildInfo.toPrettyString() + "\n", "UTF-8");
 
         mojo.execute();
-        assertTrue(tokenFile.exists(),
-                "No token file could be found");
+        assertTrue(tokenFile.exists(), "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        assertEquals(appId,
-                buildInfo.get(APPLICATION_IDENTIFIER).textValue(),
+        assertEquals(appId, buildInfo.get(APPLICATION_IDENTIFIER).textValue(),
                 "Custom application identifier not written on token file");
     }
 
@@ -651,8 +643,7 @@ class BuildFrontendMojoTest {
             String json = Files.readString(tokenFile.toPath(),
                     StandardCharsets.UTF_8);
             ObjectNode buildInfo = JacksonUtils.readTree(json);
-            assertTrue(
-                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue(),
+            assertTrue(buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue(),
                     "Commercial banner build token not written on token file");
         });
     }
@@ -664,7 +655,8 @@ class BuildFrontendMojoTest {
         mojo.project.getArtifacts().add(commercialComponent);
 
         runWithoutLicenseKeys(() -> {
-            Throwable exception = assertThrows(MojoFailureException.class, mojo::execute);
+            Throwable exception = assertThrows(MojoFailureException.class,
+                    mojo::execute);
             exception = exception.getCause();
             // Checking exception type by name because classes are loaded from
             // different classloaders
@@ -706,11 +698,9 @@ class BuildFrontendMojoTest {
                         export const router = createBrowserRouter(...routes]);
                         """);
 
-        assertFalse(
-                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
+        assertFalse(FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
-        assertTrue(
-                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
+        assertTrue(FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
     }
 
     @Test
@@ -744,12 +734,15 @@ class BuildFrontendMojoTest {
 
     static void assertContainsPackage(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> assertTrue(dependencies.has(dep), "Missing " + dep));
+        Arrays.asList(packages).forEach(
+                dep -> assertTrue(dependencies.has(dep), "Missing " + dep));
     }
 
     static void assertNotContainingPackages(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> assertFalse(dependencies.has(dep), "Not expecting " + dep));
+        Arrays.asList(packages)
+                .forEach(dep -> assertFalse(dependencies.has(dep),
+                        "Not expecting " + dep));
     }
 
     private void assertContainsImports(boolean contains, String... imports)

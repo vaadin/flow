@@ -118,11 +118,9 @@ class CleanFrontendMojoTest {
             throws MojoFailureException, MojoExecutionException {
         final File nodeModules = new File(projectBase,
                 FrontendUtils.NODE_MODULES);
-        assertTrue(nodeModules.mkdirs(),
-                "Failed to create 'node_modules'");
+        assertTrue(nodeModules.mkdirs(), "Failed to create 'node_modules'");
         mojo.execute();
-        assertFalse(nodeModules.exists(),
-                "'node_modules' was not removed.");
+        assertFalse(nodeModules.exists(), "'node_modules' was not removed.");
     }
 
     @Test
@@ -131,8 +129,7 @@ class CleanFrontendMojoTest {
         enableHilla();
         final File nodeModules = new File(projectBase,
                 FrontendUtils.NODE_MODULES);
-        assertTrue(nodeModules.mkdirs(),
-                "Failed to create 'node_modules'");
+        assertTrue(nodeModules.mkdirs(), "Failed to create 'node_modules'");
         mojo.execute();
         assertTrue(nodeModules.exists(),
                 "'node_modules' should not be removed.");
@@ -149,8 +146,7 @@ class CleanFrontendMojoTest {
                 "Failed to create 'dev-bundle' folder");
         assertTrue(devBundle.createNewFile());
         mojo.execute();
-        assertFalse(devBundle.exists(),
-                "'dev.bundle' was not removed.");
+        assertFalse(devBundle.exists(), "'dev.bundle' was not removed.");
         assertFalse(devBundleDir.exists(),
                 "Empty 'bundle' directory was not removed.");
     }
@@ -162,8 +158,7 @@ class CleanFrontendMojoTest {
         assertTrue(devBundleDir.mkdirs(),
                 "Failed to create 'dev-bundle' folder");
         mojo.execute();
-        assertFalse(devBundleDir.exists(),
-                "Bundle directory was not removed.");
+        assertFalse(devBundleDir.exists(), "Bundle directory was not removed.");
     }
 
     @Test
@@ -209,8 +204,7 @@ class CleanFrontendMojoTest {
         FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
 
         mojo.execute();
-        assertFalse(packageLock.exists(),
-                "package-lock.json was not removed");
+        assertFalse(packageLock.exists(), "package-lock.json was not removed");
     }
 
     @Test
@@ -232,8 +226,7 @@ class CleanFrontendMojoTest {
         FileUtils.fileWrite(pnpmFile, "{ \"fake\": \"pnpmfile\"}");
 
         mojo.execute();
-        assertFalse(pnpmFile.exists(),
-                ".pnpmfile.cjs was not removed");
+        assertFalse(pnpmFile.exists(), ".pnpmfile.cjs was not removed");
     }
 
     @Test
@@ -242,8 +235,7 @@ class CleanFrontendMojoTest {
         final File pnpmLock = new File(projectBase, "pnpm-lock.yaml");
         FileUtils.fileWrite(pnpmLock, "lockVersion: -1");
         mojo.execute();
-        assertFalse(pnpmLock.exists(),
-                "pnpm-lock.yaml was not removed");
+        assertFalse(pnpmLock.exists(), "pnpm-lock.yaml was not removed");
     }
 
     @Test
@@ -316,12 +308,14 @@ class CleanFrontendMojoTest {
 
     static void assertNotContainsPackage(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> assertFalse(dependencies.has(dep), "Has " + dep));
+        Arrays.asList(packages).forEach(
+                dep -> assertFalse(dependencies.has(dep), "Has " + dep));
     }
 
     static void assertContainsPackage(JsonNode dependencies,
             String... packages) {
-        Arrays.asList(packages).forEach(dep -> assertTrue(dependencies.has(dep), "Not Have " + dep));
+        Arrays.asList(packages).forEach(
+                dep -> assertTrue(dependencies.has(dep), "Not Have " + dep));
     }
 
     static ObjectNode createInitialPackageJson() {

@@ -88,29 +88,19 @@ class ArtifactMatcherTest {
         assertTrue(new FrontendScannerConfig.ArtifactMatcher("", "")
                 .matches(artifact), "Empty groups and artifacts");
         assertTrue(new FrontendScannerConfig.ArtifactMatcher("*", "*")
-                        .matches(artifact), "All groups and artifacts");
-        assertTrue(
-                        new FrontendScannerConfig.ArtifactMatcher("*", null)
-                                .matches(artifact),
-                        "All groups, unspecified artifacts");
-        assertTrue(
-                        new FrontendScannerConfig.ArtifactMatcher(null, "*")
-                                .matches(artifact),
-                        "Unspecified groups, all artifacts");
+                .matches(artifact), "All groups and artifacts");
+        assertTrue(new FrontendScannerConfig.ArtifactMatcher("*", null)
+                .matches(artifact), "All groups, unspecified artifacts");
+        assertTrue(new FrontendScannerConfig.ArtifactMatcher(null, "*")
+                .matches(artifact), "Unspecified groups, all artifacts");
         assertTrue(new FrontendScannerConfig.ArtifactMatcher("", "*")
                 .matches(artifact), "Blank groups, all artifacts");
-        assertTrue(
-                        new FrontendScannerConfig.ArtifactMatcher("*", null)
-                                .matches(artifact),
-                        "All groups, unspecified artifacts");
-        assertTrue(
-                        new FrontendScannerConfig.ArtifactMatcher(null, "*")
-                                .matches(artifact),
-                        "Unspecified groups, all artifacts");
-        assertTrue(
-                        new FrontendScannerConfig.ArtifactMatcher(null, "")
-                                .matches(artifact),
-                        "Unspecified groups, blank artifacts");
+        assertTrue(new FrontendScannerConfig.ArtifactMatcher("*", null)
+                .matches(artifact), "All groups, unspecified artifacts");
+        assertTrue(new FrontendScannerConfig.ArtifactMatcher(null, "*")
+                .matches(artifact), "Unspecified groups, all artifacts");
+        assertTrue(new FrontendScannerConfig.ArtifactMatcher(null, "")
+                .matches(artifact), "Unspecified groups, blank artifacts");
     }
 
     @Test

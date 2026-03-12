@@ -148,8 +148,7 @@ class GenerateNpmBOMMojoTest {
     }
 
     @Test
-    void shouldRunNpmInstallIfNodeModulesIsNotPresent()
-            throws Exception {
+    void shouldRunNpmInstallIfNodeModulesIsNotPresent() throws Exception {
         assertTrue(nodeModulesDir.delete());
         assertFalse(nodeModulesDir.exists());
         mojo.execute();
@@ -165,8 +164,7 @@ class GenerateNpmBOMMojoTest {
 
         List<String> newContent = TestUtils
                 .listFilesRecursively(nodeModulesDir);
-        assertArrayEquals(originalContent.toArray(),
-                newContent.toArray());
+        assertArrayEquals(originalContent.toArray(), newContent.toArray());
     }
 
 }

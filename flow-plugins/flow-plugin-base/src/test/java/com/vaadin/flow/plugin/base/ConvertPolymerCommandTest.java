@@ -52,8 +52,7 @@ class ConvertPolymerCommandTest {
     private AutoCloseable closeable;
 
     @BeforeEach
-    void init()
-            throws IOException, URISyntaxException, IllegalAccessException {
+    void init() throws IOException, URISyntaxException, IllegalAccessException {
         closeable = MockitoAnnotations.openMocks(this);
         TestUtil.stubPluginAdapterBase(adapter, tmpDir.toFile());
 
@@ -72,8 +71,8 @@ class ConvertPolymerCommandTest {
     }
 
     @Test
-    void execute() throws URISyntaxException, IOException,
-            InterruptedException, CommandExecutionException {
+    void execute() throws URISyntaxException, IOException, InterruptedException,
+            CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, false, false)) {
             command.execute();
@@ -128,8 +127,8 @@ class ConvertPolymerCommandTest {
     }
 
     @Test
-    void setSpecificServerFile_execute() throws URISyntaxException,
-            IOException, InterruptedException, CommandExecutionException {
+    void setSpecificServerFile_execute() throws URISyntaxException, IOException,
+            InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 "/nested/Component.java", false, false)) {
             command.execute();

@@ -128,16 +128,14 @@ class PrepareFrontendMojoTest {
     void tokenFileShouldExist_noHotdeployTokenVisible()
             throws IOException, MojoExecutionException, MojoFailureException {
         mojo.execute();
-        assertTrue(tokenFile.exists(),
-                "No token file could be found");
+        assertTrue(tokenFile.exists(), "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
         assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "Default HotDeploy token should not be available");
-        assertNotNull(
-                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
+        assertNotNull(buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
                 "productionMode token should be available");
     }
 
@@ -148,8 +146,7 @@ class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "frontendHotdeploy",
                 Boolean.TRUE);
         mojo.execute();
-        assertTrue(tokenFile.exists(),
-                "No token file could be found");
+        assertTrue(tokenFile.exists(), "No token file could be found");
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
@@ -178,8 +175,7 @@ class PrepareFrontendMojoTest {
         ObjectNode buildInfo = JacksonUtils.readTree(json);
         assertNull(buildInfo.get(FRONTEND_HOTDEPLOY),
                 "Default hotdeploy should not be added");
-        assertNotNull(
-                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
+        assertNotNull(buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE),
                 "productionMode token should be available");
     }
 
@@ -193,8 +189,7 @@ class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         ObjectNode buildInfo = JacksonUtils.readTree(json);
 
-        assertTrue(
-                buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
+        assertTrue(buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM),
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written");
         assertFalse(
@@ -203,8 +198,7 @@ class PrepareFrontendMojoTest {
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been disabled");
 
-        assertTrue(
-                buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
+        assertTrue(buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE),
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written");
         assertTrue(
@@ -239,15 +233,12 @@ class PrepareFrontendMojoTest {
         }
         final File oldFile = new File(flowFolder, "old.js");
         if (!oldFile.createNewFile()) {
-            fail(
-                    "Failed to generate old.js in Frontend/generated/flow");
+            fail("Failed to generate old.js in Frontend/generated/flow");
         }
 
         mojo.execute();
-        assertTrue(generatedTsFolder.exists(),
-                "Missing generated folder");
-        assertFalse(oldFile.exists(),
-                "Old file should have been removed");
+        assertTrue(generatedTsFolder.exists(), "Missing generated folder");
+        assertFalse(oldFile.exists(), "Old file should have been removed");
     }
 
     @Test
