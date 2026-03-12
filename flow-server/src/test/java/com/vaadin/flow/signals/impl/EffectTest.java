@@ -549,6 +549,42 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void setDispatcher_changesDispatcherUsedForSubsequentRuns() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> dispatcherLog = new ArrayList<>();
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        }, Runnable::run);
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+
+        // Switch to a dispatcher that records calls
+        effect.setDispatcher(command -> {
+            dispatcherLog.add("dispatched");
+            command.run();
+        });
+
+        signal.set("updated");
+        effect.activate();
+        // activate() calls revalidate() directly (not via the dispatcher)
+        // when there are changes, so the dispatcher is not invoked here
+        assertEquals(List.of("initial", "updated"), invocations,
+                "Effect should re-run with new value after setDispatcher + activate");
+        assertEquals(0, dispatcherLog.size(),
+                "Dispatcher is not used by activate() directly");
+
+        // The new dispatcher IS used for subsequent signal change notifications
+        signal.set("final");
+        assertEquals(List.of("initial", "updated", "final"), invocations,
+                "Effect should continue using the new dispatcher");
+        assertEquals(1, dispatcherLog.size(),
+                "New dispatcher should have been used for signal change");
+    }
+
+    @Test
     void passivateActivate_noChanges_callbackNotReRun() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();

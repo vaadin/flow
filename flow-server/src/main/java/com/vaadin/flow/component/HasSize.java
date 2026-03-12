@@ -421,11 +421,12 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the width of this component and keeps
-     * the width synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * Binds a {@link Signal}'s value to the width of this component. The width
+     * is set immediately with the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state. When the component is
+     * in detached state, signal value changes have no effect. <code>null</code>
+     * signal unbinds the existing binding.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
@@ -462,10 +463,11 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the height of this component and keeps
-     * the height synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to the height of this component. The
+     * height is set immediately with the current signal value when the binding
+     * is created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state. When the component is
+     * in detached state, signal value changes have no effect.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".

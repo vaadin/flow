@@ -630,6 +630,7 @@ public class BinderSignalTest extends SignalsUnitTest {
         assertFalse(firstNameField.isInvalid());
         assertTrue(binder.isValid());
 
+        lastNameSignal.set("Smith");
         // Now attach the fields
         UI.getCurrent().add(firstNameField, lastNameField);
 

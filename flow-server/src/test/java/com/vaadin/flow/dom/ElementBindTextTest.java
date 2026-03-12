@@ -207,7 +207,12 @@ class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
-        assertEquals("", element.getText());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("text", element.getText());
+
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("changed");
+        assertEquals("text", element.getText());
     }
 
     @Test

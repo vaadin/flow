@@ -110,7 +110,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void get_boundButNotAttached_valueNotSetInitially() {
+    public void get_boundButNotAttached_valueSetInitially() {
         var component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -120,8 +120,9 @@ class SignalPropertySupportTest {
                 });
         signalPropertySupport.bind(signal);
 
-        assertNull(signalPropertySupport.get());
-        assertEquals(0, callCount.get());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("foo", signalPropertySupport.get());
+        assertEquals(1, callCount.get());
     }
 
     @Test
@@ -181,7 +182,8 @@ class SignalPropertySupportTest {
 
         assertThrows(BindingActiveException.class,
                 () -> signalPropertySupport.set("bar"));
-        assertEquals(0, callCount.get());
+        // Probe ran once at bind time
+        assertEquals(1, callCount.get());
     }
 
     @Test
@@ -269,13 +271,13 @@ class SignalPropertySupportTest {
 
         signalPropertySupport.bind(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange run once initially
+        assertEquals(1, contexts.size());
 
         signal.set("updated");
 
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
@@ -293,15 +295,43 @@ class SignalPropertySupportTest {
         List<BindingContext<String>> contexts = new ArrayList<>();
 
         signalPropertySupport.bind(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size());
+        // Probe ran at bind time; onChange run initially
+        assertEquals(1, contexts.size());
 
-        // Attach — effect runs and fires initial callback
+        // Attach — nothing changed since probe, no additional callback
         UI.getCurrent().add(component);
+
+        assertEquals(1, contexts.size());
+    }
+
+    @Test
+    public void bind_onChange_bindThenChangeAndAttach() {
+        var component = new TestComponent();
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+        signalPropertySupport.bind(signal).onChange(contexts::add);
 
         assertEquals(1, contexts.size());
         BindingContext<String> initialCtx = contexts.get(0);
         assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getOldValue());
         assertEquals("initial", initialCtx.getNewValue());
+
+        // Change value before attach
+        signal.set("updated");
+
+        // Attach — changed since probe, run onChange
+        UI.getCurrent().add(component);
+
+        assertEquals(2, contexts.size());
+        initialCtx = contexts.get(1);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getOldValue());
+        assertEquals("updated", initialCtx.getNewValue());
     }
 
     @Tag("div")
