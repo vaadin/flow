@@ -49,8 +49,6 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         Signal.effect(this, () -> {
             signalValue.setText("Signal value: " + signal.get());
         });
-        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
-                signal::set);
 
         target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
                 "change", event -> {
@@ -60,6 +58,9 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
                     listenerCountDiv.setText(String
                             .valueOf(listenerCallCounter.incrementAndGet()));
                 });
+
+        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal,
+                signal::set);
 
         // Attempt to update a property value from client to a computed signal
         // should throw an exception

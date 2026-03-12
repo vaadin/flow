@@ -49,16 +49,18 @@ public interface ClassList extends Set<String>, Serializable {
     }
 
     /**
-     * Binds the presence of the given class name to the provided signal so that
-     * the class is added when the signal value is {@code true} and removed when
-     * the value is {@code false}.
+     * Binds the presence of the given class name to the provided signal. The
+     * class name is immediately added or removed based on the current signal
+     * value when the binding is created. The class is added when the signal
+     * value is {@code true} and removed when the value is {@code false}.
      * <p>
-     * While a binding for the given class name is active, manual calls to
-     * {@link #add(Object)}, {@link #remove(Object)} or
+     * After the initial application, the binding is kept synchronized with any
+     * subsequent signal value changes while the owning {@link Element} is in
+     * attached state. While a binding for the given class name is active,
+     * manual calls to {@link #add(Object)}, {@link #remove(Object)} or
      * {@link #set(String, boolean)} for that name will throw a
-     * {@link BindingActiveException}. Bindings are lifecycle-aware and only
-     * active while the owning {@link Element} is in attached state; they are
-     * deactivated while the element is in detached state.
+     * {@link BindingActiveException}. When the element is in detached state,
+     * signal value changes have no effect.
      * <p>
      * Bulk operations that indiscriminately replace or clear the class list
      * (for example {@link #clear()} or setting the {@code class} attribute via
@@ -79,9 +81,11 @@ public interface ClassList extends Set<String>, Serializable {
     };
 
     /**
-     * Binds the class names to the provided signal so that the class list is
-     * dynamically updated to match the signal's value. Only one group binding
-     * is allowed per class list.
+     * Binds the class names to the provided signal. The class list is
+     * immediately updated to match the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the element is attached. Only one group binding is allowed
+     * per class list.
      * <p>
      * The group binding coexists with static values and individual toggle
      * bindings. Names that appear in both sources are deduplicated by the

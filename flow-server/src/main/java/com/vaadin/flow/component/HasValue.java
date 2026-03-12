@@ -235,10 +235,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     boolean isRequiredIndicatorVisible();
 
     /**
-     * Binds a {@link Signal}'s value to the value state of this component and
-     * keeps the state synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to the value state of this component. The
+     * value is set immediately with the current signal value when the binding
+     * is created, and is kept synchronized with any subsequent signal value
+     * changes while the element is in attached state. When the element is in
+     * detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
@@ -312,10 +313,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     }
 
     /**
-     * Binds a {@link Signal}'s value to the read-only state of this component
-     * and keeps the state synchronized with the signal value while the
-     * component is in attached state. When the component is in detached state,
-     * signal value changes have no effect.
+     * Binds a {@link Signal}'s value to the read-only state of this component.
+     * The read-only state is set immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the component is in attached state. When the
+     * component is in detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to the read-only state, any attempt to set the
      * read-only state manually with {@link #setReadOnly(boolean)} throws
@@ -347,9 +349,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
 
     /**
      * Binds a {@link Signal}'s value to the required indicator visible state of
-     * this component and keeps the state synchronized with the signal value
-     * while the component is in attached state. When the component is in
-     * detached state, signal value changes have no effect.
+     * this component. The required indicator state is set immediately with the
+     * current signal value when the binding is created, and is kept
+     * synchronized with any subsequent signal value changes while the component
+     * is in attached state. When the component is in detached state, signal
+     * value changes have no effect.
      * <p>
      * While a Signal is bound to the required indicator visible state, any
      * attempt to set the state manually with

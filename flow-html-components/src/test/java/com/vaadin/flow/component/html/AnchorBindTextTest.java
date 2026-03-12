@@ -43,12 +43,12 @@ public class AnchorBindTextTest extends SignalsUnitTest {
         // Detached: binding inactive
         var signal = new ValueSignal<>("one");
         Anchor anchor = new Anchor("/path", signal);
-        // no propagation while detached
-        assertEquals("", anchor.getText());
+        // Initial value is applied
+        assertEquals("one", anchor.getText());
 
         // Update before attach is ignored
         signal.set("two");
-        assertEquals("", anchor.getText());
+        assertEquals("one", anchor.getText());
 
         // Attach -> latest value applied
         UI.getCurrent().add(anchor);

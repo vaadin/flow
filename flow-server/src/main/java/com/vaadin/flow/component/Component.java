@@ -594,10 +594,11 @@ public abstract class Component
 
     /**
      * Binds a {@link Signal}'s value to the <code>visible</code> property of
-     * this component and keeps property synchronized with the signal value
-     * while the component is in attached state. When the element is in detached
-     * state, signal value changes have no effect. <code>null</code> signal
-     * unbinds the existing binding.
+     * this component. The visibility is set immediately with the current signal
+     * value when the binding is created, and is kept synchronized with any
+     * subsequent signal value changes while the component is in attached state.
+     * When the element is in detached state, signal value changes have no
+     * effect. <code>null</code> signal unbinds the existing binding.
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws

@@ -81,11 +81,14 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
-        // change ignored while not attached
-        signal.set("<div id='c'>ignored</div>");
+        // Probe runs immediately at bind time, applying the signal value
+        assertEquals("after", html.getInnerHtml());
+        assertEquals("b", html.getElement().getAttribute("id"));
 
-        assertEquals("init", html.getInnerHtml());
-        assertEquals("a", html.getElement().getAttribute("id"));
+        // Changes while detached are ignored (effect is passivated)
+        signal.set("<div id='c'>ignored</div>");
+        assertEquals("after", html.getInnerHtml());
+        assertEquals("b", html.getElement().getAttribute("id"));
     }
 
     @Test

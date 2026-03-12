@@ -84,9 +84,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindWidth(signal);
-        signal.set("300px");
 
-        assertNull(component.getWidth());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("200px", component.getWidth());
+
+        // Signal changes while detached are ignored
+        signal.set("300px");
+        assertEquals("200px", component.getWidth());
     }
 
     @Test
@@ -258,9 +262,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         ValueSignal<String> signal = new ValueSignal<>("200px");
         component.bindHeight(signal);
-        signal.set("300px");
 
-        assertNull(component.getHeight());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("200px", component.getHeight());
+
+        // Signal changes while detached are ignored
+        signal.set("300px");
+        assertEquals("200px", component.getHeight());
     }
 
     @Test
@@ -393,13 +401,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
 
         component.bindWidth(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("300px");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("200px", ctx.getOldValue());
         assertEquals("300px", ctx.getNewValue());
@@ -416,13 +424,13 @@ class HasSizeBindWidthHeightTest extends SignalsUnitTest {
 
         component.bindHeight(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("300px");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<?> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("200px", ctx.getOldValue());
         assertEquals("300px", ctx.getNewValue());
