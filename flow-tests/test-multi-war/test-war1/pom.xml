@@ -30,6 +30,14 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <!-- Exclude duplicated dev mode flow-build-info -->
+          <packagingExcludes>META-INF/VAADIN/config/flow-build-info.json</packagingExcludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
