@@ -14,7 +14,7 @@
     "index.ts"
   ],
   "peerDependencies": {
-    "vite": "6.x",
+    "vite": "7.x",
     "workbox-build": "7.x",
     "rollup-plugin-brotli": "3.x"
   },
