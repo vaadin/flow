@@ -201,6 +201,13 @@
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
             </systemProperties>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.slf4j</groupId>
+              <artifactId>slf4j-simple</artifactId>
+              <version>${slf4j.version}</version>
+            </dependency>
+          </dependencies>
           <executions>
             <execution>
               <id>start-jetty</id>
@@ -208,6 +215,12 @@
                 <goal>start</goal>
               </goals>
               <phase>pre-integration-test</phase>
+              <configuration>
+                <deployMode>FORK</deployMode>
+                <maxChildStartChecks>50</maxChildStartChecks>
+                <maxChildStartCheckMs>200</maxChildStartCheckMs>
+                <jvmArgs>-Djetty.http.port=${server.port}</jvmArgs>
+              </configuration>
             </execution>
             <execution>
               <id>stop-jetty</id>

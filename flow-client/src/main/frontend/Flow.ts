@@ -244,7 +244,7 @@ export class Flow {
     });
   }
 
-  // Send the remote call to `JavaScriptBootstrapUI` to render the flow
+  // Send the remote call to `UI` to render the flow
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
