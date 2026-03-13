@@ -35,9 +35,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  */
 public final class SignalFieldTransfer implements Serializable {
 
-    private SignalFieldTransfer() {
-    }
-
     /**
      * Transfers local signal field values from the old instance to the new
      * instance by matching fields by name and type.

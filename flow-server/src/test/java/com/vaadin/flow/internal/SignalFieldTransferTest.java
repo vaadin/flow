@@ -77,6 +77,16 @@ class SignalFieldTransferTest extends SignalsUnitTest {
         String name = "not a signal";
     }
 
+    @Tag("div")
+    static class ViewWithSignalThatThrowsOnSet extends Component {
+        ValueSignal<String> name = new ValueSignal<>("default") {
+            @Override
+            public void set(String value) {
+                throw new IllegalStateException("throwing on set");
+            }
+        };
+    }
+
     @Test
     void valueSignalIsTransferred() {
         var oldView = new ViewWithValueSignal();
@@ -157,6 +167,19 @@ class SignalFieldTransferTest extends SignalsUnitTest {
 
         SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
 
+        assertEquals("default", newView.name.peek());
+    }
+
+    @Test
+    void exceptionFromSignalSetIsLogged() {
+        var oldView = new ViewWithValueSignal();
+        oldView.name.set("changed");
+        var newView = new ViewWithSignalThatThrowsOnSet();
+
+        SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
+
+        // The exception should be caught and logged, value is set by
+        // constructor and should remain unchanged
         assertEquals("default", newView.name.peek());
     }
 }
