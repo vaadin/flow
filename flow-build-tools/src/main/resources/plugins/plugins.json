@@ -7,6 +7,6 @@
     "react-function-location-plugin",
     "rollup-plugin-vaadin-i18n",
     "vite-plugin-service-worker",
-    "use-local-web-components"
+    "vite-plugin-local-web-components"
   ]
 }
