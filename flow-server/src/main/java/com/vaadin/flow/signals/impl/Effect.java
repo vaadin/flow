@@ -28,6 +28,7 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.SignalEnvironment;
@@ -129,20 +130,17 @@ public class Effect implements Serializable {
             SerializableExecutor dispatcher) {
         assert action != null;
         this.action = () -> {
-            boolean isFirstRun = firstRun;
             try {
                 EffectContext ctx = new EffectContext(firstRun,
                         invalidatedFromBackground);
                 firstRun = false;
                 invalidatedFromBackground = false;
                 action.execute(ctx);
-            } catch (RuntimeException e) {
-                if (isFirstRun) {
-                    throw e;
-                }
-                Thread thread = Thread.currentThread();
-                thread.getUncaughtExceptionHandler().uncaughtException(thread,
-                        e);
+            } catch (DeniedSignalUsageException e) {
+                // Programming error: signal.get() used in wrong context.
+                // Always propagate so the caller gets an immediate
+                // exception.
+                throw e;
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
