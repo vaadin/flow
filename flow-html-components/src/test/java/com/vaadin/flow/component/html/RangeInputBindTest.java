@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedNumberSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,8 +33,9 @@ public class RangeInputBindTest extends SignalsUnitTest {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(0.0);
-        rangeInput.bindMin(signal);
+        ValueSignal<Double> signal = new ValueSignal<>(0.0);
+        rangeInput.getElement().bindAttribute("min",
+                signal.map(Object::toString));
 
         signal.set(5.5);
         assertEquals("5.5", rangeInput.getElement().getAttribute("min"));
@@ -68,8 +70,9 @@ public class RangeInputBindTest extends SignalsUnitTest {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(100.0);
-        rangeInput.bindMax(signal);
+        ValueSignal<Double> signal = new ValueSignal<>(100.0);
+        rangeInput.getElement().bindAttribute("max",
+                signal.map(Object::toString));
 
         signal.set(150.5);
         assertEquals("150.5", rangeInput.getElement().getAttribute("max"));
