@@ -33,6 +33,9 @@ import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -41,6 +44,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0
  */
 public class VaadinServletService extends VaadinService {
+
+    private static final String PROJECT_NAME = "flow";
 
     /**
      * Should never be used directly, always use {@link #getServlet()}.
@@ -61,6 +66,7 @@ public class VaadinServletService extends VaadinService {
             DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
+        verifyLicense(deploymentConfiguration.isProductionMode());
     }
 
     /**
@@ -70,6 +76,25 @@ public class VaadinServletService extends VaadinService {
      */
     protected VaadinServletService() {
         servlet = null;
+    }
+
+    private void verifyLicense(boolean productionMode) {
+        String frameworkVersion = Version.getFullVersion();
+        if (productionMode) {
+            try {
+                LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                        BuildType.PRODUCTION);
+            } catch (LicenseException e) {
+                getLogger().error(
+                        "This Vaadin version requires an extended maintenance subscription."
+                                + "Provide either a server key or an online license checking key,"
+                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        e);
+            }
+        } else {
+            LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                    BuildType.DEVELOPMENT);
+        }
     }
 
     @Override
