@@ -123,6 +123,11 @@ public final class ElementEffect implements Serializable {
     private void executeAction(EffectContext ctx) {
         try {
             effectFunction.execute(ctx);
+        } catch (DeniedSignalUsageException e) {
+            // Programming error: signal.get() used in wrong context
+            // (e.g. inside bindChildren factory). Always propagate so
+            // the caller gets an immediate exception.
+            throw e;
         } catch (RuntimeException e) {
             SerializableBiConsumer<Exception, Element> handler = errorHandler;
             if (handler != null) {

@@ -129,12 +129,20 @@ public class Effect implements Serializable {
             SerializableExecutor dispatcher) {
         assert action != null;
         this.action = () -> {
+            boolean isFirstRun = firstRun;
             try {
                 EffectContext ctx = new EffectContext(firstRun,
                         invalidatedFromBackground);
                 firstRun = false;
                 invalidatedFromBackground = false;
                 action.execute(ctx);
+            } catch (RuntimeException e) {
+                if (isFirstRun) {
+                    throw e;
+                }
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        e);
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,

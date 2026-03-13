@@ -1252,7 +1252,7 @@ class ElementEffectTest {
     @Test
     public void bindChildren_signalGetInsideCallback_throws() {
         CurrentInstance.clearAll();
-        LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
+        mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
 
         ListSignal<String> taskList = new ListSignal<>();
@@ -1260,14 +1260,11 @@ class ElementEffectTest {
         TestLayout parentComponent = new TestLayout();
         ui.add(parentComponent);
 
-        parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
-
-        ErrorEvent event = events.pollFirst();
-        assertNotNull(event);
-        assertEquals(DeniedSignalUsageException.class,
-                event.getThrowable().getClass());
-        assertTrue(event.getThrowable().getMessage().contains("bindChildren"));
+        DeniedSignalUsageException ex = assertThrows(
+                DeniedSignalUsageException.class,
+                () -> parentComponent.bindChildren(taskList,
+                        valueSignal -> new TestComponent(valueSignal.get())));
+        assertTrue(ex.getMessage().contains("bindChildren"));
     }
 
     @Test
