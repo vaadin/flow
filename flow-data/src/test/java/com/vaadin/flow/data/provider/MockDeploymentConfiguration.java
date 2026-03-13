@@ -1,5 +1,14 @@
+/*
+ * Copyright (C) 2000-2024 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -14,32 +23,30 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean compatibilityMode = false;
+    private boolean useDeprecatedV14Bootstrapping = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int maxMessageSuspendTimeout = 5000;
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
-    private String pushURL = "";
+    private String pushServletMapping = "";
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
+    private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
-    private boolean oldLicenseChecker = false;
+    private boolean devToolsEnabled = true;
+
+    public MockDeploymentConfiguration() {
+        super(Collections.emptyMap());
+    }
 
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    @Deprecated
-    @Override
-    public boolean isBowerMode() {
-        throw new UnsupportedOperationException(
-                "Bower mode is deprecated and no longer supported as of version 2.11. Please update your configuration.");
     }
 
     @Override
@@ -125,12 +132,12 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public String getPushURL() {
-        return pushURL;
+    public String getPushServletMapping() {
+        return pushServletMapping;
     }
 
-    public void setPushURL(String pushURL) {
-        this.pushURL = pushURL;
+    public void setPushServletMapping(String pushServletMapping) {
+        this.pushServletMapping = pushServletMapping;
     }
 
     @Override
@@ -171,25 +178,40 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
-    public void setCompatibilityMode(boolean compatibility) {
-        compatibilityMode = compatibility;
+    @Override
+    public boolean useV14Bootstrap() {
+        return useDeprecatedV14Bootstrapping;
+    }
+
+    public void useDeprecatedV14Bootstrapping(
+            boolean useDeprecatedV14Bootstrapping) {
+        this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
+    }
+
+    @Override
+    public boolean isEagerServerLoad() {
+        return this.eagerServerLoad;
     }
 
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return devModeLiveReloadEnabled;
+        return isDevToolsEnabled() && devModeLiveReloadEnabled;
+    }
+
+    @Override
+    public boolean isDevToolsEnabled() {
+        return devToolsEnabled;
+    }
+
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
     }
 
     public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
         this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
     }
 
-    @Override
-    public boolean isOldLicenseCheckerEnabled() {
-        return oldLicenseChecker;
-    }
-
-    public void enableOldLicenseChecker(boolean enable) {
-        oldLicenseChecker = enable;
+    public void setDevToolsEnabled(boolean devToolsEnabled) {
+        this.devToolsEnabled = devToolsEnabled;
     }
 }
