@@ -40,6 +40,7 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.SignalFieldTransfer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -142,8 +143,18 @@ public abstract class AbstractNavigationStateRenderer
         Optional<HasElement> currentInstance = forceInstantiation
                 ? Optional.empty()
                 : findActiveRouteTarget(event, isRouteTargetType);
-        return (T) currentInstance.orElseGet(
+        T result = (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
+
+        if (forceInstantiation
+                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
+                && !ui.getSession().getConfiguration().isProductionMode()) {
+            findActiveRouteTarget(event, isRouteTargetType)
+                    .ifPresent(oldInstance -> SignalFieldTransfer
+                            .transferLocalSignalValues(oldInstance, result));
+        }
+
+        return result;
     }
 
     protected Optional<HasElement> findActiveRouteTarget(NavigationEvent event,
