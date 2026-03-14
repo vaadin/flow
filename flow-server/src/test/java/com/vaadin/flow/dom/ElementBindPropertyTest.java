@@ -19,16 +19,11 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -37,22 +32,16 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -60,35 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class ElementBindPropertyTest {
-
-    private static MockVaadinServletService service;
-
-    private UI ui;
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        CurrentInstance.clearAll();
-        ui = null;
-        events = null;
-    }
+class ElementBindPropertyTest extends SignalsUnitTest {
 
     // common property signal binding tests
 
@@ -1099,19 +1060,6 @@ class ElementBindPropertyTest {
         ObjectNode objectNode = (ObjectNode) component.getElement()
                 .getPropertyRaw(propertyName);
         return (ObjectNode) objectNode.get(key);
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
     }
 
     @Tag("div")
