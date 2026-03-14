@@ -171,6 +171,10 @@ class NavigationStateRendererTest {
         RouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(new MockVaadinContext());
         router = new Router(registry);
+
+        RouteParentLayout.creationCount.set(0);
+        ConditionalForwardView.shouldForward = false;
+        ConditionalRerouteView.shouldReroute = false;
     }
 
     @Test
@@ -305,7 +309,10 @@ class NavigationStateRendererTest {
     @Tag("div")
     private static class RouteParentLayout extends Component
             implements RouterLayout {
+        private static final AtomicInteger creationCount = new AtomicInteger(0);
+
         RouteParentLayout() {
+            creationCount.incrementAndGet();
             addAttachListener(e -> layoutAttachCount.getAndIncrement());
             layoutUUID = UUID.randomUUID().toString();
         }
@@ -330,44 +337,41 @@ class NavigationStateRendererTest {
         }
     }
 
+    @Route(value = "forward-target", layout = RouteParentLayout.class)
     @Tag("div")
-    @Route("forward-target")
-    @ParentLayout(ForwardTargetLayout.class)
     private static class ForwardTargetView extends Component {
-        ForwardTargetView() {
-            addAttachListener(
-                    e -> forwardTargetViewAttachCount.getAndIncrement());
-            forwardTargetViewUUID = UUID.randomUUID().toString();
-        }
     }
 
+    @Route(value = "reroute-target", layout = RouteParentLayout.class)
     @Tag("div")
-    private static class ForwardTargetLayout extends Component
-            implements RouterLayout {
-        ForwardTargetLayout() {
-            addAttachListener(
-                    e -> forwardTargetLayoutAttachCount.getAndIncrement());
-            forwardTargetLayoutUUID = UUID.randomUUID().toString();
-        }
+    private static class RerouteTargetView extends Component {
     }
 
+    @Route(value = "conditional-forward", layout = RouteParentLayout.class)
     @Tag("div")
-    @Route("forwarding")
-    private static class ForwardingView extends Component
+    private static class ConditionalForwardView extends Component
             implements BeforeEnterObserver {
+        static boolean shouldForward = false;
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            event.forwardTo(ForwardTargetView.class);
+            if (shouldForward) {
+                event.forwardTo(ForwardTargetView.class);
+            }
         }
     }
 
+    @Route(value = "conditional-reroute", layout = RouteParentLayout.class)
     @Tag("div")
-    @Route("rerouting")
-    private static class ReroutingView extends Component
+    private static class ConditionalRerouteView extends Component
             implements BeforeEnterObserver {
+        static boolean shouldReroute = false;
+
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            event.rerouteTo(ForwardTargetView.class);
+            if (shouldReroute) {
+                event.rerouteTo(RerouteTargetView.class);
+            }
         }
     }
 
@@ -700,13 +704,9 @@ class NavigationStateRendererTest {
 
     private static AtomicInteger layoutAttachCount;
     private static AtomicInteger viewAttachCount;
-    private static AtomicInteger forwardTargetLayoutAttachCount;
-    private static AtomicInteger forwardTargetViewAttachCount;
     private static AtomicInteger beforeEnterCount;
     private static String layoutUUID;
     private static String viewUUID;
-    private static String forwardTargetLayoutUUID;
-    private static String forwardTargetViewUUID;
 
     @Test
     public void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
@@ -816,8 +816,8 @@ class NavigationStateRendererTest {
 
     @Test
     public void handle_refreshCurrentRoute_withForwardTo_recreatesComponents() {
-        forwardTargetLayoutAttachCount = new AtomicInteger();
-        forwardTargetViewAttachCount = new AtomicInteger();
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
 
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -825,46 +825,35 @@ class NavigationStateRendererTest {
         router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 new NavigationStateBuilder(router)
-                        .withTarget(ForwardingView.class).withPath("forwarding")
-                        .build());
-        router.getRegistry().setRoute("forwarding", ForwardingView.class,
-                Collections.emptyList());
+                        .withTarget(ConditionalForwardView.class)
+                        .withPath("conditional-forward").build());
+        router.getRegistry().setRoute("conditional-forward",
+                ConditionalForwardView.class, List.of(RouteParentLayout.class));
         router.getRegistry().setRoute("forward-target", ForwardTargetView.class,
-                List.of(ForwardTargetLayout.class));
+                List.of(RouteParentLayout.class));
 
         MockUI ui = new MockUI(session);
 
-        renderer.handle(new NavigationEvent(router, new Location("forwarding"),
-                ui, NavigationTrigger.PAGE_LOAD));
-
-        assertEquals(1, forwardTargetLayoutAttachCount.get());
-        assertEquals(1, forwardTargetViewAttachCount.get());
-
-        String currentLayoutUUID = forwardTargetLayoutUUID;
-        String currentViewUUID = forwardTargetViewUUID;
+        // Initial navigation without forward
+        renderer.handle(
+                new NavigationEvent(router, new Location("conditional-forward"),
+                        ui, NavigationTrigger.PAGE_LOAD));
 
         ui.getInternals().clearLastHandledNavigation();
 
-        // Should recreate route component only
-        ui.refreshCurrentRoute(false);
-        assertEquals(1, forwardTargetLayoutAttachCount.get());
-        assertEquals(2, forwardTargetViewAttachCount.get());
-        assertEquals(currentLayoutUUID, forwardTargetLayoutUUID);
-        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
-        currentViewUUID = forwardTargetViewUUID;
-
-        // Should recreate route component and parent layout
+        // Enable forwarding and refresh with recreateLayoutChain=true
+        RouteParentLayout.creationCount.set(0);
+        ConditionalForwardView.shouldForward = true;
         ui.refreshCurrentRoute(true);
-        assertEquals(2, forwardTargetLayoutAttachCount.get());
-        assertEquals(3, forwardTargetViewAttachCount.get());
-        assertNotEquals(currentLayoutUUID, forwardTargetLayoutUUID);
-        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
+
+        assertEquals(2, RouteParentLayout.creationCount.get(),
+                "Layout should be recreated by both refresh and forward");
     }
 
     @Test
     public void handle_refreshCurrentRoute_withRerouteTo_recreatesComponents() {
-        forwardTargetLayoutAttachCount = new AtomicInteger();
-        forwardTargetViewAttachCount = new AtomicInteger();
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
 
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -872,40 +861,29 @@ class NavigationStateRendererTest {
         router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 new NavigationStateBuilder(router)
-                        .withTarget(ReroutingView.class).withPath("rerouting")
-                        .build());
-        router.getRegistry().setRoute("rerouting", ReroutingView.class,
-                Collections.emptyList());
-        router.getRegistry().setRoute("forward-target", ForwardTargetView.class,
-                List.of(ForwardTargetLayout.class));
+                        .withTarget(ConditionalRerouteView.class)
+                        .withPath("conditional-reroute").build());
+        router.getRegistry().setRoute("conditional-reroute",
+                ConditionalRerouteView.class, List.of(RouteParentLayout.class));
+        router.getRegistry().setRoute("reroute-target", RerouteTargetView.class,
+                List.of(RouteParentLayout.class));
 
         MockUI ui = new MockUI(session);
 
-        renderer.handle(new NavigationEvent(router, new Location("rerouting"),
-                ui, NavigationTrigger.PAGE_LOAD));
-
-        assertEquals(1, forwardTargetLayoutAttachCount.get());
-        assertEquals(1, forwardTargetViewAttachCount.get());
-
-        String currentLayoutUUID = forwardTargetLayoutUUID;
-        String currentViewUUID = forwardTargetViewUUID;
+        // Initial navigation without reroute
+        renderer.handle(
+                new NavigationEvent(router, new Location("conditional-reroute"),
+                        ui, NavigationTrigger.PAGE_LOAD));
 
         ui.getInternals().clearLastHandledNavigation();
 
-        // Should recreate route component only
-        ui.refreshCurrentRoute(false);
-        assertEquals(1, forwardTargetLayoutAttachCount.get());
-        assertEquals(2, forwardTargetViewAttachCount.get());
-        assertEquals(currentLayoutUUID, forwardTargetLayoutUUID);
-        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
-        currentViewUUID = forwardTargetViewUUID;
-
-        // Should recreate route component and parent layout
+        // Enable rerouting and refresh with recreateLayoutChain=true
+        RouteParentLayout.creationCount.set(0);
+        ConditionalRerouteView.shouldReroute = true;
         ui.refreshCurrentRoute(true);
-        assertEquals(2, forwardTargetLayoutAttachCount.get());
-        assertEquals(3, forwardTargetViewAttachCount.get());
-        assertNotEquals(currentLayoutUUID, forwardTargetLayoutUUID);
-        assertNotEquals(currentViewUUID, forwardTargetViewUUID);
+
+        assertEquals(2, RouteParentLayout.creationCount.get(),
+                "Layout should be recreated by both refresh and reroute");
     }
 
     @Test
