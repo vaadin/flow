@@ -16,25 +16,15 @@
 package com.vaadin.flow.dom;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,30 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for Style.bind(String, Signal<String>).
  */
-class StyleBindTest {
-
-    private static MockVaadinServletService service;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        VaadinService.setCurrent(null);
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        VaadinService.setCurrent(null);
-    }
+class StyleBindTest extends SignalsUnitTest {
 
     // Lifecycle: applies on attachment and signal changes when attached
     @Test
@@ -233,12 +200,4 @@ class StyleBindTest {
         assertEquals(element, ctx.getElement());
     }
 
-    private void mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-        var session = new MockVaadinSession(service);
-        session.lock();
-        new MockUI(session);
-        var list = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(list::add);
-    }
 }
