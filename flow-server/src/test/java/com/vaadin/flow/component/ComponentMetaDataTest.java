@@ -101,32 +101,32 @@ class ComponentMetaDataTest {
     }
 
     @Test
-    public void synchronizedProperties_methodInClass() {
+    void synchronizedProperties_methodInClass() {
         assertFooProperty(Sample.class);
     }
 
     @Test
-    public void synchronizedProperties_methodInInterface() {
+    void synchronizedProperties_methodInInterface() {
         assertFooProperty(HasFooImpl.class, DisabledUpdateMode.ALWAYS);
     }
 
     @Test
-    public void synchronizedProperties_protectedMethod() {
+    void synchronizedProperties_protectedMethod() {
         assertFooProperty(HasFooProtected.class);
     }
 
     @Test
-    public void synchronizedProperties_packagePrivateMethod() {
+    void synchronizedProperties_packagePrivateMethod() {
         assertFooProperty(HasFooPackagePrivate.class);
     }
 
     @Test
-    public void synchronizedProperties_privateMethod() {
+    void synchronizedProperties_privateMethod() {
         assertFooProperty(HasFooPrivate.class);
     }
 
     @Test
-    public void synchronizedProperties_hasOverriddenMethod() {
+    void synchronizedProperties_hasOverriddenMethod() {
         ComponentMetaData data = new ComponentMetaData(SubClass.class);
 
         Collection<SynchronizedPropertyInfo> props = data
@@ -148,7 +148,7 @@ class ComponentMetaDataTest {
     }
 
     @Test
-    public void synchronizedProperties_overridesMethodAndProperty() {
+    void synchronizedProperties_overridesMethodAndProperty() {
         ComponentMetaData data = new ComponentMetaData(
                 ChangeSyncProperty.class);
 

@@ -97,14 +97,14 @@ class ServletDeployerTest {
     }
 
     @BeforeEach
-    public void clearCaptures() {
+    void clearCaptures() {
         servletNames = new ArrayList<>();
         servletMappings = new ArrayList<>();
         servletLoadOnStartup = new ArrayList<>();
     }
 
     @Test
-    public void automaticallyRegisterTwoServletsWhenNoServletsPresent()
+    void automaticallyRegisterTwoServletsWhenNoServletsPresent()
             throws Exception {
         deployer.contextInitialized(getContextEvent());
 
@@ -114,8 +114,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void doNotRegisterAnythingIfRegistrationIsDisabled()
-            throws Exception {
+    void doNotRegisterAnythingIfRegistrationIsDisabled() throws Exception {
         disableAutomaticServletRegistration = true;
         deployer.contextInitialized(getContextEvent(
                 getServletRegistration("testServlet", TestServlet.class,
@@ -125,7 +124,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void registeredNonVaadinServlets_vaadinServletsAreRegistered()
+    void registeredNonVaadinServlets_vaadinServletsAreRegistered()
             throws Exception {
         deployer.contextInitialized(getContextEvent(
                 getServletRegistration("testServlet", TestServlet.class,
@@ -136,7 +135,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
+    void frontendServletIsNotRegisteredWhenProductionModeIsActive()
             throws Exception {
         deployer.contextInitialized(getContextEvent(getServletRegistration(
                 "testServlet", TestServlet.class, singletonList("/test/*"),
@@ -149,7 +148,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
+    void frontendServletIsNotRegistered_whenMainServletIsRegistered()
             throws Exception {
         deployer.contextInitialized(getContextEvent());
 
@@ -159,8 +158,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void servletsWithoutClassName_registrationDoesNotFail()
-            throws Exception {
+    void servletsWithoutClassName_registrationDoesNotFail() throws Exception {
         deployer.contextInitialized(getContextEvent(getServletRegistration(
                 "test", null, singletonList("/WEB-INF/test.jsp"),
                 Collections.emptyMap())));
@@ -171,7 +169,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
+    void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
         deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,
@@ -181,7 +179,7 @@ class ServletDeployerTest {
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
+    void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
             throws Exception {
         deployer.contextInitialized(getContextEvent(
                 getServletRegistration("test", TestServlet.class,

@@ -35,7 +35,7 @@ public abstract class HasCurrentService {
     private VaadinService service;
 
     @BeforeEach
-    public void setUpCurrentService() {
+    void setUpCurrentService() {
         clearCurrentService();
         assertNull(VaadinService.getCurrent());
 
@@ -46,7 +46,7 @@ public abstract class HasCurrentService {
     protected abstract VaadinService createService();
 
     @AfterEach
-    public void clearCurrentService() {
+    void clearCurrentService() {
         VaadinService.setCurrent(null);
         service = null;
     }

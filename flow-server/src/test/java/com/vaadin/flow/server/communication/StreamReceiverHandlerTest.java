@@ -106,7 +106,7 @@ class StreamReceiverHandlerTest {
     private String xFilenameHeader;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         contentLength = "6";
         inputStream = createInputStream("foobar");
         outputStream = mock(OutputStream.class);
@@ -270,7 +270,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
+    void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
             throws IOException {
         Mockito.doThrow(RuntimeException.class).when(streamVariable)
                 .getOutputStream();
@@ -283,7 +283,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
+    void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
             throws IOException {
 
         Mockito.doThrow(RuntimeException.class).when(outputStream)
@@ -297,7 +297,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus()
+    void doHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus()
             throws IOException {
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
@@ -308,7 +308,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
+    void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
             throws IOException {
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
@@ -318,7 +318,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_hasParts_uploadFailed_responseStatusIs500()
+    void doHandleMultipartFileUpload_hasParts_uploadFailed_responseStatusIs500()
             throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
@@ -346,7 +346,7 @@ class StreamReceiverHandlerTest {
      * (#10096)
      */
     @Test
-    public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
+    void exceptionIsThrownOnUnexpectedEnd() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
                 "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
@@ -363,7 +363,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsSentOnCorrectSecurityKey() throws IOException {
+    void responseIsSentOnCorrectSecurityKey() throws IOException {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
@@ -371,7 +371,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsNotSentOnIncorrectSecurityKey() throws IOException {
+    void responseIsNotSentOnIncorrectSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn("another key expected");
 
         handler.handleRequest(session, request, response, streamReceiver,
@@ -381,7 +381,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void responseIsNotSentOnMissingSecurityKey() throws IOException {
+    void responseIsNotSentOnMissingSecurityKey() throws IOException {
         when(streamReceiver.getId()).thenReturn(null);
 
         handler.handleRequest(session, request, response, streamReceiver,
@@ -391,8 +391,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test // Vaadin Spring #381
-    public void partsAreUsedDirectlyIfPresentWithoutParsingInput()
-            throws IOException {
+    void partsAreUsedDirectlyIfPresentWithoutParsingInput() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
                 "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
@@ -428,7 +427,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws UploadException {
         InputStream inputStream = new InputStream() {
 
@@ -445,7 +444,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws UploadException {
         InputStream inputStream = new InputStream() {
             @Override
@@ -465,7 +464,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+    void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws IOException, ServletException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.doThrow(IOException.class).when(request).getParts();
@@ -475,7 +474,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_filenameFromHeader_extractedCorrectly()
+    void doHandleXhrFilePost_filenameFromHeader_extractedCorrectly()
             throws IOException {
         xFilenameHeader = "test.txt";
         outputStream = new ByteArrayOutputStream();
@@ -491,7 +490,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_encodedFilename_decodedCorrectly()
+    void doHandleXhrFilePost_encodedFilename_decodedCorrectly()
             throws IOException {
         // encodeURIComponent("my file åäö.txt") in JavaScript
         xFilenameHeader = "my%20file%20%C3%A5%C3%A4%C3%B6.txt";
@@ -509,7 +508,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_contentTypeFromHeader_extractedCorrectly()
+    void doHandleXhrFilePost_contentTypeFromHeader_extractedCorrectly()
             throws IOException {
         xFilenameHeader = "test.txt";
         contentType = "text/plain";
@@ -526,7 +525,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_missingContentTypeHeader_defaultsToUnknown()
+    void doHandleXhrFilePost_missingContentTypeHeader_defaultsToUnknown()
             throws IOException {
         xFilenameHeader = "test.txt";
         contentType = null;
@@ -543,7 +542,7 @@ class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleXhrFilePost_missingFilenameHeader_defaultsToUnknown()
+    void doHandleXhrFilePost_missingFilenameHeader_defaultsToUnknown()
             throws IOException {
         xFilenameHeader = null;
         outputStream = new ByteArrayOutputStream();

@@ -65,21 +65,21 @@ class QueryParametersTest {
     }
 
     @Test
-    public void emptyParameters() {
+    void emptyParameters() {
         QueryParameters emptyParams = QueryParameters.empty();
 
         assertEquals(Collections.emptyMap(), emptyParams.getParameters());
     }
 
     @Test
-    public void emptyParametersToQueryString() {
+    void emptyParametersToQueryString() {
         QueryParameters emptyParams = QueryParameters.empty();
 
         assertEquals("", emptyParams.getQueryString());
     }
 
     @Test
-    public void underlyingMapUnmodifiable_empty() {
+    void underlyingMapUnmodifiable_empty() {
         Map<String, List<String>> parameters = QueryParameters.empty()
                 .getParameters();
         assertThrows(UnsupportedOperationException.class,
@@ -87,7 +87,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void simpleParameters() {
+    void simpleParameters() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
 
@@ -99,7 +99,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void simpleParametersFromQueryString() {
+    void simpleParametersFromQueryString() {
         QueryParameters simpleParams = QueryParameters
                 .fromString(simpleInputQueryString);
 
@@ -115,7 +115,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void simpleParametersToQueryString() {
+    void simpleParametersToQueryString() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
 
@@ -128,7 +128,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void underlyingMapUnmodifiable_simple() {
+    void underlyingMapUnmodifiable_simple() {
         Map<String, List<String>> parameters = QueryParameters
                 .simple(getSimpleInputParameters()).getParameters();
         assertThrows(UnsupportedOperationException.class,
@@ -136,13 +136,13 @@ class QueryParametersTest {
     }
 
     @Test
-    public void underlyingListsUnmodifiable_simple() {
+    void underlyingListsUnmodifiable_simple() {
         checkListsForImmutability(QueryParameters
                 .simple(getSimpleInputParameters()).getParameters().values());
     }
 
     @Test
-    public void complexParameters() {
+    void complexParameters() {
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
@@ -154,7 +154,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void complexParametersFromQueryString() {
+    void complexParametersFromQueryString() {
         QueryParameters fullParams = QueryParameters
                 .fromString(complexInputQueryString);
 
@@ -170,7 +170,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void complexParametersToQueryString() {
+    void complexParametersToQueryString() {
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
@@ -192,7 +192,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void underlyingMapUnmodifiable_full() {
+    void underlyingMapUnmodifiable_full() {
         Map<String, List<String>> parameters = QueryParameters
                 .full(getFullInputParameters()).getParameters();
         assertThrows(UnsupportedOperationException.class,
@@ -200,13 +200,13 @@ class QueryParametersTest {
     }
 
     @Test
-    public void underlyingListsUnmodifiable_full() {
+    void underlyingListsUnmodifiable_full() {
         checkListsForImmutability(QueryParameters.full(getFullInputParameters())
                 .getParameters().values());
     }
 
     @Test
-    public void parameterWithoutValue() {
+    void parameterWithoutValue() {
         QueryParameters params = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
         assertEquals("foo", params.getQueryString());
@@ -221,14 +221,14 @@ class QueryParametersTest {
     }
 
     @Test
-    public void parameterWithEmptyValue() {
+    void parameterWithEmptyValue() {
         QueryParameters fullParams = new QueryParameters(
                 Collections.singletonMap("foo", Collections.singletonList("")));
         assertEquals("foo", fullParams.getQueryString());
     }
 
     @Test
-    public void shortHands() {
+    void shortHands() {
         QueryParameters qp1 = QueryParameters.of("foo", "bar");
         Optional<String> singleParameter = qp1.getSingleParameter("foo");
         assertEquals("bar", singleParameter.get());
@@ -241,7 +241,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void excluding() {
+    void excluding() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -259,7 +259,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void excludingNone() {
+    void excludingNone() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -272,7 +272,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void including() {
+    void including() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -289,7 +289,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void includingNone() {
+    void includingNone() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -302,7 +302,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void includingNonExisting() {
+    void includingNonExisting() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -315,7 +315,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void merging() {
+    void merging() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -334,7 +334,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void mergingMultiValue() {
+    void mergingMultiValue() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -351,7 +351,7 @@ class QueryParametersTest {
     }
 
     @Test
-    public void mergingAll() {
+    void mergingAll() {
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("one", Collections.singletonList("1"));
         paramMap.put("two", Collections.singletonList("2"));
@@ -371,13 +371,13 @@ class QueryParametersTest {
     }
 
     @Test
-    public void toStringValidation() {
+    void toStringValidation() {
         String toString = QueryParameters.of("foo", "bar").toString();
         assertEquals("QueryParameters(foo=bar)", toString);
     }
 
     @Test
-    public void equalsAndHashCode() {
+    void equalsAndHashCode() {
         QueryParameters qp1 = QueryParameters.of("foo", "bar");
         QueryParameters qp2 = QueryParameters.fromString("foo=bar");
         QueryParameters qp3 = QueryParameters.fromString("bar=foo");
@@ -387,19 +387,19 @@ class QueryParametersTest {
     }
 
     @Test
-    public void fromString_emptyString_getsEmptyParameters() {
+    void fromString_emptyString_getsEmptyParameters() {
         QueryParameters params = QueryParameters.fromString("");
         assertEquals(Collections.emptyMap(), params.getParameters());
     }
 
     @Test
-    public void fromString_blankString_getsEmptyParameters() {
+    void fromString_blankString_getsEmptyParameters() {
         QueryParameters params = QueryParameters.fromString("    ");
         assertEquals(Collections.emptyMap(), params.getParameters());
     }
 
     @Test
-    public void fromString_nullString_getsEmptyParameters() {
+    void fromString_nullString_getsEmptyParameters() {
         QueryParameters params = QueryParameters.fromString(null);
         assertEquals(Collections.emptyMap(), params.getParameters());
     }

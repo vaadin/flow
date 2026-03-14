@@ -39,7 +39,7 @@ class InternalServerErrorTest {
             .mock(DeploymentConfiguration.class);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         VaadinService.setCurrent(service);
 
         Mockito.when(service.getDeploymentConfiguration())
@@ -50,12 +50,12 @@ class InternalServerErrorTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         VaadinService.setCurrent(null);
     }
 
     @Test
-    public void productionMode_noWarningAndStacktrace() {
+    void productionMode_noWarningAndStacktrace() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         InternalServerError testInstance = new InternalServerError();
@@ -68,7 +68,7 @@ class InternalServerErrorTest {
     }
 
     @Test
-    public void nonProductionMode_noLogBinding_showWaringAndStacktrace() {
+    void nonProductionMode_noLogBinding_showWaringAndStacktrace() {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         InternalServerError testInstance = new InternalServerError() {
@@ -97,7 +97,7 @@ class InternalServerErrorTest {
     }
 
     @Test
-    public void nonProductionMode_hasLogBinding_showStacktraceAndNoWarning() {
+    void nonProductionMode_hasLogBinding_showStacktraceAndNoWarning() {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         InternalServerError testInstance = new InternalServerError() {

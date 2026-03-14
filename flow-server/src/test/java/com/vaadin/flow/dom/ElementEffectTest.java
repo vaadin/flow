@@ -123,18 +123,18 @@ class ElementEffectTest {
     }
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         service = new TestService();
     }
 
     @AfterAll
-    public static void clean() {
+    static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
     @Test
-    public void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
+    void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -153,7 +153,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void contextAwareEffect_receivesEffectContext() {
+    void contextAwareEffect_receivesEffectContext() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -176,7 +176,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void contextAwareEffect_detectsBackgroundChange() {
+    void contextAwareEffect_detectsBackgroundChange() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -210,7 +210,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindText_returnsSignalBinding() {
+    void bindText_returnsSignalBinding() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -223,7 +223,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_receivesBindingContext() {
+    void signalBinding_onChange_receivesBindingContext() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -259,7 +259,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_bindThenAttach() {
+    void signalBinding_onChange_bindThenAttach() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -293,7 +293,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_bindThenChangeAndAttach() {
+    void signalBinding_onChange_bindThenChangeAndAttach() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -322,7 +322,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_calledImmediatelyInitially() {
+    void signalBinding_onChange_calledImmediatelyInitially() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -370,7 +370,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindingContext_getComponent_returnsNearestComponent() {
+    void bindingContext_getComponent_returnsNearestComponent() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -389,7 +389,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
+    void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -417,7 +417,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
+    void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -454,7 +454,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
+    void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -478,7 +478,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
+    void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -509,7 +509,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_notAttached_effectRunsImmediatelyAsProbe() {
+    void effect_notAttached_effectRunsImmediatelyAsProbe() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -525,7 +525,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_notAttached_noSignalRead_throwsEagerly() {
+    void effect_notAttached_noSignalRead_throwsEagerly() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
 
@@ -537,7 +537,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
+    void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -579,7 +579,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_reattachWithoutChanges_effectNotReRun() {
+    void effect_reattachWithoutChanges_effectNotReRun() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -608,7 +608,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_reattachWithChanges_effectReRunWithInitialRun() {
+    void effect_reattachWithChanges_effectReRunWithInitialRun() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -633,7 +633,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_reattachWithoutChanges_nextChangeNotInitialRun() {
+    void effect_reattachWithoutChanges_nextChangeNotInitialRun() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -658,7 +658,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void elementEffect_signalValueChanges_componentUpdated() {
+    void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -694,7 +694,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_nullArguments_throws() {
+    void bindChildren_nullArguments_throws() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -707,7 +707,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_emptySharedListSignal_emptyParent() {
+    void bindChildren_emptySharedListSignal_emptyParent() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -718,7 +718,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_emptySharedListSignalWithNotInitiallyEmptyParent_throw() {
+    void bindChildren_emptySharedListSignalWithNotInitiallyEmptyParent_throw() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -737,7 +737,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_listSignalWithItem_parentUpdated() {
+    void bindChildren_listSignalWithItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -760,7 +760,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addItem_parentUpdated() {
+    void bindChildren_addItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -792,7 +792,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_removeItem_parentUpdated() {
+    void bindChildren_removeItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -830,7 +830,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveItem_parentUpdated() {
+    void bindChildren_moveItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -868,7 +868,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
+    void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -892,7 +892,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
+    void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -916,7 +916,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
+    void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -940,7 +940,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addToParentComponentAndAddItem_throw() {
+    void bindChildren_addToParentComponentAndAddItem_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -981,7 +981,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChanges_sameChildrenSizeBeforeAfter_throw() {
+    void bindChildren_directParentComponentChanges_sameChildrenSizeBeforeAfter_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -1032,7 +1032,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChangeByFactory_throw() {
+    void bindChildren_directParentComponentChangeByFactory_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -1079,7 +1079,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChangeByCustomAttach_throw() {
+    void bindChildren_directParentComponentChangeByCustomAttach_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -1126,7 +1126,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChildOrderChanges_throw() {
+    void bindChildren_directParentComponentChildOrderChanges_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         // Exception is thrown only in final validation in the end when change
@@ -1174,7 +1174,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_runInTransaction_effectRunOnce() {
+    void bindChildren_runInTransaction_effectRunOnce() {
         CurrentInstance.clearAll();
         var expectedMockedElements = new ArrayList<Element>();
 
@@ -1225,7 +1225,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_withNullFromChildFactory_throws() {
+    void bindChildren_withNullFromChildFactory_throws() {
         CurrentInstance.clearAll();
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
@@ -1249,7 +1249,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_registrationRemove_effectRemoved() {
+    void bindChildren_registrationRemove_effectRemoved() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1290,7 +1290,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_withLocalValueSignalList_parentUpdated() {
+    void bindChildren_withLocalValueSignalList_parentUpdated() {
         CurrentInstance.clearAll();
         ValueSignal<String> first = new ValueSignal<>("first");
         ValueSignal<String> second = new ValueSignal<>("second");
@@ -1335,7 +1335,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_parentWithSlottedChild_succeeds() {
+    void bindChildren_parentWithSlottedChild_succeeds() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -1353,7 +1353,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_parentWithDefaultSlotChild_throws() {
+    void bindChildren_parentWithDefaultSlotChild_throws() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -1369,7 +1369,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
+    void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1405,7 +1405,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_factoryReturnsSlottedElement_throws() {
+    void bindChildren_factoryReturnsSlottedElement_throws() {
         CurrentInstance.clearAll();
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
@@ -1432,7 +1432,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
+    void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1467,7 +1467,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
+    void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");

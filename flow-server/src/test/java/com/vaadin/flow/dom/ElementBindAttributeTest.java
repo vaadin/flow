@@ -15,14 +15,26 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.LinkedList;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,10 +42,36 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ElementBindAttributeTest extends SignalsUnitTest {
+class ElementBindAttributeTest {
+
+    private static MockVaadinServletService service;
+
+    private LinkedList<ErrorEvent> events;
+
+    @BeforeAll
+    static void init() {
+        service = new MockVaadinServletService();
+    }
+
+    @AfterAll
+    static void clean() {
+        CurrentInstance.clearAll();
+        service.destroy();
+    }
+
+    @BeforeEach
+    void before() {
+        events = mockLockedSessionWithErrorHandler();
+    }
+
+    @AfterEach
+    void after() {
+        CurrentInstance.clearAll();
+        events = null;
+    }
 
     @Test
-    public void bindAttribute_nullAttribute_throwException() {
+    void bindAttribute_nullAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -41,7 +79,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_illegalAttribute_throwException() {
+    void bindAttribute_illegalAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -49,7 +87,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_notComponent_doNotThrowException() {
+    void bindAttribute_notComponent_doNotThrowException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -60,7 +98,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentNotAttached_bindingIgnored() {
+    void bindAttribute_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
@@ -76,7 +114,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentDetached_bindingIgnored() {
+    void bindAttribute_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -93,7 +131,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentAttached_bindingActive() {
+    void bindAttribute_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -106,7 +144,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentReAttached_bindingSynced() {
+    void bindAttribute_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -128,7 +166,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -142,7 +180,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -156,7 +194,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_updateSignal_attributeChanged() {
+    void bindAttribute_updateSignal_attributeChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -170,7 +208,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_nullSignal_throwsNPE() {
+    void bindAttribute_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -179,7 +217,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
+    void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -199,7 +237,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
+    void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -221,7 +259,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_simpleComputedSignal_bindingActive() {
+    void bindAttribute_simpleComputedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -235,7 +273,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_computedSignal_bindingActive() {
+    void bindAttribute_computedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -255,7 +293,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_nullAttributeValue_attributeRemoved() {
+    void bindAttribute_nullAttributeValue_attributeRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -272,6 +310,19 @@ class ElementBindAttributeTest extends SignalsUnitTest {
         // expecting whole attribute to be removed
         assertFalse(component.getElement().hasAttribute("foo"));
         assertTrue(events.isEmpty());
+    }
+
+    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+
+        var ui = new MockUI(session);
+        var events = new LinkedList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        return events;
     }
 
     @Tag("div")

@@ -15,27 +15,78 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.LinkedList;
+
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class ElementBindTextTest extends SignalsUnitTest {
+class ElementBindTextTest {
+
+    private static MockVaadinServletService service;
+
+    private LinkedList<ErrorEvent> events;
+
+    @BeforeAll
+    static void init() {
+        service = new MockVaadinServletService();
+    }
+
+    @AfterAll
+    static void clean() {
+        CurrentInstance.clearAll();
+        service.destroy();
+    }
+
+    @BeforeEach
+    void before() {
+        events = mockLockedSessionWithErrorHandler();
+    }
+
+    @AfterEach
+    void after() {
+        CurrentInstance.clearAll();
+        events = null;
+    }
+
+    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+
+        var ui = new MockUI(session);
+        var events = new LinkedList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        return events;
+    }
 
     @Test
-    public void bindTextComputedSignal_getText_returnsCorrectValue() {
+    void bindTextComputedSignal_getText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -48,7 +99,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindTextMappedSignal_getText_returnsCorrectValue() {
+    void bindTextMappedSignal_getText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -59,7 +110,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_detachAttach_returnsCorrectValue() {
+    void bindText_detachAttach_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -75,7 +126,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_setTextWithExistingActiveBinding_throws() {
+    void bindText_setTextWithExistingActiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -86,7 +137,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_setTextWithExistingInactiveBinding_throws() {
+    void bindText_setTextWithExistingInactiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -98,7 +149,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_initialEmptySignalValue_treatAsBlank() {
+    void bindText_initialEmptySignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<@Nullable String> signal = new ValueSignal<>(null);
@@ -108,7 +159,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_setNullSignalValue_treatAsBlank() {
+    void bindText_setNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -119,7 +170,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_bindTextWithExistingActiveBinding_throws() {
+    void bindText_bindTextWithExistingActiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -131,7 +182,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_bindTextWithExistingInactiveBinding_returnsCorrectValue() {
+    void bindText_bindTextWithExistingInactiveBinding_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -143,7 +194,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_nullSignal_throwsNPE() {
+    void bindText_nullSignal_throwsNPE() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -151,7 +202,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_componentNotAttached_bindingIgnored() {
+    void bindText_componentNotAttached_bindingIgnored() {
         Element element = new Element("span");
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
@@ -165,7 +216,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_componentAttached_returnsCorrectValue() {
+    void bindText_componentAttached_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -178,7 +229,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void lazyInitSignalBindingFeature() {
+    void lazyInitSignalBindingFeature() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         element.setText("text2");
@@ -201,7 +252,7 @@ class ElementBindTextTest extends SignalsUnitTest {
      * bindText. This test verifies that with a custom Span component.
      */
     @Test
-    public void bindText_componentWithHasText() {
+    void bindText_componentWithHasText() {
         @Tag(Tag.SPAN)
         class SpanWithHasText extends Component implements HasText {
         }
@@ -233,7 +284,7 @@ class ElementBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_hasText_nullSignal_throwsNPE() {
+    void bindText_hasText_nullSignal_throwsNPE() {
         @Tag(Tag.SPAN)
         class SpanWithHasText extends Component implements HasText {
         }

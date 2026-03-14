@@ -59,7 +59,7 @@ class ServletResourceDownloadHandlerTest {
     private UI ui;
 
     @BeforeEach
-    public void setUp() throws IOException, URISyntaxException {
+    void setUp() throws IOException, URISyntaxException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
@@ -100,7 +100,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_listenersInvoked()
+    void transferProgressListener_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
@@ -151,7 +151,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         DownloadEvent downloadEvent = Mockito.mock(DownloadEvent.class);
         Mockito.when(downloadEvent.getRequest()).thenReturn(request);
@@ -204,7 +204,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void inline_setFileNameInvokedByDefault() throws IOException {
+    void inline_setFileNameInvokedByDefault() throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin");
 
@@ -227,7 +227,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void attachment_doesNotSetFileNameWhenInlined() throws IOException {
+    void attachment_doesNotSetFileNameWhenInlined() throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
 
@@ -250,7 +250,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+    void handleSetToInline_contentDispositionIsInlineWithFilename()
             throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin").inline();

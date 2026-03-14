@@ -160,7 +160,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void route_path_should_contain_parent_prefix() {
+    void route_path_should_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class);
         assertEquals("parent", routePath,
@@ -168,7 +168,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void absolute_route_should_not_contain_parent_prefix() {
+    void absolute_route_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 AbsoluteRoute.class);
         assertEquals("single", routePath,
@@ -176,7 +176,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void absolute_middle_parent_route_should_not_contain_parent_prefix() {
+    void absolute_middle_parent_route_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 AbsoluteCenterRoute.class);
         assertEquals("absolute/child", routePath,
@@ -184,7 +184,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void absolute_route_alias_should_not_contain_parent_prefix() {
+    void absolute_route_alias_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteRoute.class.getAnnotation(RouteAlias.class));
         assertEquals("alias", routePath,
@@ -192,7 +192,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void absolute_middle_parent_for_route_alias_should_not_contain_parent_prefix() {
+    void absolute_middle_parent_for_route_alias_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteCenterRoute.class.getAnnotation(RouteAlias.class));
         assertEquals("absolute/alias", routePath,
@@ -200,7 +200,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void route_path_should_contain_route_and_parent_prefix() {
+    void route_path_should_contain_route_and_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(new MockVaadinContext(),
                 RouteWithParentPrefixAndRouteAlias.class);
         assertEquals("parent/flow", routePath,
@@ -208,7 +208,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void route_alias_path_should_not_contain_parent_prefix() {
+    void route_alias_path_should_not_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(
                 BaseRouteWithParentPrefixAndRouteAlias.class,
                 BaseRouteWithParentPrefixAndRouteAlias.class
@@ -224,7 +224,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void route_alias_should_contain_parent_prefix() {
+    void route_alias_should_contain_parent_prefix() {
         String routePath = RouteUtil.getRouteAliasPath(
                 RouteAliasWithParentPrefix.class,
                 RouteAliasWithParentPrefix.class
@@ -234,7 +234,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_should_be_found_for_base_route() {
+    void top_parent_layout_should_be_found_for_base_route() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
@@ -245,7 +245,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_should_be_found_for_non_base_route() {
+    void top_parent_layout_should_be_found_for_non_base_route() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(),
                 RouteWithParentPrefixAndRouteAlias.class, "parent/flow");
@@ -256,7 +256,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void no_top_parent_layout_for_route_alias() {
+    void no_top_parent_layout_for_route_alias() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(),
                 BaseRouteWithParentPrefixAndRouteAlias.class, "alias");
@@ -265,7 +265,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_for_route_alias() {
+    void top_parent_layout_for_route_alias() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), RouteAliasWithParentPrefix.class,
                 "aliasparent/alias");
@@ -276,7 +276,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_for_absolute_route() {
+    void top_parent_layout_for_absolute_route() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteRoute.class, "single");
 
@@ -286,7 +286,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_for_absolute_route_parent() {
+    void top_parent_layout_for_absolute_route_parent() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteCenterRoute.class,
                 "absolute/child");
@@ -297,7 +297,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_for_absolute_route_alias() {
+    void top_parent_layout_for_absolute_route_alias() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteRoute.class, "alias");
 
@@ -307,7 +307,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void top_parent_layout_for_absolute_route_alias_parent() {
+    void top_parent_layout_for_absolute_route_alias_parent() {
         Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 new MockVaadinContext(), AbsoluteCenterRoute.class,
                 "absolute/alias");
@@ -318,7 +318,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void automaticLayoutShouldBeAvailableForDefaultRoute() {
+    void automaticLayoutShouldBeAvailableForDefaultRoute() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -339,7 +339,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void routeAliasForAutoLayoutRoute_correctAliasIsSelectedForRoute() {
+    void routeAliasForAutoLayoutRoute_correctAliasIsSelectedForRoute() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -362,7 +362,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void expected_parent_layouts_are_found_for_route() {
+    void expected_parent_layouts_are_found_for_route() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(new MockVaadinContext(),
                         BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
@@ -382,7 +382,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void expected_to_get_parent_layout() {
+    void expected_to_get_parent_layout() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayoutsForNonRouteTarget(
                         NonRouteTargetWithParents.class);
@@ -396,7 +396,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void expected_parent_layouts_are_found_for_route_alias() {
+    void expected_parent_layouts_are_found_for_route_alias() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(new MockVaadinContext(),
                         RouteAliasWithParentPrefix.class, "aliasparent/alias");
@@ -408,7 +408,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void absolute_route_gets_expected_parent_layouts() {
+    void absolute_route_gets_expected_parent_layouts() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(new MockVaadinContext(), AbsoluteRoute.class,
                         "single");
@@ -429,7 +429,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void abolute_route_alias_gets_expected_parent_layouts() {
+    void abolute_route_alias_gets_expected_parent_layouts() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(new MockVaadinContext(), AbsoluteRoute.class,
                         "alias");
@@ -451,7 +451,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void also_non_routes_can_be_used_to_get_top_parent_layout() {
+    void also_non_routes_can_be_used_to_get_top_parent_layout() {
         Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(new MockVaadinContext(), MiddleParent.class,
                         null);
@@ -460,7 +460,7 @@ class RouteUtilTest {
     }
 
     @Test // 3424
-    public void top_layout_resolves_correctly_for_route_parent() {
+    void top_layout_resolves_correctly_for_route_parent() {
         Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(new MockVaadinContext(), MultiTarget.class,
                         "");
@@ -480,7 +480,7 @@ class RouteUtilTest {
     }
 
     @Test // 3424
-    public void parent_layouts_resolve_correctly_for_route_parent() {
+    void parent_layouts_resolve_correctly_for_route_parent() {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(new MockVaadinContext(), MultiTarget.class,
                         "");
@@ -509,7 +509,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newRouteAnnotatedClass_updateRouteRegistry_routeIsAddedToRegistry() {
+    void newRouteAnnotatedClass_updateRouteRegistry_routeIsAddedToRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -532,7 +532,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+    void newRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -555,7 +555,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newComponentClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+    void newComponentClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
         // given
         class A extends Component {
         }
@@ -577,7 +577,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newLazyRouteAnnotatedClass_updateRouteRegistry_routeIsNotAddedToRegistry() {
+    void newLazyRouteAnnotatedClass_updateRouteRegistry_routeIsNotAddedToRegistry() {
         // given
         @Route(value = "a", registerAtStartup = false)
         class A extends Component {
@@ -600,7 +600,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newLazyRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+    void newLazyRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
         // given
         @Route(value = "a", registerAtStartup = false)
         class A extends Component {
@@ -623,7 +623,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newRouteComponentWithoutRouteAnnotation_updateRouteRegistry_routeIsNotAddedToRegistry() {
+    void newRouteComponentWithoutRouteAnnotation_updateRouteRegistry_routeIsNotAddedToRegistry() {
         // given
         class A extends Component {
         }
@@ -645,7 +645,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void deletedRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+    void deletedRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -667,7 +667,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void deletedNotAnnotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+    void deletedNotAnnotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         class A extends Component {
         }
@@ -688,7 +688,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void deletedRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
+    void deletedRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -709,7 +709,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void deletedNotAnnotatedRouteClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
+    void deletedNotAnnotatedRouteClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         class A extends Component {
         }
@@ -729,7 +729,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void renamedRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+    void renamedRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
         // given
         @Route("aa")
         class A extends Component {
@@ -755,7 +755,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void changedAliasesRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+    void changedAliasesRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
         // given
         @Route("a")
         @RouteAlias("alias-new")
@@ -785,7 +785,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void changedToLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
+    void changedToLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
         // given
         @Route(value = "a", registerAtStartup = false)
         class A extends Component {
@@ -814,7 +814,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void changedFromLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
+    void changedFromLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
         // given
         @Route(value = "a")
         class A extends Component {
@@ -843,7 +843,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void modifiedLazyRouteAnnotatedClass_updateRouteRegistry_existingRoutesArePreserved() {
+    void modifiedLazyRouteAnnotatedClass_updateRouteRegistry_existingRoutesArePreserved() {
         // given
         @Route(value = "a", registerAtStartup = false)
         class A extends Component {
@@ -874,7 +874,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void deannotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+    void deannotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         class A extends Component {
         }
@@ -901,7 +901,7 @@ class RouteUtilTest {
     // change. MODIFY wins over CREATE and REMOVE
 
     @Test
-    public void routeAnnotatedClassAddedModifiedAndRemoved_updateRouteRegistry_routeIsAddedToRegistry() {
+    void routeAnnotatedClassAddedModifiedAndRemoved_updateRouteRegistry_routeIsAddedToRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -924,7 +924,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void newLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
+    void newLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             public VaadinContext getContext() {
@@ -950,7 +950,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void removeAnnotationsFromLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
+    void removeAnnotationsFromLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -980,7 +980,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void layoutAnnotatedComponent_modifiedValue_updateRouteRegistry_routeIsUpdated() {
+    void layoutAnnotatedComponent_modifiedValue_updateRouteRegistry_routeIsUpdated() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -1021,7 +1021,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void clientHasMappedLayout_validateNoClientRouteCollisions() {
+    void clientHasMappedLayout_validateNoClientRouteCollisions() {
         Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
         clientRoutes.put("", new AvailableViewInfo("public", null, false, "",
@@ -1060,7 +1060,7 @@ class RouteUtilTest {
     }
 
     @Test
-    public void clientHasOverlappingTarget_validateClientRouteCollision() {
+    void clientHasOverlappingTarget_validateClientRouteCollision() {
         Map<String, AvailableViewInfo> clientRoutes = new HashMap<>();
 
         clientRoutes.put("", new AvailableViewInfo("public", null, false, "",

@@ -127,7 +127,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void routeAndParentLayout_notRouterLayout_throws() {
+    void routeAndParentLayout_notRouterLayout_throws() {
         assertThrows(InvalidRouteLayoutConfigurationException.class, () -> {
             initializer.validateRouteClasses(context,
                     Stream.of(RouteAndParentLayout.class));
@@ -135,7 +135,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_annotationOnNonComponentClass_throws() {
+    void validateRouteClasses_annotationOnNonComponentClass_throws() {
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
@@ -147,7 +147,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_samePathForRouteAndAlias_throws() {
+    void validateRouteClasses_samePathForRouteAndAlias_throws() {
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
@@ -161,7 +161,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_samePathForRepeatableAlias_throws() {
+    void validateRouteClasses_samePathForRepeatableAlias_throws() {
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context,
@@ -178,7 +178,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_samePathForRouteAndAlias_sameLayoutPrefix_throws() {
+    void validateRouteClasses_samePathForRouteAndAlias_sameLayoutPrefix_throws() {
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context, Stream
@@ -192,7 +192,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_samePathForRouteAndAlias_sameNestedLayoutPrefix_throws() {
+    void validateRouteClasses_samePathForRouteAndAlias_sameNestedLayoutPrefix_throws() {
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
                 () -> initializer.validateRouteClasses(context, Stream.of(
@@ -206,7 +206,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void validateRouteClasses_samePathForRouteAndAlias_differentLayoutPrefix_doNotThrow() {
+    void validateRouteClasses_samePathForRouteAndAlias_differentLayoutPrefix_doNotThrow() {
         Set<Class<? extends Component>> classes = initializer
                 .validateRouteClasses(context, Stream.of(
                         RouteAndAliasWithSamePathDifferentLayoutPrefix.class));
@@ -216,7 +216,7 @@ class AbstractRouteRegistryInitializerTest {
     }
 
     @Test
-    public void routeAndParentLayout_routerLayout_returnsValidatedClass() {
+    void routeAndParentLayout_routerLayout_returnsValidatedClass() {
         Set<Class<? extends Component>> classes = initializer
                 .validateRouteClasses(context,
                         Stream.of(RouteAndParentRouterLayout.class));

@@ -82,7 +82,7 @@ public class ComponentTest {
     private UI testUI;
 
     @AfterEach
-    public void checkThreadLocal() {
+    void checkThreadLocal() {
         assertNull(Component.elementToMapTo.get());
     }
 
@@ -302,7 +302,7 @@ public class ComponentTest {
     }
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         resetComponentTrackerProductionMode();
         divWithTextComponent = new TestComponent(
                 ElementFactory.createDiv("Test component"));
@@ -323,14 +323,14 @@ public class ComponentTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         UI.setCurrent(null);
         mocks.cleanup();
         resetComponentTrackerProductionMode();
     }
 
     @Test
-    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+    void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
         Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
@@ -341,7 +341,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void getComponentLocale_hasCurrentUI_returnsUILocale() {
+    void getComponentLocale_hasCurrentUI_returnsUILocale() {
         UI ui = new UI();
         ui.setLocale(Locale.CANADA_FRENCH);
         UI.setCurrent(ui);
@@ -352,7 +352,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
+    void getComponentLocale_noCurrentUI_returnsFirstLocaleFromProvidedLocales() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
         List<Locale> providedLocales = new ArrayList<>(
@@ -379,7 +379,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
+    void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
         Mockito.when(instantiator.getI18NProvider())
@@ -402,21 +402,21 @@ public class ComponentTest {
     }
 
     @Test
-    public void getElement() {
+    void getElement() {
         assertEquals(Tag.DIV, divWithTextComponent.getElement().getTag());
         assertEquals("Test component",
                 divWithTextComponent.getElement().getTextRecursively());
     }
 
     @Test
-    public void getParentForAttachedComponent() {
+    void getParentForAttachedComponent() {
         assertEquals(parentDivComponent, child1SpanComponent.getParent().get());
         assertEquals(parentDivComponent,
                 child2InputComponent.getParent().get());
     }
 
     @Test
-    public void getUIForAttachedComponentInShadowRoot() {
+    void getUIForAttachedComponentInShadowRoot() {
         shadowRootParent = new TestComponent(ElementFactory.createDiv());
         shadowRootParent.getElement().attachShadow();
         shadowChild = new TestComponent(ElementFactory.createSpan());
@@ -430,12 +430,12 @@ public class ComponentTest {
     }
 
     @Test
-    public void getParentForDetachedComponent() {
+    void getParentForDetachedComponent() {
         assertFalse(parentDivComponent.getParent().isPresent());
     }
 
     @Test
-    public void defaultGetChildrenDirectlyAttached() {
+    void defaultGetChildrenDirectlyAttached() {
         assertChildren(parentDivComponent, child1SpanComponent,
                 child2InputComponent);
     }
@@ -450,7 +450,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void defaultGetChildrenMultiple() {
+    void defaultGetChildrenMultiple() {
         // parent
         // * level1
         // ** child1
@@ -468,7 +468,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void defaultGetChildrenDirectlyDeepElementHierarchy() {
+    void defaultGetChildrenDirectlyDeepElementHierarchy() {
         // parent
         // * level1
         // ** level2
@@ -498,7 +498,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void defaultGetChildrenNoChildren() {
+    void defaultGetChildrenNoChildren() {
         assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
                 parentDivComponent.getChildren().toArray());
@@ -506,14 +506,14 @@ public class ComponentTest {
     }
 
     @Test
-    public void attachBrokenComponent() {
+    void attachBrokenComponent() {
         BrokenComponent c = new BrokenComponent();
         TestComponentContainer tc = new TestComponentContainer();
         assertThrows(AssertionError.class, () -> tc.add(c));
     }
 
     @Test
-    public void setElement() {
+    void setElement() {
         Component c = new Component(null) {
 
         };
@@ -524,7 +524,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void setElementNull() {
+    void setElementNull() {
         Component c = new Component(null) {
         };
         assertThrows(IllegalArgumentException.class,
@@ -532,7 +532,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void setElementTwice() {
+    void setElementTwice() {
         Component c = new Component(null) {
         };
         Element element = ElementFactory.createDiv();
@@ -542,41 +542,41 @@ public class ComponentTest {
     }
 
     @Test
-    public void createComponentWithTag() {
+    void createComponentWithTag() {
         Component component = new TestComponentWithTag();
 
         assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test
-    public void createComponentWithInheritedTag() {
+    void createComponentWithInheritedTag() {
         Component component = new TestComponentWithInheritedTag();
 
         assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test
-    public void createComponentWithEmptyTag() {
+    void createComponentWithEmptyTag() {
         assertThrows(IllegalStateException.class, () -> {
             new TestComponentWithEmptyTag();
         });
     }
 
     @Test
-    public void createComponentWithoutTag() {
+    void createComponentWithoutTag() {
         assertThrows(IllegalStateException.class, () -> {
             new TestComponentWithoutTag();
         });
     }
 
     @Test
-    public void getUI_noParent() {
+    void getUI_noParent() {
         TestComponent c = new TestComponent();
         assertEmpty(c.getUI());
     }
 
     @Test
-    public void getUI_detachedParent() {
+    void getUI_detachedParent() {
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
         parent.add(child);
@@ -584,7 +584,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void getUI_attachedToUI() {
+    void getUI_attachedToUI() {
         TestComponent child = new TestComponent();
         UI ui = new UI();
         ui.add(child);
@@ -592,7 +592,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void getUI_attachedThroughParent() {
+    void getUI_attachedThroughParent() {
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
         parent.add(child);
@@ -607,7 +607,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testAttachDetachListeners_parentAttachDetach_childListenersTriggered() {
+    void testAttachDetachListeners_parentAttachDetach_childListenersTriggered() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
         TestComponentContainer child = new TestComponentContainer();
@@ -669,7 +669,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testAttachListener_eventOrder_childFirst() {
+    void testAttachListener_eventOrder_childFirst() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
@@ -695,7 +695,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testAttachDetach_children() {
+    void testAttachDetach_children() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child1 = new TestComponent();
@@ -714,7 +714,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testDetachListener_eventOrder_childFirst() {
+    void testDetachListener_eventOrder_childFirst() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
@@ -741,7 +741,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testDetach_failingListeners_allListenersInvokedAndExceptionHandled() {
+    void testDetach_failingListeners_allListenersInvokedAndExceptionHandled() {
         Set<Throwable> expectedExceptions = new HashSet<>();
         Set<Throwable> handledExceptions = new HashSet<>();
         session = new AlwaysLockedVaadinSession(new MockVaadinServletService());
@@ -810,7 +810,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testAttachDetach_elementMoved_bothEventsTriggered() {
+    void testAttachDetach_elementMoved_bothEventsTriggered() {
         UI ui = new UI();
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
@@ -834,7 +834,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testAttachDetachEvent_uiCanBeFound() {
+    void testAttachDetachEvent_uiCanBeFound() {
         UI ui = new UI();
         TestComponent testComponent = new TestComponent();
         testComponent.track();
@@ -859,7 +859,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testOnAttachOnDetachAndEventsOrder() {
+    void testOnAttachOnDetachAndEventsOrder() {
         List<String> triggered = new ArrayList<>();
         Component customComponent = new Component(new Element("div")) {
             @Override
@@ -901,7 +901,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testUIInitialAttach() {
+    void testUIInitialAttach() {
         AtomicBoolean initialAttach = new AtomicBoolean(false);
         UI ui = new UI();
         ui.addAttachListener(e -> {
@@ -917,7 +917,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testInitialAttach() {
+    void testInitialAttach() {
         AtomicBoolean initialAttach = new AtomicBoolean(false);
         TestComponent c = new TestComponent();
         c.addAttachListener(e -> {
@@ -929,7 +929,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void testSecondAttach() {
+    void testSecondAttach() {
         AtomicBoolean initialAttach = new AtomicBoolean(false);
         TestComponent c = new TestComponent();
         c.addAttachListener(e -> {
@@ -946,7 +946,7 @@ public class ComponentTest {
      * Tests {@link Component#isAttached}.
      */
     @Test
-    public void testIsAttached() {
+    void testIsAttached() {
         UI ui = new UI();
         // ui is initially attached
         assertTrue(ui.isAttached());
@@ -993,20 +993,20 @@ public class ComponentTest {
     }
 
     @Test
-    public void wrapNullComponentType() {
+    void wrapNullComponentType() {
         Element div = new Element("div");
         assertThrows(IllegalArgumentException.class, () -> div.as(null));
     }
 
     @Test
-    public void wrapWrongTag() {
+    void wrapWrongTag() {
         Element foo = new Element("foo");
         assertThrows(IllegalArgumentException.class,
                 () -> foo.as(TestDiv.class));
     }
 
     @Test
-    public void wrappedComponentGetParent() {
+    void wrappedComponentGetParent() {
         Element div = new Element("div");
         Element button = new Element("button");
         div.appendChild(button);
@@ -1018,7 +1018,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void wrappedComponentGetChildren() {
+    void wrappedComponentGetChildren() {
         Element div = new Element("div");
         Element button = new Element("button");
         div.appendChild(button);
@@ -1030,7 +1030,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void componentFromHierarchy() {
+    void componentFromHierarchy() {
         Element div = new Element("div");
         Element button = new Element("button");
         div.appendChild(button);
@@ -1042,7 +1042,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void wrappedComponentUsesElement() {
+    void wrappedComponentUsesElement() {
         Element div = new Element("div");
         div.setAttribute("id", "foo");
         assertEquals(Optional.of("foo"), div.as(TestDiv.class).getId());
@@ -1050,14 +1050,14 @@ public class ComponentTest {
     }
 
     @Test
-    public void wrappedComponentModifyElement() {
+    void wrappedComponentModifyElement() {
         Element div = new Element("div");
         div.as(TestDiv.class).setId("foo");
         assertEquals("foo", div.getAttribute("id"));
     }
 
     @Test
-    public void wrapToExistingComponent() {
+    void wrapToExistingComponent() {
         TestButton button = new TestButton();
         TestButton button2 = button.getElement().as(TestButton.class);
         button.setId("id1");
@@ -1066,7 +1066,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void wrapDifferentTypeToExistingComponent() {
+    void wrapDifferentTypeToExistingComponent() {
         TestButton button = new TestButton();
         TestOtherButton button2 = button.getElement().as(TestOtherButton.class);
         button.setId("id1");
@@ -1075,7 +1075,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void setTestId_setsDataTestIdAttribute() {
+    void setTestId_setsDataTestIdAttribute() {
         TestButton button = new TestButton();
         button.setTestId("my-button");
         assertEquals("my-button",
@@ -1083,20 +1083,20 @@ public class ComponentTest {
     }
 
     @Test
-    public void getTestId_notSet_returnsNull() {
+    void getTestId_notSet_returnsNull() {
         TestButton button = new TestButton();
         assertNull(button.getTestId());
     }
 
     @Test
-    public void getTestId_set_returnsValue() {
+    void getTestId_set_returnsValue() {
         TestButton button = new TestButton();
         button.setTestId("my-button");
         assertEquals("my-button", button.getTestId());
     }
 
     @Test
-    public void setTestId_null_removesAttribute() {
+    void setTestId_null_removesAttribute() {
         TestButton button = new TestButton();
         button.setTestId("my-button");
         button.setTestId(null);
@@ -1105,28 +1105,28 @@ public class ComponentTest {
     }
 
     @Test
-    public void mapToExistingComponent() {
+    void mapToExistingComponent() {
         TestButton button = new TestButton();
         assertThrows(IllegalArgumentException.class,
                 () -> Component.from(button.getElement(), TestButton.class));
     }
 
     @Test
-    public void mapToNullComponentType() {
+    void mapToNullComponentType() {
         Element div = new Element("div");
         assertThrows(IllegalArgumentException.class,
                 () -> Component.from(div, null));
     }
 
     @Test
-    public void mapFromNullElement() {
+    void mapFromNullElement() {
         assertThrows(IllegalArgumentException.class, () -> {
             Component.from(null, TestButton.class);
         });
     }
 
     @Test
-    public void mapToComponentWhichCreatesComponentInConstructor() {
+    void mapToComponentWhichCreatesComponentInConstructor() {
         Element e = new Element("div");
         TestComponentWhichCreatesComponentInConstructor c = Component.from(e,
                 TestComponentWhichCreatesComponentInConstructor.class);
@@ -1138,7 +1138,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void mapToComponentWhichHasComponentField() {
+    void mapToComponentWhichHasComponentField() {
         Element e = new Element("div");
         TestComponentWhichHasComponentField c = Component.from(e,
                 TestComponentWhichHasComponentField.class);
@@ -1150,7 +1150,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void mapToComponentWithElementConstructor() {
+    void mapToComponentWithElementConstructor() {
         Element e = new Element("my-element");
         TestComponentWhichUsesElementConstructor c = Component.from(e,
                 TestComponentWhichUsesElementConstructor.class);
@@ -1160,7 +1160,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void mapToComponentWithNullElementConstructor() {
+    void mapToComponentWithNullElementConstructor() {
         Element e = new Element("div");
         TestComponentWhichUsesNullElementConstructor c = Component.from(e,
                 TestComponentWhichUsesNullElementConstructor.class);
@@ -1233,14 +1233,14 @@ public class ComponentTest {
     }
 
     @Test
-    public void synchronizePropertyBasedOnGetterName() {
+    void synchronizePropertyBasedOnGetterName() {
         SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
         Element element = component.getElement();
         assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
-    public void synchronizePropertyElementConstructor() {
+    void synchronizePropertyElementConstructor() {
         SynchronizePropertyUsingElementConstructor component = new SynchronizePropertyUsingElementConstructor();
         component.customInit();
         Element element = component.getElement();
@@ -1248,7 +1248,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void componentMetaDataCached() {
+    void componentMetaDataCached() {
         ComponentUtil.componentMetaDataCache.clear();
         assertFalse(ComponentUtil.componentMetaDataCache.contains(Text.class));
         new Text("foobar");
@@ -1256,14 +1256,14 @@ public class ComponentTest {
     }
 
     @Test
-    public void synchronizePropertyWithPropertyName() {
+    void synchronizePropertyWithPropertyName() {
         SynchronizePropertyOnChangeGivenPropertyComponent component = new SynchronizePropertyOnChangeGivenPropertyComponent();
         Element element = component.getElement();
         assertSynchronizedProperties("change", element, "}bar");
     }
 
     @Test
-    public void synchronizePropertyWithMultipleEvents() {
+    void synchronizePropertyWithMultipleEvents() {
         SynchronizePropertyOnMultipleEventsComponent component = new SynchronizePropertyOnMultipleEventsComponent();
         Element element = component.getElement();
         assertSynchronizedProperties("input", element, "}foo");
@@ -1271,7 +1271,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void synchronizeOnNonGetter() {
+    void synchronizeOnNonGetter() {
         assertThrows(IllegalStateException.class, () -> {
             new SynchronizeOnNonGetterComponent();
         });
@@ -1312,7 +1312,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void usesComponent() {
+    void usesComponent() {
         UI ui = UI.getCurrent();
 
         ui.getInternals()
@@ -1327,7 +1327,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void usesChain() {
+    void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
 
         internals.addComponentDependencies(
@@ -1342,7 +1342,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void circularDependencies() {
+    void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
@@ -1377,7 +1377,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void noJsDependenciesAreAdded() {
+    void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
@@ -1391,7 +1391,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
+    void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
 
         ElementListenerMap feature = div.getElement().getNode()
@@ -1411,7 +1411,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void enabledComponent_fireDomEvent_listenerReceivesEvent() {
+    void enabledComponent_fireDomEvent_listenerReceivesEvent() {
         TestDiv div = new TestDiv();
 
         AtomicInteger count = new AtomicInteger();
@@ -1423,7 +1423,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void disabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
+    void disabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
         TestDiv div = new TestDiv();
         div.getElement().setEnabled(false);
 
@@ -1436,7 +1436,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void implicityDisabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
+    void implicityDisabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
         TestDiv div = new TestDiv();
 
         UI ui = new UI();
@@ -1452,7 +1452,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void disabledComponent_fireAlwaysEnabledDomEvent_listenerReceivesEvent() {
+    void disabledComponent_fireAlwaysEnabledDomEvent_listenerReceivesEvent() {
         TestDiv div = new TestDiv();
 
         div.getElement().setEnabled(false);
@@ -1467,7 +1467,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void removeOnRegistration_registrationIsIdempotent() {
+    void removeOnRegistration_registrationIsIdempotent() {
         TestDiv div = new TestDiv();
         Registration registration = div.addListener(ComponentEvent.class,
                 (ComponentEventListener) event -> {
@@ -1499,13 +1499,13 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnAttachCalledForParentState() {
+    void enabledStateChangeOnAttachCalledForParentState() {
         enabledStateChangeOnAttachCalledForParentState(false,
                 HasComponents::add);
     }
 
     @Test // 7085
-    public void enabledStateChangeOnDisableParent() {
+    void enabledStateChangeOnDisableParent() {
         enabledStateChangeOnAttachCalledForParentState(true,
                 (parent, child) -> {
                     parent.add(child);
@@ -1514,7 +1514,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState() {
+    void enabledStateChangeOnAttachCalledForParentOfVirtualChildState() {
         enabledStateChangeOnAttachCalledForParentState(false,
                 (parent, child) -> {
                     Element wrapper = ElementFactory.createAnchor();
@@ -1524,7 +1524,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void enabledStateChangeOnDisableParentOfVirtualChild() {
+    void enabledStateChangeOnDisableParentOfVirtualChild() {
         enabledStateChangeOnAttachCalledForParentState(true,
                 (parent, child) -> {
                     Element wrapper = ElementFactory.createAnchor();
@@ -1535,7 +1535,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnDetachReturnsOldState() {
+    void enabledStateChangeOnDetachReturnsOldState() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1570,12 +1570,12 @@ public class ComponentTest {
     }
 
     @Test
-    public void enabledStateChangeOnParentDetachReturnsOldState() {
+    void enabledStateChangeOnParentDetachReturnsOldState() {
         enabledStateChangeOnParentDetachReturnsOldState(HasComponents::add);
     }
 
     @Test
-    public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState() {
+    void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState() {
         enabledStateChangeOnParentDetachReturnsOldState((parent, child) -> {
             Element wrapper = ElementFactory.createAnchor();
             parent.getElement().appendVirtualChild(wrapper);
@@ -1584,7 +1584,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnDetachChildKeepsDisabledState() {
+    void enabledStateChangeOnDetachChildKeepsDisabledState() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1623,7 +1623,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnAttachAndDetachChildAndGrandChildrenAreNotified() {
+    void enabledStateChangeOnAttachAndDetachChildAndGrandChildrenAreNotified() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1680,7 +1680,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnAttachAndDetachDisabledChildAndGrandChildAreDisabled() {
+    void enabledStateChangeOnAttachAndDetachDisabledChildAndGrandChildAreDisabled() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1740,7 +1740,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnAttachAndDetachDisabledGrandChildAreDisabled() {
+    void enabledStateChangeOnAttachAndDetachDisabledGrandChildAreDisabled() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1798,7 +1798,7 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledPassesThroughAllChildensChildrenAndAttributeShouldBeSet() {
+    void enabledPassesThroughAllChildensChildrenAndAttributeShouldBeSet() {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
@@ -1845,7 +1845,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
+    void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
         // given
         TestComponent child = new TestComponent();
         UI ui1 = new UI();
@@ -1857,7 +1857,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void findAncestorTest() {
+    void findAncestorTest() {
         UI ui = new UI();
         TestComponentContainer componentContainer = new TestComponentContainer();
         TestComponent component = new TestComponent();
@@ -1872,7 +1872,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void removeFromParentTest() {
+    void removeFromParentTest() {
         UI ui = new UI();
         TestComponentContainer componentContainer = new TestComponentContainer();
         TestComponent component = new TestComponent();
@@ -1965,7 +1965,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoView() {
+    void scrollIntoView() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView();
@@ -1986,7 +1986,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoViewSmooth() {
+    void scrollIntoViewSmooth() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
@@ -1995,7 +1995,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoViewAllParams() {
+    void scrollIntoViewAllParams() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
@@ -2006,7 +2006,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoView_withBehaviorEnum() {
+    void scrollIntoView_withBehaviorEnum() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
@@ -2015,7 +2015,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoView_withBlockEnum() {
+    void scrollIntoView_withBlockEnum() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Block.END);
@@ -2024,7 +2024,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoView_withInlineEnum() {
+    void scrollIntoView_withInlineEnum() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
@@ -2033,7 +2033,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void scrollIntoView_withMultipleOptions() {
+    void scrollIntoView_withMultipleOptions() {
         EnabledDiv div = new EnabledDiv();
         testUI.add(div);
         div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
@@ -2068,7 +2068,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void cannotMoveComponentsToOtherUI() {
+    void cannotMoveComponentsToOtherUI() {
         // tests https://github.com/vaadin/flow/issues/9376
         final UI otherUI = createMockedUI();
         final TestButton button = new TestButton();

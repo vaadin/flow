@@ -257,7 +257,7 @@ public class VaadinAppShellInitializerTest {
     private ApplicationConfiguration appConfig;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         logger = mockLog(VaadinAppShellInitializer.class);
 
         mocks = new MockServletServiceSessionSetup();
@@ -305,15 +305,14 @@ public class VaadinAppShellInitializerTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         clearIlogger();
         mocks.cleanup();
     }
 
     @Test
-    public void should_not_modifyDocument_when_noAnnotatedAppShell()
-            throws Exception {
+    void should_not_modifyDocument_when_noAnnotatedAppShell() throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.process(classes, servletContext);
         AppShellRegistry.getInstance(context).modifyIndexHtml(document,
@@ -323,7 +322,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_modifyPushConfiguration_when_noAnnotatedAppShell()
+    void should_not_modifyPushConfiguration_when_noAnnotatedAppShell()
             throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.process(classes, servletContext);
@@ -335,13 +334,12 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_noClassesFound_null() throws Exception {
+    void should_not_throw_when_noClassesFound_null() throws Exception {
         initializer.process(null, servletContext);
     }
 
     @Test
-    public void should_haveMetasAndBodySize_when_annotatedAppShell()
-            throws Exception {
+    void should_haveMetasAndBodySize_when_annotatedAppShell() throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.process(classes, servletContext);
@@ -357,7 +355,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_haveInline_when_annotatedAppShell() throws Exception {
+    void should_haveInline_when_annotatedAppShell() throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.process(classes, servletContext);
@@ -396,7 +394,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_modifyPushConfiguration_when_annotatedAppShell()
+    void should_modifyPushConfiguration_when_annotatedAppShell()
             throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.process(classes, servletContext);
@@ -409,8 +407,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_haveMetas_when_not_callingInitializer()
-            throws Exception {
+    void should_not_haveMetas_when_not_callingInitializer() throws Exception {
         AppShellRegistry.getInstance(context).modifyIndexHtml(document,
                 createVaadinRequest("/"));
         List<Element> elements = document.head().children();
@@ -418,7 +415,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_modifyPushConfiguration_when_not_callingInitializer()
+    void should_not_modifyPushConfiguration_when_not_callingInitializer()
             throws Exception {
         AppShellRegistry.getInstance(context)
                 .modifyPushConfiguration(pushConfiguration);
@@ -428,7 +425,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_reuseContextAppShell_when_creatingNewInstance()
+    void should_reuseContextAppShell_when_creatingNewInstance()
             throws Exception {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
@@ -436,7 +433,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_throw_when_offendingClass() throws Exception {
+    void should_throw_when_offendingClass() throws Exception {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class, () -> {
                     classes.add(MyAppShellWithoutAnnotations.class);
@@ -451,13 +448,13 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void offendingEmbeddedThemeClass_shouldNotThrow() throws Exception {
+    void offendingEmbeddedThemeClass_shouldNotThrow() throws Exception {
         classes.add(NonOffendingExporter.class);
         initializer.process(classes, servletContext);
     }
 
     @Test
-    public void should_throw_when_multipleAppShell() throws Exception {
+    void should_throw_when_multipleAppShell() throws Exception {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class, () -> {
                     classes.add(MyAppShellWithoutAnnotations.class);
@@ -469,7 +466,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_interface_and_abstract_and_concrete_AppShell()
+    void should_not_throw_when_interface_and_abstract_and_concrete_AppShell()
             throws Exception {
         classes.add(InterfaceAppShellWithoutAnnotations.class);
         classes.add(AbstractAppShellWithoutAnnotations.class);
@@ -478,7 +475,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
+    void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
             throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
@@ -493,7 +490,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void styleSheetOnAppShell_injectedAsLinksInOrder() throws Exception {
+    void styleSheetOnAppShell_injectedAsLinksInOrder() throws Exception {
         classes.add(MyAppShellWithStyleSheets.class);
         initializer.process(classes, servletContext);
 
@@ -508,7 +505,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void duplicateStyleSheets_deduplicated() throws Exception {
+    void duplicateStyleSheets_deduplicated() throws Exception {
         classes.add(MyAppShellWithDuplicateStyles.class);
         initializer.process(classes, servletContext);
 
@@ -521,7 +518,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_link_to_PWA_article() throws Exception {
+    void should_link_to_PWA_article() throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
@@ -533,7 +530,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_link_to_PWA_article() throws Exception {
+    void should_not_link_to_PWA_article() throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
@@ -546,7 +543,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_throwException_when_appShellExtendsComponent()
+    void should_throwException_when_appShellExtendsComponent()
             throws Exception {
         assertThrows(InvalidApplicationConfigurationException.class, () -> {
             classes.add(AppShellExtendingComponent.class);
@@ -555,21 +552,21 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void styleSheetOnComponent_notOffending() throws Exception {
+    void styleSheetOnComponent_notOffending() throws Exception {
         classes.add(ComponentWithStylesheet.class);
         // Should not throw as @StyleSheet is allowed on Components
         initializer.process(classes, servletContext);
     }
 
     @Test
-    public void multipleStyleSheetOnComponent_notOffending() throws Exception {
+    void multipleStyleSheetOnComponent_notOffending() throws Exception {
         classes.add(ComponentWithMultipleStylesheet.class);
         // Should not throw as @StyleSheet is allowed on Components
         initializer.process(classes, servletContext);
     }
 
     @Test
-    public void styleSheetResolution_variousScenarios() throws Exception {
+    void styleSheetResolution_variousScenarios() throws Exception {
         classes.add(MyAppShellWithVariousStyleSheets.class);
         initializer.process(classes, servletContext);
 
@@ -585,7 +582,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void styleSheetResolution_handlesDotSlash() throws Exception {
+    void styleSheetResolution_handlesDotSlash() throws Exception {
         classes.add(MyAppShellWithDotSlash.class);
         initializer.process(classes, servletContext);
 
@@ -598,7 +595,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void styleSheetResolution_rejectsTraversal() throws Exception {
+    void styleSheetResolution_rejectsTraversal() throws Exception {
         classes.add(MyAppShellWithTraversal.class);
         initializer.process(classes, servletContext);
 

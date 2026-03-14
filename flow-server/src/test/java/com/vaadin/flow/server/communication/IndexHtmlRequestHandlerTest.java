@@ -112,7 +112,7 @@ public class IndexHtmlRequestHandlerTest {
     Path temporaryFolder;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
 
         UsageStatistics.resetEntries();
         mocks = new MockServletServiceSessionSetup();
@@ -136,7 +136,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_requestWithRootPath_serveContentFromTemplate()
+    void serveIndexHtml_requestWithRootPath_serveContentFromTemplate()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -148,7 +148,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
+    void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
             throws IOException {
         VaadinServletService vaadinService = Mockito
                 .mock(VaadinServletService.class);
@@ -183,8 +183,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_language_attribute_is_present()
-            throws IOException {
+    void serveIndexHtml_language_attribute_is_present() throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
@@ -193,7 +192,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
+    void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -203,7 +202,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_requestWithSomePath_hasBaseHrefElement()
+    void serveIndexHtml_requestWithSomePath_hasBaseHrefElement()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/some/path"), response);
@@ -213,8 +212,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_featureFlagsSetter_isPresent()
-            throws IOException {
+    void serveIndexHtml_featureFlagsSetter_isPresent() throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
@@ -224,7 +222,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_requestWithRootPath_handleRequest() {
+    void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/"));
         assertTrue(canHandleRequest,
@@ -232,7 +230,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_withoutBootstrapUrlPredicate() {
+    void canHandleRequest_withoutBootstrapUrlPredicate() {
         assertTrue(indexHtmlRequestHandler
                 .canHandleRequest(createVaadinRequest("/nested/picture.png")));
         assertTrue(indexHtmlRequestHandler
@@ -242,7 +240,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_withBootstrapUrlPredicate() {
+    void canHandleRequest_withBootstrapUrlPredicate() {
 
         service.setBootstrapUrlPredicate(req -> {
             // refuse any request with extension
@@ -291,37 +289,37 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_allow_oldBrowser() {
+    void canHandleRequest_allow_oldBrowser() {
         assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", null, null)));
     }
 
     @Test
-    public void canHandleRequest_handle_indexHtmlRequest() {
+    void canHandleRequest_handle_indexHtmlRequest() {
         assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "document", "navigate")));
     }
 
     @Test
-    public void canHandleRequest_doNotHandle_scriptRequest() {
+    void canHandleRequest_doNotHandle_scriptRequest() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "script", "no-cors")));
     }
 
     @Test
-    public void canHandleRequest_doNotHandle_imageRequest() {
+    void canHandleRequest_doNotHandle_imageRequest() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "image", "no-cors")));
     }
 
     @Test
-    public void canHandleRequest_doNotHandle_vaadinStaticResources() {
+    void canHandleRequest_doNotHandle_vaadinStaticResources() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/VAADIN/foo.js", null, null)));
     }
 
     @Test
-    public void canHandleRequest_doNotHandle_vaadinReservedFolders() {
+    void canHandleRequest_doNotHandle_vaadinReservedFolders() {
         for (String reservedFolder : HandlerHelper
                 .getPublicInternalFolderPaths()) {
             assertFalse(indexHtmlRequestHandler.canHandleRequest(
@@ -332,14 +330,13 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
+    void canHandleRequest_handle_serviceWorkerDocumentRequest() {
         assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "empty", "same-origin")));
     }
 
     @Test
-    public void bootstrapListener_addListener_responseIsModified()
-            throws IOException {
+    void bootstrapListener_addListener_responseIsModified() throws IOException {
         service.addIndexHtmlRequestListener(evt -> evt.getDocument().head()
                 .getElementsByTag("script").remove());
         service.addIndexHtmlRequestListener(evt -> {
@@ -361,7 +358,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_initialUidl_when_includeInitialBootstrapUidl()
+    void should_add_initialUidl_when_includeInitialBootstrapUidl()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
@@ -386,7 +383,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_add_initialUidl_when_not_includeInitialBootstrapUidl()
+    void should_not_add_initialUidl_when_not_includeInitialBootstrapUidl()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -404,7 +401,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_initialize_UI_and_add_initialUidl_when_valid_route()
+    void should_initialize_UI_and_add_initialUidl_when_valid_route()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
@@ -432,7 +429,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
+    void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
@@ -456,7 +453,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_getter_UI_return_not_empty_when_includeInitialBootstrapUidl()
+    void should_getter_UI_return_not_empty_when_includeInitialBootstrapUidl()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
@@ -475,7 +472,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void eagerServerLoad_requestParameters_forwardedToLocationObject()
+    void eagerServerLoad_requestParameters_forwardedToLocationObject()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
 
@@ -503,7 +500,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
+    void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
             throws IOException {
         VaadinRequest request = createVaadinRequest("/");
 
@@ -519,7 +516,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
+    void should_include_spring_csrf_token_in_meta_tags_when_return_not_null_spring_csrf_in_request()
             throws IOException {
         VaadinRequest request = createVaadinRequestWithSpringCsrfToken();
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
@@ -528,7 +525,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
+    void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -545,7 +542,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_include_spring_csrf_token_in_meta_tags_when_return_null_spring_csrf_in_request()
+    void should_not_include_spring_csrf_token_in_meta_tags_when_return_null_spring_csrf_in_request()
             throws IOException {
         VaadinRequest request = createVaadinRequest("/");
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
@@ -561,7 +558,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_include_spring_token_in_dom_when_referer_is_service_worker()
+    void should_include_spring_token_in_dom_when_referer_is_service_worker()
             throws IOException {
         VaadinRequest request = createVaadinRequestWithSpringCsrfToken();
         Mockito.when(request.getHeader("referer"))
@@ -572,7 +569,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_add_metaElements_when_not_appShellPresent()
+    void should_not_add_metaElements_when_not_appShellPresent()
             throws Exception {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -587,7 +584,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent()
+    void should_add_metaAndPwa_Inline_Elements_when_appShellPresent()
             throws Exception {
         // Set class in context and do not call initializer
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
@@ -659,8 +656,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_elements_when_appShellWithConfigurator()
-            throws Exception {
+    void should_add_elements_when_appShellWithConfigurator() throws Exception {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
         TestUtil.createIndexHtmlStub(projectRootFolder);
@@ -721,7 +717,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_export_usage_statistics_in_development_mode()
+    void should_export_usage_statistics_in_development_mode()
             throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
@@ -797,8 +793,7 @@ public class IndexHtmlRequestHandlerTest {
     // }
 
     @Test
-    public void devTools_disable_stubPushFunctionRegistered()
-            throws IOException {
+    void devTools_disable_stubPushFunctionRegistered() throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
         TestUtil.createIndexHtmlStub(projectRootFolder);
@@ -824,7 +819,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_NOT_export_usage_statistics_in_production_mode()
+    void should_NOT_export_usage_statistics_in_production_mode()
             throws IOException {
         deploymentConfiguration.setProductionMode(true);
 
@@ -845,7 +840,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_apply_theme_variant() throws IOException {
+    void should_apply_theme_variant() throws IOException {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(ClassWithDarkLumo.class);
         mocks.setAppShellRegistry(registry);
@@ -865,7 +860,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_apply_colorScheme_dark() throws IOException {
+    void should_apply_colorScheme_dark() throws IOException {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(ClassWithDarkColorScheme.class);
         mocks.setAppShellRegistry(registry);
@@ -887,7 +882,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_apply_colorScheme_lightDark() throws IOException {
+    void should_apply_colorScheme_lightDark() throws IOException {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(ClassWithLightDarkColorScheme.class);
         mocks.setAppShellRegistry(registry);
@@ -909,7 +904,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_apply_colorScheme_normal() throws IOException {
+    void should_not_apply_colorScheme_normal() throws IOException {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(ClassWithNormalColorScheme.class);
         mocks.setAppShellRegistry(registry);
@@ -925,8 +920,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_append_colorScheme_to_existing_style()
-            throws IOException {
+    void should_append_colorScheme_to_existing_style() throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
 
@@ -972,7 +966,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly()
+    void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -982,7 +976,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
     }
@@ -1024,7 +1018,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void internal_request_no_bootstrap_page() {
+    void internal_request_no_bootstrap_page() {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
         Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
@@ -1037,7 +1031,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void synchronizedHandleRequest_badLocation_noUiCreated()
+    void synchronizedHandleRequest_badLocation_noUiCreated()
             throws IOException {
         final IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
 
@@ -1060,7 +1054,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serviceWorkerRequest_canNotHandleRequest() {
+    void serviceWorkerRequest_canNotHandleRequest() {
         IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
@@ -1072,8 +1066,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void servingStylesCss_productionMode_noLinkTagAdded()
-            throws IOException {
+    void servingStylesCss_productionMode_noLinkTagAdded() throws IOException {
         File projectRootFolder = Files
                 .createTempDirectory(temporaryFolder, "temp").toFile();
         deploymentConfiguration.setProductionMode(true);
@@ -1164,7 +1157,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_loopbackAllowedByDefault() {
+    void devTools_loopbackAllowedByDefault() {
         assertTrue(isAllowedDevToolsHost(null, "127.0.0.1"));
         assertTrue(isAllowedDevToolsHost(null, "0:0:0:0:0:0:0:1"));
         assertTrue(isAllowedDevToolsHost(null, "::1"));
@@ -1179,7 +1172,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_externalOrNoIpDeniedByDefault() {
+    void devTools_externalOrNoIpDeniedByDefault() {
         assertFalse(isAllowedDevToolsHost(null, "192.168.1.1"));
         assertFalse(isAllowedDevToolsHost(null, "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost(null, null));
@@ -1194,7 +1187,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_allowedHostsMatchesIp() {
+    void devTools_allowedHostsMatchesIp() {
         assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.1"));
         assertTrue(isAllowedDevToolsHost("192.168.1.*", "192.168.1.100"));
         assertFalse(isAllowedDevToolsHost("192.168.1.*", "192.168.100.100"));
@@ -1205,7 +1198,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_allowedHostsMatchesIpAndForwardedFor() {
+    void devTools_allowedHostsMatchesIpAndForwardedFor() {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4"));
         assertFalse(isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
@@ -1258,7 +1251,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_forwardedForIsLocal_denyAccess() {
+    void devTools_forwardedForIsLocal_denyAccess() {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "::1"));
         assertFalse(
@@ -1286,7 +1279,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_forwardedForIsEmpty_denyAccess() {
+    void devTools_forwardedForIsEmpty_denyAccess() {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ""));
         assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
         assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
@@ -1309,7 +1302,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_multipleForwardedForHeader_allChecked() {
+    void devTools_multipleForwardedForHeader_allChecked() {
         assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
                 List.of("1.1.1.1", "2.2.2.2")));
         assertFalse(isAllowedDevToolsHost("1.1.1.1", "127.0.0.1",
@@ -1331,7 +1324,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void devTools_customRemoteIPHeader_allowedIfIpMatches() {
+    void devTools_customRemoteIPHeader_allowedIfIpMatches() {
 
         BiPredicate<String, String> verifier = (remoteIp,
                 spoofedForwarderFor) -> {
@@ -1367,21 +1360,20 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void developmentMode_commercialBannerNeverApplied()
-            throws IOException {
+    void developmentMode_commercialBannerNeverApplied() throws IOException {
         assertHasCommercialBanner(false, false, true);
         assertHasCommercialBanner(false, false, false);
         assertHasCommercialBanner(false, false, null);
     }
 
     @Test
-    public void productionMode_commercialBannerEnabled_commercialBannerApplied()
+    void productionMode_commercialBannerEnabled_commercialBannerApplied()
             throws IOException {
         assertHasCommercialBanner(true, true, true);
     }
 
     @Test
-    public void productionMode_commercialBannerNotEnabled_commercialBannerNotApplied()
+    void productionMode_commercialBannerNotEnabled_commercialBannerNotApplied()
             throws IOException {
         assertHasCommercialBanner(false, true, false);
         assertHasCommercialBanner(false, true, null);

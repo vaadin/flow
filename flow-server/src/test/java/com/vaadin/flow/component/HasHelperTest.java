@@ -28,26 +28,26 @@ class HasHelperTest {
     }
 
     @Test
-    public void getHelperText() {
+    void getHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         assertNull(c.getHelperText());
     }
 
     @Test
-    public void getHelperComponent() {
+    void getHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
         assertNull(c.getHelperComponent());
     }
 
     @Test
-    public void setHelperText() {
+    void setHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
         assertEquals("helper", c.getHelperText());
     }
 
     @Test
-    public void setHelperComponent() {
+    void setHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
         final HasHelperComponent slotted = new HasHelperComponent();
         c.setHelperComponent(slotted);
@@ -55,7 +55,7 @@ class HasHelperTest {
     }
 
     @Test
-    public void removeHelperText() {
+    void removeHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
         assertEquals("helper", c.getHelperText());
@@ -65,7 +65,7 @@ class HasHelperTest {
     }
 
     @Test
-    public void removeHelperComponent() {
+    void removeHelperComponent() {
         final HasHelperComponent c = new HasHelperComponent();
         final HasHelperComponent slotted = new HasHelperComponent();
 

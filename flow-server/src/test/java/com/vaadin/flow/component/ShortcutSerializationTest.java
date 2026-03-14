@@ -28,8 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ShortcutSerializationTest {
 
     @Test
-    public void addShortcutForLifecycleOwner_serializationWorks()
-            throws Exception {
+    void addShortcutForLifecycleOwner_serializationWorks() throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();
         Component[] components = new Component[] { ui };
@@ -42,7 +41,7 @@ class ShortcutSerializationTest {
     }
 
     @Test
-    public void addAndRemoverShortcutForLifecycleOwner_serializationWorks()
+    void addAndRemoverShortcutForLifecycleOwner_serializationWorks()
             throws Exception {
         Component owner = new FakeComponent();
         UI ui = new UI();

@@ -58,7 +58,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void route_model_provides_navigation_route_target() {
+    void route_model_provides_navigation_route_target() {
 
         RouteModel root = getRouteModel();
 
@@ -104,7 +104,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void varargs_url_parameter_defined_only_as_last_segment() {
+    void varargs_url_parameter_defined_only_as_last_segment() {
         RouteModel root = RouteModel.create(true);
         try {
             root.addRoute("trunk/:vararg*/edit", routeTarget(Root.class));
@@ -121,7 +121,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void remove_route_target_not_found() {
+    void remove_route_target_not_found() {
         RouteModel root = getRouteModel();
 
         assertNavigation(root, "trunk/branch/12", Branch.class,
@@ -140,7 +140,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void remove_route_url_not_found() {
+    void remove_route_url_not_found() {
         RouteModel root = getRouteModel();
 
         final String expectedUrl = "trunk/branch/12";
@@ -160,7 +160,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void route_model_provides_route_target() {
+    void route_model_provides_route_target() {
         RouteModel root = getRouteModel();
 
         final String template = "trunk/branch/:id("
@@ -179,7 +179,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void route_model_provides_url_template_format() {
+    void route_model_provides_url_template_format() {
         RouteModel root = getRouteModel();
 
         final String template = "trunk/branch/:id("
@@ -213,7 +213,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void route_model_provides_parameters() {
+    void route_model_provides_parameters() {
         RouteModel root = getRouteModel();
 
         final String template = "trunk/branch/:id("
@@ -235,7 +235,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void route_model_provides_routes() {
+    void route_model_provides_routes() {
         RouteModel root = getRouteModel();
 
         final Map<String, RouteTarget> routes = root.getRoutes();
@@ -251,7 +251,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void mutable_methods_throw_when_model_is_immutable() {
+    void mutable_methods_throw_when_model_is_immutable() {
         RouteModel immutable = RouteModel.create(false);
         try {
             immutable.addRoute("foo/:foo", routeTarget(Root.class));

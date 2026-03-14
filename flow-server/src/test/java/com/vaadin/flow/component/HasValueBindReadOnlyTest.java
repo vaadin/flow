@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HasValueBindReadOnlyTest extends SignalsUnitTest {
 
     @Test
-    public void bindReadOnly_elementAttachedBefore_bindingActive() {
+    void bindReadOnly_elementAttachedBefore_bindingActive() {
         TestComponent component = new TestComponent();
         // attach before bindReadOnly
         UI.getCurrent().add(component);
@@ -45,7 +45,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_elementAttachedAfter_bindingActive() {
+    void bindReadOnly_elementAttachedAfter_bindingActive() {
         TestComponent component = new TestComponent();
         assertFalse(component.isReadOnly());
 
@@ -58,7 +58,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_elementAttached_bindingActive() {
+    void bindReadOnly_elementAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -77,7 +77,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_elementNotAttached_bindingInactive() {
+    void bindReadOnly_elementNotAttached_bindingInactive() {
         TestComponent component = new TestComponent();
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindReadOnly(signal);
@@ -91,7 +91,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_elementDetached_bindingInactive() {
+    void bindReadOnly_elementDetached_bindingInactive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -103,7 +103,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_elementReAttached_bindingActivate() {
+    void bindReadOnly_elementReAttached_bindingActivate() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -116,7 +116,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_bindOrSetReadOnlyWhileBindingIsActive_throwException() {
+    void bindReadOnly_bindOrSetReadOnlyWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         component.bindReadOnly(new ValueSignal<>(true));
@@ -129,7 +129,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_nullSignal_throwsNPE() {
+    void bindReadOnly_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -138,7 +138,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_nullSignalValue_setsReadOnlyToFalse() {
+    void bindReadOnly_nullSignalValue_setsReadOnlyToFalse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -151,7 +151,7 @@ class HasValueBindReadOnlyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindReadOnly_toggleSignalValue_readOnlyUpdates() {
+    void bindReadOnly_toggleSignalValue_readOnlyUpdates() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
