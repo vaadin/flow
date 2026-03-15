@@ -432,6 +432,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
+        this.locale = locale;
         localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
@@ -1170,8 +1171,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 }
             }
 
-            // Sync locale field from signal for serialization
-            locale = localeSignal.peek();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);
