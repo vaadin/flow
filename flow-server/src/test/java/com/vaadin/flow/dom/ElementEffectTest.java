@@ -232,17 +232,16 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // onChange is registered after bind, so the initial execution is missed
+        // onChange is registered after bind, executed once immediately
         span.bindText(signal).onChange(contexts::add);
 
-        // No callbacks yet since initial run already happened before onChange
-        assertEquals(0, contexts.size());
+        assertEquals(1, contexts.size());
 
         // Trigger a subsequent update
         signal.set("updated");
 
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
@@ -251,8 +250,8 @@ class ElementEffectTest {
         // Trigger another update and verify context tracks correctly
         signal.set("final");
 
-        assertEquals(2, contexts.size());
-        BindingContext<String> ctx2 = contexts.get(1);
+        assertEquals(3, contexts.size());
+        BindingContext<String> ctx2 = contexts.get(2);
         assertFalse(ctx2.isInitialRun());
         assertEquals("updated", ctx2.getOldValue());
         assertEquals("final", ctx2.getNewValue());
@@ -268,26 +267,106 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // Bind before attaching to UI
+        // Bind before attaching to UI: the effect runs immediately as a probe,
+        // setting the initial text. The onChange callback fire for the initial
+        // run.
         span.bindText(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size());
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
 
-        // Attach — effect runs and fires initial callback
+        // Attach with no signal change: no re-run, no onChange callback
         ui.getElement().appendChild(span);
-
-        assertEquals(1, contexts.size());
-        BindingContext<String> initialCtx = contexts.get(0);
-        assertTrue(initialCtx.isInitialRun());
-        assertEquals("initial", initialCtx.getNewValue());
+        assertEquals(1, contexts.size(),
+                "onChange should not fire on attach when nothing changed since probe");
 
         // Trigger an update after attach
         signal.set("updated");
 
         assertEquals(2, contexts.size());
-        BindingContext<String> ctx = contexts.get(1);
+        ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    public void signalBinding_onChange_bindThenChangeAndAttach() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        span.bindText(signal).onChange(contexts::add);
+        assertEquals(1, contexts.size(),
+                "onChange should fire once immediately");
+
+        // Trigger an update after attach
+        signal.set("updated");
+
+        // Attach with signal change: run onChange callback with
+        // isInitialRun=true
+        ui.getElement().appendChild(span);
+
+        assertEquals(2, contexts.size(),
+                "onChange should fire on attach when changed since probe");
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    public void signalBinding_onChange_calledImmediatelyInitially() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // Bind before attaching to UI
+        // The onChange callback fire immediately for the initial run
+        var signalBinding = span.bindText(signal).onChange(contexts::add);
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // The second onChange callback fire immediately for the initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(2, contexts.size(),
+                "another onChange should fire once initially");
+        ctx = contexts.get(1);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // Trigger an update
+        signal.set("updated");
+
+        // two onChange callbacks should fire for the update
+        assertEquals(4, contexts.size());
+        ctx = contexts.get(2);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        ctx = contexts.get(3);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+
+        // The new onChange callback doesn't fire immediately for the
+        // non-initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(4, contexts.size());
     }
 
     @Test
@@ -430,6 +509,34 @@ class ElementEffectTest {
     }
 
     @Test
+    public void effect_notAttached_effectRunsImmediatelyAsProbe() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction even when not attached");
+    }
+
+    @Test
+    public void effect_notAttached_noSignalRead_throwsEagerly() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+
+        assertThrows(com.vaadin.flow.signals.MissingSignalUsageException.class,
+                () -> Signal.effect(component, () -> {
+                    // no signal read
+                }),
+                "MissingSignalUsageException should be thrown eagerly at construction when no signal is read");
+    }
+
+    @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
@@ -440,34 +547,114 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached");
+        assertEquals(1, count.get(),
+                "Effect should be run once immediately as a probe even before component is attached");
 
         signal.set("test");
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached even after signal value change");
+        assertEquals(1, count.get(),
+                "Effect should not be run while detached even after signal value change");
 
         MockUI ui = new MockUI();
         ui.add(component);
 
-        assertEquals(1, count.get(),
-                "Effect should be run once component is attached");
+        assertEquals(2, count.get(),
+                "Effect should re-run on attach because signal changed while detached");
 
         signal.set("test2");
-        assertEquals(2, count.get(),
-                "Effect should be run when signal value is chaged");
+        assertEquals(3, count.get(),
+                "Effect should be run when signal value is changed");
 
         ui.remove(component);
 
         signal.set("test3");
-        assertEquals(2, count.get(), "Effect should not be run after detach");
+        assertEquals(3, count.get(), "Effect should not be run after detach");
 
         ui.add(component);
-        assertEquals(3, count.get(), "Effect should be run after attach");
+        assertEquals(4, count.get(),
+                "Effect should re-run on reattach because signal changed while detached");
 
         registration.remove();
         signal.set("test4");
-        assertEquals(3, count.get(), "Effect should not be run after remove");
+        assertEquals(4, count.get(), "Effect should not be run after remove");
+    }
+
+    @Test
+    public void effect_reattachWithoutChanges_effectNotReRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction");
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get(),
+                "Effect should not re-run on attach when nothing changed since probe");
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(1, count.get(),
+                "Effect should not re-run on reattach when nothing changed");
+
+        signal.set("changed");
+        assertEquals(2, count.get(),
+                "Effect should still respond to changes after reattach");
+    }
+
+    @Test
+    public void effect_reattachWithChanges_effectReRunWithInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        signal.set("update");
+        assertEquals(List.of(true, false), initialRuns);
+
+        ui.remove(component);
+        signal.set("changed while detached");
+        ui.add(component);
+        assertEquals(List.of(true, false, true), initialRuns,
+                "Reattach with changes should run with isInitialRun=true");
+    }
+
+    @Test
+    public void effect_reattachWithoutChanges_nextChangeNotInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns,
+                "No re-run on reattach without changes");
+
+        signal.set("changed after reattach");
+        assertEquals(List.of(true, false), initialRuns,
+                "Normal change after reattach should not be initial run");
     }
 
     @Test

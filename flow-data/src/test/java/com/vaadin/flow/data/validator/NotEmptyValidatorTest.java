@@ -15,45 +15,48 @@
  */
 package com.vaadin.flow.data.validator;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public class NotEmptyValidatorTest {
+class NotEmptyValidatorTest {
 
     @Test
-    public void nullValueIsDisallowed() {
+    void nullValueIsDisallowed() {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
         ValidationResult result = validator.apply(null,
                 new ValueContext(new Binder()));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals("foo", result.getErrorMessage());
+        assertTrue(result.isError());
+        assertEquals("foo", result.getErrorMessage());
     }
 
     @Test
-    public void emptyValueIsDisallowed() {
+    void emptyValueIsDisallowed() {
         NotEmptyValidator<String> validator = new NotEmptyValidator<>("foo");
         ValidationResult result = validator.apply("",
                 new ValueContext(new Binder()));
-        Assert.assertTrue(result.isError());
-        Assert.assertEquals("foo", result.getErrorMessage());
+        assertTrue(result.isError());
+        assertEquals("foo", result.getErrorMessage());
     }
 
     @Test
-    public void nonNullValueIsAllowed() {
+    void nonNullValueIsAllowed() {
         NotEmptyValidator<Object> validator = new NotEmptyValidator<>("foo");
         Object value = new Object();
         ValidationResult result = validator.apply(value,
                 new ValueContext(new Binder()));
-        Assert.assertFalse(result.isError());
-        Assert.assertFalse(result.isError());
+        assertFalse(result.isError());
+        assertFalse(result.isError());
     }
 }

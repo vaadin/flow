@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -149,6 +149,11 @@ public class TemplateModelProxyHandler implements Serializable {
     @SuppressWarnings("static-method")
     public Object intercept(@This Object target, @Origin Method method,
             @AllArguments Object[] args) {
+        if (!ReflectTools.isGetter(method) && !ReflectTools.isSetter(method)) {
+            throw new InvalidTemplateModelException(
+                    getUnsupportedMethodMessage(method, args));
+        }
+
         String propertyName = ReflectTools.getPropertyName(method);
 
         BeanModelType<?> modelType = getModelTypeForProxy(target);
@@ -166,14 +171,11 @@ public class TemplateModelProxyHandler implements Serializable {
 
         if (ReflectTools.isGetter(method)) {
             return handleGetter(modelMap, propertyName, propertyType);
-        } else if (ReflectTools.isSetter(method)) {
+        } else {
             Object value = args[0];
             handleSetter(modelMap, propertyName, propertyType, value);
             return null;
         }
-
-        throw new InvalidTemplateModelException(
-                getUnsupportedMethodMessage(method, args));
     }
 
     /**

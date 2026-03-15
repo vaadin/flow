@@ -1727,20 +1727,35 @@ public class Binder<BEAN> implements Serializable {
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
                     && getField() instanceof Component component) {
-                // Constant signal that is only read and never modified.
-                // Satisfies the signal usage requirement for bindings
-                // without signal-using validators in the chain.
-                var usageGuard = new ValueSignal<Void>(null);
-                signalRegistration = Signal.effect(component, ctx -> {
-                    usageGuard.get();
-                    Result<TARGET> result = executeConversionChain();
-                    if (!ctx.isInitialRun()) {
-                        BindingValidationStatus<TARGET> status = toValidationStatus(
-                                result);
-                        fireValidationEvents(status);
-                    }
-                });
+                if (component.isAttached()) {
+                    initInternalSignalEffectForValidators(component);
+                } else {
+                    component.addAttachListener(event -> {
+                        if (event.isInitialAttach()) {
+                            event.unregisterListener();
+                        }
+                        initInternalSignalEffectForValidators(
+                                event.getSource());
+                    });
+                }
             }
+        }
+
+        private void initInternalSignalEffectForValidators(
+                Component component) {
+            // Constant signal that is only read and never modified.
+            // Satisfies the signal usage requirement for bindings
+            // without signal-using validators in the chain.
+            var usageGuard = new ValueSignal<Void>(null);
+            signalRegistration = Signal.effect(component, ctx -> {
+                usageGuard.get();
+                Result<TARGET> result = executeConversionChain();
+                if (!ctx.isInitialRun()) {
+                    BindingValidationStatus<TARGET> status = toValidationStatus(
+                            result);
+                    fireValidationEvents(status);
+                }
+            });
         }
 
         /**

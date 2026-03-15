@@ -15,75 +15,24 @@
  */
 package com.vaadin.flow.dom;
 
-import java.util.LinkedList;
-
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class ElementBindTextTest {
-
-    private static MockVaadinServletService service;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        CurrentInstance.clearAll();
-        events = null;
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        var ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
-    }
+class ElementBindTextTest extends SignalsUnitTest {
 
     @Test
     public void bindTextComputedSignal_getText_returnsCorrectValue() {
@@ -207,7 +156,12 @@ class ElementBindTextTest {
         ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
-        assertEquals("", element.getText());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("text", element.getText());
+
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("changed");
+        assertEquals("text", element.getText());
     }
 
     @Test

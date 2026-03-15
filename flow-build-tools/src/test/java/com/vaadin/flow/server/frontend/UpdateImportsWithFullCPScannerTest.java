@@ -19,13 +19,12 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class UpdateImportsWithFullCPScannerTest
-        extends AbstractUpdateImportsTest {
+class UpdateImportsWithFullCPScannerTest extends AbstractUpdateImportsTest {
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
@@ -34,7 +33,7 @@ public class UpdateImportsWithFullCPScannerTest
     }
 
     @Test
-    public void assertFullSortOrder() throws MalformedURLException {
+    void assertFullSortOrder() throws MalformedURLException {
         List<String> expectedJsModuleImports = new ArrayList<>();
         expectedJsModuleImports.add(
                 "import '@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js';");

@@ -19,16 +19,11 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -37,57 +32,24 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class ElementBindPropertyTest {
-
-    private static MockVaadinServletService service;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        CurrentInstance.clearAll();
-        events = null;
-    }
+class ElementBindPropertyTest extends SignalsUnitTest {
 
     // common property signal binding tests
 
@@ -407,7 +369,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertTrue(component.getElement().getProperty("foo", false));
+
+        // Changes while detached are ignored
+        signal.set(false);
+        assertTrue(component.getElement().getProperty("foo", false));
     }
 
     @Test
@@ -472,7 +439,14 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
+                0.0d);
+
+        // Changes while detached are ignored
+        signal.set(2.0d);
+        assertEquals(1.0d, component.getElement().getProperty("foo", -1.0d),
+                0.0d);
     }
 
     @Test
@@ -542,7 +516,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals(1, component.getElement().getProperty("foo", -1));
+
+        // Changes while detached are ignored
+        signal.set(2);
+        assertEquals(1, component.getElement().getProperty("foo", -1));
     }
 
     @Test
@@ -607,7 +586,12 @@ class ElementBindPropertyTest {
 
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("bar", component.getElement().getProperty("foo", null));
+
+        // Changes while detached are ignored
+        signal.set("changed");
+        assertEquals("bar", component.getElement().getProperty("foo", null));
     }
 
     @Test
@@ -673,11 +657,18 @@ class ElementBindPropertyTest {
     public void bindBeanProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
-        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(
-                createJohn());
+        JacksonUtilsTest.Person john = createJohn();
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
         component.getElement().bindProperty("foo", signal, signal::set);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
+
+        // Changes while detached are ignored
+        signal.set(createJack());
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
     }
 
     @Test
@@ -750,7 +741,16 @@ class ElementBindPropertyTest {
                 Arrays.asList(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal, null);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        // Changes while detached are ignored
+        signal.set(Arrays.asList(createJack(), createJohn()));
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
     }
 
     @Test
@@ -840,7 +840,16 @@ class ElementBindPropertyTest {
                 createPersonMap(createJohn(), createJack()));
         component.getElement().bindProperty("foo", signal, null);
 
-        assertNull(component.getElement().getProperty("foo", null));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        // Changes while detached are ignored
+        signal.set(createPersonMap(createJack(), createJohn()));
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
     }
 
     @Test
@@ -1051,19 +1060,6 @@ class ElementBindPropertyTest {
         ObjectNode objectNode = (ObjectNode) component.getElement()
                 .getPropertyRaw(propertyName);
         return (ObjectNode) objectNode.get(key);
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        var ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
     }
 
     @Tag("div")

@@ -24,9 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -36,7 +35,13 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tests.data.bean.Item;
 
-public class AbstractDataViewTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class AbstractDataViewTest {
 
     private Collection<Item> items;
 
@@ -48,8 +53,8 @@ public class AbstractDataViewTest {
 
     private Component component;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         items = new ArrayList<>(
                 Arrays.asList(new Item(1L, "first", "description1"),
                         new Item(2L, "middle", "description2"),
@@ -60,30 +65,30 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void getItems_noFiltersSet_allItemsObtained() {
+    void getItems_noFiltersSet_allItemsObtained() {
         Stream<Item> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
+        assertArrayEquals(items.toArray(), allItems.toArray(),
+                "Unexpected data set");
     }
 
     @Test
-    public void getItems_filtersSet_filteredItemsObtained() {
+    void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.getValue().equals("first"));
-        Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[] { "first" },
-                dataView.getItems().map(Item::getValue).toArray());
+        assertArrayEquals(new String[] { "first" },
+                dataView.getItems().map(Item::getValue).toArray(),
+                "Unexpected data set after filtering");
     }
 
     @Test
-    public void getItems_sortingSet_sortedItemsObtained() {
+    void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortOrder(Item::getId, SortDirection.DESCENDING);
-        Assert.assertArrayEquals("Unexpected items sorting",
-                new Long[] { 3L, 2L, 1L },
-                dataView.getItems().map(Item::getId).toArray());
+        assertArrayEquals(new Long[] { 3L, 2L, 1L },
+                dataView.getItems().map(Item::getId).toArray(),
+                "Unexpected items sorting");
     }
 
     @Test
-    public void addItemCountChangeListener_fireEvent_listenerNotified() {
+    void addItemCountChangeListener_fireEvent_listenerNotified() {
         AtomicInteger fired = new AtomicInteger(0);
         dataView.addItemCountChangeListener(
                 event -> fired.compareAndSet(0, event.getItemCount()));
@@ -91,23 +96,23 @@ public class AbstractDataViewTest {
         ComponentUtil.fireEvent(component,
                 new ItemCountChangeEvent<>(component, 10, false));
 
-        Assert.assertEquals(10, fired.get());
+        assertEquals(10, fired.get());
     }
 
     @Test
-    public void refreshAll_listenersNotified() {
+    void refreshAll_listenersNotified() {
         AtomicReference<DataChangeEvent<Item>> refreshAllEvent = new AtomicReference<>();
         dataProvider.addDataProviderListener(event -> {
-            Assert.assertNull(refreshAllEvent.get());
+            assertNull(refreshAllEvent.get());
             refreshAllEvent.set(event);
         });
         dataView.refreshAll();
-        Assert.assertNotNull(refreshAllEvent.get());
-        Assert.assertEquals(dataProvider, refreshAllEvent.get().getSource());
+        assertNotNull(refreshAllEvent.get());
+        assertEquals(dataProvider, refreshAllEvent.get().getSource());
     }
 
     @Test
-    public void verifyDataProviderType_wrappedDataProviderIsSupported() {
+    void verifyDataProviderType_wrappedDataProviderIsSupported() {
         // starting with EmptyDataProvider to bypass checking too early in
         // the DataViewImpl constructor.
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
@@ -123,7 +128,7 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsSupported() {
+    void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
         DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
                 component) {
@@ -137,7 +142,7 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void verifyDataProviderType_wrappedDataProviderIsNotSupported() {
+    void verifyDataProviderType_wrappedDataProviderIsNotSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
         DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
                 component) {
@@ -147,12 +152,12 @@ public class AbstractDataViewTest {
             }
         };
         wrapperDataProvider = getWrapperDataProvider();
-        Assert.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 
     @Test
-    public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsNotSupported() {
+    void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsNotSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
         DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
                 component) {
@@ -162,12 +167,12 @@ public class AbstractDataViewTest {
             }
         };
         wrapperDataProvider = dataProvider.withConfigurableFilter();
-        Assert.assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class,
                 () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 
     @Test
-    public void verifyDataProviderType_wrapperIsBackEndDataProvider_wrapperDataProviderIsSupported() {
+    void verifyDataProviderType_wrapperIsBackEndDataProvider_wrapperDataProviderIsSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
         DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
                 component) {

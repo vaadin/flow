@@ -44,6 +44,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  */
 public class SignalBinding<T extends @Nullable Object> implements Serializable {
 
+    private BindingContext<T> initialContext;
     private List<SerializableConsumer<BindingContext<T>>> changeCallbacks;
 
     /**
@@ -85,6 +86,9 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
             changeCallbacks = new ArrayList<>();
         }
         changeCallbacks.add(action);
+        if (initialContext != null && initialContext.isInitialRun()) {
+            action.accept(initialContext);
+        }
         return this;
     }
 
@@ -115,5 +119,18 @@ public class SignalBinding<T extends @Nullable Object> implements Serializable {
         for (SerializableConsumer<BindingContext<T>> callback : changeCallbacks) {
             callback.accept(context);
         }
+    }
+
+    /**
+     * Stores the context from the initial effect run so that callbacks
+     * registered after the initial run can still be invoked immediately.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param context
+     *            the context from the initial run, not {@code null}
+     */
+    public void setInitialContext(BindingContext<T> context) {
+        this.initialContext = context;
     }
 }

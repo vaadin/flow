@@ -21,26 +21,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 
-public class TaskGenerateWebComponentHtmlTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class TaskGenerateWebComponentHtmlTest {
+    @TempDir
+    File temporaryFolder;
 
     private File frontendFolder;
     private TaskGenerateWebComponentHtml taskGenerateWebComponentHtml;
 
-    @Before
-    public void setup() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
+    @BeforeEach
+    void setup() throws IOException {
+        frontendFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder);
         taskGenerateWebComponentHtml = new TaskGenerateWebComponentHtml(
@@ -48,50 +51,48 @@ public class TaskGenerateWebComponentHtmlTest {
     }
 
     @Test
-    public void should_loadCorrectContentOfDefaultFile() throws Exception {
+    void should_loadCorrectContentOfDefaultFile() throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass()
                         .getResourceAsStream(FrontendUtils.WEB_COMPONENT_HTML),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals(
-                "Should load correct default content from web-component.html",
-                defaultContent, taskGenerateWebComponentHtml.getFileContent());
+        assertEquals(defaultContent,
+                taskGenerateWebComponentHtml.getFileContent(),
+                "Should load correct default content from web-component.html");
     }
 
     @Test
-    public void should_notOverwriteWebComponentHtml_webComponentHtmlExists()
+    void should_notOverwriteWebComponentHtml_webComponentHtmlExists()
             throws Exception {
         File webComponentHtml = new File(frontendFolder, "web-component.html");
         Files.createFile(webComponentHtml.toPath());
         taskGenerateWebComponentHtml.execute();
-        Assert.assertFalse(
-                "Should not generate web-component.html while it exists in the frontend folder",
-                taskGenerateWebComponentHtml.shouldGenerate());
-        Assert.assertEquals("", IOUtils.toString(webComponentHtml.toURI(),
+        assertFalse(taskGenerateWebComponentHtml.shouldGenerate(),
+                "Should not generate web-component.html while it exists in the frontend folder");
+        assertEquals("", IOUtils.toString(webComponentHtml.toURI(),
                 StandardCharsets.UTF_8));
     }
 
     @Test
-    public void should_generateWebComponentHtml_webComponentHtmlNotExist()
+    void should_generateWebComponentHtml_webComponentHtmlNotExist()
             throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass()
                         .getResourceAsStream(FrontendUtils.WEB_COMPONENT_HTML),
                 StandardCharsets.UTF_8);
-        Assert.assertTrue(
-                "Should generate web-component.html when it doesn't exists in the frontend folder",
-                taskGenerateWebComponentHtml.shouldGenerate());
+        assertTrue(taskGenerateWebComponentHtml.shouldGenerate(),
+                "Should generate web-component.html when it doesn't exists in the frontend folder");
 
         taskGenerateWebComponentHtml.execute();
 
-        Assert.assertTrue("The generated file should exists",
-                taskGenerateWebComponentHtml.getGeneratedFile().exists());
+        assertTrue(taskGenerateWebComponentHtml.getGeneratedFile().exists(),
+                "The generated file should exists");
 
-        Assert.assertEquals("Should have default content of web-component.html",
-                defaultContent,
+        assertEquals(defaultContent,
                 IOUtils.toString(
                         taskGenerateWebComponentHtml.getGeneratedFile().toURI(),
-                        StandardCharsets.UTF_8));
+                        StandardCharsets.UTF_8),
+                "Should have default content of web-component.html");
     }
 }

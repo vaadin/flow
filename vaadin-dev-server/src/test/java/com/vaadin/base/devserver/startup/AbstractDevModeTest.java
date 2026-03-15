@@ -25,11 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.CleanupMode;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
@@ -50,10 +49,15 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public abstract class AbstractDevModeTest {
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    // JUnit 4 TemporaryFolder silently ignored cleanup failures, but JUnit 5
+    // @TempDir fails the test. node_modules created by dev mode cannot always
+    // be deleted, so skip automatic cleanup.
+    @TempDir(cleanup = CleanupMode.NEVER)
+    File temporaryFolder;
     protected ApplicationConfiguration appConfig;
     protected ServletContext servletContext;
     protected Lookup lookup;
@@ -65,7 +69,7 @@ public abstract class AbstractDevModeTest {
     protected VaadinService vaadinService;
     protected VaadinServletContext vaadinContext;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // Reset static node installation cache to ensure test isolation
         com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
@@ -74,8 +78,8 @@ public abstract class AbstractDevModeTest {
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
         firstMapping.set(null, "/fake-test-mapping");
-        baseDir = temporaryFolder.getRoot().getPath();
-        npmFolder = temporaryFolder.getRoot();
+        baseDir = temporaryFolder.getPath();
+        npmFolder = temporaryFolder;
 
         Boolean enablePnpm = Boolean.TRUE;
         appConfig = Mockito.spy(ApplicationConfiguration.class);
@@ -122,8 +126,8 @@ public abstract class AbstractDevModeTest {
 
     }
 
-    @After
-    public void teardown() {
+    @AfterEach
+    void teardown() {
         if (handler != null) {
             handler.stop();
             handler = null;
@@ -177,13 +181,13 @@ public abstract class AbstractDevModeTest {
     }
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {
-        Assert.assertNotNull(devModeHandler);
+        assertNotNull(devModeHandler);
         ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
     }
 
     protected static boolean hasDevServerProcess(
             DevModeHandler devModeHandler) {
-        Assert.assertNotNull(devModeHandler);
+        assertNotNull(devModeHandler);
         Field devServerProcessField;
         try {
             devServerProcessField = AbstractDevServerRunner.class
@@ -198,7 +202,7 @@ public abstract class AbstractDevModeTest {
 
     }
 
-    public void removeDevModeHandlerInstance() throws Exception {
+    void removeDevModeHandlerInstance() throws Exception {
         // Reset unique instance of DevModeHandler
         Field devModeHandler = DevModeHandlerManagerImpl.class
                 .getDeclaredField("devModeHandler");

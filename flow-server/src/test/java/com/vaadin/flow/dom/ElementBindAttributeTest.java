@@ -15,26 +15,14 @@
  */
 package com.vaadin.flow.dom;
 
-import java.util.LinkedList;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,33 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ElementBindAttributeTest {
-
-    private static MockVaadinServletService service;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        CurrentInstance.clearAll();
-        events = null;
-    }
+class ElementBindAttributeTest extends SignalsUnitTest {
 
     @Test
     public void bindAttribute_nullAttribute_throwException() {
@@ -105,7 +67,12 @@ class ElementBindAttributeTest {
 
         component.getElement().bindAttribute("foo", signal);
 
-        assertNull(component.getElement().getAttribute("foo"));
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("bar", component.getElement().getAttribute("foo"));
+
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("changed");
+        assertEquals("bar", component.getElement().getAttribute("foo"));
     }
 
     @Test
@@ -305,19 +272,6 @@ class ElementBindAttributeTest {
         // expecting whole attribute to be removed
         assertFalse(component.getElement().hasAttribute("foo"));
         assertTrue(events.isEmpty());
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        var ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
     }
 
     @Tag("div")

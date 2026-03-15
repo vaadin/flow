@@ -44,27 +44,32 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK,
                 "routerlink");
 
-        findElement(By.id("navigate")).click();
+        findElement(By.id("routerlink-button")).click();
         assertMessageCount(3);
+        assertLastMessage("/routerlink-button", NavigationTrigger.ROUTER_LINK,
+                "routerlink-button");
+
+        findElement(By.id("navigate")).click();
+        assertMessageCount(4);
         assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
                 "navigate");
 
         getDriver().navigate().back();
-        assertMessageCount(4);
-        assertLastMessage("/routerlink", NavigationTrigger.HISTORY,
-                "routerlink");
+        assertMessageCount(5);
+        assertLastMessage("/routerlink-button", NavigationTrigger.HISTORY,
+                "routerlink-button");
 
         getDriver().navigate().forward();
-        assertMessageCount(5);
+        assertMessageCount(6);
         assertLastMessage("/navigate", NavigationTrigger.HISTORY, "navigate");
 
         findElement(By.id("forwardButton")).click();
-        assertMessageCount(6);
+        assertMessageCount(7);
         assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
                 "forwarded");
 
         findElement(By.id("rerouteButton")).click();
-        assertMessageCount(7);
+        assertMessageCount(8);
         assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
                 "rerouted");
     }

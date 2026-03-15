@@ -18,9 +18,8 @@ package com.vaadin.base.devserver.hotswap.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
@@ -37,15 +36,19 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
-public class ErrorViewHotswapperTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ErrorViewHotswapperTest {
 
     private ErrorViewHotswapper hotswapper;
     private MockVaadinServletService service;
     private VaadinSession session;
     private MockUI ui;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         CurrentInstance.clearAll();
         service = new MockVaadinServletService();
         session = new AlwaysLockedVaadinSession(service);
@@ -62,15 +65,15 @@ public class ErrorViewHotswapperTest {
     }
 
     @Test
-    public void onClassesChange_errorViewShown_redefined_triggersRefresh() {
+    void onClassesChange_errorViewShown_redefined_triggersRefresh() {
         // Simulate an error view being displayed
         TestErrorView errorView = new TestErrorView();
         ui.getInternals().showRouteTarget(createMockLocation("error"),
                 errorView, Collections.emptyList());
 
         // Verify error view is actually showing
-        Assert.assertTrue("Error view should be showing",
-                ui.getInternals().isShowingErrorView());
+        assertTrue(ui.getInternals().isShowingErrorView(),
+                "Error view should be showing");
 
         // Simulate a class being redefined (hotswap)
         var event = new HotswapClassSessionEvent(service, session,
@@ -78,21 +81,21 @@ public class ErrorViewHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify refresh was triggered
-        Assert.assertEquals("Should trigger refresh when error view is shown",
-                UIUpdateStrategy.REFRESH,
-                event.getUIUpdateStrategy(ui).orElse(null));
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should trigger refresh when error view is shown");
     }
 
     @Test
-    public void onClassesChange_normalViewShown_redefined_noRefresh() {
+    void onClassesChange_normalViewShown_redefined_noRefresh() {
         // Simulate a normal view being displayed
         TestNormalView normalView = new TestNormalView();
         ui.getInternals().showRouteTarget(createMockLocation("normal"),
                 normalView, Collections.emptyList());
 
         // Verify error view is not showing
-        Assert.assertFalse("Normal view should not be an error view",
-                ui.getInternals().isShowingErrorView());
+        assertFalse(ui.getInternals().isShowingErrorView(),
+                "Normal view should not be an error view");
 
         // Simulate a class being redefined (hotswap)
         var event = new HotswapClassSessionEvent(service, session,
@@ -100,8 +103,8 @@ public class ErrorViewHotswapperTest {
         hotswapper.onClassesChange(event);
 
         // Verify refresh was not triggered
-        Assert.assertFalse("Should not trigger refresh for normal view",
-                event.getUIUpdateStrategy(ui).isPresent());
+        assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
+                "Should not trigger refresh for normal view");
     }
 
     // Test classes

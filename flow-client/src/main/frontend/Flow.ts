@@ -177,11 +177,9 @@ export class Flow {
       'click',
       (_e) => {
         if (_e.target) {
-          // @ts-ignore
-          if (_e.target.hasAttribute('router-link')) {
+          if (_e.composedPath().some((node) => node instanceof HTMLElement && node.hasAttribute('router-link'))) {
             this.navigation = 'link';
-            // @ts-ignore
-          } else if (_e.composedPath().some((node) => node.nodeName === 'A')) {
+          } else if (_e.composedPath().some((node) => (node as Element).nodeName === 'A')) {
             this.navigation = 'client';
           }
         }
@@ -246,7 +244,7 @@ export class Flow {
     });
   }
 
-  // Send the remote call to `JavaScriptBootstrapUI` to render the flow
+  // Send the remote call to `UI` to render the flow
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
