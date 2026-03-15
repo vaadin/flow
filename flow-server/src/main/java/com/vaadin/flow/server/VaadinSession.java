@@ -56,7 +56,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.shared.SharedValueSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -91,7 +91,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private Locale locale = Locale.getDefault();
 
-    private transient SharedValueSignal<Locale> localeSignal = new SharedValueSignal<>(
+    private transient ValueSignal<Locale> localeSignal = new ValueSignal<>(
             locale);
 
     /**
@@ -1144,7 +1144,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
-            localeSignal = new SharedValueSignal<>(locale);
+            localeSignal = new ValueSignal<>(locale);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
