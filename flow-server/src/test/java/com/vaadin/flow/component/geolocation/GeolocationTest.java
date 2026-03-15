@@ -124,7 +124,7 @@ public class GeolocationTest {
         Assertions.assertNotNull(geo);
         Assertions.assertNotNull(geo.state());
         Assertions.assertInstanceOf(GeolocationState.Pending.class,
-                geo.state().get());
+                geo.state().peek());
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
@@ -159,8 +159,8 @@ public class GeolocationTest {
                 eventData);
 
         Assertions.assertInstanceOf(GeolocationPosition.class,
-                geo.state().get());
-        GeolocationPosition pos = (GeolocationPosition) geo.state().get();
+                geo.state().peek());
+        GeolocationPosition pos = (GeolocationPosition) geo.state().peek();
         Assertions.assertEquals(60.1699, pos.coords().latitude());
         Assertions.assertEquals(24.9384, pos.coords().longitude());
         Assertions.assertEquals(10.0, pos.coords().accuracy());
@@ -187,8 +187,8 @@ public class GeolocationTest {
         fireEvent(component.getElement(), "vaadin-geolocation-error",
                 eventData);
 
-        Assertions.assertInstanceOf(GeolocationError.class, geo.state().get());
-        GeolocationError error = (GeolocationError) geo.state().get();
+        Assertions.assertInstanceOf(GeolocationError.class, geo.state().peek());
+        GeolocationError error = (GeolocationError) geo.state().peek();
         Assertions.assertEquals(GeolocationError.PERMISSION_DENIED,
                 error.code());
         Assertions.assertEquals("User denied geolocation", error.message());
@@ -210,7 +210,7 @@ public class GeolocationTest {
         fireEvent(component.getElement(), "vaadin-geolocation-error",
                 errEventData);
 
-        Assertions.assertInstanceOf(GeolocationError.class, geo.state().get());
+        Assertions.assertInstanceOf(GeolocationError.class, geo.state().peek());
 
         // Then simulate a successful position
         ObjectNode posEventData = JacksonUtils.createObjectNode();
@@ -226,7 +226,7 @@ public class GeolocationTest {
                 posEventData);
 
         Assertions.assertInstanceOf(GeolocationPosition.class,
-                geo.state().get());
+                geo.state().peek());
     }
 
     @Test
