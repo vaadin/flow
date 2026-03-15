@@ -1,4 +1,5 @@
-import path from 'path';
+import path from 'node:path';
+import { Plugin } from 'vite';
 
 // Dependencies imported both in the external web-components and in Flow application sources.
 // Vite resolves dependencies from where they are imported, so these would be bundled twice.
@@ -6,10 +7,11 @@ import path from 'path';
 // need to be excluded from optimization / pre-bundling.
 const sharedDeps = ['lit', 'lit-html', 'ol', '@polymer/polymer'];
 
-export default function useLocalWebComponents(webComponentsDir = 'web-components') {
+export default function localWebComponentsPlugin(webComponentsDir = 'web-components'): Plugin {
   const nodeModulesPath = path.resolve(webComponentsDir, 'node_modules');
+
   return {
-    name: 'vaadin:use-local-web-components',
+    name: 'vaadin:local-web-components',
     enforce: 'pre',
     config() {
       console.info('Using local web components from ' + webComponentsDir);
@@ -31,7 +33,7 @@ export default function useLocalWebComponents(webComponentsDir = 'web-components
       };
     },
     resolveId(id) {
-      if (/^@vaadin/.test(id)) {
+      if (id.startsWith('@vaadin')) {
         return this.resolve(path.join(nodeModulesPath, id));
       }
     }
