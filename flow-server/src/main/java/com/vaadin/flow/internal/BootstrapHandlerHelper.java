@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -54,10 +56,44 @@ public final class BootstrapHandlerHelper implements Serializable {
             /*
              * Make a relative URL to the servlet by adding one ../ for each
              * path segment in pathInfo (i.e. the part of the requested path
-             * that comes after the servlet mapping)
+             * that comes after the servlet mapping).
+             *
+             * Use the raw (percent-encoded) path from the request URI to count
+             * segments so that encoded slashes (%2F) in wildcard route
+             * parameters are not mistaken for path separators.
              */
-            return HandlerHelper.getCancelingRelativePath(pathInfo);
+            String rawPathInfo = getRawPathInfo(vaadinRequest);
+            return HandlerHelper.getCancelingRelativePath(
+                    rawPathInfo != null ? rawPathInfo : pathInfo);
         }
+    }
+
+    /**
+     * Returns the raw (percent-encoded) path info by stripping the context path
+     * and servlet path from the request URI. This preserves encoded characters
+     * like {@code %2F} that would be decoded in
+     * {@link HttpServletRequest#getPathInfo()}.
+     *
+     * @param vaadinRequest
+     *            the request
+     * @return the raw path info, or {@code null} if it cannot be determined
+     */
+    private static String getRawPathInfo(VaadinRequest vaadinRequest) {
+        if (vaadinRequest instanceof VaadinServletRequest servletRequest) {
+            HttpServletRequest httpRequest = servletRequest
+                    .getHttpServletRequest();
+            String requestURI = httpRequest.getRequestURI();
+            String contextPath = httpRequest.getContextPath();
+            String servletPath = httpRequest.getServletPath();
+            if (requestURI != null && contextPath != null
+                    && servletPath != null) {
+                int prefixLength = contextPath.length() + servletPath.length();
+                if (requestURI.length() >= prefixLength) {
+                    return requestURI.substring(prefixLength);
+                }
+            }
+        }
+        return null;
     }
 
     /**

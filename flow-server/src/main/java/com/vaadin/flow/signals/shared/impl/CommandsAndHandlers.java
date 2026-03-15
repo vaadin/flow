@@ -23,13 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 
 /**
  * A list of signal commands together with their result handlers.
  */
-public class CommandsAndHandlers {
+public class CommandsAndHandlers implements Serializable {
     /**
      * Handles the result of a signal command execution.
      */
@@ -79,7 +81,7 @@ public class CommandsAndHandlers {
      *            result handler
      */
     public CommandsAndHandlers(SignalCommand command,
-            CommandResultHandler resultHandler) {
+            @Nullable CommandResultHandler resultHandler) {
         assert command != null;
         commands.add(command);
         if (resultHandler != null) {
@@ -129,8 +131,9 @@ public class CommandsAndHandlers {
             }
             CommandResultHandler handler = resultHandlers
                     .remove(command.commandId());
-            if (handler != null) {
-                handler.handle(results.get(command.commandId()));
+            CommandResult result = results.get(command.commandId());
+            if (handler != null && result != null) {
+                handler.handle(result);
             }
         }
     }

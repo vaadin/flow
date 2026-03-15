@@ -17,49 +17,49 @@ package com.vaadin.flow.data.converter;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class BigDecimalToIntegerConverterTest {
+class BigDecimalToIntegerConverterTest {
 
     BigDecimalToIntegerConverter converter = new BigDecimalToIntegerConverter();
 
     @Test
-    public void testNullConversionToModel() {
+    void testNullConversionToModel() {
         assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
-    public void testNullConversionToPresentation() {
+    void testNullConversionToPresentation() {
         assertNull(converter.convertToPresentation(null, null));
     }
 
     @Test
-    public void testConvertToModel() {
+    void testConvertToModel() {
         Result<Integer> result = converter
                 .convertToModel(BigDecimal.valueOf(42), null);
         assertEquals(Result.ok(42), result);
     }
 
     @Test
-    public void testConvertToPresentation() {
+    void testConvertToPresentation() {
         BigDecimal value = converter.convertToPresentation(42, null);
         assertEquals(BigDecimal.valueOf(42), value);
     }
 
     @Test
-    public void testConvertToModelWithDecimalValue() {
+    void testConvertToModelWithDecimalValue() {
         Result<Integer> result = converter
                 .convertToModel(BigDecimal.valueOf(42.99), null);
         assertEquals(Result.ok(42), result);
     }
 
     @Test
-    public void testConvertToPresentationWithDecimalValue() {
+    void testConvertToPresentationWithDecimalValue() {
         BigDecimal value = converter.convertToPresentation(42, null);
         assertEquals(BigDecimal.valueOf(42), value);
     }

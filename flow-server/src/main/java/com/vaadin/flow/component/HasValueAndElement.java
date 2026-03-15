@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -52,7 +53,14 @@ public interface HasValueAndElement<E extends ValueChangeEvent<V>, V>
     }
 
     @Override
-    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
-        getElement().bindProperty("readonly", readOnlySignal);
+    default SignalBinding<Boolean> bindReadOnly(
+            Signal<Boolean> readOnlySignal) {
+        return getElement().bindProperty("readonly", readOnlySignal, null);
+    }
+
+    @Override
+    default SignalBinding<Boolean> bindRequiredIndicatorVisible(
+            Signal<Boolean> requiredSignal) {
+        return getElement().bindProperty("required", requiredSignal, null);
     }
 }

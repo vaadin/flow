@@ -54,7 +54,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 /**
@@ -141,6 +142,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private long lastUnlocked;
 
     private long lastLocked;
+
+    private transient Transaction sessionScopedTransaction;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -393,24 +396,27 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets a signal that holds the current locale of this session.
+     * Gets a read-only signal that holds the current locale of this session.
      * <p>
-     * The signal is the source of truth for the locale. Use
-     * {@link WritableSignal#value()} to read the locale reactively (creates a
+     * Use {@link Signal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
-     * for non-reactive reads.
+     * for non-reactive reads. To change the locale, use
+     * {@link #setLocale(Locale)}.
      * <p>
-     * Note that writing directly to the signal will not propagate the locale
-     * change to UIs in this session. Use {@link #setLocale(Locale)} if you need
-     * the locale to be set on all UIs.
+     * The signal can be used for two-way binding with a field component by
+     * passing {@link #setLocale(Locale)} as the write callback:
      *
-     * @return a writable signal holding the current locale, never null
+     * <pre>
+     * localeDropdown.bindValue(session.localeSignal(), session::setLocale);
+     * </pre>
+     *
+     * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public WritableSignal<Locale> localeSignal() {
+    public Signal<Locale> localeSignal() {
         checkHasLock();
-        return localeSignal;
+        return localeSignal.asReadonly();
     }
 
     /**
@@ -426,7 +432,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
-        localeSignal.value(locale);
+        localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
@@ -698,6 +704,23 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the session-scoped write-through transaction, creating it lazily if
+     * needed. The transaction provides repeatable-read guarantees for shared
+     * signal operations while the session lock is held.
+     * <p>
+     * The session lock must be held when calling this method.
+     *
+     * @return the session-scoped transaction, not <code>null</code>
+     */
+    Transaction getOrCreateSessionScopedTransaction() {
+        assert hasLock();
+        if (sessionScopedTransaction == null) {
+            sessionScopedTransaction = Transaction.createWriteThrough();
+        }
+        return sessionScopedTransaction;
+    }
+
+    /**
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
@@ -777,6 +800,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
@@ -1147,7 +1171,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             }
 
             // Sync locale field from signal for serialization
-            locale = localeSignal.value();
+            locale = localeSignal.peek();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);

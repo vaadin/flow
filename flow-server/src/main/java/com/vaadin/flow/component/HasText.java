@@ -19,6 +19,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -121,6 +123,7 @@ public interface HasText extends HasElement {
      *            the text content to set
      */
     default void setText(String text) {
+        throwIfChildrenBindingIsActive("setText");
         getElement().setText(text);
     }
 
@@ -164,11 +167,12 @@ public interface HasText extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the text content of this component and
-     * keeps the text content synchronized with the signal value while the
-     * element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds the
-     * existing binding.
+     * Binds a {@link Signal}'s value to the text content of this component. The
+     * text content is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes while the element is in attached state. When the element is
+     * in detached state, signal value changes have no effect. <code>null</code>
+     * signal unbinds the existing binding.
      * <p>
      * While a Signal is bound, any attempt to set the text content manually
      * throws {@link com.vaadin.flow.signals.BindingActiveException}. Same
@@ -181,17 +185,28 @@ public interface HasText extends HasElement {
      * Span component = new Span("");
      * add(component);
      * component.bindText(signal);
-     * signal.value("text"); // The component text content is set to "text"
+     * signal.set("text"); // The component text content is set to "text"
      * </pre>
      *
      * @param textSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
      */
-    default void bindText(Signal<String> textSignal) {
-        getElement().bindText(textSignal);
+    default SignalBinding<String> bindText(Signal<String> textSignal) {
+        throwIfChildrenBindingIsActive("bindText");
+        return getElement().bindText(textSignal);
+    }
+
+    private void throwIfChildrenBindingIsActive(String methodName) {
+        getElement().getNode()
+                .getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.CHILDREN)) {
+                        throw new BindingActiveException(methodName
+                                + " is not allowed while a binding for children exists.");
+                    }
+                });
     }
 }

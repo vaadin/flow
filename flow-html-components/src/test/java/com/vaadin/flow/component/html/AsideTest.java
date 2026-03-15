@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AsideTest extends ComponentTest {
+class AsideTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override
@@ -27,13 +27,13 @@ public class AsideTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
+    protected void testHasOrderedComponents() {
         super.testHasOrderedComponents();
     }
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
+    protected void testHasAriaLabelIsNotImplemented() {
         // There is mixed support for aria-label or aria-labelledby on <aside>.
         // Source: https://www.w3.org/TR/using-aria/#label-support
         super.testHasAriaLabelIsNotImplemented();

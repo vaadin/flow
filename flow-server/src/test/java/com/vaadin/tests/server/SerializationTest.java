@@ -27,10 +27,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -51,11 +50,16 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-public class SerializationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SerializationTest {
 
     Runnable cleaner;
 
-    @Before
+    @BeforeEach
     public void enabledSerializationDebugInfo() {
         String extendedDebugInfo = System
                 .getProperty("sun.io.serialization.extendedDebugInfo");
@@ -70,7 +74,7 @@ public class SerializationTest {
         };
     }
 
-    @After
+    @AfterEach
     public void restore() {
         if (cleaner != null) {
             cleaner.run();
@@ -85,9 +89,8 @@ public class SerializationTest {
 
         session = serializeAndDeserialize(session);
 
-        Assert.assertNotNull(
-                "Pending access queue was not recreated after deserialization",
-                session.getPendingAccessQueue());
+        assertNotNull(session.getPendingAccessQueue(),
+                "Pending access queue was not recreated after deserialization");
     }
 
     @Test
@@ -95,11 +98,10 @@ public class SerializationTest {
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(false);
 
-        Assert.assertNotNull(
-                "UIs should be available after empty deserialization",
-                session.getUIs());
-        Assert.assertTrue("UIs should be empty after empty deserialization",
-                session.getUIs().isEmpty());
+        assertNotNull(session.getUIs(),
+                "UIs should be available after empty deserialization");
+        assertTrue(session.getUIs().isEmpty(),
+                "UIs should be empty after empty deserialization");
     }
 
     @Test
@@ -128,15 +130,14 @@ public class SerializationTest {
         // been retrieved from http session.
         session.refreshTransients(null, vaadinService);
 
-        Assert.assertNotNull(
-                "UIs map should be available after devmode deserialization",
-                session.getUIs());
-        Assert.assertTrue("UIs should be empty after devmode deserialization",
-                session.getUIs().isEmpty());
-        Assert.assertTrue(
-                "StreamResources should be empty after devmode deserialization",
+        assertNotNull(session.getUIs(),
+                "UIs map should be available after devmode deserialization");
+        assertTrue(session.getUIs().isEmpty(),
+                "UIs should be empty after devmode deserialization");
+        assertTrue(
                 session.getResourceRegistry().getResource(name.getResourceUri())
-                        .isEmpty());
+                        .isEmpty(),
+                "StreamResources should be empty after devmode deserialization");
     }
 
     @Test
@@ -144,14 +145,12 @@ public class SerializationTest {
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(true);
 
-        Assert.assertNotNull(
-                "UIs should be available after empty deserialization",
-                session.getUIs());
-        Assert.assertEquals(
-                "UIs should contain a UI instance after empty deserialization",
-                1, session.getUIs().size());
-        Assert.assertEquals("Unexpected UI id after empty deserialization", 42,
-                session.getUIs().iterator().next().getUIId());
+        assertNotNull(session.getUIs(),
+                "UIs should be available after empty deserialization");
+        assertEquals(1, session.getUIs().size(),
+                "UIs should contain a UI instance after empty deserialization");
+        assertEquals(42, session.getUIs().iterator().next().getUIId(),
+                "Unexpected UI id after empty deserialization");
     }
 
     @Test
@@ -160,13 +159,13 @@ public class SerializationTest {
         VaadinService vaadinService = new MockVaadinService(false, true);
         VaadinSession session = Mockito.spy(new VaadinSession(vaadinService));
 
-        Assert.assertEquals(vaadinService, session.getService());
+        assertEquals(vaadinService, session.getService());
         VaadinSession serializedAndDeserializedSession = serializeAndDeserialize(
                 session);
-        Assert.assertNull(serializedAndDeserializedSession.getService());
+        assertNull(serializedAndDeserializedSession.getService());
         VaadinSession againSerializedAndDeserializedSession = serializeAndDeserialize(
                 serializedAndDeserializedSession);
-        Assert.assertNull(againSerializedAndDeserializedSession.getService());
+        assertNull(againSerializedAndDeserializedSession.getService());
     }
 
     @Test
@@ -234,21 +233,17 @@ public class SerializationTest {
         }
 
         void assertUIAvailable() {
-            Assert.assertTrue(
-                    "Expecting serialization hook to be called with UI thread local set",
-                    uiAvailableOnWrite);
-            Assert.assertTrue(
-                    "Expecting deserialization hook to be called with UI thread local set",
-                    uiAvailableOnRead);
+            assertTrue(uiAvailableOnWrite,
+                    "Expecting serialization hook to be called with UI thread local set");
+            assertTrue(uiAvailableOnRead,
+                    "Expecting deserialization hook to be called with UI thread local set");
         }
 
         void assertSessionAvailable() {
-            Assert.assertTrue(
-                    "Expecting serialization hook to be called with VaadinSession thread local set",
-                    sessionAvailableOnWrite);
-            Assert.assertTrue(
-                    "Expecting deserialization hook to be called with VaadinSession thread local set",
-                    sessionAvailableOnRead);
+            assertTrue(sessionAvailableOnWrite,
+                    "Expecting serialization hook to be called with VaadinSession thread local set");
+            assertTrue(sessionAvailableOnRead,
+                    "Expecting deserialization hook to be called with VaadinSession thread local set");
         }
 
     }

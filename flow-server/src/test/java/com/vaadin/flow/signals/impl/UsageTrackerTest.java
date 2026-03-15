@@ -21,16 +21,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
-import com.vaadin.flow.signals.function.CleanupCallback;
 import com.vaadin.flow.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UsageTrackerTest extends SignalTestBase {
@@ -39,11 +42,11 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
         Signal.runInTransaction(() -> {
-            signal.value("changed");
+            signal.set("changed");
 
             assertTrue(usage.hasChanges());
 
@@ -66,10 +69,10 @@ public class UsageTrackerTest extends SignalTestBase {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
-            signal.value();
+            signal.get();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertTrue(usage.hasChanges());
     }
 
@@ -81,7 +84,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peek();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -93,7 +96,7 @@ public class UsageTrackerTest extends SignalTestBase {
             signal.peekConfirmed();
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -103,12 +106,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value();
+                signal.get();
                 return null;
             });
         });
 
-        signal.value("update");
+        signal.set("update");
         assertFalse(usage.hasChanges());
     }
 
@@ -118,12 +121,12 @@ public class UsageTrackerTest extends SignalTestBase {
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
-                signal.value("update");
+                signal.set("update");
                 return null;
             });
         });
 
-        signal.value("another");
+        signal.set("another");
         assertFalse(usage.hasChanges());
     }
 
@@ -188,12 +191,12 @@ public class UsageTrackerTest extends SignalTestBase {
         TestUsage b = new TestUsage();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        CleanupCallback cleanup = usage.onNextChange(immediate -> false);
+        Registration cleanup = usage.onNextChange(immediate -> false);
 
         assertEquals(1, a.listeners.size());
         assertEquals(1, b.listeners.size());
 
-        cleanup.cleanup();
+        cleanup.remove();
         assertEquals(0, a.listeners.size());
         assertEquals(0, b.listeners.size());
     }
@@ -242,8 +245,8 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedNonRepeatingListener_immediatelyNotifiedThenRemoved() {
         TestUsage a = new TestUsage() {
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                CleanupCallback cleanup = super.onNextChange(listener);
+            public Registration onNextChange(TransientListener listener) {
+                Registration cleanup = super.onNextChange(listener);
                 listener.invoke(true);
                 return cleanup;
             }
@@ -267,8 +270,8 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedRepeatingListener_immediatelyNotifiedAndKeptInUse() {
         TestUsage a = new TestUsage() {
             @Override
-            public CleanupCallback onNextChange(TransientListener listener) {
-                CleanupCallback cleanup = super.onNextChange(listener);
+            public Registration onNextChange(TransientListener listener) {
+                Registration cleanup = super.onNextChange(listener);
                 listener.invoke(true);
                 return cleanup;
             }
@@ -288,6 +291,115 @@ public class UsageTrackerTest extends SignalTestBase {
         assertEquals(1, b.listeners.size());
     }
 
+    @Test
+    void get_outsideTrackingContext_throwsIllegalStateException() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertThrows(IllegalStateException.class, signal::get);
+    }
+
+    @Test
+    void get_insideTrack_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        UsageTracker.track(() -> {
+            assertEquals("value", signal.get());
+        });
+    }
+
+    @Test
+    void get_insideUntracked_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertEquals("value", Signal.untracked(() -> signal.get()));
+    }
+
+    @Test
+    void get_insideUntrackedInsideTrack_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        UsageTracker.track(() -> {
+            assertEquals("value", Signal.untracked(() -> signal.get()));
+        });
+    }
+
+    @Test
+    void peek_outsideTrackingContext_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+        assertEquals("value", signal.peek());
+    }
+
+    @Test
+    void peek_onLambdaSignal_outsideTrackingContext_succeeds() {
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+
+        Signal<String> mapped = signal.map(v -> v.toUpperCase());
+        assertDoesNotThrow(() -> mapped.peek());
+        assertEquals("HELLO", mapped.peek());
+
+        Signal<String> readonly = signal.map(v -> v);
+        assertDoesNotThrow(() -> readonly.peek());
+        assertEquals("hello", readonly.peek());
+    }
+
+    @Test
+    void isGetAllowed_outsideContext_false() {
+        assertFalse(UsageTracker.isGetAllowed());
+    }
+
+    @Test
+    void isGetAllowed_insideTrack_true() {
+        UsageTracker.track(() -> {
+            assertTrue(UsageTracker.isGetAllowed());
+        });
+    }
+
+    @Test
+    void isGetAllowed_insideUntracked_true() {
+        Signal.untracked(() -> {
+            assertTrue(UsageTracker.isGetAllowed());
+            return null;
+        });
+    }
+
+    @Test
+    void isGetAllowed_insideUntrackedInsideTrack_true() {
+        UsageTracker.track(() -> {
+            Signal.untracked(() -> {
+                assertTrue(UsageTracker.isGetAllowed());
+                return null;
+            });
+        });
+    }
+
+    @Test
+    void isActive_insideUntracked_false() {
+        Signal.untracked(() -> {
+            assertFalse(UsageTracker.isActive());
+            return null;
+        });
+    }
+
+    @Test
+    void get_sharedSignal_outsideTrackingContext_throws() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        assertThrows(IllegalStateException.class, signal::get);
+    }
+
+    @Test
+    void get_sharedSignal_withFallbackTransaction_throws() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        Transaction fallback = Transaction.createWriteThrough();
+        Transaction.setTransactionFallback(() -> fallback);
+        try {
+            assertThrows(IllegalStateException.class, signal::get);
+        } finally {
+            Transaction.setTransactionFallback(null);
+        }
+    }
+
+    @Test
+    void peek_sharedSignal_outsideTrackingContext_succeeds() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
+        assertEquals("value", signal.peek());
+    }
+
     private static class TestUsage implements Usage {
         boolean hasChanges;
         List<TransientListener> listeners = new ArrayList<>();
@@ -298,7 +410,7 @@ public class UsageTrackerTest extends SignalTestBase {
         }
 
         @Override
-        public CleanupCallback onNextChange(TransientListener listener) {
+        public Registration onNextChange(TransientListener listener) {
             listeners.add(listener);
 
             return () -> listeners.remove(listener);

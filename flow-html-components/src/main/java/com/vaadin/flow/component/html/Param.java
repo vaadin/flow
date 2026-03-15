@@ -93,8 +93,7 @@ public class Param extends HtmlComponent {
      * detached state.
      *
      * @param valueSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setValue(String)
@@ -120,10 +119,6 @@ public class Param extends HtmlComponent {
      * Binds a signal's value to the "name" attribute as a one-way binding, so
      * that the attribute is updated when the signal's value is updated.
      * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the "name" attribute. When unbinding, the current attribute value is
-     * left unchanged.
-     * <p>
      * While a binding for the "name" attribute is active, any attempt to set
      * the attribute manually throws
      * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
@@ -134,8 +129,7 @@ public class Param extends HtmlComponent {
      * detached state.
      *
      * @param nameSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setName(String)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -33,13 +35,14 @@ import com.vaadin.flow.signals.Signal;
  * @see Signal#map(SignalMapper)
  */
 @FunctionalInterface
-public interface SignalMapper<T, R> extends Serializable {
+public interface SignalMapper<T extends @Nullable Object, R extends @Nullable Object>
+        extends Serializable {
     /**
      * Applies this mapper to transform a signal value.
      *
      * @param value
-     *            the input value, may be <code>null</code>
-     * @return the transformed value, may be <code>null</code>
+     *            the input value
+     * @return the transformed value
      */
     R map(T value);
 }

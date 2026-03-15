@@ -31,9 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -57,10 +56,11 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StreamReceiverHandlerTest {
+class StreamReceiverHandlerTest {
 
     private StreamReceiverHandler handler;
     @Mock
@@ -105,7 +105,7 @@ public class StreamReceiverHandlerTest {
     private String requestCharacterEncoding;
     private String xFilenameHeader;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         contentLength = "6";
         inputStream = createInputStream("foobar");
@@ -416,11 +416,10 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventArgumentCaptor.capture());
-        Assert.assertEquals("foobar", new String(
+        assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
-        Assert.assertEquals(fileName,
-                endEventArgumentCaptor.getValue().getFileName());
-        Assert.assertEquals(contentType,
+        assertEquals(fileName, endEventArgumentCaptor.getValue().getFileName());
+        assertEquals(contentType,
                 endEventArgumentCaptor.getValue().getMimeType());
 
         Mockito.verify(response).setContentType(
@@ -488,8 +487,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("test.txt",
-                endEventCaptor.getValue().getFileName());
+        assertEquals("test.txt", endEventCaptor.getValue().getFileName());
     }
 
     @Test
@@ -506,7 +504,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("my file åäö.txt",
+        assertEquals("my file åäö.txt",
                 endEventCaptor.getValue().getFileName());
     }
 
@@ -524,8 +522,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("text/plain",
-                endEventCaptor.getValue().getMimeType());
+        assertEquals("text/plain", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
@@ -542,7 +539,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("unknown", endEventCaptor.getValue().getMimeType());
+        assertEquals("unknown", endEventCaptor.getValue().getMimeType());
     }
 
     @Test
@@ -558,7 +555,7 @@ public class StreamReceiverHandlerTest {
                 .forClass(StreamVariable.StreamingEndEvent.class);
         Mockito.verify(streamVariable)
                 .streamingFinished(endEventCaptor.capture());
-        Assert.assertEquals("unknown", endEventCaptor.getValue().getFileName());
+        assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 
 }

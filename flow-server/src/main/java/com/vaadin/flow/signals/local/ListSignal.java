@@ -18,6 +18,16 @@ package com.vaadin.flow.signals.local;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Transaction;
 
 /**
  * A local list signal that holds a list of writable signals, enabling per-entry
@@ -35,13 +45,81 @@ import java.util.List;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
+public class ListSignal<T extends @Nullable Object>
+        extends AbstractLocalSignal<@NonNull List<ValueSignal<T>>> {
+
+    private final SerializableBiPredicate<T, T> equalityChecker;
 
     /**
      * Creates a new empty list signal.
      */
     public ListSignal() {
+        this(Objects::equals);
+    }
+
+    /**
+     * Creates a new empty list signal with a custom equality checker.
+     * <p>
+     * The equality checker is used to determine if a new value is equal to the
+     * current value of an entry signal when that entry's value is updated via
+     * {@link ValueSignal#set(Object)}. It does <em>not</em> apply when
+     * inserting new items into the list (e.g., via
+     * {@link #insertLast(Object)}). If the equality checker returns
+     * {@code true}, the value update is skipped, and no change notification is
+     * triggered, i.e., no dependent effect function is triggered.
+     * <p>
+     * The equality checker is applied to all {@link ValueSignal} instances
+     * created for entries in this list.
+     *
+     * @param equalityChecker
+     *            the predicate used to compare entry values for equality, not
+     *            <code>null</code>
+     */
+    public ListSignal(SerializableBiPredicate<T, T> equalityChecker) {
         super(List.of());
+        this.equalityChecker = Objects.requireNonNull(equalityChecker,
+                "Equality checker must not be null");
+    }
+
+    @Override
+    public List<ValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public List<ValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
+    /**
+     * Gets a stream with all values in this signal. This registers a dependency
+     * for both the structure of the list and the values of all child signals.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> getValues() {
+        return get().stream().map(Signal::get);
+    }
+
+    /**
+     * Gets a stream with all values in this signal without registering any
+     * dependencies.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> peekValues() {
+        return peek().stream().map(Signal::peek);
+    }
+
+    @Override
+    protected void checkPreconditions() {
+        assertLockHeld();
+        super.checkPreconditions();
+
+        if (Transaction.inExplicitTransaction()) {
+            throw new IllegalStateException(
+                    "ListSignal cannot be used inside signal transactions because it can hold a reference to a mutable object that can be mutated directly, bypassing transaction control. Use SharedListSignal instead.");
+        }
     }
 
     /**
@@ -52,7 +130,13 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
      * @return a signal for the inserted entry
      */
     public ValueSignal<T> insertFirst(T value) {
-        return insertAt(0, value);
+        lock();
+        try {
+            checkPreconditions();
+            return insertAtInternal(0, value);
+        } finally {
+            unlock();
+        }
     }
 
     /**
@@ -65,7 +149,9 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertLast(T value) {
         lock();
         try {
-            return insertAtInternal(getSignalValue().size(), value);
+            checkPreconditions();
+            return insertAtInternal(
+                    Objects.requireNonNull(getSignalValue()).size(), value);
         } finally {
             unlock();
         }
@@ -92,7 +178,9 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public ValueSignal<T> insertAt(int index, T value) {
         lock();
         try {
-            List<ValueSignal<T>> entries = getSignalValue();
+            checkPreconditions();
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
             if (index < 0 || index > entries.size()) {
                 throw new IndexOutOfBoundsException(
                         "Index: " + index + ", Size: " + entries.size());
@@ -105,8 +193,9 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
 
     private ValueSignal<T> insertAtInternal(int index, T value) {
         assertLockHeld();
-        ValueSignal<T> entry = new ValueSignal<>(value);
-        List<ValueSignal<T>> newEntries = new ArrayList<>(getSignalValue());
+        ValueSignal<T> entry = new ValueSignal<>(value, equalityChecker);
+        List<ValueSignal<T>> newEntries = new ArrayList<>(
+                Objects.requireNonNull(getSignalValue()));
         newEntries.add(index, entry);
         setSignalValue(Collections.unmodifiableList(newEntries));
         return entry;
@@ -122,7 +211,9 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     public void remove(ValueSignal<T> entry) {
         lock();
         try {
-            List<ValueSignal<T>> entries = getSignalValue();
+            checkPreconditions();
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
             List<ValueSignal<T>> newEntries = entries.stream()
                     .filter(e -> e != entry).toList();
             if (newEntries.size() < entries.size()) {
@@ -134,17 +225,71 @@ public class ListSignal<T> extends AbstractLocalSignal<List<ValueSignal<T>>> {
     }
 
     /**
+     * Moves an existing entry to a new position in this list. The same
+     * {@code ValueSignal} instance is preserved — no new signal is created.
+     * <p>
+     * Does nothing if the entry is already at the target index.
+     * <p>
+     * <b>Note:</b> This method should only be used in non-concurrent cases
+     * where the list structure is not being modified by other threads. The
+     * index is sensitive to concurrent modifications and may lead to unexpected
+     * results if the list is modified between determining the index and calling
+     * this method.
+     *
+     * @param entry
+     *            the entry to move
+     * @param toIndex
+     *            the desired final index (0-based)
+     * @throws IllegalArgumentException
+     *             if the entry is not in the list
+     * @throws IndexOutOfBoundsException
+     *             if {@code toIndex} is negative or >= size
+     */
+    public void moveTo(ValueSignal<T> entry, int toIndex) {
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> entries = Objects
+                    .requireNonNull(getSignalValue());
+            int fromIndex = entries.indexOf(entry);
+            if (fromIndex == -1) {
+                throw new IllegalArgumentException("Entry is not in the list");
+            }
+            if (toIndex < 0 || toIndex >= entries.size()) {
+                throw new IndexOutOfBoundsException(
+                        "Index: " + toIndex + ", Size: " + entries.size());
+            }
+            if (fromIndex == toIndex) {
+                return;
+            }
+            List<ValueSignal<T>> newEntries = new ArrayList<>(entries);
+            newEntries.remove(fromIndex);
+            newEntries.add(toIndex, entry);
+            setSignalValue(Collections.unmodifiableList(newEntries));
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
      * Removes all entries from this list.
      */
     public void clear() {
         lock();
         try {
-            if (!getSignalValue().isEmpty()) {
+            checkPreconditions();
+            if (!Objects.requireNonNull(getSignalValue()).isEmpty()) {
                 setSignalValue(List.of());
             }
         } finally {
             unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 
 }

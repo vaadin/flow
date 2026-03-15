@@ -15,22 +15,24 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
-import com.vaadin.flow.signals.shared.SharedListSignal;
+import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class HasComponentsTest {
+class HasComponentsTest {
 
     private static MockVaadinServletService service;
 
@@ -47,12 +49,12 @@ public class HasComponentsTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
@@ -64,7 +66,7 @@ public class HasComponentsTest {
         TestComponent component = new TestComponent();
         component.add(text);
 
-        Assert.assertEquals(text, component.getElement().getText());
+        assertEquals(text, component.getElement().getText());
     }
 
     @Test
@@ -74,7 +76,7 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-first");
         component.addComponentAsFirst(innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
+        assertEquals(innerComponent.getId(),
                 component.getChildren().findFirst().get().getId());
     }
 
@@ -85,24 +87,26 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(2).getComponent().get().getId());
+        assertEquals(innerComponent.getId(), component.getElement().getChild(2)
+                .getComponent().get().getId());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void insertComponentIndexLessThanZero() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-less");
-        component.addComponentAtIndex(-5, innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(-5, innerComponent));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void insertComponentIndexGreaterThanChildrenNumber() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-greater");
-        component.addComponentAtIndex(100, innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.addComponentAtIndex(100, innerComponent));
     }
 
     @Test
@@ -127,9 +131,9 @@ public class HasComponentsTest {
 
         try {
             component.remove(child, innerComponent);
-            Assert.fail();
+            fail();
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals(component, child.getParent().get());
+            assertEquals(component, child.getParent().get());
         }
     }
 
@@ -143,9 +147,9 @@ public class HasComponentsTest {
         TestComponent notAChild = new TestComponent();
 
         component.remove(notAChild, child);
-        Assert.assertFalse(child.getParent().isPresent());
-        Assert.assertFalse(component.getChildren()
-                .filter(comp -> comp.equals(child)).findAny().isPresent());
+        assertFalse(child.getParent().isPresent());
+        assertFalse(component.getChildren().filter(comp -> comp.equals(child))
+                .findAny().isPresent());
     }
 
     @Test
@@ -159,10 +163,10 @@ public class HasComponentsTest {
 
         component.remove(innerComponent);
 
-        Assert.assertEquals(size, component.getChildren().count());
+        assertEquals(size, component.getChildren().count());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void remove_removeComponentWithDifferentParent() {
         TestComponent component = createTestStructure();
 
@@ -171,7 +175,8 @@ public class HasComponentsTest {
 
         another.add(innerComponent);
 
-        component.remove(innerComponent);
+        assertThrows(IllegalArgumentException.class,
+                () -> component.remove(innerComponent));
     }
 
     private TestComponent createTestStructure() {
@@ -184,7 +189,7 @@ public class HasComponentsTest {
     }
 
     private void checkChildren(int number, TestComponent component) {
-        Assert.assertEquals(number, component.getChildren().count());
+        assertEquals(number, component.getChildren().count());
     }
 
     @Test
@@ -193,12 +198,12 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
         items.insertLast("second");
         items.insertLast("third");
 
-        container.bindChildren(items, item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.get()));
 
         assertEquals(3, container.getChildren().count());
         assertEquals("first",
@@ -215,10 +220,10 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.get()));
 
         assertEquals(1, container.getChildren().count());
 
@@ -227,32 +232,10 @@ public class HasComponentsTest {
         assertEquals("second",
                 container.getChildren().toList().get(1).getId().orElse(null));
 
-        items.remove(items.value().get(0));
+        items.remove(items.peek().get(0));
         assertEquals(1, container.getChildren().count());
         assertEquals("second",
                 container.getChildren().toList().get(0).getId().orElse(null));
-    }
-
-    @Test
-    public void bindChildren_registrationRemove_stopsUpdating() {
-        CurrentInstance.clearAll();
-        TestComponent container = new TestComponent();
-        new MockUI().add(container);
-
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
-        items.insertFirst("first");
-
-        Registration registration = container.bindChildren(items,
-                item -> new TestComponent(item.value()));
-
-        assertEquals(1, container.getChildren().count());
-
-        registration.remove();
-
-        items.insertLast("second");
-        assertEquals(
-                "After removing registration, children should not be updated",
-                1, container.getChildren().count());
     }
 
     @Test
@@ -262,10 +245,10 @@ public class HasComponentsTest {
         new MockUI().add(container);
         container.add(new TestComponent("existing"));
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
 
         assertThrows(IllegalStateException.class, () -> container
-                .bindChildren(items, item -> new TestComponent(item.value())));
+                .bindChildren(items, item -> new TestComponent(item.get())));
     }
 
     @Test
@@ -274,15 +257,87 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
 
-        container.bindChildren(items, item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.get()));
 
-        SharedListSignal<String> otherItems = new SharedListSignal<>(
-                String.class);
+        ListSignal<String> otherItems = new ListSignal<>();
         assertThrows(BindingActiveException.class,
                 () -> container.bindChildren(otherItems,
-                        item -> new TestComponent(item.value())));
+                        item -> new TestComponent(item.get())));
+    }
+
+    @Test
+    public void bindChildren_addSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        // signal child + slotted child
+        assertEquals(2, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_removeSlottedComponentWhileBindingActive_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        // Add a slotted child before binding
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        // Remove slotted child - should succeed
+        container.remove(slotted);
+
+        // Only signal child remains
+        assertEquals(1, container.getElement().getChildCount());
+    }
+
+    @Test
+    public void bindChildren_parentHasOnlySlottedChildren_succeeds() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        TestComponent slotted = new TestComponent("slotted");
+        slotted.getElement().setAttribute("slot", "title");
+        container.add(slotted);
+
+        ListSignal<String> items = new ListSignal<>();
+
+        // Should not throw even though container has a child
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+    }
+
+    @Test
+    public void bindChildren_removeAllThrowsWhileBindingActive() {
+        CurrentInstance.clearAll();
+        TestComponent container = new TestComponent();
+        new MockUI().add(container);
+
+        ListSignal<String> items = new ListSignal<>();
+        items.insertFirst("first");
+
+        container.bindChildren(items, item -> new TestComponent(item.get()));
+
+        assertThrows(BindingActiveException.class, () -> container.removeAll(),
+                "removeAll should throw while binding is active");
     }
 
     @Test
@@ -291,14 +346,14 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.get()));
 
-        assertThrows("add should throw while binding is active",
-                BindingActiveException.class,
-                () -> container.add(new TestComponent("manual")));
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent("manual")),
+                "add should throw while binding is active");
     }
 
     @Test
@@ -307,41 +362,82 @@ public class HasComponentsTest {
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
+        ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.value()));
+        container.bindChildren(items, item -> new TestComponent(item.get()));
 
         Component child = container.getChildren().toList().get(0);
 
-        assertThrows("remove should throw while binding is active",
-                BindingActiveException.class, () -> container.remove(child));
+        assertThrows(BindingActiveException.class,
+                () -> container.remove(child),
+                "remove should throw while binding is active");
     }
 
     @Test
-    public void bindChildren_addAndRemoveWorkAfterRegistrationRemoved() {
+    public void textBindingActive_addThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.add(new TestComponent()),
+                "add should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_removeThrows() {
+        TestComponent container = new TestComponent();
+        TestComponent child = new TestComponent();
+        container.add(child);
+
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> container.remove(child),
+                "remove should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_removeAllThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class, container::removeAll,
+                "removeAll should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_addComponentAtIndexThrows() {
+        TestComponent container = createContainerWithTextBinding();
+
+        assertThrows(BindingActiveException.class,
+                () -> container.addComponentAtIndex(0, new TestComponent()),
+                "addComponentAtIndex should throw while text binding is active");
+    }
+
+    @Test
+    public void textBindingActive_bindChildrenThrows() {
         CurrentInstance.clearAll();
         TestComponent container = new TestComponent();
         new MockUI().add(container);
 
-        SharedListSignal<String> items = new SharedListSignal<>(String.class);
-        items.insertFirst("first");
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
 
-        Registration registration = container.bindChildren(items,
-                item -> new TestComponent(item.value()));
+        ListSignal<String> items = new ListSignal<>();
+        assertThrows(BindingActiveException.class,
+                () -> container.bindChildren(items,
+                        item -> new TestComponent(item.get())),
+                "bindChildren should throw while text binding is active");
+    }
 
-        assertEquals(1, container.getChildren().count());
-
-        registration.remove();
-
-        // Now add and remove should work normally
-        TestComponent newChild = new TestComponent("manual");
-        container.add(newChild);
-        assertEquals(2, container.getChildren().count());
-
-        Component firstChild = container.getChildren().toList().get(0);
-        container.remove(firstChild);
-        assertEquals(1, container.getChildren().count());
+    private TestComponent createContainerWithTextBinding() {
+        TestComponent container = new TestComponent();
+        SignalBindingFeature feature = container.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.TEXT, new ValueSignal<>(""));
+        return container;
     }
 
 }

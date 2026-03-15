@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NativeTableCellBindTextTest extends SignalsUnitTest {
 
@@ -35,10 +35,10 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         cell.bindText(signal);
 
-        signal.value("text-1");
+        signal.set("text-1");
         assertEquals("text-1", cell.getText());
 
-        signal.value("text-2");
+        signal.set("text-2");
         assertEquals("text-2", cell.getText());
     }
 
@@ -55,19 +55,11 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_stopsUpdates() {
+    public void bindText_nullSignal_throwsNPE() {
         NativeTableCell cell = new NativeTableCell();
         UI.getCurrent().add(cell);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        cell.bindText(signal);
-        assertEquals("a", cell.getText());
-
-        cell.bindText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", cell.getText());
+        assertThrows(NullPointerException.class, () -> cell.bindText(null));
     }
 
     @Test
@@ -78,7 +70,7 @@ public class NativeTableCellBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", cell.getText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", cell.getText());
     }
 }

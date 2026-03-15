@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.signals.Signal;
 
@@ -419,11 +421,12 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Binds a {@link Signal}'s value to the width of this component and keeps
-     * the width synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * Binds a {@link Signal}'s value to the width of this component. The width
+     * is set immediately with the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state. When the component is
+     * in detached state, signal value changes have no effect. <code>null</code>
+     * signal unbinds the existing binding.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
@@ -439,31 +442,32 @@ public interface HasSize extends HasElement {
      * Div component = new Div();
      * add(component);
      * component.bindWidth(signal);
-     * signal.value("300px"); // The component width is set to "300px"
+     * signal.set("300px"); // The component width is set to "300px"
      * </pre>
      *
      * @param widthSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setWidth(String)
      */
-    default void bindWidth(Signal<String> widthSignal) {
-        getElement().getStyle().bind(STYLE_WIDTH, widthSignal);
+    default SignalBinding<?> bindWidth(Signal<String> widthSignal) {
+        Objects.requireNonNull(widthSignal, "Signal cannot be null");
+        SignalBinding<?> binding = getElement().getStyle().bind(STYLE_WIDTH,
+                widthSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_WIDTH_FULL,
-                widthSignal != null
-                        ? widthSignal
-                                .map(value -> "100%".equals(value) ? "" : null)
-                        : null);
+                widthSignal.map(value -> "100%".equals(value) ? "" : null));
+        return binding;
     }
 
     /**
-     * Binds a {@link Signal}'s value to the height of this component and keeps
-     * the height synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds the existing
-     * binding.
+     * Binds a {@link Signal}'s value to the height of this component. The
+     * height is set immediately with the current signal value when the binding
+     * is created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state. When the component is
+     * in detached state, signal value changes have no effect.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
@@ -479,23 +483,24 @@ public interface HasSize extends HasElement {
      * Div component = new Div();
      * add(component);
      * component.bindHeight(signal);
-     * signal.value("300px"); // The component height is set to "300px"
+     * signal.set("300px"); // The component height is set to "300px"
      * </pre>
      *
      * @param heightSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setHeight(String)
      */
-    default void bindHeight(Signal<String> heightSignal) {
-        getElement().getStyle().bind(STYLE_HEIGHT, heightSignal);
+    default SignalBinding<?> bindHeight(Signal<String> heightSignal) {
+        Objects.requireNonNull(heightSignal, "Signal cannot be null");
+        SignalBinding<?> binding = getElement().getStyle().bind(STYLE_HEIGHT,
+                heightSignal);
         getElement().bindAttribute(Constants.ATTRIBUTE_HEIGHT_FULL,
-                heightSignal != null
-                        ? heightSignal
-                                .map(value -> "100%".equals(value) ? "" : null)
-                        : null);
+                heightSignal.map(value -> "100%".equals(value) ? "" : null));
+        return binding;
     }
 
     /**

@@ -18,7 +18,9 @@ package com.vaadin.flow.signals.operations;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
-import com.vaadin.flow.signals.function.SerializableFunction;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * An operation triggered on a signal instance. The result will be populated
@@ -28,14 +30,16 @@ import com.vaadin.flow.signals.function.SerializableFunction;
  * @param <T>
  *            the result type
  */
-public class SignalOperation<T> implements Serializable {
+public class SignalOperation<T extends @Nullable Object>
+        implements Serializable {
     /**
      * The result of a signal operation.
      *
      * @param <T>
      *            the result type in case the operation was successful
      */
-    public sealed interface ResultOrError<T> extends Serializable {
+    public sealed interface ResultOrError<T extends @Nullable Object>
+            extends Serializable {
         /**
          * Checks whether this instance represents successfully applied signal
          * operation.
@@ -54,7 +58,8 @@ public class SignalOperation<T> implements Serializable {
      * @param value
      *            the result value
      */
-    public static record Result<T>(T value) implements ResultOrError<T> {
+    public record Result<T extends @Nullable Object>(
+            @Nullable T value) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return true;
@@ -69,7 +74,8 @@ public class SignalOperation<T> implements Serializable {
      * @param reason
      *            the error reason message
      */
-    public static record Error<T>(String reason) implements ResultOrError<T> {
+    public record Error<T extends @Nullable Object>(
+            String reason) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return false;
@@ -141,8 +147,11 @@ public class SignalOperation<T> implements Serializable {
             SerializableFunction<T, R> mapper) {
         result.thenAccept(resultOrError -> {
             if (resultOrError.successful()) {
+                @Nullable
                 T value = ((Result<T>) resultOrError).value();
-                target.result().complete(new Result<>(mapper.apply(value)));
+                @SuppressWarnings("NullAway")
+                R mapped = mapper.apply(value);
+                target.result().complete(new Result<>(mapped));
             } else {
                 target.result().complete(
                         new Error<>(((Error<?>) resultOrError).reason()));

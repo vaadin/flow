@@ -17,9 +17,8 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,16 +28,17 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MetadataWriterTest {
+class MetadataWriterTest {
 
     private UI ui;
     private VaadinSession session;
     private SystemMessages messages;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ui = Mockito.mock(UI.class);
         session = Mockito.mock(VaadinSession.class);
@@ -122,7 +122,7 @@ public class MetadataWriterTest {
             String expectedOutput) {
         ObjectNode meta = new MetadataWriter().createMetadata(ui, repaintAll,
                 async, messages);
-        Assert.assertEquals(expectedOutput, meta.toString());
+        assertEquals(expectedOutput, meta.toString());
     }
 
 }

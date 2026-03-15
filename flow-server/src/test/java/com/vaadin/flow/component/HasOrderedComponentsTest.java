@@ -18,13 +18,16 @@ package com.vaadin.flow.component;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 
-public class HasOrderedComponentsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class HasOrderedComponentsTest {
 
     static class TestOrderedComponents implements HasOrderedComponents {
 
@@ -63,12 +66,12 @@ public class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
                         Mockito.mock(Component.class)).stream());
 
-        Assert.assertEquals(1, components.indexOf(comp));
+        assertEquals(1, components.indexOf(comp));
 
         contianer = new TestComponentContianer();
         comp = new Anchor();
         contianer.add(new Text(""), comp);
-        Assert.assertEquals(1, contianer.indexOf(comp));
+        assertEquals(1, contianer.indexOf(comp));
     }
 
     @Test
@@ -78,14 +81,15 @@ public class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
 
-        Assert.assertEquals(-1, components.indexOf(comp));
+        assertEquals(-1, components.indexOf(comp));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void indexOf_componentIsNull_throws() {
         Mockito.when(components.getChildren()).thenReturn(Stream.empty());
 
-        components.indexOf(null);
+        assertThrows(IllegalArgumentException.class,
+                () -> components.indexOf(null));
     }
 
     @Test
@@ -93,11 +97,11 @@ public class HasOrderedComponentsTest {
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
-        Assert.assertEquals(2, components.getComponentCount());
+        assertEquals(2, components.getComponentCount());
 
         contianer = new TestComponentContianer();
         contianer.add(new Text(""), new Anchor());
-        Assert.assertEquals(2, contianer.getComponentCount());
+        assertEquals(2, contianer.getComponentCount());
     }
 
     @Test
@@ -107,28 +111,30 @@ public class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class), comp,
                         Mockito.mock(Component.class)).stream());
 
-        Assert.assertSame(comp, components.getComponentAt(1));
+        assertSame(comp, components.getComponentAt(1));
 
         contianer = new TestComponentContianer();
         comp = new Anchor();
         contianer.add(new Text(""), comp);
-        Assert.assertSame(comp, contianer.getComponentAt(1));
+        assertSame(comp, contianer.getComponentAt(1));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getComponentAt_negativeIndex_throws() {
         Mockito.when(components.getChildren())
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
 
-        components.getComponentAt(-1);
+        assertThrows(IllegalArgumentException.class,
+                () -> components.getComponentAt(-1));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getComponentAt_indexIsGreaterThanSize_throws() {
         Mockito.when(components.getChildren())
                 .thenReturn(Stream.of(Mockito.mock(Component.class)));
 
-        components.getComponentAt(2);
+        assertThrows(IllegalArgumentException.class,
+                () -> components.getComponentAt(2));
     }
 }

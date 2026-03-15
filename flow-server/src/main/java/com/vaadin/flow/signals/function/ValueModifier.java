@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.signals.function;
 
+import java.io.Serializable;
+
+import org.jspecify.annotations.Nullable;
+
 /**
  * Receives the current value of a signal for in-place modification. Used with
  * reference signals to apply changes to mutable values while ensuring
@@ -27,12 +31,13 @@ package com.vaadin.flow.signals.function;
  *            the value type
  */
 @FunctionalInterface
-public interface ValueModifier<T> {
+public interface ValueModifier<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Modifies the provided value in place.
      *
      * @param value
-     *            the value to modify, may be <code>null</code>
+     *            the value to modify
      */
     void modify(T value);
 }

@@ -157,10 +157,12 @@ public interface Style extends Serializable {
     /**
      * Removes all set style properties.
      * <p>
-     * This method silently clears all style signal bindings (unsubscribe and
-     * forget recorded values) in addition to clearing style values.
+     * Throws a {@link BindingActiveException} if any style signal binding is
+     * active.
      *
      * @return this style instance
+     * @throws BindingActiveException
+     *             if any style signal binding is active
      * @see #bind(String, Signal)
      */
     Style clear();
@@ -195,20 +197,18 @@ public interface Style extends Serializable {
     Stream<String> getNames();
 
     /**
-     * Binds the given style property to the provided string signal and keeps
-     * the style property value synchronized with the signal.
-     * <p>
-     * Passing {@code null} as the {@code signal} removes any existing binding
-     * for the given style property. When unbinding, the current presence of the
-     * style property is left unchanged.
+     * Binds the given style property to the provided string signal. The style
+     * property is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes.
      * <p>
      * When a binding is in place, the style signal mirrors
-     * {@code signal.value()}. If the signal value is {@code null}, the style
+     * {@code signal.get()}. If the signal value is {@code null}, the style
      * property is removed; otherwise it is set to the string value.
      * <p>
-     * The binding effect is active only while the owner element is in the
-     * attached state. While the owner is in the detached state, updates from
-     * the signal have no effect.
+     * After the initial application, the binding is active only while the owner
+     * element is in the attached state. While the owner is in the detached
+     * state, updates from the signal have no effect.
      * <p>
      * While a binding for a specific style name is active, any attempt to bind
      * another signal for the same name throws a {@link BindingActiveException}.
@@ -220,9 +220,9 @@ public interface Style extends Serializable {
      * @param name
      *            the style property name, not {@code null}
      * @param signal
-     *            the signal that provides the style signal; {@code null}
-     *            removes an existing binding for the given name
-     * @return this style instance
+     *            the signal that provides the style value, not {@code null}
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #set(String, String)
@@ -233,7 +233,7 @@ public interface Style extends Serializable {
      *
      * @since 25.0
      */
-    default Style bind(String name, Signal<String> signal) {
+    default SignalBinding<?> bind(String name, Signal<String> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     };

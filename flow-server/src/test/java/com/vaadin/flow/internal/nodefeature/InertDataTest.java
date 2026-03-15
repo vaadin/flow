@@ -15,42 +15,45 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.StateNode;
 
-public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InertDataTest extends AbstractNodeFeatureTest<InertData> {
 
     private StateNode parent;
     private StateNode child;
     private StateNode grandchild;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         parent = createNode(null);
         child = createNode(parent);
         grandchild = createNode(child);
     }
 
     @Test
-    public void inertData_defaults() {
+    void inertData_defaults() {
         Element element = ElementFactory.createDiv();
-        Assert.assertFalse("Elements should not have InertData by default",
+        assertFalse(
                 element.getNode().getFeatureIfInitialized(InertData.class)
-                        .isPresent());
+                        .isPresent(),
+                "Elements should not have InertData by default");
         final InertData inertData = element.getNode()
                 .getFeature(InertData.class);
-        Assert.assertFalse(inertData.isInertSelf());
-        Assert.assertFalse(inertData.isIgnoreParentInert());
-        Assert.assertTrue(inertData.allowsChanges());
+        assertFalse(inertData.isInertSelf());
+        assertFalse(inertData.isIgnoreParentInert());
+        assertTrue(inertData.allowsChanges());
     }
 
     @Test
-    public void inertData_hasShadowRoot_handlesInertCheck() {
+    void inertData_hasShadowRoot_handlesInertCheck() {
         parent = createNode(null);
         StateNode shadow = new StateNode(ElementChildrenList.class,
                 ShadowRootHost.class);
@@ -62,65 +65,65 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         parentFeature.setInertSelf(true);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
     }
 
     @Test
-    public void inertData_inheritingInert_allPermutations() {
+    void inertData_inheritingInert_allPermutations() {
         final InertData childFeature = child.getFeature(InertData.class);
         childFeature.setIgnoreParentInert(true);
-        Assert.assertFalse(childFeature.isInert());
+        assertFalse(childFeature.isInert());
         childFeature.generateChangesFromEmpty();
 
         final InertData parentFeature = parent.getFeature(InertData.class);
         parentFeature.setInertSelf(true);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertFalse(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         childFeature.setIgnoreParentInert(false);
         childFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertTrue(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         childFeature.setIgnoreParentInert(true);
         childFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertFalse(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         childFeature.setInertSelf(true);
         childFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertTrue(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         parentFeature.setInertSelf(false);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertFalse(parentFeature.isInert());
-        Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertFalse(parentFeature.isInert());
+        assertTrue(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         childFeature.setInertSelf(false);
         childFeature.generateChangesFromEmpty();
 
-        Assert.assertFalse(parentFeature.isInert());
-        Assert.assertFalse(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertFalse(parentFeature.isInert());
+        assertFalse(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
 
         // both parent and child have inert data and it should cascade
@@ -129,14 +132,14 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         parentFeature.setInertSelf(true);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parentFeature.isInert());
-        Assert.assertTrue(childFeature.isInert());
-        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+        assertTrue(parentFeature.isInert());
+        assertTrue(childFeature.isInert());
+        assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
                 .isPresent());
     }
 
     @Test
-    public void inertDataUpdates_hierarchyWithGaps_updatesCascaded() {
+    void inertDataUpdates_hierarchyWithGaps_updatesCascaded() {
         StateNode greatgrandchild = createNode(grandchild);
 
         final InertData greatgrandchildFeature = greatgrandchild
@@ -144,58 +147,58 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         greatgrandchildFeature.setInertSelf(false);
         greatgrandchildFeature.generateChangesFromEmpty();
 
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
 
         final InertData parentFeature = parent.getFeature(InertData.class);
         parentFeature.setInertSelf(true);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertTrue(grandchild.isInert());
-        Assert.assertTrue(greatgrandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertTrue(grandchild.isInert());
+        assertTrue(greatgrandchild.isInert());
 
         final InertData grandchildFeature = grandchild
                 .getFeature(InertData.class);
         grandchildFeature.setIgnoreParentInert(true);
         grandchildFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertFalse(grandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
 
         parentFeature.setInertSelf(false);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertFalse(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertFalse(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
 
         parentFeature.setInertSelf(true);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertFalse(grandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
 
         grandchildFeature.setIgnoreParentInert(false);
         grandchildFeature.generateChangesFromEmpty();
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertTrue(grandchild.isInert());
-        Assert.assertTrue(greatgrandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertTrue(grandchild.isInert());
+        assertTrue(greatgrandchild.isInert());
 
         parentFeature.setInertSelf(false);
         parentFeature.generateChangesFromEmpty();
 
-        Assert.assertFalse(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertFalse(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
 
         parentFeature.setInertSelf(true);
         grandchildFeature.setIgnoreParentInert(true);
@@ -203,10 +206,10 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
         parentFeature.generateChangesFromEmpty();
         // even though changes are not yet collected from grandchild,
         // value is correct due to parent changes cascading
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
-        Assert.assertFalse(greatgrandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertFalse(grandchild.isInert());
+        assertFalse(greatgrandchild.isInert());
     }
 
     private static StateNode createNode(StateNode parent) {

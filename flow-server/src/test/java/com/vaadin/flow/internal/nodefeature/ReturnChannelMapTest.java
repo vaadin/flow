@@ -17,80 +17,81 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 
-public class ReturnChannelMapTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class ReturnChannelMapTest {
     private StateNode node = new StateNode(ReturnChannelMap.class);
     private ReturnChannelMap returnChannelMap = node
             .getFeature(ReturnChannelMap.class);
 
     @Test
-    public void registerHandler_regstrationHasCorrectData() {
+    void registerHandler_regstrationHasCorrectData() {
         ReturnChannelRegistration registration = returnChannelMap
                 .registerChannel((arguments, channel) -> {
                 });
 
-        Assert.assertEquals("Node id should match", node.getId(),
-                registration.getStateNodeId());
-        Assert.assertSame("Registration should be findable based on id",
-                registration,
-                returnChannelMap.get(registration.getChannelId()));
-        Assert.assertEquals(
-                "Default disabled update mode should be to allow when enabled",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED,
-                registration.getDisabledUpdateMode());
+        assertEquals(node.getId(), registration.getStateNodeId(),
+                "Node id should match");
+        assertSame(registration,
+                returnChannelMap.get(registration.getChannelId()),
+                "Registration should be findable based on id");
+        assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                registration.getDisabledUpdateMode(),
+                "Default disabled update mode should be to allow when enabled");
     }
 
     @Test
-    public void twoArgsHandler_invoked() {
+    void twoArgsHandler_invoked() {
         AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
         AtomicReference<ReturnChannelRegistration> observedRegistration = new AtomicReference<>();
 
         ReturnChannelRegistration registration = returnChannelMap
                 .registerChannel((arguments, channel) -> {
-                    Assert.assertNotNull("Arguments should not be null",
-                            arguments);
-                    Assert.assertNull("There should be no previous arguments",
-                            observedArguments.getAndSet(arguments));
-                    Assert.assertNull("There should be no previous channel",
-                            observedRegistration.getAndSet(channel));
+                    assertNotNull(arguments, "Arguments should not be null");
+                    assertNull(observedArguments.getAndSet(arguments),
+                            "There should be no previous arguments");
+                    assertNull(observedRegistration.getAndSet(channel),
+                            "There should be no previous channel");
                 });
 
-        Assert.assertNull("Handler should not yet be invoked",
-                observedArguments.get());
+        assertNull(observedArguments.get(),
+                "Handler should not yet be invoked");
 
         ArrayNode arguments = JacksonUtils.createArrayNode();
         registration.invoke(arguments);
 
-        Assert.assertSame(arguments, observedArguments.get());
-        Assert.assertSame(registration, observedRegistration.get());
+        assertSame(arguments, observedArguments.get());
+        assertSame(registration, observedRegistration.get());
     }
 
     @Test
-    public void shorthandHandler_invoked() {
+    void shorthandHandler_invoked() {
         AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
 
         ReturnChannelRegistration registration = returnChannelMap
                 .registerChannel(arguments -> {
-                    Assert.assertNotNull("Arguments should not be null",
-                            arguments);
-                    Assert.assertNull("There should be no previous arguments",
-                            observedArguments.getAndSet(arguments));
+                    assertNotNull(arguments, "Arguments should not be null");
+                    assertNull(observedArguments.getAndSet(arguments),
+                            "There should be no previous arguments");
                 });
 
-        Assert.assertNull("Handler should not yet be invoked",
-                observedArguments.get());
+        assertNull(observedArguments.get(),
+                "Handler should not yet be invoked");
 
         ArrayNode arguments = JacksonUtils.createArrayNode();
         registration.invoke(arguments);
 
-        Assert.assertSame(arguments, observedArguments.get());
+        assertSame(arguments, observedArguments.get());
     }
 
 }

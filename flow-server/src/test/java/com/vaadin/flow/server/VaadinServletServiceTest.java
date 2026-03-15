@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
@@ -39,13 +38,19 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 /**
  * Test class for testing es6 resolution by browser capability. This is valid
  * only for bower mode where we need to decide ourselves.
  */
-public class VaadinServletServiceTest {
+class VaadinServletServiceTest {
 
     private final class TestTheme implements AbstractTheme {
         @Override
@@ -63,7 +68,7 @@ public class VaadinServletServiceTest {
     private TestVaadinServletService service;
     private VaadinServlet servlet;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
@@ -71,7 +76,7 @@ public class VaadinServletServiceTest {
         servlet = mocks.getServlet();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mocks.cleanup();
     }
@@ -80,26 +85,26 @@ public class VaadinServletServiceTest {
     public void resolveNullThrows() {
         try {
             service.resolveResource(null);
-            Assert.fail("null should not resolve");
+            fail("null should not resolve");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Url cannot be null", e.getMessage());
+            assertEquals("Url cannot be null", e.getMessage());
         }
     }
 
     @Test
     public void resolveResource() {
-        Assert.assertEquals("", service.resolveResource(""));
-        Assert.assertEquals("foo", service.resolveResource("foo"));
-        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
+        assertEquals("", service.resolveResource(""));
+        assertEquals("foo", service.resolveResource("foo"));
+        assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
     public void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
 
-        Assert.assertEquals("", service.resolveResource(""));
-        Assert.assertEquals("foo", service.resolveResource("foo"));
-        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
+        assertEquals("", service.resolveResource(""));
+        assertEquals("foo", service.resolveResource("foo"));
+        assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
@@ -112,30 +117,30 @@ public class VaadinServletServiceTest {
         // should return . (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "");
-        Assert.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host:8080/contextpath/servlet/
         // should return ./.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "/");
-        Assert.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host:8080/servlet
         // should return "."
         location = testLocation("http://dummy.host:8080", "", "/servlet", "");
-        Assert.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host/contextpath/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host", "/contextpath", "/servlet",
                 "/extra/stuff");
-        Assert.assertEquals("./../", location);
+        assertEquals("./../", location);
 
         // http://dummy.host/context/path/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /context/path)
         location = testLocation("http://dummy.host", "/context/path",
                 "/servlet", "/extra/stuff");
-        Assert.assertEquals("./../", location);
+        assertEquals("./../", location);
 
     }
 
@@ -168,7 +173,7 @@ public class VaadinServletServiceTest {
 
         service.init();
 
-        Assert.assertSame(loader, service.getClassLoader());
+        assertSame(loader, service.getClassLoader());
     }
 
     @Test
@@ -180,7 +185,7 @@ public class VaadinServletServiceTest {
                 i -> vaadinServlet.getServletConfig().getServletContext());
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
-        Assert.assertNotNull(service.getPwaRegistry());
+        assertNotNull(service.getPwaRegistry());
     }
 
     @Test
@@ -193,7 +198,7 @@ public class VaadinServletServiceTest {
         VaadinServletService service = new VaadinServletService(vaadinServlet,
                 mocks.getDeploymentConfiguration());
         vaadinServlet.destroy();
-        Assert.assertNull(service.getPwaRegistry());
+        assertNull(service.getPwaRegistry());
     }
 
     private String testLocation(String base, String contextPath,
@@ -315,17 +320,16 @@ public class VaadinServletServiceTest {
         try {
             service.handleRequest(request, response);
         } catch (ServiceException ex) {
-            Assert.assertTrue(
-                    "The exception was the one coming from RequestHandler",
-                    ex.getMessage().contains("BOOM!"));
+            assertTrue(ex.getMessage().contains("BOOM!"),
+                    "The exception was the one coming from RequestHandler");
         }
 
-        Assert.assertEquals("Filter was called on request start", "true",
-                request.getAttribute("started"));
-        Assert.assertEquals("Filter was called on exception handling", "true",
-                request.getAttribute("exception handled"));
-        Assert.assertEquals("Filter was called in the finally block", "true",
-                request.getAttribute("ended"));
+        assertEquals("true", request.getAttribute("started"),
+                "Filter was called on request start");
+        assertEquals("true", request.getAttribute("exception handled"),
+                "Filter was called on exception handling");
+        assertEquals("true", request.getAttribute("ended"),
+                "Filter was called in the finally block");
     }
 
     static class ExceptionThrowingRequestHandler implements RequestHandler {
@@ -353,7 +357,7 @@ public class VaadinServletServiceTest {
                 VaadinResponse response, VaadinSession vaadinSession,
                 Exception t) {
             if (t instanceof IllegalStateException ex) {
-                Assert.assertEquals("BOOM!", ex.getMessage());
+                assertEquals("BOOM!", ex.getMessage());
                 request.setAttribute("exception handled", "true");
                 return;
             }

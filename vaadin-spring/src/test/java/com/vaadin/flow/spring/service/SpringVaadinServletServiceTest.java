@@ -20,16 +20,15 @@ import jakarta.servlet.ServletException;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
@@ -41,9 +40,13 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ExtendWith(SpringExtension.class)
 @Import(TestServletConfiguration.class)
-public class SpringVaadinServletServiceTest {
+class SpringVaadinServletServiceTest {
 
     @Autowired
     private ApplicationContext context;
@@ -73,18 +76,18 @@ public class SpringVaadinServletServiceTest {
     }
 
     @Test
-    public void getInstantiator_springManagedBean_instantiatorBeanReturned()
+    void getInstantiator_springManagedBean_instantiatorBeanReturned()
             throws ServletException {
         VaadinService service = SpringInstantiatorTest.getService(context,
                 null);
 
         Instantiator instantiator = service.getInstantiator();
 
-        Assert.assertEquals(TestInstantiator.class, instantiator.getClass());
+        assertEquals(TestInstantiator.class, instantiator.getClass());
     }
 
     @Test
-    public void uiInitListenerAsSpringBean_listenerIsAutoregisteredAsUIInitiLietnerInSpringService()
+    void uiInitListenerAsSpringBean_listenerIsAutoregisteredAsUIInitiLietnerInSpringService()
             throws ServletException, ServiceException {
         VaadinService service = SpringInstantiatorTest.getService(context,
                 new Properties());
@@ -94,12 +97,12 @@ public class SpringVaadinServletServiceTest {
 
         service.fireUIInitListeners(ui);
 
-        Assert.assertEquals(1, listener.events.size());
-        Assert.assertSame(ui, listener.events.get(0).getUI());
+        assertEquals(1, listener.events.size());
+        assertSame(ui, listener.events.get(0).getUI());
     }
 
     @Test
-    public void requestInterceptorsAreRegisteredOnTheService()
+    void requestInterceptorsAreRegisteredOnTheService()
             throws ServletException, ServiceException {
         VaadinServletService service = (VaadinServletService) SpringInstantiatorTest
                 .getService(context, new Properties());
@@ -110,17 +113,16 @@ public class SpringVaadinServletServiceTest {
             service.handleRequest(request, new VaadinServletResponse(
                     new MockHttpServletResponse(), service));
         } catch (Exception e) {
-            Assert.assertTrue(
-                    "Exception must be related to missing frontend folder",
-                    e.getMessage().contains("Unable to find index.html"));
+            assertTrue(e.getMessage().contains("Unable to find index.html"),
+                    "Exception must be related to missing frontend folder");
         }
 
-        Assert.assertEquals("Interceptor got called on start", "true",
-                request.getAttribute("started"));
-        Assert.assertEquals("Interceptor got called on error", "true",
-                request.getAttribute("error"));
-        Assert.assertEquals("Interceptor got called on stop", "true",
-                request.getAttribute("stopped"));
+        assertEquals("true", request.getAttribute("started"),
+                "Interceptor got called on start");
+        assertEquals("true", request.getAttribute("error"),
+                "Interceptor got called on error");
+        assertEquals("true", request.getAttribute("stopped"),
+                "Interceptor got called on stop");
     }
 
 }

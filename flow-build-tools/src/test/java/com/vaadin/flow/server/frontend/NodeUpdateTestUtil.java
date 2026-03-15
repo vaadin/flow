@@ -24,15 +24,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.DepsTests;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NodeUpdateTestUtil {
+class NodeUpdateTestUtil {
 
     static ClassFinder getClassFinder() throws MalformedURLException {
         return new DefaultClassFinder(new URLClassLoader(getClassPath()),
@@ -68,9 +68,9 @@ public class NodeUpdateTestUtil {
     static URL getTestResource(String resourceName) {
         URL resourceUrl = NodeUpdateTestUtil.class.getClassLoader()
                 .getResource(resourceName);
-        assertNotNull(String.format(
+        assertNotNull(resourceUrl, String.format(
                 "Expect the test resource to be present in test resource folder with name = '%s'",
-                resourceName), resourceUrl);
+                resourceName));
         return resourceUrl;
     }
 
@@ -111,6 +111,13 @@ public class NodeUpdateTestUtil {
             createExpectedImport(directoryWithImportsJs, nodeModulesPath,
                     expectedImport);
         }
+        // Local UI imports (./xxx.js) resolve to generated/jar-resources/
+        for (String uiImport : DepsTests.UI_IMPORTS) {
+            if (uiImport.startsWith("./")) {
+                createExpectedImport(directoryWithImportsJs, nodeModulesPath,
+                        "./generated/jar-resources/" + uiImport.substring(2));
+            }
+        }
     }
 
     void createExpectedImport(File directoryWithImportsJs, File nodeModulesPath,
@@ -118,13 +125,13 @@ public class NodeUpdateTestUtil {
         File newFile = resolveImportFile(directoryWithImportsJs,
                 nodeModulesPath, expectedImport);
         newFile.getParentFile().mkdirs();
-        Assert.assertTrue(newFile.createNewFile());
+        assertTrue(newFile.createNewFile());
     }
 
     void deleteExpectedImports(File directoryWithImportsJs,
             File nodeModulesPath) {
         for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
+            assertTrue(resolveImportFile(directoryWithImportsJs,
                     nodeModulesPath, expectedImport).delete());
         }
     }

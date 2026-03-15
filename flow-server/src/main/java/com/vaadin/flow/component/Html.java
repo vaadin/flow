@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
@@ -28,8 +29,8 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -138,7 +139,7 @@ public class Html extends Component {
         if (htmlSignal == null) {
             throw new IllegalArgumentException("HTML signal cannot be null");
         }
-        String outerHtml = htmlSignal.value();
+        String outerHtml = htmlSignal.peek();
         if (outerHtml == null || outerHtml.isEmpty()) {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
@@ -239,10 +240,11 @@ public class Html extends Component {
 
     /**
      * Binds a {@link com.vaadin.flow.signals.Signal}'s value to this
-     * component's HTML content (outer HTML) and keeps the content synchronized
-     * with the signal value while the component is attached. When the component
-     * is detached, signal value changes have no effect. Passing
-     * <code>null</code> unbinds any existing binding.
+     * component's HTML content (outer HTML). The content is set immediately
+     * with the current signal value when the binding is created, and is kept
+     * synchronized with any subsequent signal value changes while the component
+     * is attached. When the component is detached, signal value changes have no
+     * effect.
      * <p>
      * While a Signal is bound to the HTML content, any attempt to set the HTML
      * content manually via {@link #setHtmlContent(String)} throws
@@ -254,26 +256,22 @@ public class Html extends Component {
      * component's current root tag.
      *
      * @param htmlSignal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
-    public void bindHtmlContent(Signal<String> htmlSignal) {
+    public SignalBinding<String> bindHtmlContent(Signal<String> htmlSignal) {
+        Objects.requireNonNull(htmlSignal, "Signal cannot be null");
         SignalBindingFeature feature = getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
 
-        if (htmlSignal == null) {
-            feature.removeBinding(SignalBindingFeature.HTML_CONTENT);
-        } else {
-            if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
-                throw new BindingActiveException();
-            }
-
-            Registration registration = ElementEffect.bind(getElement(),
-                    htmlSignal, (element, value) -> setOuterHtml(value, true));
-            feature.setBinding(SignalBindingFeature.HTML_CONTENT, registration,
-                    htmlSignal);
+        if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
+            throw new BindingActiveException();
         }
+
+        SignalBinding<String> binding = ElementEffect.bind(getElement(),
+                htmlSignal, (element, value) -> setOuterHtml(value, true));
+        feature.setBinding(SignalBindingFeature.HTML_CONTENT, htmlSignal);
+        return binding;
     }
 }

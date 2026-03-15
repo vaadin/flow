@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class HasHelperBindHelperTextTest extends SignalsUnitTest {
+class HasHelperBindHelperTextTest extends SignalsUnitTest {
 
     @Tag("div")
     public static class HasHelperComponent extends Component
@@ -39,10 +39,10 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         c.bindHelperText(signal);
 
-        signal.value("help-1");
+        signal.set("help-1");
         assertEquals("help-1", c.getElement().getProperty("helperText"));
 
-        signal.value("help-2");
+        signal.set("help-2");
         assertEquals("help-2", c.getElement().getProperty("helperText"));
     }
 
@@ -59,18 +59,10 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHelperText_unbindWithNull_stopsUpdates() {
+    public void bindHelperText_nullSignal_throwsNPE() {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        c.bindHelperText(signal);
-        assertEquals("a", c.getElement().getProperty("helperText"));
-
-        c.bindHelperText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", c.getElement().getProperty("helperText"));
+        assertThrows(NullPointerException.class, () -> c.bindHelperText(null));
     }
 }

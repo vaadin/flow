@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NativeLabelBindTextTest extends SignalsUnitTest {
 
@@ -35,10 +35,10 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         label.bindText(signal);
 
-        signal.value("text-1");
+        signal.set("text-1");
         assertEquals("text-1", label.getText());
 
-        signal.value("text-2");
+        signal.set("text-2");
         assertEquals("text-2", label.getText());
     }
 
@@ -55,19 +55,11 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_unbindWithNull_stopsUpdates() {
+    public void bindText_nullSignal_throwsNPE() {
         NativeLabel label = new NativeLabel();
         UI.getCurrent().add(label);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        label.bindText(signal);
-        assertEquals("a", label.getText());
-
-        label.bindText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", label.getText());
+        assertThrows(NullPointerException.class, () -> label.bindText(null));
     }
 
     @Test
@@ -78,7 +70,7 @@ public class NativeLabelBindTextTest extends SignalsUnitTest {
 
         assertEquals("initial", label.getText());
 
-        signal.value("updated");
+        signal.set("updated");
         assertEquals("updated", label.getText());
     }
 }

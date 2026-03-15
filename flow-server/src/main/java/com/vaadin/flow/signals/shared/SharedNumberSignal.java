@@ -16,8 +16,8 @@
 package com.vaadin.flow.signals.shared;
 
 import java.util.Objects;
-import java.util.function.IntFunction;
 
+import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
@@ -84,30 +84,47 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
     public SignalOperation<Double> incrementBy(double delta) {
         return submit(
                 new SignalCommand.IncrementCommand(Id.random(), id(), delta),
-                success -> nodeValue(success.onlyUpdate().newNode(),
+                success -> nodeValue(
+                        Objects.requireNonNull(success.onlyUpdate().newNode()),
                         Double.class));
     }
 
     @Override
-    public Double value() {
-        Double value = super.value();
-
+    public Double get() {
+        Double value = super.get();
         if (value == null) {
             return Double.valueOf(0);
-        } else {
-            return value;
         }
+        return value;
+    }
+
+    @Override
+    public Double peek() {
+        Double value = super.peek();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
+    }
+
+    @Override
+    public Double peekConfirmed() {
+        Double value = super.peekConfirmed();
+        if (value == null) {
+            return Double.valueOf(0);
+        }
+        return value;
     }
 
     /**
      * Gets the value of this signal as an integer. This method works in the
-     * same way was {@link #value()} with regards to transactions and dependency
+     * same way was {@link #get()} with regards to transactions and dependency
      * tracking.
      *
      * @return the signal value as an integer
      */
-    public int valueAsInt() {
-        return value().intValue();
+    public int getAsInt() {
+        return get().intValue();
     }
 
     /**
@@ -118,8 +135,8 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Double> value(int value) {
-        return value(Double.valueOf(value));
+    public SignalOperation<Double> set(int value) {
+        return set(Double.valueOf(value));
     }
 
     /**
@@ -154,7 +171,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
         /*
          * While this method could semantically be declared to return a less
          * specific type that doesn't provide mutator methods, that would also
-         * remove access to e.g. the valueAsInt method.
+         * remove access to e.g. the getAsInt method.
          */
         return withValidator(anything -> false);
     }
@@ -171,7 +188,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      *            the integer mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    public <C> Signal<C> mapIntValue(IntFunction<C> mapper) {
+    public <C> Signal<C> mapIntValue(SerializableIntFunction<C> mapper) {
         return map(doubleValue -> mapper.apply(doubleValue.intValue()));
     }
 

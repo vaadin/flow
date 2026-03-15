@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.function;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -25,20 +27,20 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Dependencies are automatically tracked - any signal whose value is accessed
  * during the computation becomes a dependency. The computation is lazy and only
- * runs when the signal value is accessed and the previous value might have been
- * invalidated by dependent signal changes.
+ * runs when the signal value is accessed.
  *
  * @param <T>
  *            the computed value type
  * @see Signal#computed(SignalComputation)
  */
 @FunctionalInterface
-public interface SignalComputation<T> extends Serializable {
+public interface SignalComputation<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Computes the signal value, automatically tracking dependencies on other
      * signals.
      *
-     * @return the computed value, may be <code>null</code>
+     * @return the computed value
      */
     T compute();
 }

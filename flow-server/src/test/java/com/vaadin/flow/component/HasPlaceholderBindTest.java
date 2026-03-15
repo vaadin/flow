@@ -15,21 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit tests for
  * {@link HasPlaceholder#bindPlaceholder(com.vaadin.flow.signals.Signal)}.
  */
-public class HasPlaceholderBindTest extends SignalsUnitTest {
+class HasPlaceholderBindTest extends SignalsUnitTest {
 
     @Tag(Tag.DIV)
     private static class TestComponent extends Component
@@ -48,11 +47,11 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("first", component.getPlaceholder());
 
         // Update signal and verify placeholder follows
-        signal.value("second");
+        signal.set("second");
         assertEquals("second", component.getPlaceholder());
 
         // Another update to ensure continued propagation
-        signal.value("third");
+        signal.set("third");
         assertEquals("third", component.getPlaceholder());
     }
 
@@ -62,10 +61,11 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         // Not attached yet
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
-        // No propagation while detached
-        assertNull(component.getPlaceholder());
-        signal.value("bar");
-        assertNull(component.getPlaceholder());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("foo", component.getPlaceholder());
+        // Signal changes while detached are ignored (effect is passivated)
+        signal.set("bar");
+        assertEquals("foo", component.getPlaceholder());
     }
 
     @Test
@@ -73,10 +73,12 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
-        // Update before attach
-        signal.value("bar");
-        assertNull(component.getPlaceholder());
-        // Attach -> latest value is applied
+        // Probe applied "foo" immediately
+        assertEquals("foo", component.getPlaceholder());
+        // Update before attach - ignored while detached
+        signal.set("bar");
+        assertEquals("foo", component.getPlaceholder());
+        // Attach -> latest value is applied because signal changed since probe
         UI.getCurrent().add(component);
         assertEquals("bar", component.getPlaceholder());
     }
@@ -91,7 +93,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         assertEquals("foo", component.getPlaceholder());
         // Detach and update signal -> ignored while detached
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", component.getPlaceholder());
         // Re-attach -> latest value applied
         UI.getCurrent().add(component);
@@ -99,24 +101,12 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPlaceholder_unbindWithNullSignal_keepsCurrentAndStopsUpdates() {
+    public void bindPlaceholder_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("one");
-        component.bindPlaceholder(signal);
-        assertEquals("one", component.getPlaceholder());
 
-        // Unbind by passing null; current value should remain
-        component.bindPlaceholder(null);
-        assertEquals("one", component.getPlaceholder());
-
-        // Further updates to the old signal should not propagate
-        signal.value("two");
-        assertEquals("one", component.getPlaceholder());
-
-        // Manual updates should work after unbind
-        component.setPlaceholder("manual");
-        assertEquals("manual", component.getPlaceholder());
+        assertThrows(NullPointerException.class,
+                () -> component.bindPlaceholder(null));
     }
 
     @Test
@@ -126,10 +116,9 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when setting placeholder while binding is active",
-                BindingActiveException.class,
-                () -> component.setPlaceholder("bar"));
+        assertThrows(BindingActiveException.class,
+                () -> component.setPlaceholder("bar"),
+                "Expected BindingActiveException when setting placeholder while binding is active");
     }
 
     @Test
@@ -139,9 +128,8 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-        assertThrows(
-                "Expected BindingActiveException when binding a new signal while a binding is active",
-                BindingActiveException.class,
-                () -> component.bindPlaceholder(new ValueSignal<>("bar")));
+        assertThrows(BindingActiveException.class,
+                () -> component.bindPlaceholder(new ValueSignal<>("bar")),
+                "Expected BindingActiveException when binding a new signal while a binding is active");
     }
 }

@@ -62,16 +62,16 @@ public class LocalSignalSerializationTest {
     }
 
     @Test
-    public void testValueSignal_withNullValue_notSerializable() {
-        ValueSignal<String> signal = new ValueSignal<>();
+    public void valueSignal_serializable() {
+        ValueSignal<String> signal = new ValueSignal<>("");
         assertSerializeAndDeserialize(signal);
 
-        signal.value("Test");
+        signal.set("Test");
         assertSerializeAndDeserialize(signal);
     }
 
     @Test
-    void testListSignal_empty_notSerializable() {
+    void listSignal_serializable() {
         ListSignal<String> signal = new ListSignal<>();
         assertSerializeAndDeserialize(signal);
 

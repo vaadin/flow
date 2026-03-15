@@ -21,23 +21,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class NodeValueEmptyRequiredFeatureTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class NodeValueEmptyRequiredFeatureTest {
 
     private StateNode node;
 
     private NodeValue<Serializable> nodeValue;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         node = new StateNode(Arrays.asList(BasicTypeValue.class)) {
             @Override
             public boolean isAttached() {
@@ -48,22 +51,22 @@ public class NodeValueEmptyRequiredFeatureTest {
     }
 
     @Test
-    public void generateChangesFromEmpty_featureHasChangesToCollect() {
+    void generateChangesFromEmpty_featureHasChangesToCollect() {
         nodeValue.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
         node.collectChanges(change::set);
 
-        Assert.assertTrue(change.get() instanceof EmptyChange);
+        assertTrue(change.get() instanceof EmptyChange);
 
         nodeValue.generateChangesFromEmpty();
         change.set(null);
         node.collectChanges(change::set);
-        Assert.assertNull(change.get());
+        assertNull(change.get());
     }
 
     @Test
-    public void generateChangesFromEmpty_noEmptyChange() {
+    void generateChangesFromEmpty_noEmptyChange() {
         nodeValue.setValue("foo");
         node.clearChanges();
         nodeValue.generateChangesFromEmpty();
@@ -71,32 +74,32 @@ public class NodeValueEmptyRequiredFeatureTest {
         List<NodeChange> changes = new ArrayList<>();
         node.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
     }
 
     @Test
-    public void collectChanges_featureHasEmptyChange() {
+    void collectChanges_featureHasEmptyChange() {
         nodeValue.generateChangesFromEmpty();
 
         AtomicReference<NodeChange> change = new AtomicReference<>();
         nodeValue.collectChanges(change::set);
 
-        Assert.assertTrue(change.get() instanceof EmptyChange);
+        assertTrue(change.get() instanceof EmptyChange);
 
         change.set(null);
         nodeValue.collectChanges(change::set);
-        Assert.assertNull(change.get());
+        assertNull(change.get());
     }
 
     @Test
-    public void collectChanges_noEmptyChange() {
+    void collectChanges_noEmptyChange() {
         nodeValue.setValue("foo");
 
         List<NodeChange> changes = new ArrayList<>();
         node.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.size());
-        Assert.assertTrue(changes.get(0) instanceof MapPutChange);
+        assertEquals(1, changes.size());
+        assertTrue(changes.get(0) instanceof MapPutChange);
     }
 }

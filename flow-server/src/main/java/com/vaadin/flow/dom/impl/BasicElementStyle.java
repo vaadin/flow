@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
@@ -97,12 +98,11 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public Style bind(String name, Signal<String> signal) {
+    public SignalBinding<?> bind(String name, Signal<String> signal) {
         ElementUtil.validateStylePropertyName(name);
         String attribute = StyleUtil.stylePropertyToAttribute(name);
         Element owner = Element.get(propertyMap.getNode());
-        propertyMap.bindSignal(owner, attribute, signal);
-        return this;
+        return propertyMap.bindSignal(owner, attribute, signal, null);
     }
 
     @Override

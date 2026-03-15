@@ -17,20 +17,19 @@ package com.vaadin.flow.server;
 
 import java.util.Locale;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.flow.signals.WritableSignal;
+import com.vaadin.flow.signals.Signal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Unit tests for {@link VaadinSession#localeSignal()}.
  */
-public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
+class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
 
     private VaadinSession getSession() {
         return UI.getCurrent().getSession();
@@ -39,17 +38,17 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     @Test
     public void localeSignal_initialValue_matchesGetLocale() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        Signal<Locale> signal = session.localeSignal();
 
-        assertNotNull("localeSignal() should never return null", signal);
-        assertEquals("Signal value should match getLocale()",
-                session.getLocale(), signal.value());
+        assertNotNull(signal, "localeSignal() should never return null");
+        assertEquals(session.getLocale(), signal.peek(),
+                "Signal value should match getLocale()");
     }
 
     @Test
     public void localeSignal_setLocale_signalUpdated() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        Signal<Locale> signal = session.localeSignal();
 
         Locale initialLocale = session.getLocale();
         Locale newLocale = Locale.FRENCH;
@@ -61,71 +60,24 @@ public class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
 
         session.setLocale(newLocale);
 
-        assertEquals("Signal should reflect the new locale after setLocale()",
-                newLocale, signal.value());
-        assertEquals("getLocale() should also return the new locale", newLocale,
-                session.getLocale());
-    }
-
-    @Test
-    public void localeSignal_writeToSignal_updatesGetLocale() {
-        VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
-
-        Locale initialLocale = session.getLocale();
-        Locale newLocale = Locale.FRENCH;
-
-        // Ensure we're actually changing the locale
-        if (initialLocale.equals(newLocale)) {
-            newLocale = Locale.GERMAN;
-        }
-
-        signal.value(newLocale);
-
-        assertEquals("getLocale() should reflect the new locale after "
-                + "writing to signal", newLocale, session.getLocale());
-        assertEquals("Signal should have the new value", newLocale,
-                signal.value());
-    }
-
-    @Test
-    public void localeSignal_sameInstance_returnedOnMultipleCalls() {
-        VaadinSession session = getSession();
-
-        WritableSignal<Locale> signal1 = session.localeSignal();
-        WritableSignal<Locale> signal2 = session.localeSignal();
-
-        assertSame("localeSignal() should return the same instance on "
-                + "multiple calls", signal1, signal2);
+        assertEquals(newLocale, signal.peek(),
+                "Signal should reflect the new locale after setLocale()");
+        assertEquals(newLocale, session.getLocale(),
+                "getLocale() should also return the new locale");
     }
 
     @Test
     public void localeSignal_multipleLocaleChanges_signalFollows() {
         VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
+        Signal<Locale> signal = session.localeSignal();
 
         session.setLocale(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, signal.value());
+        assertEquals(Locale.FRENCH, signal.peek());
 
         session.setLocale(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, signal.value());
+        assertEquals(Locale.GERMAN, signal.peek());
 
         session.setLocale(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, signal.value());
-    }
-
-    @Test
-    public void localeSignal_multipleSignalWrites_getLocaleFollows() {
-        VaadinSession session = getSession();
-        WritableSignal<Locale> signal = session.localeSignal();
-
-        signal.value(Locale.FRENCH);
-        assertEquals(Locale.FRENCH, session.getLocale());
-
-        signal.value(Locale.GERMAN);
-        assertEquals(Locale.GERMAN, session.getLocale());
-
-        signal.value(Locale.JAPANESE);
-        assertEquals(Locale.JAPANESE, session.getLocale());
+        assertEquals(Locale.JAPANESE, signal.peek());
     }
 }

@@ -23,7 +23,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
 @SpringBootTest()
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
-public abstract class AbstractDevModeBrowserLauncherTest {
+abstract class AbstractDevModeBrowserLauncherTest {
 
     @Autowired
     protected GenericWebApplicationContext app;

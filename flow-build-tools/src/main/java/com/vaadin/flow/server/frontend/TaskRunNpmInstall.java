@@ -110,6 +110,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } else {
                 command = "ci";
             }
+        } else if (options.isEnablePnpm()) {
+            command += " --no-frozen-lockfile";
         }
 
         if (packageUpdater.modified || shouldRunNpmInstall()) {
@@ -282,6 +284,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         } else {
             npmInstallCommand.add("install");
+            if (options.isEnablePnpm()) {
+                npmInstallCommand.add("--no-frozen-lockfile");
+            }
         }
 
         postinstallCommand.add("run");

@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -70,6 +70,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
+                "com\\.vaadin\\.flow\\.internal\\.ResourceContentHash",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
                 "com\\.vaadin\\.flow\\.signals\\..*",
@@ -206,7 +207,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
-                "com\\.vaadin\\.flow\\.component\\.ComponentEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",

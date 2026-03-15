@@ -59,6 +59,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
@@ -95,6 +96,7 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.signals.SignalEnvironment;
+import com.vaadin.flow.signals.impl.Transaction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -372,8 +374,14 @@ public abstract class VaadinService implements Serializable {
                         task.run();
                     } else {
                         try {
-                            getExecutor()
-                                    .execute(() -> owner.access(task::run));
+                            getExecutor().execute(() -> {
+                                try {
+                                    owner.access(task::run);
+                                } catch (UIDetachedException e) {
+                                    // UI got detached while we were
+                                    // waiting to access it, ignore
+                                }
+                            });
                         } catch (Exception e) {
                             // submitted when executor is shut down, ignore
                         }
@@ -395,7 +403,19 @@ public abstract class VaadinService implements Serializable {
         Runnable unregister = SignalEnvironment
                 .register(new VaadinServiceEnvironment());
 
-        addServiceDestroyListener(event -> unregister.run());
+        Transaction.setTransactionFallback(() -> {
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session == null || session.getLockInstance() == null
+                    || !session.hasLock()) {
+                return null;
+            }
+            return session.getOrCreateSessionScopedTransaction();
+        });
+
+        addServiceDestroyListener(event -> {
+            unregister.run();
+            Transaction.setTransactionFallback(null);
+        });
     }
 
     private void addRouterUsageStatistics() {

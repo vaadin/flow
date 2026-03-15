@@ -15,17 +15,19 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -36,11 +38,13 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SignalPropertySupportTest {
+class SignalPropertySupportTest {
 
     private static MockVaadinServletService service;
 
@@ -49,27 +53,27 @@ public class SignalPropertySupportTest {
     private AtomicInteger callCount;
     private AtomicReference<Object> lastValue;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         service = new MockVaadinServletService();
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         events = mockLockedSessionWithErrorHandler();
         callCount = new AtomicInteger(0);
         lastValue = new AtomicReference<>();
     }
 
-    @After
+    @AfterEach
     public void after() {
-        Assert.assertTrue(events.isEmpty());
+        assertTrue(events.isEmpty());
         CurrentInstance.clearAll();
         events = null;
     }
@@ -106,7 +110,7 @@ public class SignalPropertySupportTest {
     }
 
     @Test
-    public void get_boundButNotAttached_valueNotSetInitially() {
+    public void get_boundButNotAttached_valueSetInitially() {
         var component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -116,8 +120,9 @@ public class SignalPropertySupportTest {
                 });
         signalPropertySupport.bind(signal);
 
-        assertNull(signalPropertySupport.get());
-        assertEquals(0, callCount.get());
+        // Probe runs immediately at bind time even when not attached
+        assertEquals("foo", signalPropertySupport.get());
+        assertEquals(1, callCount.get());
     }
 
     @Test
@@ -136,7 +141,7 @@ public class SignalPropertySupportTest {
         assertEquals("foo", signalPropertySupport.get());
         assertEquals("foo", lastValue.get());
 
-        signal.value("bar");
+        signal.set("bar");
 
         assertEquals("bar", signalPropertySupport.get());
         assertEquals("bar", lastValue.get());
@@ -177,7 +182,8 @@ public class SignalPropertySupportTest {
 
         assertThrows(BindingActiveException.class,
                 () -> signalPropertySupport.set("bar"));
-        assertEquals(0, callCount.get());
+        // Probe ran once at bind time
+        assertEquals(1, callCount.get());
     }
 
     @Test
@@ -189,7 +195,7 @@ public class SignalPropertySupportTest {
                 .create(component, lastValue::set);
         ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport
-                .bind(Signal.computed(() -> "computed-" + signal.value()));
+                .bind(Signal.computed(() -> "computed-" + signal.get()));
         assertEquals("computed-foo", signalPropertySupport.get());
         assertEquals("computed-foo", lastValue.get());
     }
@@ -208,32 +214,16 @@ public class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_nullWithNotYetBound_noEffect() {
+    public void bind_nullSignal_throwsNPE() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        signalPropertySupport.bind(null);
 
-        assertNull(signalPropertySupport.get());
-    }
-
-    @Test
-    public void bind_nullWithAlreadyBound_removeBinding() {
-        var component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
-                .create(component, value -> {
-                });
-        ValueSignal<String> signal = new ValueSignal<>("foo");
-        signalPropertySupport.bind(new ValueSignal<>("foo"));
-        assertEquals("foo", signalPropertySupport.get());
-        signalPropertySupport.bind(null);
-        signal.value("bar");
-        assertEquals("foo", signalPropertySupport.get());
+        assertThrows(NullPointerException.class,
+                () -> signalPropertySupport.bind(null));
     }
 
     @Test
@@ -262,10 +252,86 @@ public class SignalPropertySupportTest {
         signalPropertySupport.bind(signal);
         assertEquals("foo", signalPropertySupport.get());
         component.removeFromParent();
-        signal.value("bar");
+        signal.set("bar");
         assertEquals("foo", signalPropertySupport.get());
         UI.getCurrent().add(component);
         assertEquals("bar", signalPropertySupport.get());
+    }
+
+    @Test
+    public void bind_onChange_receivesBindingContext() {
+        var component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        signalPropertySupport.bind(signal).onChange(contexts::add);
+
+        // onChange run once initially
+        assertEquals(1, contexts.size());
+
+        signal.set("updated");
+
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        assertEquals(component.getElement(), ctx.getElement());
+    }
+
+    @Test
+    public void bind_onChange_bindThenAttach() {
+        var component = new TestComponent();
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        signalPropertySupport.bind(signal).onChange(contexts::add);
+        // Probe ran at bind time; onChange run initially
+        assertEquals(1, contexts.size());
+
+        // Attach — nothing changed since probe, no additional callback
+        UI.getCurrent().add(component);
+
+        assertEquals(1, contexts.size());
+    }
+
+    @Test
+    public void bind_onChange_bindThenChangeAndAttach() {
+        var component = new TestComponent();
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
+                .create(component, value -> {
+                });
+        List<BindingContext<String>> contexts = new ArrayList<>();
+        signalPropertySupport.bind(signal).onChange(contexts::add);
+
+        assertEquals(1, contexts.size());
+        BindingContext<String> initialCtx = contexts.get(0);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getOldValue());
+        assertEquals("initial", initialCtx.getNewValue());
+
+        // Change value before attach
+        signal.set("updated");
+
+        // Attach — changed since probe, run onChange
+        UI.getCurrent().add(component);
+
+        assertEquals(2, contexts.size());
+        initialCtx = contexts.get(1);
+        assertTrue(initialCtx.isInitialRun());
+        assertEquals("initial", initialCtx.getOldValue());
+        assertEquals("updated", initialCtx.getNewValue());
     }
 
     @Tag("div")

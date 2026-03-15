@@ -79,7 +79,7 @@ public class BindValueIT extends ChromeBrowserTest {
         changeSignalValue.click();
         changeValue.click();
         Assert.assertEquals("foo", getTargetInput().getValue());
-        Assert.assertEquals("foo", getSignalValueText());
+        Assert.assertEquals("foo", getValueText());
         Assert.assertEquals("foo", getSignalValueText());
         Assert.assertEquals("2", getCounterNumber());
 
@@ -90,6 +90,36 @@ public class BindValueIT extends ChromeBrowserTest {
         Assert.assertEquals("bar", getValueText());
         Assert.assertEquals("bar", getSignalValueText());
         Assert.assertEquals("5", getCounterNumber());
+    }
+
+    @Test
+    public void setValueAndChangeSignalValueMixed_updatesTransformedInputAndSignalValue() {
+        open();
+
+        NativeButtonElement changeSignalValue = $(NativeButtonElement.class)
+                .id("change-signal-value-button");
+        NativeButtonElement changeUppercaseValue = $(NativeButtonElement.class)
+                .id("change-uppercase-value-button");
+        // bindUppercaseValue unregisters value change listener in the other
+        // input
+        NativeButtonElement bindUppercaseValue = $(NativeButtonElement.class)
+                .id("bind-uppercase-value-button");
+
+        changeSignalValue.click();
+        bindUppercaseValue.click();
+        changeUppercaseValue.click();
+        Assert.assertEquals("FOO", getTargetInput().getValue());
+        Assert.assertEquals("FOO", getUppercaseTargetInput().getValue());
+        Assert.assertEquals("FOO", getValueText());
+        Assert.assertEquals("FOO", getSignalValueText());
+        Assert.assertEquals("3", getCounterNumber());
+
+        changeSignalValue.click();
+        Assert.assertEquals("bar", getTargetInput().getValue());
+        Assert.assertEquals("bar", getUppercaseTargetInput().getValue());
+        Assert.assertEquals("bar", getValueText());
+        Assert.assertEquals("bar", getSignalValueText());
+        Assert.assertEquals("4", getCounterNumber());
     }
 
     // This simulates internal value change via subclassing or similar
@@ -134,6 +164,10 @@ public class BindValueIT extends ChromeBrowserTest {
 
     private InputTextElement getTargetInput() {
         return $(InputTextElement.class).id("target");
+    }
+
+    private InputTextElement getUppercaseTargetInput() {
+        return $(InputTextElement.class).id("target2");
     }
 
     private String getValueText() {

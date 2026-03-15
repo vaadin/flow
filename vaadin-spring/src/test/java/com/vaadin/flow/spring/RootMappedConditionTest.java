@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 
-public class RootMappedConditionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class RootMappedConditionTest {
 
     @Test
-    public void lookupProperty() {
+    void lookupProperty() {
         assertUrlMapping("url-mapping");
         assertUrlMapping("urlmapping");
         assertUrlMapping("urlMapping");
@@ -33,7 +34,6 @@ public class RootMappedConditionTest {
     private void assertUrlMapping(String key) {
         MockEnvironment environment = new MockEnvironment();
         environment.setProperty("vaadin." + key, "abc");
-        Assert.assertEquals("abc",
-                RootMappedCondition.getUrlMapping(environment));
+        assertEquals("abc", RootMappedCondition.getUrlMapping(environment));
     }
 }

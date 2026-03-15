@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
@@ -27,13 +29,14 @@ import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
- * A signal representing a node in a tree structure. The {@link #value()} of a
+ * A signal representing a node in a tree structure. The {@link #get()} of a
  * node signal is an immutable object that consists of:
  * <ul>
  * <li>the node's own value</li>
@@ -43,7 +46,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * </ul>
  *
  * A child node is always either a list child or a map child but it cannot have
- * both roles at the same time. The {@link #value()} of a detached node is
+ * both roles at the same time. The {@link #get()} of a detached node is
  * <code>null</code>.
  * <p>
  * This class does not provide methods for all possible operation you could do
@@ -53,14 +56,14 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * applying some specific operation.
  */
 public class SharedNodeSignal
-        extends AbstractSignal<SharedNodeSignal.SharedNodeSignalState> {
+        extends AbstractSharedSignal<SharedNodeSignal.SharedNodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.
      */
-    public static class SharedNodeSignalState {
-        private final JsonNode value;
-        private final SharedNodeSignal parent;
+    public static class SharedNodeSignalState implements Serializable {
+        private final @Nullable JsonNode value;
+        private final @Nullable SharedNodeSignal parent;
         private final List<SharedNodeSignal> listChildren;
         private final Map<String, SharedNodeSignal> mapChildren;
 
@@ -71,8 +74,8 @@ public class SharedNodeSignal
          * @param value
          *            the JSON value, or <code>null</code> if there is no value
          * @param parent
-         *            the parent node, nor <code>null</code> for the value of
-         *            the root node
+         *            the parent node, or <code>null</code> for the value of the
+         *            root node
          * @param listChildren
          *            a list of children accessed by order, or an empty list if
          *            there are no list children. Not <code>null</code>.
@@ -80,7 +83,8 @@ public class SharedNodeSignal
          *            a map of children access by key, or an empty map if there
          *            are no map children. Not <code>null</code>.
          */
-        public SharedNodeSignalState(JsonNode value, SharedNodeSignal parent,
+        public SharedNodeSignalState(@Nullable JsonNode value,
+                @Nullable SharedNodeSignal parent,
                 List<SharedNodeSignal> listChildren,
                 Map<String, SharedNodeSignal> mapChildren) {
             this.value = value;
@@ -98,7 +102,7 @@ public class SharedNodeSignal
          *            the value type, not <code>null</code>
          * @return the value, or <code>null</code> if there is no value
          */
-        public <T> T value(Class<T> valueType) {
+        public <T> @Nullable T value(Class<T> valueType) {
             return fromJson(value, valueType);
         }
 
@@ -107,7 +111,7 @@ public class SharedNodeSignal
          *
          * @return the parent node, or <code>null</code> for the root node
          */
-        public SharedNodeSignal parent() {
+        public @Nullable SharedNodeSignal parent() {
             return parent;
         }
 
@@ -135,7 +139,7 @@ public class SharedNodeSignal
      * node structure. The signal does not support clustering.
      */
     public SharedNodeSignal() {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES);
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES);
     }
 
     /**
@@ -159,7 +163,8 @@ public class SharedNodeSignal
     }
 
     @Override
-    protected SharedNodeSignalState extractValue(Data data) {
+    protected @Nullable SharedNodeSignalState extractValue(
+            @Nullable Data data) {
         if (data == null) {
             return null;
         }
@@ -256,8 +261,8 @@ public class SharedNodeSignal
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<SharedNodeSignal> insertChildWithValue(Object value,
-            ListPosition at) {
+    public InsertOperation<SharedNodeSignal> insertChildWithValue(
+            @Nullable Object value, ListPosition at) {
         return submitInsert(new SignalCommand.InsertCommand(Id.random(), id(),
                 null, toJson(value), at), this::child);
     }
@@ -298,19 +303,34 @@ public class SharedNodeSignal
 
     /**
      * Creates a new node with no value if a map node with the given key doesn't
-     * already exist. The returned operation has a reference to a signal that
-     * corresponds to the given key regardless of whether a node existed for the
-     * key. The operation will be resolved as successful regardless of whether
-     * the key was already used.
+     * already exist. The operation will be resolved as successful regardless of
+     * whether the key was already used. The result contains information about
+     * whether a new entry was created and a reference to the signal for the
+     * entry.
      *
      * @param key
      *            the key to use, not <code>null</code>
-     * @return an operation containing a signal for the entry and the eventual
-     *         result
+     * @return an operation containing the eventual result with the entry signal
      */
-    public InsertOperation<SharedNodeSignal> putChildIfAbsent(String key) {
-        return submitInsert(new SignalCommand.PutIfAbsentCommand(Id.random(),
-                id(), null, Objects.requireNonNull(key), null), this::child);
+    public SignalOperation<PutIfAbsentResult<SharedNodeSignal>> putChildIfAbsent(
+            String key) {
+        Id commandId = Id.random();
+        return submit(new SignalCommand.PutIfAbsentCommand(commandId, id(),
+                null, Objects.requireNonNull(key), null), success -> {
+                    boolean created = success.updates().containsKey(commandId);
+                    Id childId;
+                    if (created) {
+                        childId = commandId;
+                    } else {
+                        var modification = Objects
+                                .requireNonNull(success.updates().get(id()));
+                        var newNode = (Data) Objects
+                                .requireNonNull(modification.newNode());
+                        childId = Objects
+                                .requireNonNull(newNode.mapChildren().get(key));
+                    }
+                    return new PutIfAbsentResult<>(created, child(childId));
+                });
     }
 
     /**
@@ -325,7 +345,7 @@ public class SharedNodeSignal
      *            the target list location, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAt(AbstractSignal<?> node,
+    public SignalOperation<Void> adoptAt(AbstractSharedSignal<?> node,
             ListPosition at) {
         return submit(new SignalCommand.AdoptAtCommand(Id.random(), id(),
                 node.id(), Objects.requireNonNull(at)));
@@ -343,7 +363,8 @@ public class SharedNodeSignal
      *            the key to use, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAs(AbstractSignal<?> signal, String key) {
+    public SignalOperation<Void> adoptAs(AbstractSharedSignal<?> signal,
+            String key) {
         return submit(new SignalCommand.AdoptAsCommand(Id.random(), id(),
                 signal.id(), Objects.requireNonNull(key)));
     }

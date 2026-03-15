@@ -18,71 +18,76 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.ui.Transport;
 
-public class PushConfigurationMapTest
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PushConfigurationMapTest
         extends AbstractNodeFeatureTest<PushConfigurationMap> {
 
     private PushConfigurationMap ns = createFeature();
 
     @Test
-    public void transportWebsocket() {
+    void transportWebsocket() {
         ns.setTransport(Transport.WEBSOCKET);
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.WEBSOCKET, ns.getTransport());
+        assertFalse(ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        assertEquals(Transport.WEBSOCKET, ns.getTransport());
     }
 
     @Test
-    public void transportLongPolling() {
+    void transportLongPolling() {
         ns.setTransport(Transport.LONG_POLLING);
-        Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+        assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.LONG_POLLING, ns.getTransport());
+        assertFalse(ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        assertEquals(Transport.LONG_POLLING, ns.getTransport());
     }
 
     @Test
-    public void transportLongWebsocketXHR() {
+    void transportLongWebsocketXHR() {
         ns.setTransport(Transport.WEBSOCKET_XHR);
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertTrue((Boolean) ns
+        assertTrue((Boolean) ns
                 .get(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
-        Assert.assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
+        assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
     }
 
     @Test
-    public void fallbackTransportLongPolling() {
+    void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
-        Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
+        assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
-        Assert.assertEquals(Transport.LONG_POLLING, ns.getFallbackTransport());
+        assertEquals(Transport.LONG_POLLING, ns.getFallbackTransport());
     }
 
     @Test
-    public void fallbackTransportWebsocket() {
+    void fallbackTransportWebsocket() {
         ns.setFallbackTransport(Transport.WEBSOCKET);
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("fallbackTransport"));
-        Assert.assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void fallbackTransportWebsocketXHR() {
-        ns.setFallbackTransport(Transport.WEBSOCKET_XHR);
+        assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
     }
 
     @Test
-    public void parameterNames() {
+    void fallbackTransportWebsocketXHR() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            ns.setFallbackTransport(Transport.WEBSOCKET_XHR);
+        });
+    }
+
+    @Test
+    void parameterNames() {
         ns.setParameter("foo", "bar");
-        Assert.assertArrayEquals(new String[] { "foo" },
+        assertArrayEquals(new String[] { "foo" },
                 ns.getParameterNames().toArray());
 
         ns.setTransport(Transport.WEBSOCKET);
@@ -96,7 +101,7 @@ public class PushConfigurationMapTest
         // getParmeterNames does not guarantee order
         Arrays.sort(expected);
         Arrays.sort(actual);
-        Assert.assertArrayEquals(expected, actual);
+        assertArrayEquals(expected, actual);
     }
 
 }

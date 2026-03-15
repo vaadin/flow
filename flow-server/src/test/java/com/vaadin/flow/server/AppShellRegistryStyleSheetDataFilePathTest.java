@@ -16,19 +16,24 @@
 package com.vaadin.flow.server;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.shared.ApplicationConstants;
 
-public class AppShellRegistryStyleSheetDataFilePathTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AppShellRegistryStyleSheetDataFilePathTest {
 
     @StyleSheet("/absolute.css")
     @StyleSheet("./relative/path.css")
@@ -41,7 +46,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
     private VaadinServletContext context;
     private Document document;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mocks = new MockServletServiceSessionSetup();
         context = new VaadinServletContext(mocks.getServletContext());
@@ -50,7 +55,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         document = Document.createShell("");
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         mocks.cleanup();
@@ -68,31 +73,118 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assert.assertEquals(4, links.size());
+        assertEquals(4, links.size());
 
         // 1) Absolute path: href preserved, data-file-path drops leading '/'
         Element abs = links.get(0);
-        Assert.assertEquals("/absolute.css", abs.attr("href"));
-        Assert.assertEquals("absolute.css", abs.attr("data-file-path"));
+        assertEquals("/absolute.css", abs.attr("href"));
+        assertEquals("absolute.css", abs.attr("data-file-path"));
 
         // 2) Relative with './': href resolved with context path,
         // data-file-path drops './'
         Element rel = links.get(1);
-        Assert.assertEquals("/ctx/relative/path.css", rel.attr("href"));
-        Assert.assertEquals("relative/path.css", rel.attr("data-file-path"));
+        assertEquals("/ctx/relative/path.css", rel.attr("href"));
+        assertEquals("relative/path.css", rel.attr("data-file-path"));
 
         // 3) context:// should resolve to context path in href, and
         // data-file-path strips context protocol prefix
         Element ctx = links.get(2);
-        Assert.assertEquals("/ctx/from-context.css", ctx.attr("href"));
-        Assert.assertEquals("from-context.css", ctx.attr("data-file-path"));
+        assertEquals("/ctx/from-context.css", ctx.attr("href"));
+        assertEquals("from-context.css", ctx.attr("data-file-path"));
 
         // 4) Remote http(s) URL unchanged, data-file-path remains original
         Element remote = links.get(3);
-        Assert.assertEquals("https://cdn.example.com/remote.css",
-                remote.attr("href"));
-        Assert.assertEquals("https://cdn.example.com/remote.css",
+        assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
+        assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("data-file-path"));
+    }
+
+    @Test
+    public void productionMode_hrefContainsHash_dataFilePathUnchanged()
+            throws Exception {
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        // Register stylesheet resources so the hash can be computed.
+        // Paths must match what resolveResource() produces for each
+        // annotation value.
+        mocks.getServlet().addServletContextResource("/absolute.css",
+                "body { color: red; }");
+        mocks.getServlet().addServletContextResource("/from-context.css",
+                "body { color: blue; }");
+        // ./relative/path.css is passed through resolveResource unchanged
+        mocks.getServlet().addServletContextResource("./relative/path.css",
+                "body { color: green; }");
+
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyShell.class);
+
+        VaadinServletRequest request = createRequest("/", "/ctx");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(4, links.size());
+
+        Pattern hashPattern = Pattern
+                .compile("\\?" + ApplicationConstants.CONTENT_HASH_PARAMETER
+                        + "=[0-9a-f]{8}$");
+
+        // In production mode, data-file-path uses the original annotation
+        // value (no stripping like dev mode does)
+
+        // 1) Absolute path: href has hash appended, data-file-path unchanged
+        Element abs = links.get(0);
+        assertTrue(hashPattern.matcher(abs.attr("href")).find(),
+                "Absolute href should contain hash parameter");
+        assertTrue(abs.attr("href").startsWith("/absolute.css"),
+                "Absolute href should start with /absolute.css");
+        assertEquals("/absolute.css", abs.attr("data-file-path"));
+
+        // 2) Relative path: href has hash appended, data-file-path unchanged
+        Element rel = links.get(1);
+        assertTrue(hashPattern.matcher(rel.attr("href")).find(),
+                "Relative href should contain hash parameter");
+        assertTrue(rel.attr("href").startsWith("/ctx/relative/path.css"),
+                "Relative href should start with /ctx/");
+        assertEquals("./relative/path.css", rel.attr("data-file-path"));
+
+        // 3) Context path: href has hash appended, data-file-path unchanged
+        Element ctx = links.get(2);
+        assertTrue(hashPattern.matcher(ctx.attr("href")).find(),
+                "Context href should contain hash parameter");
+        assertTrue(ctx.attr("href").startsWith("/ctx/from-context.css"),
+                "Context href should start with /ctx/");
+        assertEquals("context://from-context.css", ctx.attr("data-file-path"));
+
+        // 4) External URL: no hash appended, data-file-path unchanged
+        Element remote = links.get(3);
+        assertEquals("https://cdn.example.com/remote.css", remote.attr("href"));
+        assertFalse(hashPattern.matcher(remote.attr("href")).find(),
+                "External href should not have hash");
+        assertEquals("https://cdn.example.com/remote.css",
+                remote.attr("data-file-path"));
+    }
+
+    @Test
+    public void productionMode_missingResource_fallsBackToOriginalUrl()
+            throws Exception {
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        // Do NOT register any resources — getResourceAsStream returns null
+
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(MyShell.class);
+
+        VaadinServletRequest request = createRequest("/", "/ctx");
+        registry.modifyIndexHtml(document, request);
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        // The links should still be present, just without hash
+        for (Element link : links) {
+            assertFalse(link.attr("href").contains(
+                    "?" + ApplicationConstants.CONTENT_HASH_PARAMETER + "="),
+                    "Missing resource href should not have hash: "
+                            + link.attr("href"));
+        }
     }
 
     private VaadinServletRequest createRequest(String pathInfo,

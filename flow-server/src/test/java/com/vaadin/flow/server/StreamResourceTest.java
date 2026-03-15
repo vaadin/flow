@@ -21,13 +21,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.ContentTypeResolver;
 
-public class StreamResourceTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class StreamResourceTest {
 
     @Test
     public void getDefaultContentTypeResolver() {
@@ -35,7 +37,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         ContentTypeResolver resolver = resource.getContentTypeResolver();
 
-        Assert.assertNotNull(resolver);
+        assertNotNull(resolver);
 
         assertContentType(resource, resolver);
     }
@@ -46,7 +48,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         resource.setContentTypeResolver((res, context) -> "bar");
 
-        Assert.assertNotNull(resource.getContentTypeResolver());
+        assertNotNull(resource.getContentTypeResolver());
 
         assertContentType(resource, resource.getContentTypeResolver());
     }
@@ -57,7 +59,7 @@ public class StreamResourceTest {
                 () -> makeEmptyStream());
         resource.setContentType("bar");
 
-        Assert.assertNotNull(resource.getContentTypeResolver());
+        assertNotNull(resource.getContentTypeResolver());
 
         assertContentType(resource, resource.getContentTypeResolver());
     }
@@ -69,11 +71,11 @@ public class StreamResourceTest {
 
         resource.setHeader("foo", "bar");
 
-        Assert.assertEquals("bar", resource.getHeader("foo").get());
+        assertEquals("bar", resource.getHeader("foo").get());
 
         Map<String, String> headers = resource.getHeaders();
-        Assert.assertEquals(1, headers.size());
-        Assert.assertEquals("bar", headers.get("foo"));
+        assertEquals(1, headers.size());
+        assertEquals("bar", headers.get("foo"));
     }
 
     private void assertContentType(StreamResource resource,
@@ -82,7 +84,7 @@ public class StreamResourceTest {
         Mockito.when(context.getMimeType("foo")).thenReturn("bar");
         String mimeType = resolver.apply(resource, context);
 
-        Assert.assertEquals("bar", mimeType);
+        assertEquals("bar", mimeType);
     }
 
     private InputStream makeEmptyStream() {

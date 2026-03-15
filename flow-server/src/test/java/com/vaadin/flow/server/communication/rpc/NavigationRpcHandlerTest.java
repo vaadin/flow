@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -26,14 +26,14 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
 
-public class NavigationRpcHandlerTest {
+class NavigationRpcHandlerTest {
 
     private UI ui;
     private History.HistoryStateChangeHandler historyStateChangeHandler;
     private NavigationRpcHandler rpcHandler;
     private ObjectNode invocation;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ui = new UI();
         historyStateChangeHandler = Mockito

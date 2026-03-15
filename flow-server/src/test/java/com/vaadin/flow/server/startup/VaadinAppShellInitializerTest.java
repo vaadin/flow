@@ -32,12 +32,9 @@ import java.util.concurrent.ConcurrentMap;
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
@@ -75,10 +72,11 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
@@ -245,9 +243,6 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
     }
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     private VaadinAppShellInitializer initializer;
 
     private ServletContext servletContext;
@@ -261,7 +256,7 @@ public class VaadinAppShellInitializerTest {
     private Logger logger;
     private ApplicationConfiguration appConfig;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         logger = mockLog(VaadinAppShellInitializer.class);
 
@@ -309,7 +304,7 @@ public class VaadinAppShellInitializerTest {
         pushConfiguration = Mockito.mock(PushConfiguration.class);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         clearIlogger();
@@ -437,20 +432,22 @@ public class VaadinAppShellInitializerTest {
             throws Exception {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
-        Assert.assertSame(registry, AppShellRegistry.getInstance(context));
+        assertSame(registry, AppShellRegistry.getInstance(context));
     }
 
     @Test
     public void should_throw_when_offendingClass() throws Exception {
-        exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString(
-                "Found app shell configuration annotations in non"));
-        exception.expectMessage(containsString(
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    classes.add(MyAppShellWithoutAnnotations.class);
+                    classes.add(OffendingClass.class);
+                    initializer.process(classes, servletContext);
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Found app shell configuration annotations in non"));
+        assertTrue(thrown.getMessage().contains(
                 "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
                         + " from"));
-        classes.add(MyAppShellWithoutAnnotations.class);
-        classes.add(OffendingClass.class);
-        initializer.process(classes, servletContext);
     }
 
     @Test
@@ -461,13 +458,14 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_throw_when_multipleAppShell() throws Exception {
-        exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString(
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    classes.add(MyAppShellWithoutAnnotations.class);
+                    classes.add(MyAppShellWithMultipleAnnotations.class);
+                    initializer.process(classes, servletContext);
+                });
+        assertTrue(thrown.getMessage().contains(
                 "Multiple classes implementing `AppShellConfigurator` were found"));
-
-        classes.add(MyAppShellWithoutAnnotations.class);
-        classes.add(MyAppShellWithMultipleAnnotations.class);
-        initializer.process(classes, servletContext);
     }
 
     @Test
@@ -547,11 +545,13 @@ public class VaadinAppShellInitializerTest {
         assertTrue(arg.getValue().contains("@Viewport"));
     }
 
-    @Test(expected = InvalidApplicationConfigurationException.class)
+    @Test
     public void should_throwException_when_appShellExtendsComponent()
             throws Exception {
-        classes.add(AppShellExtendingComponent.class);
-        initializer.process(classes, servletContext);
+        assertThrows(InvalidApplicationConfigurationException.class, () -> {
+            classes.add(AppShellExtendingComponent.class);
+            initializer.process(classes, servletContext);
+        });
     }
 
     @Test

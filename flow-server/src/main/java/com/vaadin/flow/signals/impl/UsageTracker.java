@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import com.vaadin.flow.signals.function.CleanupCallback;
-import com.vaadin.flow.signals.function.SerializableRunnable;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.function.ValueSupplier;
 
 /**
@@ -41,15 +43,15 @@ public class UsageTracker {
         }
 
         @Override
-        public CleanupCallback onNextChange(TransientListener listener) {
-            return new CleanupCallback() {
+        public Registration onNextChange(TransientListener listener) {
+            return new Registration() {
                 /*
                  * Synchronize since listeners can fire at any time, e.g. before
                  * all listeners have been registered, or while running the
                  * action due to another listener being fired, or during cleanup
                  */
                 final Object lock = new Object();
-                final Collection<CleanupCallback> cleanups = new ArrayList<>();
+                final Collection<Registration> cleanups = new ArrayList<>();
 
                 boolean closed = false;
 
@@ -63,10 +65,10 @@ public class UsageTracker {
                                     return onChange(immediate);
                                 }
                             };
-                            CleanupCallback cleanup = usage
+                            Registration cleanup = usage
                                     .onNextChange(usageListener);
                             if (closed) {
-                                cleanup.cleanup();
+                                cleanup.remove();
                                 break;
                             } else {
                                 cleanups.add(cleanup);
@@ -96,12 +98,12 @@ public class UsageTracker {
                         closed = true;
                     }
                     // Important release the lock before calling signal methods
-                    cleanups.forEach(CleanupCallback::cleanup);
+                    cleanups.forEach(Registration::remove);
                     cleanups.clear();
                 }
 
                 @Override
-                public void cleanup() {
+                public void remove() {
                     close();
                 }
             };
@@ -127,9 +129,10 @@ public class UsageTracker {
          *
          * @param listener
          *            the listener to use, not <code>null</code>
-         * @return a callback for removing the listener, not <code>null</code>
+         * @return a {@link Registration} for removing the listener, not
+         *         <code>null</code>
          */
-        CleanupCallback onNextChange(TransientListener listener);
+        Registration onNextChange(TransientListener listener);
     }
 
     /**
@@ -156,10 +159,17 @@ public class UsageTracker {
         }
 
         @Override
-        public CleanupCallback onNextChange(TransientListener listener) {
+        public Registration onNextChange(TransientListener listener) {
             return () -> {
             };
         }
+    };
+
+    /**
+     * Sentinel registrar that represents a deliberately untracked context,
+     * distinguishing it from having no tracking context at all.
+     */
+    private static final UsageRegistrar DELIBERATELY_UNTRACKED = usage -> {
     };
 
     private static final ThreadLocal<UsageRegistrar> currentTracker = new ThreadLocal<>();
@@ -250,18 +260,23 @@ public class UsageTracker {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T untracked(ValueSupplier<T> task) {
+    public static <T extends @Nullable Object> T untracked(
+            ValueSupplier<T> task) {
         var previousTracker = currentTracker.get();
-        if (previousTracker == null) {
+        if (previousTracker == DELIBERATELY_UNTRACKED) {
             return task.supply();
         }
 
         try {
-            currentTracker.remove();
+            currentTracker.set(DELIBERATELY_UNTRACKED);
 
             return task.supply();
         } finally {
-            currentTracker.set(previousTracker);
+            if (previousTracker == null) {
+                currentTracker.remove();
+            } else {
+                currentTracker.set(previousTracker);
+            }
         }
     }
 
@@ -279,12 +294,26 @@ public class UsageTracker {
     }
 
     /**
-     * Checks whether a usage tracker is currently active.
+     * Checks whether calling {@code Signal.get()} is allowed in the current
+     * context. Returns {@code true} when a real usage tracker is active or when
+     * inside a deliberately untracked context (e.g. via
+     * {@code Signal.untracked()} or {@code Signal.peek()}).
+     *
+     * @return {@code true} if calling {@code get()} is allowed
+     */
+    public static boolean isGetAllowed() {
+        return currentTracker.get() != null;
+    }
+
+    /**
+     * Checks whether a usage tracker is currently active. Returns {@code true}
+     * only for real trackers, not the deliberately untracked sentinel.
      *
      * @return <code>true</code> if a usage tracker is active
      */
     public static boolean isActive() {
-        return currentTracker.get() != null;
+        UsageRegistrar tracker = currentTracker.get();
+        return tracker != null && tracker != DELIBERATELY_UNTRACKED;
     }
 
 }

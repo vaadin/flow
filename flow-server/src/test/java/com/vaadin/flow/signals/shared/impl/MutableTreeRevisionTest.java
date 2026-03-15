@@ -27,7 +27,6 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
-import com.vaadin.flow.signals.Node.Alias;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -38,6 +37,7 @@ import com.vaadin.flow.signals.shared.impl.CommandResult.NodeModification;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,7 +77,9 @@ public class MutableTreeRevisionTest {
         Accept accept = assertAccepted(result);
         NodeModification modification = accept.onlyUpdate();
         assertEquals(Node.EMPTY, modification.oldNode());
-        Data newDataNode = (Data) modification.newNode();
+        var newNode = modification.newNode();
+        assertNotNull(newNode);
+        Data newDataNode = (Data) newNode;
         assertEquals(new StringNode("value"), newDataNode.value());
 
         // Check revision state
@@ -120,7 +122,9 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Data newData = assertSingleDataChange(result);
-        assertEquals(3, newData.value().asInt());
+        var newDataValue = newData.value();
+        assertNotNull(newDataValue);
+        assertEquals(3, newDataValue.asInt());
 
         // Check revision state
         assertValue(Id.ZERO, 3);
@@ -136,7 +140,9 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Data newData = assertSingleDataChange(result);
-        assertEquals(5, newData.value().asInt());
+        var newDataValue = newData.value();
+        assertNotNull(newDataValue);
+        assertEquals(5, newDataValue.asInt());
 
         // Check revision state
         assertValue(Id.ZERO, 5);
@@ -182,13 +188,19 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
-        assertEquals(List.of(commandId),
-                ((Data) parentUpdate.newNode()).listChildren());
-        NodeModification childUpdate = accept.updates().get(commandId);
+        var parentUpdate = accept.updates().get(Id.ZERO);
+        assertNotNull(parentUpdate);
+        var parentNewNode = parentUpdate.newNode();
+        assertNotNull(parentNewNode);
+        assertEquals(List.of(commandId), ((Data) parentNewNode).listChildren());
+        var childUpdate = accept.updates().get(commandId);
+        assertNotNull(childUpdate);
         assertNull(childUpdate.oldNode());
-        assertEquals("value",
-                ((Data) childUpdate.newNode()).value().asString());
+        var childNewNode = childUpdate.newNode();
+        assertNotNull(childNewNode);
+        var childValue = ((Data) childNewNode).value();
+        assertNotNull(childValue);
+        assertEquals("value", childValue.asString());
 
         // Check revision state
         assertListChildren(Id.ZERO, commandId);
@@ -208,11 +220,15 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Accept accept = assertAccepted(result);
-        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
-        assertEquals(List.of(other),
-                ((Data) parentUpdate.oldNode()).listChildren());
+        var parentUpdate = accept.updates().get(Id.ZERO);
+        assertNotNull(parentUpdate);
+        var parentOldNode = parentUpdate.oldNode();
+        assertNotNull(parentOldNode);
+        assertEquals(List.of(other), ((Data) parentOldNode).listChildren());
+        var parentNewNode = parentUpdate.newNode();
+        assertNotNull(parentNewNode);
         assertEquals(List.of(inserted, other),
-                ((Data) parentUpdate.newNode()).listChildren());
+                ((Data) parentNewNode).listChildren());
 
         // Check revision state
         assertListChildren(Id.ZERO, inserted, other);
@@ -411,13 +427,20 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        NodeModification rootModification = accept.updates().get(Id.ZERO);
+        var rootModification = accept.updates().get(Id.ZERO);
+        assertNotNull(rootModification);
+        var rootNewNode = rootModification.newNode();
+        assertNotNull(rootNewNode);
         assertEquals(Map.of("key", commandId),
-                ((Data) rootModification.newNode()).mapChildren());
-        NodeModification childModification = accept.updates().get(commandId);
+                ((Data) rootNewNode).mapChildren());
+        var childModification = accept.updates().get(commandId);
+        assertNotNull(childModification);
         assertNull(childModification.oldNode());
-        assertEquals("value",
-                ((Data) childModification.newNode()).value().asString());
+        var childNewNode = childModification.newNode();
+        assertNotNull(childNewNode);
+        var childValue = ((Data) childNewNode).value();
+        assertNotNull(childValue);
+        assertEquals("value", childValue.asString());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", commandId));
@@ -448,8 +471,16 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         NodeModification childUpdate = accept.onlyUpdate();
-        assertEquals("1", ((Data) childUpdate.oldNode()).value().asString());
-        assertEquals("2", ((Data) childUpdate.newNode()).value().asString());
+        var oldNode = childUpdate.oldNode();
+        assertNotNull(oldNode);
+        var oldValue = ((Data) oldNode).value();
+        assertNotNull(oldValue);
+        assertEquals("1", oldValue.asString());
+        var newNode = childUpdate.newNode();
+        assertNotNull(newNode);
+        var newValue = ((Data) newNode).value();
+        assertNotNull(newValue);
+        assertEquals("2", newValue.asString());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", child));
@@ -487,7 +518,7 @@ public class MutableTreeRevisionTest {
     }
 
     @Test
-    void putIfAbsentCommand_present_aliasCreated() {
+    void putIfAbsentCommand_present_parentInUpdates() {
         Id child = Id.random();
         applySingle(new SignalCommand.PutCommand(child, Id.ZERO, "key",
                 new StringNode("1")));
@@ -497,18 +528,19 @@ public class MutableTreeRevisionTest {
 
         // Check result object
         Accept accept = assertAccepted(result);
-        assertEquals(1, accept.updates().size(), "Only alias is updated");
-        NodeModification modification = accept.updates().get(commandId);
-        assertNull(modification.oldNode());
-        assertInstanceOf(Node.Alias.class, modification.newNode());
-        assertEquals(child, ((Alias) modification.newNode()).target());
+        assertEquals(1, accept.updates().size());
+        var parentModification = accept.updates().get(Id.ZERO);
+        assertNotNull(parentModification);
+        assertEquals(parentModification.oldNode(),
+                parentModification.newNode());
+        var parentNewNode = parentModification.newNode();
+        assertNotNull(parentNewNode);
+        assertEquals(child, ((Data) parentNewNode).mapChildren().get("key"));
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", child));
         assertValue(child, "1");
-        assertValue(commandId, "1");
-        assertInstanceOf(Node.Data.class, revision.nodes().get(child));
-        assertInstanceOf(Node.Alias.class, revision.nodes().get(commandId));
+        assertNull(revision.nodes().get(commandId));
     }
 
     @Test
@@ -559,6 +591,24 @@ public class MutableTreeRevisionTest {
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, child, Id.ZERO, ListPosition.last()));
+
+        // Check result object
+        assertFalse(result.accepted());
+
+        // Check revision state
+        assertListChildren(Id.ZERO, child);
+    }
+
+    @Test
+    void adoptAtCommand_childAdoptsParentAlias_reject() {
+        Id child = Id.random();
+        applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
+                SharedListSignal.ListPosition.last()));
+
+        Id alias = createAlias(Id.ZERO);
+
+        CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
+                commandId, child, alias, ListPosition.last()));
 
         // Check result object
         assertFalse(result.accepted());
@@ -836,11 +886,17 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(3, accept.updates().size());
-        Data newRootData = (Data) accept.updates().get(Id.ZERO).newNode();
+        var rootUpdate = accept.updates().get(Id.ZERO);
+        assertNotNull(rootUpdate);
+        var rootNewNode = rootUpdate.newNode();
+        assertNotNull(rootNewNode);
+        Data newRootData = (Data) rootNewNode;
         assertEquals(List.of(), newRootData.listChildren());
-        NodeModification childUpdate = accept.updates().get(child);
+        var childUpdate = accept.updates().get(child);
+        assertNotNull(childUpdate);
         assertNull(childUpdate.newNode());
-        NodeModification grandchildUpdate = accept.updates().get(grandChild);
+        var grandchildUpdate = accept.updates().get(grandChild);
+        assertNotNull(grandchildUpdate);
         assertNull(grandchildUpdate.newNode());
 
         // Check revision state
@@ -959,10 +1015,14 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(2, accept.updates().size());
-        NodeModification childUpdate = accept.updates().get(child);
+        var childUpdate = accept.updates().get(child);
+        assertNotNull(childUpdate);
         assertNull(childUpdate.newNode());
-        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
-        assertEquals(Map.of(), ((Data) parentUpdate.newNode()).mapChildren());
+        var parentUpdate = accept.updates().get(Id.ZERO);
+        assertNotNull(parentUpdate);
+        var parentNewNode = parentUpdate.newNode();
+        assertNotNull(parentNewNode);
+        assertEquals(Map.of(), ((Data) parentNewNode).mapChildren());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of());
@@ -1018,12 +1078,17 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         assertEquals(3, accept.updates().size());
-        NodeModification listChildUpdate = accept.updates().get(listChild);
+        var listChildUpdate = accept.updates().get(listChild);
+        assertNotNull(listChildUpdate);
         assertNull(listChildUpdate.newNode());
-        NodeModification mapChildUpdate = accept.updates().get(mapChild);
+        var mapChildUpdate = accept.updates().get(mapChild);
+        assertNotNull(mapChildUpdate);
         assertNull(mapChildUpdate.newNode());
-        NodeModification parentUpdate = accept.updates().get(Id.ZERO);
-        assertEquals(Map.of(), ((Data) parentUpdate.newNode()).mapChildren());
+        var parentUpdate = accept.updates().get(Id.ZERO);
+        assertNotNull(parentUpdate);
+        var parentNewNode = parentUpdate.newNode();
+        assertNotNull(parentNewNode);
+        assertEquals(Map.of(), ((Data) parentNewNode).mapChildren());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of());
@@ -1491,16 +1556,25 @@ public class MutableTreeRevisionTest {
                                         "key", null)))));
 
         // Check result objects
-        Accept transaction = assertAccepted(results.get(commandId));
+        var transactionResult = results.get(commandId);
+        assertNotNull(transactionResult);
+        Accept transaction = assertAccepted(transactionResult);
         assertEquals(2, transaction.updates().size());
         // Verify that modifications from both commands are merged
-        NodeModification rootModification = transaction.updates().get(Id.ZERO);
+        var rootModification = transaction.updates().get(Id.ZERO);
+        assertNotNull(rootModification);
         assertEquals(Node.EMPTY, rootModification.oldNode());
         assertEquals(revision.nodes().get(Id.ZERO), rootModification.newNode());
 
-        Accept set = assertAccepted(results.get(command1));
-        Data setModificationNode = (Data) set.onlyUpdate().newNode();
-        assertEquals("value", setModificationNode.value().asString());
+        var setResult = results.get(command1);
+        assertNotNull(setResult);
+        Accept set = assertAccepted(setResult);
+        var setNewNode = set.onlyUpdate().newNode();
+        assertNotNull(setNewNode);
+        Data setModificationNode = (Data) setNewNode;
+        var setModificationValue = setModificationNode.value();
+        assertNotNull(setModificationValue);
+        assertEquals("value", setModificationValue.asString());
         assertEquals(Map.of(), setModificationNode.mapChildren());
 
         // Check revision state
@@ -1544,9 +1618,15 @@ public class MutableTreeRevisionTest {
 
         // Check result objects
         assertEquals(3, results.size());
-        assertAccepted(results.get(commandId));
-        assertAccepted(results.get(innerTransaction));
-        assertAccepted(results.get(set));
+        var outerResult = results.get(commandId);
+        assertNotNull(outerResult);
+        assertAccepted(outerResult);
+        var innerResult = results.get(innerTransaction);
+        assertNotNull(innerResult);
+        assertAccepted(innerResult);
+        var setResult = results.get(set);
+        assertNotNull(setResult);
+        assertAccepted(setResult);
 
         // Check revision state
         assertValue(Id.ZERO, "value");
@@ -1578,7 +1658,9 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.InsertCommand(node, Id.ZERO,
                 revision.ownerId(), null, ListPosition.last()));
 
-        assertEquals(node, revision.originalInserts().get(node).commandId());
+        var originalInsert = revision.originalInserts().get(node);
+        assertNotNull(originalInsert);
+        assertEquals(node, originalInsert.commandId());
 
         Id childOfOwned = Id.random();
         applySingle(
@@ -1603,7 +1685,9 @@ public class MutableTreeRevisionTest {
         applySingle(new SignalCommand.PutIfAbsentCommand(node, Id.ZERO,
                 revision.ownerId(), "key", null));
 
-        assertEquals(node, revision.originalInserts().get(node).commandId());
+        var originalInsert = revision.originalInserts().get(node);
+        assertNotNull(originalInsert);
+        assertEquals(node, originalInsert.commandId());
 
         CommandResult result = applySingle(new SignalCommand.ClearOwnerCommand(
                 commandId, revision.ownerId()));
@@ -1677,7 +1761,9 @@ public class MutableTreeRevisionTest {
                 .applyAndGetResults(List.of(command));
         assertEquals(1, results.size());
 
-        return results.get(command.commandId());
+        var result = results.get(command.commandId());
+        assertNotNull(result);
+        return result;
     }
 
     private void assertNullValue(Id nodeId) {
@@ -1738,7 +1824,9 @@ public class MutableTreeRevisionTest {
     private static Data assertSingleDataChange(CommandResult result) {
         Accept accept = assertAccepted(result);
         NodeModification onlyUpdate = accept.onlyUpdate();
-        return (Data) onlyUpdate.newNode();
+        var newNode = onlyUpdate.newNode();
+        assertNotNull(newNode);
+        return (Data) newNode;
     }
 
     private List<Id> insertChildren(Id parent, int count) {

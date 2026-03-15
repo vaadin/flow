@@ -18,6 +18,11 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.dom.BindingContext;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
@@ -36,7 +41,7 @@ import com.vaadin.flow.signals.Signal;
  * MyComponent component = new MyComponent();
  * add(component);
  * component.bindTextContent(signal);
- * signal.value("Hello"); // component content showing now "Content: Hello" text
+ * signal.set("Hello"); // component content showing now "Content: Hello" text
  * </pre>
  * 
  * <pre>
@@ -65,7 +70,8 @@ import com.vaadin.flow.signals.Signal;
  * @param <T>
  *            the type of the property
  */
-public class SignalPropertySupport<T> implements Serializable {
+public class SignalPropertySupport<T extends @Nullable Object>
+        implements Serializable {
 
     private final SerializableConsumer<T> valueChangeConsumer;
 
@@ -104,43 +110,55 @@ public class SignalPropertySupport<T> implements Serializable {
      * @return a new instance of SignalPropertySupport
      * @see #bind(Signal)
      */
-    public static <T> SignalPropertySupport<T> create(Component owner,
-            SerializableConsumer<T> valueChangeConsumer) {
+    public static <T extends @Nullable Object> SignalPropertySupport<T> create(
+            Component owner, SerializableConsumer<T> valueChangeConsumer) {
         return new SignalPropertySupport<>(owner, valueChangeConsumer);
     }
 
     /**
-     * Binds a {@link Signal}'s value to this property support and keeps the
-     * value synchronized with the signal value while the component is in
-     * attached state. When the component is in detached state, signal value
-     * changes have no effect. <code>null</code> signal unbinds existing
-     * binding.
+     * Binds a {@link Signal}'s value to this property support. The value is set
+     * immediately with the current signal value when the binding is created,
+     * and is kept synchronized with any subsequent signal value changes while
+     * the component is in attached state. When the component is in detached
+     * state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to a property support, any attempt to set value
      * manually throws {@link com.vaadin.flow.signals.BindingActiveException}.
      * Same happens when trying to bind a new Signal while one is already bound.
      *
      * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
+     *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
-    public void bind(Signal<T> signal) {
-        if (signal != null && this.signal != null) {
+    public SignalBinding<T> bind(Signal<T> signal) {
+        Objects.requireNonNull(signal, "Signal cannot be null");
+        if (this.signal != null) {
             throw new BindingActiveException();
         }
         this.signal = signal;
-        if (signal == null && registration != null) {
-            registration.remove();
-            registration = null;
-        }
-        if (signal != null) {
-            registration = ComponentEffect.effect(owner, () -> {
-                value = signal.value();
-                valueChangeConsumer.accept(value);
-            });
-        }
+        SignalBinding<T> binding = new SignalBinding<>();
+        @SuppressWarnings("unchecked")
+        T[] previousValue = (T[]) new Object[] { signal.peek() };
+        Element element = owner.getElement();
+        registration = Signal.effect(owner, ctx -> {
+            T newValue = signal.get();
+            T oldValue = previousValue[0];
+            value = newValue;
+            valueChangeConsumer.accept(newValue);
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, element);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
+            }
+            previousValue[0] = newValue;
+        });
+        return binding;
     }
 
     /**

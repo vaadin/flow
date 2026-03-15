@@ -34,8 +34,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -52,6 +51,15 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class StateNodeTest {
 
@@ -101,35 +109,33 @@ public class StateNodeTest {
 
         NodeOwner owner = node.getOwner();
 
-        Assert.assertNotNull("New node should have an owner", owner);
+        assertNotNull(owner, "New node should have an owner");
 
-        Assert.assertEquals("New node shold have unassigned id", -1,
-                node.getId());
+        assertEquals(-1, node.getId(), "New node shold have unassigned id");
 
-        Assert.assertFalse("Node should not be attached", node.isAttached());
+        assertFalse(node.isAttached(), "Node should not be attached");
     }
 
     @Test
     public void nodeContainsDefinedFeatures() {
         StateNode node = new StateNode(ElementData.class);
 
-        Assert.assertTrue("Should have feature defined in constructor",
-                node.hasFeature(ElementData.class));
+        assertTrue(node.hasFeature(ElementData.class),
+                "Should have feature defined in constructor");
 
         ElementData feature = node.getFeature(ElementData.class);
 
-        Assert.assertNotNull("Existing feature should also be available",
-                feature);
+        assertNotNull(feature, "Existing feature should also be available");
 
-        Assert.assertFalse(
-                "Should not have a feature that wasn't defined in constructor",
-                node.hasFeature(ElementPropertyMap.class));
+        assertFalse(node.hasFeature(ElementPropertyMap.class),
+                "Should not have a feature that wasn't defined in constructor");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void getMissingFeatureThrows() {
         StateNode node = new StateNode(ElementData.class);
-        node.getFeature(ElementPropertyMap.class);
+        assertThrows(IllegalStateException.class,
+                () -> node.getFeature(ElementPropertyMap.class));
     }
 
     @Test
@@ -141,28 +147,28 @@ public class StateNodeTest {
 
         node.collectChanges(collector);
 
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        assertTrue(changes.isEmpty(), "Node should have no changes");
 
         // Attach node
         setParent(node, createStateTree().getRootNode());
 
         node.collectChanges(collector);
 
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
-        Assert.assertTrue("Should have attach change",
-                changes.get(0) instanceof NodeAttachChange);
+        assertEquals(1, changes.size(), "Should have 1 change");
+        assertTrue(changes.get(0) instanceof NodeAttachChange,
+                "Should have attach change");
         changes.clear();
 
         node.collectChanges(collector);
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        assertTrue(changes.isEmpty(), "Node should have no changes");
 
         // Detach node
         setParent(node, null);
 
         node.collectChanges(collector);
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
-        Assert.assertTrue("Should have detach change",
-                changes.get(0) instanceof NodeDetachChange);
+        assertEquals(1, changes.size(), "Should have 1 change");
+        assertTrue(changes.get(0) instanceof NodeDetachChange,
+                "Should have detach change");
         changes.clear();
     }
 
@@ -178,9 +184,9 @@ public class StateNodeTest {
         setParent(child, parent);
         setParent(parent, root);
 
-        Assert.assertNotEquals(-1, parent.getId());
-        Assert.assertNotEquals(-1, child.getId());
-        Assert.assertNotEquals(-1, grandchild.getId());
+        assertNotEquals(-1, parent.getId());
+        assertNotEquals(-1, child.getId());
+        assertNotEquals(-1, grandchild.getId());
     }
 
     @Test
@@ -195,25 +201,25 @@ public class StateNodeTest {
         setParent(child, parent);
         setParent(grandchild, child);
 
-        Assert.assertNotEquals(-1, parent.getId());
-        Assert.assertNotEquals(-1, child.getId());
-        Assert.assertNotEquals(-1, grandchild.getId());
+        assertNotEquals(-1, parent.getId());
+        assertNotEquals(-1, child.getId());
+        assertNotEquals(-1, grandchild.getId());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setChildAsParent() {
         StateNode parent = createParentNode("parent");
         StateNode child = createParentNode("child");
-
         setParent(child, parent);
-        setParent(parent, child);
+        assertThrows(IllegalStateException.class,
+                () -> setParent(parent, child));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setAsOwnParent() {
         StateNode parent = createParentNode("parent");
-
-        setParent(parent, parent);
+        assertThrows(IllegalStateException.class,
+                () -> setParent(parent, parent));
     }
 
     /**
@@ -233,7 +239,7 @@ public class StateNodeTest {
         Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
                 .collect(Collectors.toSet());
         childOfRoot.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
-        Assert.assertTrue(set.isEmpty());
+        assertTrue(set.isEmpty());
     }
 
     /**
@@ -264,7 +270,7 @@ public class StateNodeTest {
                 .collect(Collectors.toSet());
         childOfRoot.visitNodeTree(n -> visit((TestStateNode) n,
                 (StateTree) childOfRoot.getOwner(), set));
-        Assert.assertTrue(set.isEmpty());
+        assertTrue(set.isEmpty());
     }
 
     @Test
@@ -291,7 +297,7 @@ public class StateNodeTest {
             setParent(childOfRoot, root);
         }
 
-        root.visitNodeTreeBottomUp(node -> Assert.assertEquals(
+        root.visitNodeTreeBottomUp(node -> assertEquals(
                 ((Integer) ((TestStateNode) node).getData()),
                 data.removeLast()));
     }
@@ -321,8 +327,7 @@ public class StateNodeTest {
 
         root.visitNodeTreeBottomUp(node -> count.add(1));
 
-        Assert.assertEquals("Each node should be visited once", 3,
-                count.size());
+        assertEquals(3, count.size(), "Each node should be visited once");
     }
 
     @Test
@@ -330,14 +335,14 @@ public class StateNodeTest {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
-        Assert.assertFalse(child.isAttached());
+        assertFalse(child.isAttached());
         AtomicBoolean triggered = new AtomicBoolean(false);
 
         child.addAttachListener(() -> triggered.set(true));
 
         setParent(child, root);
 
-        Assert.assertTrue(triggered.get());
+        assertTrue(triggered.get());
     }
 
     @Test
@@ -345,7 +350,7 @@ public class StateNodeTest {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
-        Assert.assertFalse(child.isAttached());
+        assertFalse(child.isAttached());
         AtomicBoolean triggered = new AtomicBoolean(false);
 
         Registration registrationHandle = child
@@ -354,7 +359,7 @@ public class StateNodeTest {
 
         setParent(child, root);
 
-        Assert.assertFalse(triggered.get());
+        assertFalse(triggered.get());
     }
 
     @Test
@@ -363,7 +368,7 @@ public class StateNodeTest {
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+        assertTrue(child.isAttached());
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
@@ -371,8 +376,7 @@ public class StateNodeTest {
 
         setParent(child, null);
 
-        Assert.assertTrue("Detach listener was not triggered.",
-                triggered.get());
+        assertTrue(triggered.get(), "Detach listener was not triggered.");
     }
 
     @Test
@@ -381,7 +385,7 @@ public class StateNodeTest {
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+        assertTrue(child.isAttached());
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
@@ -391,9 +395,8 @@ public class StateNodeTest {
 
         setParent(child, null);
 
-        Assert.assertFalse(
-                "Detach listener was triggered even though handler was removed.",
-                triggered.get());
+        assertFalse(triggered.get(),
+                "Detach listener was triggered even though handler was removed.");
     }
 
     @Test
@@ -405,28 +408,26 @@ public class StateNodeTest {
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+        assertTrue(child.isAttached());
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
         child.addDetachListener(() -> {
-            Assert.assertTrue(
-                    "Child node should still have a parent and be been seen as attached",
-                    child.isAttached());
-            Assert.assertFalse("Child node should have been unregistered",
-                    tree.hasNode(child));
+            assertTrue(child.isAttached(),
+                    "Child node should still have a parent and be been seen as attached");
+            assertFalse(tree.hasNode(child),
+                    "Child node should have been unregistered");
 
             child.setParent(null);
-            Assert.assertTrue("Child's parent should be null",
-                    child.getParent() == null);
+            assertTrue(child.getParent() == null,
+                    "Child's parent should be null");
 
             triggered.set(true);
         });
 
         setParent(child, null);
 
-        Assert.assertTrue("Detach listener was not triggered.",
-                triggered.get());
+        assertTrue(triggered.get(), "Detach listener was not triggered.");
     }
 
     public static StateNode createEmptyNode() {
@@ -504,7 +505,7 @@ public class StateNodeTest {
     }
 
     private void visit(TestStateNode node, StateTree tree, Set<Integer> set) {
-        Assert.assertEquals(tree, node.getOwner());
+        assertEquals(tree, node.getOwner());
         set.remove(node.getData());
     }
 
@@ -520,17 +521,17 @@ public class StateNodeTest {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
         node.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(node, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
         setParent(node, null);
         setParent(node, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -539,18 +540,18 @@ public class StateNodeTest {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
         node.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
         node.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(node, tree.getRootNode());
-        Assert.assertEquals(2, commandRun.get());
+        assertEquals(2, commandRun.get());
     }
 
     @Test
@@ -560,11 +561,11 @@ public class StateNodeTest {
         StateTree tree = createStateTree();
         setParent(node, tree.getRootNode());
         node.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
+            assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -576,16 +577,16 @@ public class StateNodeTest {
 
         node.addDetachListener(() -> {
             node.runWhenAttached(ui -> {
-                Assert.assertEquals(tree.getUI(), ui);
+                assertEquals(tree.getUI(), ui);
                 commandRun.incrementAndGet();
             });
         });
 
         setParent(node, null);
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(node, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -599,16 +600,16 @@ public class StateNodeTest {
 
         child.addDetachListener(() -> {
             child.runWhenAttached(ui -> {
-                Assert.assertEquals(tree.getUI(), ui);
+                assertEquals(tree.getUI(), ui);
                 commandRun.incrementAndGet();
             });
         });
 
         setParent(parent, null);
-        Assert.assertEquals(0, commandRun.get());
+        assertEquals(0, commandRun.get());
 
         setParent(parent, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
+        assertEquals(1, commandRun.get());
     }
 
     @Test
@@ -617,15 +618,13 @@ public class StateNodeTest {
                 Arrays.asList(ElementClassList.class, ElementPropertyMap.class),
                 ElementAttributeMap.class);
 
-        Assert.assertTrue(stateNode.hasFeature(ElementClassList.class));
-        Assert.assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
-        Assert.assertTrue(stateNode.hasFeature(ElementAttributeMap.class));
+        assertTrue(stateNode.hasFeature(ElementClassList.class));
+        assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
+        assertTrue(stateNode.hasFeature(ElementAttributeMap.class));
 
-        Assert.assertTrue(stateNode.isReportedFeature(ElementClassList.class));
-        Assert.assertTrue(
-                stateNode.isReportedFeature(ElementPropertyMap.class));
-        Assert.assertFalse(
-                stateNode.isReportedFeature(ElementAttributeMap.class));
+        assertTrue(stateNode.isReportedFeature(ElementClassList.class));
+        assertTrue(stateNode.isReportedFeature(ElementPropertyMap.class));
+        assertFalse(stateNode.isReportedFeature(ElementAttributeMap.class));
     }
 
     @Test
@@ -665,59 +664,59 @@ public class StateNodeTest {
         parent.getFeature(ElementChildrenList.class).add(0, child);
         child.getFeature(ElementChildrenList.class).add(0, grandchild);
 
-        Assert.assertFalse(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
+        assertFalse(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
 
         parent.getFeature(InertData.class).setInertSelf(true);
 
-        Assert.assertFalse(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
+        assertFalse(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
 
         parent.collectChanges(nodeChange -> {
         });
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertTrue(grandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertTrue(grandchild.isInert());
 
         child.getFeature(InertData.class).setIgnoreParentInert(true);
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertTrue(grandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertTrue(grandchild.isInert());
 
         // parent doesn't have any changes, nothing happens until child is
         // collected
         parent.collectChanges(nodeChange -> {
         });
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertTrue(grandchild.isInert());
+        assertTrue(parent.isInert());
+        assertTrue(child.isInert());
+        assertTrue(grandchild.isInert());
 
         child.collectChanges(nodeChange -> {
         });
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
+        assertTrue(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
 
         // change both but only collect parent -> changes cascaded
         parent.getFeature(InertData.class).setInertSelf(false);
         child.getFeature(InertData.class).setIgnoreParentInert(false);
 
-        Assert.assertTrue(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
+        assertTrue(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
 
         parent.collectChanges(nodeChange -> {
         });
 
-        Assert.assertFalse(parent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(grandchild.isInert());
+        assertFalse(parent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(grandchild.isInert());
     }
 
     @Test
@@ -740,23 +739,23 @@ public class StateNodeTest {
         inertParent.collectChanges(node -> {
         });
 
-        Assert.assertTrue(inertParent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertFalse(parent.isInert());
+        assertTrue(inertParent.isInert());
+        assertTrue(child.isInert());
+        assertFalse(parent.isInert());
 
         inertParent.getFeature(ElementChildrenList.class).remove(0);
         parent.getFeature(ElementChildrenList.class).add(0, child);
 
-        Assert.assertTrue(inertParent.isInert());
-        Assert.assertFalse(child.isInert());
-        Assert.assertFalse(parent.isInert());
+        assertTrue(inertParent.isInert());
+        assertFalse(child.isInert());
+        assertFalse(parent.isInert());
 
         parent.getFeature(ElementChildrenList.class).remove(0);
         inertParent.getFeature(ElementChildrenList.class).add(0, child);
 
-        Assert.assertTrue(inertParent.isInert());
-        Assert.assertTrue(child.isInert());
-        Assert.assertFalse(parent.isInert());
+        assertTrue(inertParent.isInert());
+        assertTrue(child.isInert());
+        assertFalse(parent.isInert());
     }
 
     @Test
@@ -846,15 +845,15 @@ public class StateNodeTest {
                 ElementData.class);
         parentNode.getFeature(ElementChildrenList.class).add(0, childNode);
 
-        Assert.assertTrue(childNode.isVisible());
+        assertTrue(childNode.isVisible());
         childNode.getFeature(ElementData.class).setVisible(false);
-        Assert.assertFalse(childNode.isVisible());
+        assertFalse(childNode.isVisible());
 
         childNode.getFeature(ElementData.class).setVisible(true);
-        Assert.assertTrue(parentNode.isVisible());
+        assertTrue(parentNode.isVisible());
         parentNode.getFeature(ElementData.class).setVisible(false);
-        Assert.assertFalse(parentNode.isVisible());
-        Assert.assertFalse(childNode.isVisible());
+        assertFalse(parentNode.isVisible());
+        assertFalse(childNode.isVisible());
     }
 
     @Test
@@ -873,29 +872,29 @@ public class StateNodeTest {
         node.getFeature(ElementData.class).setVisible(false);
         node.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.stream()
+        assertEquals(1, changes.stream()
                 .filter(c -> c instanceof NodeAttachChange).count());
-        Assert.assertEquals(2, changes.stream()
-                .filter(c -> c instanceof MapPutChange).count());
+        assertEquals(2, changes.stream().filter(c -> c instanceof MapPutChange)
+                .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
                 .map(c -> ((MapPutChange) c).getKey())
                 .collect(Collectors.toList());
-        Assert.assertTrue(changedMapKeys.contains("visible"));
-        Assert.assertTrue(changedMapKeys.contains("tag"));
+        assertTrue(changedMapKeys.contains("visible"));
+        assertTrue(changedMapKeys.contains("tag"));
 
         // Check that previously changed property is returned when visibility
         // changes to true
         changes.clear();
         node.getFeature(ElementData.class).setVisible(true);
         node.collectChanges(changes::add);
-        Assert.assertEquals(2, changes.stream()
-                .filter(c -> c instanceof MapPutChange).count());
+        assertEquals(2, changes.stream().filter(c -> c instanceof MapPutChange)
+                .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
                 .map(c -> ((MapPutChange) c).getKey())
                 .collect(Collectors.toList());
-        Assert.assertTrue(changedMapKeys.contains("visible"));
-        Assert.assertTrue(changedMapKeys.contains("foo"));
+        assertTrue(changedMapKeys.contains("visible"));
+        assertTrue(changedMapKeys.contains("foo"));
     }
 
     @Test
@@ -920,27 +919,27 @@ public class StateNodeTest {
         parentNode.getFeature(ElementData.class).setVisible(false);
         childNode.collectChanges(changes::add);
 
-        Assert.assertEquals(1, changes.stream()
+        assertEquals(1, changes.stream()
                 .filter(c -> c instanceof NodeAttachChange).count());
-        Assert.assertEquals(1, changes.stream()
-                .filter(c -> c instanceof MapPutChange).count());
+        assertEquals(1, changes.stream().filter(c -> c instanceof MapPutChange)
+                .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
                 .map(c -> ((MapPutChange) c).getKey())
                 .collect(Collectors.toList());
-        Assert.assertTrue(changedMapKeys.contains("tag"));
+        assertTrue(changedMapKeys.contains("tag"));
 
         // Check that previously changed property is returned when visibility
         // changes to true
         changes.clear();
         parentNode.getFeature(ElementData.class).setVisible(true);
         childNode.collectChanges(changes::add);
-        Assert.assertEquals(1, changes.stream()
-                .filter(c -> c instanceof MapPutChange).count());
+        assertEquals(1, changes.stream().filter(c -> c instanceof MapPutChange)
+                .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
                 .map(c -> ((MapPutChange) c).getKey())
                 .collect(Collectors.toList());
-        Assert.assertTrue(changedMapKeys.contains("foo"));
+        assertTrue(changedMapKeys.contains("foo"));
     }
 
     /**
@@ -1101,7 +1100,7 @@ public class StateNodeTest {
 
         removeFromParent(parent);
 
-        Assert.assertEquals(1, detachEvents.get());
+        assertEquals(1, detachEvents.get());
     }
 
     @Test
@@ -1124,7 +1123,7 @@ public class StateNodeTest {
 
         removeFromParent(parent);
 
-        Assert.assertEquals(1, detachEvents.get());
+        assertEquals(1, detachEvents.get());
     }
 
     @Test
@@ -1148,7 +1147,7 @@ public class StateNodeTest {
         });
 
         removeFromParent(parent);
-        Assert.assertEquals(0, events.get());
+        assertEquals(0, events.get());
     }
 
     @Test
@@ -1174,7 +1173,7 @@ public class StateNodeTest {
         });
 
         removeFromParent(parent);
-        Assert.assertEquals(0, events.get());
+        assertEquals(0, events.get());
     }
 
     @Test
@@ -1203,7 +1202,7 @@ public class StateNodeTest {
         // handled first and <code>a</code> had been detached before attach
         // event has been fired for <code>a</code>. So no events for
         // <code>a</code>
-        Assert.assertEquals(0, events.get());
+        assertEquals(0, events.get());
     }
 
     @Test
@@ -1234,9 +1233,9 @@ public class StateNodeTest {
          * <code>b</code> has been removed. So we should get also a detach
          * event.
          */
-        Assert.assertEquals(2, attachDetachEvents.size());
-        Assert.assertTrue(attachDetachEvents.get(0));
-        Assert.assertFalse(attachDetachEvents.get(1));
+        assertEquals(2, attachDetachEvents.size());
+        assertTrue(attachDetachEvents.get(0));
+        assertFalse(attachDetachEvents.get(1));
     }
 
     /**
@@ -1391,7 +1390,7 @@ public class StateNodeTest {
         parent.removeFromTree();
 
         // then parent's parent is null
-        Assert.assertNull(parent.getParent());
+        assertNull(parent.getParent());
 
         // then parent and its descendants are reset
         assertNodesReset(parent, child);
@@ -1412,20 +1411,20 @@ public class StateNodeTest {
         addChild(tree.getRootNode(), grandParent);
 
         parent.collectChanges(change -> {
-            Assert.assertTrue("Expected attach event for node",
-                    change instanceof NodeAttachChange);
+            assertTrue(change instanceof NodeAttachChange,
+                    "Expected attach event for node");
         });
 
         // when parent is removed from the tree
         parent.removeFromTree(true);
 
         // then parent's parent is null
-        Assert.assertNull(parent.getParent());
-        Assert.assertNotEquals(parent.getId(), -1);
+        assertNull(parent.getParent());
+        assertNotEquals(parent.getId(), -1);
 
         parent.collectChanges(change -> {
-            Assert.assertTrue("Expected detach event for reset node",
-                    change instanceof NodeDetachChange);
+            assertTrue(change instanceof NodeDetachChange,
+                    "Expected detach event for reset node");
         });
     }
 
@@ -1444,20 +1443,19 @@ public class StateNodeTest {
         addChild(tree.getRootNode(), grandParent);
 
         parent.collectChanges(change -> {
-            Assert.assertTrue("Expected attach event for node",
-                    change instanceof NodeAttachChange);
+            assertTrue(change instanceof NodeAttachChange,
+                    "Expected attach event for node");
         });
 
         // remove from tree with reset all.
         parent.removeFromTree();
 
         // then parent's parent is null
-        Assert.assertNull(parent.getParent());
-        Assert.assertEquals(parent.getId(), -1);
+        assertNull(parent.getParent());
+        assertEquals(parent.getId(), -1);
 
         parent.collectChanges(change -> {
-            Assert.fail(
-                    "No changes should be collected for detached reset node.");
+            fail("No changes should be collected for detached reset node.");
         });
     }
 
@@ -1532,7 +1530,7 @@ public class StateNodeTest {
         removeFromParent(anotherChild);
 
         // Once a child is added to a tree its id is not negative
-        Assert.assertNotEquals(-1, anotherChild.getId());
+        assertNotEquals(-1, anotherChild.getId());
 
         // Remove the first child from the tree (as it's done on preserve on
         // refresh)
@@ -1549,15 +1547,15 @@ public class StateNodeTest {
 
         // It's possible to set a new tree for the child whose owner is detached
         // as marked replaced via preserved on refresh, its id is reset to -1
-        Assert.assertEquals(-1, anotherChild.getId());
+        assertEquals(-1, anotherChild.getId());
     }
 
     private void assertNodesReset(StateNode... nodes) {
         for (StateNode node : nodes) {
-            Assert.assertEquals(-1, node.getId());
-            Assert.assertFalse(node.isAttached());
-            Assert.assertEquals(NullOwner.get(), node.getOwner());
-            node.collectChanges(c -> Assert.fail("No changes expected"));
+            assertEquals(-1, node.getId());
+            assertFalse(node.isAttached());
+            assertEquals(NullOwner.get(), node.getOwner());
+            node.collectChanges(c -> fail("No changes expected"));
         }
     }
 
@@ -1600,16 +1598,16 @@ public class StateNodeTest {
          * ATTACH.
          */
         if (expectSingleEvent) {
-            Assert.assertEquals(1, attachDetachEvents.size());
-            Assert.assertEquals(newParentNode, attachDetachEvents.get(0));
+            assertEquals(1, attachDetachEvents.size());
+            assertEquals(newParentNode, attachDetachEvents.get(0));
         } else {
-            Assert.assertEquals(3, attachDetachEvents.size());
-            Assert.assertEquals(parent, attachDetachEvents.get(0));
-            Assert.assertEquals(Boolean.FALSE, attachDetachEvents.get(1));
-            Assert.assertEquals(newParentNode, attachDetachEvents.get(2));
+            assertEquals(3, attachDetachEvents.size());
+            assertEquals(parent, attachDetachEvents.get(0));
+            assertEquals(Boolean.FALSE, attachDetachEvents.get(1));
+            assertEquals(newParentNode, attachDetachEvents.get(2));
         }
 
-        Assert.assertEquals(newParentNode, childNode.getParent());
+        assertEquals(newParentNode, childNode.getParent());
     }
 
     private void assertDetachAttachEvents(Map<String, StateNode> nodes,
@@ -1648,8 +1646,8 @@ public class StateNodeTest {
         removeFromParent(parent);
 
         // Only one DETACH event is expected
-        Assert.assertEquals(1, attachDetachEvents.size());
-        Assert.assertFalse((Boolean) attachDetachEvents.get(0));
+        assertEquals(1, attachDetachEvents.size());
+        assertFalse((Boolean) attachDetachEvents.get(0));
     }
 
     private Map<String, StateNode> createNodes() {
@@ -1701,18 +1699,18 @@ public class StateNodeTest {
         stateNode.collectChanges(changes::add);
 
         if (visibilityChanged) {
-            Assert.assertEquals(1, tree.dirtyNodes.size());
+            assertEquals(1, tree.dirtyNodes.size());
             MatcherAssert.assertThat(tree.dirtyNodes,
                     CoreMatchers.hasItem(stateNode));
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
-            Assert.assertEquals(2, tree.dirtyNodes.size());
+            assertEquals(2, tree.dirtyNodes.size());
             stateNode.visitNodeTree(node -> MatcherAssert
                     .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
 
-        Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
+        assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
@@ -1722,7 +1720,7 @@ public class StateNodeTest {
                 .filter(MapPutChange.class::isInstance)
                 .map(MapPutChange.class::cast)
                 .filter(chang -> chang.getKey().equals("tag")).findFirst();
-        Assert.assertTrue("No tag change found", tagFound.isPresent());
+        assertTrue(tagFound.isPresent(), "No tag change found");
         MapPutChange tagChange = tagFound.get();
 
         MapPutChange change = (MapPutChange) changes.get(1);
@@ -1733,11 +1731,10 @@ public class StateNodeTest {
                     : change;
         }
 
-        Assert.assertEquals(Element.get(stateNode).getTag(),
-                tagChange.getValue());
+        assertEquals(Element.get(stateNode).getTag(), tagChange.getValue());
 
         if (visibilityChanged) {
-            Assert.assertEquals(Boolean.FALSE, change.getValue());
+            assertEquals(Boolean.FALSE, change.getValue());
         }
 
         changes.clear();
@@ -1750,7 +1747,7 @@ public class StateNodeTest {
         properties.setProperty("baz", "foo");
         stateNode.collectChanges(changes::add);
 
-        Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
+        assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
         MatcherAssert.assertThat(changes.get(1),
@@ -1763,8 +1760,8 @@ public class StateNodeTest {
                 .findFirst();
 
         if (visibilityChanged) {
-            Assert.assertTrue(visibilityChange.isPresent());
-            Assert.assertTrue((Boolean) visibilityChange.get().getValue());
+            assertTrue(visibilityChange.isPresent());
+            assertTrue((Boolean) visibilityChange.get().getValue());
             changes.remove(visibilityChange.get());
         }
 
@@ -1773,20 +1770,20 @@ public class StateNodeTest {
                 .map(MapPutChange.class::cast)
                 .filter(chang -> chang.getKey().equals("foo")).findFirst();
 
-        Assert.assertTrue(fooUpdate.isPresent());
-        Assert.assertEquals("bar", fooUpdate.get().getValue());
+        assertTrue(fooUpdate.isPresent());
+        assertEquals("bar", fooUpdate.get().getValue());
 
         changes.remove(fooUpdate.get());
 
         change = (MapPutChange) changes.get(0);
-        Assert.assertEquals("foo", change.getValue());
-        Assert.assertEquals("baz", change.getKey());
+        assertEquals("foo", change.getValue());
+        assertEquals("baz", change.getKey());
 
         // Don't make any changes, check that there are no changes collected
         changes.clear();
         stateNode.collectChanges(changes::add);
 
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 
     private void assertCollectChanges_initiallyVisible(StateNode stateNode,
@@ -1799,7 +1796,7 @@ public class StateNodeTest {
         List<NodeChange> changes = new ArrayList<>();
         stateNode.collectChanges(changes::add);
 
-        Assert.assertEquals(2, changes.size());
+        assertEquals(2, changes.size());
         // node is attached event
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
@@ -1829,21 +1826,21 @@ public class StateNodeTest {
         boolean visibilityChanged = !visibility.isVisible();
 
         // The only possible change is visibility value change
-        Assert.assertEquals(visibilityChanged ? 1 : 0, changes.size());
+        assertEquals(visibilityChanged ? 1 : 0, changes.size());
 
         MapPutChange change;
         if (visibilityChanged) {
-            Assert.assertEquals(1, tree.dirtyNodes.size());
+            assertEquals(1, tree.dirtyNodes.size());
             MatcherAssert.assertThat(tree.dirtyNodes,
                     CoreMatchers.hasItem(stateNode));
             MatcherAssert.assertThat(changes.get(0),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
-            Assert.assertEquals(ElementData.class, change.getFeature());
+            assertEquals(ElementData.class, change.getFeature());
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
-            Assert.assertEquals(2, tree.dirtyNodes.size());
+            assertEquals(2, tree.dirtyNodes.size());
             stateNode.visitNodeTree(node -> MatcherAssert
                     .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
@@ -1857,7 +1854,7 @@ public class StateNodeTest {
 
         // Two possible changes: probable visibility value change and property
         // update change
-        Assert.assertEquals(visibilityChanged ? 2 : 1, changes.size());
+        assertEquals(visibilityChanged ? 2 : 1, changes.size());
         MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
@@ -1875,14 +1872,13 @@ public class StateNodeTest {
             propertyChange = change;
         }
 
-        Assert.assertEquals(ElementPropertyMap.class,
-                propertyChange.getFeature());
-        Assert.assertEquals("baz", propertyChange.getValue());
+        assertEquals(ElementPropertyMap.class, propertyChange.getFeature());
+        assertEquals("baz", propertyChange.getValue());
 
         // Don't make any changes, check that there are no changes collected
         changes.clear();
         stateNode.collectChanges(changes::add);
 
-        Assert.assertEquals(0, changes.size());
+        assertEquals(0, changes.size());
     }
 }

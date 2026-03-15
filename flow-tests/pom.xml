@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.1-SNAPSHOT</version>
+    <version>25.2-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -173,6 +173,12 @@
           <configuration>
             <webApp>
               <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+              <!-- Exclude overlay WAR JARs from scanning to avoid
+                   "scanned from multiple locations" warnings. Jetty extracts
+                   overlay WARs to jetty_overlays/ AND resolves the same deps
+                   from Maven, causing duplicates. This pattern includes all
+                   JARs except those in the jetty_overlays directory. -->
+              <webInfIncludeJarPattern>(?!.*jetty_overlays).*</webInfIncludeJarPattern>
             </webApp>
             <httpConnector>
               <port>${server.port}</port>
@@ -195,6 +201,13 @@
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
             </systemProperties>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.slf4j</groupId>
+              <artifactId>slf4j-simple</artifactId>
+              <version>${slf4j.version}</version>
+            </dependency>
+          </dependencies>
           <executions>
             <execution>
               <id>start-jetty</id>
@@ -202,6 +215,12 @@
                 <goal>start</goal>
               </goals>
               <phase>pre-integration-test</phase>
+              <configuration>
+                <deployMode>FORK</deployMode>
+                <maxChildStartChecks>50</maxChildStartChecks>
+                <maxChildStartCheckMs>200</maxChildStartCheckMs>
+                <jvmArgs>-Djetty.http.port=${server.port}</jvmArgs>
+              </configuration>
             </execution>
             <execution>
               <id>stop-jetty</id>
@@ -252,6 +271,24 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <!-- Force the JUnit 4 provider for IT tests. TestBench's
+             ParallelRunner (@RunWith) handles browser parameterization
+             ([any_Chrome_] suffixes) and is not compatible with the
+             JUnit Platform provider that is auto-selected when
+             junit-jupiter-engine or junit-vintage-engine are on the
+             classpath (inherited from root pom). -->
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>${maven.failsafe.plugin.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -448,6 +485,8 @@
                     <include>tsconfig.json</include>
                     <include>pnpm-lock.yaml</include>
                     <include>bun.lockb</include>
+                    <include>vite.config.ts</include>
+                    <include>vite.generated.ts</include>
                     <include>node_modules/**</include>
                   </includes>
                 </fileset>

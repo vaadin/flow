@@ -22,22 +22,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class CustomElementsTest {
+class CustomElementsTest {
     private CustomElements customElements;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         customElements = new CustomElements();
     }
@@ -49,11 +50,13 @@ public class CustomElementsTest {
                 Collections.singletonList(CustomElement.class));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void addDifferentElements() {
-        addElementsAndCheckResults(
-                Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
-                Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class));
+        assertThrows(IllegalStateException.class, () -> {
+            addElementsAndCheckResults(
+                    Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
+                    Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class));
+        });
     }
 
     @Test

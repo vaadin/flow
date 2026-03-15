@@ -19,9 +19,9 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -29,18 +29,24 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 
-public class AnchorTest extends ComponentTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AnchorTest extends ComponentTest {
 
     private UI ui;
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         ui = null;
         UI.setCurrent(null);
     }
 
+    @BeforeEach
     @Override
-    public void setup() throws IntrospectionException, InstantiationException,
+    void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             InvocationTargetException, NoSuchMethodException {
         whitelistProperty("download");
@@ -48,100 +54,98 @@ public class AnchorTest extends ComponentTest {
     }
 
     @Test
-    public void removeHref() {
+    void removeHref() {
         Anchor anchor = new Anchor();
         anchor.setHref("foo");
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        assertTrue(anchor.getElement().hasAttribute("href"));
 
         anchor.removeHref();
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        assertFalse(anchor.getElement().hasAttribute("href"));
     }
 
     @Test
-    public void createWithComponent() {
+    void createWithComponent() {
         Anchor anchor = new Anchor("#", new Text("Home"));
-        Assert.assertEquals(anchor.getElement().getAttribute("href"), "#");
-        Assert.assertEquals(anchor.getHref(), "#");
-        Assert.assertEquals(anchor.getElement().getText(), "Home");
-        Assert.assertEquals(anchor.getText(), "Home");
+        assertEquals(anchor.getElement().getAttribute("href"), "#");
+        assertEquals(anchor.getHref(), "#");
+        assertEquals(anchor.getElement().getText(), "Home");
+        assertEquals(anchor.getText(), "Home");
     }
 
     @Test
-    public void createWithTarget() {
+    void createWithTarget() {
         Anchor anchor = new Anchor("#", "Home");
-        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.DEFAULT);
-        Assert.assertEquals(anchor.getTarget(), Optional.empty());
+        assertEquals(anchor.getTargetValue(), AnchorTarget.DEFAULT);
+        assertEquals(anchor.getTarget(), Optional.empty());
 
         anchor.setTarget(AnchorTarget.BLANK);
 
-        Assert.assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
-        Assert.assertEquals(anchor.getTarget(),
+        assertEquals(anchor.getTargetValue(), AnchorTarget.BLANK);
+        assertEquals(anchor.getTarget(),
                 Optional.of(AnchorTarget.BLANK.getValue()));
 
-        Assert.assertEquals(anchor.getTargetValue(),
+        assertEquals(anchor.getTargetValue(),
                 new Anchor("#", "Home", AnchorTarget.BLANK).getTargetValue());
-        Assert.assertEquals(anchor.getTarget(),
+        assertEquals(anchor.getTarget(),
                 new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
     }
 
     @Test
-    public void shouldNotRemoveRouterIgnoreAttributeWhenRemoveHref() {
+    void shouldNotRemoveRouterIgnoreAttributeWhenRemoveHref() {
         Anchor anchor = new Anchor();
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.removeHref();
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
-                anchor.getElement().getAttribute("router-ignore"));
+        assertEquals("", anchor.getElement().getAttribute("router-ignore"),
+                "Anchor element should have router-ignore " + "attribute");
     }
 
     @Test
-    public void shouldNotBreakBehaviorIfSetHrefWhenHavingRouterIgnoreAttributeBefore() {
+    void shouldNotBreakBehaviorIfSetHrefWhenHavingRouterIgnoreAttributeBefore() {
         Anchor anchor = new Anchor();
         anchor.getElement().setAttribute("router-ignore", true);
         anchor.setHref("/logout");
 
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
-                anchor.getElement().getAttribute("router-ignore"));
+        assertEquals("", anchor.getElement().getAttribute("router-ignore"),
+                "Anchor element should have router-ignore " + "attribute");
     }
 
     @Test
-    public void setTargetValue_useEnum_targetIsSet() {
+    void setTargetValue_useEnum_targetIsSet() {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.PARENT);
 
-        Assert.assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
+        assertEquals(Optional.of(AnchorTarget.PARENT.getValue()),
                 anchor.getTarget());
-        Assert.assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
+        assertEquals(AnchorTarget.PARENT, anchor.getTargetValue());
     }
 
     @Test
-    public void setTargetValue_useObject_targetIsSet() {
+    void setTargetValue_useObject_targetIsSet() {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTargetValue.forString("foo"));
 
-        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
-        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+        assertEquals(Optional.of("foo"), anchor.getTarget());
+        assertEquals("foo", anchor.getTargetValue().getValue());
     }
 
     @Test
-    public void getTargetValue_useEnumStringValue_targetIsReturned() {
+    void getTargetValue_useEnumStringValue_targetIsReturned() {
         Anchor anchor = new Anchor();
         anchor.setTarget(AnchorTarget.SELF.getValue());
 
-        Assert.assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
+        assertEquals(Optional.of(AnchorTarget.SELF.getValue()),
                 anchor.getTarget());
-        Assert.assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
+        assertEquals(AnchorTarget.SELF, anchor.getTargetValue());
     }
 
     @Test
-    public void getTargetValue_useSomeStringValue_targetIsReturned() {
+    void getTargetValue_useSomeStringValue_targetIsReturned() {
         Anchor anchor = new Anchor();
         anchor.setTarget("foo");
 
-        Assert.assertEquals(Optional.of("foo"), anchor.getTarget());
-        Assert.assertEquals("foo", anchor.getTargetValue().getValue());
+        assertEquals(Optional.of("foo"), anchor.getTarget());
+        assertEquals("foo", anchor.getTargetValue().getValue());
     }
 
     // Other test methods in super class
@@ -156,17 +160,17 @@ public class AnchorTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 
     @Test
-    public void setEnabled_anchorWithoutHref_doesNotThrow() {
+    void setEnabled_anchorWithoutHref_doesNotThrow() {
         Anchor anchor = new Anchor();
         anchor.setEnabled(false);
 
         anchor.setEnabled(true);
-        Assert.assertTrue(anchor.isEnabled());
+        assertTrue(anchor.isEnabled());
 
         anchor.setHref("foo");
         anchor.setEnabled(false);
@@ -175,33 +179,33 @@ public class AnchorTest extends ComponentTest {
     }
 
     @Test
-    public void disabledAnchor_removeHref_hrefIsEmpty() {
+    void disabledAnchor_removeHref_hrefIsEmpty() {
         Anchor anchor = new Anchor();
         anchor.setHref("foo");
         anchor.setEnabled(false);
-        Assert.assertEquals("foo", anchor.getHref());
+        assertEquals("foo", anchor.getHref());
         anchor.setHref("bar");
-        Assert.assertEquals("bar", anchor.getHref());
+        assertEquals("bar", anchor.getHref());
         anchor.removeHref();
-        Assert.assertEquals("", anchor.getHref());
+        assertEquals("", anchor.getHref());
         anchor.setEnabled(true);
-        Assert.assertEquals("", anchor.getHref());
+        assertEquals("", anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+    void disabledAnchor_hrefIsRemoved_enableAnchor_hrefIsRestored() {
         Anchor anchor = new Anchor("foo", "bar");
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        assertFalse(anchor.getElement().hasAttribute("href"));
 
         anchor.setEnabled(true);
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals("foo", anchor.getHref());
+        assertTrue(anchor.getElement().hasAttribute("href"));
+        assertEquals("foo", anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_setHrefWhenDisabled_enableAnchor_hrefIsPreserved() {
+    void disabledAnchor_setHrefWhenDisabled_enableAnchor_hrefIsPreserved() {
         Anchor anchor = new Anchor("foo", "bar");
         anchor.setEnabled(false);
 
@@ -209,12 +213,12 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals("baz", anchor.getHref());
+        assertTrue(anchor.getElement().hasAttribute("href"));
+        assertEquals("baz", anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_setResourceWhenDisabled_enableAnchor_resourceIsPreserved() {
+    void disabledAnchor_setResourceWhenDisabled_enableAnchor_resourceIsPreserved() {
         Anchor anchor = new Anchor("foo", "bar");
         anchor.setEnabled(false);
 
@@ -228,11 +232,11 @@ public class AnchorTest extends ComponentTest {
         });
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        assertTrue(anchor.getElement().hasAttribute("href"));
     }
 
     @Test
-    public void disabledAnchor_setResource_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+    void disabledAnchor_setResource_hrefIsRemoved_enableAnchor_hrefIsRestored() {
         mockUI();
         AbstractStreamResource resource = new AbstractStreamResource() {
 
@@ -246,15 +250,15 @@ public class AnchorTest extends ComponentTest {
         String href = anchor.getHref();
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals(href, anchor.getHref());
+        assertFalse(anchor.getElement().hasAttribute("href"));
+        assertEquals(href, anchor.getHref());
 
         anchor.setEnabled(true);
-        Assert.assertEquals(href, anchor.getHref());
+        assertEquals(href, anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_setResourceWhenDisabled_hrefIsPreserved() {
+    void disabledAnchor_setResourceWhenDisabled_hrefIsPreserved() {
         mockUI();
         AbstractStreamResource resource = new AbstractStreamResource() {
 
@@ -278,12 +282,12 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertNotEquals(href, anchor.getHref());
+        assertTrue(anchor.getElement().hasAttribute("href"));
+        assertNotEquals(href, anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_setDownload_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+    void disabledAnchor_setDownload_hrefIsRemoved_enableAnchor_hrefIsRestored() {
         mockUI();
         DownloadHandler downloadHandler = event -> event.getWriter()
                 .write("foo");
@@ -291,15 +295,15 @@ public class AnchorTest extends ComponentTest {
         String href = anchor.getHref();
         anchor.setEnabled(false);
 
-        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
-        Assert.assertEquals(href, anchor.getHref());
+        assertFalse(anchor.getElement().hasAttribute("href"));
+        assertEquals(href, anchor.getHref());
 
         anchor.setEnabled(true);
-        Assert.assertEquals(href, anchor.getHref());
+        assertEquals(href, anchor.getHref());
     }
 
     @Test
-    public void disabledAnchor_setDownloadWhenDisabled_hrefIsPreserved() {
+    void disabledAnchor_setDownloadWhenDisabled_hrefIsPreserved() {
         mockUI();
         DownloadHandler downloadHandler = event -> event.getWriter()
                 .write("foo");
@@ -317,121 +321,111 @@ public class AnchorTest extends ComponentTest {
 
         anchor.setEnabled(true);
 
-        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
-        Assert.assertNotEquals(href, anchor.getHref());
+        assertTrue(anchor.getElement().hasAttribute("href"));
+        assertNotEquals(href, anchor.getHref());
     }
 
     @Test
-    public void anchorWithDownloadHandler_downloadAttributeIsSet() {
+    void anchorWithDownloadHandler_downloadAttributeIsSet() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
     }
 
     @Test
-    public void anchorWithDownloadAttributeSet_newHandler_downloadAttributeCleared() {
+    void anchorWithDownloadAttributeSet_newHandler_downloadAttributeCleared() {
         mockUI();
         ServletResourceDownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
 
         downloadHandler.inline();
 
         anchor.setHref(downloadHandler);
 
-        Assert.assertFalse(
-                "Setting inline download handler should clear download attribute",
-                anchor.isDownload());
+        assertFalse(anchor.isDownload(),
+                "Setting inline download handler should clear download attribute");
     }
 
     @Test
-    public void anchorWithDownloadAttributeSet_newCustomHandler_downloadAttributeNotTouched() {
+    void anchorWithDownloadAttributeSet_newCustomHandler_downloadAttributeNotTouched() {
         mockUI();
         Anchor anchor = new Anchor("/home", "bar");
         anchor.getElement().setAttribute("download", true);
 
-        Assert.assertTrue(
-                "Pre-built download handlers should set download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Pre-built download handlers should set download attribute");
 
         anchor.setHref(event -> event.getWriter().write("foo"));
 
-        Assert.assertTrue(
-                "Setting custom download handler should not clear download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Setting custom download handler should not clear download attribute");
     }
 
     @Test
-    public void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet() {
+    void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path").inline();
         Anchor anchor = new Anchor(downloadHandler, "bar");
 
-        Assert.assertFalse(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        assertFalse(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
-    public void anchorWithLinkModeDownload_downloadAttributeIsSet() {
+    void anchorWithLinkModeDownload_downloadAttributeIsSet() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path").inline();
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.DOWNLOAD,
                 "bar");
 
-        Assert.assertTrue(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
-    public void anchorWithLinkModeInline_downloadAttributeIsNotSet() {
+    void anchorWithLinkModeInline_downloadAttributeIsNotSet() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.INLINE,
                 "bar");
 
-        Assert.assertFalse(
-                "Inline download handlers should not add download attribute",
-                anchor.isDownload());
+        assertFalse(anchor.isDownload(),
+                "Inline download handlers should not add download attribute");
     }
 
     @Test
-    public void customDownloadHandler_constructorSetsDownloadMode() {
+    void customDownloadHandler_constructorSetsDownloadMode() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(event -> {
         }, "bar");
 
-        Assert.assertTrue(
-                "Custom download handlers should by default add download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Custom download handlers should by default add download attribute");
     }
 
     @Test
-    public void customDownloadHandler_nullType_constructorSetsDownloadMode() {
+    void customDownloadHandler_nullType_constructorSetsDownloadMode() {
         mockUI();
         DownloadHandler downloadHandler = DownloadHandler
                 .forServletResource("null/path");
         Anchor anchor = new Anchor(event -> {
         }, null, "bar");
 
-        Assert.assertTrue(
-                "Custom download handlers should by default add download attribute",
-                anchor.isDownload());
+        assertTrue(anchor.isDownload(),
+                "Custom download handlers should by default add download attribute");
     }
 
     private void mockUI() {

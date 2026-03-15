@@ -17,8 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.lang.reflect.Field;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -27,7 +26,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
-public class IFrameTest extends ComponentTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class IFrameTest extends ComponentTest {
 
     // Actual test methods mostly in super class
 
@@ -49,7 +51,7 @@ public class IFrameTest extends ComponentTest {
     }
 
     @Test
-    public void reload() throws Exception {
+    void reload() throws Exception {
         Element element = Mockito.mock(Element.class);
         IFrame iframe = new IFrame();
         Field f = Component.class.getDeclaredField("element");
@@ -64,12 +66,12 @@ public class IFrameTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasAriaLabelIsImplemented() {
+    protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
     }
 
     @Test
-    public void downloadHandler_isSetToInline() {
+    void downloadHandler_isSetToInline() {
         Element element = Mockito.mock(Element.class);
         class TestIFrame extends IFrame {
             public TestIFrame(DownloadHandler downloadHandler) {
@@ -84,8 +86,8 @@ public class IFrameTest extends ComponentTest {
         // dummy handler
         InputStreamDownloadHandler handler = DownloadHandler
                 .fromInputStream(event -> DownloadResponse.error(500));
-        Assert.assertFalse(handler.isInline());
+        assertFalse(handler.isInline());
         new TestIFrame(handler);
-        Assert.assertTrue(handler.isInline());
+        assertTrue(handler.isInline());
     }
 }

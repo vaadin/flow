@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -67,16 +67,16 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class UidlWriterTest {
+class UidlWriterTest {
     private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
             .name();
     private MockServletServiceSessionSetup mocks;
@@ -164,7 +164,7 @@ public class UidlWriterTest {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (mocks != null) {
             mocks.cleanup();
@@ -348,16 +348,81 @@ public class UidlWriterTest {
     }
 
     @Test
+    public void productionMode_stylesheetDependency_urlContainsHash()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        // Add resources so hash can be computed. Paths must match what
+        // resolveResource() produces for the @StyleSheet annotation values.
+        mocks.getServlet().addServletContextResource("eager.css",
+                "body { color: red; }");
+        mocks.getServlet().addServletContextResource("lazy.css",
+                "body { color: blue; }");
+
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+        ui.add(new ComponentWithAllDependencyTypes());
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        Map<LoadMode, List<ObjectNode>> dependenciesMap = Stream
+                .of(LoadMode.values())
+                .map(mode -> (ArrayNode) response.get(mode.name()))
+                .flatMap(JacksonUtils::<ObjectNode> stream)
+                .collect(Collectors.toMap(
+                        jsonObject -> LoadMode.valueOf(jsonObject
+                                .get(Dependency.KEY_LOAD_MODE).textValue()),
+                        Collections::singletonList, (list1, list2) -> {
+                            List<ObjectNode> result = new ArrayList<>(list1);
+                            result.addAll(list2);
+                            return result;
+                        }));
+
+        // EAGER stylesheet should have hash
+        List<ObjectNode> eagerDeps = dependenciesMap.get(LoadMode.EAGER);
+        ObjectNode eagerCss = eagerDeps.stream()
+                .filter(d -> Dependency.Type.STYLESHEET.name()
+                        .equals(d.get(Dependency.KEY_TYPE).textValue()))
+                .findFirst().orElse(null);
+        assertNotNull(eagerCss, "Should have an eager stylesheet dependency");
+        String eagerUrl = eagerCss.get(Dependency.KEY_URL).textValue();
+        assertTrue(eagerUrl.matches("eager\\.css\\?"
+                + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
+                "Eager stylesheet URL should contain hash: " + eagerUrl);
+
+        // LAZY stylesheet should have hash
+        List<ObjectNode> lazyDeps = dependenciesMap.get(LoadMode.LAZY);
+        lazyDeps.removeIf(obj -> obj.get(Dependency.KEY_URL).textValue()
+                .contains("Flow.loadOnDemand"));
+        ObjectNode lazyCss = lazyDeps.stream()
+                .filter(d -> Dependency.Type.STYLESHEET.name()
+                        .equals(d.get(Dependency.KEY_TYPE).textValue()))
+                .findFirst().orElse(null);
+        assertNotNull(lazyCss, "Should have a lazy stylesheet dependency");
+        String lazyUrl = lazyCss.get(Dependency.KEY_URL).textValue();
+        assertTrue(lazyUrl.matches("lazy\\.css\\?"
+                + ApplicationConstants.CONTENT_HASH_PARAMETER + "=[0-9a-f]{8}"),
+                "Lazy stylesheet URL should contain hash: " + lazyUrl);
+
+        // INLINE dependency should NOT have a URL (it has contents instead)
+        List<ObjectNode> inlineDeps = dependenciesMap.get(LoadMode.INLINE);
+        assertThat("Should have an inline dependency", inlineDeps, hasSize(1));
+        assertFalse(inlineDeps.get(0).has(Dependency.KEY_URL));
+    }
+
+    @Test
     public void resynchronizationRequested_responseFieldContainsResynchronize()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
         ObjectNode response = uidlWriter.createUidl(ui, false, true);
-        assertTrue("Response contains resynchronize field",
-                response.has(ApplicationConstants.RESYNCHRONIZE_ID));
-        assertTrue("Response resynchronize field is set to true", response
-                .get(ApplicationConstants.RESYNCHRONIZE_ID).booleanValue());
+        assertTrue(response.has(ApplicationConstants.RESYNCHRONIZE_ID),
+                "Response contains resynchronize field");
+        assertTrue(
+                response.get(ApplicationConstants.RESYNCHRONIZE_ID)
+                        .booleanValue(),
+                "Response resynchronize field is set to true");
     }
 
     @Test
@@ -374,8 +439,8 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertFalse("UI is still dirty after creating UIDL",
-                ui.getInternals().isDirty());
+        assertFalse(ui.getInternals().isDirty(),
+                "UI is still dirty after creating UIDL");
     }
 
     @Test
@@ -392,9 +457,8 @@ public class UidlWriterTest {
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
-        assertTrue(
-                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
-                ui.getInternals().isDirty());
+        assertTrue(ui.getInternals().isDirty(),
+                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL");
     }
 
     private void assertInlineDependencies(List<ObjectNode> inlineDependencies) {
@@ -489,9 +553,8 @@ public class UidlWriterTest {
     private void assertDependency(String url, String type,
             Map<String, ObjectNode> dependenciesMap) {
         ObjectNode jsonValue = dependenciesMap.get(url);
-        assertNotNull(
-                "Expected dependencies map to have dependency with key=" + url,
-                jsonValue);
+        assertNotNull(jsonValue,
+                "Expected dependencies map to have dependency with key=" + url);
         assertEquals(url, jsonValue.get(Dependency.KEY_URL).textValue());
         assertEquals(type, jsonValue.get(Dependency.KEY_TYPE).textValue());
     }

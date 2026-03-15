@@ -96,9 +96,6 @@ abstract class AbstractUpdateImports implements Runnable {
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
 
-    private static final String TAILWIND_IMPORT = "./"
-            + FrontendUtils.TAILWIND_JS;
-
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
@@ -148,7 +145,7 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
-        var generatedFolder = FrontendUtils
+        File generatedFolder = FrontendUtils
                 .getFrontendGeneratedFolder(options.getFrontendDirectory());
         appShellImports = new File(generatedFolder,
                 FrontendUtils.APP_SHELL_IMPORTS_NAME);
@@ -272,7 +269,18 @@ abstract class AbstractUpdateImports implements Runnable {
                 Collections.emptyList()));
         merged.addAll(outputFiles.getOrDefault(generatedFlowImports,
                 Collections.emptyList()));
-        return merged.stream().distinct().toList();
+        List<String> result = new ArrayList<>(
+                merged.stream().distinct().toList());
+        moveImportsToTop(result);
+        return result;
+    }
+
+    // Move all import lines to the top, before any non-import lines
+    private static void moveImportsToTop(List<String> lines) {
+        List<String> imports = new ArrayList<>(lines);
+        imports.removeIf(line -> !line.startsWith("import "));
+        lines.removeIf(line -> line.startsWith("import "));
+        lines.addAll(0, imports);
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -418,7 +426,13 @@ abstract class AbstractUpdateImports implements Runnable {
             appShellLines.addAll(appShellCssLines);
         }
         if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
-            appShellLines.add(String.format(IMPORT_TEMPLATE, TAILWIND_IMPORT));
+            String importPath = "Frontend/"
+                    + options.getFrontendDirectory().toPath()
+                            .relativize(options.getFrontendGeneratedFolder()
+                                    .toPath())
+                            .toString()
+                    + "/" + FrontendUtils.TAILWIND_JS;
+            appShellLines.add(String.format(IMPORT_TEMPLATE, importPath));
         }
         files.put(appShellImports, appShellLines);
         files.put(appShellDefinitions, Collections.singletonList("export {}"));
@@ -440,11 +454,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     getCssLines(webComponentCssData, cssLineOffset));
         }
 
-        // Move all imports to the top
-        List<String> copy = new ArrayList<>(mainLines);
-        copy.removeIf(line -> !line.startsWith("import "));
-        mainLines.removeIf(line -> line.startsWith("import "));
-        mainLines.addAll(0, copy);
+        moveImportsToTop(mainLines);
 
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");

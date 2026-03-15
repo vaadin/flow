@@ -18,13 +18,18 @@ package com.vaadin.flow.signals;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.signals.function.CleanupCallback;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.function.SignalMapper;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
-import com.vaadin.flow.signals.impl.ComputedSignal;
+import com.vaadin.flow.signals.impl.CachedSignal;
 import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -35,22 +40,21 @@ import com.vaadin.flow.signals.operations.TransactionOperation;
  * A signal is a reactive value holder with automatic subscription and
  * unsubscription of listeners.
  * <p>
- * Reactivity is based on {@link Signal#effect(EffectAction)} callbacks that
- * detect the signals used during invocation. The callback will be run again
- * whenever there's a change to any of the signal instances used in the previous
- * invocation. Detection is based on running {@link #value()}.
+ * Reactivity is based on {@link Signal#unboundEffect(EffectAction)} callbacks
+ * that detect the signals used during invocation. The callback will be run
+ * again whenever there's a change to any of the signal instances used in the
+ * previous invocation. Detection is based on running {@link #get()}.
  * {@link #untracked(ValueSupplier)} can be used to read the value within an
  * effect without registering a dependency.
  * <p>
  * This interface can be used for creating simple computed signals as a lambda
- * function that uses other signals. This kind of signal is more limited than
- * {@link #computed(SignalComputation)} since it doesn't cache its value.
+ * function that uses other signals.
  *
  * @param <T>
  *            the signal value type
  */
 @FunctionalInterface
-public interface Signal<T> extends Serializable {
+public interface Signal<T extends @Nullable Object> extends Serializable {
     /**
      * Gets the current value of this signal. The value is read in a way that
      * takes the current transaction into account and in the case of clustering
@@ -62,18 +66,31 @@ public interface Signal<T> extends Serializable {
      * transaction depend on the value so that the transaction fails in case the
      * signal value is changed concurrently.
      * <p>
-     * Reading the value inside an {@link #effect(EffectAction)} or
-     * {@link #computed(SignalComputation)} callback sets up that effect or
-     * computed signal to depend on the signal.
+     * Reading the value inside an {@link #unboundEffect(EffectAction)} or
+     * {@link #cached(Signal)} callback sets up that effect or cached signal to
+     * depend on the signal.
+     * <p>
+     * This method must only be called within a reactive context such as an
+     * effect, cached signal, an explicit {@link #untracked(ValueSupplier)}
+     * block, or a {@link #runInTransaction(TransactionTask) transaction}.
+     * Calling it outside such a context throws an
+     * {@link IllegalStateException}. Use {@link #peek()} for one-time reads
+     * that do not need dependency tracking.
      *
      * @return the signal value
+     * @throws IllegalStateException
+     *             if called outside a reactive context
      */
-    T value();
+    T get();
 
     /**
      * Reads the value without setting up any dependencies. This method returns
-     * the same value as {@link #value()} but without creating a dependency when
-     * used inside a transaction, effect or computed signal.
+     * the same value as {@link #get()} but without creating a dependency when
+     * used inside a transaction, effect or cached signal.
+     * <p>
+     * Unlike {@link #get()}, this method can be called outside a reactive
+     * context and is the recommended way to read a signal value for one-time
+     * use, such as logging, assertions, or initializing non-reactive UI.
      *
      * @return the signal value
      */
@@ -82,7 +99,7 @@ public interface Signal<T> extends Serializable {
          * Subclasses are encouraged to use an approach with less overhead than
          * what this very generic implementation can do.
          */
-        return untracked(() -> value());
+        return untracked(() -> get());
     }
 
     /**
@@ -90,12 +107,6 @@ public interface Signal<T> extends Serializable {
      * passed the value of this signal. If the mapper function accesses other
      * signal values, then the computed signal will also depend on those
      * signals.
-     * <p>
-     * The computed signal does not perform any caching but will instead run the
-     * callback every time the signal value is read. Use
-     * {@link #computed(SignalComputation)} to create a computed signal that
-     * caches the result of running the callback until the value of any
-     * dependency changes.
      *
      * @param <C>
      *            the computed signal type
@@ -103,8 +114,9 @@ public interface Signal<T> extends Serializable {
      *            the mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    default <C> Signal<C> map(SignalMapper<T, C> mapper) {
-        return () -> mapper.map(value());
+    default <C extends @Nullable Object> Signal<C> map(
+            SignalMapper<T, C> mapper) {
+        return () -> mapper.map(get());
     }
 
     /*
@@ -114,16 +126,94 @@ public interface Signal<T> extends Serializable {
      */
 
     /**
-     * Creates a signal effect with the given action. The action is run when the
-     * effect is created and is subsequently run again whenever there's a change
-     * to any signal value that was read during the last invocation.
+     * Creates a signal effect that is owned by a given component. The effect is
+     * enabled when the component is attached and automatically disabled when it
+     * is detached.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Registration effect = Signal.effect(myComponent, () -> {
+     *     Notification.show("Component is attached and signal value is "
+     *             + someSignal.get());
+     * });
+     * effect.remove(); // to remove the effect when no longer needed
+     * </pre>
+     *
+     * @param <C>
+     *            the type of the component
+     * @param owner
+     *            the owner component for which the effect is applied, must not
+     *            be <code>null</code>
+     * @param effectFunction
+     *            the effect function to be executed when any dependency is
+     *            changed, must not be <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    static <C extends Component> Registration effect(C owner,
+            EffectAction effectFunction) {
+        return ElementEffect.effect(owner.getElement(), effectFunction);
+    }
+
+    /**
+     * Creates a context-aware component-scoped signal effect. The effect is
+     * enabled when the component is attached and automatically disabled when it
+     * is detached. The action receives an {@link EffectContext} providing
+     * information about why the effect is running (initial render, effect
+     * owner's request, or background change).
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * Signal.effect(this, ctx -&gt; {
+     *     span.getElement().setText("$" + price.get());
+     *     if (ctx.isBackgroundChange()) {
+     *         span.getElement().flashClass("highlight");
+     *     }
+     * });
+     * </pre>
+     *
+     * @param <C>
+     *            the type of the component
+     * @param owner
+     *            the owner component for which the effect is applied, must not
+     *            be <code>null</code>
+     * @param effectFunction
+     *            the context-aware effect function, must not be
+     *            <code>null</code>
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
+     */
+    static <C extends Component> Registration effect(C owner,
+            ContextualEffectAction effectFunction) {
+        return ElementEffect.effect(owner.getElement(), effectFunction);
+    }
+
+    /**
+     * Creates an unbound signal effect with the given action. The action is run
+     * when the effect is created and is subsequently run again whenever there's
+     * a change to any signal value that was read during the last invocation.
+     * <p>
+     * An unbound effect executes without holding the session lock, similar to a
+     * background thread. If the effect action needs to modify components or
+     * other UI state, it must explicitly acquire the lock using
+     * {@link com.vaadin.flow.component.UI#access(com.vaadin.flow.server.Command)}.
+     * This applies even when creating the effect while already holding the
+     * session lock, as the effect callbacks run independently and may execute
+     * after the session has expired or been invalidated.
+     * <p>
+     * Consider using {@link #effect(Component, EffectAction)} instead to tie
+     * the effect lifecycle to a component and automatically manage the session
+     * lock.
      *
      * @param action
      *            the effect action to use, not <code>null</code>
-     * @return a callback used to close the effect so that it no longer listens
-     *         to signal changes, not <code>null</code>
+     * @return a {@link Registration} that can be used to close the effect so
+     *         that it no longer listens to signal changes, not
+     *         <code>null</code>
      */
-    static CleanupCallback effect(EffectAction action) {
+    static Registration unboundEffect(EffectAction action) {
         Effect effect = new Effect(Objects.requireNonNull(action));
         return effect::dispose;
     }
@@ -131,16 +221,22 @@ public interface Signal<T> extends Serializable {
     /**
      * Creates a new computed signal with the given computation callback. A
      * computed signal behaves like a regular signal except that the value is
-     * not directly set but instead computed from other signals. The computed
-     * signal is automatically updated if any of the used signals are updated.
-     * The computation is lazy so that it only runs when its value is accessed
-     * and only if the previously computed value might have been invalidated by
-     * dependent signal changes. If the computation callback throws a
-     * {@link RuntimeException}, then that exception will be re-thrown when
-     * accessing the signal value. An {@link Signal#effect(EffectAction) effect}
-     * or computed signal that uses the value from a computed signal will not be
-     * invalidated if the computation is run again but produces the same value
-     * as before.
+     * not directly set but instead computed from other signals. The value is
+     * computed again every time the value is read. Use {@link #cached(Signal)}
+     * to create a signal that computes a new value only if any of the dependent
+     * signals might have changed.
+     * <p>
+     * A computed signal can also be defined directly as a lambda expression.
+     * Using this method enables type inference in cases where the target type
+     * isn't explicitly defined.
+     * 
+     * <pre>
+     * // Type must be explicitly defined for a direct lambda expression
+     * Signal&lt;Integer&gt; signal = () -&gt; stringSignal.get().length();
+     * 
+     * // Type can be inferred by wrapping in computed()
+     * var signal = Signal.computed(() -&gt; stringSignal.get().length());
+     * </pre>
      *
      * @param <T>
      *            the signal type
@@ -148,22 +244,47 @@ public interface Signal<T> extends Serializable {
      *            the computation callback, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    static <T> Signal<T> computed(SignalComputation<T> computation) {
-        return new ComputedSignal<>(computation);
+    static <T extends @Nullable Object> Signal<T> computed(
+            SignalComputation<T> computation) {
+        return Objects.requireNonNull(computation)::compute;
     }
 
     /**
-     * Crates a new computed signal containing the negation of the provided
-     * boolean-valued signal. <code>null</code> values are preserved as
-     * <code>null</code>.
+     * Creates a new cached signal based on the given inner signal. The inner
+     * signal is typically a computed signal performing an expensive computation
+     * based on other signal values. When getting the value of this signal, a
+     * previously cached value will be used if available as long as that value
+     * is still valid. The cached value remains valid until the value changes
+     * for any of the inner signals.
+     * <p>
+     * If a {@link RuntimeException} is thrown when getting the value of the
+     * inner signal, then that exception will be re-thrown when accessing the
+     * value of this signal. An {@link Signal#unboundEffect(EffectAction)
+     * effect} or outer cached signal that uses the value from a cached signal
+     * will not be invalidated if the inner signal is invalidated but holds the
+     * same value as before invalidation.
      * 
+     * @param <T>
+     *            the signal type
+     * @param innerSignal
+     *            the inner signal, not <code>null</code>
+     * @return the cached signal not <code>null</code>
+     */
+    static <T extends @Nullable Object> Signal<T> cached(
+            Signal<T> innerSignal) {
+        return new CachedSignal<>(innerSignal);
+    }
+
+    /**
+     * Creates a new computed signal containing the negation of the provided
+     * boolean-valued signal.
+     *
      * @param signal
      *            the boolean-valued signal to negate, not <code>null</code>
      * @return the negated signal, not <code>null</code>
      */
     static Signal<Boolean> not(Signal<Boolean> signal) {
-        return Objects.requireNonNull(signal)
-                .map(value -> value == null ? null : !value);
+        return Objects.requireNonNull(signal).map(value -> !value);
     }
 
     /**
@@ -188,7 +309,7 @@ public interface Signal<T> extends Serializable {
      * @return a transaction operation containing the supplier return value and
      *         the eventual result
      */
-    static <T> TransactionOperation<T> runInTransaction(
+    static <T extends @Nullable Object> TransactionOperation<T> runInTransaction(
             ValueSupplier<T> transactionTask) {
         return Transaction.runInTransaction(transactionTask);
     }
@@ -227,7 +348,8 @@ public interface Signal<T> extends Serializable {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T runWithoutTransaction(ValueSupplier<T> task) {
+    static <T extends @Nullable Object> T runWithoutTransaction(
+            ValueSupplier<T> task) {
         return Transaction.runWithoutTransaction(task);
     }
 
@@ -254,7 +376,7 @@ public interface Signal<T> extends Serializable {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T untracked(ValueSupplier<T> task) {
+    static <T extends @Nullable Object> T untracked(ValueSupplier<T> task) {
         /*
          * Note that there's no Runnable overload since the whole point of
          * untracked is to read values.

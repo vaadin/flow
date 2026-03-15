@@ -29,6 +29,7 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';

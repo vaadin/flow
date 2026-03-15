@@ -29,9 +29,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -42,7 +41,13 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
-public class PendingJavaScriptInvocationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
             .createNode("foo");
 
@@ -55,7 +60,7 @@ public class PendingJavaScriptInvocationTest {
     private BiConsumer<JsonNode, Throwable> jsonFutureHandler;
     private BiConsumer<String, Throwable> stringFutureHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         invocation = new PendingJavaScriptInvocation(
                 new Element("dummy").getNode(), new JavaScriptInvocation(""));
@@ -73,8 +78,7 @@ public class PendingJavaScriptInvocationTest {
             Consumer<T> successConsumer, Consumer<String> errorConsumer) {
         return (successValue, error) -> {
             if (error != null) {
-                Assert.assertEquals(JavaScriptException.class,
-                        error.getClass());
+                assertEquals(JavaScriptException.class, error.getClass());
                 errorConsumer.accept(error.getMessage());
             } else {
                 successConsumer.accept(successValue);
@@ -199,9 +203,8 @@ public class PendingJavaScriptInvocationTest {
 
         invocation.complete(fooJsonString);
 
-        Assert.assertSame(fooJsonString,
-                jsonSuccessConsumer.getCapturedValue());
-        Assert.assertEquals("foo", stringSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
+        assertEquals("foo", stringSuccessConsumer.getCapturedValue());
         assertNoErrorValue();
     }
 
@@ -217,15 +220,16 @@ public class PendingJavaScriptInvocationTest {
         assertNoStringSuccessValue();
         assertNoJsonSuccessValue();
 
-        Assert.assertSame("foo", errorConsumer.getCapturedValue());
-        Assert.assertSame("foo", extraErrorHandler.getCapturedValue());
+        assertSame("foo", errorConsumer.getCapturedValue());
+        assertSame("foo", extraErrorHandler.getCapturedValue());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void thenAfterSend_throws() {
         invocation.setSentToBrowser();
 
-        invocation.then(jsonSuccessConsumer);
+        assertThrows(IllegalStateException.class,
+                () -> invocation.then(jsonSuccessConsumer));
     }
 
     @Test
@@ -257,8 +261,7 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture)) {
                 try {
                     action.call();
-                    Assert.fail(
-                            "Blocking on a pending invocation while holding the session lock should throw");
+                    fail("Blocking on a pending invocation while holding the session lock should throw");
                 } catch (IllegalStateException e) {
                     // This is expected
                 }
@@ -282,7 +285,7 @@ public class PendingJavaScriptInvocationTest {
             for (Callable<JsonNode> action : createBlockingActions(
                     completableFuture)) {
                 JsonNode actionValue = action.call();
-                Assert.assertSame(value, actionValue);
+                assertSame(value, actionValue);
             }
 
             return null;
@@ -305,11 +308,11 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture)) {
                 try {
                     action.call();
-                    Assert.fail("Execution should have failed");
+                    fail("Execution should have failed");
                 } catch (ExecutionException | CompletionException e) {
                     JavaScriptException cause = (JavaScriptException) e
                             .getCause();
-                    Assert.assertEquals(errorMessage, cause.getMessage());
+                    assertEquals(errorMessage, cause.getMessage());
                 }
             }
             return null;
@@ -332,8 +335,8 @@ public class PendingJavaScriptInvocationTest {
                     completableFuture).stream().map(executor::submit)
                     .collect(Collectors.toList());
 
-            Assert.assertEquals("All futures should be pending", 0,
-                    futures.stream().filter(Future::isDone).count());
+            assertEquals(0, futures.stream().filter(Future::isDone).count(),
+                    "All futures should be pending");
 
             JsonNode value = JacksonUtils.createObjectNode();
             invocation.complete(value);
@@ -341,13 +344,14 @@ public class PendingJavaScriptInvocationTest {
             executor.shutdown();
             executor.awaitTermination(100, TimeUnit.MILLISECONDS);
 
-            Assert.assertEquals("All futures should be done", futures.size(),
-                    futures.stream().filter(Future::isDone).count());
+            assertEquals(futures.size(),
+                    futures.stream().filter(Future::isDone).count(),
+                    "All futures should be done");
 
             futures.forEach(future -> {
                 try {
                     JsonNode futureValue = future.get();
-                    Assert.assertSame(value, futureValue);
+                    assertSame(value, futureValue);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -368,13 +372,12 @@ public class PendingJavaScriptInvocationTest {
 
     private void assertStringSuccess() {
         assertNoJsonSuccessValue();
-        Assert.assertEquals("foo", stringSuccessConsumer.getCapturedValue());
+        assertEquals("foo", stringSuccessConsumer.getCapturedValue());
         assertNoErrorValue();
     }
 
     private void assertJsonSuccess() {
-        Assert.assertSame(fooJsonString,
-                jsonSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
         assertNoStringSuccessValue();
         assertNoErrorValue();
     }
@@ -386,7 +389,7 @@ public class PendingJavaScriptInvocationTest {
     private void assertFail(String expectedMessage) {
         assertNoJsonSuccessValue();
         assertNoStringSuccessValue();
-        Assert.assertSame(expectedMessage, errorConsumer.getCapturedValue());
+        assertSame(expectedMessage, errorConsumer.getCapturedValue());
     }
 
     private void assertNoUpdate() {
@@ -396,17 +399,17 @@ public class PendingJavaScriptInvocationTest {
     }
 
     private void assertNoJsonSuccessValue() {
-        Assert.assertFalse("Json success consumer should not be invoked",
-                jsonSuccessConsumer.isCaptured());
+        assertFalse(jsonSuccessConsumer.isCaptured(),
+                "Json success consumer should not be invoked");
     }
 
     private void assertNoStringSuccessValue() {
-        Assert.assertFalse("String success consumer should not be invoked",
-                stringSuccessConsumer.isCaptured());
+        assertFalse(stringSuccessConsumer.isCaptured(),
+                "String success consumer should not be invoked");
     }
 
     private void assertNoErrorValue() {
-        Assert.assertFalse("Error consumer should not be invoked",
-                errorConsumer.isCaptured());
+        assertFalse(errorConsumer.isCaptured(),
+                "Error consumer should not be invoked");
     }
 }

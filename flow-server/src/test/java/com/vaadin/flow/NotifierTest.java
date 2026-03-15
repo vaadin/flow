@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.BlurNotifier;
 import com.vaadin.flow.component.ClickNotifier;
@@ -26,7 +26,7 @@ import com.vaadin.flow.component.InputNotifier;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.Tag;
 
-public class NotifierTest {
+class NotifierTest {
     @Tag("div")
     public static class NotifierComponent extends Component
             implements BlurNotifier<NotifierComponent>,

@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.component.page;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
@@ -27,7 +26,9 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public class HistoryTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class HistoryTest {
 
     private class TestUI extends UI {
         @Override
@@ -74,7 +75,7 @@ public class HistoryTest {
     private static final String PUSH_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
     private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));";
 
-    @Before
+    @BeforeEach
     public void setup() {
         history = new History(ui);
         configuration = Mockito.mock(DeploymentConfiguration.class);
@@ -91,88 +92,90 @@ public class HistoryTest {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString());
-        Assert.assertEquals("invalid location", "context/view?param=4",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view?param=4", page.parameters[1],
+                "invalid location");
 
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString());
-        Assert.assertEquals("invalid location", "context/view/?param=4",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view/?param=4", page.parameters[1],
+                "invalid location");
     }
 
     @Test
     public void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("fragment not retained", "context/view#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view#foobar", page.parameters[1],
+                "fragment not retained");
 
         history.pushState(null, "context/view/#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("fragment not retained", "context/view/#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/#foobar", page.parameters[1],
+                "fragment not retained");
     }
 
     @Test // #11628
     public void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_JS, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
     public void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
     public void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("location should be '.'", ".", page.parameters[1]);
+        assertEquals(REPLACE_STATE_JS, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals(".", page.parameters[1], "location should be '.'");
     }
 
     @Test
@@ -181,22 +184,24 @@ public class HistoryTest {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString());
-        Assert.assertEquals("invalid location", "context/view?param=4",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view?param=4", page.parameters[1],
+                "invalid location");
 
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
-                ((JsonNode) page.parameters[0]).toString());
-        Assert.assertEquals("invalid location", "context/view/?param=4",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals("{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString(),
+                "push state not included");
+        assertEquals("context/view/?param=4", page.parameters[1],
+                "invalid location");
     }
 
     @Test
@@ -204,19 +209,19 @@ public class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("fragment not retained", "context/view#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view#foobar", page.parameters[1],
+                "fragment not retained");
 
         history.pushState(null, "context/view/#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("fragment not retained", "context/view/#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/#foobar", page.parameters[1],
+                "fragment not retained");
     }
 
     @Test // #11628
@@ -224,19 +229,19 @@ public class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
-                page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(PUSH_STATE_REACT, page.expression,
+                "push state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
@@ -244,28 +249,28 @@ public class HistoryTest {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included",
-                REPLACE_STATE_REACT, page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(REPLACE_STATE_REACT, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view?foo=bar#foobar", page.parameters[1],
+                "invalid location");
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included",
-                REPLACE_STATE_REACT, page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
-                page.parameters[1]);
+        assertEquals(REPLACE_STATE_REACT, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals("context/view/?foo=bar#foobar", page.parameters[1],
+                "invalid location");
     }
 
     @Test // #11628
     public void replaceState_locationEmpty_pushesPeriod_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "");
-        Assert.assertEquals("replace state JS not included",
-                REPLACE_STATE_REACT, page.expression);
-        Assert.assertEquals(null, page.parameters[0]);
-        Assert.assertEquals("location should be '.'", ".", page.parameters[1]);
+        assertEquals(REPLACE_STATE_REACT, page.expression,
+                "replace state JS not included");
+        assertEquals(null, page.parameters[0]);
+        assertEquals(".", page.parameters[1], "location should be '.'");
     }
 }

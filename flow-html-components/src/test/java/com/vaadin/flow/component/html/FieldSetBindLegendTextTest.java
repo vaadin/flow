@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for {@link FieldSet#bindLegendText(com.vaadin.flow.signals.Signal)}
@@ -39,10 +39,10 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("");
         fieldSet.bindLegendText(signal);
 
-        signal.value("legend-1");
+        signal.set("legend-1");
         assertEquals("legend-1", fieldSet.getLegend().getText());
 
-        signal.value("legend-2");
+        signal.set("legend-2");
         assertEquals("legend-2", fieldSet.getLegend().getText());
     }
 
@@ -59,19 +59,12 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_unbindWithNull_stopsUpdates() {
+    public void bindLegendText_nullSignal_throwsNPE() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
-        fieldSet.bindLegendText(signal);
-        assertEquals("a", fieldSet.getLegend().getText());
-
-        fieldSet.bindLegendText(null);
-        signal.value("b");
-
-        // After unbinding, value should remain as before
-        assertEquals("a", fieldSet.getLegend().getText());
+        assertThrows(NullPointerException.class,
+                () -> fieldSet.bindLegendText(null));
     }
 
     @Test
@@ -87,7 +80,7 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
         UI.getCurrent().remove(fieldSet);
 
         // Update value after detach – legend text should remain unchanged
-        signal.value("b");
+        signal.set("b");
         assertEquals("a", fieldSet.getLegend().getText());
     }
 }

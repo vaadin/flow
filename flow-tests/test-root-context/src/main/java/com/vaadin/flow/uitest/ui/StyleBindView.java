@@ -48,20 +48,16 @@ public class StyleBindView extends Div {
 
         // Control buttons
         NativeButton setRed = new NativeButton("Set Red",
-                e -> color.value("rgba(255, 0, 0, 1)"));
+                e -> color.set("rgba(255, 0, 0, 1)"));
         setRed.setId("set-red");
 
         NativeButton setGreen = new NativeButton("Set Green",
-                e -> color.value("rgba(0, 128, 0, 1)"));
+                e -> color.set("rgba(0, 128, 0, 1)"));
         setGreen.setId("set-green");
 
         NativeButton setNull = new NativeButton("Set Null",
-                e -> color.value(null));
+                e -> color.set(null));
         setNull.setId("set-null");
-
-        NativeButton removeBinding = new NativeButton("Remove Binding",
-                e -> style.bind("background-color", null));
-        removeBinding.setId("remove-binding");
 
         // Manual operations that should fail while bound/active
         Span status = new Span();
@@ -103,7 +99,7 @@ public class StyleBindView extends Div {
         });
         attach.setId("attach");
 
-        add(target, setRed, setGreen, setNull, removeBinding, manualSet,
-                manualRemove, detach, attach, status);
+        add(target, setRed, setGreen, setNull, manualSet, manualRemove, detach,
+                attach, status);
     }
 }

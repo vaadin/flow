@@ -19,20 +19,23 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
-import com.vaadin.flow.signals.operations.InsertOperation;
+import com.vaadin.flow.signals.operations.PutIfAbsentResult;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.impl.CommandResult.NodeModification;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a map of values with string keys. Supports atomic updates
@@ -43,8 +46,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedMapSignal<T>
-        extends AbstractSignal<Map<String, SharedValueSignal<T>>> {
+public class SharedMapSignal<T extends @Nullable Object> extends
+        AbstractSharedSignal<@NonNull Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -56,7 +59,7 @@ public class SharedMapSignal<T>
      *            the element type, not <code>null</code>
      */
     public SharedMapSignal(Class<T> elementType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
 
@@ -82,13 +85,29 @@ public class SharedMapSignal<T>
         this.elementType = Objects.requireNonNull(elementType);
     }
 
+    @Override
+    public Map<String, SharedValueSignal<T>> get() {
+        return Objects.requireNonNull(super.get());
+    }
+
+    @Override
+    public Map<String, SharedValueSignal<T>> peek() {
+        return Objects.requireNonNull(super.peek());
+    }
+
+    @Override
+    public Map<String, SharedValueSignal<T>> peekConfirmed() {
+        return Objects.requireNonNull(super.peekConfirmed());
+    }
+
     private SharedValueSignal<T> child(Id childId) {
         return new SharedValueSignal<T>(tree(), childId, validator(),
                 elementType);
     }
 
     @Override
-    protected Map<String, SharedValueSignal<T>> extractValue(Data data) {
+    protected Map<String, SharedValueSignal<T>> extractValue(
+            @Nullable Data data) {
         if (data == null) {
             return Map.of();
         } else {
@@ -127,7 +146,9 @@ public class SharedMapSignal<T>
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
                     if (success.updates().size() == 1) {
-                        return nodeValue(success.onlyUpdate().oldNode(),
+                        return nodeValue(
+                                Objects.requireNonNull(
+                                        success.onlyUpdate().oldNode()),
                                 elementType);
                     } else {
                         // New node and mapChildren update -> no previous value
@@ -140,24 +161,38 @@ public class SharedMapSignal<T>
     /**
      * Creates a new entry with the given value if an entry with the given key
      * doesn't already exist. If an entry exists, then the given value is
-     * ignored. The returned operation has a reference to a signal that
-     * corresponds to the given key regardless of whether an entry existed for
-     * the key. The operation will be resolved as successful regardless of
-     * whether they key was already used.
+     * ignored. The operation will be resolved as successful regardless of
+     * whether the key was already used. The result contains information about
+     * whether a new entry was created and a reference to the signal for the
+     * entry.
      *
      * @param key
      *            the key to use, not <code>null</code>
      * @param value
      *            the value to set
-     * @return an operation containing a signal for the entry and the eventual
-     *         result
+     * @return an operation containing the eventual result with the entry signal
      */
-    public InsertOperation<SharedValueSignal<T>> putIfAbsent(String key,
-            T value) {
-        return submitInsert(
-                new SignalCommand.PutIfAbsentCommand(Id.random(), id(), null,
+    public SignalOperation<PutIfAbsentResult<SharedValueSignal<T>>> putIfAbsent(
+            String key, T value) {
+        Id commandId = Id.random();
+        return submit(
+                new SignalCommand.PutIfAbsentCommand(commandId, id(), null,
                         Objects.requireNonNull(key), toJson(value)),
-                this::child);
+                success -> {
+                    boolean created = success.updates().containsKey(commandId);
+                    Id childId;
+                    if (created) {
+                        childId = commandId;
+                    } else {
+                        var modification = Objects
+                                .requireNonNull(success.updates().get(id()));
+                        var newNode = (Data) Objects
+                                .requireNonNull(modification.newNode());
+                        childId = Objects
+                                .requireNonNull(newNode.mapChildren().get(key));
+                    }
+                    return new PutIfAbsentResult<>(created, child(childId));
+                });
     }
 
     /**
@@ -176,7 +211,8 @@ public class SharedMapSignal<T>
                     NodeModification removal = success.updates().values()
                             .stream().filter(update -> update.newNode() == null)
                             .findAny().get();
-                    return nodeValue(removal.oldNode(), elementType);
+                    return nodeValue(Objects.requireNonNull(removal.oldNode()),
+                            elementType);
                 });
     }
 
@@ -193,7 +229,7 @@ public class SharedMapSignal<T>
     }
 
     private SignalOperation<Void> submitKeyCondition(String key,
-            Id expectedChildId) {
+            @Nullable Id expectedChildId) {
         return submit(new SignalCommand.KeyCondition(Id.random(), id(), key,
                 expectedChildId));
     }
@@ -214,7 +250,7 @@ public class SharedMapSignal<T>
      * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKey(String key,
-            AbstractSignal<?> expectedChild) {
+            AbstractSharedSignal<?> expectedChild) {
         return submitKeyCondition(Objects.requireNonNull(key),
                 expectedChild.id());
     }
@@ -300,7 +336,7 @@ public class SharedMapSignal<T>
      * @return an unmodifiable map of signal instances, not <code>null</code>
      */
     static <T extends Signal<?>> Map<String, T> children(Data node,
-            Function<Id, T> factory) {
+            SerializableFunction<Id, T> factory) {
         LinkedHashMap<String, T> children = new LinkedHashMap<String, T>();
 
         node.mapChildren()
@@ -325,9 +361,12 @@ public class SharedMapSignal<T>
 
     @Override
     public String toString() {
-        return peek().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue().value())
+        var value = peek();
+        if (value == null) {
+            return "SharedMapSignal[null]";
+        }
+        return value.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue().peek())
                 .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
-
 }

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -25,10 +25,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SpringBootAutoConfigurationConditionalTest {
+class SpringBootAutoConfigurationConditionalTest {
 
     @Test
-    public void customServletRegistrationBean() {
+    void customServletRegistrationBean() {
         new WebApplicationContextRunner()
                 .withConfiguration(AutoConfigurations
                         .of(SpringBootAutoConfiguration.class))
