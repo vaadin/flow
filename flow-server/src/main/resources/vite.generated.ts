@@ -464,31 +464,17 @@ export const vaadinConfig: UserConfigFn = (env) => {
         allow: allowedFrontendFolders
       }
     },
-    esbuild: {
-        legalComments: 'inline',
-    },
     build: {
       minify: productionMode,
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
       target,
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           indexhtml: projectIndexHtml,
 
           ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
-        },
-        output: {
-          // Workaround to enable dynamic imports with top-level await for
-          // commonjs modules, such as "atmosphere.js" in Hilla. Extracting
-          // Rollup's commonjs helpers into separate manual chunk avoids
-          // circular dependencies in this case. Caused
-          //   - https://github.com/vitejs/vite/issues/10995
-          //   - https://github.com/rollup/rollup/issues/5884
-          //   - https://github.com/vitejs/vite/issues/19695
-          //   - https://github.com/vitejs/vite/issues/12209
-          manualChunks: (id: string) => id.startsWith('\0commonjsHelpers.js') ? 'commonjsHelpers' : null
         },
         onwarn: (warning: any, defaultHandler: (warning: any) => void) => {
           const ignoreEvalWarning = [
@@ -496,7 +482,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             'generated/jar-resources/vaadin-spreadsheet/spreadsheet-export.js',
             '@vaadin/charts/src/helpers.js'
           ];
-          if (warning.code === 'EVAL' && warning.id && !!ignoreEvalWarning.find((id) => warning.id?.endsWith(id))) {
+          if (warning.code === 'EVAL' && warning.id && !!ignoreEvalWarning.find((id: string) => warning.id?.endsWith(id))) {
             return;
           }
           defaultHandler(warning);
@@ -504,9 +490,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target,
-      },
       entries: [
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'

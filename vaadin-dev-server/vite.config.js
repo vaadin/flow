@@ -9,7 +9,7 @@ export default defineConfig({
     outDir: 'src/main/resources/META-INF/frontend/vaadin-dev-tools',
     // Clear output directory
     emptyOutDir: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         devTools: fileURLToPath(new URL('./src/main/frontend/vaadin-dev-tools.ts', import.meta.url))
       },
