@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,9 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -48,7 +48,6 @@ import com.vaadin.flow.signals.SignalCommand.AdoptAsCommand;
 import com.vaadin.flow.signals.SignalCommand.AdoptAtCommand;
 import com.vaadin.flow.signals.SignalCommand.ClearCommand;
 import com.vaadin.flow.signals.SignalCommand.ClearOwnerCommand;
-import com.vaadin.flow.signals.SignalCommand.ConditionCommand;
 import com.vaadin.flow.signals.SignalCommand.IncrementCommand;
 import com.vaadin.flow.signals.SignalCommand.InsertCommand;
 import com.vaadin.flow.signals.SignalCommand.KeyCondition;
@@ -63,7 +62,6 @@ import com.vaadin.flow.signals.SignalCommand.SetCommand;
 import com.vaadin.flow.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
 import com.vaadin.flow.signals.SignalCommand.ValueCondition;
-import com.vaadin.flow.signals.function.SignalUpdater;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.NodeModification;
@@ -74,24 +72,75 @@ import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
  */
 public class MutableTreeRevision extends TreeRevision {
     /**
-     * Dispatches command results to their handlers.
+     * Helper for accessing nodes in a consistent way regardless of whether the
+     * nodes are loaded directly from the map in a revision or also checked for
+     * overrides in a result builder.
      */
-    @FunctionalInterface
-    interface CommandDispatcher extends Serializable {
-        /**
-         * Dispatches a command result.
-         *
-         * @param command
-         *            the command ID, not <code>null</code>
-         * @param result
-         *            the command result, not <code>null</code>
-         */
-        void dispatch(Id command, CommandResult result);
+    private static abstract class NodeLookup {
+        protected abstract Node node(Id nodeId);
+
+        protected boolean isChildAt(List<Id> children, int index,
+                Id expectedChild) {
+            assert expectedChild != null;
+
+            if (index < 0 || index >= children.size()) {
+                return false;
+            }
+
+            return isSameNode(children.get(index), expectedChild);
+        }
+
+        protected Data data(Id nodeId) {
+            Node node = node(resolveAlias(nodeId));
+
+            return (Data) node;
+        }
+
+        protected boolean isSameNode(Id a, Id b) {
+            return Objects.equals(resolveAlias(a), resolveAlias(b));
+        }
+
+        protected Id resolveAlias(Id id) {
+            Node node = node(id);
+
+            if (node instanceof Alias alias) {
+                return alias.target();
+            } else {
+                return id;
+            }
+        }
+
+        protected ResolvedData resolveData(Id nodeId) {
+            Id id = resolveAlias(nodeId);
+
+            Node node = node(id);
+            if (node == null) {
+                return null;
+            } else {
+                return new ResolvedData(id, (Data) node);
+            }
+        }
+    }
+
+    private class DirectNodeLookup extends NodeLookup {
+        @Override
+        protected Node node(Id nodeId) {
+            return nodes().get(nodeId);
+        }
+    }
+
+    private record ResolvedData(Id resolvedId, Data data) {
     }
 
     /**
-     * Attaches a child node to a parent node.
+     * Gathers and collects all state related to applying a command that affects
+     * multiple nodes. To help with commands that consist of multiple steps, any
+     * node updates are tracked and subsequent node lookup uses the updates
+     * nodes rather than the originals.
      */
+<<<<<<< HEAD
+    private class ResultBuilder extends NodeLookup {
+=======
     @FunctionalInterface
     interface ChildAttacher extends Serializable {
         /**
@@ -118,12 +167,16 @@ public class MutableTreeRevision extends TreeRevision {
      * steps.
      */
     private class TreeManipulator implements Serializable {
+>>>>>>> origin/main
         private final Map<Id, Node> updatedNodes = new HashMap<>();
         private final Set<Id> detachedNodes = new HashSet<>();
         private final Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts = new HashMap<>();
 
         private final SignalCommand command;
 
+<<<<<<< HEAD
+        public ResultBuilder(SignalCommand command) {
+=======
         /**
          * The operation result is tracked in an instance field to allow helper
          * methods to optionally set a result while also returning a regular
@@ -139,14 +192,25 @@ public class MutableTreeRevision extends TreeRevision {
         private @Nullable Map<Id, CommandResult> subCommandResults;
 
         public TreeManipulator(SignalCommand command) {
+>>>>>>> origin/main
             this.command = command;
         }
 
-        private void setResult(CommandResult result) {
-            assert this.result == null;
-            this.result = result;
+        private Reject fail(String reason) {
+            return CommandResult.fail(reason);
         }
 
+<<<<<<< HEAD
+        @Override
+        protected Node node(Id nodeId) {
+            if (detachedNodes.contains(nodeId)) {
+                return null;
+            }
+
+            Node node = updatedNodes.get(nodeId);
+            if (node != null) {
+                return node;
+=======
         private void fail(String reason) {
             setResult(CommandResult.fail(reason));
         }
@@ -216,23 +280,92 @@ public class MutableTreeRevision extends TreeRevision {
 
             if (index < 0) {
                 return false;
+>>>>>>> origin/main
             }
 
-            Id idAtIndex = listChildren(parentId).map(children -> {
-                if (index >= children.size()) {
+            return nodes().get(nodeId);
+        }
+
+        private Reject detach(Id nodeId) {
+            ResolvedData resolved = resolveData(nodeId);
+            if (resolved == null) {
+                return fail("Node not found");
+            }
+
+            Data node = resolved.data();
+            Id id = resolved.resolvedId();
+
+            if (id.equals(Id.ZERO)) {
+                return fail("Cannot detach the root");
+            }
+
+            Id parentId = node.parent();
+            if (parentId == null) {
+                return fail("Node is not attached");
+            }
+
+            Data parentData = data(parentId);
+
+            String key = parentData.mapChildren().entrySet().stream()
+                    .filter(entry -> entry.getValue().equals(id)).findAny()
+                    .map(Entry::getKey).orElse(null);
+
+            if (key != null) {
+                updateMapChildren(parentId, map -> {
+                    map.remove(key);
                     return null;
-                }
-                return children.get(index);
-            }).orElse(null);
+                });
+            } else {
+                updateListChildren(parentId, list -> {
+                    list.remove(id);
+                    return null;
+                });
+            }
 
-            return isSameNode(idAtIndex, expectedChild);
+            detachedNodes.add(id);
+            return null;
         }
 
-        private Optional<Id> mapChild(Id nodeId, String key) {
-            return data(nodeId).map(Data::mapChildren)
-                    .map(children -> children.get(key));
+        private Reject updateMapChildren(Id resolvedParentId,
+                Function<Map<String, Id>, CommandResult.Reject> mapUpdater) {
+            Data node = data(resolvedParentId);
+
+<<<<<<< HEAD
+            LinkedHashMap<String, Id> map = new LinkedHashMap<>(
+                    node.mapChildren());
+            Reject maybeError = mapUpdater.apply(map);
+            if (maybeError != null) {
+                return maybeError;
+            }
+
+            updatedNodes.put(resolvedParentId, new Data(node.parent(),
+                    command.commandId(), node.scopeOwner(), node.value(),
+                    node.listChildren(), Collections.unmodifiableMap(map)));
+
+            return null;
         }
 
+        private Reject updateListChildren(Id resolvedParentId,
+                Function<List<Id>, CommandResult.Reject> listUpdater) {
+            Data node = data(resolvedParentId);
+
+            ArrayList<Id> list = new ArrayList<>(node.listChildren());
+            Reject maybeError = listUpdater.apply(list);
+            if (maybeError != null) {
+                return maybeError;
+            }
+
+            updatedNodes.put(resolvedParentId, new Data(node.parent(),
+                    command.commandId(), node.scopeOwner(), node.value(),
+                    Collections.unmodifiableList(list), node.mapChildren()));
+            return null;
+        }
+
+        private Reject attach(Id parentId, Id childId,
+                BiFunction<Id, Id, Reject> attacher) {
+            Id resolvedParentId = resolveAlias(parentId);
+            Id resolvedChildId = resolveAlias(childId);
+=======
         private boolean isSameNode(@Nullable Id a, @Nullable Id b) {
             return Objects.equals(resolveAlias(a), resolveAlias(b));
         }
@@ -300,46 +433,52 @@ public class MutableTreeRevision extends TreeRevision {
             Id resolvedParentId = Objects
                     .requireNonNull(resolveAlias(parentId));
             Id resolvedChildId = Objects.requireNonNull(resolveAlias(childId));
+>>>>>>> origin/main
 
             if (!detachedNodes.contains(resolvedChildId)) {
-                fail("Node is not detached");
-                return;
+                return fail("Node is not detached");
             }
 
             Id ancestor = resolvedParentId;
             while (ancestor != null) {
                 if (ancestor.equals(resolvedChildId)) {
-                    fail("Cannot attach to own descendant");
-                    return;
+                    return fail("Cannot attach to own descendant");
                 }
 
-                ancestor = data(ancestor).map(Data::parent).orElse(null);
+                ancestor = data(ancestor).parent();
             }
 
-            useData(parentId, (node, id) -> {
-                // Mark as detached only after the last error condition check
-                // done by useData
-                detachedNodes.remove(resolvedChildId);
+            detachedNodes.remove(resolvedChildId);
 
+<<<<<<< HEAD
+            Reject maybeError = attacher.apply(resolvedParentId,
+                    resolvedChildId);
+            if (maybeError != null) {
+                return maybeError;
+            }
+=======
                 Data updated = attacher.attach(node, resolvedChildId);
                 if (result == null && updated != null) {
                     Data child = data(resolvedChildId).get();
+>>>>>>> origin/main
 
-                    updatedNodes.put(id, updated);
-                    updatedNodes.put(resolvedChildId,
-                            new Data(id, child.lastUpdate(), child.scopeOwner(),
-                                    child.value(), child.listChildren(),
-                                    child.mapChildren()));
-                }
-            });
+            Data child = data(resolvedChildId);
+            updatedNodes.put(resolvedChildId,
+                    new Data(resolvedParentId, child.lastUpdate(),
+                            child.scopeOwner(), child.value(),
+                            child.listChildren(), child.mapChildren()));
+
+            return null;
         }
 
-        private void attachAs(Id parentId, String key, Id childId) {
-            attach(parentId, childId, (parentNode, resolvedChildId) -> {
+        private Reject attachAs(Id parentId, String key, Id childId) {
+            return attach(parentId, childId, (parentNode, resolvedChildId) -> {
                 return updateMapChildren(parentNode, map -> {
                     Id previous = map.putIfAbsent(key, resolvedChildId);
                     if (previous != null) {
-                        fail("Key is in use");
+                        return fail("Key is in use");
+                    } else {
+                        return null;
                     }
                 });
             });
@@ -389,25 +528,35 @@ public class MutableTreeRevision extends TreeRevision {
             }
         }
 
-        private void attachAt(Id parentId, ListPosition position, Id childId) {
-            attach(parentId, childId, (node, resolvedChildId) -> {
-                int insertIndex = findInsertIndex(node.listChildren(),
-                        position);
-                if (insertIndex == -1) {
-                    fail("Insert position not matched");
-                    return null;
-                }
+        private Reject attachAt(Id parentId, ListPosition position,
+                Id childId) {
+            return attach(parentId, childId,
+                    (resolvedParentId, resolvedChildId) -> {
+                        int insertIndex = findInsertIndex(
+                                data(resolvedParentId).listChildren(),
+                                position);
+                        if (insertIndex == -1) {
+                            return fail("Insert position not matched");
+                        }
 
-                return updateListChildren(node,
-                        list -> list.add(insertIndex, resolvedChildId));
-            });
+                        return updateListChildren(resolvedParentId, list -> {
+                            list.add(insertIndex, resolvedChildId);
+                            return null;
+                        });
+                    });
         }
 
+<<<<<<< HEAD
+        private Reject createNode(Id nodeId, JsonNode value, Id scopeOwner) {
+            if (node(nodeId) != null) {
+                return fail("Node already exists");
+=======
         private void createNode(Id nodeId, @Nullable JsonNode value,
                 @Nullable Id scopeOwner) {
             if (data(nodeId).isPresent()) {
                 fail("Node already exists");
                 return;
+>>>>>>> origin/main
             }
 
             // Mark as detached to make it eligible for attaching
@@ -418,6 +567,7 @@ public class MutableTreeRevision extends TreeRevision {
             if (ownerId().equals(scopeOwner)) {
                 originalInserts.put(nodeId, (ScopeOwnerCommand) command);
             }
+            return null;
         }
 
         private NodeModification createModification(Id id,
@@ -426,6 +576,9 @@ public class MutableTreeRevision extends TreeRevision {
             return new NodeModification(original, newNode);
         }
 
+<<<<<<< HEAD
+        private CommandResult build() {
+=======
         private static Map<Class<? extends SignalCommand>, SerializableBiConsumer<TreeManipulator, ? extends SignalCommand>> handlers = new HashMap<>();
 
         private static <T extends SignalCommand> void addHandler(
@@ -486,6 +639,7 @@ public class MutableTreeRevision extends TreeRevision {
                 return result;
             }
 
+>>>>>>> origin/main
             Map<Id, NodeModification> updates = new HashMap<>();
 
             updatedNodes.forEach((id, newNode) -> {
@@ -522,6 +676,8 @@ public class MutableTreeRevision extends TreeRevision {
 
             return new Accept(updates, originalInserts);
         }
+<<<<<<< HEAD
+=======
 
         private CommandResult handleValueCondition(ValueCondition test) {
             JsonNode value = value(test.targetNodeId());
@@ -817,6 +973,7 @@ public class MutableTreeRevision extends TreeRevision {
 
             updatedNodes.putAll(snapshot.nodes());
         }
+>>>>>>> origin/main
     }
 
     /**
@@ -873,6 +1030,12 @@ public class MutableTreeRevision extends TreeRevision {
      *            ignore results
      */
     public void apply(SignalCommand command,
+<<<<<<< HEAD
+            BiConsumer<Id, CommandResult> resultCollector) {
+        // Custom logic for transactions that can produce multiple results
+        if (command instanceof TransactionCommand transaction) {
+            Map<Id, CommandResult> results = handleTransaction(transaction);
+=======
             @Nullable CommandDispatcher resultCollector) {
         CommandResult result = data(command.targetNodeId()).map(data -> {
             TreeManipulator manipulator = new TreeManipulator(command);
@@ -884,7 +1047,36 @@ public class MutableTreeRevision extends TreeRevision {
             }
             return opResult;
         }).orElseGet(() -> CommandResult.fail("Node not found"));
+>>>>>>> origin/main
 
+            applyResult(results.get(transaction.commandId()));
+
+            if (resultCollector != null) {
+                results.forEach(resultCollector);
+            }
+        } else {
+            CommandResult result;
+            if (!nodes().containsKey(command.targetNodeId())) {
+                result = CommandResult.fail("Node not found");
+            } else {
+                @SuppressWarnings("unchecked")
+                var handler = (BiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
+                        .get(command.getClass());
+
+                result = handler.apply(this, command);
+            }
+
+            applyResult(result);
+
+            if (resultCollector != null) {
+                resultCollector.accept(command.commandId(), result);
+            }
+        }
+
+        assert assertValidTree();
+    }
+
+    private void applyResult(CommandResult result) {
         if (result instanceof Accept accept) {
             accept.updates().forEach((nodeId, update) -> {
                 Node newNode = update.newNode();
@@ -899,11 +1091,435 @@ public class MutableTreeRevision extends TreeRevision {
 
             originalInserts().putAll(accept.originalInserts());
         }
+    }
 
-        if (resultCollector != null) {
-            resultCollector.dispatch(command.commandId(), result);
+    private static Map<Class<? extends SignalCommand>, BiFunction<MutableTreeRevision, ? extends SignalCommand, CommandResult>> handlers = new HashMap<>();
+
+    private static <T extends SignalCommand> void addHandler(
+            Class<T> commandType,
+            BiFunction<MutableTreeRevision, T, CommandResult> handler) {
+        handlers.put(commandType, handler);
+    }
+
+    static {
+        addHandler(ValueCondition.class,
+                MutableTreeRevision::handleValueCondition);
+        addHandler(PositionCondition.class,
+                MutableTreeRevision::handlePositionCondition);
+        addHandler(KeyCondition.class, MutableTreeRevision::handleKeyCondition);
+        addHandler(LastUpdateCondition.class,
+                MutableTreeRevision::handleLastUpdateCondition);
+
+        addHandler(AdoptAsCommand.class, MutableTreeRevision::handleAdoptAs);
+        addHandler(AdoptAtCommand.class, MutableTreeRevision::handleAdoptAt);
+        addHandler(IncrementCommand.class,
+                MutableTreeRevision::handleIncrement);
+        addHandler(ClearCommand.class, MutableTreeRevision::handleClear);
+        addHandler(RemoveByKeyCommand.class,
+                MutableTreeRevision::handleRemoveByKey);
+        addHandler(PutCommand.class, MutableTreeRevision::handlePut);
+        addHandler(PutIfAbsentCommand.class,
+                MutableTreeRevision::handlePutIfAbsent);
+        addHandler(InsertCommand.class, MutableTreeRevision::handleInsert);
+        addHandler(SetCommand.class, MutableTreeRevision::handleSet);
+        addHandler(RemoveCommand.class, MutableTreeRevision::handleRemove);
+        addHandler(ClearOwnerCommand.class,
+                MutableTreeRevision::handleClearOwner);
+        addHandler(SnapshotCommand.class, MutableTreeRevision::handleSnapshot);
+    }
+
+    private CommandResult handleValueCondition(ValueCondition test) {
+        JsonNode value = data(test.targetNodeId()).map(Data::value)
+                .orElse(null);
+        if (value == null) {
+            value = NullNode.getInstance();
         }
 
-        assert assertValidTree();
+        JsonNode expectedValue = test.expectedValue();
+        if (expectedValue == null) {
+            expectedValue = NullNode.getInstance();
+        }
+
+        return CommandResult.conditional(value.equals(expectedValue),
+                "Unexpected value");
+    }
+
+    private CommandResult handlePositionCondition(PositionCondition test) {
+        DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+        List<Id> listChildren = data(test.targetNodeId()).get().listChildren();
+
+        Id resolvedChild = nodeLookup.resolveAlias(test.childId());
+        int indexOf = listChildren.indexOf(resolvedChild);
+
+        if (indexOf == -1) {
+            return CommandResult.fail("Not a child");
+        }
+
+        ListPosition position = test.position();
+
+        Id after = position.after();
+        if (after != null) {
+            if (after.equals(Id.EDGE)) {
+                if (indexOf != 0) {
+                    return CommandResult.fail("Not the first child");
+                }
+            } else {
+                if (!nodeLookup.isChildAt(listChildren, indexOf - 1, after)) {
+                    return CommandResult.fail("Not after the provided child");
+                }
+            }
+        }
+
+        Id before = position.before();
+        if (before != null) {
+            if (before.equals(Id.EDGE)) {
+                int childCount = listChildren.size();
+                if (indexOf != childCount - 1) {
+                    return CommandResult.fail("Not the last child");
+                }
+            } else {
+                if (!nodeLookup.isChildAt(listChildren, indexOf + 1, before)) {
+                    return CommandResult.fail("Not before the provided child");
+                }
+            }
+        }
+
+        return CommandResult.ok();
+    }
+
+    private CommandResult handleKeyCondition(KeyCondition keyTest) {
+        Id nodeId = keyTest.targetNodeId();
+        String key = keyTest.key();
+        Id expectedChild = keyTest.expectedChild();
+
+        Id actualChildId = data(nodeId).get().mapChildren().get(key);
+
+        if (expectedChild == null) {
+            return CommandResult.conditional(actualChildId != null,
+                    "Key not present");
+        } else if (Id.ZERO.equals(expectedChild)) {
+            return CommandResult.conditional(actualChildId == null,
+                    "A key is present");
+        } else {
+            DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+            return CommandResult.conditional(
+                    nodeLookup.isSameNode(actualChildId, expectedChild),
+                    "Unexpected child");
+        }
+    }
+
+    private CommandResult handleLastUpdateCondition(
+            LastUpdateCondition lastUpdateTest) {
+        Id lastUpdate = data(lastUpdateTest.targetNodeId()).get().lastUpdate();
+
+        return CommandResult.conditional(
+                Objects.equals(lastUpdate, lastUpdateTest.expectedLastUpdate()),
+                "Unexpected last update");
+    }
+
+    private CommandResult handleAdoptAs(AdoptAsCommand adoptAs) {
+        Id nodeId = adoptAs.targetNodeId();
+        Id childId = adoptAs.childId();
+        String key = adoptAs.key();
+
+        var builder = new ResultBuilder(adoptAs);
+
+        Reject maybeError = builder.detach(childId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        maybeError = builder.attachAs(nodeId, key, childId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        return builder.build();
+    }
+
+    private CommandResult handleAdoptAt(AdoptAtCommand adoptAt) {
+        Id nodeId = adoptAt.targetNodeId();
+        Id childId = adoptAt.childId();
+        ListPosition pos = adoptAt.position();
+
+        var builder = new ResultBuilder(adoptAt);
+
+        Reject maybeError = builder.detach(childId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        maybeError = builder.attachAt(nodeId, pos, childId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        return builder.build();
+    }
+
+    private CommandResult handleIncrement(IncrementCommand increment) {
+        DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+        ResolvedData resolved = nodeLookup
+                .resolveData(increment.targetNodeId());
+
+        double delta = increment.delta();
+
+        JsonNode oldValue = data(increment.targetNodeId()).get().value();
+
+        double newValue;
+        if (oldValue instanceof NumericNode value) {
+            newValue = value.doubleValue() + delta;
+        } else if (oldValue == null || oldValue instanceof NullNode) {
+            newValue = delta;
+        } else {
+            return CommandResult.fail("Value is not numeric");
+        }
+
+        return createValueChange(increment, resolved, new DoubleNode(newValue));
+    }
+
+    private CommandResult handleClear(ClearCommand clear) {
+        var builder = new ResultBuilder(clear);
+
+        ResolvedData resolved = builder.resolveData(clear.targetNodeId());
+
+        Data node = resolved.data;
+
+        builder.detachedNodes.addAll(node.listChildren());
+        builder.detachedNodes.addAll(node.mapChildren().values());
+
+        if (builder.detachedNodes.isEmpty()) {
+            return CommandResult.ok();
+        }
+
+        Data updatedNode = new Data(node.parent(), clear.commandId(),
+                node.scopeOwner(), node.value(), List.of(), Map.of());
+
+        builder.updatedNodes.put(resolved.resolvedId, updatedNode);
+
+        return builder.build();
+    }
+
+    private CommandResult handleRemoveByKey(RemoveByKeyCommand removeByKey) {
+        Id nodeId = removeByKey.targetNodeId();
+        String key = removeByKey.key();
+
+        DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+        Id childId = nodeLookup.data(nodeId).mapChildren().get(key);
+
+        if (childId == null) {
+            return CommandResult.fail("Key not present");
+        } else {
+            var builder = new ResultBuilder(removeByKey);
+
+            Reject result = builder.detach(childId);
+            assert result == null;
+
+            return builder.build();
+        }
+    }
+
+    private CommandResult handlePut(PutCommand put) {
+        Id commandId = put.commandId();
+        Id nodeId = put.targetNodeId();
+        String key = put.key();
+        JsonNode value = put.value();
+
+        Id childId = data(nodeId).get().mapChildren().get(key);
+        if (childId != null) {
+            DirectNodeLookup nodeLookup = new DirectNodeLookup();
+            return createValueChange(put, nodeLookup.resolveData(childId),
+                    value);
+        } else {
+            var builder = new ResultBuilder(put);
+
+            Reject maybeError = builder.createNode(commandId, value, null);
+            if (maybeError != null) {
+                return maybeError;
+            }
+
+            maybeError = builder.attachAs(nodeId, key, commandId);
+            if (maybeError != null) {
+                return maybeError;
+            }
+
+            return builder.build();
+        }
+    }
+
+    private CommandResult handlePutIfAbsent(PutIfAbsentCommand putIfAbsent) {
+        Id commandId = putIfAbsent.commandId();
+        Id nodeId = putIfAbsent.targetNodeId();
+        String key = putIfAbsent.key();
+
+        var builder = new ResultBuilder(putIfAbsent);
+
+        Id childId = builder.data(nodeId).mapChildren().get(key);
+        if (childId != null) {
+            if (builder.node(commandId) != null) {
+                return CommandResult.fail("Node already exists");
+            }
+
+            builder.updatedNodes.put(commandId, new Alias(childId));
+        } else {
+            Reject maybeError = builder.createNode(commandId,
+                    putIfAbsent.value(), putIfAbsent.scopeOwner());
+            if (maybeError != null) {
+                return maybeError;
+            }
+
+            maybeError = builder.attachAs(nodeId, key, commandId);
+            if (maybeError != null) {
+                return maybeError;
+            }
+        }
+
+        return builder.build();
+    }
+
+    private CommandResult handleInsert(InsertCommand insert) {
+        Id commandId = insert.commandId();
+
+        var builder = new ResultBuilder(insert);
+
+        Reject maybeError = builder.createNode(commandId, insert.value(),
+                insert.scopeOwner());
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        maybeError = builder.attachAt(insert.targetNodeId(), insert.position(),
+                commandId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        return builder.build();
+    }
+
+    private CommandResult handleSet(SetCommand set) {
+        DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+        ResolvedData resolved = nodeLookup.resolveData(set.targetNodeId());
+
+        return createValueChange(set, resolved, set.value());
+    }
+
+    private CommandResult handleRemove(RemoveCommand remove) {
+        Id nodeId = remove.targetNodeId();
+
+        Id expectedParentId = remove.expectedParentId();
+        if (expectedParentId != null) {
+            DirectNodeLookup nodeLookup = new DirectNodeLookup();
+
+            Id actualParentId = nodeLookup.data(nodeId).parent();
+
+            if (!nodeLookup.isSameNode(expectedParentId, actualParentId)) {
+                return CommandResult.fail("Not a child");
+            }
+        }
+
+        var builder = new ResultBuilder(remove);
+
+        Reject maybeError = builder.detach(nodeId);
+        if (maybeError != null) {
+            return maybeError;
+        }
+
+        return builder.build();
+    }
+
+    private CommandResult handleClearOwner(ClearOwnerCommand clearOwner) {
+        Id ownerId = clearOwner.ownerId();
+
+        var builder = new ResultBuilder(clearOwner);
+
+        nodes().forEach((id, nodeOrAlias) -> {
+            if (nodeOrAlias instanceof Data node
+                    && ownerId.equals(node.scopeOwner())) {
+                Reject result = builder.detach(id);
+                assert result == null;
+            }
+        });
+
+        return builder.build();
+    }
+
+    private Map<Id, CommandResult> handleTransaction(
+            TransactionCommand transaction) {
+        List<SignalCommand> commands = transaction.commands();
+
+        MutableTreeRevision scratchpad = new MutableTreeRevision(this);
+
+        var results = new HashMap<Id, CommandResult>();
+
+        Reject firstReject = null;
+        for (SignalCommand command : commands) {
+            scratchpad.apply(command, results::put);
+
+            CommandResult subResult = results.get(command.commandId());
+            if (subResult instanceof Reject reject) {
+                firstReject = reject;
+                break;
+            }
+        }
+
+        if (firstReject == null) {
+            Map<Id, NodeModification> updates = new HashMap<>();
+            Map<Id, SignalCommand.ScopeOwnerCommand> originalInserts = new HashMap<>();
+
+            // Iterate the command list to preserve order
+            for (SignalCommand command : commands) {
+                Accept op = (Accept) results.get(command.commandId());
+                op.updates().forEach((nodeId, modification) -> {
+                    NodeModification previous = updates.get(nodeId);
+                    if (previous != null) {
+                        updates.put(nodeId, new NodeModification(
+                                previous.oldNode(), modification.newNode()));
+                    } else {
+                        updates.put(nodeId, modification);
+                    }
+                });
+
+                originalInserts.putAll(op.originalInserts());
+            }
+
+            results.put(transaction.commandId(),
+                    new Accept(updates, originalInserts));
+        } else {
+            for (SignalCommand command : commands) {
+                CommandResult originalResult = results.get(command.commandId());
+                if (!(originalResult instanceof Reject)) {
+                    results.put(command.commandId(), firstReject);
+                }
+            }
+
+            results.put(transaction.commandId(), firstReject);
+        }
+
+        return results;
+    }
+
+    private CommandResult handleSnapshot(SnapshotCommand snapshot) {
+        ResultBuilder builder = new ResultBuilder(snapshot);
+
+        builder.updatedNodes.putAll(snapshot.nodes());
+
+        return builder.build();
+    }
+
+    private static CommandResult createValueChange(SignalCommand command,
+            ResolvedData resolved, JsonNode value) {
+        Data oldNode = resolved.data();
+        Data newNode = new Node.Data(oldNode.parent(), command.commandId(),
+                oldNode.scopeOwner(), value, oldNode.listChildren(),
+                oldNode.mapChildren());
+
+        return new Accept(Map.of(resolved.resolvedId(),
+                new NodeModification(oldNode, newNode)), Map.of());
     }
 }
