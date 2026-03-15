@@ -128,7 +128,7 @@ class ErrorStateRendererTest {
     }
 
     @Test
-    public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
+    void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(
@@ -152,7 +152,7 @@ class ErrorStateRendererTest {
     }
 
     @Test
-    public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
+    void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(
@@ -191,7 +191,7 @@ class ErrorStateRendererTest {
     }
 
     @Test
-    public void handle_errorViewLayoutForwardsToAView_viewIsNavigated() {
+    void handle_errorViewLayoutForwardsToAView_viewIsNavigated() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(

@@ -104,7 +104,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void newNodeState() {
+    void newNodeState() {
         StateNode node = createEmptyNode();
 
         NodeOwner owner = node.getOwner();
@@ -117,7 +117,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void nodeContainsDefinedFeatures() {
+    void nodeContainsDefinedFeatures() {
         StateNode node = new StateNode(ElementData.class);
 
         assertTrue(node.hasFeature(ElementData.class),
@@ -132,14 +132,14 @@ public class StateNodeTest {
     }
 
     @Test
-    public void getMissingFeatureThrows() {
+    void getMissingFeatureThrows() {
         StateNode node = new StateNode(ElementData.class);
         assertThrows(IllegalStateException.class,
                 () -> node.getFeature(ElementPropertyMap.class));
     }
 
     @Test
-    public void attachDetachChangeCollection() {
+    void attachDetachChangeCollection() {
         StateNode node = createEmptyNode();
 
         List<NodeChange> changes = new ArrayList<>();
@@ -173,7 +173,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void appendChildBeforeParent() {
+    void appendChildBeforeParent() {
         StateNode parent = createParentNode("parent");
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
@@ -190,7 +190,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void appendParentBeforeChild() {
+    void appendParentBeforeChild() {
         StateNode parent = createParentNode("parent");
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
@@ -207,7 +207,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void setChildAsParent() {
+    void setChildAsParent() {
         StateNode parent = createParentNode("parent");
         StateNode child = createParentNode("child");
         setParent(child, parent);
@@ -216,7 +216,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void setAsOwnParent() {
+    void setAsOwnParent() {
         StateNode parent = createParentNode("parent");
         assertThrows(IllegalStateException.class,
                 () -> setParent(parent, parent));
@@ -229,7 +229,7 @@ public class StateNodeTest {
      * no sense to test insane depth.
      */
     @Test
-    public void recursiveTreeNavigation_resilienceInDepth() {
+    void recursiveTreeNavigation_resilienceInDepth() {
         TestStateNode childOfRoot = new TestStateNode();
         TestStateNode node = createTree(childOfRoot, 3000);
         StateTree tree = createStateTree();
@@ -249,7 +249,7 @@ public class StateNodeTest {
      * no sense to test insane depth.
      */
     @Test
-    public void recursiveTreeNavigation_resilienceInSize() {
+    void recursiveTreeNavigation_resilienceInSize() {
         TestStateNode childOfRoot = new TestStateNode();
         int count = 300;
         StateNode node = createTree(childOfRoot, count);
@@ -274,7 +274,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void nodeTreeOnAttach_bottomUpTraversing_correctOrder() {
+    void nodeTreeOnAttach_bottomUpTraversing_correctOrder() {
         TestStateNode root = new TestStateNode();
         LinkedList<Integer> data = new LinkedList<>();
         data.add(0);
@@ -303,7 +303,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void nodeTreeOnAttach_bottomUpTraversing_brokenParentInChildDoesNotEndInLoop()
+    void nodeTreeOnAttach_bottomUpTraversing_brokenParentInChildDoesNotEndInLoop()
             throws NoSuchFieldException, IllegalAccessException {
         // Set data is used to track the node during debug see
         // TestStateNode.toString
@@ -331,7 +331,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void attachListener_onSetParent_listenerTriggered() {
+    void attachListener_onSetParent_listenerTriggered() {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
@@ -346,7 +346,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void attachListener_listenerRemoved_listenerNotTriggered() {
+    void attachListener_listenerRemoved_listenerNotTriggered() {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
@@ -363,7 +363,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachListener_onSetParent_listenerTriggered() {
+    void detachListener_onSetParent_listenerTriggered() {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
@@ -380,7 +380,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachListener_listenerRemoved_listenerNotTriggered() {
+    void detachListener_listenerRemoved_listenerNotTriggered() {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
@@ -400,7 +400,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachListener_removesNode_notUnregisteredTwice() {
+    void detachListener_removesNode_notUnregisteredTwice() {
         StateTree tree = createStateTree();
         StateNode root = createParentNode("");
         setParent(root, tree.getRootNode());
@@ -516,7 +516,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runWhenAttachedNodeNotAttached() {
+    void runWhenAttachedNodeNotAttached() {
         StateTree tree = createStateTree();
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
@@ -535,7 +535,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runMultipleWhenAttachedNodeNotAttached() {
+    void runMultipleWhenAttachedNodeNotAttached() {
         StateTree tree = createStateTree();
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
@@ -555,7 +555,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runWhenAttachedNodeAttached() {
+    void runWhenAttachedNodeAttached() {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
         StateTree tree = createStateTree();
@@ -569,7 +569,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runWhenAttached_detachingNode_schedulesCommandOnAttach() {
+    void runWhenAttached_detachingNode_schedulesCommandOnAttach() {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
         StateTree tree = createStateTree();
@@ -590,7 +590,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runWhenAttached_detachingNode_childNodeSchedulesCommandOnAttach() {
+    void runWhenAttached_detachingNode_childNodeSchedulesCommandOnAttach() {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode parent = createParentNode("PARENT");
         StateNode child = createEmptyNode("CHILD");
@@ -613,7 +613,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void requiredFeatures() {
+    void requiredFeatures() {
         StateNode stateNode = new StateNode(
                 Arrays.asList(ElementClassList.class, ElementPropertyMap.class),
                 ElementAttributeMap.class);
@@ -628,7 +628,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
+    void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
                 ElementPropertyMap.class, ElementData.class);
 
@@ -650,7 +650,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_inertElement_inertChangesCollected() {
+    void collectChanges_inertElement_inertChangesCollected() {
         StateNode parent = createTestNode("Parent node",
                 ElementChildrenList.class, InertData.class);
         StateNode child = createTestNode("Child node",
@@ -720,7 +720,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_inertChildMoved_inertStateInherited() {
+    void collectChanges_inertChildMoved_inertStateInherited() {
         StateNode inertParent = createTestNode("Inert parent",
                 ElementChildrenList.class, InertData.class);
         StateNode child = createTestNode("Child", InertData.class);
@@ -759,7 +759,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
+    void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
         StateNode stateNode = createTestNode("Active node",
                 ElementPropertyMap.class, ElementData.class);
 
@@ -786,7 +786,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyInactiveElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
+    void collectChanges_initiallyInactiveElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
         Element element = ElementFactory.createAnchor();
 
         StateNode stateNode = element.getNode();
@@ -809,7 +809,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
+    void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
         Element element = ElementFactory.createAnchor();
 
         StateNode stateNode = element.getNode();
@@ -838,7 +838,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void recursiveAndStandAloneVisibility() {
+    void recursiveAndStandAloneVisibility() {
         StateNode parentNode = new StateNode(ElementPropertyMap.class,
                 ElementData.class, ElementChildrenList.class);
         StateNode childNode = new StateNode(ElementPropertyMap.class,
@@ -857,7 +857,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void invisibleNodeNoExtraChanges() {
+    void invisibleNodeNoExtraChanges() {
         Element element = ElementFactory.createAnchor();
         StateNode node = element.getNode();
 
@@ -898,7 +898,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void invisibleParentNodeNoExtraChanges() {
+    void invisibleParentNodeNoExtraChanges() {
         Element parentElement = ElementFactory.createDiv();
         StateNode parentNode = parentElement.getNode();
 
@@ -960,7 +960,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_firstAsParent_lastAsChild() {
+    void modifyNodeTreeInAttachListener_firstAsParent_lastAsChild() {
         assertAttachDetachEvents(createNodes(), "a", "c", false);
     }
 
@@ -984,7 +984,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_lastAsParent_firstAsChild() {
+    void modifyNodeTreeInAttachListener_lastAsParent_firstAsChild() {
         assertAttachDetachEvents(createNodes(), "c", "a", true);
     }
 
@@ -1008,7 +1008,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_middleAsParent_firstAsChild() {
+    void modifyNodeTreeInAttachListener_middleAsParent_firstAsChild() {
         assertAttachDetachEvents(createNodes(), "b", "a", true);
     }
 
@@ -1032,7 +1032,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_firstAsParent_middleAsChild() {
+    void modifyNodeTreeInAttachListener_firstAsParent_middleAsChild() {
         assertAttachDetachEvents(createNodes(), "a", "b", true);
     }
 
@@ -1054,7 +1054,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_middleAsParent_lastAsChild() {
+    void modifyNodeTreeInAttachListener_middleAsParent_lastAsChild() {
         assertAttachDetachEvents(createNodes(), "b", "c", false);
     }
 
@@ -1076,12 +1076,12 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInAttachListener_lastAsParent_middleAsChild() {
+    void modifyNodeTreeInAttachListener_lastAsParent_middleAsChild() {
         assertAttachDetachEvents(createNodes(), "c", "b", false);
     }
 
     @Test
-    public void detachParent_detachFirstChildOnDetachLast_oneDetachEvent() {
+    void detachParent_detachFirstChildOnDetachLast_oneDetachEvent() {
         TestStateTree tree = new TestStateTree();
 
         StateNode childA = createEmptyNode("a");
@@ -1104,7 +1104,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachParent_detachLastChildOnDetachFirst_oneDetachEvent() {
+    void detachParent_detachLastChildOnDetachFirst_oneDetachEvent() {
         TestStateTree tree = new TestStateTree();
 
         StateNode childA = createEmptyNode("a");
@@ -1127,7 +1127,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachParent_appendChildOnDetach_noEvents() {
+    void detachParent_appendChildOnDetach_noEvents() {
         TestStateTree tree = new TestStateTree();
 
         StateNode childA = createEmptyNode("a");
@@ -1151,7 +1151,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void detachParent_insertChildAsFirstOnDetach_noEvents() {
+    void detachParent_insertChildAsFirstOnDetach_noEvents() {
         TestStateTree tree = new TestStateTree();
 
         StateNode child = createEmptyNode("a");
@@ -1177,7 +1177,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void attachParent_detachFirstOnAttachLast_noEvents() {
+    void attachParent_detachFirstOnAttachLast_noEvents() {
         TestStateTree tree = new TestStateTree();
 
         StateNode childA = createEmptyNode("a");
@@ -1206,7 +1206,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void attachParent_detachLastOnAttachFirst_attachDetachEvents() {
+    void attachParent_detachLastOnAttachFirst_attachDetachEvents() {
         TestStateTree tree = new TestStateTree();
 
         StateNode childA = createEmptyNode("a");
@@ -1256,7 +1256,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_firstAsParent_lastAsChild() {
+    void modifyNodeTreeInDetachListener_firstAsParent_lastAsChild() {
         assertDetachAttachEvents(createNodes(), "a", "c");
     }
 
@@ -1278,7 +1278,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_lastAsParent_firstAsChild() {
+    void modifyNodeTreeInDetachListener_lastAsParent_firstAsChild() {
         assertDetachAttachEvents(createNodes(), "c", "a");
     }
 
@@ -1300,7 +1300,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_middleAsParent_firstAsChild() {
+    void modifyNodeTreeInDetachListener_middleAsParent_firstAsChild() {
         assertDetachAttachEvents(createNodes(), "b", "a");
     }
 
@@ -1322,7 +1322,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_firstAsParent_middleAsChild() {
+    void modifyNodeTreeInDetachListener_firstAsParent_middleAsChild() {
         assertDetachAttachEvents(createNodes(), "a", "b");
     }
 
@@ -1344,7 +1344,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_middleAsParent_lastAsChild() {
+    void modifyNodeTreeInDetachListener_middleAsParent_lastAsChild() {
         assertDetachAttachEvents(createNodes(), "b", "c");
     }
 
@@ -1366,7 +1366,7 @@ public class StateNodeTest {
      * @formatter:on
      */
     @Test
-    public void modifyNodeTreeInDetachListener_lastAsParent_middleAsChild() {
+    void modifyNodeTreeInDetachListener_lastAsParent_middleAsChild() {
         assertDetachAttachEvents(createNodes(), "c", "b");
     }
 
@@ -1375,7 +1375,7 @@ public class StateNodeTest {
      * nodes.
      */
     @Test
-    public void removeFromTree_nodeAttached_detachedAndDescendantsReset() {
+    void removeFromTree_nodeAttached_detachedAndDescendantsReset() {
         // given grandParent -> parent -> child
         StateNode grandParent = createParentNode("grandParent");
         StateNode parent = createParentNode("parent");
@@ -1401,7 +1401,7 @@ public class StateNodeTest {
      * nodes, sends detach event.
      */
     @Test
-    public void removeFromTree_nodeAttachedThenDetached_detachEventCollected() {
+    void removeFromTree_nodeAttachedThenDetached_detachEventCollected() {
         // given grandParent -> parent -> child
         StateNode grandParent = createParentNode("grandParent");
         StateNode parent = createParentNode("parent");
@@ -1433,7 +1433,7 @@ public class StateNodeTest {
      * nodes, sends detach event.
      */
     @Test
-    public void removeFromTree_nodeAttached_detachedFullReset_noDetachEventCollected() {
+    void removeFromTree_nodeAttached_detachedFullReset_noDetachEventCollected() {
         // given grandParent -> parent -> child
         StateNode grandParent = createParentNode("grandParent");
         StateNode parent = createParentNode("parent");
@@ -1464,7 +1464,7 @@ public class StateNodeTest {
      * StateTree reference and resets descendant nodes.
      */
     @Test
-    public void removeFromTree_nodeAttachedAndInDetachListener_detachedAndDescendantsReset() {
+    void removeFromTree_nodeAttachedAndInDetachListener_detachedAndDescendantsReset() {
         // given grandParent -> parent -> child
         StateNode grandParent = createParentNode("grandParent");
         StateNode parent = createParentNode("parent");
@@ -1486,7 +1486,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void removeFromTree_closeUI_allowsToSetANewTree() {
+    void removeFromTree_closeUI_allowsToSetANewTree() {
         UI ui = new UI();
 
         AtomicBoolean isRootAttached = new AtomicBoolean();

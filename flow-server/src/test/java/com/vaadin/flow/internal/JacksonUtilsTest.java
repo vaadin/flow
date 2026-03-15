@@ -49,7 +49,7 @@ public class JacksonUtilsTest {
     ObjectMapper mapper = JacksonUtils.getMapper();
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         // Equal
         assertTrue(JacksonUtils.jsonEquals(mapper.valueToTree(true),
                 mapper.valueToTree(true)));
@@ -92,14 +92,14 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testEquals_firstNull_throws() {
+    void testEquals_firstNull_throws() {
         assertThrows(AssertionError.class, () -> {
             JacksonUtils.jsonEquals(null, mapper.nullNode());
         });
     }
 
     @Test
-    public void testEquals_secondNull_throws() {
+    void testEquals_secondNull_throws() {
         assertThrows(AssertionError.class, () -> {
             JacksonUtils.jsonEquals(mapper.nullNode(), null);
         });
@@ -140,14 +140,14 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void collectEmptyStream() {
+    void collectEmptyStream() {
         Stream<JsonNode> jsonValueStream = Stream.empty();
         ArrayNode a = jsonValueStream.collect(JacksonUtils.asArray());
         assertEquals(0, a.size());
     }
 
     @Test
-    public void testStream() {
+    void testStream() {
         ArrayNode array = createTestArray1();
         List<JsonNode> list = JacksonUtils.stream(array).toList();
 
@@ -158,7 +158,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testObjectStream() {
+    void testObjectStream() {
         ArrayNode array = Stream.of(mapper.createObjectNode(),
                 createTestObject1(), createTestObject2())
                 .collect(JacksonUtils.asArray());
@@ -175,7 +175,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testNumberStream() {
+    void testNumberStream() {
         double[] values = new double[] { 3.14, 42, Double.MAX_VALUE };
 
         ArrayNode array = DoubleStream.of(values)
@@ -188,7 +188,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testAsArray() {
+    void testAsArray() {
         Stream<JsonNode> stream = JacksonUtils.stream(createTestArray1());
 
         ArrayNode array = stream.collect(JacksonUtils.asArray());
@@ -197,7 +197,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testCreateArray() {
+    void testCreateArray() {
         ArrayNode array = JacksonUtils.createArray(mapper.valueToTree("string"),
                 mapper.nullNode());
 
@@ -207,14 +207,14 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testCreateEmptyArray() {
+    void testCreateEmptyArray() {
         ArrayNode array = JacksonUtils.createArray();
 
         assertEquals(0, array.size());
     }
 
     @Test
-    public void createObject() {
+    void createObject() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("integer", Integer.valueOf(3));
         map.put("string", "foo");
@@ -233,7 +233,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testCreateEmptyObject() {
+    void testCreateEmptyObject() {
         ObjectNode object = JacksonUtils.createObject(Collections.emptyMap(),
                 item -> {
                     throw new AssertionError("Callback should not be called");
@@ -349,7 +349,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void simpleBeanToJson() {
+    void simpleBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new SimpleBean());
         assertEquals("value", json.get("string").asString());
         assertEquals(1.0, json.get("number").asDouble(), 0.0);
@@ -358,7 +358,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void nestedBeanToJson() {
+    void nestedBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
         assertEquals("parent", json.get("parentValue").asString());
         JsonNode child = json.get("child");
@@ -366,7 +366,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void beanWithTimeFields() {
+    void beanWithTimeFields() {
         BeanWithTemporalFields bean = new BeanWithTemporalFields();
         ObjectNode json = JacksonUtils.beanToJson(bean);
 
@@ -400,7 +400,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void nullChildBean() {
+    void nullChildBean() {
         ParentBean bean = new ParentBean();
         bean.child = null;
 
@@ -409,7 +409,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void beanWithListAndMap() {
+    void beanWithListAndMap() {
         ListAndMapBean bean = new ListAndMapBean();
 
         ObjectNode json = JacksonUtils.beanToJson(bean);
@@ -439,7 +439,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void simpleBeanListToJson() {
+    void simpleBeanListToJson() {
         ArrayList<SimpleBean> list = new ArrayList<>();
         SimpleBean bean1 = new SimpleBean();
         bean1.string = "bean1";
@@ -454,7 +454,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void simpleMapToJson() {
+    void simpleMapToJson() {
         Map<String, Object> map = new HashMap<>();
         SimpleBean bean1 = new SimpleBean();
         bean1.string = "bean1";
@@ -474,7 +474,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void testReadObject() {
+    void testReadObject() {
         ObjectNode jsonObject = mapper.createObjectNode();
         jsonObject.put("name", "Foo");
         jsonObject.put("age", 30.5);
@@ -488,7 +488,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void toFileJson() throws JacksonException {
+    void toFileJson() throws JacksonException {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
         assertEquals("""
                 {
@@ -501,7 +501,7 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void writeValue_nullReturnsNullNode() {
+    void writeValue_nullReturnsNullNode() {
         BaseJsonNode result = JacksonUtils.writeValue(null);
         assertTrue(result.isNull(), "Expected NullNode");
         assertEquals(mapper.nullNode(), result);

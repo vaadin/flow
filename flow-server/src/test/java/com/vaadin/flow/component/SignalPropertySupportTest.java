@@ -54,25 +54,25 @@ class SignalPropertySupportTest {
     private AtomicReference<Object> lastValue;
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         service = new MockVaadinServletService();
     }
 
     @AfterAll
-    public static void clean() {
+    static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
     @BeforeEach
-    public void before() {
+    void before() {
         events = mockLockedSessionWithErrorHandler();
         callCount = new AtomicInteger(0);
         lastValue = new AtomicReference<>();
     }
 
     @AfterEach
-    public void after() {
+    void after() {
         assertTrue(events.isEmpty());
         CurrentInstance.clearAll();
         events = null;
@@ -92,7 +92,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void create_nullArguments_throwException() {
+    void create_nullArguments_throwException() {
         assertThrows(NullPointerException.class,
                 () -> SignalPropertySupport.create(null, value -> {
                 }));
@@ -101,7 +101,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void get_notBound_nullValue() {
+    void get_notBound_nullValue() {
         var component = new TestComponent();
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
@@ -110,7 +110,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void get_boundButNotAttached_valueSetInitially() {
+    void get_boundButNotAttached_valueSetInitially() {
         var component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -126,7 +126,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void get_boundAndAttached_valueSet() {
+    void get_boundAndAttached_valueSet() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -150,7 +150,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void set_notBound_valueSet() {
+    void set_notBound_valueSet() {
         var component = new TestComponent();
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
@@ -171,7 +171,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void set_alreadyBound_throwException() {
+    void set_alreadyBound_throwException() {
         var component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
@@ -187,7 +187,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void set_computedSignal_valueSet() {
+    void set_computedSignal_valueSet() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -201,7 +201,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void set_mappedSignal_valueSet() {
+    void set_mappedSignal_valueSet() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -214,7 +214,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -227,7 +227,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_alreadyBound_throw() {
+    void bind_alreadyBound_throw() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -241,7 +241,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_boundDetachedAttached_bindingRemovedAndAddedBack() {
+    void bind_boundDetachedAttached_bindingRemovedAndAddedBack() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -259,7 +259,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_onChange_receivesBindingContext() {
+    void bind_onChange_receivesBindingContext() {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -285,7 +285,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_onChange_bindThenAttach() {
+    void bind_onChange_bindThenAttach() {
         var component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -305,7 +305,7 @@ class SignalPropertySupportTest {
     }
 
     @Test
-    public void bind_onChange_bindThenChangeAndAttach() {
+    void bind_onChange_bindThenChangeAndAttach() {
         var component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("initial");

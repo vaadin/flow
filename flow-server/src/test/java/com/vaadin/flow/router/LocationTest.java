@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocationTest {
     @Test
-    public void parseLocation() {
+    void parseLocation() {
         Location location = new Location("foo/bar/baz");
 
         assertEquals(Arrays.asList("foo", "bar", "baz"),
@@ -40,33 +40,33 @@ class LocationTest {
     }
 
     @Test
-    public void parseLocationWithEndingSlash() {
+    void parseLocationWithEndingSlash() {
         Location location = new Location("foo/bar/");
 
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
     @Test
-    public void parseLocationStartingWithSlash() {
+    void parseLocationStartingWithSlash() {
         Location location = new Location("/foo/bar/");
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
     @Test
-    public void parseNullLocation() {
+    void parseNullLocation() {
         Location location = new Location((String) null);
         assertEquals(Arrays.asList(""), location.getSegments());
     }
 
     @Test
-    public void parseNullLocationWithParameters() {
+    void parseNullLocationWithParameters() {
         Location location = new Location((String) null,
                 QueryParameters.fromString("foo"));
         assertEquals(Arrays.asList(""), location.getSegments());
     }
 
     @Test
-    public void parseLocationWithQueryStringOnly() {
+    void parseLocationWithQueryStringOnly() {
         Location location = new Location("?hey=hola&zz=");
         assertEquals("", location.getPath());
         Map<String, List<String>> queryMap = new HashMap<>();
@@ -80,7 +80,7 @@ class LocationTest {
     }
 
     @Test
-    public void parseLocationWithQueryString_noValue() {
+    void parseLocationWithQueryString_noValue() {
         Location location = new Location("path?query");
 
         assertEquals("path", location.getPath());
@@ -92,7 +92,7 @@ class LocationTest {
     }
 
     @Test
-    public void parseLocationWithQueryString_emptyValue() {
+    void parseLocationWithQueryString_emptyValue() {
         Location location = new Location("path?query=");
 
         assertEquals("path", location.getPath());
@@ -104,14 +104,14 @@ class LocationTest {
     }
 
     @Test
-    public void locationFromSegments() {
+    void locationFromSegments() {
         Location location = new Location(Arrays.asList("one", "two"));
         assertEquals(Arrays.asList("one", "two"), location.getSegments());
         assertEquals("one/two", location.getPath());
     }
 
     @Test
-    public void queryValue_decodedCorrectly() {
+    void queryValue_decodedCorrectly() {
         QueryParameters queryParameters = new Location("home?value+part")
                 .getQueryParameters();
         assertEquals("value part",
@@ -146,7 +146,7 @@ class LocationTest {
     }
 
     @Test
-    public void subLocation() {
+    void subLocation() {
         Location location = new Location(Arrays.asList("one", "two", "three"));
 
         assertEquals("one", location.getFirstSegment());
@@ -159,14 +159,14 @@ class LocationTest {
     }
 
     @Test
-    public void emptyLocation() {
+    void emptyLocation() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Location(Collections.emptyList());
         });
     }
 
     @Test
-    public void noSubLocation_emptyOptional() {
+    void noSubLocation_emptyOptional() {
         Location location = new Location("foo");
         Optional<Location> maybeSubLocation = location.getSubLocation();
 
@@ -174,13 +174,13 @@ class LocationTest {
     }
 
     @Test
-    public void spaceInLocation() {
+    void spaceInLocation() {
         Location location = new Location("foo bar");
         assertEquals("foo bar", location.getFirstSegment());
     }
 
     @Test
-    public void umlautInLocation() {
+    void umlautInLocation() {
         Location location = new Location("foo/åäö/bar");
 
         assertEquals("foo", location.getSegments().get(0));
@@ -189,7 +189,7 @@ class LocationTest {
     }
 
     @Test
-    public void toggleTrailingSlash() {
+    void toggleTrailingSlash() {
         assertEquals("foo",
                 new Location("foo/").toggleTrailingSlash().getPath());
         assertEquals("foo/",
@@ -197,7 +197,7 @@ class LocationTest {
     }
 
     @Test
-    public void toggleTrailingSlash_emtpyLocation() {
+    void toggleTrailingSlash_emtpyLocation() {
         assertThrows(IllegalArgumentException.class, () -> {
             // Does not make sense to change the location to "/"
             new Location("").toggleTrailingSlash();
@@ -205,7 +205,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParametersPath_emptyParams() {
+    void locationWithParametersPath_emptyParams() {
         String initialPath = "foo/bar/";
         Location location = new Location(initialPath);
 
@@ -216,7 +216,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParametersPath_withTrailingSlash() {
+    void locationWithParametersPath_withTrailingSlash() {
         String initialPath = "foo/bar/";
         QueryParameters queryParams = getQueryParameters();
         Location location = new Location(initialPath, queryParams);
@@ -228,7 +228,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParametersPath_withoutTrailingSlash() {
+    void locationWithParametersPath_withoutTrailingSlash() {
         String initialPath = "foo/bar";
         QueryParameters queryParams = getQueryParameters();
         Location location = new Location(initialPath, queryParams);
@@ -249,7 +249,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParamsInUrl() {
+    void locationWithParamsInUrl() {
         String initialPath = "foo/bar/";
         QueryParameters queryParams = getQueryParameters();
         Location location = new Location(initialPath, queryParams);
@@ -260,7 +260,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParamsInUrlAndParameters() {
+    void locationWithParamsInUrlAndParameters() {
         Location location = new Location("foo/bar/?one&two=222",
                 getQueryParameters());
         assertEquals(Arrays.asList("foo", "bar", "?one&two=222"),
@@ -271,7 +271,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParamWithAndWithoutValue() {
+    void locationWithParamWithAndWithoutValue() {
         Location location = new Location("foo?param&param=bar");
         assertEquals("param&param=bar",
                 location.getQueryParameters().getQueryString());
@@ -282,7 +282,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationWithParamAndEmptyValue() {
+    void locationWithParamAndEmptyValue() {
         Location location = new Location("foo?param=&param=bar");
 
         assertEquals("param&param=bar",
@@ -290,7 +290,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationNameShouldBeAbleToHaveDotDot() {
+    void locationNameShouldBeAbleToHaveDotDot() {
         Location location = new Location("..element");
         assertEquals("..element", location.getFirstSegment());
 
@@ -299,7 +299,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationShouldBeRelative() {
+    void locationShouldBeRelative() {
         InvalidLocationException ex = assertThrows(
                 InvalidLocationException.class, () -> {
 
@@ -310,7 +310,7 @@ class LocationTest {
     }
 
     @Test
-    public void locationShouldNotEndWithDotDotSegment() {
+    void locationShouldNotEndWithDotDotSegment() {
         InvalidLocationException ex = assertThrows(
                 InvalidLocationException.class, () -> {
 
@@ -321,7 +321,7 @@ class LocationTest {
     }
 
     @Test
-    public void dotDotLocationShouldNotWork() {
+    void dotDotLocationShouldNotWork() {
         InvalidLocationException ex = assertThrows(
                 InvalidLocationException.class, () -> {
 
@@ -332,12 +332,12 @@ class LocationTest {
     }
 
     @Test
-    public void pathShouldBeEmpty() {
+    void pathShouldBeEmpty() {
         assertEquals("", new Location("").getPathWithQueryParameters());
     }
 
     @Test
-    public void locationWithUrlEncodedCharacters() {
+    void locationWithUrlEncodedCharacters() {
         Location location = new Location(
                 "foo?bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz");
         assertEquals(Arrays.asList("a b ñ & ?"),
@@ -349,14 +349,14 @@ class LocationTest {
     }
 
     @Test
-    public void colonInLocationPath_locationIsParsed() {
+    void colonInLocationPath_locationIsParsed() {
         Location location = new Location("abc:foo/bar?baz");
         assertEquals("abc:foo/bar", location.getPath());
         assertEquals("baz", location.getQueryParameters().getQueryString());
     }
 
     @Test
-    public void locationWithFragment_fragmentRetainedForPathWithQueryParameters() {
+    void locationWithFragment_fragmentRetainedForPathWithQueryParameters() {
         String locationString = "foo#fragment";
         Location location = new Location(locationString);
         assertEquals(locationString, location.getPathWithQueryParameters());

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ShortcutsTest {
 
     @Test
-    public void hasOnlyStaticMethods() {
+    void hasOnlyStaticMethods() {
         Method[] methods = Shortcuts.class.getDeclaredMethods();
 
         for (Method method : methods) {
@@ -47,7 +47,7 @@ class ShortcutsTest {
     }
 
     @Test
-    public void setShortcutListenOnElementLocatorJs_storesLocatorOnComponentData() {
+    void setShortcutListenOnElementLocatorJs_storesLocatorOnComponentData() {
         final RouterLink routerLink = new RouterLink();
         final String locator = "foobar";
         final Registration registration = Shortcuts
@@ -63,7 +63,7 @@ class ShortcutsTest {
     }
 
     @Test
-    public void setShortcutListenOnElementLocatorJs_registrationDoesNotRemoveModifiedData_nullClearsAlways() {
+    void setShortcutListenOnElementLocatorJs_registrationDoesNotRemoveModifiedData_nullClearsAlways() {
         final RouterLink routerLink = new RouterLink();
         final String locator = "foobar";
         final Registration registration = Shortcuts

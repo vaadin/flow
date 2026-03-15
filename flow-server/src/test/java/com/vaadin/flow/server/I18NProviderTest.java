@@ -50,7 +50,7 @@ public class I18NProviderTest {
     private MockDeploymentConfiguration config = new MockDeploymentConfiguration();
 
     @Test
-    public void no_property_defined_should_leave_with_default_locale()
+    void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
         initServletAndService(config);
 
@@ -60,7 +60,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void property_defined_should_init_registry_with_provider()
+    void property_defined_should_init_registry_with_provider()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -75,7 +75,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void with_defined_provider_locale_should_be_the_available_one()
+    void with_defined_provider_locale_should_be_the_available_one()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -93,8 +93,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void translate_calls_provider()
-            throws ServletException, ServiceException {
+    void translate_calls_provider() throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
@@ -105,7 +104,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void translate_withoutProvider_returnsKey()
+    void translate_withoutProvider_returnsKey()
             throws ServletException, ServiceException {
         initServletAndService(config);
 
@@ -114,7 +113,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void translate_withoutVaadinService_throwIllegalStateException()
+    void translate_withoutVaadinService_throwIllegalStateException()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -129,7 +128,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void translate_withoutInstantiator_throwIllegalStateException()
+    void translate_withoutInstantiator_throwIllegalStateException()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -150,13 +149,12 @@ public class I18NProviderTest {
     }
 
     @BeforeEach
-    public void initState()
-            throws NoSuchFieldException, IllegalAccessException {
+    void initState() throws NoSuchFieldException, IllegalAccessException {
         clearI18NProviderField();
     }
 
     @AfterEach
-    public void clearCurrentInstances()
+    void clearCurrentInstances()
             throws NoSuchFieldException, IllegalAccessException {
         CurrentInstance.clearAll();
         clearI18NProviderField();

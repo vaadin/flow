@@ -37,7 +37,7 @@ import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSign
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class EffectTest extends SignalTestBase {
+class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_noSignalUsage_throws() {

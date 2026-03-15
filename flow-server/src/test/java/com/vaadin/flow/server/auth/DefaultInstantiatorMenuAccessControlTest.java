@@ -44,7 +44,7 @@ class DefaultInstantiatorMenuAccessControlTest {
     private ClassLoader classLoader;
 
     @BeforeEach
-    public void init() throws NoSuchFieldException, IllegalAccessException,
+    void init() throws NoSuchFieldException, IllegalAccessException,
             ClassNotFoundException {
         clearMenuAccessControlField();
         contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -56,12 +56,12 @@ class DefaultInstantiatorMenuAccessControlTest {
     }
 
     @AfterEach
-    public void destroy() throws NoSuchFieldException, IllegalAccessException {
+    void destroy() throws NoSuchFieldException, IllegalAccessException {
         Thread.currentThread().setContextClassLoader(contextClassLoader);
     }
 
     @Test
-    public void defaultInstantiator_getMenuAccessControl_defaultMenuAccessControl()
+    void defaultInstantiator_getMenuAccessControl_defaultMenuAccessControl()
             throws ClassNotFoundException {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
@@ -76,7 +76,7 @@ class DefaultInstantiatorMenuAccessControlTest {
     }
 
     @Test
-    public void defaultInstantiator_getMenuAccessControl_customMenuAccessControl()
+    void defaultInstantiator_getMenuAccessControl_customMenuAccessControl()
             throws ClassNotFoundException {
         String customMenuAccessControlClassName = "com.vaadin.flow.server.auth.CustomMenuAccessControl";
 
@@ -100,7 +100,7 @@ class DefaultInstantiatorMenuAccessControlTest {
     }
 
     @Test
-    public void defaultInstantiator_getMenuAccessControlWithInvalidType_throwException() {
+    void defaultInstantiator_getMenuAccessControlWithInvalidType_throwException() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(

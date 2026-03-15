@@ -179,12 +179,12 @@ public class UITest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void elementIsBody() {
+    void elementIsBody() {
         UI ui = new UI();
 
         assertEquals("body", ui.getElement().getTag());
@@ -281,7 +281,7 @@ public class UITest {
     }
 
     @Test
-    public void scrollAttribute() {
+    void scrollAttribute() {
         UI ui = new UI();
         assertNull(ui.getElement().getAttribute("scroll"),
                 "'scroll' attribute shouldn't be set for the "
@@ -289,8 +289,7 @@ public class UITest {
     }
 
     @Test
-    public void testInitialLocation()
-            throws InvalidRouteConfigurationException {
+    void testInitialLocation() throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -298,7 +297,7 @@ public class UITest {
     }
 
     @Test
-    public void locationAfterServerNavigation()
+    void locationAfterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
@@ -317,7 +316,7 @@ public class UITest {
 
     @Test
     @Disabled("Check what is the new Router.navigate for JavaScriptUI")
-    public void navigateWithParameters_delegateToRouter() {
+    void navigateWithParameters_delegateToRouter() {
         final String route = "params";
         Router router = Mockito.mock(Router.class);
         UI ui = new MockUI(router);
@@ -340,7 +339,7 @@ public class UITest {
     }
 
     @Test
-    public void navigateWithParameters_afterServerNavigation()
+    void navigateWithParameters_afterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
@@ -365,7 +364,7 @@ public class UITest {
     }
 
     @Test
-    public void navigateWithQueryAndRouteParameters_afterServerNavigation()
+    void navigateWithQueryAndRouteParameters_afterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
@@ -391,7 +390,7 @@ public class UITest {
     }
 
     @Test
-    public void localeSet_directionUpdated() {
+    void localeSet_directionUpdated() {
         MockUI ui = new MockUI();
 
         ui.setDirection(Direction.RIGHT_TO_LEFT);
@@ -407,7 +406,7 @@ public class UITest {
     }
 
     @Test
-    public void locationAfterClientNavigation()
+    void locationAfterClientNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
@@ -423,7 +422,7 @@ public class UITest {
     }
 
     @Test
-    public void noRouteMatches_404ViewAndCodeReturned()
+    void noRouteMatches_404ViewAndCodeReturned()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
 
@@ -440,7 +439,7 @@ public class UITest {
     }
 
     @Test
-    public void addComponent() {
+    void addComponent() {
         UI ui = new UI();
         Text text = new Text("foo");
         ui.add(text);
@@ -448,7 +447,7 @@ public class UITest {
     }
 
     @Test
-    public void addComponents() {
+    void addComponents() {
         UI ui = new UI();
         Text text = new Text("foo");
         Html html = new Html("<div>foobar</div>");
@@ -457,7 +456,7 @@ public class UITest {
     }
 
     @Test
-    public void removeComponent() {
+    void removeComponent() {
         UI ui = new UI();
         Text text = new Text("foo");
         ui.add(text);
@@ -467,7 +466,7 @@ public class UITest {
     }
 
     @Test
-    public void setLastHeartbeatTimestamp_heartbeatEventIsFired() {
+    void setLastHeartbeatTimestamp_heartbeatEventIsFired() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -483,7 +482,7 @@ public class UITest {
     }
 
     @Test
-    public void setLastHeartbeatTimestamp_multipleHeartbeatListenerRegistered_eachHeartbeatListenerIsCalled() {
+    void setLastHeartbeatTimestamp_multipleHeartbeatListenerRegistered_eachHeartbeatListenerIsCalled() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -497,7 +496,7 @@ public class UITest {
     }
 
     @Test
-    public void setLastHeartbeatTimestamp_heartbeatListenerRemoved_listenerNotRun() {
+    void setLastHeartbeatTimestamp_heartbeatListenerRemoved_listenerNotRun() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -520,7 +519,7 @@ public class UITest {
     }
 
     @Test
-    public void setSession_attachEventIsFired()
+    void setSession_attachEventIsFired()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         List<AttachEvent> events = new ArrayList<>();
@@ -532,7 +531,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_detachEventIsFired()
+    void unsetSession_detachEventIsFired()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
@@ -549,7 +548,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_detachEventIsFiredForUIChildren()
+    void unsetSession_detachEventIsFiredForUIChildren()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
@@ -569,7 +568,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_detachEventIsFiredForElements() {
+    void unsetSession_detachEventIsFiredForElements() {
         UI ui = createTestUI();
 
         List<ElementDetachEvent> events = new ArrayList<>();
@@ -592,7 +591,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_accessErrorHandlerStillWorks() throws IOException {
+    void unsetSession_accessErrorHandlerStillWorks() throws IOException {
         UI ui = createTestUI();
         initUI(ui, "", null);
 
@@ -616,7 +615,7 @@ public class UITest {
     }
 
     @Test
-    public void access_currentUIFilledInErrorHandler() {
+    void access_currentUIFilledInErrorHandler() {
         UI ui = createTestUI();
         initUI(ui, "", null);
         final AtomicReference<UI> uiInErrorHandler = new AtomicReference<>();
@@ -637,7 +636,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_regularOrder() {
+    void beforeClientResponse_regularOrder() {
         UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
@@ -659,7 +658,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_withInnerRunnables() {
+    void beforeClientResponse_withInnerRunnables() {
         UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
@@ -685,7 +684,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_withUnattachedNodes() {
+    void beforeClientResponse_withUnattachedNodes() {
         UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
@@ -709,7 +708,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_withAttachedNodesDuringExecution() {
+    void beforeClientResponse_withAttachedNodesDuringExecution() {
         UI ui = createTestUI();
         Component rootComponent = new AttachableComponent();
         ui.add(rootComponent);
@@ -744,7 +743,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_withReattachedNodes() {
+    void beforeClientResponse_withReattachedNodes() {
         UI ui = createTestUI();
         Component root = new AttachableComponent();
         ui.add(root);
@@ -792,7 +791,7 @@ public class UITest {
     }
 
     @Test
-    public void beforeClientResponse_componentNotAttachedToUi_noException() {
+    void beforeClientResponse_componentNotAttachedToUi_noException() {
         UI ui = createTestUI();
         Component component = new AttachableComponent();
         ui.beforeClientResponse(component, context -> {
@@ -800,7 +799,7 @@ public class UITest {
     }
 
     @Test()
-    public void beforeClientResponse_componentBelongsToAnotherUI_throws() {
+    void beforeClientResponse_componentBelongsToAnotherUI_throws() {
         UI firstUI = createTestUI();
         UI anotherUI = createTestUI();
         Component component = new AttachableComponent();
@@ -840,7 +839,7 @@ public class UITest {
     }
 
     @Test
-    public void before_enter_listener_priority_should_dictate_sort_order()
+    void before_enter_listener_priority_should_dictate_sort_order()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         initUI(ui, "", null);
@@ -889,7 +888,7 @@ public class UITest {
     }
 
     @Test
-    public void before_Leave_listener_priority_should_dictate_sort_order()
+    void before_Leave_listener_priority_should_dictate_sort_order()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         initUI(ui, "", null);
@@ -938,7 +937,7 @@ public class UITest {
     }
 
     @Test
-    public void after_navigation_listener_priority_should_dictate_sort_order()
+    void after_navigation_listener_priority_should_dictate_sort_order()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         initUI(ui, "", null);
@@ -964,7 +963,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterRunnable_nullHandler_exception() {
+    void accessLaterRunnable_nullHandler_exception() {
         UI ui = createAccessableTestUI();
 
         assertThrows(NullPointerException.class,
@@ -973,7 +972,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterRunnable_attachedUnlockedUi_runnableIsRun() {
+    void accessLaterRunnable_attachedUnlockedUi_runnableIsRun() {
         AtomicInteger runCount = new AtomicInteger();
 
         UI ui = createAccessableTestUI();
@@ -996,7 +995,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterRunnable_detachedUiNoHandler_throws() {
+    void accessLaterRunnable_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
         SerializableRunnable wrapped = ui
@@ -1005,7 +1004,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterRunnable_detachedUi_detachHandlerCalled() {
+    void accessLaterRunnable_detachedUi_detachHandlerCalled() {
         AtomicInteger runCount = new AtomicInteger();
 
         UI ui = createTestUI();
@@ -1022,7 +1021,7 @@ public class UITest {
     }
 
     @Test
-    public void getCurrentOrThrow_withCurrentUI_returnsUI() {
+    void getCurrentOrThrow_withCurrentUI_returnsUI() {
         UI ui = createTestUI();
         UI.setCurrent(ui);
 
@@ -1033,13 +1032,13 @@ public class UITest {
     }
 
     @Test
-    public void getCurrentOrThrow_withoutCurrentUI_throws() {
+    void getCurrentOrThrow_withoutCurrentUI_throws() {
         CurrentInstance.clearAll();
         assertThrows(IllegalStateException.class, () -> UI.getCurrentOrThrow());
     }
 
     @Test
-    public void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
+    void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
         CurrentInstance.clearAll();
         try {
             UI.getCurrentOrThrow();
@@ -1053,7 +1052,7 @@ public class UITest {
     }
 
     @Test
-    public void csrfToken_differentUIs_shouldBeUnique() {
+    void csrfToken_differentUIs_shouldBeUnique() {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();
 
@@ -1062,7 +1061,7 @@ public class UITest {
     }
 
     @Test
-    public void csrfToken_sameUI_shouldBeSame() {
+    void csrfToken_sameUI_shouldBeSame() {
         UI ui = new UI();
         String token1 = ui.getCsrfToken();
         String token2 = ui.getCsrfToken();
@@ -1072,7 +1071,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterConsumer_nullHandler_exception() {
+    void accessLaterConsumer_nullHandler_exception() {
         UI ui = createAccessableTestUI();
 
         assertThrows(NullPointerException.class, () -> ui
@@ -1081,7 +1080,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterConsumer_attachedUnlockedUi_runnableIsRun() {
+    void accessLaterConsumer_attachedUnlockedUi_runnableIsRun() {
         AtomicInteger sum = new AtomicInteger();
 
         UI ui = createAccessableTestUI();
@@ -1104,7 +1103,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterConsumer_detachedUiNoHandler_throws() {
+    void accessLaterConsumer_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
         SerializableConsumer<Object> wrapped = ui
@@ -1113,7 +1112,7 @@ public class UITest {
     }
 
     @Test
-    public void accessLaterConsumer_detachedUi_detachHandlerCalled() {
+    void accessLaterConsumer_detachedUi_detachHandlerCalled() {
         AtomicInteger runCount = new AtomicInteger();
 
         UI ui = createTestUI();
@@ -1130,7 +1129,7 @@ public class UITest {
     }
 
     @Test
-    public void navigate_useParameterizedTarget_noOptionalAnnotation_navigationSucceded() {
+    void navigate_useParameterizedTarget_noOptionalAnnotation_navigationSucceded() {
         AtomicReference<String> loc = new AtomicReference<>();
         UI ui = new UI() {
             @Override
@@ -1145,7 +1144,7 @@ public class UITest {
     }
 
     @Test
-    public void navigate_throws_illegal_argument_exception() {
+    void navigate_throws_illegal_argument_exception() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -1180,7 +1179,7 @@ public class UITest {
     }
 
     @Test
-    public void navigate_throws_null_pointer_exception() {
+    void navigate_throws_null_pointer_exception() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -1207,7 +1206,7 @@ public class UITest {
     }
 
     @Test
-    public void navigate_throws_not_found_exception() {
+    void navigate_throws_not_found_exception() {
         UI ui = new UI();
         initUI(ui, "", null);
 
@@ -1232,7 +1231,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+    void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
         final TestFixture fixture = new TestFixture();
         assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
@@ -1244,7 +1243,7 @@ public class UITest {
     }
 
     @Test
-    public void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+    void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
         final TestFixture fixture = new TestFixture();
         assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
@@ -1257,7 +1256,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
+    void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
         final TestFixture fixture = new TestFixture();
         assertEquals(fixture.modalComponent,
                 fixture.ui.getInternals().getActiveModalComponent(),
@@ -1278,7 +1277,7 @@ public class UITest {
     }
 
     @Test
-    public void addToModalComponent_newComponentAdded_isAddedCorrectlyAsChild() {
+    void addToModalComponent_newComponentAdded_isAddedCorrectlyAsChild() {
         final TestFixture fixture = new TestFixture();
         Component test = new AttachableComponent();
         fixture.ui.addToModalComponent(test);
@@ -1292,7 +1291,7 @@ public class UITest {
     }
 
     @Test
-    public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
+    void routingComponentVisible_modalComponentAdded_routingComponentInert() {
         final TestFixture fixture = new TestFixture();
 
         verifyInert(fixture.ui, false);
@@ -1321,7 +1320,7 @@ public class UITest {
     }
 
     @Test
-    public void routingComponentAndModalComponentVisible_modalComponentAdded_anotherModalComponentInert() {
+    void routingComponentAndModalComponentVisible_modalComponentAdded_anotherModalComponentInert() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1347,7 +1346,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentPresent_modalityChanged_routingComponentNotInert() {
+    void modalComponentPresent_modalityChanged_routingComponentNotInert() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1371,7 +1370,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentsPresent_newComponentAdded_isInert() {
+    void modalComponentsPresent_newComponentAdded_isInert() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1394,7 +1393,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponent_addedAndRemovedBeforeResponse_noInertChanged() {
+    void modalComponent_addedAndRemovedBeforeResponse_noInertChanged() {
         final TestFixture fixture = new TestFixture();
 
         verifyInert(fixture.ui, false);
@@ -1410,7 +1409,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentsPresent_componentMoved_notModal() {
+    void modalComponentsPresent_componentMoved_notModal() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1428,7 +1427,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentPresent_sameModalAddedAgain_modeless() {
+    void modalComponentPresent_sameModalAddedAgain_modeless() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1446,7 +1445,7 @@ public class UITest {
     }
 
     @Test
-    public void modalComponentPresent_toggleTopModalAgain_noChanges() {
+    void modalComponentPresent_toggleTopModalAgain_noChanges() {
         final TestFixture fixture = new TestFixture();
         fixture.collectUiChanges();
 
@@ -1463,7 +1462,7 @@ public class UITest {
     }
 
     @Test
-    public void modelessComponentPresent_toggleModelessAgain_noChanges() {
+    void modelessComponentPresent_toggleModelessAgain_noChanges() {
         final TestFixture fixture = new TestFixture();
         fixture.ui.setChildComponentModal(fixture.modalComponent, false);
         fixture.collectUiChanges();
@@ -1481,7 +1480,7 @@ public class UITest {
     }
 
     @Test
-    public void twoModalComponents_lowerComponentModelssAndTopMostRemoved_routingComponentNotInert() {
+    void twoModalComponents_lowerComponentModelssAndTopMostRemoved_routingComponentNotInert() {
         final TestFixture fixture = new TestFixture();
         final AttachableComponent secondModal = new AttachableComponent();
         fixture.ui.addModal(secondModal);
@@ -1512,7 +1511,7 @@ public class UITest {
     }
 
     @Test
-    public void twoModalComponents_topComponentMoved_modalComponentSwitches() {
+    void twoModalComponents_topComponentMoved_modalComponentSwitches() {
         final TestFixture fixture = new TestFixture();
         final AttachableComponent secondModal = new AttachableComponent();
         fixture.ui.addModal(secondModal);
@@ -1533,7 +1532,7 @@ public class UITest {
     }
 
     @Test
-    public void twoModalComponents_lowerComponentModalAgain_topComponentInert() {
+    void twoModalComponents_lowerComponentModalAgain_topComponentInert() {
         final TestFixture fixture = new TestFixture();
         final AttachableComponent secondModal = new AttachableComponent();
         fixture.ui.addModal(secondModal);
@@ -1556,7 +1555,7 @@ public class UITest {
     }
 
     @Test
-    public void threeModalComponents_topComponentRemoved_onlyTopMostNotInert() {
+    void threeModalComponents_topComponentRemoved_onlyTopMostNotInert() {
         final TestFixture fixture = new TestFixture();
         final AttachableComponent secondModal = new AttachableComponent();
         final AttachableComponent thirdModal = new AttachableComponent();
@@ -1580,7 +1579,7 @@ public class UITest {
     }
 
     @Test
-    public void getCurrentView_routingInitialized_getsCurrentRouteComponent()
+    void getCurrentView_routingInitialized_getsCurrentRouteComponent()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         initUI(ui, "", null);
@@ -1595,7 +1594,7 @@ public class UITest {
     }
 
     @Test
-    public void getCurrentView_routingNotInitialized_throws()
+    void getCurrentView_routingNotInitialized_throws()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
         assertThrows(IllegalStateException.class, ui::getCurrentView);

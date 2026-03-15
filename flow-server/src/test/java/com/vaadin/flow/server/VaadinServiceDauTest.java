@@ -50,14 +50,14 @@ public class VaadinServiceDauTest {
     private MockedStatic<DauIntegration> dauIntegrationMock;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
         dauIntegrationMock = Mockito.mockStatic(DauIntegration.class);
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         if (subscriptionKey != null) {
             System.setProperty("vaadin.subscriptionKey", subscriptionKey);
         } else {
@@ -67,7 +67,7 @@ public class VaadinServiceDauTest {
     }
 
     @Test
-    public void init_developmentMode_dauNotEnabled() {
+    void init_developmentMode_dauNotEnabled() {
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
         config.setProductionMode(false);
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
@@ -79,7 +79,7 @@ public class VaadinServiceDauTest {
     }
 
     @Test
-    public void init_productionMode_notDauBuild_dauNotEnabled() {
+    void init_productionMode_notDauBuild_dauNotEnabled() {
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
         config.setProductionMode(true);
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "false");
@@ -91,7 +91,7 @@ public class VaadinServiceDauTest {
     }
 
     @Test
-    public void init_productionMode_dauBuild_dauEnabled() {
+    void init_productionMode_dauBuild_dauEnabled() {
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
         config.setProductionMode(true);
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
@@ -104,7 +104,7 @@ public class VaadinServiceDauTest {
     }
 
     @Test
-    public void init_productionMode_dauBuild_subscriptionKeyNotAvailable_throws() {
+    void init_productionMode_dauBuild_subscriptionKeyNotAvailable_throws() {
         dauIntegrationMock.reset();
         dauIntegrationMock.when(() -> DauIntegration.startTracking(anyString()))
                 .thenCallRealMethod();
@@ -118,7 +118,7 @@ public class VaadinServiceDauTest {
     }
 
     @Test
-    public void init_dauEnabled_lookupCustomIdentitySupplier() {
+    void init_dauEnabled_lookupCustomIdentitySupplier() {
 
         UserIdentitySupplier providedIdentitySupplier = userIdentityContext -> Optional
                 .of("user1");

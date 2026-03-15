@@ -27,32 +27,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SharedUtilTests {
 
     @Test
-    public void trailingSlashIsTrimmed() {
+    void trailingSlashIsTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/path/"), is("/path"));
     }
 
     @Test
-    public void noTrailingSlashForTrimming() {
+    void noTrailingSlashForTrimming() {
         assertThat(SharedUtil.trimTrailingSlashes("/path"), is("/path"));
     }
 
     @Test
-    public void trailingSlashesAreTrimmed() {
+    void trailingSlashesAreTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/path///"), is("/path"));
     }
 
     @Test
-    public void emptyStringIsHandled() {
+    void emptyStringIsHandled() {
         assertThat(SharedUtil.trimTrailingSlashes(""), is(""));
     }
 
     @Test
-    public void rootSlashIsTrimmed() {
+    void rootSlashIsTrimmed() {
         assertThat(SharedUtil.trimTrailingSlashes("/"), is(""));
     }
 
     @Test
-    public void camelCaseToHumanReadable() {
+    void camelCaseToHumanReadable() {
         assertEquals("First Name",
                 SharedUtil.camelCaseToHumanFriendly("firstName"));
         assertEquals("First Name",
@@ -75,7 +75,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void splitCamelCase() {
+    void splitCamelCase() {
         assertCamelCaseSplit("firstName", "first", "Name");
         assertCamelCaseSplit("fooBar", "foo", "Bar");
         assertCamelCaseSplit("fooBar", "foo", "Bar");
@@ -94,7 +94,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void join() {
+    void join() {
         String s1 = "foo-bar-baz";
         String s2 = "foo--bar";
 
@@ -106,7 +106,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void dashSeparatedToCamelCase() {
+    void dashSeparatedToCamelCase() {
         assertEquals(null, SharedUtil.dashSeparatedToCamelCase(null));
         assertEquals("", SharedUtil.dashSeparatedToCamelCase(""));
         assertEquals("foo", SharedUtil.dashSeparatedToCamelCase("foo"));
@@ -119,7 +119,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void camelCaseToDashSeparated() {
+    void camelCaseToDashSeparated() {
         assertEquals(null, SharedUtil.camelCaseToDashSeparated(null));
         assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
         assertEquals("foo", SharedUtil.camelCaseToDashSeparated("foo"));
@@ -137,7 +137,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void upperCamelCaseToDashSeparatedLowerCase() {
+    void upperCamelCaseToDashSeparatedLowerCase() {
         assertEquals(null,
                 SharedUtil.upperCamelCaseToDashSeparatedLowerCase(null));
         assertEquals("", SharedUtil.upperCamelCaseToDashSeparatedLowerCase(""));
@@ -158,7 +158,7 @@ class SharedUtilTests {
     }
 
     @Test
-    public void methodUppercaseWithTurkishLocale() {
+    void methodUppercaseWithTurkishLocale() {
         Locale defaultLocale = Locale.getDefault();
         try {
             Locale.setDefault(new Locale("tr", "TR"));
@@ -183,7 +183,7 @@ class SharedUtilTests {
     };
 
     @Test
-    public void testParameterAdding() {
+    void testParameterAdding() {
         String[] urisWithAbcdParam = new String[] {
                 "http://demo.vaadin.com/?a=b&c=d",
                 "https://demo.vaadin.com/?a=b&c=d",

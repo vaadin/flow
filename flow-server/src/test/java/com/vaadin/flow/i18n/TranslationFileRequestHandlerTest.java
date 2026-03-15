@@ -83,24 +83,24 @@ class TranslationFileRequestHandlerTest {
     private I18NProvider i18NProvider;
 
     @BeforeEach
-    public void configure() throws IOException {
+    void configure() throws IOException {
         initTranslationsFolder();
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         ResourceBundle.clearCache(urlClassLoader);
     }
 
     @Test
-    public void pathDoesNotMatch_requestNotHandled() throws IOException {
+    void pathDoesNotMatch_requestNotHandled() throws IOException {
         configure(true);
         setRequestParams(null, "other", null, null);
         assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
-    public void withRootBundle_languageTagIsNull_responseIsRootBundle()
+    void withRootBundle_languageTagIsNull_responseIsRootBundle()
             throws IOException {
         configure(true);
         testResponseContent(null, "{\"title\":\"Root bundle lang\"}", "und");
@@ -108,7 +108,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withoutRootBundle_languageTagIsNull_responseIsEmpty()
+    void withoutRootBundle_languageTagIsNull_responseIsEmpty()
             throws IOException {
         configure(false);
         testResponseContent(null, "", null);
@@ -116,7 +116,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_languageTagIsEmpty_responseIsRootBundle()
+    void withRootBundle_languageTagIsEmpty_responseIsRootBundle()
             throws IOException {
         configure(true);
         testResponseContent("", "{\"title\":\"Root bundle lang\"}", "und");
@@ -124,7 +124,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withoutRootBundle_languageTagIsEmpty_responseIsEmpty()
+    void withoutRootBundle_languageTagIsEmpty_responseIsEmpty()
             throws IOException {
         configure(false);
         testResponseContent("", "", null);
@@ -132,7 +132,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void languageTagWithoutCountryAvailable_responseIsCorrect()
+    void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
         configure(true);
         testResponseContent("fi", "{\"title\":\"Suomi\"}", "fi");
@@ -140,7 +140,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseIsEmpty()
+    void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseIsEmpty()
             throws IOException {
         configure(false);
         testResponseContent("es", "", null);
@@ -148,7 +148,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void languageTagWithCountryAvailable_responseIsCorrect()
+    void languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
         configure(false);
         testResponseContent("es-ES", "{\"title\":\"Espanol (Spain)\"}",
@@ -157,7 +157,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_requestedLocaleBundleNotAvailable_responseIsRootBundle()
+    void withRootBundle_requestedLocaleBundleNotAvailable_responseIsRootBundle()
             throws IOException {
         configure(true);
         testResponseContent("en-US", "{\"title\":\"Root bundle lang\"}",
@@ -166,7 +166,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withoutRootBundle_requestedLocaleBundleNotAvailable_responseIsEmpty()
+    void withoutRootBundle_requestedLocaleBundleNotAvailable_responseIsEmpty()
             throws IOException {
         configure(false);
         testResponseContent("en-US", "", null);
@@ -174,7 +174,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void languageTagWithUnderscoresAvailable_responseIsCorrect()
+    void languageTagWithUnderscoresAvailable_responseIsCorrect()
             throws IOException {
         configure(false);
         testResponseContent("es_ES", "{\"title\":\"Espanol (Spain)\"}",
@@ -183,7 +183,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_languageTagWithUnderscoresNotAvailable_responseIsRootBundle()
+    void withRootBundle_languageTagWithUnderscoresNotAvailable_responseIsRootBundle()
             throws IOException {
         configure(true);
         testResponseContent("it_IT", "{\"title\":\"Root bundle lang\"}",
@@ -192,7 +192,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withoutRootBundle_languageTagWithUnderscoresNotAvailable_responseIsEmpty()
+    void withoutRootBundle_languageTagWithUnderscoresNotAvailable_responseIsEmpty()
             throws IOException {
         configure(false);
         testResponseContent("it_IT", "", null);
@@ -200,7 +200,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsRootBundle()
+    void withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsRootBundle()
             throws IOException {
         configure(true, CustomI18NProvider.class, false);
         testResponseContent("fi", "{\"title\":\"title-fi\"}", "fi");
@@ -208,7 +208,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void productionMode_withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsRootBundle()
+    void productionMode_withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsRootBundle()
             throws IOException {
         configure(true, CustomI18NProvider.class, true);
         testResponseContent("fi", "{\"title\":\"title-fi\"}", "fi");
@@ -259,14 +259,14 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void productionMode_withChunks_filtersKeys() throws IOException {
+    void productionMode_withChunks_filtersKeys() throws IOException {
         setUpChunkedTest();
         testResponseContent("", new String[] { "indexhtml" }, null,
                 "{\"title\":\"Root bundle lang\"}", "und");
     }
 
     @Test
-    public void productionMode_withKeys_onlyReturnsThose() throws IOException {
+    void productionMode_withKeys_onlyReturnsThose() throws IOException {
         setUpChunkedTest();
         testResponseContent("", null, new String[] { "title" },
                 "{\"title\":\"Root bundle lang\"}", "und");
@@ -412,7 +412,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void handleSessionExpired_translationRequest_returnsTranslations()
+    void handleSessionExpired_translationRequest_returnsTranslations()
             throws IOException {
         configure(true);
         setRequestParams("fi",
@@ -428,7 +428,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void handleSessionExpired_nonTranslationRequest_returnsFalse()
+    void handleSessionExpired_nonTranslationRequest_returnsFalse()
             throws IOException {
         configure(true);
         setRequestParams(null, "other", null, null);
@@ -438,8 +438,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void handleSessionExpired_noI18nProvider_returnsError()
-            throws IOException {
+    void handleSessionExpired_noI18nProvider_returnsError() throws IOException {
         // Create handler without I18NProvider
         createTranslationFiles(true);
         mockResponse();
@@ -460,7 +459,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void handleSessionExpired_noI18nProvider_productionMode_returnsNotFound()
+    void handleSessionExpired_noI18nProvider_productionMode_returnsNotFound()
             throws IOException {
         // Create handler without I18NProvider
         createTranslationFiles(true);

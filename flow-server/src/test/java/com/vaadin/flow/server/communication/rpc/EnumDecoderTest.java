@@ -33,31 +33,31 @@ class EnumDecoderTest {
     }
 
     @Test
-    public void isApplicable_applicableToStringAndEnum() {
+    void isApplicable_applicableToStringAndEnum() {
         assertTrue(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Title.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToBooleanAndEnum() {
+    void isApplicable_notApplicableToBooleanAndEnum() {
         assertFalse(decoder.isApplicable(JacksonUtils.createNode(true),
                 Enum.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndString() {
+    void isApplicable_notApplicableToStringAndString() {
         assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 String.class));
     }
 
     @Test
-    public void isApplicable_notApplicableToStringAndAbstractEnum() {
+    void isApplicable_notApplicableToStringAndAbstractEnum() {
         assertFalse(decoder.isApplicable(JacksonUtils.createNode("foo"),
                 Enum.class));
     }
 
     @Test
-    public void stringToEnum_convertableString_valueIsConverted()
+    void stringToEnum_convertableString_valueIsConverted()
             throws RpcDecodeException {
         Title title = Title.MRS;
         Title decoded = decoder.decode(JacksonUtils.createNode(title.name()),
@@ -66,7 +66,7 @@ class EnumDecoderTest {
     }
 
     @Test
-    public void stringToEnum_nonConvertableString_valueIsConverted()
+    void stringToEnum_nonConvertableString_valueIsConverted()
             throws RpcDecodeException {
         assertThrows(IllegalArgumentException.class, () -> {
             decoder.decode(JacksonUtils.createNode("foo"), Title.class);

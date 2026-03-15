@@ -106,7 +106,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void rootNodeState() {
+    void rootNodeState() {
         StateNode rootNode = tree.getRootNode();
 
         assertNull(rootNode.getParent(), "Root node should have no parent");
@@ -121,14 +121,14 @@ class StateTreeTest {
     }
 
     @Test
-    public void rootNode_setStateNodeAsParent_throws() {
+    void rootNode_setStateNodeAsParent_throws() {
         assertThrows(IllegalStateException.class, () -> {
             tree.getRootNode().setParent(new StateNode());
         });
     }
 
     @Test
-    public void rootNode_setNullAsParent_nodeIsDetached() {
+    void rootNode_setNullAsParent_nodeIsDetached() {
         AtomicInteger detachCount = new AtomicInteger();
         assertTrue(tree.hasNode(tree.getRootNode()));
         tree.getRootNode()
@@ -141,7 +141,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void attachedNodeIsAttached() {
+    void attachedNodeIsAttached() {
         StateNode node = StateNodeTest.createEmptyNode();
 
         assertFalse(node.isAttached(), "New node should not be attached");
@@ -158,7 +158,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void moveNodeToOtherRoot_throws() {
+    void moveNodeToOtherRoot_throws() {
         StateNode node = StateNodeTest.createEmptyNode();
         StateNodeTest.setParent(node, tree.getRootNode());
         StateNodeTest.setParent(node, null);
@@ -169,7 +169,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void moveNodeToOtherRoot_removeFromTree_doesNotThrow() {
+    void moveNodeToOtherRoot_removeFromTree_doesNotThrow() {
         StateNode node = StateNodeTest.createEmptyNode();
 
         StateNodeTest.setParent(node, tree.getRootNode());
@@ -183,7 +183,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testNoRootAttachChange() {
+    void testNoRootAttachChange() {
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
         for (NodeChange change : changes) {
@@ -200,7 +200,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testTreeChangeCollection() {
+    void testTreeChangeCollection() {
         StateNode node2 = StateNodeTest.createEmptyNode();
         StateNodeTest.setParent(node2, tree.getRootNode());
 
@@ -231,7 +231,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testDirtyNodeCollection() {
+    void testDirtyNodeCollection() {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = StateNodeTest.createEmptyNode("node2");
 
@@ -261,7 +261,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testDirtyNodeCollectionOrder() {
+    void testDirtyNodeCollectionOrder() {
         StateNode rootNode = tree.getRootNode();
         List<StateNode> nodes = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -290,7 +290,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testDetachInChanges() {
+    void testDetachInChanges() {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = StateNodeTest.createEmptyNode();
         StateNodeTest.setParent(node2, node1);
@@ -308,7 +308,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void allValuesAfterReattach() {
+    void allValuesAfterReattach() {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = new StateNode(ElementData.class);
 
@@ -355,7 +355,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void testSerializable() {
+    void testSerializable() {
         @SuppressWarnings("unchecked")
         Class<? extends NodeFeature>[] features = new Class[] {
                 ElementChildrenList.class, ElementData.class,
@@ -375,7 +375,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void reattachedNodeRetainsId() throws InterruptedException {
+    void reattachedNodeRetainsId() throws InterruptedException {
         StateNode child = new StateNode(ElementChildrenList.class);
         StateNode grandChild = new StateNode(ElementChildrenList.class);
 
@@ -415,7 +415,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void detachedNodeGarbageCollected() throws InterruptedException {
+    void detachedNodeGarbageCollected() throws InterruptedException {
         StateNode child = new StateNode(ElementChildrenList.class);
         StateNode grandChild = new StateNode(ElementChildrenList.class);
 
@@ -443,7 +443,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_regularOrder() {
+    void beforeClientResponse_regularOrder() {
         StateNode rootNode = new AttachableNode(true);
 
         List<Integer> results = new ArrayList<>();
@@ -463,7 +463,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_initiallyAttachedToOneUI_executedWithAnother_executionDoesNotHappen() {
+    void beforeClientResponse_initiallyAttachedToOneUI_executedWithAnother_executionDoesNotHappen() {
         StateTree initialTree = new UI().getInternals().getStateTree();
 
         StateNode child = new StateNode(ElementChildrenList.class);
@@ -482,7 +482,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
+    void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
         StateTree someTree = new UI().getInternals().getStateTree();
 
         StateNode child = new StateNode(ElementChildrenList.class);
@@ -497,7 +497,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_withInnerRunnables() {
+    void beforeClientResponse_withInnerRunnables() {
         StateNode rootNode = new AttachableNode(true);
 
         List<Integer> results = new ArrayList<>();
@@ -521,7 +521,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_withUnattachedNodes() {
+    void beforeClientResponse_withUnattachedNodes() {
         StateNode rootNode = new AttachableNode(true);
         StateNode emptyNode = new AttachableNode();
 
@@ -543,7 +543,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_withAttachedNodesDuringExecution() {
+    void beforeClientResponse_withAttachedNodesDuringExecution() {
         StateNode rootNode = tree.getRootNode();
         StateNode emptyNode1 = StateNodeTest.createEmptyNode("node1");
         StateNode emptyNode2 = StateNodeTest.createEmptyNode("node2");
@@ -576,7 +576,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_failingExecutionWithNullErrorHandler_NoNPE() {
+    void beforeClientResponse_failingExecutionWithNullErrorHandler_NoNPE() {
         StateNode rootNode = tree.getRootNode();
         tree.beforeClientResponse(rootNode, context -> {
             throw new IllegalStateException("Throw before client response");
@@ -597,7 +597,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_failingExecutionWithNullSession_NoNPE() {
+    void beforeClientResponse_failingExecutionWithNullSession_NoNPE() {
         StateNode rootNode = tree.getRootNode();
         tree.beforeClientResponse(rootNode, context -> {
             throw new IllegalStateException("Throw before client response");
@@ -611,7 +611,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void beforeClientResponse_nodeGarbageCollectedDespiteClosure()
+    void beforeClientResponse_nodeGarbageCollectedDespiteClosure()
             throws InterruptedException {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = StateNodeTest.createEmptyNode("node2");
@@ -648,7 +648,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void collectChanges_updateActiveState() {
+    void collectChanges_updateActiveState() {
         StateNode node1 = Mockito.mock(StateNode.class);
         StateNode node2 = Mockito.mock(StateNode.class);
 
@@ -666,7 +666,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void collectChanges_parentIsInactive_childrenAreCollected() {
+    void collectChanges_parentIsInactive_childrenAreCollected() {
         StateNode node1 = new CollectableNode();
         StateNode node2 = new CollectableNode();
         StateNode node3 = new CollectableNode();
@@ -695,7 +695,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void prepareForResync_nodeHasAttachAndDetachListeners_treeIsDirtyAndListenersAreCalled() {
+    void prepareForResync_nodeHasAttachAndDetachListeners_treeIsDirtyAndListenersAreCalled() {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = StateNodeTest.createEmptyNode("node2");
         StateNodeTest.setParent(node2, node1);
@@ -742,7 +742,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void pendingJavascriptExecutionForInitiallyInvisibleNode() {
+    void pendingJavascriptExecutionForInitiallyInvisibleNode() {
         UI ui = new UI();
         VaadinSession mockSession = Mockito.mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
@@ -767,7 +767,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void pendingJavascriptExecutionForVisibleAndInvisibleNode() {
+    void pendingJavascriptExecutionForVisibleAndInvisibleNode() {
         UI ui = new UI();
         VaadinSession mockSession = Mockito.mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
@@ -798,7 +798,7 @@ class StateTreeTest {
     }
 
     @Test
-    public void pendingJavascriptExecutionForVisibleAndInvisibleParentNode() {
+    void pendingJavascriptExecutionForVisibleAndInvisibleParentNode() {
         UI ui = new UI();
         VaadinSession mockSession = Mockito.mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);

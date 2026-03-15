@@ -32,7 +32,7 @@ class HasHelperBindHelperTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHelperText_updatesPropertyOnSignalChange() {
+    void bindHelperText_updatesPropertyOnSignalChange() {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
@@ -47,7 +47,7 @@ class HasHelperBindHelperTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHelperText_setHelperTextWhileBindingActive_throws() {
+    void bindHelperText_setHelperTextWhileBindingActive_throws() {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
@@ -59,7 +59,7 @@ class HasHelperBindHelperTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHelperText_nullSignal_throwsNPE() {
+    void bindHelperText_nullSignal_throwsNPE() {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 

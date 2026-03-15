@@ -70,7 +70,7 @@ class AbstractRpcInvocationHandlerTest {
     private TestRpcInvocationHandler handler = new TestRpcInvocationHandler();
 
     @Test
-    public void handleVisibleAndEnabledNode_nodeIsHandled() {
+    void handleVisibleAndEnabledNode_nodeIsHandled() {
         UI ui = new UI();
 
         Element element = createRpcInvocationData(ui, null);
@@ -79,7 +79,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void handleInactiveNode_nodeIsNotHandled() {
+    void handleInactiveNode_nodeIsNotHandled() {
         UI ui = new UI();
 
         createRpcInvocationData(ui, elem -> {
@@ -92,7 +92,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void handleInertNode_nodeIsNotHandled() {
+    void handleInertNode_nodeIsNotHandled() {
         UI ui = new UI();
 
         createRpcInvocationData(ui, elem -> {
@@ -106,7 +106,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUI_passingNoPollingPayload_ignoresPollingInvocation() {
+    void inertUI_passingNoPollingPayload_ignoresPollingInvocation() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createNonPollingRpcInvocationPayload(ui);
@@ -116,7 +116,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingLegitimatePollingPayload_doesNotIgnorePolling() {
+    void inertUIWithPollingInterval_passingLegitimatePollingPayload_doesNotIgnorePolling() {
 
         UI ui = createInertUI();
 
@@ -135,7 +135,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimateKeysForPollingPayload_ignoresInvocation() {
+    void inertUIWithPollingInterval_passingIllegitimateKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
@@ -146,7 +146,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimateGreaterNumberOfKeysForPollingPayload_ignoresInvocation() {
+    void inertUIWithPollingInterval_passingIllegitimateGreaterNumberOfKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
@@ -157,7 +157,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimateSmallerNumberOfKeysForPollingPayload_ignoresInvocation() {
+    void inertUIWithPollingInterval_passingIllegitimateSmallerNumberOfKeysForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
@@ -168,7 +168,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
+    void inertUIWithPollingInterval_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
@@ -177,7 +177,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimateNonRootNodeIdForPollingPayload_ignoresInvocation() {
+    void inertUIWithPollingInterval_passingIllegitimateNonRootNodeIdForPollingPayload_ignoresInvocation() {
 
         UI ui = createInertUIWithPollInterval();
         JsonNode invocationJson = createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
@@ -188,7 +188,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithoutPollInterval_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    void inertUIWithoutPollInterval_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
@@ -209,7 +209,7 @@ class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollingInterval_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    void inertUIWithPollingInterval_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(

@@ -40,7 +40,7 @@ class DisableComponentTrackerTest {
     private Field disabledField;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         disabledField = ComponentTracker.class.getDeclaredField("disabled");
         disabledField.setAccessible(true);
         previousDisabled = disabledField.get(null);
@@ -48,12 +48,12 @@ class DisableComponentTrackerTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         disabledField.set(null, previousDisabled);
     }
 
     @Test
-    public void trackCreate_disabledInProductionMode() {
+    void trackCreate_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(true);
             Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
@@ -66,7 +66,7 @@ class DisableComponentTrackerTest {
     }
 
     @Test
-    public void trackAttach_disabledInProductionMode() {
+    void trackAttach_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(true);
             Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
@@ -81,7 +81,7 @@ class DisableComponentTrackerTest {
     }
 
     @Test
-    public void trackCreate_disabledByConfiguration() {
+    void trackCreate_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(false);
             Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
@@ -94,7 +94,7 @@ class DisableComponentTrackerTest {
     }
 
     @Test
-    public void trackAttach_disabledByConfiguration() {
+    void trackAttach_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
             Mockito.when(appCfg.isProductionMode()).thenReturn(false);
             Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(

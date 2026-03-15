@@ -53,7 +53,7 @@ class ReturnChannelHandlerTest {
     private ArrayNode args = JacksonUtils.createArrayNode();
 
     @Test
-    public void happyPath_everythingWorks() {
+    void happyPath_everythingWorks() {
         ReturnChannelRegistration registration = registerUiChannel();
 
         handleMessage(registration);
@@ -63,7 +63,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void noReturnChannelMap_invocationIgnored() {
+    void noReturnChannelMap_invocationIgnored() {
         StateNode nodeWithoutMap = new StateNode();
 
         ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
@@ -75,7 +75,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void returnChannelMapNotInitialized_noInitializedAfterInvocation() {
+    void returnChannelMapNotInitialized_noInitializedAfterInvocation() {
         handleMessage(ui.getElement().getNode().getId(), 0);
 
         assertFalse(ui.getElement().getNode()
@@ -84,7 +84,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void unregisteredChannel_invocationIgnored() {
+    void unregisteredChannel_invocationIgnored() {
         ReturnChannelRegistration registration = registerUiChannel();
         registration.remove();
 
@@ -95,7 +95,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void disabledElement_defaultRegistration_invocationIgnored() {
+    void disabledElement_defaultRegistration_invocationIgnored() {
         ReturnChannelRegistration registration = registerUiChannel();
 
         ui.setEnabled(false);
@@ -107,7 +107,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void disabledElement_registrationAlwaysAllowed_invocationProcessed() {
+    void disabledElement_registrationAlwaysAllowed_invocationProcessed() {
         ReturnChannelRegistration registration = registerUiChannel();
         registration.setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
@@ -120,7 +120,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void modalComponent_registrationExists_invocationProcessed() {
+    void modalComponent_registrationExists_invocationProcessed() {
         ReturnChannelRegistration registration = registerUiChannel();
 
         Div modal = new Div();
@@ -133,7 +133,7 @@ class ReturnChannelHandlerTest {
     }
 
     @Test
-    public void modalComponent_unregisteredChannel_invocationIgnored() {
+    void modalComponent_unregisteredChannel_invocationIgnored() {
         ReturnChannelRegistration registration = registerUiChannel();
         registration.remove();
 

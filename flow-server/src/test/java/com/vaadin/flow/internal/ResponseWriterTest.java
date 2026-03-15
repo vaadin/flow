@@ -149,7 +149,7 @@ public class ResponseWriterTest {
     };
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
         deploymentConfiguration.setBrotli(true);
 
@@ -171,7 +171,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void contentType() {
+    void contentType() {
         AtomicReference<String> contentType = new AtomicReference<>(null);
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
@@ -187,7 +187,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void noContentType() {
+    void noContentType() {
         AtomicReference<String> contentType = new AtomicReference<>(null);
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
@@ -202,7 +202,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void acceptsGzippedResource() {
+    void acceptsGzippedResource() {
         assertTrue(acceptsGzippedResource("compress, gzip"));
         assertTrue(acceptsGzippedResource("brotli, gzip"));
         assertTrue(acceptsGzippedResource("gzip"));
@@ -229,7 +229,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void acceptsBrotliResource() {
+    void acceptsBrotliResource() {
         // Not testing all the same cases as for gzip since most of those
         // variants are effectively testing the same parser functionality
         assertTrue(acceptsBrotliResource("compress, brotli"));
@@ -247,7 +247,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataGzipped() throws IOException {
+    void writeDataGzipped() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(PATH_JS, PATH_GZ);
@@ -256,7 +256,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataGzippedClassPathResource() throws IOException {
+    void writeDataGzippedClassPathResource() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(CLASS_PATH_JS);
@@ -266,8 +266,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataNotGzippedClassPathNotAcceptedPath()
-            throws IOException {
+    void writeDataNotGzippedClassPathNotAcceptedPath() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(FAULTY_CLASS_PATH_JS);
@@ -277,7 +276,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataNoGzippedVersion() throws IOException {
+    void writeDataNoGzippedVersion() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(PATH_JS);
@@ -286,8 +285,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataBrowserDoesNotAcceptGzippedVersion()
-            throws IOException {
+    void writeDataBrowserDoesNotAcceptGzippedVersion() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = false;
 
         makePathsAvailable(PATH_JS, PATH_GZ);
@@ -296,7 +294,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataBrotli() throws IOException {
+    void writeDataBrotli() throws IOException {
         responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
 
         // Enable gzip as well to see that Brotli takes priority over gzip in
@@ -309,7 +307,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataNoBrotliVersion() throws IOException {
+    void writeDataNoBrotliVersion() throws IOException {
         responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
 
         makePathsAvailable(PATH_JS);
@@ -318,7 +316,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataBrowserDoesNotAcceptBrotli() throws IOException {
+    void writeDataBrowserDoesNotAcceptBrotli() throws IOException {
         responseWriter.overrideAcceptsBrotliResource = Boolean.FALSE;
 
         makePathsAvailable(PATH_JS, PATH_BR);
@@ -327,7 +325,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataBrotliDisabled() throws IOException {
+    void writeDataBrotliDisabled() throws IOException {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setBrotli(false);
 
@@ -341,7 +339,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeFromStart() throws IOException {
+    void writeByteRangeFromStart() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=0-1"));
 
@@ -353,7 +351,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeSubset() throws IOException {
+    void writeByteRangeSubset() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-11"));
         assertResponse(Arrays.copyOfRange(fileJsContents, 10, 12));
@@ -364,7 +362,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeStartOmitted() throws IOException {
+    void writeByteRangeStartOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
         assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
@@ -375,7 +373,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeEndOmitted() throws IOException {
+    void writeByteRangeEndOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-"));
         assertResponse(
@@ -387,7 +385,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangePastFileSize() throws IOException {
+    void writeByteRangePastFileSize() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-100000"));
         assertResponse(
@@ -399,7 +397,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeEmpty() throws IOException {
+    void writeByteRangeEmpty() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-9"));
         assertResponse(new byte[] {});
@@ -407,7 +405,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMalformed() throws IOException {
+    void writeByteRangeMalformed() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "f-d-d___"));
         assertResponse(new byte[] {});
@@ -415,7 +413,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeBothEndsOpen() throws IOException {
+    void writeByteRangeBothEndsOpen() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "-"));
         assertResponse(new byte[] {});
@@ -423,7 +421,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMultiPartSequential() throws IOException {
+    void writeByteRangeMultiPartSequential() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=1-4, 5-6, 10-12"));
         // "File.js contents"
@@ -439,7 +437,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMultiPartNonSequential() throws IOException {
+    void writeByteRangeMultiPartNonSequential() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-12, 1-4, 5-6"));
         // "File.js contents"
@@ -460,7 +458,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMultiPartOverlapping() throws IOException {
+    void writeByteRangeMultiPartOverlapping() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=0-15, 1-4"));
         // "File.js contents"
@@ -474,7 +472,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMultiPartTooManyRequested() throws IOException {
+    void writeByteRangeMultiPartTooManyRequested() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range",
                 "bytes=0-0, 0-0, 1-1, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-11, 12-12, 13-13, 14-14, 15-15, 16-16"));
@@ -517,7 +515,7 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeByteRangeMultiPartTooManyOverlappingRequested()
+    void writeByteRangeMultiPartTooManyOverlappingRequested()
             throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=2-4, 0-4, 3-14"));

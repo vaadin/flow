@@ -53,12 +53,12 @@ class DefaultDeploymentConfigurationTest {
     VaadinContext context;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         context = new MockVaadinContext();
     }
 
     @Test
-    public void testGetSystemPropertyForDefaultPackage()
+    void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
         Class<?> clazz = Class.forName("ClassInDefaultPackage");
         String value = "value";
@@ -74,7 +74,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void testGetSystemProperty() {
+    void testGetSystemProperty() {
         String value = "value";
         String prop = "prop";
         System.setProperty(
@@ -92,7 +92,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void booleanValueReadIgnoreTheCase_true() {
+    void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
@@ -105,7 +105,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void booleanValueReadIgnoreTheCase_false() {
+    void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
@@ -119,7 +119,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void booleanValueRead_emptyIsTrue() {
+    void booleanValueRead_emptyIsTrue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
@@ -132,7 +132,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void defaultPushServletMapping() {
+    void defaultPushServletMapping() {
         Properties initParameters = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -140,7 +140,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void pushUrl() {
+    void pushUrl() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING,
@@ -152,7 +152,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void booleanValueRead_exceptionOnNonBooleanValue() {
+    void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
@@ -163,7 +163,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void maxMessageSuspendTimeout_validValue_accepted() {
+    void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
@@ -174,7 +174,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
+    void maxMessageSuspendTimeout_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
@@ -185,7 +185,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
+    void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
 
@@ -201,7 +201,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
+    void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
 
@@ -217,7 +217,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
+    void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
 
@@ -234,7 +234,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
+    void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
@@ -251,7 +251,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
+    void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
         assertEquals(Mode.DEVELOPMENT_BUNDLE, config.getMode(),
@@ -265,7 +265,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeploy_defaultsToParentConfiguration() {
+    void frontendHotdeploy_defaultsToParentConfiguration() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
@@ -277,7 +277,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void checkLockStrategy_defaultsToAssert() {
+    void checkLockStrategy_defaultsToAssert() {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
@@ -286,7 +286,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void checkLockStrategy_configurableViaPropertyParameter() {
+    void checkLockStrategy_configurableViaPropertyParameter() {
         Properties init = new Properties();
         init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                 "throw");
@@ -297,7 +297,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
+    void productionModeTrue_frontendHotdeployTrue_frontendHotdeployReturnsFalse() {
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         init.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
@@ -309,7 +309,7 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
+    void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
             throws IOException {
         File projectRoot = tempFolder.toFile();
         File legacyFrontend = Files
