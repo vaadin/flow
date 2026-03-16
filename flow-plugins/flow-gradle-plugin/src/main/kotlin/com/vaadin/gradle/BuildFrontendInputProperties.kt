@@ -83,20 +83,6 @@ internal class BuildFrontendInputProperties(
     @Input
     fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
 
-//    @Input
-//    fun getPnpmEnable(): Provider<Boolean> = config.pnpmEnable
-//
-//    @Input
-//    fun getUseGlobalPnpm(): Provider<Boolean> = config.useGlobalPnpm
-//
-//    @Input
-//    fun getRequireHomeNodeExec(): Provider<Boolean> =
-//        config.requireHomeNodeExec
-//
-//    @Input
-//    @Optional
-//    fun getNodeFolder(): Provider<String> = config.nodeFolder
-
     @Input
     fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
 
@@ -131,28 +117,9 @@ internal class BuildFrontendInputProperties(
     fun getGeneratedTsFolder(): Provider<String> =
         config.generatedTsFolder.absolutePath
 
-//    @Input
-//    fun getNodeVersion(): Provider<String> = config.nodeVersion
-//
-//    @Input
-//    fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
-//
-//    @Input
-//    fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
-
     @Input
     fun getPostInstallPackages(): ListProperty<String> =
         config.postinstallPackages
-
-//    @Input
-//    fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
-//
-//    @Input
-//    fun getCiBuild(): Provider<Boolean> = config.ciBuild
-//
-//    @Input
-//    fun getSkipDevBundleBuild(): Provider<Boolean> =
-//        config.skipDevBundleBuild
 
     @Input
     fun getForceProductionBuild(): Provider<Boolean> =
@@ -165,17 +132,9 @@ internal class BuildFrontendInputProperties(
     fun getFrontendExtraFileExtensions(): ListProperty<String> =
         config.frontendExtraFileExtensions
 
-//    @Input
-//    fun getApplicationIdentifier(): Provider<String> =
-//        config.applicationIdentifier
-
     @Input
     fun getNpmExcludeWebComponents(): Provider<Boolean> =
         config.npmExcludeWebComponents
-
-//    @Input
-//    fun getFrontendIgnoreVersionChecks(): Provider<Boolean> =
-//        config.frontendIgnoreVersionChecks
 
     @Input
     fun getCleanFrontendFiles(): Provider<Boolean> =
@@ -184,32 +143,6 @@ internal class BuildFrontendInputProperties(
     @Input
     fun getCommercialWithBanner(): Provider<Boolean> =
         config.commercialWithBanner
-
-//    @Input
-//    @Optional
-//    fun getNodeExecutablePath(): Provider<String> =
-//        toolsService.toolsProperty { it.nodeBinary }
-//            .filterExists()
-//
-//    @Input
-//    @Optional
-//    fun getNpmExecutablePath(): Provider<String> =
-//        toolsService.toolsProperty { tools ->
-//            val npmExecutable = tools.npmExecutable ?: listOf()
-//            npmExecutable.joinToString(" ")
-//        }
-//
-//    @Input
-//    @Optional
-//    fun getPnpmExecutablePath(): Provider<String> =
-//        config.pnpmEnable.filterBy {
-//            it
-//        }.flatMap {
-//            toolsService.toolsProperty { tools ->
-//                val pnpmExecutable = tools.pnpmExecutable ?: listOf()
-//                pnpmExecutable.joinToString(" ")
-//            }
-//        }.orElse("")
 
     @InputDirectory
     @Optional
