@@ -476,6 +476,12 @@ export const vaadinConfig: UserConfigFn = (env) => {
 
           ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
         },
+        output: {
+          // Rolldown does not guarantee ESM-spec module execution order by
+          // default. Vaadin components (via Polymer) depend on correct
+          // initialization order, especially when top-level await is used.
+          strictExecutionOrder: true,
+        },
         onwarn: (warning: any, defaultHandler: (warning: any) => void) => {
           const ignoreEvalWarning = [
             'generated/jar-resources/FlowClient.js',
