@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class RouteParametersTest {
 
     @Test
-    public void getters_provide_correct_values() {
+    void getters_provide_correct_values() {
         RouteParameters parameters = getParameters();
 
         // String getter
@@ -61,7 +61,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void getters_provide_empty_values() {
+    void getters_provide_empty_values() {
         RouteParameters parameters = getParameters();
 
         assertFalse(parameters.get("foo").isPresent(),
@@ -76,7 +76,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void integer_getter_stringParameter_throws() {
+    void integer_getter_stringParameter_throws() {
         RouteParameters parameters = getParameters();
 
         IllegalArgumentException ex = assertThrows(
@@ -89,7 +89,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void integer_getter_longParameter_throws() {
+    void integer_getter_longParameter_throws() {
         RouteParameters parameters = getParameters();
 
         IllegalArgumentException ex = assertThrows(
@@ -102,7 +102,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void integer_getter_varaargsParameter_throws() {
+    void integer_getter_varaargsParameter_throws() {
         RouteParameters parameters = getParameters();
 
         IllegalArgumentException ex = assertThrows(
@@ -115,7 +115,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void long_getter_varaargsParameter_throws() {
+    void long_getter_varaargsParameter_throws() {
         RouteParameters parameters = getParameters();
 
         IllegalArgumentException ex = assertThrows(
@@ -128,7 +128,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void long_getter_stringParameter_throws() {
+    void long_getter_stringParameter_throws() {
         RouteParameters parameters = getParameters();
 
         IllegalArgumentException ex = assertThrows(
@@ -141,7 +141,7 @@ class RouteParametersTest {
     }
 
     @Test
-    public void varargs_initializer_throws_exception() {
+    void varargs_initializer_throws_exception() {
         try {
             new RouteParameters(new RouteParam("int", "123"),
                     new RouteParam("int", "123"));

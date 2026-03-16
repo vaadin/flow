@@ -95,7 +95,7 @@ class MenuRegistryTest {
     private MockedStatic<FrontendUtils> frontendUtils;
 
     @BeforeEach
-    public void init() {
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
@@ -137,14 +137,14 @@ class MenuRegistryTest {
     }
 
     @AfterEach
-    public void cleanup() throws Exception {
+    void cleanup() throws Exception {
         frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void getMenuItemsContainsExpectedClientPaths() throws IOException {
+    void getMenuItemsContainsExpectedClientPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -158,8 +158,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsWithNestedFiltering_doesNotThrow()
-            throws IOException {
+    void getMenuItemsWithNestedFiltering_doesNotThrow() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -172,8 +171,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsNoFilteringContainsAllClientPaths()
-            throws IOException {
+    void getMenuItemsNoFilteringContainsAllClientPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -188,7 +186,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void testNonCollidingServerAndClientRoutesDoesNotThrow()
+    void testNonCollidingServerAndClientRoutesDoesNotThrow()
             throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -209,8 +207,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void testCollidingServerAndClientRouteDoesThrow()
-            throws IOException {
+    void testCollidingServerAndClientRouteDoesThrow() throws IOException {
         assertThrows(InvalidRouteConfigurationException.class, () -> {
             File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                     .toFile();
@@ -226,7 +223,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void productionMode_getMenuItemsContainsExpectedClientPaths()
+    void productionMode_getMenuItemsContainsExpectedClientPaths()
             throws IOException {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(true);
@@ -258,7 +255,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsContainsExpectedServerPaths() {
+    void getMenuItemsContainsExpectedServerPaths() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(MyRoute.class, MyInfo.class)
@@ -272,8 +269,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsContainBothClientAndServerPaths()
-            throws IOException {
+    void getMenuItemsContainBothClientAndServerPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -293,7 +289,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void collectMenuItems_returnsCorrectPaths() throws IOException {
+    void collectMenuItems_returnsCorrectPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -316,7 +312,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void testWithLoggedInUser_userHasRoles() throws IOException {
+    void testWithLoggedInUser_userHasRoles() throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
         Mockito.when(request.isUserInRole(Mockito.anyString()))
@@ -345,7 +341,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void testWithLoggedInUser_noMatchingRoles() throws IOException {
+    void testWithLoggedInUser_noMatchingRoles() throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
         Mockito.when(request.isUserInRole(Mockito.anyString()))
@@ -364,7 +360,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsList_returnsCorrectPaths() throws IOException {
+    void getMenuItemsList_returnsCorrectPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -393,7 +389,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsList_assertOrder() {
+    void getMenuItemsList_assertOrder() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(TestRouteA.class, TestRouteB.class, TestRouteC.class,
@@ -407,7 +403,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
+    void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
                 .readTree(testClientRouteFile);
@@ -419,7 +415,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
+    void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
             throws IOException {
         ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
                 .readTree(emptyChildren);
@@ -432,7 +428,7 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
+    void hasHillaAutoLayout_fileRoutesHasSingleRootRoute_false()
             throws IOException {
         assertFalse(singleRoute.contains("\"children\""));
 
@@ -440,13 +436,13 @@ class MenuRegistryTest {
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
+    void hasHillaAutoLayout_fileRoutesHasMultipleRootRoutes_false()
             throws IOException {
         assertHasHillaMainLayout(multipleRootRoutes, false);
     }
 
     @Test
-    public void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
+    void hasHillaAutoLayout_fileRoutesHasNonEmptyRoute_false()
             throws IOException {
         assertHasHillaMainLayout(nonEmptyRoute, false);
     }

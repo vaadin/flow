@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SharedListSignalTest extends SignalTestBase {
+class SharedListSignalTest extends SignalTestBase {
     @Test
     void constructor_initialValue_isEmpty() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);

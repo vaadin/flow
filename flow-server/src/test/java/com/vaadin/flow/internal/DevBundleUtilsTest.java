@@ -34,7 +34,7 @@ class DevBundleUtilsTest {
     Path temporaryFolder;
 
     @Test
-    public void compileDevBundle_uncompileDevBundle_filesHasSameHash()
+    void compileDevBundle_uncompileDevBundle_filesHasSameHash()
             throws IOException {
         File projectBase = temporaryFolder.toFile();
         File devFolder = new File(projectBase, "target/dev-bundle");

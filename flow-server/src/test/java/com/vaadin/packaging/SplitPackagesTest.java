@@ -46,7 +46,7 @@ class SplitPackagesTest {
      * package contains classes from multiple modules.
      */
     @Test
-    public void findSplitPackages() throws IOException {
+    void findSplitPackages() throws IOException {
         Collection<File> modules = findModules();
         Map<String, Set<File>> packageToModules = mapPackagesToModules(modules);
         String errors = collectErrors(packageToModules);

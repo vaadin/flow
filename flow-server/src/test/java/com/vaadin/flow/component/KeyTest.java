@@ -35,7 +35,7 @@ class KeyTest {
     }
 
     @Test
-    public void listenerWithMultipleKeyValues() {
+    void listenerWithMultipleKeyValues() {
         InputComponent input = new InputComponent();
         AtomicBoolean fired = new AtomicBoolean(false);
         input.addKeyPressListener(Key.of("foo", "bar"),
@@ -54,7 +54,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_toString_returnsKeys() {
+    void of_toString_returnsKeys() {
         Key key = Key.of("foo");
 
         assertEquals("foo", key.toString());
@@ -65,7 +65,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_equals_stringRepresentationsEqual_toKeysAreEqual() {
+    void of_equals_stringRepresentationsEqual_toKeysAreEqual() {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("foo");
 
@@ -73,7 +73,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_equals_stringRepresentationsNotEqual_toKeysAreNotEqual() {
+    void of_equals_stringRepresentationsNotEqual_toKeysAreNotEqual() {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("bar");
 
@@ -81,7 +81,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_equals_secondKeyHasAdditionalKeys_toKeysAreNotEqual() {
+    void of_equals_secondKeyHasAdditionalKeys_toKeysAreNotEqual() {
         Key key1 = Key.of("foo");
         Key key2 = Key.of("foo", "bar");
 
@@ -89,7 +89,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_equals_differentClasses_toKeysAreNotEqual() {
+    void of_equals_differentClasses_toKeysAreNotEqual() {
         Key key1 = Key.of("foo");
         Key key2 = new Key() {
 
@@ -103,7 +103,7 @@ class KeyTest {
     }
 
     @Test
-    public void of_equalKeys_hasSameHashCode() {
+    void of_equalKeys_hasSameHashCode() {
         Key key1 = Key.of("foo", "bar");
         Key key2 = Key.of("foo", "bar");
         assertEquals(key1.hashCode(), key2.hashCode());

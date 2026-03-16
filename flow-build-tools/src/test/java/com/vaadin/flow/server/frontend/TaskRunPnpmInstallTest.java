@@ -401,7 +401,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_devMode_usesNoFrozenLockfile()
+    void runPnpmInstall_devMode_usesNoFrozenLockfile()
             throws ExecutionFailedException, IOException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
@@ -417,7 +417,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_ciBuild_usesFrozenLockfile()
+    void runPnpmInstall_ciBuild_usesFrozenLockfile()
             throws ExecutionFailedException, IOException {
         TaskRunNpmInstall ciTask = createCiTask();
         getNodeUpdater().modified = true;

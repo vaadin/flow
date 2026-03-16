@@ -69,7 +69,7 @@ class UploadTransferProgressTest {
     Path temporaryFolder;
 
     @BeforeEach
-    public void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
         session = new AlwaysLockedVaadinSession(service) {
             @Override
@@ -115,7 +115,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_toFile_addListener_listenersInvoked()
+    void transferProgressListener_toFile_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         AtomicReference<File> actualFile = new AtomicReference<>();
         AtomicReference<File> expectedFile = new AtomicReference<>();
@@ -143,7 +143,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_toFile_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_toFile_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException {
         List<String> invocations = new ArrayList<>();
         UploadHandler handler = UploadHandler.toFile((meta, file) -> {
@@ -160,7 +160,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_toTempFile_addListener_listenersInvoked()
+    void transferProgressListener_toTempFile_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
@@ -175,7 +175,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_toTempFile_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_toTempFile_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
 
@@ -197,7 +197,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_inMemory_addListener_listenersInvoked()
+    void transferProgressListener_inMemory_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
@@ -212,7 +212,7 @@ class UploadTransferProgressTest {
     }
 
     @Test
-    public void transferProgressListener_inMemory_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_inMemory_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
 

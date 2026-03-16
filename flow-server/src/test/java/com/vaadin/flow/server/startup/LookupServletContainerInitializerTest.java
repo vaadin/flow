@@ -116,7 +116,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void processLookupServletContainerInitializer_resourceProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
+    void processLookupServletContainerInitializer_resourceProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
             throws ServletException {
         Lookup lookup = mockLookup(TestResourceProvider.class);
 
@@ -133,7 +133,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void processLookupServletContainerInitializer_polymerPublishedEventHandlerIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
+    void processLookupServletContainerInitializer_polymerPublishedEventHandlerIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
             throws ServletException {
         Lookup lookup = mockLookup(TestPolymerPublishedEventHandler.class);
 
@@ -152,7 +152,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void processLookupServletContainerInitializer_routePathProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
+    void processLookupServletContainerInitializer_routePathProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
             throws ServletException {
         Lookup lookup = mockLookup(TestRoutePathProvider.class);
 
@@ -169,7 +169,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void processLookupServletContainerInitializer_contextHasDeferredInitializers_runInitializersAndClearAttribute()
+    void processLookupServletContainerInitializer_contextHasDeferredInitializers_runInitializersAndClearAttribute()
             throws ServletException {
         ServletContext context = Mockito.mock(ServletContext.class);
         DeferredServletContextInitializers deferredInitializers = Mockito
@@ -185,7 +185,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void processApplicationConfigurationFactory_factoryIsProvided_providedFactoryIsCreated()
+    void processApplicationConfigurationFactory_factoryIsProvided_providedFactoryIsCreated()
             throws ServletException {
         Lookup lookup = mockLookup(DefaultApplicationConfigurationFactory.class,
                 TestApplicationConfigurationFactory.class);
@@ -197,7 +197,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void process_customLookupInitializerIsProvided_servicesHasCustomImpls_customInitializerIsCalledWithProvidedImpls()
+    void process_customLookupInitializerIsProvided_servicesHasCustomImpls_customInitializerIsCalledWithProvidedImpls()
             throws ServletException {
         Lookup lookup = mockLookup(TestPolymerPublishedEventHandler.class,
                 TestResourceProvider.class,
@@ -218,7 +218,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void getServiceTypes_getServiceTypesIsInvoked_initializerIsInvokdedWithProvidedServices()
+    void getServiceTypes_getServiceTypesIsInvoked_initializerIsInvokdedWithProvidedServices()
             throws ServletException {
         initializer = new LookupServletContainerInitializer() {
             @Override
@@ -243,7 +243,7 @@ class LookupServletContainerInitializerTest {
     }
 
     @Test
-    public void process_classSetIsNull_throws() throws ServletException {
+    void process_classSetIsNull_throws() throws ServletException {
         assertThrows(ServletException.class, () -> {
             initializer.process(null, Mockito.mock(ServletContext.class));
         });

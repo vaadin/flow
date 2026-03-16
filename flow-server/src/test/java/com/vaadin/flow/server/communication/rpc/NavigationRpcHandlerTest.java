@@ -34,7 +34,7 @@ class NavigationRpcHandlerTest {
     private ObjectNode invocation;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ui = new UI();
         historyStateChangeHandler = Mockito
                 .mock(History.HistoryStateChangeHandler.class);
@@ -50,7 +50,7 @@ class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleRouterLinkClick_navigationTriggered() {
+    void handleRouterLinkClick_navigationTriggered() {
         invocation.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, true);
         rpcHandler.handle(ui, invocation);
 
@@ -60,7 +60,7 @@ class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleRouterLinkClick_uiIsInert_navigationTriggered() {
+    void handleRouterLinkClick_uiIsInert_navigationTriggered() {
         ui.addModal(new RouterLink());
         ui.getInternals().getStateTree().collectChanges(nodeChange -> {
         });
@@ -74,7 +74,7 @@ class NavigationRpcHandlerTest {
     }
 
     @Test
-    public void handleHistoryChange_uiIsInert_navigationTriggered() {
+    void handleHistoryChange_uiIsInert_navigationTriggered() {
         ui.addModal(new RouterLink());
         rpcHandler.handle(ui, invocation);
 

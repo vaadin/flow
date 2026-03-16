@@ -38,26 +38,26 @@ class PageTest {
     private Page page = ui.getPage();
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         UI.setCurrent(null);
     }
 
     @Test
-    public void testAddNullStyleSheet() {
+    void testAddNullStyleSheet() {
         assertThrows(IllegalArgumentException.class, () -> {
             page.addStyleSheet(null);
         });
     }
 
     @Test
-    public void testAddNullJavaScript() {
+    void testAddNullJavaScript() {
         assertThrows(IllegalArgumentException.class, () -> {
             page.addJavaScript(null);
         });
     }
 
     @Test
-    public void testJavasScriptExecutionCancel() {
+    void testJavasScriptExecutionCancel() {
         assertEquals(0, countPendingInvocations());
 
         PendingJavaScriptResult executeJavaScript = page
@@ -71,7 +71,7 @@ class PageTest {
     }
 
     @Test
-    public void testJavaScriptExecutionTooLateCancel() {
+    void testJavaScriptExecutionTooLateCancel() {
         assertEquals(0, countPendingInvocations());
 
         PendingJavaScriptResult executeJavaScript = page
@@ -88,7 +88,7 @@ class PageTest {
     }
 
     @Test
-    public void addDynamicImport_dynamicDependencyIsAvaialbleViaGetPendingSendToClient() {
+    void addDynamicImport_dynamicDependencyIsAvaialbleViaGetPendingSendToClient() {
         page.addDynamicImport("foo");
 
         DependencyList list = ui.getInternals().getDependencyList();
