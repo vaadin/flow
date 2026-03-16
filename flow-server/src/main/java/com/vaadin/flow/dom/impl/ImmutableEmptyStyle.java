@@ -70,7 +70,7 @@ public class ImmutableEmptyStyle implements Style {
      * to a style property,
      */
     @Override
-    public SignalBinding<?> bind(String name, Signal<String> signal) {
+    public SignalBinding<String> bind(String name, Signal<String> signal) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 }
