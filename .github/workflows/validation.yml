@@ -216,10 +216,10 @@ jobs:
           set -x -e -o pipefail
           $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
       - name: Package test-report files
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@v4
-        if: ${{ failure() || success() }}
+        if: ${{ always() }}
         with:
           name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
