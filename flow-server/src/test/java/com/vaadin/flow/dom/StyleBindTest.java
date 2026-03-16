@@ -28,6 +28,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -182,7 +183,7 @@ class StyleBindTest extends SignalsUnitTest {
         UI.getCurrent().getElement().appendChild(element);
 
         ValueSignal<String> signal = new ValueSignal<>("red");
-        List<BindingContext<?>> contexts = new ArrayList<>();
+        List<BindingContext<String>> contexts = new ArrayList<>();
 
         element.getStyle().bind("background-color", signal)
                 .onChange(contexts::add);
@@ -193,11 +194,33 @@ class StyleBindTest extends SignalsUnitTest {
         signal.set("blue");
 
         assertEquals(2, contexts.size());
-        BindingContext<?> ctx = contexts.get(1);
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("red", ctx.getOldValue());
         assertEquals("blue", ctx.getNewValue());
         assertEquals(element, ctx.getElement());
+    }
+
+    @Test
+    public void bind_returnsTypedSignalBinding() {
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<String> signal = new ValueSignal<>("red");
+
+        // Verify that bind returns SignalBinding<String>
+        SignalBinding<String> binding = element.getStyle()
+                .bind("background-color", signal);
+
+        // Verify that we can use the typed binding with String context
+        binding.onChange(ctx -> {
+            String oldValue = ctx.getOldValue(); // No cast needed
+            String newValue = ctx.getNewValue(); // No cast needed
+            assertNotNull(oldValue);
+            assertNotNull(newValue);
+            assertEquals(String.class, oldValue.getClass());
+            assertEquals(String.class, newValue.getClass());
+        });
     }
 
 }

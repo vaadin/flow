@@ -233,7 +233,7 @@ public interface Style extends Serializable {
      *
      * @since 25.0
      */
-    default SignalBinding<?> bind(String name, Signal<String> signal) {
+    default SignalBinding<String> bind(String name, Signal<String> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     };
