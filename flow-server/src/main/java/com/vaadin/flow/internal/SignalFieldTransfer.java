@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,8 +121,7 @@ public final class SignalFieldTransfer implements Serializable {
         Class<?> current = targetClazz;
         while (current != null && current != Object.class) {
             try {
-                if (Objects.equals(current.getName(),
-                        declaringClass.getName())) {
+                if (current.getName().equals(declaringClass.getName())) {
                     return current.getDeclaredField(fieldName);
                 }
             } catch (NoSuchFieldException ignored) {
