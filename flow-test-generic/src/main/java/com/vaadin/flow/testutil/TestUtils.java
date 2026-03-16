@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -102,9 +103,8 @@ public final class TestUtils {
                 : "This method expects valid directory as input, but got: "
                         + directory;
 
-        try {
-            return Files.walk(directory.toPath())
-                    .filter(file -> Files.isRegularFile(file))
+        try (Stream<Path> paths = Files.walk(directory.toPath())) {
+            return paths.filter(file -> Files.isRegularFile(file))
                     .map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
                     .map(path -> path.startsWith(File.separator)
