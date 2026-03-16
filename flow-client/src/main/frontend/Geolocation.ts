@@ -147,3 +147,7 @@ const watches = new Map<string, number>();
     }
   }
 };
+
+// Empty export to ensure TypeScript emits this as an ES module,
+// which is required for Vite to load it via import.
+export {};
