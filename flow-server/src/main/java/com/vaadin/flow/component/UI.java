@@ -1285,6 +1285,10 @@ public class UI extends Component
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * In development mode, local signal field values are automatically
+     * transferred from the old component instance to the new one, preserving UI
+     * state across refreshes.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
