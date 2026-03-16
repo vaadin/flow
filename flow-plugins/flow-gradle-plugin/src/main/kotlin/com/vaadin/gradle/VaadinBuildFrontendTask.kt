@@ -29,8 +29,15 @@ import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.api.services.ServiceReference
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -48,11 +55,60 @@ import org.gradle.api.tasks.bundling.Jar
  * the classpath,
  * * Update [FrontendUtils.WEBPACK_CONFIG] file.
  *
+ * Uses Gradle incremental builds feature, i.e. Gradle skips this task if
+ * all the inputs (config parameters, classpath, frontend sources) and outputs
+ * (production bundle) are up-to-date and have the same values as for previous
+ * build.
  */
+@CacheableTask
 public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     @get:Internal
     internal abstract val adapter: Property<GradlePluginAdapter>
+
+    @ServiceReference
+    internal abstract fun getSvc(): Property<FrontendToolService>
+
+    /**
+     * The project's own compiled classes. Tracked with [Classpath] for
+     * content-based change detection, since project classes are small and
+     * change frequently.
+     */
+    @get:Classpath
+    internal abstract val projectClassesDirs: ConfigurableFileCollection
+
+    /**
+     * A lightweight fingerprint of the dependency JARs on the classpath.
+     * Using a fingerprint (name + size + last modified) instead of
+     * [Classpath] content hashing avoids reading hundreds of JAR files
+     * into memory, which can cause OOM on large projects (e.g. Spring Boot
+     * with 200+ transitive dependencies).
+     */
+    @get:Internal
+    internal abstract val dependencyJarFiles: ConfigurableFileCollection
+
+    @get:Input
+    internal val dependencyJarFingerprint: Provider<String>
+        get() = project.provider {
+            dependencyJarFiles.files
+                .sortedBy { it.name }
+                .joinToString("\n") { "${it.name}:${it.length()}" }
+        }
+
+    /**
+     * Defines an object containing all the scalar/config inputs of this task.
+     */
+    @get:Nested
+    internal val inputProperties = adapter.zip(getSvc()) { adp, svc ->
+        BuildFrontendInputProperties(adp, svc)
+    }
+
+    /**
+     * Defines an object containing all the outputs of this task.
+     */
+    @get:Nested
+    internal val outputProperties =
+        adapter.map { BuildFrontendOutputProperties(it) }
 
     init {
         group = "Vaadin"
@@ -76,6 +132,25 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     internal fun configure(config: PluginEffectiveConfiguration) {
         adapter.set(GradlePluginAdapter(this, config, false))
+
+        // Set up classpath for incremental build tracking.
+        // Project classes are tracked with @Classpath (content-based) since
+        // they are small and change frequently.
+        val sourceSetName = config.sourceSetName.get()
+        projectClassesDirs.from(
+            project.getSourceSet(sourceSetName).output.classesDirs
+        )
+
+        // Dependency JARs are tracked with a lightweight fingerprint
+        // (name + size) to avoid the memory cost of content-hashing
+        // hundreds of JARs on large classpaths.
+        val dependencyConfiguration =
+            project.configurations.getByName(config.dependencyScope.get())
+        dependencyJarFiles.from(
+            dependencyConfiguration.incoming.files.filter {
+                it.name.endsWith(".jar", true)
+            }
+        )
     }
 
     @TaskAction
@@ -136,6 +211,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
+
+        // Write marker file for Gradle up-to-date tracking
+        val markerFile = java.io.File(config.resourceOutputDirectory.get(), "build-frontend.marker")
+        markerFile.parentFile.mkdirs()
+        markerFile.writeText("Build completed at ${System.currentTimeMillis()}")
     }
 
 
