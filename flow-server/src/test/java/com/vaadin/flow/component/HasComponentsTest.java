@@ -203,7 +203,7 @@ class HasComponentsTest {
         items.insertLast("second");
         items.insertLast("third");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         assertEquals(3, container.getChildren().count());
         assertEquals("first",
@@ -223,7 +223,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         assertEquals(1, container.getChildren().count());
 
@@ -248,7 +248,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
 
         assertThrows(IllegalStateException.class, () -> container
-                .bindChildren(items, item -> new TestComponent(item.get())));
+                .bindChildren(items, item -> new TestComponent(item.peek())));
     }
 
     @Test
@@ -259,12 +259,12 @@ class HasComponentsTest {
 
         ListSignal<String> items = new ListSignal<>();
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         ListSignal<String> otherItems = new ListSignal<>();
         assertThrows(BindingActiveException.class,
                 () -> container.bindChildren(otherItems,
-                        item -> new TestComponent(item.get())));
+                        item -> new TestComponent(item.peek())));
     }
 
     @Test
@@ -276,7 +276,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         TestComponent slotted = new TestComponent("slotted");
         slotted.getElement().setAttribute("slot", "title");
@@ -300,7 +300,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         // Remove slotted child - should succeed
         container.remove(slotted);
@@ -322,7 +322,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
 
         // Should not throw even though container has a child
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
     }
 
     @Test
@@ -334,7 +334,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         assertThrows(BindingActiveException.class, () -> container.removeAll(),
                 "removeAll should throw while binding is active");
@@ -349,7 +349,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         assertThrows(BindingActiveException.class,
                 () -> container.add(new TestComponent("manual")),
@@ -365,7 +365,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         items.insertFirst("first");
 
-        container.bindChildren(items, item -> new TestComponent(item.get()));
+        container.bindChildren(items, item -> new TestComponent(item.peek()));
 
         Component child = container.getChildren().toList().get(0);
 
@@ -428,7 +428,7 @@ class HasComponentsTest {
         ListSignal<String> items = new ListSignal<>();
         assertThrows(BindingActiveException.class,
                 () -> container.bindChildren(items,
-                        item -> new TestComponent(item.get())),
+                        item -> new TestComponent(item.peek())),
                 "bindChildren should throw while text binding is active");
     }
 
