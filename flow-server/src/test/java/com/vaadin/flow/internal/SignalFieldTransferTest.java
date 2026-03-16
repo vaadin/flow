@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -32,6 +30,11 @@ class SignalFieldTransferTest extends SignalsUnitTest {
 
     @Tag("div")
     static class ViewWithValueSignal extends Component {
+        ValueSignal<String> name = new ValueSignal<>("default");
+    }
+
+    @Tag("div")
+    static class AnotherViewWithValueSignal extends Component {
         ValueSignal<String> name = new ValueSignal<>("default");
     }
 
@@ -99,6 +102,17 @@ class SignalFieldTransferTest extends SignalsUnitTest {
     }
 
     @Test
+    void classNameChanged_valueSignalIsNotTransferred() {
+        var oldView = new ViewWithValueSignal();
+        oldView.name.set("updated");
+
+        var newView = new AnotherViewWithValueSignal();
+        SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
+
+        assertEquals("default", newView.name.peek());
+    }
+
+    @Test
     void listSignalEntriesAreTransferred() {
         var oldView = new ViewWithListSignal();
         oldView.items.insertLast("a");
@@ -108,8 +122,7 @@ class SignalFieldTransferTest extends SignalsUnitTest {
         var newView = new ViewWithListSignal();
         SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
 
-        var values = newView.items.peek().stream().map(ValueSignal::peek)
-                .collect(Collectors.toList());
+        var values = newView.items.peekValues().toList();
         assertEquals(java.util.List.of("a", "b", "c"), values);
     }
 
@@ -153,7 +166,9 @@ class SignalFieldTransferTest extends SignalsUnitTest {
         var oldView = new ViewWithoutExtraField();
         oldView.name.set("transferred");
 
-        var newView = new ViewWithExtraField();
+        var newView = new ViewWithoutExtraField() {
+            ValueSignal<String> extra = new ValueSignal<>("extra-default");
+        };
         SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
 
         assertEquals("transferred", newView.name.peek());
@@ -171,7 +186,7 @@ class SignalFieldTransferTest extends SignalsUnitTest {
     }
 
     @Test
-    void exceptionFromSignalSetIsLogged() {
+    void exceptionFromSignalSetIsHandled_valueNotPreserved() {
         var oldView = new ViewWithValueSignal();
         oldView.name.set("changed");
         var newView = new ViewWithSignalThatThrowsOnSet();
@@ -181,5 +196,26 @@ class SignalFieldTransferTest extends SignalsUnitTest {
         // The exception should be caught and logged, value is set by
         // constructor and should remain unchanged
         assertEquals("default", newView.name.peek());
+    }
+
+    @Test
+    void hierarchyChange_inheritedSignalFieldsAreTransferred() {
+        @Tag("div")
+        class ViewExtendsBaseView extends BaseView {
+        }
+        @Tag("div")
+        class OriginalView extends BaseView {
+        }
+        @Tag("div")
+        class HierarchyChangedView extends ViewExtendsBaseView {
+        }
+
+        var oldView = new OriginalView();
+        oldView.count.set(1);
+        var newView = new HierarchyChangedView();
+
+        SignalFieldTransfer.transferLocalSignalValues(oldView, newView);
+
+        assertEquals(1, newView.count.peek());
     }
 }

@@ -19,11 +19,13 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.signals.local.AbstractLocalSignal;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -56,7 +58,7 @@ public final class SignalFieldTransfer implements Serializable {
                     continue;
                 }
                 try {
-                    transferField(oldInstance, newInstance, newField);
+                    transferField(oldInstance, newInstance, newField, newClass);
                 } catch (Exception e) {
                     getLogger().debug(
                             "Failed to transfer signal field '{}': {}",
@@ -68,17 +70,18 @@ public final class SignalFieldTransfer implements Serializable {
     }
 
     private static boolean isLocalSignalType(Class<?> type) {
-        return ValueSignal.class.isAssignableFrom(type)
-                || ListSignal.class.isAssignableFrom(type);
+        return AbstractLocalSignal.class.isAssignableFrom(type);
     }
 
     private static void transferField(HasElement oldInstance,
-            HasElement newInstance, Field newField) throws Exception {
-        Field oldField = findField(oldInstance.getClass(), newField.getName());
+            HasElement newInstance, Field newField, Class<?> declaringClass)
+            throws Exception {
+        Field oldField = findField(oldInstance.getClass(), declaringClass,
+                newField.getName());
         if (oldField == null) {
             return;
         }
-        if (!isLocalSignalType(oldField.getType())) {
+        if (!oldField.getType().equals(newField.getType())) {
             return;
         }
 
@@ -91,12 +94,10 @@ public final class SignalFieldTransfer implements Serializable {
             return;
         }
 
-        if (oldSignal instanceof ValueSignal<?> oldValue
-                && newSignal instanceof ValueSignal<?> newValue) {
-            transferValueSignal(oldValue, newValue);
-        } else if (oldSignal instanceof ListSignal<?> oldList
-                && newSignal instanceof ListSignal<?> newList) {
-            transferListSignal(oldList, newList);
+        if (oldSignal instanceof ValueSignal<?> oldValue) {
+            transferValueSignal(oldValue, (ValueSignal<?>) newSignal);
+        } else if (oldSignal instanceof ListSignal<?> oldList) {
+            transferListSignal(oldList, (ListSignal<?>) newSignal);
         }
     }
 
@@ -116,14 +117,19 @@ public final class SignalFieldTransfer implements Serializable {
         }
     }
 
-    private static Field findField(Class<?> clazz, String fieldName) {
-        Class<?> current = clazz;
+    private static Field findField(Class<?> targetClazz,
+            Class<?> declaringClass, String fieldName) {
+        Class<?> current = targetClazz;
         while (current != null && current != Object.class) {
             try {
-                return current.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-                current = current.getSuperclass();
+                if (Objects.equals(current.getName(),
+                        declaringClass.getName())) {
+                    return current.getDeclaredField(fieldName);
+                }
+            } catch (NoSuchFieldException ignored) {
+                return null;
             }
+            current = current.getSuperclass();
         }
         return null;
     }

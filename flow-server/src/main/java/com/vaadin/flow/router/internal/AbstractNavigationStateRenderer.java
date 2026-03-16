@@ -143,7 +143,7 @@ public abstract class AbstractNavigationStateRenderer
         Optional<HasElement> currentInstance = forceInstantiation
                 ? Optional.empty()
                 : findActiveRouteTarget(event, isRouteTargetType);
-        T result = (T) currentInstance.orElseGet(
+        T routeTarget = (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
 
         if (forceInstantiation
@@ -151,10 +151,11 @@ public abstract class AbstractNavigationStateRenderer
                 && !ui.getSession().getConfiguration().isProductionMode()) {
             findActiveRouteTarget(event, isRouteTargetType)
                     .ifPresent(oldInstance -> SignalFieldTransfer
-                            .transferLocalSignalValues(oldInstance, result));
+                            .transferLocalSignalValues(oldInstance,
+                                    routeTarget));
         }
 
-        return result;
+        return routeTarget;
     }
 
     protected Optional<HasElement> findActiveRouteTarget(NavigationEvent event,

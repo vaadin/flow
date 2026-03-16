@@ -96,22 +96,6 @@ class HotswapSignalsTest {
     }
 
     @Test
-    void refreshRoute_valueSignalTransferred() {
-        ui = HotswapperTest.initUIAndNavigateTo(service, session,
-                ViewWithValueSignal.class);
-        withSessionLock(() -> {
-            ViewWithValueSignal oldView = getActiveView();
-            oldView.name.set("modified");
-
-            ui.refreshCurrentRoute(false);
-
-            ViewWithValueSignal newView = getActiveView();
-            assertNotSame(oldView, newView);
-            assertEquals("modified", newView.name.peek());
-        });
-    }
-
-    @Test
     void refreshRoute_valueSignalInSuperClassTransferred() {
         ui = HotswapperTest.initUIAndNavigateTo(service, session,
                 ViewWithSuperViewWithValueSignal.class);
@@ -147,28 +131,6 @@ class HotswapSignalsTest {
             assertNotSame(oldView, newView);
             assertNotSame(oldLayout, newLayout);
             assertEquals("modified", newLayout.name.peek());
-        });
-    }
-
-    @Test
-    void refreshRoute_listSignalTransferred() {
-        ui = HotswapperTest.initUIAndNavigateTo(service, session,
-                ViewWithListSignal.class);
-
-        withSessionLock(() -> {
-            ViewWithListSignal oldView = getActiveView();
-            oldView.items.insertLast("a");
-            oldView.items.insertLast("b");
-            oldView.items.insertLast("c");
-
-            ui.refreshCurrentRoute(false);
-
-            ViewWithListSignal newView = getActiveView();
-            assertNotSame(oldView, newView);
-
-            List<String> values = newView.items.peek().stream()
-                    .map(entry -> entry.peek()).collect(Collectors.toList());
-            assertEquals(List.of("a", "b", "c"), values);
         });
     }
 
