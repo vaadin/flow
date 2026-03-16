@@ -28,7 +28,14 @@ public class GeolocationIT extends ChromeBrowserTest {
     public void get_returnsPosition() {
         open();
         findElement(By.id("getButton")).click();
-        WebElement result = waitUntil(d -> findElement(By.id("getResult")));
+        waitUntil(d -> {
+            WebElement debug = findElement(By.id("debug"));
+            if (debug != null && !debug.getText().isEmpty()) {
+                System.out.println("DEBUG info: " + debug.getText());
+            }
+            return findElement(By.id("getResult"));
+        });
+        WebElement result = findElement(By.id("getResult"));
         Assert.assertEquals("lat=60.1699, lon=24.9384", result.getText());
     }
 
@@ -36,7 +43,14 @@ public class GeolocationIT extends ChromeBrowserTest {
     public void track_receivesPositionUpdate() {
         open();
         findElement(By.id("trackButton")).click();
-        WebElement result = waitUntil(d -> findElement(By.id("trackResult")));
+        waitUntil(d -> {
+            WebElement debug = findElement(By.id("debug"));
+            if (debug != null && !debug.getText().isEmpty()) {
+                System.out.println("DEBUG info: " + debug.getText());
+            }
+            return findElement(By.id("trackResult"));
+        });
+        WebElement result = findElement(By.id("trackResult"));
         Assert.assertEquals("lat=60.1699, lon=24.9384", result.getText());
     }
 }

@@ -28,6 +28,25 @@ public class GeolocationView extends AbstractDivView {
 
     @Override
     protected void onShow() {
+        Div debug = new Div();
+        debug.setId("debug");
+        add(debug);
+
+        // Check if geolocation API is available and report status
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const debugEl = document.getElementById('debug');
+                        const info = [];
+                        info.push('Vaadin: ' + (typeof window.Vaadin));
+                        info.push('Flow: ' + (typeof window.Vaadin?.Flow));
+                        info.push('geolocation: ' + (typeof window.Vaadin?.Flow?.geolocation));
+                        if (window.Vaadin?.Flow?.geolocation) {
+                            info.push('get: ' + (typeof window.Vaadin.Flow.geolocation.get));
+                            info.push('watch: ' + (typeof window.Vaadin.Flow.geolocation.watch));
+                        }
+                        debugEl.textContent = info.join(', ');
+                        """);
+
         // Mock navigator.geolocation so tests work without real permissions.
         // getCurrentPosition calls success immediately with fixed coordinates.
         // watchPosition calls success once, then returns a watch id.
@@ -82,20 +101,23 @@ public class GeolocationView extends AbstractDivView {
         NativeButton trackButton = createButton("Track Position", "trackButton",
                 e -> {
                     Geolocation geo = Geolocation.track(this);
-                    // Use an effect-like polling approach: check signal after
-                    // a short delay via JS round-trip
-                    UI.getCurrent().getPage().executeJs("return true")
-                            .then(Boolean.class, ok -> {
-                                if (geo.state()
-                                        .get() instanceof GeolocationPosition pos) {
-                                    Div result = new Div();
-                                    result.setId("trackResult");
+                    // Listen for the position event directly to avoid
+                    // race conditions with signal update timing
+                    getElement().addEventListener("vaadin-geolocation-position",
+                            ev -> {
+                                var state = geo.state().peek();
+                                Div result = new Div();
+                                result.setId("trackResult");
+                                if (state instanceof GeolocationPosition pos) {
                                     result.setText("lat="
                                             + pos.coords().latitude() + ", lon="
                                             + pos.coords().longitude());
-                                    add(result);
+                                } else {
+                                    result.setText(
+                                            "unexpected state: " + state);
                                 }
-                            });
+                                add(result);
+                            }).addEventDetail();
                 });
 
         add(getButton, trackButton);

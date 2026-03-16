@@ -4,6 +4,7 @@ import {
   type ConnectionStateChangeListener,
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
+import './Geolocation';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
