@@ -121,11 +121,12 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void checkLicense_prodMode_licenseIsNotChecked()
+    public void checkLicense_prodMode_licenseIsChecked()
             throws ServletException {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         triggerLicenseChecking();
-        licenseChecker.verifyNoInteractions();
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.DEVELOPMENT));
     }
 
     private HttpServletRequest createRequest(
