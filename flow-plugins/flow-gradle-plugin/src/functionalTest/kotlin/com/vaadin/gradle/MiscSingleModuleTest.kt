@@ -796,6 +796,13 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         tokenFile.delete()
         expect(false) { tokenFile.exists() }
 
+        // Also delete the build-frontend marker file so that Gradle's
+        // up-to-date check detects a missing output and re-executes
+        // vaadinBuildFrontend (which contains the token file regeneration
+        // safety net).
+        val markerFile = File(testProject.dir, "build/vaadin-generated/build-frontend.marker")
+        markerFile.delete()
+
         // Run vaadinBuildFrontend again - it should propagate build info
         // even though the token file doesn't exist
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
@@ -825,6 +832,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:vaadin-prod-bundle:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }

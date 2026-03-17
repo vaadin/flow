@@ -47,14 +47,12 @@ internal class BuildFrontendInputProperties(
     @Optional
     fun getFrontendOutputDirectory(): Provider<String> =
         config.frontendOutputDirectory
-            .filterExists()
             .absolutePath
 
     @Input
     @Optional
     fun getResourcesOutputDirectory(): Provider<String> =
         config.resourcesOutputDirectory
-            .filterExists()
             .absolutePath
 
     @Input
@@ -143,12 +141,6 @@ internal class BuildFrontendInputProperties(
     @Input
     fun getCommercialWithBanner(): Provider<Boolean> =
         config.commercialWithBanner
-
-    @InputDirectory
-    @Optional
-    @PathSensitive(PathSensitivity.RELATIVE)
-    fun getFrontendSourceDirectory(): Provider<File> =
-        config.effectiveFrontendDirectory.filterExists()
 
     @InputFile
     @Optional

@@ -35,9 +35,15 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -76,6 +82,19 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      */
     @get:Classpath
     internal abstract val projectClassesDirs: ConfigurableFileCollection
+
+    /**
+     * User-written frontend source files, excluding the `generated/`
+     * subdirectory. The `generated/` directory is excluded because it is
+     * an output of [VaadinPrepareFrontendTask] and also modified by this
+     * task's [vaadinBuildFrontend] action, which would make the inputs
+     * unstable across builds.
+     */
+    @get:InputFiles
+    @get:Optional
+    @get:IgnoreEmptyDirectories
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    internal abstract val frontendSourceFiles: ConfigurableFileCollection
 
     /**
      * A lightweight fingerprint of the dependency JARs on the classpath.
@@ -132,6 +151,16 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     internal fun configure(config: PluginEffectiveConfiguration) {
         adapter.set(GradlePluginAdapter(this, config, false))
+
+        // Track user-written frontend source files, excluding the
+        // generated/ subdirectory which is modified by this task.
+        frontendSourceFiles.from(
+            config.effectiveFrontendDirectory.map { frontendDir ->
+                project.fileTree(frontendDir) {
+                    it.exclude("generated/**")
+                }
+            }
+        )
 
         // Set up classpath for incremental build tracking.
         // Project classes are tracked with @Classpath (content-based) since
