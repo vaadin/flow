@@ -31,7 +31,6 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
@@ -107,12 +106,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * with 200+ transitive dependencies).
      */
     @get:Input
-    internal val dependencyJarFingerprint: Provider<String>
-        get() = project.provider {
-            dependencyJarFiles.files
-                .sortedBy { it.name }
-                .joinToString("\n") { "${it.name}:${it.length()}" }
-        }
+    internal abstract val dependencyJarFingerprint: Property<String>
 
     /**
      * Defines an object containing all the scalar/config inputs of this task.
@@ -180,6 +174,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 it.name.endsWith(".jar", true)
             }
         )
+        dependencyJarFingerprint.set(project.provider {
+            dependencyJarFiles.files
+                .sortedBy { it.name }
+                .joinToString("\n") { "${it.name}:${it.length()}" }
+        })
     }
 
     @TaskAction
