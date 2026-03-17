@@ -197,7 +197,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         long start = System.nanoTime();
         getLogger().info("Starting " + getServerName());
 
-        watchDog.set(new DevServerWatchDog());
+        DevServerWatchDog newWatchDog = new DevServerWatchDog();
+        newWatchDog.start();
+        watchDog.set(newWatchDog);
 
         // Look for a free port
         port = getFreePort();
