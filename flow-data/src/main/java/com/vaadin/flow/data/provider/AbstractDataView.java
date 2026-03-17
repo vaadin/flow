@@ -178,6 +178,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
+    public void refreshItem(T newItem, T oldItem) {
+        Objects.requireNonNull(newItem, NULL_ITEM_ERROR_MESSAGE);
+        Objects.requireNonNull(oldItem, NULL_ITEM_ERROR_MESSAGE);
+        dataProviderSupplier.get().refreshItem(newItem, oldItem);
+    }
+
+    @Override
     public void refreshAll() {
         dataProviderSupplier.get().refreshAll();
     }
