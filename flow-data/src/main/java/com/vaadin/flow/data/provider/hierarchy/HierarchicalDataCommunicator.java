@@ -223,7 +223,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void refresh(T data, T oldData) {
+    protected void refresh(T oldData, T data) {
         if (data != oldData) {
             throw new UnsupportedOperationException(
                     "HierarchicalDataCommunicator does not support "
@@ -245,7 +245,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                             """);
         }
 
-        keyMapper.refresh(item, oldItem);
+        keyMapper.refresh(oldItem, item);
         dataGenerator.refreshData(item);
 
         if (rootCache == null) {
