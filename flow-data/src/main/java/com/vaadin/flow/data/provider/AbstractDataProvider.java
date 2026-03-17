@@ -82,17 +82,8 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
         fireEvent(new DataRefreshEvent<>(this, item));
     }
 
-    /**
-     * Refreshes data for an item that has been replaced with a new instance,
-     * passing the old item identity through the event pipeline so that
-     * downstream consumers can remap their internal state.
-     *
-     * @param oldItem
-     *            the old item before the update, not null
-     * @param newItem
-     *            the new item after the update, not null
-     */
-    void refreshItem(T oldItem, T newItem) {
+    @Override
+    public void replaceItem(T oldItem, T newItem) {
         fireEvent(new DataRefreshEvent<>(this, newItem, oldItem));
     }
 

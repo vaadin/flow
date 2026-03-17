@@ -120,6 +120,23 @@ public interface DataView<T> extends Serializable {
     void refreshItem(T item);
 
     /**
+     * Replaces an item that has changed identity with a new instance.
+     * <p>
+     * Unlike {@link #refreshItem(Object)}, this method carries the old item
+     * through the data pipeline so that internal mappings (e.g. key mappers)
+     * can be remapped from the old identity to the new one.
+     * <p>
+     * This method delegates the update to
+     * {@link DataProvider#replaceItem(Object, Object)}.
+     *
+     * @param oldItem
+     *            the old item before the update, not null
+     * @param newItem
+     *            the new item after the update, not null
+     */
+    void replaceItem(T oldItem, T newItem);
+
+    /**
      * Notifies the component that all the items should be refreshed.
      */
     void refreshAll();

@@ -318,17 +318,8 @@ public final class DataViewUtils {
         // Create and set the data provider using the provided setter
         V dataView = dataProviderSetter.apply(backingList);
 
-        SerializableBiConsumer<T, T> replaceItem;
-        if (dataView instanceof AbstractDataView<T> adv) {
-            replaceItem = adv::replaceItem;
-        } else {
-            throw new UnsupportedOperationException(
-                    "Signal-based item binding requires an "
-                            + "AbstractDataView.");
-        }
-
         setupItemsEffect(component, itemsSignal, backingList,
-                dataView::refreshAll, replaceItem);
+                dataView::refreshAll, dataView::replaceItem);
 
         // Store the binding in SignalBindingFeature to track active binding
         bindingFeature.setBinding(SignalBindingFeature.ITEMS, itemsSignal);

@@ -135,7 +135,7 @@ public class DataChangeEvent<T> extends EventObject {
          *
          * @return the old item, or the current item if no old item was provided
          */
-        T getOldItem() {
+        public T getOldItem() {
             return oldItem != null ? oldItem : item;
         }
 

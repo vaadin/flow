@@ -177,29 +177,11 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         dataProviderSupplier.get().refreshItem(item);
     }
 
-    /**
-     * Refreshes data for an item that has been replaced with a new instance,
-     * passing the old item identity through the data pipeline so that the
-     * KeyMapper can remap from the old identity to the new one.
-     *
-     * @param oldItem
-     *            the old item before the update, not null
-     * @param newItem
-     *            the new item after the update, not null
-     */
-    void replaceItem(T oldItem, T newItem) {
+    @Override
+    public void replaceItem(T oldItem, T newItem) {
         Objects.requireNonNull(oldItem, NULL_ITEM_ERROR_MESSAGE);
         Objects.requireNonNull(newItem, NULL_ITEM_ERROR_MESSAGE);
-        DataProvider<T, ?> dp = dataProviderSupplier.get();
-        if (dp instanceof AbstractDataProvider<T, ?> adp) {
-            adp.refreshItem(oldItem, newItem);
-        } else {
-            throw new UnsupportedOperationException(
-                    "Item replacement requires an AbstractDataProvider. "
-                            + "The current data provider ("
-                            + dp.getClass().getName()
-                            + ") does not support this operation.");
-        }
+        dataProviderSupplier.get().replaceItem(oldItem, newItem);
     }
 
     @Override
