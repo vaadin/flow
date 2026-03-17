@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
@@ -231,7 +232,7 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                DeploymentConfiguration conf = new MockDeploymentConfiguration(); 
+                DeploymentConfiguration conf = Mockito.mock(DeploymentConfiguration.class);
                 session = new AlwaysLockedVaadinSession(
                         new VaadinServletService(new VaadinServlet(), conf));
                 VaadinSession.setCurrent(session);
