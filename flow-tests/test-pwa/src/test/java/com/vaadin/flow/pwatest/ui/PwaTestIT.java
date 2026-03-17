@@ -122,6 +122,10 @@ public class PwaTestIT extends ChromeDeviceTest {
         assertExists(serviceWorkerUrl);
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+        System.out.println("=== sw.js content (first 500 chars) ===");
+        System.out.println(serviceWorkerJS.substring(0,
+                Math.min(500, serviceWorkerJS.length())));
+        System.out.println("=== end sw.js ===");
 
         // For Vite search for the precache file as it is loaded at runtime
         // and not compiled into sw.js during build

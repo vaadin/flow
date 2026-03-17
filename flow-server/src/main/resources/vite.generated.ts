@@ -32,7 +32,6 @@ export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plu
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
-import babel from '@rolldown/plugin-babel';
 //#tailwindcssVitePluginImport#
 
 //#vitePluginFileSystemRouterImport#
@@ -530,13 +529,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh
+      // The React plugin provides fast refresh and debug source info
+      // In v6, babel options are top-level instead of nested under 'babel'
       reactPlugin({
-        include: '**/*.tsx',
-      }),
-      // Babel plugin for source location info and signals transform
-      // (separated from reactPlugin since @vitejs/plugin-react v6 removed the babel option)
-      babel({
         include: '**/*.tsx',
         presets: [
           [
