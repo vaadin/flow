@@ -128,7 +128,7 @@ class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void replaceItem(String oldItem, String newItem) {
+        public void replaceItem(String newItem, String oldItem) {
         }
 
         @Override

@@ -140,12 +140,12 @@ public interface DataProvider<T, F> extends Serializable {
      * {@link #refreshItem(Object)}, discarding the old item. Implementations
      * that need to remap internal state should override this method.
      *
-     * @param oldItem
-     *            the old item before the update, not null
      * @param newItem
      *            the new item after the update, not null
+     * @param oldItem
+     *            the old item before the update, not null
      */
-    default void replaceItem(T oldItem, T newItem) {
+    default void replaceItem(T newItem, T oldItem) {
         refreshItem(newItem);
     }
 

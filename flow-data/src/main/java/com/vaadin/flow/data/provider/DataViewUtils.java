@@ -407,7 +407,7 @@ public final class DataViewUtils {
             if (!context.isInitialRun()) {
                 T oldValue = backingList.get(index);
                 backingList.set(index, newValue);
-                replaceItem.accept(oldValue, newValue);
+                replaceItem.accept(newValue, oldValue);
             }
         });
     }

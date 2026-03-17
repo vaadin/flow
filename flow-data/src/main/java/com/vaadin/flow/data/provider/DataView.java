@@ -129,12 +129,12 @@ public interface DataView<T> extends Serializable {
      * This method delegates the update to
      * {@link DataProvider#replaceItem(Object, Object)}.
      *
-     * @param oldItem
-     *            the old item before the update, not null
      * @param newItem
      *            the new item after the update, not null
+     * @param oldItem
+     *            the old item before the update, not null
      */
-    void replaceItem(T oldItem, T newItem);
+    void replaceItem(T newItem, T oldItem);
 
     /**
      * Notifies the component that all the items should be refreshed.

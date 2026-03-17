@@ -178,10 +178,10 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public void replaceItem(T oldItem, T newItem) {
-        Objects.requireNonNull(oldItem, NULL_ITEM_ERROR_MESSAGE);
+    public void replaceItem(T newItem, T oldItem) {
         Objects.requireNonNull(newItem, NULL_ITEM_ERROR_MESSAGE);
-        dataProviderSupplier.get().replaceItem(oldItem, newItem);
+        Objects.requireNonNull(oldItem, NULL_ITEM_ERROR_MESSAGE);
+        dataProviderSupplier.get().replaceItem(newItem, oldItem);
     }
 
     @Override

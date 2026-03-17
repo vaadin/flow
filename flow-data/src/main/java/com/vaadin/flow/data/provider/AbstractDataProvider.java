@@ -83,7 +83,7 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     }
 
     @Override
-    public void replaceItem(T oldItem, T newItem) {
+    public void replaceItem(T newItem, T oldItem) {
         fireEvent(new DataRefreshEvent<>(this, newItem, oldItem));
     }
 
