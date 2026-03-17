@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.LicenseChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +121,6 @@ public class VaadinServlet extends HttpServlet {
 
             try {
                 servletService = createServletService();
-                validateLicense(servletService.getDeploymentConfiguration());
             } catch (ServiceException e) {
                 throw new ServletException("Could not initialize VaadinServlet",
                         e);
@@ -621,14 +618,5 @@ public class VaadinServlet extends HttpServlet {
      */
     public static String getFrontendMapping() {
         return frontendMapping;
-    }
-
-    private void validateLicense(
-            DeploymentConfiguration deploymentConfiguration) {
-        // Check the license at runtime if in development mode
-        if (!deploymentConfiguration.isProductionMode()) {
-            LicenseChecker.checkLicense("flow", Version.getFullVersion(),
-                    BuildType.DEVELOPMENT);
-        }
     }
 }
