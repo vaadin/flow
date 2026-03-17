@@ -79,8 +79,8 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
-    public void replaceItem(T newItem, T oldItem) {
-        dataProvider.replaceItem(newItem, oldItem);
+    public void refreshItem(T newItem, T oldItem) {
+        dataProvider.refreshItem(newItem, oldItem);
     }
 
     @Override

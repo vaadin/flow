@@ -132,9 +132,9 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Replaces an item that has changed identity with a new instance, passing
-     * the old item so that downstream consumers (e.g. key mappers) can remap
-     * from the old identity to the new one.
+     * Refreshes an item that has changed identity, passing the old item so that
+     * downstream consumers (e.g. key mappers) can remap from the old identity
+     * to the new one.
      * <p>
      * The default implementation simply delegates to
      * {@link #refreshItem(Object)}, discarding the old item. Implementations
@@ -145,7 +145,7 @@ public interface DataProvider<T, F> extends Serializable {
      * @param oldItem
      *            the old item before the update, not null
      */
-    default void replaceItem(T newItem, T oldItem) {
+    default void refreshItem(T newItem, T oldItem) {
         refreshItem(newItem);
     }
 
