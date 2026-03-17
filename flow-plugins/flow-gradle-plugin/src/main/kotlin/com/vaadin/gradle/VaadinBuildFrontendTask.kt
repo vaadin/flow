@@ -242,7 +242,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         )
 
         // Write marker file for Gradle up-to-date tracking
-        val markerFile = java.io.File(config.resourceOutputDirectory.get(), "build-frontend.marker")
+        val markerFile = outputProperties.get().getBuildFrontendMarker()
         markerFile.parentFile.mkdirs()
         markerFile.writeText("Build completed at ${System.currentTimeMillis()}")
     }
