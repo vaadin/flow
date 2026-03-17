@@ -96,16 +96,16 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     internal abstract val frontendSourceFiles: ConfigurableFileCollection
 
+    @get:Internal
+    internal abstract val dependencyJarFiles: ConfigurableFileCollection
+
     /**
      * A lightweight fingerprint of the dependency JARs on the classpath.
-     * Using a fingerprint (name + size + last modified) instead of
+     * Using a fingerprint (name + size) instead of
      * [Classpath] content hashing avoids reading hundreds of JAR files
      * into memory, which can cause OOM on large projects (e.g. Spring Boot
      * with 200+ transitive dependencies).
      */
-    @get:Internal
-    internal abstract val dependencyJarFiles: ConfigurableFileCollection
-
     @get:Input
     internal val dependencyJarFingerprint: Provider<String>
         get() = project.provider {
