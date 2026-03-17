@@ -32,6 +32,8 @@ import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -48,6 +50,9 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
+
+    private static final String PROJECT_NAME = "flow";
+
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
     private WebJarServer webJarServer;
@@ -70,6 +75,8 @@ public class VaadinServlet extends HttpServlet {
 
         try {
             servletService = createServletService();
+            verifyLicense(servletService.getDeploymentConfiguration()
+                    .isProductionMode());
         } catch (ServiceException e) {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
@@ -88,6 +95,25 @@ public class VaadinServlet extends HttpServlet {
         servletInitialized();
         CurrentInstance.clearAll();
 
+    }
+
+    private void verifyLicense(boolean productionMode) {
+        String frameworkVersion = Version.getFullVersion();
+        if (productionMode) {
+            try {
+                LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                        BuildType.PRODUCTION);
+            } catch (LicenseException e) {
+                getLogger().error(
+                        "This Vaadin version requires an extended maintenance subscription."
+                                + "Provide either a server key or an online license checking key,"
+                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        e);
+            }
+        } else {
+            LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                    BuildType.DEVELOPMENT);
+        }
     }
 
     /**
