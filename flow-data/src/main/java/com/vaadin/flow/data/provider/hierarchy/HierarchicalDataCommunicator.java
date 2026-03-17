@@ -230,10 +230,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                             + "item identity remapping. Use refreshAll() "
                             + "instead.");
         }
-        refreshInternal(data, oldData, false);
+        refreshInternal(oldData, data, false);
     }
 
-    private void refreshInternal(T item, T oldItem, boolean refreshChildren) {
+    private void refreshInternal(T oldItem, T item, boolean refreshChildren) {
         Objects.requireNonNull(item, "Item cannot be null");
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
