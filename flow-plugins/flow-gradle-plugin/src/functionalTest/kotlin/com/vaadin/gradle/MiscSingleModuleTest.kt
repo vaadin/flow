@@ -808,4 +808,124 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             java.nio.charset.StandardCharsets.UTF_8
         )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_featureEnabled() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+        var result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        expect(true) { result.output.contains(
+            "Task ':vaadinBuildFrontend' is not up-to-date") }
+
+        result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        expect(true) { result.output.contains(
+            "Skipping task ':vaadinBuildFrontend' as it is up-to-date") }
+    }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_rerunsOnInputChange() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+        testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+
+        // Second run should be up-to-date
+        var result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+
+        // Change a config input (optimizeBundle) to trigger re-execution
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                optimizeBundle = false
+            }
+        """.trimIndent()
+        )
+        result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        expect(true) { result.output.contains(
+            "Task ':vaadinBuildFrontend' is not up-to-date") }
+    }
+
+    @Test
+    fun buildFrontendIncrementalBuilds_disableWithProperty() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                alwaysExecuteBuildFrontend = true
+            }
+        """.trimIndent()
+        )
+        repeat(3) {
+            val result = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+            expect(true) {
+                result.output.contains(
+                    "Task ':vaadinBuildFrontend' is not up-to-date"
+                )
+            }
+        }
+    }
 }
