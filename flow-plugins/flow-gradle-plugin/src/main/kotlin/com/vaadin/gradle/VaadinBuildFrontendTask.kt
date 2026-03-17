@@ -18,7 +18,6 @@ package com.vaadin.flow.gradle
 import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
-import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendBuildUtils
 import com.vaadin.flow.server.frontend.Options
@@ -42,7 +41,6 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -58,7 +56,7 @@ import org.gradle.api.tasks.bundling.Jar
  * * Update the [FrontendUtils.IMPORTS_NAME] file imports with the
  * [com.vaadin.flow.component.dependency.JsModule] [com.vaadin.flow.theme.Theme] and [com.vaadin.flow.component.dependency.JavaScript] annotations defined in
  * the classpath,
- * * Update [FrontendUtils.WEBPACK_CONFIG] file.
+ * * Update [FrontendUtils.VITE_CONFIG] file.
  *
  * Uses Gradle incremental builds feature, i.e. Gradle skips this task if
  * all the inputs (config parameters, classpath, frontend sources) and outputs
@@ -125,7 +123,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     init {
         group = "Vaadin"
-        description = "Builds the frontend bundle with webpack"
+        description = "Builds the frontend bundle with vite"
 
         // we need the flow-build-info.json to be created, which is what the vaadinPrepareFrontend task does
         dependsOn("vaadinPrepareFrontend")
@@ -136,7 +134,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         dependsOn("classes")
 
         // Make sure to run this task before the `war`/`jar` tasks, so that
-        // webpack bundle will end up packaged in the war/jar archive. The inclusion
+        // vite bundle will end up packaged in the war/jar archive. The inclusion
         // rule itself is configured in the VaadinPlugin class.
         project.tasks.withType(Jar::class.java) { task: Jar ->
             task.mustRunAfter("vaadinBuildFrontend")
