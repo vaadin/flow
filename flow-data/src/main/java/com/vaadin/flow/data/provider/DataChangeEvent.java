@@ -91,7 +91,7 @@ public class DataChangeEvent<T> extends EventObject {
          *            the old item before the update, or null if the identity
          *            has not changed
          */
-        DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem) {
+        public DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem) {
             this(source, item, oldItem, false);
         }
 
@@ -111,7 +111,7 @@ public class DataChangeEvent<T> extends EventObject {
          *            whether, in hierarchical providers, subelements should be
          *            refreshed as well
          */
-        DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem,
+        public DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem,
                 boolean refreshChildren) {
             super(source);
             Objects.requireNonNull(item, "Refreshed item can't be null");
