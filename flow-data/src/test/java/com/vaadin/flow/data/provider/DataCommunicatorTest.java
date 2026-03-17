@@ -445,6 +445,32 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void refreshItemWithOldItem_keyMapperRemapsIdentity(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        List<Item> items = new ArrayList<>();
+        items.add(new Item(1, "Original"));
+        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+
+        Item originalItem = items.get(0);
+        String key = dataCommunicator.getKeyMapper().key(originalItem);
+
+        // Replace with a new item that has a different identity
+        Item newItem = new Item(2, "Updated");
+        items.set(0, newItem);
+        dataProvider.refreshItem(newItem, originalItem);
+
+        assertFalse(dataCommunicator.getKeyMapper().has(originalItem));
+        assertTrue(dataCommunicator.getKeyMapper().has(newItem));
+        assertSame(newItem, dataCommunicator.getKeyMapper().get(key));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
