@@ -40,8 +40,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  */
 public class VaadinServletService extends VaadinService {
 
-    private static final String PROJECT_NAME = "flow";
-
     /**
      * Should never be used directly, always use {@link #getServlet()}.
      */
