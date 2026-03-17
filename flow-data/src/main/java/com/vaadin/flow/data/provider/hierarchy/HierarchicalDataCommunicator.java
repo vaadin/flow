@@ -254,8 +254,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var cache = itemContext.cache();
         var index = itemContext.index();
         if (oldItem != item) {
-            rootCache.onItemRemoved(oldItem);
-            rootCache.onItemAdded(item, cache, index);
             cache.refreshItem(item, oldItem);
         } else {
             cache.refreshItem(item);

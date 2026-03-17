@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -153,7 +154,7 @@ class Cache<T> implements Serializable {
 
     /**
      * Replaces a cached item with a new instance when the item identity has
-     * changed. Removes the old identity mapping and adds the new one.
+     * changed. Updates all internal mappings and the root cache context.
      *
      * @param newItem
      *            the new item instance
@@ -165,6 +166,16 @@ class Cache<T> implements Serializable {
         var newItemId = rootCache.getItemId(newItem);
         itemIdToItem.remove(oldItemId);
         itemIdToItem.put(newItemId, newItem);
+        // Update index-to-ID mapping
+        for (var entry : indexToItemId.entrySet()) {
+            if (Objects.equals(entry.getValue(), oldItemId)) {
+                entry.setValue(newItemId);
+                // Update root cache context
+                rootCache.onItemRemoved(oldItem);
+                rootCache.onItemAdded(newItem, this, entry.getKey());
+                break;
+            }
+        }
     }
 
     /**
