@@ -832,7 +832,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                implementation("com.vaadin:vaadin-prod-bundle:$flowVersion")
+//                Uncomment for faster test.
+//                implementation("com.vaadin:vaadin-prod-bundle:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
