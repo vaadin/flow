@@ -194,7 +194,11 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         if (dp instanceof AbstractDataProvider<T, ?> adp) {
             adp.refreshItem(oldItem, newItem);
         } else {
-            dp.refreshItem(newItem);
+            throw new UnsupportedOperationException(
+                    "Item replacement requires an AbstractDataProvider. "
+                            + "The current data provider ("
+                            + dp.getClass().getName()
+                            + ") does not support this operation.");
         }
     }
 

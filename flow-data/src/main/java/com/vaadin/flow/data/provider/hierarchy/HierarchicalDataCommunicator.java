@@ -224,6 +224,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     protected void refresh(T data, T oldData) {
+        if (data != oldData) {
+            throw new UnsupportedOperationException(
+                    "HierarchicalDataCommunicator does not support "
+                            + "item identity remapping. Use refreshAll() "
+                            + "instead.");
+        }
         refreshInternal(data, oldData, false);
     }
 
@@ -253,11 +259,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         var cache = itemContext.cache();
         var index = itemContext.index();
-        if (oldItem != item) {
-            cache.refreshItem(item, oldItem);
-        } else {
-            cache.refreshItem(item);
-        }
+        cache.refreshItem(item);
 
         var subCache = cache.getSubCache(index);
         if (refreshChildren && subCache != null) {

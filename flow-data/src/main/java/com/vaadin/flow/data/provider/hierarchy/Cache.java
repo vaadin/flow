@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -150,32 +149,6 @@ class Cache<T> implements Serializable {
     public void refreshItem(T item) {
         var itemId = rootCache.getItemId(item);
         itemIdToItem.replace(itemId, item);
-    }
-
-    /**
-     * Replaces a cached item with a new instance when the item identity has
-     * changed. Updates all internal mappings and the root cache context.
-     *
-     * @param newItem
-     *            the new item instance
-     * @param oldItem
-     *            the old item instance whose mapping should be replaced
-     */
-    public void refreshItem(T newItem, T oldItem) {
-        var oldItemId = rootCache.getItemId(oldItem);
-        var newItemId = rootCache.getItemId(newItem);
-        itemIdToItem.remove(oldItemId);
-        itemIdToItem.put(newItemId, newItem);
-        // Update index-to-ID mapping
-        for (var entry : indexToItemId.entrySet()) {
-            if (Objects.equals(entry.getValue(), oldItemId)) {
-                entry.setValue(newItemId);
-                // Update root cache context
-                rootCache.onItemRemoved(oldItem);
-                rootCache.onItemAdded(newItem, this, entry.getKey());
-                break;
-            }
-        }
     }
 
     /**

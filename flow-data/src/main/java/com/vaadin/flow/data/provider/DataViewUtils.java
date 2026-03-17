@@ -322,7 +322,9 @@ public final class DataViewUtils {
         if (dataView instanceof AbstractDataView<T> adv) {
             replaceItem = adv::replaceItem;
         } else {
-            replaceItem = (oldItem, newItem) -> dataView.refreshItem(newItem);
+            throw new UnsupportedOperationException(
+                    "Signal-based item binding requires an "
+                            + "AbstractDataView.");
         }
 
         setupItemsEffect(component, itemsSignal, backingList,
