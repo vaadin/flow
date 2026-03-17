@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -358,23 +357,26 @@ class TaskRunNpmInstallTest {
         Mockito.verify(logger).info(getRunningMsg());
     }
 
-    protected void setupEsbuildAndFooInstallation() throws IOException {
+    protected void setupPostinstallPackages() throws IOException {
         File nodeModules = options.getNodeModulesFolder();
         nodeModules.mkdir();
         getNodeUpdater().modified = false;
 
-        // Fake that we have installed "esbuild"
-        File esbuildPackageJson = new File(
-                new File(nodeModules.getParentFile(), "fake-esbuild"),
-                "package.json");
-        String esbuildPackageJsonContents = IOUtils.toString(
+        // Fake that we have installed "@vaadin/vaadin-usage-statistics"
+        // (in the default postinstall list)
+        File statsDir = new File(nodeModules,
+                "@vaadin/vaadin-usage-statistics");
+        statsDir.mkdirs();
+        File statsPackageJson = new File(statsDir, "package.json");
+        String statsPackageJsonContents = IOUtils.toString(
                 getClass().getResourceAsStream(
                         "fake-package-with-postinstall.json"),
                 StandardCharsets.UTF_8);
-        FileUtils.write(esbuildPackageJson, esbuildPackageJsonContents,
+        FileUtils.write(statsPackageJson, statsPackageJsonContents,
                 StandardCharsets.UTF_8);
 
-        // Fake that we have installed "foo"
+        // Fake that we have installed "foo" (not in the default postinstall
+        // list unless explicitly added)
         File fooPackageJson = new File(
                 new File(nodeModules.getParentFile(), "fake-foo"),
                 "package.json");
@@ -387,8 +389,8 @@ class TaskRunNpmInstallTest {
 
         File packageJsonFile = ensurePackageJson();
         JsonNode packageJson = getNodeUpdater().getPackageJson();
-        ((ObjectNode) packageJson.get(DEV_DEPENDENCIES)).put("esbuild",
-                "./fake-esbuild");
+        ((ObjectNode) packageJson.get(DEV_DEPENDENCIES))
+                .put("@vaadin/vaadin-usage-statistics", "0.0.1");
         ((ObjectNode) packageJson.get(DEV_DEPENDENCIES)).put("foo",
                 "./fake-foo");
         FileUtils.write(packageJsonFile, packageJson.toString(),
@@ -399,43 +401,44 @@ class TaskRunNpmInstallTest {
     @Test
     void runNpmInstall_noPostinstallScript_postIntstallNotExecuted()
             throws IOException, ExecutionFailedException {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
 
-        // Remove postinstall script from "esbuild"
-        File esbuildPackageJson = new File(
-                new File(options.getNodeModulesFolder().getParentFile(),
-                        "fake-esbuild"),
+        // Remove postinstall script from "@vaadin/vaadin-usage-statistics"
+        File statsPackageJson = new File(
+                new File(options.getNodeModulesFolder(),
+                        "@vaadin/vaadin-usage-statistics"),
                 "package.json");
-        JsonNode esbuildPackageJsonContents = JacksonUtils
+        JsonNode statsPackageJsonContents = JacksonUtils
                 .readTree(IOUtils.toString(
                         getClass().getResourceAsStream(
                                 "fake-package-with-postinstall.json"),
                         StandardCharsets.UTF_8));
-        ((ObjectNode) esbuildPackageJsonContents.get("scripts"))
+        ((ObjectNode) statsPackageJsonContents.get("scripts"))
                 .remove("postinstall");
-        FileUtils.write(esbuildPackageJson,
-                esbuildPackageJsonContents.toString(), StandardCharsets.UTF_8);
+        FileUtils.write(statsPackageJson, statsPackageJsonContents.toString(),
+                StandardCharsets.UTF_8);
 
         logger = new MockLogger();
         assertTrue(logger.isDebugEnabled());
         task.execute();
 
-        assertFalse(
-                ((MockLogger) logger).getLogs()
-                        .contains("Running postinstall for 'esbuild'"),
-                "esbuild without postinstall should not have been executed");
+        assertFalse(((MockLogger) logger).getLogs().contains(
+                "Running postinstall for '@vaadin/vaadin-usage-statistics'"),
+                "@vaadin/vaadin-usage-statistics without postinstall should not have been executed");
     }
 
     @Test
     void runNpmInstall_postInstall_runOnlyForDefaultPackages()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
         task.execute();
 
         assertTrue(
-                new File(new File(options.getNodeModulesFolder(), "esbuild"),
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
                         "postinstall-file.txt").exists(),
-                "Postinstall for 'esbuild' was not run");
+                "Postinstall for '@vaadin/vaadin-usage-statistics' was not run");
         assertFalse(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
                         "postinstall-file.txt").exists(),
@@ -445,14 +448,16 @@ class TaskRunNpmInstallTest {
     @Test
     void runNpmInstall_postInstall_runForDefinedAdditionalPackages()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
-        task = createTask(Collections.singletonList("foo"));
+        setupPostinstallPackages();
+        task = createTask(List.of("foo"));
         task.execute();
 
         assertTrue(
-                new File(new File(options.getNodeModulesFolder(), "esbuild"),
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
                         "postinstall-file.txt").exists(),
-                "Postinstall for 'esbuild' was not run");
+                "Postinstall for '@vaadin/vaadin-usage-statistics' was not run");
         assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
                         "postinstall-file.txt").exists(),
@@ -464,7 +469,7 @@ class TaskRunNpmInstallTest {
     @Timeout(30)
     void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
 
         File nodeModules = options.getNodeModulesFolder();
         File fooPackageJson = new File(
@@ -477,7 +482,7 @@ class TaskRunNpmInstallTest {
         FileUtils.write(fooPackageJson, fooPackageJsonContents,
                 StandardCharsets.UTF_8);
 
-        task = createTask(Collections.singletonList("foo"));
+        task = createTask(List.of("foo"));
         task.execute();
 
         assertTrue(
@@ -488,7 +493,7 @@ class TaskRunNpmInstallTest {
 
     @Test
     void shouldRunNpmInstallWhenFolderChanges() throws Exception {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
 
         String packageJsonHash = getNodeUpdater().getPackageJson()
                 .get(VAADIN_DEP_KEY).get(HASH_KEY).asString();
