@@ -104,6 +104,12 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
             super.refreshItem(item);
         }
 
+        @Override
+        void replaceItem(String oldItem, String newItem) {
+            refreshedItems.add(newItem);
+            super.replaceItem(oldItem, newItem);
+        }
+
         public int getItemCount() {
             return (int) getItems().count();
         }

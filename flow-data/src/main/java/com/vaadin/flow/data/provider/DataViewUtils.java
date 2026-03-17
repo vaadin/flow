@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -318,8 +319,15 @@ public final class DataViewUtils {
         // Create and set the data provider using the provided setter
         V dataView = dataProviderSetter.apply(backingList);
 
+        SerializableBiConsumer<T, T> replaceItem;
+        if (dataView instanceof AbstractDataView<T> adv) {
+            replaceItem = adv::replaceItem;
+        } else {
+            replaceItem = (oldItem, newItem) -> dataView.refreshItem(newItem);
+        }
+
         setupItemsEffect(component, itemsSignal, backingList,
-                dataView::refreshAll, dataView::refreshItem);
+                dataView::refreshAll, replaceItem);
 
         // Store the binding in SignalBindingFeature to track active binding
         bindingFeature.setBinding(SignalBindingFeature.ITEMS, itemsSignal);
@@ -339,15 +347,15 @@ public final class DataViewUtils {
      *            the backing list to update
      * @param refreshAll
      *            callback to refresh all items
-     * @param refreshItem
-     *            callback to refresh a single item
+     * @param replaceItem
+     *            callback to replace a single item, accepting old and new items
      * @param <T>
      *            item type
      */
     private static <T> void setupItemsEffect(Component component,
             Signal<? extends List<? extends Signal<T>>> itemsSignal,
             List<T> backingList, Runnable refreshAll,
-            SerializableConsumer<T> refreshItem) {
+            SerializableBiConsumer<T, T> replaceItem) {
         // List to store inner effect registrations
         List<Registration> innerEffectRegistrations = new ArrayList<>();
 
@@ -370,7 +378,7 @@ public final class DataViewUtils {
             for (int i = 0; i < currentSignals.size(); i++) {
                 Signal<T> itemSignal = currentSignals.get(i);
                 Registration innerEffect = createItemEffect(component,
-                        itemSignal, i, backingList, refreshItem);
+                        itemSignal, i, backingList, replaceItem);
                 innerEffectRegistrations.add(innerEffect);
             }
         });
@@ -389,24 +397,25 @@ public final class DataViewUtils {
      *            the index of the item in the backing list
      * @param backingList
      *            the backing list to update
-     * @param refreshItem
-     *            callback to refresh the item
+     * @param replaceItem
+     *            callback to replace the item, accepting old and new items
      * @param <T>
      *            item type
      * @return the registration for the effect
      */
     private static <T> Registration createItemEffect(Component component,
             Signal<T> itemSignal, int index, List<T> backingList,
-            SerializableConsumer<T> refreshItem) {
+            SerializableBiConsumer<T, T> replaceItem) {
         return Signal.effect(component, context -> {
             // register a dependency on the initial run
             T newValue = itemSignal.get();
 
-            // Skip refreshItem on the first run since refreshAll was just
+            // Skip replaceItem on the first run since refreshAll was just
             // called
             if (!context.isInitialRun()) {
+                T oldValue = backingList.get(index);
                 backingList.set(index, newValue);
-                refreshItem.accept(newValue);
+                replaceItem.accept(oldValue, newValue);
             }
         });
     }
