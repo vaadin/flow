@@ -32,8 +32,6 @@ import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -72,8 +70,6 @@ public class VaadinServlet extends HttpServlet {
 
         try {
             servletService = createServletService();
-            verifyLicense(servletService.getDeploymentConfiguration()
-                    .isProductionMode());
         } catch (ServiceException e) {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
@@ -92,14 +88,6 @@ public class VaadinServlet extends HttpServlet {
         servletInitialized();
         CurrentInstance.clearAll();
 
-    }
-
-    private void verifyLicense(boolean productionMode) {
-        if (!productionMode) {
-            String flowVersion = Version.getFullVersion();
-            LicenseChecker.checkLicense("flow", flowVersion,
-                    BuildType.DEVELOPMENT);
-        }
     }
 
     /**
