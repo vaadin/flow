@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -579,5 +582,9 @@ public class VaadinServlet extends HttpServlet {
                 }
             }
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinServlet.class.getName());
     }
 }
