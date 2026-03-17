@@ -28,7 +28,7 @@ public class KeyMapperTest {
         String key = mapper.key("old");
         Assert.assertTrue(mapper.has("old"));
 
-        mapper.refresh("old", "new");
+        mapper.refresh("new", "old");
 
         Assert.assertFalse(mapper.has("old"));
         Assert.assertTrue(mapper.has("new"));
@@ -41,7 +41,7 @@ public class KeyMapperTest {
         KeyMapper<String> mapper = new KeyMapper<>();
         mapper.key("existing");
 
-        mapper.refresh("unknown", "new");
+        mapper.refresh("new", "unknown");
 
         Assert.assertTrue(mapper.has("existing"));
         Assert.assertFalse(mapper.has("new"));

@@ -434,15 +434,15 @@ public class DataCommunicator<T> implements Serializable {
      * Informs the DataCommunicator that a data object has been updated,
      * providing the old data object for identity remapping in the KeyMapper.
      *
-     * @param oldData
-     *            the old data object used to find the existing key mapping
      * @param data
      *            the new data object; not {@code null}
+     * @param oldData
+     *            the old data object used to find the existing key mapping
      */
-    protected void refresh(T oldData, T data) {
+    protected void refresh(T data, T oldData) {
         Objects.requireNonNull(data,
                 "DataCommunicator can not refresh null object");
-        getKeyMapper().refresh(oldData, data);
+        getKeyMapper().refresh(data, oldData);
         dataGenerator.refreshData(data);
         updatedData.add(data);
         requestFlushUpdatedData();
@@ -1154,7 +1154,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
-        refresh(event.getOldItem(), event.getItem());
+        refresh(event.getItem(), event.getOldItem());
     }
 
     private void handleDetach() {

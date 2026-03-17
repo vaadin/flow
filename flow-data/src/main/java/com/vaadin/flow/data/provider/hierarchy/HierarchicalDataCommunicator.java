@@ -223,17 +223,17 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void refresh(T oldData, T data) {
+    protected void refresh(T data, T oldData) {
         if (data != oldData) {
             throw new UnsupportedOperationException(
                     "HierarchicalDataCommunicator does not support "
                             + "item identity remapping. Use refreshAll() "
                             + "instead.");
         }
-        refreshInternal(oldData, data, false);
+        refreshInternal(data, oldData, false);
     }
 
-    private void refreshInternal(T oldItem, T item, boolean refreshChildren) {
+    private void refreshInternal(T item, T oldItem, boolean refreshChildren) {
         Objects.requireNonNull(item, "Item cannot be null");
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
@@ -245,7 +245,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                             """);
         }
 
-        keyMapper.refresh(oldItem, item);
+        keyMapper.refresh(item, oldItem);
         dataGenerator.refreshData(item);
 
         if (rootCache == null) {
