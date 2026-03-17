@@ -97,6 +97,13 @@ public class FlowPlugin : Plugin<Project> {
                 project.tasks.getByName("vaadinPrepareFrontend")
                     .doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature")
             }
+
+            project.tasks.getByName("vaadinBuildFrontend")
+                .usesService(toolsService)
+            if (config.alwaysExecuteBuildFrontend.get()) {
+                project.tasks.getByName("vaadinBuildFrontend")
+                    .doNotTrackState("State tracking is disabled. Use the 'alwaysExecuteBuildFrontend' plugin setting to enable the feature")
+            }
         }
     }
 
