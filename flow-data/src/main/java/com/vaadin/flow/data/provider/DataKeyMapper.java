@@ -94,7 +94,9 @@ public interface DataKeyMapper<T> extends Serializable {
      *            the old data object to find the existing mapping
      */
     default void refresh(T dataObject, T oldDataObject) {
-        refresh(dataObject);
+        throw new UnsupportedOperationException(
+                "This DataKeyMapper does not support identity remapping. "
+                        + "Override refresh(T, T) to handle item replacement.");
     }
 
     /**

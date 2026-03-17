@@ -427,7 +427,7 @@ public class DataCommunicator<T> implements Serializable {
      *            updated data object; not {@code null}
      */
     public void refresh(T data) {
-        refreshWithOldData(data, data);
+        refresh(data, data);
     }
 
     /**
@@ -439,7 +439,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param oldData
      *            the old data object used to find the existing key mapping
      */
-    protected void refreshWithOldData(T data, T oldData) {
+    protected void refresh(T data, T oldData) {
         Objects.requireNonNull(data,
                 "DataCommunicator can not refresh null object");
         getKeyMapper().refresh(data, oldData);
@@ -1154,13 +1154,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
-        T item = event.getItem();
-        T oldItem = event.getOldItem();
-        if (oldItem != item) {
-            refreshWithOldData(item, oldItem);
-        } else {
-            refresh(item);
-        }
+        refresh(event.getItem(), event.getOldItem());
     }
 
     private void handleDetach() {

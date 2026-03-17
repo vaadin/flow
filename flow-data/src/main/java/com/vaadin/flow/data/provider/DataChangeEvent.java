@@ -80,7 +80,8 @@ public class DataChangeEvent<T> extends EventObject {
 
         /**
          * Creates a new data refresh event originating from the given data
-         * provider, with a reference to the old item identity.
+         * provider, carrying the previous item instance so that downstream
+         * consumers can remap their internal state.
          *
          * @param source
          *            the data provider, not null
@@ -96,7 +97,8 @@ public class DataChangeEvent<T> extends EventObject {
 
         /**
          * Creates a new data refresh event originating from the given data
-         * provider, with a reference to the old item identity.
+         * provider, carrying the previous item instance so that downstream
+         * consumers can remap their internal state.
          *
          * @param source
          *            the data provider, not null
@@ -131,8 +133,7 @@ public class DataChangeEvent<T> extends EventObject {
          * Gets the old item before the update. If no old item was provided,
          * returns the current item as a safe default.
          *
-         * @return the old item, or the current item if no old item was
-         *         provided
+         * @return the old item, or the current item if no old item was provided
          */
         T getOldItem() {
             return oldItem != null ? oldItem : item;

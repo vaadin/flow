@@ -84,7 +84,8 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
     /**
      * Refreshes data for an item that has been replaced with a new instance,
-     * threading the old item identity through the event pipeline.
+     * passing the old item identity through the event pipeline so that
+     * downstream consumers can remap their internal state.
      *
      * @param oldItem
      *            the old item before the update, not null

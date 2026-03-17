@@ -33,6 +33,7 @@ public class KeyMapperTest {
         Assert.assertFalse(mapper.has("old"));
         Assert.assertTrue(mapper.has("new"));
         Assert.assertEquals("new", mapper.get(key));
+        Assert.assertEquals(key, mapper.key("new"));
     }
 
     @Test

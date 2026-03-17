@@ -223,7 +223,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void refreshWithOldData(T data, T oldData) {
+    protected void refresh(T data, T oldData) {
         refreshInternal(data, oldData, false);
     }
 
@@ -253,7 +253,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         var cache = itemContext.cache();
         var index = itemContext.index();
-        cache.refreshItem(item);
+        if (oldItem != item) {
+            rootCache.onItemRemoved(oldItem);
+            rootCache.onItemAdded(item, cache, index);
+            cache.refreshItem(item, oldItem);
+        } else {
+            cache.refreshItem(item);
+        }
 
         var subCache = cache.getSubCache(index);
         if (refreshChildren && subCache != null) {

@@ -152,6 +152,22 @@ class Cache<T> implements Serializable {
     }
 
     /**
+     * Replaces a cached item with a new instance when the item identity has
+     * changed. Removes the old identity mapping and adds the new one.
+     *
+     * @param newItem
+     *            the new item instance
+     * @param oldItem
+     *            the old item instance whose mapping should be replaced
+     */
+    public void refreshItem(T newItem, T oldItem) {
+        var oldItemId = rootCache.getItemId(oldItem);
+        var newItemId = rootCache.getItemId(newItem);
+        itemIdToItem.remove(oldItemId);
+        itemIdToItem.put(newItemId, newItem);
+    }
+
+    /**
      * Sets the items in this cache starting from the specified index.
      *
      * @param startIndex

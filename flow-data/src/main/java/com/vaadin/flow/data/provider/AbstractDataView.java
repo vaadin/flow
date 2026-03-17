@@ -179,8 +179,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
 
     /**
      * Refreshes data for an item that has been replaced with a new instance,
-     * threading the old item identity through the data pipeline for targeted
-     * KeyMapper updates.
+     * passing the old item identity through the data pipeline so that the
+     * KeyMapper can remap from the old identity to the new one.
      *
      * @param oldItem
      *            the old item before the update, not null
