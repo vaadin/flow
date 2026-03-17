@@ -34,6 +34,7 @@ import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
