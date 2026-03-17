@@ -79,6 +79,11 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
+    public void replaceItem(T newItem, T oldItem) {
+        dataProvider.replaceItem(newItem, oldItem);
+    }
+
+    @Override
     public Object getId(T item) {
         return dataProvider.getId(item);
     }
