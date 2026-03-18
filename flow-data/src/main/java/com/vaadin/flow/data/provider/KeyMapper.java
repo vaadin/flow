@@ -163,6 +163,17 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
         }
     }
 
+    @Override
+    public void refresh(V dataObject, V oldDataObject) {
+        Object oldId = identifierGetter.apply(oldDataObject);
+        String key = objectIdKeyMap.remove(oldId);
+        if (key != null) {
+            Object newId = identifierGetter.apply(dataObject);
+            objectIdKeyMap.put(newId, key);
+            keyObjectMap.put(key, dataObject);
+        }
+    }
+
     /**
      * Gets all mapped objects.
      */
