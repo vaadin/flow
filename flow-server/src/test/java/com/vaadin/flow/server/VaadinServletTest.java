@@ -127,7 +127,7 @@ public class VaadinServletTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         triggerLicenseChecking();
         licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
-                Version.getFullVersion(), BuildType.PRODUCTION));
+                Version.getFullVersion(), BuildType.PRODUCTION, null));
     }
 
     @Test
