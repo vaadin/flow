@@ -391,4 +391,29 @@ class BeanUtilTest {
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
 
     }
+
+    public interface ReadOnlyMeasurement {
+        double getValue();
+    }
+
+    public interface WritableMeasurement extends ReadOnlyMeasurement {
+        void setValue(double value);
+    }
+
+    @Test
+    void getterAndSetterFromSeparateInterfacesAreMerged()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(WritableMeasurement.class);
+
+        PropertyDescriptor valueDescriptor = descriptors.stream()
+                .filter(d -> "value".equals(d.getName())).findFirst()
+                .orElse(null);
+
+        assertNotNull(valueDescriptor, "Should find 'value' property");
+        assertNotNull(valueDescriptor.getReadMethod(),
+                "Should have read method from parent interface");
+        assertNotNull(valueDescriptor.getWriteMethod(),
+                "Should have write method from child interface");
+    }
 }
