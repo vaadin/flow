@@ -530,28 +530,32 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       // The React plugin provides fast refresh and debug source info
-      // In v6, babel options are top-level instead of nested under 'babel'
       reactPlugin({
         include: '**/*.tsx',
-        presets: [
-          [
-            '@babel/preset-react',
-            {
-              runtime: 'automatic',
-              importSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
-              development: !productionMode
-            }
-          ]
-        ],
-        plugins: [
-          !productionMode && addFunctionComponentSourceLocationBabel(),
-          [
-            'module:@preact/signals-react-transform',
-            {
-              mode: 'all' // Needed to include translations which do not use something.value
-            }
-          ]
-        ].filter(Boolean)
+        babel: {
+          // We need to use babel to provide the source information for it to be correct
+          // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
+          presets: [
+            [
+              '@babel/preset-react',
+              {
+                runtime: 'automatic',
+                importSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
+                development: !productionMode
+              }
+            ]
+          ],
+          // React writes the source location for where components are used, this writes for where they are defined
+          plugins: [
+            !productionMode && addFunctionComponentSourceLocationBabel(),
+            [
+              'module:@preact/signals-react-transform',
+              {
+                mode: 'all' // Needed to include translations which do not use something.value
+              }
+            ]
+          ].filter(Boolean)
+        }
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
