@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -34,6 +37,7 @@ import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -50,6 +54,9 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
+
+    private static final String PROJECT_NAME = "flow";
+
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
     private WebJarServer webJarServer;
@@ -95,9 +102,20 @@ public class VaadinServlet extends HttpServlet {
     }
 
     private void verifyLicense(boolean productionMode) {
-        if (!productionMode) {
-            String flowVersion = Version.getFullVersion();
-            LicenseChecker.checkLicense("flow", flowVersion,
+        String frameworkVersion = Version.getFullVersion();
+        if (productionMode) {
+            try {
+                LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
+                        BuildType.PRODUCTION, null);
+            } catch (LicenseException e) {
+                getLogger().error(
+                        "This Vaadin version requires an extended maintenance subscription."
+                                + "Provide either a server key or an online license checking key,"
+                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        e);
+            }
+        } else {
+            LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
                     BuildType.DEVELOPMENT);
         }
     }
@@ -564,5 +582,9 @@ public class VaadinServlet extends HttpServlet {
                 }
             }
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinServlet.class.getName());
     }
 }
