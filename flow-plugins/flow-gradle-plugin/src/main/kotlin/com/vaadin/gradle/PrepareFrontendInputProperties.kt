@@ -46,12 +46,14 @@ internal class PrepareFrontendInputProperties(
     @Optional
     fun getFrontendOutputDirectory(): Provider<String> =
         config.frontendOutputDirectory
+            .filterExists()
             .absolutePath
 
     @Input
     @Optional
     fun getResourcesOutputDirectory(): Provider<String> =
         config.resourcesOutputDirectory
+            .filterExists()
             .absolutePath
 
     @Input
