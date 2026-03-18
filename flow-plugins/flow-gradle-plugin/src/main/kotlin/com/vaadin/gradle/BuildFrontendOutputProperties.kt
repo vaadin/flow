@@ -16,31 +16,49 @@
 package com.vaadin.flow.gradle
 
 import java.io.File
+import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.LocalState
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
 /**
  * Declaratively defines the outputs of the [VaadinBuildFrontendTask].
- * Uses a marker file in the Vaadin-generated directory to track build
- * completion. The actual production bundle is written to the shared
- * resources directory (build/resources/main/META-INF/VAADIN/) which
- * cannot be declared as a task output because it overlaps with other
- * Gradle tasks (e.g. processResources, Spring Boot's resolveMainClassName).
+ *
+ * The [getBuildInfoFile] output tracks the `flow-build-info.json` token
+ * file that is written by [BuildFrontendUtil.updateBuildFile] at the end
+ * of every production build.
+ *
+ * The [getFrontendIndexHtml] output tracks the `index.html` file that the
+ * task creates if it is missing. Declaring it as an output means Gradle
+ * also tracks its content for up-to-date checking, so user edits to the
+ * file will trigger a rebuild.
+ *
+ * The generated frontend directory is declared as [LocalState] so that
+ * Gradle will clean it before re-execution and restore it from cache,
+ * but its contents do not participate in up-to-date checking (the
+ * generated files are non-deterministic across runs).
  */
 internal class BuildFrontendOutputProperties(
     adapter: GradlePluginAdapter
 ) {
 
-    private val markerFile: File =
-        File(adapter.config.resourceOutputDirectory.get(), "build-frontend.marker")
+    private val buildInfoFile: File =
+        BuildFrontendUtil.getTokenFile(adapter)
     private val generatedTsFolder: File =
         BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
+    private val frontendIndexHtml: File =
+        File(BuildFrontendUtil.getFrontendDirectory(adapter),
+            FrontendUtils.INDEX_HTML)
 
     @OutputFile
-    fun getBuildFrontendMarker(): File = markerFile
+    fun getBuildInfoFile(): File = buildInfoFile
 
-    @OutputDirectory
+    @OutputFile
+    @Optional
+    fun getFrontendIndexHtml(): File = frontendIndexHtml
+
+    @LocalState
     fun getGeneratedTsFolder(): File = generatedTsFolder
 }

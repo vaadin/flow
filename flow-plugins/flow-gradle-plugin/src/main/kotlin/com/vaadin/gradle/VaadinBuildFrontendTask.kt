@@ -82,9 +82,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     /**
      * User-written frontend source files, excluding the `generated/`
-     * subdirectory. The `generated/` directory is excluded because it is
-     * modified by this task's [vaadinBuildFrontend] action, which would
-     * make the inputs unstable across builds.
+     * subdirectory and `index.html`. The `generated/` directory is
+     * excluded because it is modified by this task's action. `index.html`
+     * is excluded because the task creates it when missing; it is tracked
+     * as an output instead so that user edits to it also invalidate the
+     * up-to-date check (Gradle tracks output file content).
      */
     @get:InputFiles
     @get:Optional
@@ -142,11 +144,14 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         adapter.set(GradlePluginAdapter(this, config, false))
 
         // Track user-written frontend source files, excluding the
-        // generated/ subdirectory which is modified by this task.
+        // generated/ subdirectory (modified by this task) and index.html
+        // (may be created by this task when missing; tracked as an output
+        // in BuildFrontendOutputProperties instead).
         frontendSourceFiles.from(
             config.effectiveFrontendDirectory.map { frontendDir ->
                 project.fileTree(frontendDir) {
                     it.exclude("generated/**")
+                    it.exclude(FrontendUtils.INDEX_HTML)
                 }
             }
         )
@@ -230,11 +235,6 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
-
-        // Write marker file for Gradle up-to-date tracking
-        val markerFile = outputProperties.get().getBuildFrontendMarker()
-        markerFile.parentFile.mkdirs()
-        markerFile.writeText("Build completed at ${System.currentTimeMillis()}")
     }
 
 
