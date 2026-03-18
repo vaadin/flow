@@ -36,10 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Unit tests for Anchor constructors that accept Signal<String> and related
  * bindText(Signal) semantics as documented in Anchor Javadoc.
  */
-public class AnchorBindTextTest extends SignalsUnitTest {
+class AnchorBindTextTest extends SignalsUnitTest {
 
     @Test
-    public void constructor_href_signal_lifecycleAndUpdates() {
+    void constructor_href_signal_lifecycleAndUpdates() {
         // Detached: binding inactive
         var signal = new ValueSignal<>("one");
         Anchor anchor = new Anchor("/path", signal);
@@ -69,7 +69,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_nullSignal_throwsNPE() {
+    void bindText_nullSignal_throwsNPE() {
         Anchor anchor = new Anchor("/a", "text");
         UI.getCurrent().add(anchor);
 
@@ -77,7 +77,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setText_whileBindingActive_throwsBindingActiveException() {
+    void setText_whileBindingActive_throwsBindingActiveException() {
         var signal = new ValueSignal<>("x");
         Anchor anchor = new Anchor("/x", signal);
         UI.getCurrent().add(anchor);
@@ -86,7 +86,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindText_againWhileActive_throwsBindingActiveException() {
+    void bindText_againWhileActive_throwsBindingActiveException() {
         var signal = new ValueSignal<>("first");
         Anchor anchor = new Anchor("/x", signal);
         UI.getCurrent().add(anchor);
@@ -96,7 +96,7 @@ public class AnchorBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void constructor_downloadHandler_signal_setsDownloadAttributeAccordingToHandlerType() {
+    void constructor_downloadHandler_signal_setsDownloadAttributeAccordingToHandlerType() {
         // AbstractDownloadHandler default: attachment (download attribute true)
         var attachmentHandler = new AttachmentHandler();
         Anchor a1 = new Anchor(attachmentHandler, new ValueSignal<>("d1"));

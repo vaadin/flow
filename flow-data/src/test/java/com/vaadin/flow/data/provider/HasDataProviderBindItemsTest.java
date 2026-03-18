@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class HasDataProviderBindItemsTest extends SignalsUnitTest {
+class HasDataProviderBindItemsTest extends SignalsUnitTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component
@@ -53,7 +53,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_listSignal_setsDataProvider() {
+    void bindItems_listSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -73,7 +73,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_emptyList_setsDataProvider() {
+    void bindItems_emptyList_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -87,7 +87,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_nullSignal_throwsException() {
+    void bindItems_nullSignal_throwsException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -96,7 +96,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_alreadyBound_throwsBindingActiveException() {
+    void bindItems_alreadyBound_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -114,7 +114,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_sharedListSignal_setsDataProvider() {
+    void bindItems_sharedListSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -133,7 +133,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindItems_genericSignal_setsDataProvider() {
+    void bindItems_genericSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -153,7 +153,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setDataProvider_afterBindItems_throwsBindingActiveException() {
+    void setDataProvider_afterBindItems_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -168,7 +168,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setItems_collection_afterBindItems_throwsBindingActiveException() {
+    void setItems_collection_afterBindItems_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -182,7 +182,7 @@ public class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setItems_varargs_afterBindItems_throwsBindingActiveException() {
+    void setItems_varargs_afterBindItems_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

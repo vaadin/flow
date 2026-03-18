@@ -76,7 +76,7 @@ class HistoryTest {
     private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));";
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         history = new History(ui);
         configuration = Mockito.mock(DeploymentConfiguration.class);
 
@@ -88,7 +88,7 @@ class HistoryTest {
     }
 
     @Test
-    public void pushState_locationWithQueryParameters_queryParametersRetained() {
+    void pushState_locationWithQueryParameters_queryParametersRetained() {
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
@@ -113,7 +113,7 @@ class HistoryTest {
     }
 
     @Test
-    public void pushState_locationWithFragment_fragmentRetained() {
+    void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
 
         assertEquals(PUSH_STATE_JS, page.expression,
@@ -132,7 +132,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
+    void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
 
         assertEquals(PUSH_STATE_JS, page.expression,
@@ -151,7 +151,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
+    void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
 
         assertEquals(REPLACE_STATE_JS, page.expression,
@@ -170,7 +170,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void replaceState_locationEmpty_pushesPeriod() {
+    void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
         assertEquals(REPLACE_STATE_JS, page.expression,
                 "replace state JS not included");
@@ -179,7 +179,7 @@ class HistoryTest {
     }
 
     @Test
-    public void pushState_locationWithQueryParameters_queryParametersRetained_react() {
+    void pushState_locationWithQueryParameters_queryParametersRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
@@ -205,7 +205,7 @@ class HistoryTest {
     }
 
     @Test
-    public void pushState_locationWithFragment_fragmentRetained_react() {
+    void pushState_locationWithFragment_fragmentRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view#foobar");
 
@@ -225,7 +225,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained_react() {
+    void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.pushState(null, "context/view?foo=bar#foobar");
 
@@ -245,7 +245,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained_react() {
+    void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "context/view?foo=bar#foobar");
 
@@ -265,7 +265,7 @@ class HistoryTest {
     }
 
     @Test // #11628
-    public void replaceState_locationEmpty_pushesPeriod_react() {
+    void replaceState_locationEmpty_pushesPeriod_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
         history.replaceState(null, "");
         assertEquals(REPLACE_STATE_REACT, page.expression,

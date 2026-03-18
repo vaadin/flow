@@ -70,7 +70,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void themeListCreatedWithNoThemes() {
+    void themeListCreatedWithNoThemes() {
         ThemeListImpl emptyList = new ThemeListImpl(new MockElement());
 
         assertTrue(emptyList.isEmpty(),
@@ -80,7 +80,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void themeListCreatedWithOneThemes() {
+    void themeListCreatedWithOneThemes() {
         String themeName = "theme1";
 
         ThemeListImpl elementWithOneTheme = new ThemeListImpl(
@@ -93,7 +93,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void themeListCreatedWithMultipleThemes() {
+    void themeListCreatedWithMultipleThemes() {
         String[] themeNames = { "theme1", "theme2" };
         ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(
                 new MockElement(themeNames));
@@ -109,7 +109,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void themeListCreatedWithDuplicateThemes() {
+    void themeListCreatedWithDuplicateThemes() {
         String[] themeNames = { "theme1", "theme1", "theme1" };
         ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(
                 new MockElement(themeNames));
@@ -121,7 +121,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void clear() {
+    void clear() {
         MockElement element = new MockElement("theme1", "theme2");
         ThemeListImpl themeList = new ThemeListImpl(element);
 
@@ -134,7 +134,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void remove() {
+    void remove() {
         String themeToRemove = "theme2";
         String themeToLeave = "theme1";
         MockElement element = new MockElement(themeToLeave, themeToRemove);
@@ -152,7 +152,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void removeAll() {
+    void removeAll() {
         String themeToRemove1 = "theme3";
         String themeToRemove2 = "theme2";
         String themeToLeave = "theme1";
@@ -172,7 +172,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void removeAllThemes() {
+    void removeAllThemes() {
         String[] themeNames = { "theme1", "theme2" };
         MockElement element = new MockElement(themeNames);
         ThemeListImpl themeList = new ThemeListImpl(element);
@@ -186,7 +186,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void retainAll() {
+    void retainAll() {
         List<String> elementsToRetain = Arrays.asList("retained",
                 "notRetained");
         String[] themeNames = { elementsToRetain.get(0), "theme2", "theme3" };
@@ -203,7 +203,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void add() {
+    void add() {
         String themeToAdd = "theme";
         MockElement element = new MockElement();
         ThemeListImpl themeList = new ThemeListImpl(element);
@@ -220,7 +220,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void addAll() {
+    void addAll() {
         List<String> themesToAdd = Arrays.asList("theme1", "theme2", "theme3");
         MockElement element = new MockElement();
         ThemeListImpl themeList = new ThemeListImpl(element);
@@ -240,7 +240,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void addDuplicates() {
+    void addDuplicates() {
         List<String> themesToAdd = Arrays.asList("theme1", "theme1", "theme1");
         MockElement element = new MockElement();
         ThemeListImpl themeList = new ThemeListImpl(element);
@@ -257,7 +257,7 @@ class ThemeListImplTest {
     }
 
     @Test
-    public void iteratorRemoval() {
+    void iteratorRemoval() {
         String[] themeNames = { "theme1", "theme2", "theme3" };
         List<String> originalThemes = Arrays.asList(themeNames);
         MockElement element = new MockElement(themeNames);

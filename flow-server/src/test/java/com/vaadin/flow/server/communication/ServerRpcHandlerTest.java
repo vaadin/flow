@@ -61,7 +61,7 @@ class ServerRpcHandlerTest {
     private DeploymentConfiguration deploymentConfiguration;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         request = Mockito.mock(VaadinRequest.class);
         service = Mockito.mock(VaadinService.class);
         session = Mockito.mock(VaadinSession.class);
@@ -91,7 +91,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
+    void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
             throws IOException,
             ServerRpcHandler.InvalidUIDLSecurityKeyException,
             ServerRpcHandler.MessageIdSyncException {
@@ -112,7 +112,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_duplicateMessage_throwsResendPayload()
+    void handleRpc_duplicateMessage_throwsResendPayload()
             throws InvalidUIDLSecurityKeyException,
             ServerRpcHandler.MessageIdSyncException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
@@ -128,7 +128,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_unexpectedMessage_throw()
+    void handleRpc_unexpectedMessage_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
@@ -142,7 +142,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_unexpectedMessage_exceptionContainsCorrectIds()
+    void handleRpc_unexpectedMessage_exceptionContainsCorrectIds()
             throws InvalidUIDLSecurityKeyException, IOException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":5}";
         ServerRpcHandler handler = new ServerRpcHandler();
@@ -162,7 +162,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_throws()
+    void handleRpc_dauEnforcement_throws()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -180,7 +180,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_pollEvent_doNoThrow()
+    void handleRpc_dauEnforcement_pollEvent_doNoThrow()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -201,7 +201,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_pollEventMixedWithOtherEvents_throw()
+    void handleRpc_dauEnforcement_pollEventMixedWithOtherEvents_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -219,7 +219,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_resynchronization_doNoThrow()
+    void handleRpc_dauEnforcement_resynchronization_doNoThrow()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -237,7 +237,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_unloadBeacon_doNoThrow()
+    void handleRpc_dauEnforcement_unloadBeacon_doNoThrow()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -258,7 +258,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_returnChannelMessage_doNoThrow()
+    void handleRpc_dauEnforcement_returnChannelMessage_doNoThrow()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();
@@ -279,7 +279,7 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_dauEnforcement_returnChannelMessageMixedWithOtherEvents_throw()
+    void handleRpc_dauEnforcement_returnChannelMessageMixedWithOtherEvents_throw()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
         enableDau();

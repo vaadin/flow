@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests for
  * {@link HasStyle#bindClassName(String, com.vaadin.flow.signals.Signal)}.
  */
-public class HasStyleSignalTest extends SignalsUnitTest {
+class HasStyleSignalTest extends SignalsUnitTest {
 
     @Tag("div")
     public static class HasStyleComponent extends Component
@@ -37,7 +37,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_signalBound_classNameToggledWhenAttached() {
+    void bindClassName_signalBound_classNameToggledWhenAttached() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -54,7 +54,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_signalTrue_classNameAdded() {
+    void bindClassName_signalTrue_classNameAdded() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -65,7 +65,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_attachedThenDetached_stopsUpdates() {
+    void bindClassName_attachedThenDetached_stopsUpdates() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -82,7 +82,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_multipleClassNames_independentBindings() {
+    void bindClassName_multipleClassNames_independentBindings() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -104,7 +104,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_addClassNameWhileBound_throwsException() {
+    void bindClassName_addClassNameWhileBound_throwsException() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -116,7 +116,7 @@ public class HasStyleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassName_bindAgainWhileBound_throwsException() {
+    void bindClassName_bindAgainWhileBound_throwsException() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 

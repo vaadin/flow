@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ActiveStyleSheetTrackerTest {
 
     @Test
-    public void singletonPerContext() {
+    void singletonPerContext() {
         VaadinService service = new MockVaadinServletService();
         ActiveStyleSheetTracker t1 = ActiveStyleSheetTracker.get(service);
         ActiveStyleSheetTracker t2 = ActiveStyleSheetTracker.get(service);
@@ -38,7 +38,7 @@ class ActiveStyleSheetTrackerTest {
     }
 
     @Test
-    public void addRemoveAndAppShellMerge() {
+    void addRemoveAndAppShellMerge() {
         VaadinService service = new MockVaadinServletService();
 
         ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker.get(service);

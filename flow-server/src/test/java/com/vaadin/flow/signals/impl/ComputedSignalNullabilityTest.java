@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-public class ComputedSignalNullabilityTest extends SignalTestBase {
+class ComputedSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void map_returnsNullable() {

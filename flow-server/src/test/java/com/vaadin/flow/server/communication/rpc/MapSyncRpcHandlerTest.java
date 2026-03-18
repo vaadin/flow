@@ -69,7 +69,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void testSynchronizeProperty() throws Exception {
+    void testSynchronizeProperty() throws Exception {
         TestComponent c = new TestComponent();
         Element element = c.getElement();
         ElementPropertyMap.getModel(element.getNode())
@@ -85,7 +85,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsForStateNodeInList_propertySetToStateNodeCopy()
+    void syncJSON_jsonIsForStateNodeInList_propertySetToStateNodeCopy()
             throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
@@ -127,7 +127,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToNode()
+    void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToNode()
             throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
@@ -164,7 +164,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsNotListItemAndNotPropertyValue_propertySetToJSON()
+    void syncJSON_jsonIsNotListItemAndNotPropertyValue_propertySetToJSON()
             throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
@@ -196,8 +196,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_updateDisallowed_updateIsNotDone()
-            throws Exception {
+    void disabledElement_updateDisallowed_updateIsNotDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
@@ -212,7 +211,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
+    void disabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -228,7 +227,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_updateIsAllowedByEventListener_updateIsDone()
+    void disabledElement_updateIsAllowedByEventListener_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -245,7 +244,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void implicitlyDisabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
+    void implicitlyDisabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -261,7 +260,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void implicitlyDisabledElement_updateIsAllowedByEventListener_updateIsDone()
+    void implicitlyDisabledElement_updateIsAllowedByEventListener_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -278,7 +277,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void noSyncPropertiesFeature_noExplicitAllow_throws() {
+    void noSyncPropertiesFeature_noExplicitAllow_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             StateNode noSyncProperties = new StateNode(
                     ElementPropertyMap.class);
@@ -295,7 +294,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
+    void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class, () -> {
                     Element element = new Element("foo");
@@ -309,7 +308,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
+    void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class, () -> {
                     TestComponent component = new TestComponent();
@@ -325,7 +324,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
+    void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class, () -> {
                     TestComponent component = new TestComponent();
@@ -346,7 +345,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_callsElementPropertyMapDeferredUpdateFromClient() {
+    void handleNode_callsElementPropertyMapDeferredUpdateFromClient() {
         AtomicInteger deferredUpdateInvocations = new AtomicInteger();
         AtomicReference<String> deferredKey = new AtomicReference<>();
         StateNode node = new StateNode(ElementPropertyMap.class) {
@@ -380,7 +379,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_stateNodePropertyDefaultValueNotSet_doesNotWarnForUnsetDisabledPropertyChange() {
+    void handleNode_stateNodePropertyDefaultValueNotSet_doesNotWarnForUnsetDisabledPropertyChange() {
 
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(null);
@@ -406,7 +405,7 @@ class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void handleNode_stateNodePropertyDefaultValueSet_warnsForSetDisabledPropertyChange() {
+    void handleNode_stateNodePropertyDefaultValueSet_warnsForSetDisabledPropertyChange() {
 
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(NEW_VALUE);

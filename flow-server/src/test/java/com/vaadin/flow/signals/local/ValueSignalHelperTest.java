@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ValueSignalHelperTest extends SignalTestBase {
+class ValueSignalHelperTest extends SignalTestBase {
 
     record ImmutablePerson(String name, int age) {
         ImmutablePerson withName(String name) {

@@ -67,14 +67,14 @@ class RoutePathAccessCheckerTest {
     private Function<Class<?>, Pair<String, RouteParameters>> eventDataFactory = this::getRouteData;
 
     @BeforeEach
-    public void init() {
+    void init() {
         this.accessPathChecker = Mockito.mock(AccessPathChecker.class);
         this.routePathAccessChecker = new RoutePathAccessChecker(
                 accessPathChecker);
     }
 
     @Test
-    public void permittedPath_anonymousAccessToAnonymousViewMainPath_accessAllowed() {
+    void permittedPath_anonymousAccessToAnonymousViewMainPath_accessAllowed() {
         Mockito.when(accessPathChecker.hasAccess(eq("anon"), any(), any()))
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
@@ -84,7 +84,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void permittedPath_loggedInNoRolesAccessToAnonymousViewMainPath_accessAllowed() {
+    void permittedPath_loggedInNoRolesAccessToAnonymousViewMainPath_accessAllowed() {
         Mockito.when(accessPathChecker.hasAccess(eq("anon"), any(), any()))
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
@@ -94,7 +94,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void permittedPath_loggedInNoRolesAccessToAnnotatedView_accessAllowed() {
+    void permittedPath_loggedInNoRolesAccessToAnnotatedView_accessAllowed() {
         Mockito.when(accessPathChecker.hasAccess(eq("permitall"), any(), any()))
                 .thenReturn(true);
         AccessCheckResult result = checkAccess(PermitAllView.class,
@@ -105,7 +105,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void permittedPath_accessToViewWithoutAliases_accessAllowed() {
+    void permittedPath_accessToViewWithoutAliases_accessAllowed() {
         Mockito.when(
                 accessPathChecker.hasAccess(eq("noannotation"), any(), any()))
                 .thenReturn(true);
@@ -117,7 +117,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void forbiddenPath_anonymousAccessToAnonymousViewMainPath_accessDenied() {
+    void forbiddenPath_anonymousAccessToAnonymousViewMainPath_accessDenied() {
         Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
                 .thenReturn(false);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
@@ -128,7 +128,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void forbiddenPath_anonymousAccessAnnotatedView_accessDenied() {
+    void forbiddenPath_anonymousAccessAnnotatedView_accessDenied() {
         Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
                 .thenReturn(false);
         AccessCheckResult result = checkAccess(PermitAllView.class, null);
@@ -138,7 +138,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void forbiddenPath_loggedInNoRolesAccessToAnonymousViewMainPath_accessDenied() {
+    void forbiddenPath_loggedInNoRolesAccessToAnonymousViewMainPath_accessDenied() {
         Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
                 .thenReturn(false);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
@@ -148,7 +148,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void forbiddenPath_loggedInNoRolesAccessToAnnotatedView_accessDenied() {
+    void forbiddenPath_loggedInNoRolesAccessToAnnotatedView_accessDenied() {
         Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
                 .thenReturn(false);
         AccessCheckResult result = checkAccess(PermitAllView.class,
@@ -159,7 +159,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void forbiddenPath_accessToViewWithoutAliases_accessDenied() {
+    void forbiddenPath_accessToViewWithoutAliases_accessDenied() {
         Mockito.when(
                 accessPathChecker.hasAccess(eq("noannotation"), any(), any()))
                 .thenReturn(false);
@@ -171,7 +171,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void openingForbiddenPath_showsReasonAndHintInDevelopmentMode() {
+    void openingForbiddenPath_showsReasonAndHintInDevelopmentMode() {
         Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
                 .thenReturn(false);
         AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
@@ -183,7 +183,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void pathAlias_aliasPathAllowed_accessGranted() {
+    void pathAlias_aliasPathAllowed_accessGranted() {
         eventDataFactory = target -> new Pair<>("anon-alias",
                 RouteParameters.empty());
         Mockito.when(accessPathChecker.hasAccess(anyString(), any(), any()))
@@ -198,7 +198,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void pathAliasWithParent_aliasPathAllowed_accessGranted() {
+    void pathAliasWithParent_aliasPathAllowed_accessGranted() {
         eventDataFactory = target -> new Pair<>("parent/alias-with-parent",
                 RouteParameters.empty());
         Mockito.when(accessPathChecker.hasAccess(anyString(), any(), any()))
@@ -214,7 +214,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void wildcardPathAlias_aliasPathAllowed_accessGranted() {
+    void wildcardPathAlias_aliasPathAllowed_accessGranted() {
         eventDataFactory = target -> new Pair<>("anon-alias-wildcard/a/b/c",
                 new RouteParameters("path", "a/b/c"));
         Mockito.when(accessPathChecker.hasAccess(anyString(), any(), any()))
@@ -230,7 +230,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void templatePathAlias_aliasPathAllowed_accessGranted() {
+    void templatePathAlias_aliasPathAllowed_accessGranted() {
         eventDataFactory = target -> new Pair<>(
                 "anon-alias-template/ID-123/C0/resource/12345",
                 new RouteParameters(Map.of("identifier", "ID-123", "category",
@@ -249,7 +249,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void pathAlias_aliasPathForbidden_accessDenied() {
+    void pathAlias_aliasPathForbidden_accessDenied() {
         eventDataFactory = target -> new Pair<>("anon-alias",
                 RouteParameters.empty());
         Mockito.when(accessPathChecker.hasAccess(anyString(), any(), any()))
@@ -266,7 +266,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void wildcardPathAlias_aliasPathForbidden_accessDenied() {
+    void wildcardPathAlias_aliasPathForbidden_accessDenied() {
         eventDataFactory = target -> new Pair<>("anon-alias-wildcard/a/b/c",
                 new RouteParameters("path", "a/b/c"));
 
@@ -285,7 +285,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void pathAliasWithParent_aliasPathForbidden_accessDenied() {
+    void pathAliasWithParent_aliasPathForbidden_accessDenied() {
         eventDataFactory = target -> new Pair<>("parent/alias-with-parent",
                 RouteParameters.empty());
 
@@ -304,7 +304,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void templatePathAlias_aliasPathForbidden_accessDenied() {
+    void templatePathAlias_aliasPathForbidden_accessDenied() {
         eventDataFactory = target -> new Pair<>(
                 "anon-alias-template/ID-123/C0/resource/12345",
                 new RouteParameters(Map.of("identifier", "ID-123", "category",
@@ -324,7 +324,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void templateRoutePath_locationPathIsChecked() {
+    void templateRoutePath_locationPathIsChecked() {
         eventDataFactory = target -> new Pair<>(
                 "anon-template/ID-123/C0/resource/12345",
                 new RouteParameters(Map.of("identifier", "ID-123", "category",
@@ -340,7 +340,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void wildcardRoutePath_locationPathIsChecked() {
+    void wildcardRoutePath_locationPathIsChecked() {
         eventDataFactory = target -> new Pair<>("anon-wildcard/a/b/c",
                 new RouteParameters("path", "a/b/c"));
         Mockito.when(accessPathChecker.hasAccess(eq("anon-wildcard/a/b/c"),
@@ -353,7 +353,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void urlParameterPath_locationPathIsChecked() {
+    void urlParameterPath_locationPathIsChecked() {
         eventDataFactory = target -> new Pair<>("anon-url-parameter/a/b/c/d",
                 RouteParameters.empty());
         Mockito.when(accessPathChecker
@@ -367,7 +367,7 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
-    public void rerouteToError_neutral() {
+    void rerouteToError_neutral() {
         eventDataFactory = target -> new Pair<>("some-path",
                 RouteParameters.empty());
         AccessCheckResult result = checkAccess(RouteNotFoundError.class, null);

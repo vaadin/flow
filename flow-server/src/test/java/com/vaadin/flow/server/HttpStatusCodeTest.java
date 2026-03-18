@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HttpStatusCodeTest {
 
     @Test
-    public void isValidStatusCode_invalidCode_returnsFalse() {
+    void isValidStatusCode_invalidCode_returnsFalse() {
         Set<Integer> validCodes = Stream.of(HttpStatusCode.values())
                 .map(HttpStatusCode::getCode).collect(Collectors.toSet());
 
@@ -39,7 +39,7 @@ class HttpStatusCodeTest {
     }
 
     @Test
-    public void isValidStatusCode_validCode_returnsTrue() {
+    void isValidStatusCode_validCode_returnsTrue() {
         Stream.of(HttpStatusCode.values()).mapToInt(HttpStatusCode::getCode)
                 .forEach(sc -> assertTrue(HttpStatusCode.isValidStatusCode(sc),
                         sc + " should be valid, but was not"));

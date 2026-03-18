@@ -96,7 +96,7 @@ class EventUtilTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         VaadinSession session = Mockito.mock(VaadinSession.class);
         ui = new UI() {
             @Override
@@ -112,12 +112,12 @@ class EventUtilTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         UI.setCurrent(null);
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromUI() throws Exception {
+    void collectBeforeNavigationObserversFromUI() throws Exception {
         UI ui = UI.getCurrent();
         Element node = ui.getElement();
         node.appendChild(new Element("main"), new Element("menu"));
@@ -136,7 +136,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromUI_elementHasVirtualChildren()
+    void collectBeforeNavigationObserversFromUI_elementHasVirtualChildren()
             throws Exception {
         UI ui = UI.getCurrent();
         Element node = ui.getElement();
@@ -161,7 +161,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromChains() throws Exception {
+    void collectBeforeNavigationObserversFromChains() throws Exception {
         Foo foo = new Foo();
         EnterObserver toBeDetached = new EnterObserver();
         foo.getElement().appendChild(new EnterObserver().getElement(),
@@ -188,7 +188,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectAfterNavigationObservers() {
+    void collectAfterNavigationObservers() {
         UI ui = UI.getCurrent();
 
         Element menu = new Element("menu");
@@ -211,7 +211,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void inspectChildrenHierarchy() throws Exception {
+    void inspectChildrenHierarchy() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -228,7 +228,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void inspectChildrenHierarchy_selective() throws Exception {
+    void inspectChildrenHierarchy_selective() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -246,7 +246,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void inspectMixedChildrenHierarchy() throws Exception {
+    void inspectMixedChildrenHierarchy() throws Exception {
         Element node = new Element("root");
         node.appendVirtualChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -272,7 +272,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void getImplementingComponents() throws Exception {
+    void getImplementingComponents() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested");
@@ -296,7 +296,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void getImplementingComponents_elementHasVirtualChildren()
+    void getImplementingComponents_elementHasVirtualChildren()
             throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
@@ -322,7 +322,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromElement() throws Exception {
+    void collectLocaleChangeObserverFromElement() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
         Element nested = new Element("nested-locale");
@@ -340,7 +340,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromElement_elementHasVirtualChildren()
+    void collectLocaleChangeObserverFromElement_elementHasVirtualChildren()
             throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
@@ -361,7 +361,26 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromComponentList()
+    void collectLocaleChangeObserverFromComponentList() throws Exception {
+        Foo foo = new Foo();
+        foo.getElement().appendChild(new Locale().getElement());
+        Bar bar = new Bar();
+
+        Element nested = new Element("nested-locale");
+        nested.appendChild(new Element("nested-child"),
+                new Locale().getElement());
+
+        bar.getElement().appendChild(new Foo().getElement(), nested);
+
+        List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
+                .collectLocaleChangeObservers(Arrays.asList(foo, bar));
+
+        assertEquals(2, beforeNavigationObservers.size(),
+                "Wrong amount of listener instances found");
+    }
+
+    @Test
+    void collectLocaleChangeObserverFromComponentList_elementHasVirtualChildren()
             throws Exception {
         Foo foo = new Foo();
         foo.getElement().appendChild(new Locale().getElement());
@@ -381,27 +400,7 @@ class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromComponentList_elementHasVirtualChildren()
-            throws Exception {
-        Foo foo = new Foo();
-        foo.getElement().appendChild(new Locale().getElement());
-        Bar bar = new Bar();
-
-        Element nested = new Element("nested-locale");
-        nested.appendChild(new Element("nested-child"),
-                new Locale().getElement());
-
-        bar.getElement().appendChild(new Foo().getElement(), nested);
-
-        List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
-                .collectLocaleChangeObservers(Arrays.asList(foo, bar));
-
-        assertEquals(2, beforeNavigationObservers.size(),
-                "Wrong amount of listener instances found");
-    }
-
-    @Test
-    public void getImplementingComponents_hasComposite_originalComponentIsReturned() {
+    void getImplementingComponents_hasComposite_originalComponentIsReturned() {
         CompositeWrapper wrapper = new CompositeWrapper();
         List<BeforeEnterObserver> components = EventUtil
                 .getImplementingComponents(Stream.of(wrapper.getElement()),

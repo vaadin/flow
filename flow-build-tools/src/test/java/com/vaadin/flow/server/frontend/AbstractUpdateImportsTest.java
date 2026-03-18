@@ -877,7 +877,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generatedFlowImports_importsAreOnTopBeforeOtherInstructions() {
+    void generatedFlowImports_importsAreOnTopBeforeOtherInstructions() {
         updater.run();
 
         List<String> lines = updater.getOutput()
@@ -886,7 +886,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generatedFlowWebComponentImports_importsAreOnTopBeforeOtherInstructions()
+    void generatedFlowWebComponentImports_importsAreOnTopBeforeOtherInstructions()
             throws Exception {
         Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
                 UI.class, AllEagerAppConf.class };

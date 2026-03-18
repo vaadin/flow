@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class DependencyTreeCacheTest {
     @Test
-    public void multipleLevels_allIncluded_noneParsedAgain() {
+    void multipleLevels_allIncluded_noneParsedAgain() {
         MockParser parser = new MockParser().addResult("/a", "/b")
                 .addResult("/b", "/c").addResult("/c");
 
@@ -53,7 +53,7 @@ class DependencyTreeCacheTest {
     }
 
     @Test
-    public void sharedDependency_onlyParsedOnce() {
+    void sharedDependency_onlyParsedOnce() {
         MockParser parser = new MockParser().addResult("/a", "/b", "/c")
                 .addResult("/b", "/d").addResult("/c", "/d").addResult("/d");
 
@@ -66,7 +66,7 @@ class DependencyTreeCacheTest {
     }
 
     @Test
-    public void concurrentParse_onlyParsedOnce() throws InterruptedException {
+    void concurrentParse_onlyParsedOnce() throws InterruptedException {
         MockParser parser = new MockParser();
         parser.addResult("/a", "/b");
         parser.addResult("/b", 100);
@@ -98,7 +98,7 @@ class DependencyTreeCacheTest {
     }
 
     @Test
-    public void parallelParsing_potentialSpeedup() throws InterruptedException {
+    void parallelParsing_potentialSpeedup() throws InterruptedException {
         // Eventually, we should see both a case when the randomization makes
         // parsing progress in parallel and a case when it happens sequentially
         int maxDuration = Integer.MIN_VALUE;

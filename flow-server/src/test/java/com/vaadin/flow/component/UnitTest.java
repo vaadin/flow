@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class UnitTest {
 
     @Test
-    public void getUnit() {
+    void getUnit() {
         assertFalse(Unit.getUnit(null).isPresent());
         assertFalse(Unit.getUnit("").isPresent());
         assertFalse(Unit.getUnit("10unknown").isPresent());
