@@ -106,7 +106,7 @@ public class VaadinServlet extends HttpServlet {
         if (productionMode) {
             try {
                 LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
-                        BuildType.PRODUCTION);
+                        BuildType.PRODUCTION, null);
             } catch (LicenseException e) {
                 getLogger().error(
                         "This Vaadin version requires an extended maintenance subscription."
