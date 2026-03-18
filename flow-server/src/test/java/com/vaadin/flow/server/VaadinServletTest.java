@@ -24,6 +24,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -384,11 +385,27 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void checkLicense_prodMode_licenseIsNotChecked()
+    public void checkLicense_prodMode_licenseIsChecked()
             throws ServletException {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         triggerLicenseChecking();
-        licenseChecker.verifyNoInteractions();
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.PRODUCTION, null));
+    }
+
+    @Test
+    public void checkLicense_prodModeCheck_notFails()
+            throws ServletException {
+        licenseChecker
+                .when(() -> LicenseChecker.checkLicense("flow",
+                        Version.getFullVersion(), BuildType.PRODUCTION, null))
+                .thenThrow(new LicenseException("Test exception"));
+        try {
+            triggerLicenseChecking();
+        } catch (LicenseException e) {
+            Assert.fail(
+                    "License check should not throw exception in prod mode");
+        }
     }
 
     private ServletConfig mockConfig() {
