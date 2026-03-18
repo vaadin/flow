@@ -467,6 +467,46 @@ class BeanPropertySetTest {
         }
     }
 
+    public interface Measurement {
+        double getValue();
+    }
+
+    public interface MutableMeasurement extends Measurement {
+        void setValue(double value);
+    }
+
+    public static class MeasurementBean implements MutableMeasurement {
+        private double value;
+
+        @Override
+        public double getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(double value) {
+            this.value = value;
+        }
+    }
+
+    @Test
+    void propertyWithGetterAndSetterFromSeparateInterfaces() {
+        // When getter is in a parent interface and setter in a sub-interface,
+        // the property should be discovered with both accessors.
+        // This tests the interface type directly, as used e.g. in
+        // Grid<MutableMeasurement>.
+        PropertySet<MutableMeasurement> set = BeanPropertySet
+                .get(MutableMeasurement.class);
+
+        assertTrue(set.getProperty("value").isPresent(),
+                "Property 'value' should be discovered when getter is in "
+                        + "a parent interface and setter in a sub-interface");
+        PropertyDefinition<MutableMeasurement, ?> def = set.getProperty("value")
+                .get();
+        assertNotNull(def.getGetter());
+        assertTrue(def.getSetter().isPresent());
+    }
+
     @Test
     void includesDefaultMethodsFromInterfaces() {
         PropertySet<MyClass> set = BeanPropertySet.get(MyClass.class);
