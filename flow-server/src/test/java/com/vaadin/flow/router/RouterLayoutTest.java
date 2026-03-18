@@ -30,12 +30,12 @@ class RouterLayoutTest {
     private TestRouterLayout testRouterLayout;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         testRouterLayout = new TestRouterLayout();
     }
 
     @Test
-    public void show_nonNull_childrenUpdated() {
+    void show_nonNull_childrenUpdated() {
         assertEquals(0, testRouterLayout.getElement().getChildCount());
 
         ComponentTest.TestDiv content = new ComponentTest.TestDiv();
@@ -54,13 +54,13 @@ class RouterLayoutTest {
     }
 
     @Test
-    public void show_null_noChildren() {
+    void show_null_noChildren() {
         testRouterLayout.showRouterLayoutContent(null);
         assertEquals(0, testRouterLayout.getElement().getChildCount());
     }
 
     @Test
-    public void remove_removesContent() {
+    void remove_removesContent() {
         ComponentTest.TestDiv content = new ComponentTest.TestDiv();
         testRouterLayout.element.appendChild(content.getElement());
 

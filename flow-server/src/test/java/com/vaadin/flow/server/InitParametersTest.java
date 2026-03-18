@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InitParametersTest {
     @Test
-    public void publicMembersAreStringConstants() {
+    void publicMembersAreStringConstants() {
         for (Field field : InitParameters.class.getDeclaredFields()) {
             int modifiers = field.getModifiers();
             if (Modifier.isPublic(modifiers)) {

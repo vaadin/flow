@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 class FileIOUtilsTest {
 
     @Test
-    public void projectFolderOnWindows() throws Exception {
+    void projectFolderOnWindows() throws Exception {
         assumeTrue(OSUtils.isWindows());
 
         URL url = new URL(
@@ -42,7 +42,7 @@ class FileIOUtilsTest {
     }
 
     @Test
-    public void projectFolderOnMacOrLinux() throws Exception {
+    void projectFolderOnMacOrLinux() throws Exception {
         assumeFalse(OSUtils.isWindows());
 
         URL url = new URL(
@@ -52,7 +52,7 @@ class FileIOUtilsTest {
     }
 
     @Test
-    public void tempFilesAreTempFiles() {
+    void tempFilesAreTempFiles() {
         assertTrue(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt~")));
         assertFalse(FileIOUtils.isProbablyTemporaryFile(new File("foo.txt")));
     }

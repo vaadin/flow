@@ -45,12 +45,12 @@ class VaadinServiceSignalsInitializationTest {
 
     @BeforeEach
     @AfterEach
-    public void clearTestEnvironment() {
+    void clearTestEnvironment() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void init_flowSignalEnvironmentInitialized()
+    void init_flowSignalEnvironmentInitialized()
             throws InterruptedException, TimeoutException {
 
         var service = new MockVaadinServletService();
@@ -108,7 +108,7 @@ class VaadinServiceSignalsInitializationTest {
     }
 
     @Test
-    public void resultNotifier_ownerUiIsClosing_taskNotScheduled()
+    void resultNotifier_ownerUiIsClosing_taskNotScheduled()
             throws InterruptedException {
         var service = new MockVaadinServletService();
 

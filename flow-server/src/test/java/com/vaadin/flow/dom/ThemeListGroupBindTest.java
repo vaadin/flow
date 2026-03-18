@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ThemeListGroupBindTest extends SignalsUnitTest {
 
     @Test
-    public void basicGroupBinding_addsAndRemovesThemes() {
+    void basicGroupBinding_addsAndRemovesThemes() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -61,7 +61,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void nullList_treatedAsEmpty() {
+    void nullList_treatedAsEmpty() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -72,7 +72,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void nullAndEmptyEntriesInList_silentlyIgnored() {
+    void nullAndEmptyEntriesInList_silentlyIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -86,7 +86,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void secondGroupBind_throwsBindingActiveException() {
+    void secondGroupBind_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -99,7 +99,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void duplicateInAttribute_staticAndGroupAreDeduplicated() {
+    void duplicateInAttribute_staticAndGroupAreDeduplicated() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -116,7 +116,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void staticRemovalWhileGroupHasSameName_nameIsRemoved() {
+    void staticRemovalWhileGroupHasSameName_nameIsRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -134,7 +134,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void groupRemovalWhileStaticHasSameName_nameIsRemoved() {
+    void groupRemovalWhileStaticHasSameName_nameIsRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -150,7 +150,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_throwsWhenGroupBindingActive() {
+    void clear_throwsWhenGroupBindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -164,7 +164,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void detachAndReattach_reappliesCurrentValue() {
+    void detachAndReattach_reappliesCurrentValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -187,7 +187,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void coexistenceWithToggleBind_bothWorkIndependently() {
+    void coexistenceWithToggleBind_bothWorkIndependently() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -210,7 +210,7 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_onChange_receivesBindingContext() {
+    void bind_onChange_receivesBindingContext() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

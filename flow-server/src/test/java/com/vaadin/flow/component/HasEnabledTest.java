@@ -29,14 +29,14 @@ class HasEnabledTest {
     }
 
     @Test
-    public void enabledComponent_isEnabledReturnsTrue() {
+    void enabledComponent_isEnabledReturnsTrue() {
         TestComponent component = new TestComponent();
 
         assertTrue(component.isEnabled());
     }
 
     @Test
-    public void explicitlyDisabledComponent_isEnabledReturnsFalse() {
+    void explicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 
@@ -44,7 +44,7 @@ class HasEnabledTest {
     }
 
     @Test
-    public void implicitlyDisabledComponent_isEnabledReturnsFalse() {
+    void implicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
 
         TestComponent parent = new TestComponent();
@@ -56,7 +56,7 @@ class HasEnabledTest {
     }
 
     @Test
-    public void implicitlyDisabledComponent_detach_componentBecomesEnabled() {
+    void implicitlyDisabledComponent_detach_componentBecomesEnabled() {
         TestComponent component = new TestComponent();
 
         TestComponent parent = new TestComponent();
@@ -70,7 +70,7 @@ class HasEnabledTest {
     }
 
     @Test
-    public void explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
+    void explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
         TestComponent component = new TestComponent();
         component.setEnabled(false);
 

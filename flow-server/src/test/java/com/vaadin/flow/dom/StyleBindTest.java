@@ -40,7 +40,7 @@ class StyleBindTest extends SignalsUnitTest {
 
     // Lifecycle: applies on attachment and signal changes when attached
     @Test
-    public void bindingMirrorsSignalWhileAttached_updatesStyleValue() {
+    void bindingMirrorsSignalWhileAttached_updatesStyleValue() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -60,7 +60,7 @@ class StyleBindTest extends SignalsUnitTest {
     // Lifecycle: no updates while detached; lastApplied preserved across
     // detach/attachment
     @Test
-    public void detached_noUpdates_lastAppliedPreservedOnReattach() {
+    void detached_noUpdates_lastAppliedPreservedOnReattach() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -82,7 +82,7 @@ class StyleBindTest extends SignalsUnitTest {
 
     // Conflict prevention: set/remove throw while binding is active
     @Test
-    public void conflict_setRemoveThrowWhileBoundAndActive() {
+    void conflict_setRemoveThrowWhileBoundAndActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -96,7 +96,7 @@ class StyleBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_throwsWhenBindingsActive() {
+    void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -108,7 +108,7 @@ class StyleBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -118,7 +118,7 @@ class StyleBindTest extends SignalsUnitTest {
 
     // Getters semantics
     @Test
-    public void getters_returnLastAppliedAndNamesWithValues() {
+    void getters_returnLastAppliedAndNamesWithValues() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -154,7 +154,7 @@ class StyleBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void nullSignalValue_removesStyleAndHasReturnsFalse() {
+    void nullSignalValue_removesStyleAndHasReturnsFalse() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -178,7 +178,7 @@ class StyleBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_onChange_receivesBindingContext() {
+    void bind_onChange_receivesBindingContext() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -202,7 +202,7 @@ class StyleBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_returnsTypedSignalBinding() {
+    void bind_returnsTypedSignalBinding() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 

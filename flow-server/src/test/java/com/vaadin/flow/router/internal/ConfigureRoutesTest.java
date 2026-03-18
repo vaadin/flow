@@ -58,7 +58,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfiguration_canSetRouteTarget() {
+    void mutableConfiguration_canSetRouteTarget() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
@@ -70,7 +70,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfiguration_canSetTargetRoute() {
+    void mutableConfiguration_canSetTargetRoute() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
@@ -82,7 +82,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfigurationClear_removesRegisteredRoutes() {
+    void mutableConfigurationClear_removesRegisteredRoutes() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         assertSetRoutes(mutable);
@@ -99,7 +99,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfigurationClear_preservesErrorRoute() {
+    void mutableConfigurationClear_preservesErrorRoute() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
@@ -113,7 +113,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void duplicateRootPathRegistration_throwsException() {
+    void duplicateRootPathRegistration_throwsException() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
@@ -132,7 +132,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void duplicateParameterPathRegistration_throwsException() {
+    void duplicateParameterPathRegistration_throwsException() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute(":param", ParamTarget.class);
@@ -151,7 +151,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfiguration_makingImmutableHasCorrectData() {
+    void mutableConfiguration_makingImmutableHasCorrectData() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
@@ -169,7 +169,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void mutableConfiguration_canSetErrorTargets() {
+    void mutableConfiguration_canSetErrorTargets() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
@@ -183,7 +183,7 @@ class ConfigureRoutesTest {
     }
 
     @Test
-    public void populatedMutableConfiguration_clearRemovesAllContent() {
+    void populatedMutableConfiguration_clearRemovesAllContent() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);

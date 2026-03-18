@@ -35,7 +35,7 @@ class PropertyDeploymentConfigurationTest {
     Path tempFolder;
 
     @Test
-    public void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
+    void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
@@ -46,7 +46,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isProductionMode_modeIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+    void isProductionMode_modeIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
 
@@ -60,7 +60,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void reuseDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+    void reuseDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
 
@@ -74,7 +74,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void reuseDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
+    void reuseDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
@@ -85,7 +85,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isPnpmEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
+    void isPnpmEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
@@ -96,7 +96,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isPnpmEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+    void isPnpmEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(false);
 
@@ -110,7 +110,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
+    void isXsrfProtectionEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
@@ -121,7 +121,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+    void isXsrfProtectionEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
@@ -135,7 +135,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void getApplicationProperty_propertyIsDefinedInParentOnly_valueFromParentIsReturned() {
+    void getApplicationProperty_propertyIsDefinedInParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         Mockito.when(appConfig.getStringProperty("foo", null))
@@ -150,7 +150,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void getApplicationProperty_propertyIsDefinedInPropertiesAndParent_valueFromPropertiesIsReturned() {
+    void getApplicationProperty_propertyIsDefinedInPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         Mockito.when(appConfig.getStringProperty("foo", null))
@@ -167,7 +167,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isProductionMode_modeIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+    void isProductionMode_modeIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
@@ -195,7 +195,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isPnpmEnabled_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+    void isPnpmEnabled_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
@@ -223,7 +223,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void reuseDevServer_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+    void reuseDevServer_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
@@ -251,7 +251,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void isXsrfProtectionEnabled_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
+    void isXsrfProtectionEnabled_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
@@ -279,7 +279,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void getInitParameters_prorprtiesAreMergedFromParentAndDeploymentConfig() {
+    void getInitParameters_prorprtiesAreMergedFromParentAndDeploymentConfig() {
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames()).thenReturn(
@@ -299,7 +299,7 @@ class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void allDefaultAbstractConfigurationMethodsAreOverridden() {
+    void allDefaultAbstractConfigurationMethodsAreOverridden() {
         Method[] methods = PropertyDeploymentConfiguration.class.getMethods();
         for (Method method : methods) {
             String methodName = method.getName();

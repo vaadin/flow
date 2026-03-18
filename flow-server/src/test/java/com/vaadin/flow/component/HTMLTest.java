@@ -29,56 +29,56 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class HTMLTest {
 
     @Test
-    public void attachedToElement() {
+    void attachedToElement() {
         // This will throw an assertion error if the element is not attached to
         // the component
         new Html("<b>Hello</b>").getParent();
     }
 
     @Test
-    public void nullHtml() {
+    void nullHtml() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Html((String) null);
         });
     }
 
     @Test
-    public void nullStream() {
+    void nullStream() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Html((InputStream) null);
         });
     }
 
     @Test
-    public void emptyHtml() {
+    void emptyHtml() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Html("");
         });
     }
 
     @Test
-    public void twoRoots() {
+    void twoRoots() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Html("<b></b><div></div>");
         });
     }
 
     @Test
-    public void text() {
+    void text() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Html("hello");
         });
     }
 
     @Test
-    public void simpleHtml() {
+    void simpleHtml() {
         Html html = new Html("<span>hello</span>");
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
-    public void setHtmlContent() {
+    void setHtmlContent() {
         Html html = new Html("<span>hello</span>");
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertEquals("hello", html.getInnerHtml());
@@ -87,7 +87,7 @@ class HTMLTest {
     }
 
     @Test
-    public void setHtmlContent_tagMismatch() {
+    void setHtmlContent_tagMismatch() {
         Html html = new Html("<span>hello</span>");
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertEquals("hello", html.getInnerHtml());
@@ -96,7 +96,7 @@ class HTMLTest {
     }
 
     @Test
-    public void rootAttributes() {
+    void rootAttributes() {
         Html html = new Html("<span foo='bar'>hello</span>");
         assertEquals(Tag.SPAN, html.getElement().getTag());
         assertEquals(1, html.getElement().getAttributeNames().count());
@@ -105,7 +105,7 @@ class HTMLTest {
     }
 
     @Test
-    public void rootSpecialAttributes() {
+    void rootSpecialAttributes() {
         Html html = new Html(
                 "<span class='foo' style='color: red'>hello</span>");
         Element element = html.getElement();
@@ -118,20 +118,20 @@ class HTMLTest {
     }
 
     @Test
-    public void fromStream() {
+    void fromStream() {
         new Html(new ByteArrayInputStream(
                 "<div><span>contents</span></div>".getBytes()));
     }
 
     @Test
-    public void brokenHtml() {
+    void brokenHtml() {
         Html html = new Html("<b></div>");
         assertEquals("b", html.getElement().getTag());
         assertEquals("", html.getInnerHtml());
     }
 
     @Test
-    public void extraWhitespace() {
+    void extraWhitespace() {
         String input = "   <span>    " //
                 + "    <div>" //
                 + "       <b>Hello!</b>" //
@@ -147,7 +147,7 @@ class HTMLTest {
     }
 
     @Test
-    public void emptyAttribute_elementIsCreatedAndHasAttribute() {
+    void emptyAttribute_elementIsCreatedAndHasAttribute() {
         Html html = new Html("<audio controls></audio>");
 
         assertEquals("", html.getElement().getAttribute("controls"));
@@ -157,14 +157,14 @@ class HTMLTest {
     }
 
     @Test
-    public void styleElementAsString_elementIsUsed() {
+    void styleElementAsString_elementIsUsed() {
         Html html = new Html("<style></style>");
         assertEquals("style", html.getElement().getTag());
     }
 
     @Test
 
-    public void styleElementAsStream_elementIsUsed() {
+    void styleElementAsStream_elementIsUsed() {
         Html html = new Html(new ByteArrayInputStream(
                 "<style></style>".getBytes(StandardCharsets.UTF_8)));
         assertEquals("style", html.getElement().getTag());

@@ -36,7 +36,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_initialValue_matchesGetLocale() {
+    void localeSignal_initialValue_matchesGetLocale() {
         VaadinSession session = getSession();
         Signal<Locale> signal = session.localeSignal();
 
@@ -46,7 +46,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_setLocale_signalUpdated() {
+    void localeSignal_setLocale_signalUpdated() {
         VaadinSession session = getSession();
         Signal<Locale> signal = session.localeSignal();
 
@@ -67,7 +67,7 @@ class VaadinSessionLocaleSignalTest extends SignalsUnitTest {
     }
 
     @Test
-    public void localeSignal_multipleLocaleChanges_signalFollows() {
+    void localeSignal_multipleLocaleChanges_signalFollows() {
         VaadinSession session = getSession();
         Signal<Locale> signal = session.localeSignal();
 
