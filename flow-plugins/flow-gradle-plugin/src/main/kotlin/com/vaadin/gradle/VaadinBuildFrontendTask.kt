@@ -235,6 +235,13 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
+
+        // Write marker file for Gradle up-to-date tracking.
+        // Content is fixed so that identical builds produce identical
+        // output and Gradle can mark the task as UP_TO_DATE.
+        val markerFile = outputProperties.get().getBuildFrontendMarker()
+        markerFile.parentFile.mkdirs()
+        markerFile.writeText("build-frontend completed")
     }
 
 

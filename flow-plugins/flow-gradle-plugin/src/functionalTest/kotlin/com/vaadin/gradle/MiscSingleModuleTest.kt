@@ -792,11 +792,13 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
 
-        // Clean the token file to simulate it not existing.
-        // Since flow-build-info.json is a declared task output, deleting
-        // it triggers Gradle to re-execute vaadinBuildFrontend.
+        // Clean the token file and marker file to simulate them not
+        // existing. Deleting the marker file (a declared task output)
+        // triggers Gradle to re-execute vaadinBuildFrontend.
         tokenFile.delete()
         expect(false) { tokenFile.exists() }
+        val markerFile = File(testProject.dir, "build/vaadin-generated/build-frontend.marker")
+        markerFile.delete()
 
         // Run vaadinBuildFrontend again - it should regenerate the token file
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
