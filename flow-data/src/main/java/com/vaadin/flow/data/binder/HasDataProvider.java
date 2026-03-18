@@ -46,14 +46,11 @@ public interface HasDataProvider<T> extends HasItems<T> {
      *
      * @param dataProvider
      *            the data provider, not null
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     void setDataProvider(DataProvider<T, ?> dataProvider);
 
     @Override
     default void setItems(Collection<T> items) {
-        DataViewUtils.checkNoActiveItemsBinding(this);
         setDataProvider(DataProvider.ofCollection(items));
     }
 
