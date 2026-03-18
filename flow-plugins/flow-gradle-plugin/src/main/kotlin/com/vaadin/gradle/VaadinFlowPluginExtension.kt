@@ -306,17 +306,6 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
-    /**
-     * Prevents tracking state of the `vaadinBuildFrontend` task, so that it
-     * will re-run every time it is called.
-     *
-     * Setting this to `true` allows to always execute `vaadinBuildFrontend`.
-     *
-     * Defaults to `false`, meaning that the task execution is skipped when its
-     * outcomes are up-to-date, improving the overall build time.
-     */
-    public abstract val alwaysExecuteBuildFrontend: Property<Boolean>
-
     public abstract val reactEnable: Property<Boolean>
 
     public abstract val cleanFrontendFiles: Property<Boolean>
@@ -604,10 +593,6 @@ public class PluginEffectiveConfiguration(
         extension.alwaysExecutePrepareFrontend
             .convention(false)
 
-    public val alwaysExecuteBuildFrontend: Property<Boolean> =
-        extension.alwaysExecuteBuildFrontend
-            .convention(false)
-
     public val reactEnable: Provider<Boolean> = extension.reactEnable
         .convention(effectiveFrontendDirectory.map {
             FrontendUtils.isReactRouterRequired(it)
@@ -732,7 +717,6 @@ public class PluginEffectiveConfiguration(
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
-            "alwaysExecuteBuildFrontend=${alwaysExecuteBuildFrontend.get()}, " +
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
