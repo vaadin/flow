@@ -46,7 +46,6 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
         @Override
         @SuppressWarnings({ "unchecked", "rawtypes" })
         public TestDataView setItems(DataProvider<String, Void> dataProvider) {
-            DataViewUtils.checkNoActiveItemsBinding(this);
             if (dataProvider instanceof InMemoryDataProvider) {
                 this.dataProvider = (InMemoryDataProvider) dataProvider;
             }
@@ -57,7 +56,6 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
         @Override
         public TestDataView setItems(
                 InMemoryDataProvider<String> dataProvider) {
-            DataViewUtils.checkNoActiveItemsBinding(this);
             this.dataProvider = dataProvider;
             this.dataView = new TestDataView(() -> dataProvider, this);
             return this.dataView;
@@ -517,35 +515,5 @@ public class HasDataViewBindItemsTest extends SignalsUnitTest {
 
         List<String> items = dataView.getItems().toList();
         assertEquals("Updated Item 1", items.getFirst());
-    }
-
-    @Test
-    public void setItems_dataProvider_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems(DataProvider.ofItems("Item 2")));
-    }
-
-    @Test
-    public void setItems_inMemoryDataProvider_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        InMemoryDataProvider<String> dataProvider = DataProvider
-                .ofCollection(List.of("Item 2"));
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems(dataProvider));
     }
 }

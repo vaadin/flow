@@ -46,8 +46,6 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      * @param dataProvider
      *            DataProvider instance to use, not <code>null</code>
      * @return DataView providing information on the data
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     V setItems(DataProvider<T, F> dataProvider);
 
@@ -62,8 +60,6 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      * @param dataProvider
      *            InMemoryDataProvider to use, not <code>null</code>
      * @return DataView providing information on the data
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     V setItems(InMemoryDataProvider<T> dataProvider);
 
