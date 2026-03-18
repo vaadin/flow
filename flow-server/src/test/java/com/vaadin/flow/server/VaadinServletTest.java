@@ -26,6 +26,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -134,7 +135,7 @@ public class VaadinServletTest {
             throws ServletException {
         licenseChecker
                 .when(() -> LicenseChecker.checkLicense("flow",
-                        Version.getFullVersion(), BuildType.PRODUCTION))
+                        Version.getFullVersion(), BuildType.PRODUCTION, null))
                 .thenThrow(new LicenseException("Test exception"));
         try {
             triggerLicenseChecking();
