@@ -1,5 +1,6 @@
 package com.vaadin.flow.internal;
 
+import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.List;
 
@@ -72,5 +73,28 @@ public class BeanUtilTest {
         Assert.assertEquals(FirstInterface.class,
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
 
+    }
+
+    public interface ReadOnlyMeasurement {
+        double getValue();
+    }
+
+    public interface WritableMeasurement extends ReadOnlyMeasurement {
+        void setValue(double value);
+    }
+
+    @Test
+    public void getterAndSetterFromSeparateInterfacesAreMerged()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(WritableMeasurement.class);
+
+        PropertyDescriptor valueDescriptor = descriptors.stream()
+                .filter(d -> "value".equals(d.getName())).findFirst()
+                .orElse(null);
+
+        Assert.assertNotNull("Should find 'value' property", valueDescriptor);
+        Assert.assertNotNull("Should have read method from parent interface", valueDescriptor.getReadMethod());
+        Assert.assertNotNull("Should have write method from child interface", valueDescriptor.getWriteMethod());
     }
 }

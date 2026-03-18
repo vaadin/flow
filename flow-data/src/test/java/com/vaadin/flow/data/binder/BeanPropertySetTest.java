@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -465,6 +466,72 @@ public class BeanPropertySetTest {
         public void setFirstName(String firstName) {
             this.firstName = firstName;
         }
+    }
+
+    public interface Measurement {
+        double getValue();
+    }
+
+    public interface MutableMeasurement extends Measurement {
+        void setValue(double value);
+    }
+
+    @Test
+    public void propertyWithGetterAndSetterFromSeparateInterfaces() {
+        // When getter is in a parent interface and setter in a sub-interface,
+        // the property should be discovered with both accessors.
+        // This tests the interface type directly, as used e.g. in
+        // Grid<MutableMeasurement>.
+        PropertySet<MutableMeasurement> set = BeanPropertySet
+                .get(MutableMeasurement.class);
+
+        Assert.assertTrue(
+                "Property 'value' should be discovered when getter is in "
+                        + "a parent interface and setter in a sub-interface",
+                set.getProperty("value").isPresent());
+        PropertyDefinition<MutableMeasurement, ?> def = set.getProperty("value")
+                .get();
+        Assert.assertNotNull(def.getGetter());
+        Assert.assertTrue(def.getSetter().isPresent());
+    }
+
+    // Reproducer from https://github.com/vaadin/flow/issues/20814
+    interface BaseInfo {
+        String getInfo();
+    }
+
+    interface ExtendedInfo extends BaseInfo {
+        void setInfo(String value);
+    }
+
+    interface ExtendedInfoWithOverride extends BaseInfo {
+        @Override
+        String getInfo();
+
+        void setInfo(String value);
+    }
+
+    @Test
+    public void setterInChildInterfaceWithoutGetterOverride() {
+        PropertySet<ExtendedInfo> set = BeanPropertySet.get(ExtendedInfo.class);
+
+        Optional<PropertyDefinition<ExtendedInfo, ?>> info = set
+                .getProperty("info");
+        Assert.assertTrue(info.isPresent());
+        Assert.assertNotNull(info.get().getGetter());
+        Assert.assertTrue(info.get().getSetter().isPresent());
+    }
+
+    @Test
+    public void setterInChildInterfaceWithGetterOverride() {
+        PropertySet<ExtendedInfoWithOverride> set = BeanPropertySet
+                .get(ExtendedInfoWithOverride.class);
+
+        Optional<PropertyDefinition<ExtendedInfoWithOverride, ?>> info = set
+                .getProperty("info");
+        Assert.assertTrue(info.isPresent());
+        Assert.assertNotNull(info.get().getGetter());
+        Assert.assertTrue(info.get().getSetter().isPresent());
     }
 
     @Test
