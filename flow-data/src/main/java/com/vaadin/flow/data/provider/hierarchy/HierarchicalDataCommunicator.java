@@ -219,6 +219,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             hierarchy format is not {@link HierarchyFormat#NESTED}
      */
     public void refresh(T item, boolean refreshChildren) {
+        refreshInternal(item, item, refreshChildren);
+    }
+
+    @Override
+    protected void refresh(T data, T oldData) {
+        if (data != oldData) {
+            throw new UnsupportedOperationException(
+                    "HierarchicalDataCommunicator does not support "
+                            + "item identity remapping. Use refreshAll() "
+                            + "instead.");
+        }
+        refreshInternal(data, oldData, false);
+    }
+
+    private void refreshInternal(T item, T oldItem, boolean refreshChildren) {
         Objects.requireNonNull(item, "Item cannot be null");
 
         if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
@@ -230,14 +245,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                             """);
         }
 
-        keyMapper.refresh(item);
+        keyMapper.refresh(item, oldItem);
         dataGenerator.refreshData(item);
 
         if (rootCache == null) {
             return;
         }
 
-        var itemContext = rootCache.getContextByItem(item);
+        var itemContext = rootCache.getContextByItem(oldItem);
         if (itemContext == null) {
             return;
         }

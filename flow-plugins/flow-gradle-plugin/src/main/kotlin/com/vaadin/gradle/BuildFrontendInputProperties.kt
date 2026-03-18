@@ -17,6 +17,7 @@ package com.vaadin.flow.gradle
 
 import java.io.File
 import com.vaadin.experimental.FeatureFlags
+import com.vaadin.flow.server.Constants
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -27,12 +28,12 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 
 /**
- * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
- * configurable parameters, Node.js and npm/pnpm versions. Being used for
- * caching the results of vaadinPrepareFrontend task to not run it again if
- * inputs are the same.
+ * Declaratively defines the inputs of the [VaadinBuildFrontendTask]:
+ * configurable parameters, frontend sources,
+ * and package descriptor files. Used for caching the results of
+ * vaadinBuildFrontend task to skip re-execution when inputs are unchanged.
  */
-internal class PrepareFrontendInputProperties(
+internal class BuildFrontendInputProperties(
     adapter: GradlePluginAdapter,
     private val toolsService: FrontendToolService
 ) {
@@ -81,20 +82,6 @@ internal class PrepareFrontendInputProperties(
     fun getOptimizeBundle(): Provider<Boolean> = config.optimizeBundle
 
     @Input
-    fun getPnpmEnable(): Provider<Boolean> = config.pnpmEnable
-
-    @Input
-    fun getUseGlobalPnpm(): Provider<Boolean> = config.useGlobalPnpm
-
-    @Input
-    fun getRequireHomeNodeExec(): Provider<Boolean> =
-        config.requireHomeNodeExec
-
-    @Input
-    @Optional
-    fun getNodeFolder(): Provider<String> = config.nodeFolder
-
-    @Input
     fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
 
     @InputFile
@@ -129,27 +116,8 @@ internal class PrepareFrontendInputProperties(
         config.generatedTsFolder.absolutePath
 
     @Input
-    fun getNodeVersion(): Provider<String> = config.nodeVersion
-
-    @Input
-    fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
-
-    @Input
-    fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
-
-    @Input
     fun getPostInstallPackages(): ListProperty<String> =
         config.postinstallPackages
-
-    @Input
-    fun getFrontendHotdeploy(): Provider<Boolean> = config.frontendHotdeploy
-
-    @Input
-    fun getCiBuild(): Provider<Boolean> = config.ciBuild
-
-    @Input
-    fun getSkipDevBundleBuild(): Provider<Boolean> =
-        config.skipDevBundleBuild
 
     @Input
     fun getForceProductionBuild(): Provider<Boolean> =
@@ -163,42 +131,33 @@ internal class PrepareFrontendInputProperties(
         config.frontendExtraFileExtensions
 
     @Input
-    fun getApplicationIdentifier(): Provider<String> =
-        config.applicationIdentifier
-
-    @Input
     fun getNpmExcludeWebComponents(): Provider<Boolean> =
         config.npmExcludeWebComponents
 
     @Input
-    fun getFrontendIgnoreVersionChecks(): Provider<Boolean> =
-        config.frontendIgnoreVersionChecks
+    fun getCleanFrontendFiles(): Provider<Boolean> =
+        config.cleanFrontendFiles
 
     @Input
-    @Optional
-    fun getNodeExecutablePath(): Provider<String> =
-        toolsService.toolsProperty { it.nodeBinary }
-            .filterExists()
+    fun getCommercialWithBanner(): Provider<Boolean> =
+        config.commercialWithBanner
 
-    @Input
+    @InputFile
     @Optional
-    fun getNpmExecutablePath(): Provider<String> =
-        toolsService.toolsProperty { tools ->
-            val npmExecutable = tools.npmExecutable ?: listOf()
-            npmExecutable.joinToString(" ")
-        }
+    @PathSensitive(PathSensitivity.NONE)
+    fun getPackageJsonFile(): Provider<File> =
+        config.npmFolder.map { File(it, Constants.PACKAGE_JSON) }.filterExists()
 
-
-    @Input
+    @InputFile
     @Optional
-    fun getPnpmExecutablePath(): Provider<String> =
-        config.pnpmEnable.filterBy {
-            it
-        }.flatMap {
-            toolsService.toolsProperty { tools ->
-                val pnpmExecutable = tools.pnpmExecutable ?: listOf()
-                pnpmExecutable.joinToString(" ")
-            }
-        }.orElse("")
+    @PathSensitive(PathSensitivity.NONE)
+    fun getPackageLockJsonFile(): Provider<File> =
+        config.npmFolder.map { File(it, Constants.PACKAGE_LOCK_JSON) }.filterExists()
+
+    @InputFile
+    @Optional
+    @PathSensitive(PathSensitivity.NONE)
+    fun getPackageLockYamlFile(): Provider<File> =
+        config.npmFolder.map { File(it, Constants.PACKAGE_LOCK_YAML) }.filterExists()
 
 }
