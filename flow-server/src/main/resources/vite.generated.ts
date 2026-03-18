@@ -32,6 +32,7 @@ export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plu
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 //#tailwindcssVitePluginImport#
 
 //#vitePluginFileSystemRouterImport#
@@ -529,33 +530,24 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
-      // The React plugin provides fast refresh and debug source info
+      // The React plugin provides fast refresh and JSX transformation via OXC
       reactPlugin({
         include: '**/*.tsx',
-        babel: {
-          // We need to use babel to provide the source information for it to be correct
-          // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
-          presets: [
-            [
-              '@babel/preset-react',
-              {
-                runtime: 'automatic',
-                importSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
-                development: !productionMode
-              }
-            ]
-          ],
-          // React writes the source location for where components are used, this writes for where they are defined
-          plugins: [
-            !productionMode && addFunctionComponentSourceLocationBabel(),
-            [
-              'module:@preact/signals-react-transform',
-              {
-                mode: 'all' // Needed to include translations which do not use something.value
-              }
-            ]
-          ].filter(Boolean)
-        }
+        jsxImportSource: productionMode ? 'react' : 'Frontend/generated/jsx-dev-transform',
+      }),
+      // Babel plugins for source location info and signals transform
+      // (separate from reactPlugin since v6 uses OXC instead of Babel for JSX)
+      babel({
+        include: '**/*.tsx',
+        plugins: [
+          !productionMode && addFunctionComponentSourceLocationBabel(),
+          [
+            'module:@preact/signals-react-transform',
+            {
+              mode: 'all' // Needed to include translations which do not use something.value
+            }
+          ]
+        ].filter(Boolean)
       }),
       //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
