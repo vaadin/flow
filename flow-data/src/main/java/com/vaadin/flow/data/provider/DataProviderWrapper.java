@@ -79,11 +79,6 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
-    public void refreshItem(T newItem, T oldItem) {
-        dataProvider.refreshItem(newItem, oldItem);
-    }
-
-    @Override
     public Object getId(T item) {
         return dataProvider.getId(item);
     }

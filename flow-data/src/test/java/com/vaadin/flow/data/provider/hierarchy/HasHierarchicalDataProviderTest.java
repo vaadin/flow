@@ -128,10 +128,6 @@ class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void refreshItem(String newItem, String oldItem) {
-        }
-
-        @Override
         public void refreshAll() {
 
         }
