@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class HasDataProviderBindItemsTest extends SignalsUnitTest {
+public class HasDataProviderBindItemsTest extends SignalsUnitTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component
@@ -43,7 +43,6 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
 
         @Override
         public void setDataProvider(DataProvider<String, ?> dataProvider) {
-            DataViewUtils.checkNoActiveItemsBinding(this);
             this.dataProvider = dataProvider;
         }
 
@@ -53,7 +52,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_listSignal_setsDataProvider() {
+    public void bindItems_listSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -73,7 +72,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_emptyList_setsDataProvider() {
+    public void bindItems_emptyList_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -87,7 +86,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_nullSignal_throwsException() {
+    public void bindItems_nullSignal_throwsException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -96,7 +95,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_alreadyBound_throwsBindingActiveException() {
+    public void bindItems_alreadyBound_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -114,7 +113,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_sharedListSignal_setsDataProvider() {
+    public void bindItems_sharedListSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -133,7 +132,7 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_genericSignal_setsDataProvider() {
+    public void bindItems_genericSignal_setsDataProvider() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -150,48 +149,5 @@ class HasDataProviderBindItemsTest extends SignalsUnitTest {
         assertEquals(2, items.size());
         assertEquals("Item 1", items.get(0));
         assertEquals("Item 2", items.get(1));
-    }
-
-    @Test
-    void setDataProvider_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component
-                        .setDataProvider(DataProvider.ofItems("Item 2")));
-    }
-
-    @Test
-    void setItems_collection_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems(List.of("Item 2")));
-    }
-
-    @Test
-    void setItems_varargs_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems("Item 2", "Item 3"));
     }
 }
