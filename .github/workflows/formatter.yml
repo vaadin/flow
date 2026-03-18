@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   JAVA_VERSION: '21'
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 

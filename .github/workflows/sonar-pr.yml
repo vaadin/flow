@@ -13,6 +13,7 @@ permissions:
   contents: read
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _HEAD_REF: ${{ github.event.pull_request.head.ref }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
