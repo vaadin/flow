@@ -196,6 +196,7 @@ class AbstractDevServerRunnerTest extends AbstractDevModeTest {
             Class<? extends InetAddress> loopbackAddressType,
             Consumer<Map<String, String>> op) {
         final DevServerWatchDog watchDog = new DevServerWatchDog();
+        watchDog.start();
         final InetAddress loopbackAddress = findLocalhostAddress(
                 loopbackAddressType);
         try {
