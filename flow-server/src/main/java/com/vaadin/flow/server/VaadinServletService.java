@@ -42,8 +42,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 public class VaadinServletService extends VaadinService {
 
-    private static final String PROJECT_NAME = "flow";
-
     /**
      * Should never be used directly, always use {@link #getServlet()}.
      */
