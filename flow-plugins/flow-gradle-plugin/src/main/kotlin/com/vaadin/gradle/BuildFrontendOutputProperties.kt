@@ -16,7 +16,9 @@
 package com.vaadin.flow.gradle
 
 import java.io.File
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 
 /**
@@ -33,7 +35,12 @@ internal class BuildFrontendOutputProperties(
 
     private val markerFile: File =
         File(adapter.config.resourceOutputDirectory.get(), "build-frontend.marker")
+    private val generatedTsFolder: File =
+        BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
 
     @OutputFile
     fun getBuildFrontendMarker(): File = markerFile
+
+    @OutputDirectory
+    fun getGeneratedTsFolder(): File = generatedTsFolder
 }

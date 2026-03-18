@@ -66,16 +66,20 @@ public class FlowPlugin : Plugin<Project> {
                 config.resourceOutputDirectory
             )
 
-            // the processResources copies stuff from build/vaadin-generated
-            // (which is populated by this task) and therefore must run after vaadinPrepareFrontend task.
-            project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
-
             // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
             if (config.productionMode.get()) {
+                // In production mode, vaadinBuildFrontend is self-contained
+                // and performs its own frontend preparation, so there is no
+                // need for vaadinPrepareFrontend to run beforehand.
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
                 }
+            } else {
+                // In development mode, processResources copies stuff from
+                // build/vaadin-generated (which is populated by
+                // vaadinPrepareFrontend) and therefore must run after it.
+                project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
             }
 
             val toolsService = project.gradle.sharedServices.registerIfAbsent(
@@ -98,8 +102,12 @@ public class FlowPlugin : Plugin<Project> {
                     .doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature")
             }
 
-            project.tasks.getByName("vaadinBuildFrontend")
-                .usesService(toolsService)
+            // In production mode, vaadinBuildFrontend performs frontend
+            // preparation itself and needs dependent project jars to be
+            // built for classpath scanning to work properly.
+            project.tasks.getByName("vaadinBuildFrontend").dependsOn(
+                project.configurations.getByName(config.dependencyScope.get()).jars
+            ).usesService(toolsService)
             if (config.alwaysExecuteBuildFrontend.get()) {
                 project.tasks.getByName("vaadinBuildFrontend")
                     .doNotTrackState("State tracking is disabled. Use the 'alwaysExecuteBuildFrontend' plugin setting to enable the feature")

@@ -209,7 +209,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -255,7 +255,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -268,7 +268,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
             testProject.build("bootJar")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -445,7 +445,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
@@ -683,7 +683,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult = testProject.build("build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -779,9 +779,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        // First, run prepare and build to ensure everything works normally
+        // First, run build to ensure everything works normally
         val build1: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
-        build1.expectTaskSucceded("vaadinPrepareFrontend")
+        build1.expectTaskNotRan("vaadinPrepareFrontend")
         build1.expectTaskSucceded("vaadinBuildFrontend")
 
         // Verify token file was created

@@ -83,9 +83,8 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     /**
      * User-written frontend source files, excluding the `generated/`
      * subdirectory. The `generated/` directory is excluded because it is
-     * an output of [VaadinPrepareFrontendTask] and also modified by this
-     * task's [vaadinBuildFrontend] action, which would make the inputs
-     * unstable across builds.
+     * modified by this task's [vaadinBuildFrontend] action, which would
+     * make the inputs unstable across builds.
      */
     @get:InputFiles
     @get:Optional
@@ -125,8 +124,6 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         group = "Vaadin"
         description = "Builds the frontend bundle with vite"
 
-        // we need the flow-build-info.json to be created, which is what the vaadinPrepareFrontend task does
-        dependsOn("vaadinPrepareFrontend")
         // Maven's task run in the LifecyclePhase.PROCESS_CLASSES phase
 
         // We need access to the produced classes, to be able to analyze e.g.
@@ -190,6 +187,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             logger.info("Token file does not exist, propagating build info")
             BuildFrontendUtil.propagateBuildInfo(adapter.get())
         }
+
+        // Run the preparations that were previously done by the
+        // vaadinPrepareFrontend task so that buildFrontend is self-contained
+        // and does not depend on a separate preparation step.
+        BuildFrontendUtil.prepareFrontend(adapter.get())
 
         val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
             .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))

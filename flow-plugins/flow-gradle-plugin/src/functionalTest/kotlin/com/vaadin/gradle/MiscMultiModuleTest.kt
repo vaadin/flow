@@ -112,7 +112,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.newFolder("web")
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("web:vaadinPrepareFrontend")
+        b.expectTaskNotRan("web:vaadinPrepareFrontend")
         b.expectTaskSucceded("web:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
@@ -166,7 +166,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("MY_APP_ID:vaadinPrepareFrontend")
+        b.expectTaskNotRan("MY_APP_ID:vaadinPrepareFrontend")
         b.expectTaskSucceded("MY_APP_ID:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
@@ -218,7 +218,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("web:vaadinPrepareFrontend")
+        b.expectTaskNotRan("web:vaadinPrepareFrontend")
         b.expectTaskSucceded("web:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
