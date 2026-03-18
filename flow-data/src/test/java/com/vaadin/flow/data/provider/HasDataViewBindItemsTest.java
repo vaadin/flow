@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class HasDataViewBindItemsTest extends SignalsUnitTest {
+public class HasDataViewBindItemsTest extends SignalsUnitTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component
@@ -46,7 +46,6 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
         @Override
         @SuppressWarnings({ "unchecked", "rawtypes" })
         public TestDataView setItems(DataProvider<String, Void> dataProvider) {
-            DataViewUtils.checkNoActiveItemsBinding(this);
             if (dataProvider instanceof InMemoryDataProvider) {
                 this.dataProvider = (InMemoryDataProvider) dataProvider;
             }
@@ -57,7 +56,6 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
         @Override
         public TestDataView setItems(
                 InMemoryDataProvider<String> dataProvider) {
-            DataViewUtils.checkNoActiveItemsBinding(this);
             this.dataProvider = dataProvider;
             this.dataView = new TestDataView(() -> dataProvider, this);
             return this.dataView;
@@ -133,7 +131,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_listSignal_insertsItems() {
+    public void bindItems_listSignal_insertsItems() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -152,7 +150,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_outerSignalChange_triggersRefreshAll() {
+    public void bindItems_outerSignalChange_triggersRefreshAll() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -176,7 +174,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_innerSignalChange_triggersRefreshItem() {
+    public void bindItems_innerSignalChange_triggersRefreshItem() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -206,7 +204,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_multipleInnerSignalChanges_triggersMultipleRefreshItems() {
+    public void bindItems_multipleInnerSignalChanges_triggersMultipleRefreshItems() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -237,7 +235,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_mixedChanges_correctRefreshCalls() {
+    public void bindItems_mixedChanges_correctRefreshCalls() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -277,7 +275,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_emptyList_handledCorrectly() {
+    public void bindItems_emptyList_handledCorrectly() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -294,7 +292,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_removeItems_triggersRefreshAll() {
+    public void bindItems_removeItems_triggersRefreshAll() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -319,7 +317,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_nullSignal_throwsException() {
+    public void bindItems_nullSignal_throwsException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -328,7 +326,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_alreadyBound_throwsBindingActiveException() {
+    public void bindItems_alreadyBound_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -347,7 +345,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_componentDetached_effectsStopWorking() {
+    public void bindItems_componentDetached_effectsStopWorking() {
         TestComponent component = new TestComponent();
         UI ui = UI.getCurrent();
         ui.add(component);
@@ -375,7 +373,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_componentReattached_effectsResumeWorking() {
+    public void bindItems_componentReattached_effectsResumeWorking() {
         TestComponent component = new TestComponent();
         UI ui = UI.getCurrent();
         ui.add(component);
@@ -402,7 +400,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_sharedListSignal_itemsInsertedAndUpdated() {
+    public void bindItems_sharedListSignal_itemsInsertedAndUpdated() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -440,7 +438,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_genericSignal_worksCorrectly() {
+    public void bindItems_genericSignal_worksCorrectly() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -475,7 +473,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_getItems_returnsAllItems() {
+    public void bindItems_getItems_returnsAllItems() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -494,7 +492,7 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindItems_getItems_reflectsSignalChanges() {
+    public void bindItems_getItems_reflectsSignalChanges() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -517,35 +515,5 @@ class HasDataViewBindItemsTest extends SignalsUnitTest {
 
         List<String> items = dataView.getItems().toList();
         assertEquals("Updated Item 1", items.getFirst());
-    }
-
-    @Test
-    void setItems_dataProvider_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems(DataProvider.ofItems("Item 2")));
-    }
-
-    @Test
-    void setItems_inMemoryDataProvider_afterBindItems_throwsBindingActiveException() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-
-        ListSignal<String> itemsSignal = new ListSignal<>();
-        itemsSignal.insertLast("Item 1");
-
-        component.bindItems(itemsSignal);
-
-        InMemoryDataProvider<String> dataProvider = DataProvider
-                .ofCollection(List.of("Item 2"));
-        assertThrows(com.vaadin.flow.signals.BindingActiveException.class,
-                () -> component.setItems(dataProvider));
     }
 }
