@@ -12,6 +12,7 @@ concurrency:
   group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_REF: ${{ github.head_ref }}
   _REF_NAME: ${{ github.ref_name }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
