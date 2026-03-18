@@ -23,8 +23,8 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.binder.HasDataProvider;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -340,14 +340,14 @@ public final class DataViewUtils {
      * @param refreshAll
      *            callback to refresh all items
      * @param refreshItem
-     *            callback to refresh a single item
+     *            callback to replace a single item, accepting old and new items
      * @param <T>
      *            item type
      */
     private static <T> void setupItemsEffect(Component component,
             Signal<? extends List<? extends Signal<T>>> itemsSignal,
             List<T> backingList, Runnable refreshAll,
-            SerializableConsumer<T> refreshItem) {
+            SerializableBiConsumer<T, T> refreshItem) {
         // List to store inner effect registrations
         List<Registration> innerEffectRegistrations = new ArrayList<>();
 
@@ -390,14 +390,14 @@ public final class DataViewUtils {
      * @param backingList
      *            the backing list to update
      * @param refreshItem
-     *            callback to refresh the item
+     *            callback to replace the item, accepting old and new items
      * @param <T>
      *            item type
      * @return the registration for the effect
      */
     private static <T> Registration createItemEffect(Component component,
             Signal<T> itemSignal, int index, List<T> backingList,
-            SerializableConsumer<T> refreshItem) {
+            SerializableBiConsumer<T, T> refreshItem) {
         return Signal.effect(component, context -> {
             // register a dependency on the initial run
             T newValue = itemSignal.get();
@@ -405,8 +405,9 @@ public final class DataViewUtils {
             // Skip refreshItem on the first run since refreshAll was just
             // called
             if (!context.isInitialRun()) {
+                T oldValue = backingList.get(index);
                 backingList.set(index, newValue);
-                refreshItem.accept(newValue);
+                refreshItem.accept(newValue, oldValue);
             }
         });
     }
