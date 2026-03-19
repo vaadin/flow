@@ -69,8 +69,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testWarProjectProductionMode() {
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Read from archive since the token file is deleted from the
+        // filesystem after packaging to avoid stale production tokens
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -80,8 +82,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testWarProjectProductionModeWithCustomName() {
         testProject.settingsFile.writeText("rootProject.name = 'my-test-project'")
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -784,27 +786,27 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build1.expectTaskNotRan("vaadinPrepareFrontend")
         build1.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was created
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        expect(true) { tokenFile.exists() }
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token file was packaged in the war archive (the token
+        // is deleted from the filesystem after packaging to prevent
+        // stale production tokens when running from an IDE)
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
 
-        // Clean the token file and marker file to simulate them not
-        // existing. Deleting the marker file (a declared task output)
-        // triggers Gradle to re-execute vaadinBuildFrontend.
-        tokenFile.delete()
-        expect(false) { tokenFile.exists() }
+        // Delete the marker file so that Gradle's up-to-date check
+        // detects a missing output and re-executes vaadinBuildFrontend.
         val markerFile = File(testProject.dir, "build/vaadin-generated/build-frontend.marker")
         markerFile.delete()
 
-        // Run vaadinBuildFrontend again - it should regenerate the token file
+        // Run vaadinBuildFrontend directly (not via build/war) so the
+        // token file persists on disk for verification
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         build2.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was re-created by propagation
+        // Verify token file was re-created
+        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         expect(true) { tokenFile.exists() }
         val newTokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
