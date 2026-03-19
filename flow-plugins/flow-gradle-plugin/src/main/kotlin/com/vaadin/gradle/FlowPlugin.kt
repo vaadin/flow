@@ -74,6 +74,17 @@ public class FlowPlugin : Plugin<Project> {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
+                    // After the jar/war has packaged the production token
+                    // file, delete it from the build resources directory so
+                    // that running the application from an IDE does not pick
+                    // up a stale productionMode=true token from the classpath.
+                    task.doLast {
+                        val adapter = GradlePluginAdapter(task, config, false)
+                        val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
+                        if (tokenFile.exists()) {
+                            tokenFile.delete()
+                        }
+                    }
                 }
             } else {
                 // In development mode, processResources copies stuff from

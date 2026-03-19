@@ -212,6 +212,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         BuildFrontendUtil.updateBuildFile(this, licenseRequired,
                 commercialBannerRequired);
 
+        // Schedule the token file for deletion when the JVM exits so
+        // that running the application from an IDE after a production
+        // build does not pick up a stale productionMode=true token.
+        // Maven goals always re-execute so this does not affect
+        // subsequent builds.
+        File tokenFile = BuildFrontendUtil.getTokenFile(this);
+        if (tokenFile.exists()) {
+            tokenFile.deleteOnExit();
+        }
+
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
     }
