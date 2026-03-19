@@ -194,13 +194,15 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
         // Ensure the token file exists and compute its content hash.
         // If the file was removed (e.g. by post-packaging cleanup),
-        // propagateBuildInfo recreates a dev-mode token.
-        // If the hash differs a rebuild is triggered.
+        // propagateBuildInfo + updateBuildFile recreate a production-mode
+        // token. If the hash matches the previous build, the task stays
+        // UP_TO_DATE and avoids an unnecessary rebuild.
         buildInfoFileHash.set(project.provider {
             val adp = adapter.get()
             val tokenFile = BuildFrontendUtil.getTokenFile(adp)
             if (!tokenFile.exists()) {
                 BuildFrontendUtil.propagateBuildInfo(adp)
+                BuildFrontendUtil.updateBuildFile(adp, false, false)
             }
             if (tokenFile.exists()) tokenFile.readText().hashCode().toString()
             else ""
