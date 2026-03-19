@@ -25,6 +25,7 @@ import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.flow.internal.FrontendUtils
+import com.vaadin.flow.server.InitParameters
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
@@ -96,6 +97,17 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     @get:Internal
     internal abstract val dependencyJarFiles: ConfigurableFileCollection
+
+    /**
+     * Content hash of the `flow-build-info.json` token file. If the
+     * token file does not exist (e.g. deleted by a previous build's
+     * cleanup), [BuildFrontendUtil.propagateBuildInfo] is called to
+     * create a development-mode token. If the resulting hash differs from
+     * the production-mode hash written by [BuildFrontendUtil.updateBuildFile],
+     * this task is re-executed.
+     */
+    @get:Input
+    internal abstract val buildInfoFileHash: Property<String>
 
     /**
      * A lightweight fingerprint of the dependency JARs on the classpath.
@@ -178,6 +190,20 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             dependencyJarFiles.files
                 .sortedBy { it.name }
                 .joinToString("\n") { "${it.name}:${it.length()}" }
+        })
+
+        // Ensure the token file exists and compute its content hash.
+        // If the file was removed (e.g. by post-packaging cleanup),
+        // propagateBuildInfo recreates a dev-mode token.
+        // If the hash differs a rebuild is triggered.
+        buildInfoFileHash.set(project.provider {
+            val adp = adapter.get()
+            val tokenFile = BuildFrontendUtil.getTokenFile(adp)
+            if (!tokenFile.exists()) {
+                BuildFrontendUtil.propagateBuildInfo(adp)
+            }
+            if (tokenFile.exists()) tokenFile.readText().hashCode().toString()
+            else ""
         })
     }
 
