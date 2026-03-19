@@ -17,9 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import javax.imageio.ImageIO;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -188,7 +185,7 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         int targetWidth = icon.getWidth();
         int targetHeight = icon.getHeight();
         return () -> {
-            BufferedImage scaled = drawIconImage(baseImage, targetWidth,
+            BufferedImage scaled = PwaIcon.drawIconImage(baseImage, targetWidth,
                     targetHeight);
             try (OutputStream os = Files.newOutputStream(iconPath)) {
                 ImageIO.write(scaled, "png", os);
@@ -198,34 +195,5 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
                 scaled.flush();
             }
         };
-    }
-
-    private static BufferedImage drawIconImage(BufferedImage baseImage,
-            int targetWidth, int targetHeight) {
-        int bgColor = baseImage.getRGB(0, 0);
-
-        BufferedImage bimage = new BufferedImage(targetWidth, targetHeight,
-                BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = bimage.createGraphics();
-        try {
-            graphics.setBackground(new Color(bgColor, true));
-            graphics.clearRect(0, 0, targetWidth, targetHeight);
-
-            float ratio = Math.max((float) baseImage.getWidth() / targetWidth,
-                    (float) baseImage.getHeight() / targetHeight);
-            ratio = Math.max(ratio, 1.0f);
-
-            int newWidth = Math.round(baseImage.getHeight() / ratio);
-            int newHeight = Math.round(baseImage.getWidth() / ratio);
-
-            graphics.drawImage(
-                    baseImage.getScaledInstance(newWidth, newHeight,
-                            Image.SCALE_SMOOTH),
-                    (targetWidth - newWidth) / 2,
-                    (targetHeight - newHeight) / 2, null);
-        } finally {
-            graphics.dispose();
-        }
-        return bimage;
     }
 }
