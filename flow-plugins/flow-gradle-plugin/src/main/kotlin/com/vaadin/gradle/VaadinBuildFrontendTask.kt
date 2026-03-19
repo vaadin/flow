@@ -197,12 +197,26 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         // propagateBuildInfo + updateBuildFile recreate a production-mode
         // token. If the hash matches the previous build, the task stays
         // UP_TO_DATE and avoids an unnecessary rebuild.
-        buildInfoFileHash.set(project.provider {
-            val adp = adapter.get()
+        // Uses adapter.flatMap so the provider is configuration-cache
+        // compatible (Gradle tracks the Property, not the resolved value).
+        val outputProps = outputProperties
+        buildInfoFileHash.set(adapter.map { adp ->
             val tokenFile = BuildFrontendUtil.getTokenFile(adp)
             if (!tokenFile.exists()) {
+                // Read license state persisted by the previous build
+                val markerFile = outputProps.get().getBuildFrontendMarker()
+                var licenseRequired = false
+                var commercialBannerRequired = false
+                if (markerFile.exists()) {
+                    val parts = markerFile.readText().split(",")
+                    if (parts.size == 2) {
+                        licenseRequired = parts[0].toBoolean()
+                        commercialBannerRequired = parts[1].toBoolean()
+                    }
+                }
                 BuildFrontendUtil.propagateBuildInfo(adp)
-                BuildFrontendUtil.updateBuildFile(adp, false, false)
+                BuildFrontendUtil.updateBuildFile(adp, licenseRequired,
+                    commercialBannerRequired)
             }
             if (tokenFile.exists()) tokenFile.readText().hashCode().toString()
             else ""
@@ -264,12 +278,12 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
 
-        // Write marker file for Gradle up-to-date tracking.
-        // Content is fixed so that identical builds produce identical
-        // output and Gradle can mark the task as UP_TO_DATE.
+        // Persist license state so that the buildInfoFileHash provider
+        // can call updateBuildFile with the same parameters when
+        // regenerating a deleted token file.
         val markerFile = outputProperties.get().getBuildFrontendMarker()
         markerFile.parentFile.mkdirs()
-        markerFile.writeText("build-frontend completed")
+        markerFile.writeText("$licenseRequired,$commercialBannerRequired")
     }
 
 
