@@ -49,7 +49,7 @@ internal class BuildFrontendOutputProperties(
 ) {
 
     private val markerFile: File =
-        File(adapter.config.resourceOutputDirectory.get(), "build-frontend.marker")
+        File(adapter.config.projectBuildDir.get(), "build-frontend.marker")
     private val generatedTsFolder: File =
         BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
     private val frontendIndexHtml: File =

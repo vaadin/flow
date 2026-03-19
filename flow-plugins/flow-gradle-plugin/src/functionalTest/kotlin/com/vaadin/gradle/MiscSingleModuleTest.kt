@@ -797,7 +797,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // Delete the marker file so that Gradle's up-to-date check
         // detects a missing output and re-executes vaadinBuildFrontend.
-        val markerFile = File(testProject.dir, "build/vaadin-generated/build-frontend.marker")
+        val markerFile = File(testProject.dir, "build/build-frontend.marker")
         markerFile.delete()
 
         // Run vaadinBuildFrontend directly (not via build/war) so the
