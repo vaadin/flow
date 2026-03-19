@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class FlowClassesSerializableTest extends ClassesSerializableTest {
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         CurrentInstance.clearAll();
     }
 
@@ -65,7 +65,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
      * generic test because of their constructors
      */
     @Test
-    public void htmlComponentAndHtmlContainer() throws Throwable {
+    void htmlComponentAndHtmlContainer() throws Throwable {
         Component[] components = { new HtmlComponent("dummy-tag"),
                 new HtmlContainer("dummy-tag") };
         for (Component component : components) {
@@ -84,7 +84,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
      * see the workaround in ElementAttributeMap#deferRegistration
      */
     @Test
-    public void streamResource() throws Throwable {
+    void streamResource() throws Throwable {
         UI ui = new UI();
         UI.setCurrent(ui);
         try {
@@ -149,7 +149,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void localSignalSerializable() {
+    void localSignalSerializable() {
         MockUI ui = setupForSignalSerializationTest();
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
@@ -227,7 +227,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void sharedSignalNotSerializable() {
+    void sharedSignalNotSerializable() {
         MockUI ui = setupForSignalSerializationTest();
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
@@ -255,7 +255,7 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
     }
 
     @Test
-    public void sharedSignalNotSerializable_twoSessionsSharingSignal_onlyOneSessionAttemptedToSerialize() {
+    void sharedSignalNotSerializable_twoSessionsSharingSignal_onlyOneSessionAttemptedToSerialize() {
         // Create both services before touching any CurrentInstance state so
         // neither service's construction clobbers the other's ThreadLocals.
         CurrentInstance.clearAll();

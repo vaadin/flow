@@ -83,7 +83,7 @@ class SessionRouteRegistryTest {
     private VaadinSession session;
 
     @BeforeEach
-    public void init() {
+    void init() {
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
@@ -118,7 +118,7 @@ class SessionRouteRegistryTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
@@ -140,7 +140,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void addSameClassForMultipleRoutes_removalOfRouteClassClearsRegisttry() {
+    void addSameClassForMultipleRoutes_removalOfRouteClassClearsRegisttry() {
         SessionRouteRegistry registry = getRegistry(session);
 
         registry.setRoute("home", MyRoute.class, Collections.emptyList());
@@ -158,7 +158,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void addMultipleClassesToSameRoute_removeClassLeavesRoute() {
+    void addMultipleClassesToSameRoute_removeClassLeavesRoute() {
         SessionRouteRegistry registry = getRegistry(session);
 
         registry.setRoute("home", MyRoute.class, Collections.emptyList());
@@ -196,7 +196,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void sessionRegistryOverridesParentRegistryForGetTargetUrl_globalRouteStillAccessible() {
+    void sessionRegistryOverridesParentRegistryForGetTargetUrl_globalRouteStillAccessible() {
         registry.setRoute("MyRoute", MyRoute.class, Collections.emptyList());
         SessionRouteRegistry sessionRegistry = getRegistry(session);
         sessionRegistry.setRoute("alternate", MyRoute.class,
@@ -213,7 +213,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void sessionRegistryOverridesParentRegistryWithOwnClass_globalRouteReturnedAfterClassRemoval() {
+    void sessionRegistryOverridesParentRegistryWithOwnClass_globalRouteReturnedAfterClassRemoval() {
         registry.setRoute("MyRoute", MyRoute.class, Collections.emptyList());
         SessionRouteRegistry sessionRegistry = getRegistry(session);
         sessionRegistry.setRoute("MyRoute", Secondary.class,
@@ -231,7 +231,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void registerRouteWithAliases_routeAliasesRegisteredAsExpected() {
+    void registerRouteWithAliases_routeAliasesRegisteredAsExpected() {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
@@ -253,7 +253,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
+    void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
         sessionRegistry.setRoute("MyRoute", MyRouteWithAliases.class,
@@ -278,7 +278,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void registeredParentLayouts_changingListDoesntChangeRegistration() {
+    void registeredParentLayouts_changingListDoesntChangeRegistration() {
         SessionRouteRegistry registry = getRegistry(session);
 
         List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
@@ -295,7 +295,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void registeredParentLayouts_returnedListInSameOrder() {
+    void registeredParentLayouts_returnedListInSameOrder() {
         SessionRouteRegistry registry = getRegistry(session);
 
         List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
@@ -310,7 +310,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void routeRegisteredOnMultiplePaths_removalOfDefaultPathUpdatesDefaultPath() {
+    void routeRegisteredOnMultiplePaths_removalOfDefaultPathUpdatesDefaultPath() {
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
         // register route and have default path "MyRoute"
@@ -356,7 +356,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void manuallyRegisteredAliases_RouteDataIsReturnedCorrectly() {
+    void manuallyRegisteredAliases_RouteDataIsReturnedCorrectly() {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
         sessionRegistry.setRoute("main", Secondary.class,
@@ -393,7 +393,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void registeredRouteWithAliasGlobally_sessionRegistryReturnsFromGlobal() {
+    void registeredRouteWithAliasGlobally_sessionRegistryReturnsFromGlobal() {
         registry.setRoute("MyRoute", MyRouteWithAliases.class,
                 Collections.emptyList());
         registry.setRoute("info", MyRouteWithAliases.class,
@@ -420,7 +420,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void registeredRouteWithAliasGlobally_sessionRegistryOverridesMainUrl() {
+    void registeredRouteWithAliasGlobally_sessionRegistryOverridesMainUrl() {
         registry.setRoute("MyRoute", MyRouteWithAliases.class,
                 Collections.emptyList());
         registry.setRoute("info", MyRouteWithAliases.class,
@@ -454,7 +454,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
+    void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 5;
 
@@ -503,7 +503,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void useRouteResolutionFromDifferentThreads_ConcurrencyTest()
+    void useRouteResolutionFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 5;
 
@@ -552,7 +552,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
+    void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
             throws InterruptedException, ExecutionException {
 
         List<Callable<Result>> callables = new ArrayList<>();
@@ -613,7 +613,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
+    void updateAndRemoveFromMultipleThreads_endResultAsExpected()
             throws InterruptedException, ExecutionException {
 
         getRegistry(session).setRoute("home", MyRoute.class,
@@ -686,7 +686,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void settingSessionRouteRegistryOfAnotherSession_getRegistryFails() {
+    void settingSessionRouteRegistryOfAnotherSession_getRegistryFails() {
         SessionRouteRegistry registry = getRegistry(session);
 
         VaadinSession anotherSession = new MockVaadinSession(vaadinService) {
@@ -719,7 +719,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlockk() {
+    void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlockk() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
 
@@ -760,7 +760,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void routeChangeListener_correctChangesAreReturned() {
+    void routeChangeListener_correctChangesAreReturned() {
         SessionRouteRegistry registry = getRegistry(session);
 
         List<RouteBaseData> added = new ArrayList<>();
@@ -801,7 +801,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
+    void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
         SessionRouteRegistry registry = getRegistry(session);
 
         registry.setRoute("", MyRoute.class, Collections.emptyList());
@@ -844,7 +844,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+    void routeWithAliases_eventShowsCorrectlyAsRemoved() {
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
         List<RouteBaseData> added = new ArrayList<>();
@@ -878,7 +878,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void maskedPathsInParent_eventContainsOnlyChangesVisibleForSession() {
+    void maskedPathsInParent_eventContainsOnlyChangesVisibleForSession() {
         registry.setRoute("main", MyRoute.class, Collections.emptyList());
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
@@ -919,7 +919,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void removeListener_noEventsAreGottenForAnyRegistry() {
+    void removeListener_noEventsAreGottenForAnyRegistry() {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
@@ -956,8 +956,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void serialize_deserialize_parentRegistryIsANewOne()
-            throws Throwable {
+    void serialize_deserialize_parentRegistryIsANewOne() throws Throwable {
         session = new MockVaadinSession(vaadinService);
 
         TestSessionRouteRegistry registry = new TestSessionRouteRegistry(
@@ -987,7 +986,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsNotRoot_mainRouteIsReturned() {
+    void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsNotRoot_mainRouteIsReturned() {
         SessionRouteRegistry registry = getRegistry(session);
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(registry);
@@ -1002,7 +1001,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsParamerterized_routeAliasIsReturned() {
+    void getTargetUrl_annotatedRoute_rootIsAlias_mainRouteIsParamerterized_routeAliasIsReturned() {
         SessionRouteRegistry registry = getRegistry(session);
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(registry);
@@ -1017,7 +1016,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void sessionScopeContainsTemplateRoute_applicationRegistryExactMatchIsReturned() {
+    void sessionScopeContainsTemplateRoute_applicationRegistryExactMatchIsReturned() {
         registry.setRoute(":first/:second", Templated.class,
                 Collections.emptyList());
         registry.setRoute("other/view", NonTemplated.class,
@@ -1055,7 +1054,7 @@ class SessionRouteRegistryTest {
     }
 
     @Test
-    public void sessionScopeContainsTemplateRoute_applicationRegistryBetterMatchIsReturned() {
+    void sessionScopeContainsTemplateRoute_applicationRegistryBetterMatchIsReturned() {
         registry.setRoute("other/view/parent", NonTemplated.class,
                 Collections.emptyList());
         registry.setRoute("other/alias/:extra?", Templated.class,

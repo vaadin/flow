@@ -34,7 +34,7 @@ class StyleUtilTest {
     }
 
     @Test
-    public void attributeToProperty() {
+    void attributeToProperty() {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
@@ -45,7 +45,7 @@ class StyleUtilTest {
     }
 
     @Test
-    public void propertyToAttribute() {
+    void propertyToAttribute() {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();

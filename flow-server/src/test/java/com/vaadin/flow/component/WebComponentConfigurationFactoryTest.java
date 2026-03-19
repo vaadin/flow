@@ -32,7 +32,7 @@ class WebComponentConfigurationFactoryTest {
     private WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
     @Test
-    public void create_constructsValidConfiguration() {
+    void create_constructsValidConfiguration() {
         WebComponentConfiguration<? extends Component> config1 = factory.create(
                 new DefaultWebComponentExporterFactory<WebComponentExporterTest.MyComponent>(
                         MyComponentExporter.class).create());
@@ -47,7 +47,7 @@ class WebComponentConfigurationFactoryTest {
     }
 
     @Test
-    public void create_instance_throwsOnNullArgument() {
+    void create_instance_throwsOnNullArgument() {
         NullPointerException ex = assertThrows(NullPointerException.class,
                 () -> factory.create(null));
         assertTrue(ex.getMessage().contains("'exporter'"));
@@ -55,7 +55,7 @@ class WebComponentConfigurationFactoryTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void create_configuration_hashCode() {
+    void create_configuration_hashCode() {
         WebComponentConfiguration<WebComponentExporterTest.MyComponent> myComponentConfig = factory
                 .create(new DefaultWebComponentExporterFactory<WebComponentExporterTest.MyComponent>(
                         MyComponentExporter.class).create());
@@ -84,7 +84,7 @@ class WebComponentConfigurationFactoryTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void create_configuration_equals() {
+    void create_configuration_equals() {
         WebComponentConfiguration<WebComponentExporterTest.MyComponent> myComponentConfig = factory
                 .create(new DefaultWebComponentExporterFactory<>(
                         MyComponentExporter.class).create());

@@ -68,7 +68,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void stringField_basicCases() {
+    void stringField_basicCases() {
         StringField field = new StringField();
         ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
 
@@ -92,7 +92,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void stringField_setValueNull_exceptionAndNoEvent() {
+    void stringField_setValueNull_exceptionAndNoEvent() {
         StringField field = new StringField();
         ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
 
@@ -105,7 +105,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void stringField_initProperty_noEvent() {
+    void stringField_initProperty_noEvent() {
         StringField field = new StringField();
         ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
 
@@ -115,7 +115,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void synchronizedEvent_default() {
+    void synchronizedEvent_default() {
         StringField stringField = new StringField();
 
         assertEquals("property-changed",
@@ -123,7 +123,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void synchronizedEvent_redefined() {
+    void synchronizedEvent_redefined() {
         StringField stringField = new StringField();
         DomListenerRegistration origReg = stringField
                 .getSynchronizationRegistration();
@@ -140,7 +140,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void synchronizedEvent_null_noSynchronization() {
+    void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
         SerializableRunnable unregisterListener = Mockito
                 .mock(SerializableRunnable.class);
@@ -153,7 +153,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void synchronizedEvent_camelCaseProperty_dashCaseEvent() {
+    void synchronizedEvent_camelCaseProperty_dashCaseEvent() {
         StringField stringField = new StringField("immediateValue");
 
         assertEquals("immediate-value-changed",
@@ -169,7 +169,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void stringNullField_basicCases() {
+    void stringNullField_basicCases() {
         StringNullField field = new StringNullField();
         ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
 
@@ -195,7 +195,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void doubleField_basicCases() {
+    void doubleField_basicCases() {
         DoubleField field = new DoubleField();
         ValueChangeMonitor<Double> monitor = new ValueChangeMonitor<>(field);
 
@@ -227,7 +227,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void integerField_basicCases() {
+    void integerField_basicCases() {
         IntegerField field = new IntegerField();
         ValueChangeMonitor<Integer> monitor = new ValueChangeMonitor<>(field);
 
@@ -259,7 +259,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void booleanField_basicCases() {
+    void booleanField_basicCases() {
         BooleanField field = new BooleanField();
         ValueChangeMonitor<Boolean> monitor = new ValueChangeMonitor<>(field);
 
@@ -297,7 +297,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void simpleDateField_constructor_throws() {
+    void simpleDateField_constructor_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             new SimpleDateField();
         });
@@ -313,7 +313,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void dateField_basicCases() {
+    void dateField_basicCases() {
         DateField field = new DateField();
         ValueChangeMonitor<LocalDate> monitor = new ValueChangeMonitor<>(field);
 
@@ -352,7 +352,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void integerToString_basicCases() {
+    void integerToString_basicCases() {
         IntegerToStringField field = new IntegerToStringField();
         ValueChangeMonitor<Integer> monitor = new ValueChangeMonitor<>(field);
         assertNull(field.getValue());
@@ -373,7 +373,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void integerToString_nonIntegerInput_ignore() {
+    void integerToString_nonIntegerInput_ignore() {
         IntegerToStringField field = new IntegerToStringField();
         ValueChangeMonitor<Integer> monitor = new ValueChangeMonitor<>(field);
 
@@ -417,7 +417,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void radixField() {
+    void radixField() {
         RadixField field = new RadixField();
         ValueChangeMonitor<Integer> changeMonitor = new ValueChangeMonitor<>(
                 field);
@@ -452,7 +452,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void jsonField() {
+    void jsonField() {
         JsonField field = new JsonField();
         ValueChangeMonitor<JsonNode> monitor = new ValueChangeMonitor<>(field);
 
@@ -476,7 +476,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void jsonArrayField() {
+    void jsonArrayField() {
         JsonArrayField field = new JsonArrayField();
         ValueChangeMonitor<ArrayNode> monitor = new ValueChangeMonitor<>(field);
 
@@ -497,7 +497,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void noOwnPublicApi() {
+    void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
                 .findNewPublicMethods(AbstractSinglePropertyField.class)
                 .collect(Collectors.toList());
@@ -505,7 +505,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void serializable() {
+    void serializable() {
         StringField field = new StringField();
         field.addValueChangeListener(ignore -> {
         });
@@ -516,7 +516,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void getValue_wrapExistingElement_elementHasProperty_valueIsThePropertyValue() {
+    void getValue_wrapExistingElement_elementHasProperty_valueIsThePropertyValue() {
         Element element = new Element("tag");
         element.setProperty("property", "foo");
 
@@ -554,7 +554,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void jacksonField() {
+    void jacksonField() {
         JacksonField field = new JacksonField();
         ValueChangeMonitor<BaseJsonNode> monitor = new ValueChangeMonitor<>(
                 field);
@@ -579,7 +579,7 @@ class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void jacksonArrayField() {
+    void jacksonArrayField() {
         JacksonArrayField field = new JacksonArrayField();
         ValueChangeMonitor<ArrayNode> monitor = new ValueChangeMonitor<>(field);
 

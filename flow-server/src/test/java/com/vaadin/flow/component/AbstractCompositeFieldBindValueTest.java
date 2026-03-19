@@ -69,7 +69,7 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void multipleFieldsField_bindValue_detached_setValueDoesNotUpdateSignal() {
+    void multipleFieldsField_bindValue_detached_setValueDoesNotUpdateSignal() {
         MultipleFieldsField field = new MultipleFieldsField();
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
@@ -85,7 +85,7 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void multipleFieldsField_bindValue_detached_setModelValueDoesNotUpdateSignal() {
+    void multipleFieldsField_bindValue_detached_setModelValueDoesNotUpdateSignal() {
         MultipleFieldsField field = new MultipleFieldsField();
 
         ValueSignal<String> signal = new ValueSignal<>("Hello Cool World");
@@ -102,7 +102,7 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void multipleFieldsField_bindValue_attached() {
+    void multipleFieldsField_bindValue_attached() {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 
@@ -129,7 +129,7 @@ class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_nullSignal_throwsNPE() {
+    void bindValue_nullSignal_throwsNPE() {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 

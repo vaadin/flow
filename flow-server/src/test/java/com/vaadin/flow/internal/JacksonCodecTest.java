@@ -52,7 +52,7 @@ class JacksonCodecTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void encodeWithoutTypeInfo_supportedTypes() {
+    void encodeWithoutTypeInfo_supportedTypes() {
         assertJsonEquals(objectMapper.valueToTree(true),
                 JacksonCodec.encodeWithoutTypeInfo(Boolean.TRUE));
         assertJsonEquals(objectMapper.valueToTree("string"),
@@ -84,7 +84,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithoutTypeInfo_unsupportedTypes() {
+    void encodeWithoutTypeInfo_unsupportedTypes() {
         List<Object> unsupported = new ArrayList<>(complexTypeValues);
         unsupported.add(ElementFactory.createDiv());
 
@@ -103,7 +103,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithTypeInfo_basicTypes() {
+    void encodeWithTypeInfo_basicTypes() {
         assertJsonEquals(objectMapper.valueToTree(true),
                 JacksonCodec.encodeWithTypeInfo(Boolean.TRUE));
         assertJsonEquals(objectMapper.nullNode(),
@@ -122,7 +122,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithTypeInfo_attachedElement() {
+    void encodeWithTypeInfo_attachedElement() {
         Element element = ElementFactory.createDiv();
 
         StateTree tree = new StateTree(new UI().getInternals(),
@@ -140,7 +140,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithTypeInfo_detachedElement() {
+    void encodeWithTypeInfo_detachedElement() {
         Element element = ElementFactory.createDiv();
 
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
@@ -154,14 +154,14 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void decodeAs_booleanJson() {
+    void decodeAs_booleanJson() {
         JsonNode json = objectMapper.valueToTree(true);
         assertTrue(JacksonCodec.decodeAs(json, Boolean.class));
         assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
     }
 
     @Test
-    public void decodeAs_stringJson() {
+    void decodeAs_stringJson() {
         JsonNode json = objectMapper.valueToTree("Test123 String\n !%");
         assertEquals("Test123 String\n !%",
                 JacksonCodec.decodeAs(json, String.class));
@@ -169,7 +169,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void decodeAs_numberJson() {
+    void decodeAs_numberJson() {
         // Test integer
         JsonNode intJson = objectMapper.valueToTree(15);
         assertEquals(Integer.valueOf(15),
@@ -186,7 +186,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void decodeAs_nullJson() {
+    void decodeAs_nullJson() {
         JsonNode json = objectMapper.nullNode();
         assertNull(JacksonCodec.decodeAs(json, Boolean.class));
         assertNull(JacksonCodec.decodeAs(json, String.class));
@@ -196,14 +196,14 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void decodeAs_jsonValue() {
+    void decodeAs_jsonValue() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("foo", "bar");
         assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
     }
 
     @Test
-    public void decodeAs_jsonValueWrongType_classCastException() {
+    void decodeAs_jsonValueWrongType_classCastException() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("foo", "bar");
         assertThrows(ClassCastException.class,
@@ -211,7 +211,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void decodeAs_unsupportedType() {
+    void decodeAs_unsupportedType() {
         assertThrows(IllegalArgumentException.class, () -> {
             assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
                     float.class));
@@ -219,7 +219,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testSimpleBeanSerialization() {
+    void testSimpleBeanSerialization() {
         SimpleBean bean = new SimpleBean("Test", 42);
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
@@ -231,7 +231,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testNestedBeanSerialization() {
+    void testNestedBeanSerialization() {
         NestedBean nested = new NestedBean("inner", 123);
         OuterBean outer = new OuterBean("outer", nested);
 
@@ -247,7 +247,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testComplexTypeSerialization() {
+    void testComplexTypeSerialization() {
         // Test Object - should serialize as empty object
         Object obj = new Object();
         JsonNode objEncoded = JacksonCodec.encodeWithTypeInfo(obj);
@@ -379,7 +379,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsSimpleBean() {
+    void testDecodeAsSimpleBean() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("text", "TestBean");
         json.put("value", 42);
@@ -391,7 +391,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsNestedBean() {
+    void testDecodeAsNestedBean() {
         ObjectNode nestedJson = objectMapper.createObjectNode();
         nestedJson.put("text", "NestedTest");
         nestedJson.put("number", 456);
@@ -408,7 +408,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsNullValue() {
+    void testDecodeAsNullValue() {
         JsonNode nullNode = objectMapper.nullNode();
 
         SimpleBean decoded = JacksonCodec.decodeAs(nullNode, SimpleBean.class);
@@ -416,7 +416,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsInvalidJson() {
+    void testDecodeAsInvalidJson() {
         JsonNode invalidJson = objectMapper.valueToTree("not an object");
 
         try {
@@ -429,7 +429,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsForPrimitiveTypes() {
+    void testDecodeAsForPrimitiveTypes() {
         assertEquals("test", JacksonCodec
                 .decodeAs(objectMapper.valueToTree("test"), String.class));
         assertEquals(Integer.valueOf(42), JacksonCodec
@@ -441,7 +441,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testListOfBeansSerialization() {
+    void testListOfBeansSerialization() {
         List<SimpleBean> beanList = Arrays.asList(new SimpleBean("First", 1),
                 new SimpleBean("Second", 2), new SimpleBean("Third", 3));
 
@@ -460,7 +460,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testListOfBeansDeserialization() {
+    void testListOfBeansDeserialization() {
         // Create JSON array manually
         ObjectNode bean1 = objectMapper.createObjectNode();
         bean1.put("text", "FirstBean");
@@ -486,7 +486,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testSetOfBeansSerialization() {
+    void testSetOfBeansSerialization() {
         Set<SimpleBean> beanSet = new HashSet<>(Arrays.asList(
                 new SimpleBean("Alpha", 10), new SimpleBean("Beta", 20)));
 
@@ -511,7 +511,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testSetOfBeansDeserialization() {
+    void testSetOfBeansDeserialization() {
         // Create JSON array manually
         ObjectNode bean1 = objectMapper.createObjectNode();
         bean1.put("text", "Gamma");
@@ -544,7 +544,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testListOfIntegersSerialization() {
+    void testListOfIntegersSerialization() {
         List<Integer> integerList = List.of(1, 2, 3);
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(integerList);
@@ -558,7 +558,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testMapOfBeansSerialization() {
+    void testMapOfBeansSerialization() {
         Map<String, SimpleBean> beanMap = new HashMap<>();
         beanMap.put("first", new SimpleBean("FirstBean", 100));
         beanMap.put("second", new SimpleBean("SecondBean", 200));
@@ -580,7 +580,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testMapOfBeansDeserialization() {
+    void testMapOfBeansDeserialization() {
         // Create JSON object manually
         ObjectNode bean1 = objectMapper.createObjectNode();
         bean1.put("text", "Alpha");
@@ -610,7 +610,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testNestedMapSerialization() {
+    void testNestedMapSerialization() {
         Map<String, Object> nestedMap = new HashMap<>();
         nestedMap.put("bean", new SimpleBean("NestedBean", 999));
         nestedMap.put("number", 42);
@@ -637,7 +637,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testListOfComponentElementsSerialization() {
+    void testListOfComponentElementsSerialization() {
         // Create elements directly instead of through components to avoid
         // attachment issues
         Element element1 = ElementFactory.createDiv();
@@ -673,7 +673,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testBeanWithComponentSerialization() {
+    void testBeanWithComponentSerialization() {
         TestComponent component = new TestComponent();
         BeanWithComponent bean = new BeanWithComponent("TestComponent",
                 component, 42);
@@ -697,7 +697,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testArrayWithComponentsSerialization() {
+    void testArrayWithComponentsSerialization() {
         TestComponent component1 = new TestComponent();
         TestComponent component2 = new TestComponent();
 
@@ -718,7 +718,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testListOfBeansWithComponentsSerialization() {
+    void testListOfBeansWithComponentsSerialization() {
         TestComponent component1 = new TestComponent();
         TestComponent component2 = new TestComponent();
 
@@ -775,7 +775,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testTypeReferenceListDeserialization() {
+    void testTypeReferenceListDeserialization() {
         // Create JSON array with bean objects
         ObjectNode bean1 = objectMapper.createObjectNode();
         bean1.put("text", "FirstBean");
@@ -802,7 +802,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testTypeReferenceMapDeserialization() {
+    void testTypeReferenceMapDeserialization() {
         // Create JSON object with bean values
         ObjectNode bean1 = objectMapper.createObjectNode();
         bean1.put("text", "Alpha");
@@ -831,7 +831,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testTypeReferenceNestedList() {
+    void testTypeReferenceNestedList() {
         // Create nested structure: List<Map<String, SimpleBean>>
         ObjectNode innerBean = objectMapper.createObjectNode();
         innerBean.put("text", "Nested");
@@ -857,7 +857,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testTypeReferenceNullHandling() {
+    void testTypeReferenceNullHandling() {
         JsonNode nullJson = objectMapper.nullNode();
 
         TypeReference<List<SimpleBean>> typeRef = new TypeReference<List<SimpleBean>>() {
@@ -868,7 +868,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testTypeReferenceListOfPrimitives() {
+    void testTypeReferenceListOfPrimitives() {
         JsonNode arrayJson = objectMapper.createArrayNode().add(10).add(20)
                 .add(30);
 
@@ -884,7 +884,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testNestedRecordDeserialization() {
+    void testNestedRecordDeserialization() {
         // Test that nested records work for event data pattern
         record EventDetails(int button, int clientX, int clientY) {
         }
@@ -914,7 +914,7 @@ class JacksonCodecTest {
     }
 
     @Test
-    public void testNestedRecordWithTypeReference() {
+    void testNestedRecordWithTypeReference() {
         // Test List<Record> deserialization
         record Point(int x, int y) {
         }

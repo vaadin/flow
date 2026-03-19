@@ -61,7 +61,7 @@ class PendingJavaScriptInvocationTest {
     private BiConsumer<String, Throwable> stringFutureHandler;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         invocation = new PendingJavaScriptInvocation(
                 new Element("dummy").getNode(), new JavaScriptInvocation(""));
 
@@ -87,7 +87,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedIgnoreErrors_success() {
+    void untypedIgnoreErrors_success() {
         invocation.then(jsonSuccessConsumer);
 
         invocation.complete(fooJsonString);
@@ -96,7 +96,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedIgnoreErrors_fail() {
+    void untypedIgnoreErrors_fail() {
         invocation.then(jsonSuccessConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -105,7 +105,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedCaptureErrors_success() {
+    void untypedCaptureErrors_success() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.complete(fooJsonString);
@@ -114,7 +114,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedCaptureErrors_fail() {
+    void untypedCaptureErrors_fail() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -123,7 +123,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedFuture_success() {
+    void untypedFuture_success() {
         invocation.toCompletableFuture().whenComplete(jsonFutureHandler);
 
         invocation.complete(fooJsonString);
@@ -132,7 +132,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void untypedFuture_fail() {
+    void untypedFuture_fail() {
         invocation.toCompletableFuture().whenComplete(jsonFutureHandler);
 
         invocation.completeExceptionally(fooJsonString);
@@ -141,7 +141,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedIgnoreErrors_success() {
+    void typedIgnoreErrors_success() {
         invocation.then(String.class, stringSuccessConsumer);
 
         invocation.complete(fooJsonString);
@@ -150,7 +150,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedCaptureErrors_fail() {
+    void typedCaptureErrors_fail() {
         invocation.then(String.class, stringSuccessConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -159,7 +159,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedCaptureErrors_success() {
+    void typedCaptureErrors_success() {
         invocation.then(String.class, stringSuccessConsumer, errorConsumer);
 
         invocation.complete(fooJsonString);
@@ -168,7 +168,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedIgnoreErrors_fail() {
+    void typedIgnoreErrors_fail() {
         invocation.then(String.class, stringSuccessConsumer, errorConsumer);
 
         invocation.completeExceptionally(fooJsonString);
@@ -177,7 +177,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedFuture_success() {
+    void typedFuture_success() {
         invocation.toCompletableFuture(String.class)
                 .whenComplete(stringFutureHandler);
 
@@ -187,7 +187,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void typedFuture_fail() {
+    void typedFuture_fail() {
         invocation.toCompletableFuture(String.class)
                 .whenComplete(stringFutureHandler);
 
@@ -197,7 +197,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void multipleSuccessHandlers() {
+    void multipleSuccessHandlers() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
         invocation.then(String.class, stringSuccessConsumer);
 
@@ -209,7 +209,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void multipleErrorHandlers() {
+    void multipleErrorHandlers() {
         SingleCaptureConsumer<String> extraErrorHandler = new SingleCaptureConsumer<>();
 
         invocation.then(jsonSuccessConsumer, errorConsumer);
@@ -225,7 +225,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void thenAfterSend_throws() {
+    void thenAfterSend_throws() {
         invocation.setSentToBrowser();
 
         assertThrows(IllegalStateException.class,
@@ -233,7 +233,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void subscribeAfterCancel_callFailHandler() {
+    void subscribeAfterCancel_callFailHandler() {
         invocation.cancelExecution();
 
         invocation.then(jsonSuccessConsumer, errorConsumer);
@@ -242,7 +242,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void susbscribeBeforeCancel_callFailHandler() {
+    void susbscribeBeforeCancel_callFailHandler() {
         invocation.then(jsonSuccessConsumer, errorConsumer);
 
         invocation.cancelExecution();
@@ -251,7 +251,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromInvokingThread_throws() throws Exception {
+    void blockFromInvokingThread_throws() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -272,8 +272,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromSessionThreadAfterCompleting_doesNotThrow()
-            throws Exception {
+    void blockFromSessionThreadAfterCompleting_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -293,8 +292,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromSessionThreadAfterFailing_doesNotThrow()
-            throws Exception {
+    void blockFromSessionThreadAfterFailing_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
             CompletableFuture<JsonNode> completableFuture = invocation
@@ -320,7 +318,7 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    public void blockFromOtherThread_doesNotThrow() throws Exception {
+    void blockFromOtherThread_doesNotThrow() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         VaadinSession.setCurrent(session);
 

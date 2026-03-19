@@ -84,14 +84,14 @@ class PageTest {
 
     @Test
 
-    public void addNullAsAListener_trows() {
+    void addNullAsAListener_trows() {
         assertThrows(NullPointerException.class, () -> {
             page.addBrowserWindowResizeListener(null);
         });
     }
 
     @Test
-    public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
+    void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
         // given
         final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
@@ -151,7 +151,7 @@ class PageTest {
     }
 
     @Test
-    public void fetchCurrentUrl_consumerReceivesCorrectURL() {
+    void fetchCurrentUrl_consumerReceivesCorrectURL() {
         // given
         final UI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
@@ -198,7 +198,7 @@ class PageTest {
     }
 
     @Test
-    public void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
+    void fetchCurrentUrl_passNullCallback_throwsNullPointerException() {
         final UI mockUI = new MockUI();
         Page page = new Page(mockUI);
         assertThrows(NullPointerException.class,
@@ -206,7 +206,7 @@ class PageTest {
     }
 
     @Test
-    public void addJsModule_accepts_onlyExternalAndStartingSlash() {
+    void addJsModule_accepts_onlyExternalAndStartingSlash() {
         List<String> urls = new LinkedList<>();
         urls.add("http://sample.com/mod.js");
         urls.add("https://sample.com/mod.js");
@@ -240,7 +240,7 @@ class PageTest {
     }
 
     @Test
-    public void addJsModule_rejects_files() {
+    void addJsModule_rejects_files() {
         try {
             page.addJsModule("mod.js");
 
@@ -250,7 +250,7 @@ class PageTest {
     }
 
     @Test
-    public void executeJavaScript_delegatesToExecJs() {
+    void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
         AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
@@ -279,7 +279,7 @@ class PageTest {
     }
 
     @Test
-    public void open_openInSameWindow_closeTheClientApplication() {
+    void open_openInSameWindow_closeTheClientApplication() {
         AtomicReference<String> capture = new AtomicReference<>();
         List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
@@ -302,7 +302,7 @@ class PageTest {
     }
 
     @Test
-    public void setLocation_dispatchesRedirectPendingEvent() {
+    void setLocation_dispatchesRedirectPendingEvent() {
         AtomicReference<String> capture = new AtomicReference<>();
         List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
@@ -327,7 +327,7 @@ class PageTest {
     }
 
     @Test
-    public void open_dispatchesRedirectPendingEventBeforeRedirect() {
+    void open_dispatchesRedirectPendingEventBeforeRedirect() {
         AtomicReference<String> capture = new AtomicReference<>();
         Page page = new Page(new MockUI()) {
             @Override
@@ -351,7 +351,7 @@ class PageTest {
     }
 
     @Test
-    public void setColorScheme_setsStyleProperty() {
+    void setColorScheme_setsStyleProperty() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         AtomicReference<Object[]> capturedParams = new AtomicReference<>();
         MockUI mockUI = new MockUI();
@@ -379,7 +379,7 @@ class PageTest {
     }
 
     @Test
-    public void setColorScheme_lightDark_setsCorrectValues() {
+    void setColorScheme_lightDark_setsCorrectValues() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         AtomicReference<Object[]> capturedParams = new AtomicReference<>();
         MockUI mockUI = new MockUI();
@@ -408,7 +408,7 @@ class PageTest {
     }
 
     @Test
-    public void setColorScheme_null_clearsProperty() {
+    void setColorScheme_null_clearsProperty() {
         MockUI mockUI = new MockUI();
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
@@ -432,7 +432,7 @@ class PageTest {
     }
 
     @Test
-    public void setColorScheme_normal_clearsProperty() {
+    void setColorScheme_normal_clearsProperty() {
         MockUI mockUI = new MockUI();
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
@@ -453,13 +453,13 @@ class PageTest {
     }
 
     @Test
-    public void getColorScheme_returnsNormal_whenNotSet() {
+    void getColorScheme_returnsNormal_whenNotSet() {
         Page page = new Page(new MockUI());
         assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
-    public void getColorScheme_returnsCachedValue() {
+    void getColorScheme_returnsCachedValue() {
         MockUI mockUI = new MockUI();
         // Set up ExtendedClientDetails with color scheme
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
@@ -472,7 +472,7 @@ class PageTest {
     }
 
     @Test
-    public void setColorScheme_updatesGetColorScheme() {
+    void setColorScheme_updatesGetColorScheme() {
         MockUI mockUI = new MockUI();
         // Set up ExtendedClientDetails
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
