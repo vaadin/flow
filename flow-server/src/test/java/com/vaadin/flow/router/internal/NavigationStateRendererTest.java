@@ -835,8 +835,8 @@ public class NavigationStateRendererTest {
         ConditionalForwardView.shouldForward = true;
         ui.refreshCurrentRoute(true);
 
-        assertEquals(2, RouteParentLayout.creationCount.get(),
-                "Layout should be recreated by both refresh and forward");
+        Assert.assertEquals("Layout should be recreated by both refresh and forward",
+                2, RouteParentLayout.creationCount.get());
     }
 
     @Test
@@ -871,8 +871,8 @@ public class NavigationStateRendererTest {
         ConditionalRerouteView.shouldReroute = true;
         ui.refreshCurrentRoute(true);
 
-        assertEquals(2, RouteParentLayout.creationCount.get(),
-                "Layout should be recreated by both refresh and reroute");
+        Assert.assertEquals("Layout should be recreated by both refresh and reroute",
+                2, RouteParentLayout.creationCount.get());
     }
 
     @Test
