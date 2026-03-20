@@ -244,16 +244,16 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
 
-        // Cache a copy of the production token file so it can be
-        // restored if the original is deleted (e.g. by post-packaging
-        // cleanup). This avoids re-running propagateBuildInfo +
-        // updateBuildFile and preserves the exact production content
-        // including license flags.
+        // Cache the production token file and delete the original so
+        // that IDE runs default to development mode.  Jar/War tasks
+        // restore the token from the cached copy in their doFirst
+        // action (via BuildFrontendTokenService.ensureToken()).
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
         val cachedTokenFile = outputProperties.get().getCachedBuildInfoFile()
         cachedTokenFile.parentFile.mkdirs()
         if (tokenFile.exists()) {
             tokenFile.copyTo(cachedTokenFile, overwrite = true)
+            tokenFile.delete()
         }
     }
 

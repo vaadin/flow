@@ -139,8 +139,9 @@ public class FlowPlugin : Plugin<Project> {
                             VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE).absolutePath
                     )
                 }
-                // Jar/War tasks also use the service so that close()
-                // only fires after packaging is complete.
+                // Ensure close() fires after vaadinBuildFrontend and
+                // all Jar/War packaging tasks have completed.
+                buildFrontendTask.usesService(tokenService)
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.usesService(tokenService)
                 }
