@@ -62,8 +62,10 @@ internal abstract class BuildFrontendTokenService
     }
 
     /**
-     * Called by Gradle when the build finishes. Deletes the production
-     * token file so IDE runs default to development mode.
+     * Called by Gradle after all tasks that declared [usesService] for
+     * this service have completed (including jar/war packaging tasks).
+     * Deletes the production token so IDE runs default to development
+     * mode.
      */
     override fun close() {
         val tokenFile = File(parameters.getTokenFilePath().get())

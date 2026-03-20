@@ -133,6 +133,11 @@ public class FlowPlugin : Plugin<Project> {
                 }
                 buildFrontendTask.usesService(tokenService)
                 (buildFrontendTask as VaadinBuildFrontendTask).tokenService.set(tokenService)
+                // Jar/War tasks also use the service so that close()
+                // only fires after packaging is complete.
+                project.tasks.withType(Jar::class.java) { task: Jar ->
+                    task.usesService(tokenService)
+                }
             }
         }
     }
