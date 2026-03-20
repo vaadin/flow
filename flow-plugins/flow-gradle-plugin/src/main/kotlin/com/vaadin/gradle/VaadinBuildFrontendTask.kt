@@ -74,8 +74,8 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     @get:Internal
     internal abstract val adapter: Property<GradlePluginAdapter>
 
-    @get:Internal
-    internal abstract val tokenService: Property<BuildFrontendTokenService>
+    @ServiceReference("vaadinBuildFrontendToken")
+    internal abstract fun getTokenService(): Property<BuildFrontendTokenService>
 
     @ServiceReference
     internal abstract fun getSvc(): Property<FrontendToolService>
@@ -202,7 +202,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         // The service restores the token from a cached copy if it was
         // deleted by a previous build's cleanup, and deletes it when
         // the build finishes so IDE runs default to development mode.
-        buildInfoFileHash.set(tokenService.map { svc ->
+        buildInfoFileHash.set(getTokenService().map { svc ->
             svc.ensureTokenAndComputeHash()
         })
     }
@@ -273,6 +273,10 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         if (tokenFile.exists()) {
             tokenFile.copyTo(cachedTokenFile, overwrite = true)
         }
+
+        // Persist the hash so subsequent builds use the exact same
+        // value for up-to-date checking without re-reading file content.
+        getTokenService().get().cacheHash()
     }
 
 

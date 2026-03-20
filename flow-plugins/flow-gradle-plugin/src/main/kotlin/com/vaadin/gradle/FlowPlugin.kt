@@ -117,6 +117,7 @@ public class FlowPlugin : Plugin<Project> {
 
             // Register a build service that restores the production token
             // file before builds and cleans it up when the build finishes.
+            // The service is looked up by @ServiceReference on the task.
             if (config.productionMode.get()) {
                 val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
                 val tokenService = project.gradle.sharedServices.registerIfAbsent(
@@ -131,8 +132,6 @@ public class FlowPlugin : Plugin<Project> {
                             VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE).absolutePath
                     )
                 }
-                buildFrontendTask.usesService(tokenService)
-                (buildFrontendTask as VaadinBuildFrontendTask).tokenService.set(tokenService)
                 // Jar/War tasks also use the service so that close()
                 // only fires after packaging is complete.
                 project.tasks.withType(Jar::class.java) { task: Jar ->
