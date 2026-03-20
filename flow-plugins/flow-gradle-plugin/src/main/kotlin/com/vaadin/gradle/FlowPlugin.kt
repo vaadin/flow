@@ -75,6 +75,13 @@ public class FlowPlugin : Plugin<Project> {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
+                    // Restore the production token before packaging in
+                    // case it was deleted by a previous build's cleanup.
+                    task.doFirst {
+                        val svc = (project.tasks.getByName("vaadinBuildFrontend")
+                            as VaadinBuildFrontendTask).getTokenService().orNull
+                        svc?.ensureToken()
+                    }
                 }
             } else {
                 // In development mode, processResources copies stuff from

@@ -22,13 +22,16 @@ import org.gradle.api.services.BuildServiceParameters
 
 /**
  * A shared build service that manages the `flow-build-info.json` token
- * file lifecycle.
+ * file lifecycle during production builds.
  *
- * Before the build (during input evaluation), the service restores the
- * production token from a cached copy if the original has been deleted
- * (e.g. by a previous build's cleanup). After the build completes,
- * [close] deletes the token so that running the application from an IDE
- * does not pick up a stale `productionMode=true` token.
+ * [ensureToken] restores the production token from a cached copy when
+ * the original has been deleted by a previous build's [close] call.
+ * This is called from jar/war `doFirst` so the token is available for
+ * packaging even when `vaadinBuildFrontend` is UP_TO_DATE.
+ *
+ * [close] is called by Gradle after all tasks that declared
+ * `usesService` have completed (including jar/war). It deletes the
+ * token so IDE runs default to development mode.
  *
  * The cached copy in the build directory
  * ([VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE]) is written by the
@@ -38,10 +41,6 @@ import org.gradle.api.services.BuildServiceParameters
 internal abstract class BuildFrontendTokenService
     : BuildService<BuildFrontendTokenService.Parameters>, AutoCloseable {
 
-    companion object {
-        private const val HASH_FILE_SUFFIX = ".hash"
-    }
-
     interface Parameters : BuildServiceParameters {
         /** Absolute path to the token file in build/resources/main/. */
         fun getTokenFilePath(): Property<String>
@@ -49,49 +48,21 @@ internal abstract class BuildFrontendTokenService
         fun getCachedTokenFilePath(): Property<String>
     }
 
-    private fun hashFile(): File =
-        File(parameters.getCachedTokenFilePath().get() + HASH_FILE_SUFFIX)
-
     /**
-     * Ensures the token file exists by restoring it from the cached
-     * copy if needed. Returns the cached hash from the previous build
-     * so that identical builds produce the same value without depending
-     * on the exact file content.
+     * Restores the production token file from the cached copy if the
+     * original has been deleted (e.g. by a previous build's [close]).
      */
-    fun ensureTokenAndComputeHash(): String {
+    fun ensureToken() {
         val tokenFile = File(parameters.getTokenFilePath().get())
         val cachedFile = File(parameters.getCachedTokenFilePath().get())
         if (!tokenFile.exists() && cachedFile.exists()) {
             tokenFile.parentFile.mkdirs()
             cachedFile.copyTo(tokenFile, overwrite = true)
         }
-        // Return the persisted hash from the previous build if available,
-        // so the value is stable across builds even if the token file
-        // content has minor non-deterministic differences.
-        val hf = hashFile()
-        if (hf.exists()) {
-            return hf.readText()
-        }
-        return if (tokenFile.exists())
-            tokenFile.readText().hashCode().toString()
-        else ""
     }
 
     /**
-     * Persists the content hash of the current token file so that
-     * subsequent builds can use the same value for up-to-date checking.
-     */
-    fun cacheHash() {
-        val tokenFile = File(parameters.getTokenFilePath().get())
-        if (tokenFile.exists()) {
-            val hf = hashFile()
-            hf.parentFile.mkdirs()
-            hf.writeText(tokenFile.readText().hashCode().toString())
-        }
-    }
-
-    /**
-     * Called by Gradle after all tasks that declared [usesService] for
+     * Called by Gradle after all tasks that declared `usesService` for
      * this service have completed (including jar/war packaging tasks).
      * Deletes the production token so IDE runs default to development
      * mode.

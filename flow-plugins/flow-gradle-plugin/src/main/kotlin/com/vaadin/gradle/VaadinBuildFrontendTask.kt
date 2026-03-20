@@ -67,8 +67,8 @@ import org.gradle.api.tasks.bundling.Jar
 @CacheableTask
 public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
-    internal companion object {
-        const val CACHED_BUILD_INFO_FILE = "cached-flow-build-info.json"
+    public companion object {
+        public const val CACHED_BUILD_INFO_FILE: String = "cached-flow-build-info.json"
     }
 
     @get:Internal
@@ -104,16 +104,6 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     @get:Internal
     internal abstract val dependencyJarFiles: ConfigurableFileCollection
-
-    /**
-     * Content hash of the `flow-build-info.json` token file, computed
-     * by [BuildFrontendTokenService]. If the token was deleted (e.g. by
-     * the service's post-build cleanup), the service restores it from a
-     * cached copy. If no cached copy exists (first build), the hash is
-     * empty and the task runs unconditionally.
-     */
-    @get:Input
-    internal abstract val buildInfoFileHash: Property<String>
 
     /**
      * A lightweight fingerprint of the dependency JARs on the classpath.
@@ -197,14 +187,6 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 .sortedBy { it.name }
                 .joinToString("\n") { "${it.name}:${it.length()}" }
         })
-
-        // Compute the token file content hash via the build service.
-        // The service restores the token from a cached copy if it was
-        // deleted by a previous build's cleanup, and deletes it when
-        // the build finishes so IDE runs default to development mode.
-        buildInfoFileHash.set(getTokenService().map { svc ->
-            svc.ensureTokenAndComputeHash()
-        })
     }
 
     @TaskAction
@@ -273,10 +255,6 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         if (tokenFile.exists()) {
             tokenFile.copyTo(cachedTokenFile, overwrite = true)
         }
-
-        // Persist the hash so subsequent builds use the exact same
-        // value for up-to-date checking without re-reading file content.
-        getTokenService().get().cacheHash()
     }
 
 

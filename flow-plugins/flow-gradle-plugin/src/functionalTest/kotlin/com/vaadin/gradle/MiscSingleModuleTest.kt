@@ -805,10 +805,11 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         build2.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was re-created
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        expect(true) { tokenFile.exists() }
-        val newTokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token was re-created (read from the cached copy since
+        // the build service deletes the original after the build)
+        val cachedTokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
+        expect(true) { cachedTokenFile.exists() }
+        val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
