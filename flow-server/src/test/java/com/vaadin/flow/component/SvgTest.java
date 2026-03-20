@@ -27,21 +27,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SvgTest {
 
     @Test
-    public void attachedToElement() {
+    void attachedToElement() {
         // This will throw an assertion error if the element is not attached to
         // the component
         new Svg("<svg></svg>").getParent();
     }
 
     @Test
-    public void nullStream() {
+    void nullStream() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Svg((InputStream) null);
         });
     }
 
     @Test
-    public void text() {
+    void text() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Svg("hello");
         });
@@ -72,19 +72,19 @@ class SvgTest {
             </svg>""";
 
     @Test
-    public void simpleSvg() {
+    void simpleSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
         assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }
 
     @Test
-    public void withDocType() {
+    void withDocType() {
         Svg svg = new Svg(SVG_WITH_DOCTYPE_ET_AL);
         assertTrue(getSvgDocumentBody(svg).startsWith("<svg"));
     }
 
     @Test
-    public void resetSvg() {
+    void resetSvg() {
         Svg svg = new Svg(TRIVIAL_SVG);
         assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
         svg.setSvg(TRIVIAL_SVG2);
@@ -92,7 +92,7 @@ class SvgTest {
     }
 
     @Test
-    public void fromStream() {
+    void fromStream() {
         Svg svg = new Svg(new ByteArrayInputStream(TRIVIAL_SVG.getBytes()));
         assertEquals(TRIVIAL_SVG, getSvgDocumentBody(svg));
     }

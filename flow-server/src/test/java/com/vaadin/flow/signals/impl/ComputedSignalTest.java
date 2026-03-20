@@ -29,6 +29,8 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
@@ -38,20 +40,25 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ComputedSignalTest extends SignalTestBase {
+/*
+ * The original computed signal was also a cached signal. For historical
+ * reasons, this class tests both cached signals and the "new" computed signals
+ * that do no caching.
+ */
+class ComputedSignalTest extends SignalTestBase {
 
     @Test
-    void value_constantCallback_throws() {
-        Signal<String> signal = Signal.computed(() -> "const");
+    void cached_constantCallback_throws() {
+        Signal<String> signal = Signal.cached(() -> "const");
         assertThrows(MissingSignalUsageException.class, signal::peek);
     }
 
     @Test
-    void value_constantCallback_runOnceAndConstantSignalValue() {
+    void cached_constantCallback_runOnceAndConstantSignalValue() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
         Signal<@Nullable Object> signal = Signal
-                .<@Nullable Object> computed(() -> {
+                .<@Nullable Object> cached(() -> {
                     dependency.get();
                     count.incrementAndGet();
                     return null;
@@ -65,7 +72,31 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void value_readSignal_runLazily() {
+    void cached_readSignal_runLazily() {
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
+
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal<String> signal = Signal.cached(() -> {
+            String value = source.get();
+            invocations.add(value);
+            return value;
+        });
+
+        assertEquals(List.of(), invocations);
+
+        assertEquals("value", signal.peek());
+        assertEquals(List.of("value"), invocations);
+
+        source.set("update");
+        assertEquals(List.of("value"), invocations);
+
+        assertEquals("update", signal.peek());
+        assertEquals(List.of("value", "update"), invocations);
+    }
+
+    @Test
+    void computed_readSignal_runLazily() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         ArrayList<String> invocations = new ArrayList<>();
@@ -89,11 +120,28 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void value_noOpChange_notRunAgain() {
+    void computed_noChange_runAgain() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<String> signal = Signal.computed(() -> {
+            count.incrementAndGet();
+            return source.get();
+        });
+
+        signal.peek();
+        assertEquals(1, count.intValue());
+
+        signal.peek();
+        assertEquals(2, count.intValue());
+    }
+
+    @Test
+    void cached_noOpChange_notRunAgain() {
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<String> signal = Signal.cached(() -> {
             count.incrementAndGet();
             return source.get();
         });
@@ -108,12 +156,12 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void map_mapComputedSignal_valueIsMapped() {
+    void map_mapCachedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<Integer> computed = Signal.computed(() -> source.get().length());
+        Signal<Integer> cached = Signal.cached(() -> source.get().length());
 
-        Signal<Integer> doubled = computed.map(l -> l * 2);
+        Signal<Integer> doubled = cached.map(l -> l * 2);
 
         assertEquals(10, doubled.peek());
     }
@@ -165,7 +213,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<@Nullable String> signal = Signal
-                .<@Nullable String> computed((() -> {
+                .<@Nullable String> cached((() -> {
                     dependency.get();
                     other.set("update");
                     return null;
@@ -182,7 +230,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
-        Signal<String> signal = Signal.computed(() -> {
+        Signal<String> signal = Signal.cached(() -> {
             count.incrementAndGet();
             return source.get();
         });
@@ -206,7 +254,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> source = new SharedValueSignal<>("value1");
         AtomicInteger count = new AtomicInteger();
 
-        Signal<Integer> signal = Signal.computed(() -> {
+        Signal<Integer> signal = Signal.cached(() -> {
             count.incrementAndGet();
             return source.get().length();
         });
@@ -234,7 +282,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         AtomicInteger computeCount = new AtomicInteger();
-        Signal<String> signal = Signal.computed(() -> {
+        Signal<String> signal = Signal.cached(() -> {
             computeCount.incrementAndGet();
             return source.get();
         });
@@ -253,10 +301,10 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void effect_closedEffect_computedGarbageCollected() {
+    void effect_closedEffect_cachedGarbageCollected() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
-        Signal<String> signal = Signal.computed(() -> source.get());
+        Signal<String> signal = Signal.cached(() -> source.get());
 
         ArrayList<String> invocations = new ArrayList<>();
 
@@ -290,7 +338,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
-        Signal<String> signal = Signal.computed(() -> {
+        Signal<String> signal = Signal.cached(() -> {
             count.incrementAndGet();
             return source.get();
         });
@@ -314,7 +362,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
-        Signal<String> signal = Signal.computed(() -> {
+        Signal<String> signal = Signal.cached(() -> {
             count.incrementAndGet();
             return source.get();
         });
@@ -332,19 +380,116 @@ public class ComputedSignalTest extends SignalTestBase {
         });
 
         /*
-         * Count is 3 because the computed signal's dependency was captured with
+         * Count is 3 because the cached signal's dependency was captured with
          * the in-transaction value ("update"). After the rejected transaction,
          * the submitted value is still "value", which differs from the captured
-         * value, so the computed signal must recompute.
+         * value, so the cached signal must recompute.
          */
         assertEquals("value", signal.peek());
         assertEquals(3, count.get());
     }
 
     @Test
+    void lambda_getLocalValueSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ValueSignal<>(2);
+
+        Signal<Integer> computed = () -> shared.get() + local.get();
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ValueSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void cached_getLocalValueSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ValueSignal<>(2);
+
+        Signal<Integer> cached = Signal
+                .cached(() -> shared.get() + local.get());
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(cached.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ValueSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void lambda_getLocalListSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ListSignal<Integer>();
+        local.insertFirst(2);
+
+        Signal<Integer> computed = () -> shared.get()
+                + local.get().get(0).get();
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(computed.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ListSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
+    void cached_getLocalListSignalExplicitTransaction_doNotThrow() {
+        var shared = new SharedValueSignal<>(1);
+        var local = new ListSignal<Integer>();
+        local.insertFirst(2);
+
+        Signal<Integer> cached = Signal
+                .cached(() -> shared.get() + local.get().get(0).peek());
+
+        AtomicInteger count = new AtomicInteger();
+        Signal.unboundEffect(() -> {
+            count.set(cached.get());
+        });
+
+        assertEquals(3, count.get());
+
+        // ListSignal update should not throw IllegalStateException.
+        // Update runs in an explicit transaction.
+        shared.update(x -> x + 1);
+        assertEquals(4, count.get());
+        // Verify that set also works
+        shared.set(shared.peek() + 1);
+        assertEquals(5, count.get());
+    }
+
+    @Test
     void unsuppotedOperations_runOperations_throws() {
         AbstractSharedSignal<Object> signal = (AbstractSharedSignal<Object>) Signal
-                .computed(() -> null);
+                .cached(() -> null);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peekConfirmed();
@@ -380,7 +525,7 @@ public class ComputedSignalTest extends SignalTestBase {
         SharedValueSignal<Boolean> shouldThrow = new SharedValueSignal<>(false);
 
         AtomicInteger count = new AtomicInteger();
-        Signal<Boolean> computed = Signal.computed(() -> {
+        Signal<Boolean> cached = Signal.cached(() -> {
             count.incrementAndGet();
             if (shouldThrow.get()) {
                 throw new RuntimeException("Expected exception");
@@ -388,18 +533,18 @@ public class ComputedSignalTest extends SignalTestBase {
                 return shouldThrow.get();
             }
         });
-        assertFalse(computed.peek());
+        assertFalse(cached.peek());
         assertEquals(1, count.get());
 
         shouldThrow.set(true);
-        assertThrows(RuntimeException.class, () -> computed.peek());
+        assertThrows(RuntimeException.class, () -> cached.peek());
         assertEquals(2, count.get());
 
-        assertThrows(RuntimeException.class, () -> computed.peek());
+        assertThrows(RuntimeException.class, () -> cached.peek());
         assertEquals(2, count.get(), "Exception should be cached");
 
         shouldThrow.set(false);
-        assertFalse(computed.peek());
+        assertFalse(cached.peek());
         assertEquals(3, count.get());
     }
 

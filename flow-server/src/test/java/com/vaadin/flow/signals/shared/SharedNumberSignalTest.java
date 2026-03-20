@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SharedNumberSignalTest extends SignalTestBase {
+class SharedNumberSignalTest extends SignalTestBase {
     @Test
     void constructor_noArgs_zeroValue() {
         SharedNumberSignal signal = new SharedNumberSignal();

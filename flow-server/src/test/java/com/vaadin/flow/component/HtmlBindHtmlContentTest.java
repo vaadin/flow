@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
     @Test
-    public void bindHtmlContent_componentAttachedBefore_bindingActive() {
+    void bindHtmlContent_componentAttachedBefore_bindingActive() {
         Html html = new Html("<div id='a'>init</div>");
         // attach before bind
         UI.getCurrent().add(html);
@@ -44,7 +44,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_componentAttachedAfter_bindingActive() {
+    void bindHtmlContent_componentAttachedAfter_bindingActive() {
         Html html = new Html("<div id='a'>init</div>");
         ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
@@ -58,7 +58,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_componentAttached_bindingActive_updatesOnChange() {
+    void bindHtmlContent_componentAttached_bindingActive_updatesOnChange() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
 
@@ -75,21 +75,24 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_componentNotAttached_bindingInactive() {
+    void bindHtmlContent_componentNotAttached_bindingInactive() {
         Html html = new Html("<div id='a'>init</div>");
         ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
-        // change ignored while not attached
-        signal.set("<div id='c'>ignored</div>");
+        // Probe runs immediately at bind time, applying the signal value
+        assertEquals("after", html.getInnerHtml());
+        assertEquals("b", html.getElement().getAttribute("id"));
 
-        assertEquals("init", html.getInnerHtml());
-        assertEquals("a", html.getElement().getAttribute("id"));
+        // Changes while detached are ignored (effect is passivated)
+        signal.set("<div id='c'>ignored</div>");
+        assertEquals("after", html.getInnerHtml());
+        assertEquals("b", html.getElement().getAttribute("id"));
     }
 
     @Test
-    public void bindHtmlContent_componentDetached_bindingInactive() {
+    void bindHtmlContent_componentDetached_bindingInactive() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
         ValueSignal<String> signal = new ValueSignal<>(
@@ -106,7 +109,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_componentReAttached_bindingActivate() {
+    void bindHtmlContent_componentReAttached_bindingActivate() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
         ValueSignal<String> signal = new ValueSignal<>(
@@ -125,7 +128,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_withNullValue_recordsErrorAndDoesNotChange() {
+    void bindHtmlContent_withNullValue_recordsErrorAndDoesNotChange() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
         ValueSignal<String> signal = new ValueSignal<>(
@@ -148,7 +151,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_nullSignal_throwsNPE() {
+    void bindHtmlContent_nullSignal_throwsNPE() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
 
@@ -157,7 +160,7 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindHtmlContent_setterAndRebindWhileActive_throwException() {
+    void bindHtmlContent_setterAndRebindWhileActive_throwException() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
         ValueSignal<String> signal = new ValueSignal<>(

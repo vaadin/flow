@@ -98,7 +98,7 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public SignalBinding<?> bind(String name, Signal<String> signal) {
+    public SignalBinding<String> bind(String name, Signal<String> signal) {
         ElementUtil.validateStylePropertyName(name);
         String attribute = StyleUtil.stylePropertyToAttribute(name);
         Element owner = Element.get(propertyMap.getNode());

@@ -22,11 +22,9 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
@@ -38,11 +36,12 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TaskUpdateSettingsFileTest {
+class TaskUpdateSettingsFileTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private Options options;
 
@@ -54,18 +53,18 @@ public class TaskUpdateSettingsFileTest {
             "devBundleStatsOutput", "jarResourcesFolder",
             "clientServiceWorkerSource");
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         ClassFinder finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        buildDirectory = temporaryFolder.newFolder("target");
-        options = new MockOptions(finder, temporaryFolder.getRoot())
+        buildDirectory = new File(temporaryFolder, "target");
+        options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory("target").withJarFrontendResourcesFolder(
-                        temporaryFolder.newFolder("resources"));
+                        new File(temporaryFolder, "resources"));
     }
 
     @Test
-    public void execute_withWebappResourcesDirectory_useAbsolutePaths()
+    void execute_withWebappResourcesDirectory_useAbsolutePaths()
             throws IOException {
 
         options.withBuildResultFolders(
@@ -81,7 +80,7 @@ public class TaskUpdateSettingsFileTest {
     }
 
     @Test
-    public void execute_withoutWebappResourcesDirectory_useAbsolutePaths()
+    void execute_withoutWebappResourcesDirectory_useAbsolutePaths()
             throws IOException {
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 options, "theme", new PwaConfiguration());
@@ -91,7 +90,7 @@ public class TaskUpdateSettingsFileTest {
     }
 
     private JsonNode readSettingsFile() throws IOException {
-        File settings = new File(temporaryFolder.getRoot(),
+        File settings = new File(temporaryFolder,
                 "target/" + DEV_SETTINGS_FILE);
         JsonNode settingsJson = JacksonUtils.readTree(
                 IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
@@ -101,12 +100,9 @@ public class TaskUpdateSettingsFileTest {
     private void assertPathsMatchProjectFolder(JsonNode json) {
         ABSOLUTE_PATH_ENTRIES.forEach(key -> {
             String path = json.get(key).asString();
-            Assert.assertTrue(
+            assertTrue(Paths.get(path).startsWith(temporaryFolder.getPath()),
                     "Expected '" + key + "' to have an absolute path matching "
-                            + temporaryFolder.getRoot().getPath() + ", but was "
-                            + path,
-                    Paths.get(path)
-                            .startsWith(temporaryFolder.getRoot().getPath()));
+                            + temporaryFolder.getPath() + ", but was " + path);
         });
     }
 

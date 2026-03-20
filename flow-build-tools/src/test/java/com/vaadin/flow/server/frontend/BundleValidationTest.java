@@ -19,23 +19,18 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
@@ -61,9 +56,12 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@RunWith(Parameterized.class)
-public class BundleValidationTest {
+class BundleValidationTest {
 
     public static final String BLANK_PACKAGE_JSON_WITH_HASH = "{\n \"dependencies\": {}, \"vaadin\": { \"hash\": \"a5\"} \n}";
 
@@ -88,17 +86,15 @@ public class BundleValidationTest {
 
     }
 
-    @Parameterized.Parameters
-    public static Collection<Mode> modes() {
-        return List.of(Mode.PRODUCTION_PRECOMPILED_BUNDLE,
+    static Stream<Mode> modes() {
+        return Stream.of(Mode.PRODUCTION_PRECOMPILED_BUNDLE,
                 Mode.DEVELOPMENT_BUNDLE);
     }
 
-    @Parameterized.Parameter
-    public Mode mode;
+    private Mode mode;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    File temporaryFolder;
 
     private Options options;
 
@@ -118,16 +114,13 @@ public class BundleValidationTest {
 
     private String bundleLocation;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        options = new MockOptions(finder, temporaryFolder.getRoot())
+        options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
-        options.withProductionMode(mode.isProduction());
-        bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
-                : Constants.DEV_BUNDLE_NAME;
         frontendBuildUtils = Mockito.mockStatic(FrontendBuildUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
@@ -140,8 +133,15 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
     }
 
-    @After
-    public void teardown() {
+    private void setupMode(Mode mode) {
+        this.mode = mode;
+        options.withProductionMode(mode.isProduction());
+        bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
+                : Constants.DEV_BUNDLE_NAME;
+    }
+
+    @AfterEach
+    void teardown() {
         frontendBuildUtils.close();
         devBundleUtils.close();
         prodBundleUtils.close();
@@ -193,34 +193,39 @@ public class BundleValidationTest {
         return stats;
     }
 
-    @Test
-    public void noDevBundle_bundleCompilationRequires() {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noDevBundle_bundleCompilationRequires(Mode mode) {
+        setupMode(mode);
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 Mockito.mock(FrontendDependenciesScanner.class), mode);
-        Assert.assertTrue("Bundle should require creation if not available",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Bundle should require creation if not available");
     }
 
-    @Test
-    public void devBundleStatsJsonMissing_bundleCompilationRequires() {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void devBundleStatsJsonMissing_bundleCompilationRequires(Mode mode) {
+        setupMode(mode);
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
+                .thenReturn(temporaryFolder);
         devBundleUtils.when(() -> DevBundleUtils
-                .findBundleStatsJson(temporaryFolder.getRoot(), "target"))
+                .findBundleStatsJson(temporaryFolder, "target"))
                 .thenReturn(null);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 Mockito.mock(FrontendDependenciesScanner.class), mode);
-        Assert.assertTrue("Missing stats.json should require bundling",
-                needsBuild);
+        assertTrue(needsBuild, "Missing stats.json should require bundling");
     }
 
-    @Test
-    public void hashesMatch_noNpmPackages_noCompilationRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_noNpmPackages_noCompilationRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
@@ -240,16 +245,18 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Matching hashes should not require compilation",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Matching hashes should not require compilation");
     }
 
-    @Test
-    public void loadDependenciesOnStartup_annotatedClassInProject_compilationRequiredForProduction()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void loadDependenciesOnStartup_annotatedClassInProject_compilationRequiredForProduction(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
@@ -273,16 +280,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "'LoadDependenciesOnStartup' annotation requires build",
-                needsBuild);
+        assertTrue(needsBuild,
+                "'LoadDependenciesOnStartup' annotation requires build");
     }
 
-    @Test
-    public void hashesMatch_statsMissingNpmPackages_compilationRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_statsMissingNpmPackages_compilationRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
@@ -304,15 +312,16 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Missing npmPackage should require bundling",
-                needsBuild);
+        assertTrue(needsBuild, "Missing npmPackage should require bundling");
     }
 
-    @Test
-    public void hashesMatch_statsMissingPackageJsonPackage_compilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_statsMissingPackageJsonPackage_compilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -340,15 +349,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Bundle missing module dependency should rebuild",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Bundle missing module dependency should rebuild");
     }
 
-    @Test
-    public void hashesMatch_packageJsonMissingNpmPackages_statsHasJsonPackages_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_packageJsonMissingNpmPackages_statsHasJsonPackages_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"dependencies\": {"
@@ -370,16 +381,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Not missing npmPackage in stats.json should not require compilation",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Not missing npmPackage in stats.json should not require compilation");
     }
 
-    @Test
-    public void packageJsonContainsOldVersion_versionsJsonUpdates_noCompilation()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void packageJsonContainsOldVersion_versionsJsonUpdates_noCompilation(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -396,7 +408,7 @@ public class BundleValidationTest {
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        File versions = new File(temporaryFolder.getRoot(),
+        File versions = new File(temporaryFolder,
                 Constants.VAADIN_CORE_VERSIONS_JSON);
         versions.createNewFile();
         FileUtils.write(versions, """
@@ -423,16 +435,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "vaadin-core-versions.json should have updated version to expected.",
-                needsBuild);
+        assertFalse(needsBuild,
+                "vaadin-core-versions.json should have updated version to expected.");
     }
 
-    @Test
-    public void packageJsonContainsOldVersionsAfterVersionUpdate_updatedStatsMatches_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void packageJsonContainsOldVersionsAfterVersionUpdate_updatedStatsMatches_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -464,16 +477,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Not missing npmPackage in stats.json should not require compilation",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Not missing npmPackage in stats.json should not require compilation");
     }
 
-    @Test
-    public void noPackageJsonHashAfterCleanFrontend_statsHasDefaultJsonPackages_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noPackageJsonHashAfterCleanFrontend_statsHasDefaultJsonPackages_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -506,16 +520,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Not missing npmPackage in stats.json should not require compilation",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Not missing npmPackage in stats.json should not require compilation");
     }
 
-    @Test
-    public void noPackageJsonHashAfterCleanFrontend_statsMissingDefaultJsonPackages_compilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noPackageJsonHashAfterCleanFrontend_statsMissingDefaultJsonPackages_compilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -542,16 +557,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Missing npmPackage in stats.json should require compilation",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Missing npmPackage in stats.json should require compilation");
     }
 
-    @Test
-    public void hashesMatch_packageJsonHasRange_statsHasFixed_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_packageJsonHasRange_statsHasFixed_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -578,16 +594,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Not missing npmPackage in stats.json should not require compilation",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Not missing npmPackage in stats.json should not require compilation");
     }
 
-    @Test
-    public void hashesMatch_packageJsonHasTildeRange_statsHasNewerFixed_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_packageJsonHasTildeRange_statsHasNewerFixed_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -614,24 +631,25 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("No compilation if tilde range only patch update",
-                needsBuild);
+        assertFalse(needsBuild,
+                "No compilation if tilde range only patch update");
 
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
                 .put("@vaadin/router", "1.8.1");
         setupFrontendUtilsMock(stats);
 
         needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
-        Assert.assertTrue(
-                "Compilation required if minor version change for tilde range",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Compilation required if minor version change for tilde range");
     }
 
-    @Test
-    public void hashesMatch_packageJsonHasCaretRange_statsHasNewerFixed_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void hashesMatch_packageJsonHasCaretRange_statsHasNewerFixed_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -658,25 +676,25 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "No compilation if caret range only minor version update",
-                needsBuild);
+        assertFalse(needsBuild,
+                "No compilation if caret range only minor version update");
 
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
                 .put("@vaadin/router", "2.0.0");
         setupFrontendUtilsMock(stats);
 
         needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
-        Assert.assertTrue(
-                "Compilation required if major version change for caret range",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Compilation required if major version change for caret range");
     }
 
-    @Test
-    public void packageJsonHasOldPlatformDependencies_statsDoesNotHaveThem_noCompilationRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void packageJsonHasOldPlatformDependencies_statsDoesNotHaveThem_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -708,13 +726,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("No compilation expected if package.json has "
-                + "only dependencies from older Vaadin version not "
-                + "presenting in a newer version", needsBuild);
+        assertFalse(needsBuild,
+                "No compilation expected if package.json has "
+                        + "only dependencies from older Vaadin version not "
+                        + "presenting in a newer version");
     }
 
-    @Test
-    public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded() {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded(
+            Mode mode) {
+        setupMode(mode);
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -736,12 +758,15 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Default package.json should be built and validated",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Default package.json should be built and validated");
     }
 
-    @Test
-    public void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded() {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded(
+            Mode mode) {
+        setupMode(mode);
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -761,13 +786,14 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Missing NpmPackage with default bundle should require rebuild",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Missing NpmPackage with default bundle should require rebuild");
     }
 
-    @Test
-    public void noPackageJson_defaultPackagesInStats_noBuildNeeded() {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noPackageJson_defaultPackagesInStats_noBuildNeeded(Mode mode) {
+        setupMode(mode);
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(depScanner.getPackages())
@@ -787,15 +813,17 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Default package.json should be built and validated",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Default package.json should be built and validated");
     }
 
-    @Test
-    public void generatedFlowImports_bundleMissingImports_buildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void generatedFlowImports_bundleMissingImports_buildRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -831,15 +859,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Compilation required as stats.json missing import",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Compilation required as stats.json missing import");
     }
 
-    @Test
-    public void generatedFlowImports_bundleHasAllImports_noBuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void generatedFlowImports_bundleHasAllImports_noBuildRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -876,15 +906,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("All imports in stats, no compilation required",
-                needsBuild);
+        assertFalse(needsBuild,
+                "All imports in stats, no compilation required");
     }
 
-    @Test
-    public void themedGeneratedFlowImports_bundleUsesTheme_noBuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themedGeneratedFlowImports_bundleUsesTheme_noBuildRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -922,16 +954,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "All themed imports in stats, no compilation required",
-                needsBuild);
+        assertFalse(needsBuild,
+                "All themed imports in stats, no compilation required");
     }
 
-    @Test
-    public void frontendFileHashMatches_noBundleRebuild() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void frontendFileHashMatches_noBundleRebuild(Mode mode) throws IOException {
+        setupMode(mode);
         String fileContent = "TodoContent";
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -963,19 +996,20 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
+                .thenReturn(temporaryFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar fronted file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar fronted file content hash should match.");
     }
 
-    @Test
-    public void noFrontendFileHash_bundleRebuild() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noFrontendFileHash_bundleRebuild(Mode mode) throws IOException {
+        setupMode(mode);
         String fileContent = "TodoContent";
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -1003,28 +1037,28 @@ public class BundleValidationTest {
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
+                .thenReturn(temporaryFolder);
         frontendBuildUtils
                 .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.eq("TodoTemplate.js"),
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
-        devBundleUtils
-                .when(() -> DevBundleUtils.findBundleStatsJson(
-                        temporaryFolder.getRoot(), "target"))
+        devBundleUtils.when(() -> DevBundleUtils
+                .findBundleStatsJson(temporaryFolder, "target"))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Content should not have been validated.",
-                needsBuild);
+        assertTrue(needsBuild, "Content should not have been validated.");
     }
 
-    @Test
-    public void frontendFileHashMissmatch_bundleRebuild() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void frontendFileHashMissmatch_bundleRebuild(Mode mode) throws IOException {
+        setupMode(mode);
         String fileContent = "TodoContent2";
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -1054,34 +1088,34 @@ public class BundleValidationTest {
 
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
-                .thenReturn(temporaryFolder.getRoot());
+                .thenReturn(temporaryFolder);
         frontendBuildUtils
                 .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.eq("TodoTemplate.js"),
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
-        devBundleUtils
-                .when(() -> DevBundleUtils.findBundleStatsJson(
-                        temporaryFolder.getRoot(), "target"))
+        devBundleUtils.when(() -> DevBundleUtils
+                .findBundleStatsJson(temporaryFolder, "target"))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Jar fronted file content hash should not be a match.",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Jar fronted file content hash should not be a match.");
     }
 
-    @Test
-    public void cssImportWithInline_statsAndImportsMatchAndNoBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void cssImportWithInline_statsAndImportsMatchAndNoBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File stylesheetFile = new File(temporaryFolder.getRoot(),
+        File stylesheetFile = new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + "my-styles.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
-        Assert.assertTrue(created);
+        assertTrue(created);
         FileUtils.write(stylesheetFile, "body{color:yellow}",
                 StandardCharsets.UTF_8);
 
@@ -1102,13 +1136,14 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "CSS 'inline' suffix should be ignored for imports checking",
-                needsBuild);
+        assertFalse(needsBuild,
+                "CSS 'inline' suffix should be ignored for imports checking");
     }
 
-    @Test
-    public void projectFrontendFileChange_bundleRebuild() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectFrontendFileChange_bundleRebuild(Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
@@ -1128,13 +1163,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Project frontend file change should trigger rebuild",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Project frontend file change should trigger rebuild");
     }
 
-    @Test
-    public void projectFrontendFileNotChanged_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectFrontendFileNotChanged_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
@@ -1154,13 +1191,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "No bundle rebuild expected when no changes in frontend file",
-                needsBuild);
+        assertFalse(needsBuild,
+                "No bundle rebuild expected when no changes in frontend file");
     }
 
-    @Test
-    public void projectFrontendFileDeleted_bundleRebuild() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectFrontendFileDeleted_bundleRebuild(Mode mode)
+            throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1179,13 +1218,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Project frontend file delete should trigger rebuild",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Project frontend file delete should trigger rebuild");
     }
 
-    @Test
-    public void reusedTheme_noReusedThemes_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_noReusedThemes_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1198,23 +1239,24 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Shouldn't rebuild the bundle if no reused themes",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Shouldn't rebuild the bundle if no reused themes");
     }
 
-    @Test
-    public void reusedTheme_newlyAddedTheme_noThemeJson_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_newlyAddedTheme_noThemeJson_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         File jarWithTheme = TestUtils.getTestJar("jar-with-no-theme-json.jar");
         options.copyResources(Collections.singleton(jarWithTheme));
 
         // create custom-theme folder with no theme.json
-        File jarResourcesFolder = new File(temporaryFolder.getRoot(),
-                DEFAULT_FRONTEND_DIR
-                        + "generated/jar-resources/themes/custom-theme");
+        File jarResourcesFolder = new File(temporaryFolder, DEFAULT_FRONTEND_DIR
+                + "generated/jar-resources/themes/custom-theme");
         boolean created = jarResourcesFolder.mkdirs();
-        Assert.assertTrue(created);
+        assertTrue(created);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1223,14 +1265,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when the new theme has no theme.json",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not trigger a bundle rebuild when the new theme has no theme.json");
     }
 
-    @Test
-    public void reusedTheme_noPreviouslyAddedThemes_justAddedNewTheme_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_noPreviouslyAddedThemes_justAddedNewTheme_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         File jarWithTheme = TestUtils
@@ -1244,14 +1287,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should trigger a bundle rebuild when a new reusable theme is added",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should trigger a bundle rebuild when a new reusable theme is added");
     }
 
-    @Test
-    public void reusedTheme_previouslyAddedThemes_justAddedNewTheme_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_previouslyAddedThemes_justAddedNewTheme_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         File jarWithTheme = TestUtils
@@ -1268,14 +1312,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should trigger a bundle rebuild when a new reusable theme is added",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should trigger a bundle rebuild when a new reusable theme is added");
     }
 
-    @Test
-    public void reusedTheme_previouslyAddedThemes_assetsUpdate_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_previouslyAddedThemes_assetsUpdate_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         // Jar with 'line-awesome' assets
@@ -1304,14 +1349,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should trigger a bundle rebuild when the assets updated",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should trigger a bundle rebuild when the assets updated");
     }
 
-    @Test
-    public void reusedTheme_previouslyAddedThemes_noUpdates_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void reusedTheme_previouslyAddedThemes_noUpdates_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         File jarWithTheme = TestUtils
@@ -1343,14 +1389,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when the themes not changed",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not trigger a bundle rebuild when the themes not changed");
     }
 
-    @Test
-    public void themeJsonUpdates_statsHasNoThemeJson_projectHasThemeJson_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_statsHasNoThemeJson_projectHasThemeJson_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
@@ -1370,18 +1417,19 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json");
     }
 
-    @Test
-    public void themeJsonUpdates_containsParentTheme_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_containsParentTheme_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
                 "my-theme");
-        new File(temporaryFolder.getRoot(),
+        new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1400,14 +1448,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when parent theme is used",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not trigger a bundle rebuild when parent theme is used");
     }
 
-    @Test
-    public void themeJsonUpdates_statsHasThemeJson_projectHasNoThemeJson_noBundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_statsHasThemeJson_projectHasNoThemeJson_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1417,8 +1466,8 @@ public class BundleValidationTest {
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        new File(temporaryFolder.getRoot(),
-                DEFAULT_FRONTEND_DIR + "themes/my-theme").mkdirs();
+        new File(temporaryFolder, DEFAULT_FRONTEND_DIR + "themes/my-theme")
+                .mkdirs();
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
@@ -1428,14 +1477,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when project has no theme.json",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not trigger a bundle rebuild when project has no theme.json");
     }
 
-    @Test
-    public void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_statsAndProjectThemeJsonEquals_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("""
                 {
@@ -1479,14 +1529,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle");
     }
 
-    @Test
-    public void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_bundleMissesSomeEntries_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub(
                 """
@@ -1528,14 +1579,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should rebuild when project theme.json adds extra entries",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when project theme.json adds extra entries");
     }
 
-    @Test
-    public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("""
                 {
@@ -1569,15 +1621,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
+        assertFalse(needsBuild,
                 "Shouldn't re-bundle when the dev bundle already have all"
-                        + " the entries defined in the project's theme.json",
-                needsBuild);
+                        + " the entries defined in the project's theme.json");
     }
 
-    @Test
-    public void themeJsonUpdates_noProjectThemeHashInStats_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void themeJsonUpdates_noProjectThemeHashInStats_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
@@ -1596,15 +1649,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should trigger a bundle rebuild when project has theme"
-                        + ".json but stats doesn't",
-                needsBuild);
+                        + ".json but stats doesn't");
     }
 
-    @Test
-    public void parentThemeInFrontend_parentHasEntriesInJson_bundleMissesSomeEntries_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void parentThemeInFrontend_parentHasEntriesInJson_bundleMissesSomeEntries_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{ \"importCss\": [\"foo\"]}",
                 "parent-theme");
@@ -1626,187 +1680,204 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should rebuild when 'theme.json' from parent theme in "
-                        + "frontend folder adds extra entries",
-                needsBuild);
+                        + "frontend folder adds extra entries");
     }
 
-    @Test
-    public void projectThemeComponentsCSS_contentsAdded_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectThemeComponentsCSS_contentsAdded_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
                 false, false);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should rebuild when Shadow DOM Stylesheets are present "
                         + " in '" + DEFAULT_FRONTEND_DIR
-                        + "<theme>/components' folder",
-                needsBuild);
+                        + "<theme>/components' folder");
     }
 
-    @Test
-    public void projectThemeComponentsCSS_contentsChanged_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectThemeComponentsCSS_contentsChanged_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
                 true, true);
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents have changed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents have changed");
     }
 
-    @Test
-    public void projectThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectThemeComponentsCSS_contentsNotChanged_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
                 false, true);
-        Assert.assertFalse(
-                "Should not rebuild when Shadow DOM Stylesheets contents have not changed",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not rebuild when Shadow DOM Stylesheets contents have not changed");
     }
 
-    @Test
-    public void projectThemeComponentsCSS_removedFromProject_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectThemeComponentsCSS_removedFromProject_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForProjectThemeComponentsCSS(
                 false, true, "deleted-component-stylesheet.css");
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents have been removed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents have been removed");
     }
 
-    @Test
-    public void jarResourceThemeComponentsCSS_contentsAdded_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void jarResourceThemeComponentsCSS_contentsAdded_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
                 false, false);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should rebuild when Shadow DOM Stylesheets are present "
-                        + " in 'frontend/generated/jar-resources/<theme>/components' folder",
-                needsBuild);
+                        + " in 'frontend/generated/jar-resources/<theme>/components' folder");
     }
 
-    @Test
-    public void jarResourceThemeComponentsCSS_contentsChanged_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void jarResourceThemeComponentsCSS_contentsChanged_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
                 true, true);
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents have changed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents have changed");
     }
 
-    @Test
-    public void jarResourceThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void jarResourceThemeComponentsCSS_contentsNotChanged_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
                 false, true);
-        Assert.assertFalse(
-                "Should not rebuild when Shadow DOM Stylesheets contents have not changed",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not rebuild when Shadow DOM Stylesheets contents have not changed");
     }
 
-    @Test
-    public void jarResourceThemeComponentsCSS_removedFromProject_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void jarResourceThemeComponentsCSS_removedFromProject_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedThemeComponentsCSS(
                 false, true, "deleted-component-stylesheet.css");
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents have been removed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents have been removed");
     }
 
-    @Test
-    public void projectParentThemeComponentsCSS_contentsAdded_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentThemeComponentsCSS_contentsAdded_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
                 false, false);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should rebuild when Shadow DOM Stylesheets are present "
-                        + " in parent theme folder",
-                needsBuild);
+                        + " in parent theme folder");
     }
 
-    @Test
-    public void projectParentThemeComponentsCSS_contentsChanged_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentThemeComponentsCSS_contentsChanged_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
                 true, true);
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed");
     }
 
-    @Test
-    public void projectParentThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentThemeComponentsCSS_contentsNotChanged_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
                 false, true);
-        Assert.assertFalse(
-                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed");
     }
 
-    @Test
-    public void projectParentThemeComponentsCSS_removedFromProject_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentThemeComponentsCSS_removedFromProject_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForParentProjectThemeComponentsCSS(
                 false, true, "deleted-component-stylesheet.css");
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed");
     }
 
-    @Test
-    public void projectParentInJarThemeComponentsCSS_contentsAdded_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentInJarThemeComponentsCSS_contentsAdded_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
                 false, false);
-        Assert.assertTrue(
+        assertTrue(needsBuild,
                 "Should rebuild when Shadow DOM Stylesheets are present "
-                        + " in parent theme folder",
-                needsBuild);
+                        + " in parent theme folder");
     }
 
-    @Test
-    public void projectParentInJarThemeComponentsCSS_contentsChanged_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentInJarThemeComponentsCSS_contentsChanged_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
                 true, true);
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have changed");
     }
 
-    @Test
-    public void projectParentInJarThemeComponentsCSS_contentsNotChanged_noBundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentInJarThemeComponentsCSS_contentsNotChanged_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
                 false, true);
-        Assert.assertFalse(
-                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not rebuild when Shadow DOM Stylesheets contents in parent theme have not changed");
     }
 
-    @Test
-    public void projectParentInJarThemeComponentsCSS_removedFromProject_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectParentInJarThemeComponentsCSS_removedFromProject_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         boolean needsBuild = checkBundleRebuildForJarPackagedParentThemeComponentsCSS(
                 false, true, "deleted-component-stylesheet.css");
-        Assert.assertTrue(
-                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when Shadow DOM Stylesheets contents in parent theme have been removed");
     }
 
-    @Test
-    public void projectThemeComponentsCSS_noThemeJson_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void projectThemeComponentsCSS_noThemeJson_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         // Theme has components/ folder with CSS but no theme.json
         String cssTemplate = "[part=\"input-field\"]{background: %s; }";
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         // Create components CSS file without creating theme.json
         String themeLocation = "themes/my-theme/components/";
-        File stylesheetFile = new File(temporaryFolder.getRoot(),
+        File stylesheetFile = new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
@@ -1825,17 +1896,18 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should rebuild when theme has components CSS but no theme.json",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should rebuild when theme has components CSS but no theme.json");
     }
 
-    @Test
-    public void indexTsAdded_rebuildRequired() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void indexTsAdded_rebuildRequired(Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder
-                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -1851,16 +1923,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("Adding 'index.ts' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild, "Adding 'index.ts' should require bundling");
     }
 
-    @Test
-    public void changeInIndexTs_rebuildRequired() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void changeInIndexTs_rebuildRequired(Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {}, \"vaadin\": { \"hash\": \"aHash\"} }");
-        File frontendFolder = temporaryFolder
-                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -1878,21 +1951,21 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "'index.ts' equal content should not require bundling",
-                needsBuild);
+        assertFalse(needsBuild,
+                "'index.ts' equal content should not require bundling");
 
         FileUtils.write(indexTs, "window.alert('hello');",
                 StandardCharsets.UTF_8);
 
         needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
-        Assert.assertTrue(
-                "changed content for 'index.ts' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "changed content for 'index.ts' should require bundling");
     }
 
-    @Test
-    public void indexTsDeleted_rebuildRequired() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void indexTsDeleted_rebuildRequired(Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -1906,16 +1979,17 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue("'index.ts' delete should require re-bundling",
-                needsBuild);
+        assertTrue(needsBuild, "'index.ts' delete should require re-bundling");
     }
 
-    @Test
-    public void indexHtmlNotChanged_rebuildNotRequired() throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void indexHtmlNotChanged_rebuildNotRequired(Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder
-                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
         indexHtml.createNewFile();
@@ -1935,18 +2009,20 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Default 'index.html' should not require bundling",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Default 'index.html' should not require bundling");
     }
 
-    @Test
-    public void indexHtmlChanged_productionMode_rebuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void indexHtmlChanged_productionMode_rebuildRequired(Mode mode)
             throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder
-                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
         indexHtml.createNewFile();
@@ -1967,19 +2043,20 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "In production mode, custom 'index.html' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "In production mode, custom 'index.html' should require bundling");
     }
 
-    @Test
-    public void indexHtmlChanged_developmentMode_rebuildNotRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void indexHtmlChanged_developmentMode_rebuildNotRequired(Mode mode)
             throws IOException {
-        Assume.assumeFalse(mode.isProduction());
+        setupMode(mode);
+        assumeFalse(mode.isProduction());
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder
-                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        File frontendFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexHtml = new File(frontendFolder, FrontendUtils.INDEX_HTML);
         indexHtml.createNewFile();
@@ -2000,14 +2077,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "In dev mode, custom 'index.html' should not require bundling",
-                needsBuild);
+        assertFalse(needsBuild,
+                "In dev mode, custom 'index.html' should not require bundling");
     }
 
-    @Test
-    public void standardVaadinComponent_notAddedToProjectAsJar_noRebuildRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void standardVaadinComponent_notAddedToProjectAsJar_noRebuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2025,14 +2103,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Should not require bundling if component JS is missing in jar-resources",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Should not require bundling if component JS is missing in jar-resources");
     }
 
-    @Test
-    public void cssImport_cssInMetaInfResources_notThrow_bundleRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void cssImport_cssInMetaInfResources_notThrow_bundleRequired(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2052,14 +2131,15 @@ public class BundleValidationTest {
         // "Failed to find the following css files in the...."
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should re-bundle if CSS is imported from META-INF/resources",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should re-bundle if CSS is imported from META-INF/resources");
     }
 
-    @Test
-    public void flowFrontendPackageInPackageJson_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void flowFrontendPackageInPackageJson_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {\"@vaadin/flow-frontend\": \"./target/flow-frontend\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
@@ -2072,14 +2152,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json");
     }
 
-    @Test
-    public void localPackageInPackageJson_notChanged_noBundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void localPackageInPackageJson_notChanged_noBundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
@@ -2094,14 +2175,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "Shouldn't re-bundle when referencing local packages in package.json",
-                needsBuild);
+        assertFalse(needsBuild,
+                "Shouldn't re-bundle when referencing local packages in package.json");
     }
 
-    @Test
-    public void localPackageInPackageJson_differentReference_bundleRebuild()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void localPackageInPackageJson_differentReference_bundleRebuild(Mode mode)
             throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
@@ -2116,14 +2198,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should re-bundle when local packages have different values",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should re-bundle when local packages have different values");
     }
 
-    @Test
-    public void localPackageInPackageJson_parsableVersionInStats_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void localPackageInPackageJson_parsableVersionInStats_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
@@ -2138,14 +2221,15 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should re-bundle when local package in package.json but parsable version in stats",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should re-bundle when local package in package.json but parsable version in stats");
     }
 
-    @Test
-    public void localPackageInStats_parsableVersionInPackageJson_bundleRebuild()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void localPackageInStats_parsableVersionInPackageJson_bundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
         createPackageJsonStub(
                 "{\"dependencies\": {\"my-pkg\": \"1.0.0\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
 
@@ -2160,18 +2244,19 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Should re-bundle when local package in stats but parsable version in package.json",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Should re-bundle when local package in stats but parsable version in package.json");
     }
 
-    @Test
-    public void bundleMissesSomeEntries_devMode_skipBundleBuildSet_noBundleRebuild()
-            throws IOException {
-        Assume.assumeTrue(mode == Mode.DEVELOPMENT_BUNDLE);
+    @ParameterizedTest
+    @MethodSource("modes")
+    void bundleMissesSomeEntries_devMode_skipBundleBuildSet_noBundleRebuild(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode == Mode.DEVELOPMENT_BUNDLE);
         options.skipDevBundleBuild(true);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2198,28 +2283,31 @@ public class BundleValidationTest {
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Rebuild should be skipped", needsBuild);
+        assertFalse(needsBuild, "Rebuild should be skipped");
     }
 
-    @Test
-    public void forceProductionBundle_bundleRequired() {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void forceProductionBundle_bundleRequired(Mode mode) {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
 
         options.withForceProductionBuild(true);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 Mockito.mock(FrontendDependenciesScanner.class), mode);
-        Assert.assertTrue(
-                "Production bundle required due to force.production.bundle flag.",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Production bundle required due to force.production.bundle flag.");
     }
 
-    @Test
-    public void noDevFolder_compressedDevBundleExists_noBuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noDevFolder_compressedDevBundleExists_noBuildRequired(Mode mode)
             throws IOException {
-        Assume.assumeTrue(!mode.isProduction());
+        setupMode(mode);
+        assumeTrue(!mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2242,7 +2330,7 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
+        File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -2260,21 +2348,21 @@ public class BundleValidationTest {
         File statsFile = new File(configFolder, "stats.json");
         FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
-        DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                bundleSourceFolder);
+        DevBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar fronted file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar fronted file content hash should match.");
     }
 
-    @Test
-    public void compressedProdBundleExists_noBuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void compressedProdBundleExists_noBuildRequired(Mode mode)
             throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2297,7 +2385,7 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
+        File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -2315,19 +2403,19 @@ public class BundleValidationTest {
         File statsFile = new File(configFolder, "stats.json");
         FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
-        ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                bundleSourceFolder);
+        ProdBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar fronted file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar fronted file content hash should match.");
     }
 
-    @Test
-    public void noFileBundleOrJar_compressedBundleExists_noBuildRequired()
+    @ParameterizedTest
+    @MethodSource("modes")
+    void noFileBundleOrJar_compressedBundleExists_noBuildRequired(Mode mode)
             throws IOException {
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        setupMode(mode);
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2350,7 +2438,7 @@ public class BundleValidationTest {
                         Collections.singletonList(
                                 "@polymer/paper-checkbox/paper-checkbox.js")));
 
-        File bundleSourceFolder = temporaryFolder.newFolder("compiled");
+        File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -2369,14 +2457,12 @@ public class BundleValidationTest {
         FileUtils.write(statsFile, stats.toString(), StandardCharsets.UTF_8);
 
         if (mode.isProduction()) {
-            ProdBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                    bundleSourceFolder);
+            ProdBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
             Mockito.when(finder
                     .getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                     .thenReturn(null);
         } else {
-            DevBundleUtils.compressBundle(temporaryFolder.getRoot(),
-                    bundleSourceFolder);
+            DevBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
             Mockito.when(finder
                     .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                     .thenReturn(null);
@@ -2384,17 +2470,18 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar frontend file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar frontend file content hash should match.");
     }
 
-    @Test
-    public void defaultDevBundleExists_noCompressedDevBundleFile_reactDisabled_buildRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultDevBundleExists_noCompressedDevBundleFile_reactDisabled_buildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
         options.withReact(false);
-        Assume.assumeTrue(!mode.isProduction());
+        assumeTrue(!mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
@@ -2414,17 +2501,18 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Dev bundle build is expected when react is disabled and using otherwise default dev bundle.",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Dev bundle build is expected when react is disabled and using otherwise default dev bundle.");
     }
 
-    @Test
-    public void defaultProdBundleExists_noCompressedProdBundleFile_noBuildRequired()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultProdBundleExists_noCompressedProdBundleFile_noBuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2454,19 +2542,20 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar frontend file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar frontend file content hash should match.");
     }
 
-    @Test
-    public void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         frontendBuildUtils.when(
                 () -> FrontendBuildUtils.isReactModuleAvailable(Mockito.any()))
                 .thenAnswer(q -> true);
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, """
@@ -2487,7 +2576,7 @@ public class BundleValidationTest {
         Mockito.when(depScanner.getPackages()).thenReturn(
                 Collections.singletonMap("@vaadin/button", "2.0.0"));
 
-        File versions = new File(temporaryFolder.getRoot(),
+        File versions = new File(temporaryFolder,
                 Constants.VAADIN_CORE_VERSIONS_JSON);
         versions.createNewFile();
         FileUtils.write(versions, """
@@ -2526,17 +2615,18 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse("Jar frontend file content hash should match.",
-                needsBuild);
+        assertFalse(needsBuild, "Jar frontend file content hash should match.");
     }
 
-    @Test
-    public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired()
-            throws IOException {
+    @ParameterizedTest
+    @MethodSource("modes")
+    void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
         options.withReact(false);
-        Assume.assumeTrue(mode.isProduction());
+        assumeTrue(mode.isProduction());
 
-        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        File packageJson = new File(temporaryFolder, "package.json");
         packageJson.createNewFile();
 
         FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
@@ -2556,14 +2646,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.",
-                needsBuild);
+        assertTrue(needsBuild,
+                "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.");
     }
 
-    @Test
-    public void commercialBannerBuild_commercialBannerComponentMissing_rebuildRequired() {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void commercialBannerBuild_commercialBannerComponentMissing_rebuildRequired(
+            Mode mode) {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2573,15 +2665,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "In commercial banner build mode, missing 'commercial-banner.js' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "In commercial banner build mode, missing 'commercial-banner.js' should require bundling");
     }
 
-    @Test
-    public void commercialBannerBuild_commercialBannerComponentChanged_rebuildRequired()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void commercialBannerBuild_commercialBannerComponentChanged_rebuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2600,15 +2693,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "In commercial banner build mode, modified 'commercial-banner.js' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "In commercial banner build mode, modified 'commercial-banner.js' should require bundling");
     }
 
-    @Test
-    public void commercialBannerBuild_commercialBannerComponentNotChanged_rebuildNotRequired()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void commercialBannerBuild_commercialBannerComponentNotChanged_rebuildNotRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2625,22 +2719,23 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "In commercial banner build mode, unmodified 'commercial-banner.js' should not require bundling",
-                needsBuild);
+        assertFalse(needsBuild,
+                "In commercial banner build mode, unmodified 'commercial-banner.js' should not require bundling");
     }
 
-    @Test
-    public void nonCommercialBannerBuild_commercialBannerComponentPresent_rebuildRequired()
-            throws IOException {
-        Assume.assumeTrue(mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void nonCommercialBannerBuild_commercialBannerComponentPresent_rebuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(mode.isProduction());
         options.withCommercialBanner(false);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        File frontendGeneratedFolder = temporaryFolder.newFolder(
-                FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED);
+        File frontendGeneratedFolder = newFolder(temporaryFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR + FrontendUtils.GENERATED);
         File commercialBannerJS = new File(frontendGeneratedFolder,
                 FrontendUtils.COMMERCIAL_BANNER_JS);
         commercialBannerJS.createNewFile();
@@ -2657,14 +2752,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "In non commercial banner build mode, presence of 'commercial-banner.js' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "In non commercial banner build mode, presence of 'commercial-banner.js' should require bundling");
     }
 
-    @Test
-    public void developmentMode_commercialBannerComponentNotPresent_rebuildNotRequired() {
-        Assume.assumeTrue(!mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void developmentMode_commercialBannerComponentNotPresent_rebuildNotRequired(
+            Mode mode) {
+        setupMode(mode);
+        assumeTrue(!mode.isProduction());
         options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2675,15 +2772,16 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertFalse(
-                "In development mode, absence of 'commercial-banner.js' should not require bundling",
-                needsBuild);
+        assertFalse(needsBuild,
+                "In development mode, absence of 'commercial-banner.js' should not require bundling");
     }
 
-    @Test
-    public void developmentMode_commercialBannerComponentPresent_rebuildRequired()
-            throws IOException {
-        Assume.assumeTrue(!mode.isProduction());
+    @ParameterizedTest
+    @MethodSource("modes")
+    void developmentMode_commercialBannerComponentPresent_rebuildRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        assumeTrue(!mode.isProduction());
         options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
@@ -2700,16 +2798,14 @@ public class BundleValidationTest {
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
-        Assert.assertTrue(
-                "In development mode, presence of 'commercial-banner.js' should require bundling",
-                needsBuild);
+        assertTrue(needsBuild,
+                "In development mode, presence of 'commercial-banner.js' should require bundling");
     }
 
     private void createPackageJsonStub(String content) throws IOException {
-        File packageJson = new File(temporaryFolder.getRoot(),
-                Constants.PACKAGE_JSON);
+        File packageJson = new File(temporaryFolder, Constants.PACKAGE_JSON);
         boolean created = packageJson.createNewFile();
-        Assert.assertTrue(created);
+        assertTrue(created);
         FileUtils.write(packageJson, content, StandardCharsets.UTF_8);
     }
 
@@ -2721,21 +2817,20 @@ public class BundleValidationTest {
     private void createThemeJsonStub(String content, String theme,
             boolean projectTheme) throws IOException {
         String themeLocation = projectTheme ? "" : "generated/jar-resources/";
-        File themeJson = new File(temporaryFolder.getRoot(),
-                DEFAULT_FRONTEND_DIR + themeLocation + "themes/" + theme
-                        + "/theme.json");
+        File themeJson = new File(temporaryFolder, DEFAULT_FRONTEND_DIR
+                + themeLocation + "themes/" + theme + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
-        Assert.assertTrue(created);
+        assertTrue(created);
         FileUtils.write(themeJson, content, StandardCharsets.UTF_8);
     }
 
     private void createProjectFrontendFileStub() throws IOException {
-        File frontendFile = new File(temporaryFolder.getRoot(),
+        File frontendFile = new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + "views/lit-view.ts");
         FileUtils.forceMkdir(frontendFile.getParentFile());
         boolean created = frontendFile.createNewFile();
-        Assert.assertTrue(created);
+        assertTrue(created);
         FileUtils.write(frontendFile, "Some codes", StandardCharsets.UTF_8);
     }
 
@@ -2747,13 +2842,12 @@ public class BundleValidationTest {
                             Mockito.any(ClassFinder.class)))
                     .thenReturn(stats.toString());
         } else {
+            devBundleUtils.when(() -> DevBundleUtils
+                    .getDevBundleFolder(Mockito.any(), Mockito.any()))
+                    .thenReturn(temporaryFolder);
             devBundleUtils
-                    .when(() -> DevBundleUtils.getDevBundleFolder(Mockito.any(),
-                            Mockito.any()))
-                    .thenReturn(temporaryFolder.getRoot());
-            devBundleUtils
-                    .when(() -> DevBundleUtils.findBundleStatsJson(
-                            temporaryFolder.getRoot(), "target"))
+                    .when(() -> DevBundleUtils
+                            .findBundleStatsJson(temporaryFolder, "target"))
                     .thenAnswer(q -> stats.toString());
         }
         frontendBuildUtils
@@ -2815,11 +2909,11 @@ public class BundleValidationTest {
         String themeLocation = (projectTheme ? "" : "generated/jar-resources/")
                 + "themes/" + ((useParentTheme) ? "parent-theme" : "my-theme")
                 + "/components/";
-        File stylesheetFile = new File(temporaryFolder.getRoot(),
+        File stylesheetFile = new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
-        Assert.assertTrue(created);
+        assertTrue(created);
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
@@ -2859,6 +2953,12 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         return BundleValidationUtil.needsBuild(options, depScanner, mode);
+    }
+
+    private static File newFolder(File parent, String... paths) {
+        File folder = new File(parent, String.join(File.separator, paths));
+        folder.mkdirs();
+        return folder;
     }
 
 }

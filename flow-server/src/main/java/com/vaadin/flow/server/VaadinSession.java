@@ -54,8 +54,9 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.shared.SharedValueSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -90,7 +91,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private Locale locale = Locale.getDefault();
 
-    private transient SharedValueSignal<Locale> localeSignal = new SharedValueSignal<>(
+    private transient ValueSignal<Locale> localeSignal = new ValueSignal<>(
             locale);
 
     /**
@@ -395,24 +396,27 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets a signal that holds the current locale of this session.
+     * Gets a read-only signal that holds the current locale of this session.
      * <p>
-     * The signal is the source of truth for the locale. Use
-     * {@link SharedValueSignal#get()} to read the locale reactively (creates a
+     * Use {@link Signal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
-     * for non-reactive reads.
+     * for non-reactive reads. To change the locale, use
+     * {@link #setLocale(Locale)}.
      * <p>
-     * Note that writing directly to the signal will not propagate the locale
-     * change to UIs in this session. Use {@link #setLocale(Locale)} if you need
-     * the locale to be set on all UIs.
+     * The signal can be used for two-way binding with a field component by
+     * passing {@link #setLocale(Locale)} as the write callback:
      *
-     * @return a writable signal holding the current locale, never null
+     * <pre>
+     * localeDropdown.bindValue(session.localeSignal(), session::setLocale);
+     * </pre>
+     *
+     * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public SharedValueSignal<Locale> localeSignal() {
+    public Signal<Locale> localeSignal() {
         checkHasLock();
-        return localeSignal;
+        return localeSignal.asReadonly();
     }
 
     /**
@@ -428,6 +432,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert locale != null : "Null locale is not supported!";
 
         checkHasLock();
+        this.locale = locale;
         localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
@@ -1140,7 +1145,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             uIs = (Map<Integer, UI>) stream.readObject();
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
-            localeSignal = new SharedValueSignal<>(locale);
+            localeSignal = new ValueSignal<>(locale);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(old);
@@ -1166,8 +1171,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 }
             }
 
-            // Sync locale field from signal for serialization
-            locale = localeSignal.peek();
             stream.defaultWriteObject();
             if (serializeUIs) {
                 stream.writeObject(uIs);

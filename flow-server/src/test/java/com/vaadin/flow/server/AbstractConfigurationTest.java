@@ -48,23 +48,22 @@ class AbstractConfigurationTest {
     };
 
     @Test
-    public void getProjectFolder_mavenProject_detected() throws IOException {
+    void getProjectFolder_mavenProject_detected() throws IOException {
         assertProjectFolderDetected("pom.xml");
     }
 
     @Test
-    public void getProjectFolder_gradleProject_detected() throws IOException {
+    void getProjectFolder_gradleProject_detected() throws IOException {
         assertProjectFolderDetected("build.gradle");
     }
 
     @Test
-    public void getProjectFolder_gradleKotlinProject_detected()
-            throws IOException {
+    void getProjectFolder_gradleKotlinProject_detected() throws IOException {
         assertProjectFolderDetected("build.gradle.kts");
     }
 
     @Test
-    public void getProjectFolder_unknownProject_throws() throws IOException {
+    void getProjectFolder_unknownProject_throws() throws IOException {
         withTemporaryUserDir(() -> {
             IllegalStateException exception = assertThrows(
                     IllegalStateException.class,

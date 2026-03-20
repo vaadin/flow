@@ -24,13 +24,13 @@ import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ParamBindTextTest extends SignalsUnitTest {
+class ParamBindTextTest extends SignalsUnitTest {
 
     @Test
-    public void bindName_updatesAttributeOnSignalChange() {
+    void bindName_updatesAttributeOnSignalChange() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
@@ -45,7 +45,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindName_setNameWhileBindingActive_throws() {
+    void bindName_setNameWhileBindingActive_throws() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
@@ -57,7 +57,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindName_nullSignal_throwsNPE() {
+    void bindName_nullSignal_throwsNPE() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
@@ -65,7 +65,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_updatesAttributeOnSignalChange() {
+    void bindValue_updatesAttributeOnSignalChange() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
@@ -80,7 +80,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_setValueWhileBindingActive_throws() {
+    void bindValue_setValueWhileBindingActive_throws() {
         Param param = new Param();
         UI.getCurrent().add(param);
 
@@ -92,7 +92,7 @@ public class ParamBindTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_nullSignal_throwsNPE() {
+    void bindValue_nullSignal_throwsNPE() {
         Param param = new Param();
         UI.getCurrent().add(param);
 

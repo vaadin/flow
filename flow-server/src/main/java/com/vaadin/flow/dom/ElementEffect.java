@@ -30,15 +30,18 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.impl.Effect;
+import com.vaadin.flow.signals.impl.UsageTracker;
 
 /**
  * The utility class that provides helper methods for using Signal effects in a
@@ -56,9 +59,15 @@ import com.vaadin.flow.signals.impl.Effect;
  */
 public final class ElementEffect implements Serializable {
     private final ContextualEffectAction effectFunction;
-    private boolean closed = false;
+    private final Element owner;
     private Effect effect = null;
+    private Registration attachRegistration;
     private Registration detachRegistration;
+    /**
+     * Error handler used by the active effect action. {@code null} means
+     * exceptions are re-thrown (probe / unattached mode).
+     */
+    private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
         this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
@@ -69,7 +78,32 @@ public final class ElementEffect implements Serializable {
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
-        owner.addAttachListener(attach -> {
+        this.owner = owner;
+
+        if (owner.getNode().isAttached()) {
+            // Element is already attached: set up the error handler and
+            // UI-locked dispatcher before creating the Effect so that the
+            // initial (synchronous) run uses the proper error-routing and
+            // execution context.
+            enableEffect(owner);
+
+            detachRegistration = owner.addDetachListener(detach -> {
+                disableEffect();
+                detachRegistration.remove();
+                detachRegistration = null;
+            });
+        } else {
+            // Element is not yet attached: run a probe immediately so that
+            // structural errors (e.g. MissingSignalUsageException) are reported
+            // at the call site rather than delayed until attach. The probe uses
+            // Runnable::run so the first revalidation is synchronous. The
+            // effect is then passivated so it does not actively listen for
+            // changes while the element is detached.
+            effect = new Effect(this::executeAction, Runnable::run);
+            effect.passivate();
+        }
+
+        attachRegistration = owner.addAttachListener(attach -> {
             enableEffect(attach.getSource());
 
             detachRegistration = owner.addDetachListener(detach -> {
@@ -78,15 +112,31 @@ public final class ElementEffect implements Serializable {
                 detachRegistration = null;
             });
         });
+    }
 
-        if (owner.getNode().isAttached()) {
-            enableEffect(owner);
-
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
+    /**
+     * Executes the effect function, routing exceptions through the
+     * {@link #errorHandler} when attached (active mode) or re-throwing them
+     * when no error handler is set (probe/unattached mode). This is a named
+     * method rather than a lambda to ensure reliable serialization.
+     */
+    private void executeAction(EffectContext ctx) {
+        try {
+            effectFunction.execute(ctx);
+        } catch (DeniedSignalUsageException e) {
+            // Programming error: signal.get() used in wrong context
+            // (e.g. inside bindChildren factory). Always propagate so
+            // the caller gets an immediate exception.
+            throw e;
+        } catch (RuntimeException e) {
+            SerializableBiConsumer<Exception, Element> handler = errorHandler;
+            if (handler != null) {
+                handler.accept(e, owner);
+            } else {
+                // Probe run: re-throw so the exception surfaces at the
+                // call site (e.g. inside bindText / Signal.effect).
+                throw e;
+            }
         }
     }
 
@@ -206,35 +256,32 @@ public final class ElementEffect implements Serializable {
             T newValue = signal.get();
             T oldValue = previousValue[0];
             setter.accept(owner, newValue);
-            if (binding.hasCallbacks()) {
-                binding.fireOnChange(new BindingContext<>(ctx.isInitialRun(),
-                        ctx.isBackgroundChange(), oldValue, newValue, owner));
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), oldValue, newValue, owner);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
             }
+
             previousValue[0] = newValue;
         });
         return binding;
     }
 
     private void enableEffect(Element owner) {
-        if (closed) {
-            return;
-        }
-
         Component parentComponent = ComponentUtil.findParentComponent(owner)
                 .get();
         UI ui = parentComponent.getUI().get();
 
-        ContextualEffectAction errorHandlingEffectFunction = ctx -> {
-            try {
-                effectFunction.execute(ctx);
-            } catch (Exception e) {
-                ui.getSession().getErrorHandler()
-                        .error(new ErrorEvent(e, owner.getNode()));
-            }
-        };
+        // Install the UI error handler so that exceptions during active
+        // (post-attach) runs are routed to the session error handler instead
+        // of being re-thrown.
+        errorHandler = (e, elem) -> ui.getSession().getErrorHandler()
+                .error(new ErrorEvent(e, elem.getNode()));
 
-        assert effect == null;
-        effect = new Effect(errorHandlingEffectFunction, command -> {
+        SerializableExecutor uiDispatcher = command -> {
             if (UI.getCurrent() == ui) {
                 // Run immediately if on the same UI
                 command.run();
@@ -250,19 +297,41 @@ public final class ElementEffect implements Serializable {
                     }
                 });
             }
-        });
+        };
+
+        if (effect == null) {
+            // First attach for the already-attached path (effect not yet
+            // created): create the Effect directly with the UI dispatcher so
+            // that the initial run uses the proper execution context.
+            effect = new Effect(this::executeAction, uiDispatcher);
+        } else {
+            // Re-attach after detach (or the not-attached probe path):
+            // swap the dispatcher and activate. activate() will only re-run
+            // the callback if a signal changed while the element was detached.
+            effect.setDispatcher(uiDispatcher);
+            effect.activate();
+        }
     }
 
     private void disableEffect() {
         if (effect != null) {
-            effect.dispose();
-            effect = null;
+            effect.passivate();
         }
     }
 
     public void close() {
-        disableEffect();
-        closed = true;
+        if (effect != null) {
+            effect.dispose();
+            effect = null;
+        }
+        if (attachRegistration != null) {
+            attachRegistration.remove();
+            attachRegistration = null;
+        }
+        if (detachRegistration != null) {
+            detachRegistration.remove();
+            detachRegistration = null;
+        }
     }
 
     /**
@@ -496,7 +565,19 @@ public final class ElementEffect implements Serializable {
          */
         private Element getElement(S item) {
             return valueSignalToChildCache.computeIfAbsent(item, signal -> {
-                Element element = childElementFactory.apply(signal);
+                Element element = UsageTracker.track(
+                        () -> childElementFactory.apply(signal), usage -> {
+                            throw new DeniedSignalUsageException(
+                                    "Detected Signal.get() call inside a "
+                                            + "bindChildren child factory "
+                                            + "callback. Use peek() to read "
+                                            + "the value without setting up a "
+                                            + "dependency, or pass the signal "
+                                            + "to a component that creates its "
+                                            + "own reactive binding "
+                                            + "(e.g. new Span(() -> "
+                                            + "signal.get())).");
+                        });
                 if (element.getAttribute("slot") != null) {
                     throw new IllegalStateException(
                             "Children created by the bindChildren factory must not have a slot attribute set");

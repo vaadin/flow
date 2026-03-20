@@ -165,14 +165,14 @@ class UidlWriterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         if (mocks != null) {
             mocks.cleanup();
         }
     }
 
     @Test
-    public void testEncodeExecuteJavaScript_npmMode() {
+    void testEncodeExecuteJavaScript_npmMode() {
         Element element = ElementFactory.createDiv();
 
         JavaScriptInvocation invocation1 = new JavaScriptInvocation(
@@ -202,7 +202,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies_npmMode() throws Exception {
+    void componentDependencies_npmMode() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -215,7 +215,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies_productionMode_scanForParentClasses()
+    void componentDependencies_productionMode_scanForParentClasses()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         mocks.getDeploymentConfiguration().setProductionMode(true);
@@ -243,7 +243,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies_developmentMode_onlySendComponentSpecificChunks()
+    void componentDependencies_developmentMode_onlySendComponentSpecificChunks()
             throws Exception {
         UidlWriter uidlWriter = new UidlWriter();
         UI ui = initializeUIForDependenciesTest(new TestUI());
@@ -267,7 +267,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void testComponentInterfaceDependencies_npmMode() throws Exception {
+    void testComponentInterfaceDependencies_npmMode() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
@@ -293,7 +293,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies_npmMode() throws Exception {
+    void checkAllTypesOfDependencies_npmMode() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -348,7 +348,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void productionMode_stylesheetDependency_urlContainsHash()
+    void productionMode_stylesheetDependency_urlContainsHash()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         mocks.getDeploymentConfiguration().setProductionMode(true);
@@ -411,7 +411,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void resynchronizationRequested_responseFieldContainsResynchronize()
+    void resynchronizationRequested_responseFieldContainsResynchronize()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
@@ -426,7 +426,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void createUidl_allChangesCollected_uiIsNotDirty() throws Exception {
+    void createUidl_allChangesCollected_uiIsNotDirty() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
 
         ComponentsContainer container = new ComponentsContainer();
@@ -444,7 +444,7 @@ class UidlWriterTest {
     }
 
     @Test
-    public void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly()
+    void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(spy(new TestUI()));
         StateTree stateTree = spy(ui.getInternals().getStateTree());

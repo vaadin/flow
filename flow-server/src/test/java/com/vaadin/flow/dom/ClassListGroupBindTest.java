@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ClassListGroupBindTest extends SignalsUnitTest {
 
     @Test
-    public void basicGroupBinding_addsAndRemovesClasses() {
+    void basicGroupBinding_addsAndRemovesClasses() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -60,7 +60,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void nullList_treatedAsEmpty() {
+    void nullList_treatedAsEmpty() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -71,7 +71,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void nullAndEmptyEntriesInList_silentlyIgnored() {
+    void nullAndEmptyEntriesInList_silentlyIgnored() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -85,7 +85,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void secondGroupBind_throwsBindingActiveException() {
+    void secondGroupBind_throwsBindingActiveException() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -98,7 +98,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void coexistenceWithStaticAdd_bothPresent() {
+    void coexistenceWithStaticAdd_bothPresent() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -113,7 +113,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void coexistenceWithStaticAdd_groupRemovalRemovesFromFlatList() {
+    void coexistenceWithStaticAdd_groupRemovalRemovesFromFlatList() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -135,7 +135,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void coexistenceWithToggleBind_bothWorkIndependently() {
+    void coexistenceWithToggleBind_bothWorkIndependently() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -158,7 +158,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_throwsWhenGroupBindingActive() {
+    void clear_throwsWhenGroupBindingActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -172,7 +172,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void detachAndReattach_reappliesCurrentValue() {
+    void detachAndReattach_reappliesCurrentValue() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -195,7 +195,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void incrementalUpdates_diffAppliedCorrectly() {
+    void incrementalUpdates_diffAppliedCorrectly() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -213,7 +213,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindClassNames_shorthandOnHasStyle() {
+    void bindClassNames_shorthandOnHasStyle() {
         HasStyleComponent component = new HasStyleComponent();
         UI.getCurrent().add(component);
 
@@ -229,7 +229,7 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_onChange_receivesBindingContext() {
+    void bind_onChange_receivesBindingContext() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -238,13 +238,13 @@ class ClassListGroupBindTest extends SignalsUnitTest {
 
         element.getClassList().bind(signal).onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set(List.of("c"));
 
-        assertEquals(1, contexts.size());
-        BindingContext<List<String>> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<List<String>> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals(List.of("a", "b"), ctx.getOldValue());
         assertEquals(List.of("c"), ctx.getNewValue());

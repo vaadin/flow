@@ -39,19 +39,19 @@ class CustomElementsTest {
     private CustomElements customElements;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         customElements = new CustomElements();
     }
 
     @Test
-    public void addSingleElement() {
+    void addSingleElement() {
         addElementsAndCheckResults(
                 Collections.singletonList(CustomElement.class),
                 Collections.singletonList(CustomElement.class));
     }
 
     @Test
-    public void addDifferentElements() {
+    void addDifferentElements() {
         assertThrows(IllegalStateException.class, () -> {
             addElementsAndCheckResults(
                     Arrays.asList(Tag2_Extend.class, Tag2_NotExtend.class),
@@ -60,7 +60,7 @@ class CustomElementsTest {
     }
 
     @Test
-    public void addExtendingElements_superclassFirst() {
+    void addExtendingElements_superclassFirst() {
         addElementsAndCheckResults(
                 Arrays.asList(CustomElement.class, Tag1_Extend1.class,
                         Tag1_Extend2.class, Tag1_Extend3.class),
@@ -68,7 +68,7 @@ class CustomElementsTest {
     }
 
     @Test
-    public void addExtendingElements_superclassLast() {
+    void addExtendingElements_superclassLast() {
         addElementsAndCheckResults(
                 Arrays.asList(Tag1_Extend1.class, Tag1_Extend2.class,
                         Tag1_Extend3.class, CustomElement.class),
@@ -76,7 +76,7 @@ class CustomElementsTest {
     }
 
     @Test
-    public void addTwoExtendingWithDifferentTag() {
+    void addTwoExtendingWithDifferentTag() {
         addElementsAndCheckResults(
                 Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class),
                 Arrays.asList(Tag1_Extend1.class, Tag2_Extend.class));

@@ -197,16 +197,18 @@ public interface Style extends Serializable {
     Stream<String> getNames();
 
     /**
-     * Binds the given style property to the provided string signal and keeps
-     * the style property value synchronized with the signal.
+     * Binds the given style property to the provided string signal. The style
+     * property is set immediately with the current signal value when the
+     * binding is created, and is kept synchronized with any subsequent signal
+     * value changes.
      * <p>
      * When a binding is in place, the style signal mirrors
      * {@code signal.get()}. If the signal value is {@code null}, the style
      * property is removed; otherwise it is set to the string value.
      * <p>
-     * The binding effect is active only while the owner element is in the
-     * attached state. While the owner is in the detached state, updates from
-     * the signal have no effect.
+     * After the initial application, the binding is active only while the owner
+     * element is in the attached state. While the owner is in the detached
+     * state, updates from the signal have no effect.
      * <p>
      * While a binding for a specific style name is active, any attempt to bind
      * another signal for the same name throws a {@link BindingActiveException}.
@@ -231,7 +233,7 @@ public interface Style extends Serializable {
      *
      * @since 25.0
      */
-    default SignalBinding<?> bind(String name, Signal<String> signal) {
+    default SignalBinding<String> bind(String name, Signal<String> signal) {
         // experimental API, do not force implementation
         throw new UnsupportedOperationException();
     };

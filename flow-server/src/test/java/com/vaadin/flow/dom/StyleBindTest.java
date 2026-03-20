@@ -16,28 +16,19 @@
 package com.vaadin.flow.dom;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,34 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for Style.bind(String, Signal<String>).
  */
-class StyleBindTest {
-
-    private static MockVaadinServletService service;
-
-    @BeforeAll
-    public static void init() {
-        service = new MockVaadinServletService();
-    }
-
-    @AfterAll
-    public static void clean() {
-        VaadinService.setCurrent(null);
-        service.destroy();
-    }
-
-    @BeforeEach
-    public void before() {
-        mockLockedSessionWithErrorHandler();
-    }
-
-    @AfterEach
-    public void after() {
-        VaadinService.setCurrent(null);
-    }
+class StyleBindTest extends SignalsUnitTest {
 
     // Lifecycle: applies on attachment and signal changes when attached
     @Test
-    public void bindingMirrorsSignalWhileAttached_updatesStyleValue() {
+    void bindingMirrorsSignalWhileAttached_updatesStyleValue() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -92,7 +60,7 @@ class StyleBindTest {
     // Lifecycle: no updates while detached; lastApplied preserved across
     // detach/attachment
     @Test
-    public void detached_noUpdates_lastAppliedPreservedOnReattach() {
+    void detached_noUpdates_lastAppliedPreservedOnReattach() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -114,7 +82,7 @@ class StyleBindTest {
 
     // Conflict prevention: set/remove throw while binding is active
     @Test
-    public void conflict_setRemoveThrowWhileBoundAndActive() {
+    void conflict_setRemoveThrowWhileBoundAndActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -128,7 +96,7 @@ class StyleBindTest {
     }
 
     @Test
-    public void clear_throwsWhenBindingsActive() {
+    void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -140,7 +108,7 @@ class StyleBindTest {
     }
 
     @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -150,7 +118,7 @@ class StyleBindTest {
 
     // Getters semantics
     @Test
-    public void getters_returnLastAppliedAndNamesWithValues() {
+    void getters_returnLastAppliedAndNamesWithValues() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -173,12 +141,12 @@ class StyleBindTest {
         // present
         assertTrue(names.contains("margin-bottom"));
 
-        // Detach before any applying for c -> bind while detached -> no value
-        // applied yet, get returns null
+        // Detach before binding c -> probe runs immediately at bind time even
+        // while detached, so value IS applied right away
         ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
-        assertNull(element.getStyle().get("paddingTop"));
+        assertEquals("5px", element.getStyle().get("paddingTop"));
         names = element.getStyle().getNames().collect(Collectors.toSet());
         // The current implementation records the binding name even before first
         // attach
@@ -186,7 +154,7 @@ class StyleBindTest {
     }
 
     @Test
-    public void nullSignalValue_removesStyleAndHasReturnsFalse() {
+    void nullSignalValue_removesStyleAndHasReturnsFalse() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -210,35 +178,49 @@ class StyleBindTest {
     }
 
     @Test
-    public void bind_onChange_receivesBindingContext() {
+    void bind_onChange_receivesBindingContext() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
         ValueSignal<String> signal = new ValueSignal<>("red");
-        List<BindingContext<?>> contexts = new ArrayList<>();
+        List<BindingContext<String>> contexts = new ArrayList<>();
 
         element.getStyle().bind("background-color", signal)
                 .onChange(contexts::add);
 
-        // Initial run already happened before onChange was registered
-        assertEquals(0, contexts.size());
+        // onChange should have been called once initially
+        assertEquals(1, contexts.size());
 
         signal.set("blue");
 
-        assertEquals(1, contexts.size());
-        BindingContext<?> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("red", ctx.getOldValue());
         assertEquals("blue", ctx.getNewValue());
         assertEquals(element, ctx.getElement());
     }
 
-    private void mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-        var session = new MockVaadinSession(service);
-        session.lock();
-        new MockUI(session);
-        var list = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(list::add);
+    @Test
+    void bind_returnsTypedSignalBinding() {
+        Element element = new Element("div");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<String> signal = new ValueSignal<>("red");
+
+        // Verify that bind returns SignalBinding<String>
+        SignalBinding<String> binding = element.getStyle()
+                .bind("background-color", signal);
+
+        // Verify that we can use the typed binding with String context
+        binding.onChange(ctx -> {
+            String oldValue = ctx.getOldValue(); // No cast needed
+            String newValue = ctx.getNewValue(); // No cast needed
+            assertNotNull(oldValue);
+            assertNotNull(newValue);
+            assertEquals(String.class, oldValue.getClass());
+            assertEquals(String.class, newValue.getClass());
+        });
     }
+
 }

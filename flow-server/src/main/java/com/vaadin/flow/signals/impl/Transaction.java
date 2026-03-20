@@ -269,7 +269,14 @@ public abstract class Transaction implements Serializable {
      */
     public static boolean inExplicitTransaction() {
         Transaction transaction = currentTransaction.get();
-        return transaction != null && transaction != EXPLICITLY_NO_TRANSACTION;
+        if (transaction == null || transaction == EXPLICITLY_NO_TRANSACTION) {
+            return false;
+        }
+        if (transaction instanceof StagedTransaction staged
+                && staged.isCommitting()) {
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -165,12 +165,12 @@ class VaadinServiceTest {
 
     @BeforeEach
     @AfterEach
-    public void clearCurrentInstances() {
+    void clearCurrentInstances() {
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void requestEnd_serviceFailure_threadLocalsCleared() {
+    void requestEnd_serviceFailure_threadLocalsCleared() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             void cleanupSession(VaadinSession session) {
@@ -204,7 +204,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void requestEnd_interceptorFailure_allInterceptorsInvoked_doNotThrowAndThreadLocalsCleared() {
+    void requestEnd_interceptorFailure_allInterceptorsInvoked_doNotThrowAndThreadLocalsCleared() {
         VaadinRequestInterceptor interceptor1 = Mockito
                 .mock(VaadinRequestInterceptor.class);
         VaadinRequestInterceptor interceptor2 = Mockito
@@ -254,7 +254,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void should_reported_routing_server() {
+    void should_reported_routing_server() {
 
         // this test needs a fresh empty statistics, so we need to clear
         // them for resusing forks for unit tests
@@ -277,7 +277,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void should_reported_routing_hybrid() {
+    void should_reported_routing_hybrid() {
         UsageStatistics.resetEntries();
         VaadinServiceInitListener initListener = event -> {
             RouteConfiguration.forApplicationScope().setRoute("test",
@@ -304,7 +304,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void should_reported_auto_layout_server() {
+    void should_reported_auto_layout_server() {
         UsageStatistics.resetEntries();
         @Layout
         class AutoLayout extends Component implements RouterLayout {
@@ -332,7 +332,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void should_reported_auto_layout_client() {
+    void should_reported_auto_layout_client() {
         UsageStatistics.resetEntries();
         @Layout
         class AutoLayout extends Component implements RouterLayout {
@@ -358,7 +358,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void should_reported_auto_layout_routes_not_used() {
+    void should_reported_auto_layout_routes_not_used() {
         UsageStatistics.resetEntries();
         @Route(value = "not-in-auto-layout")
         @Tag("div")
@@ -412,7 +412,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void testFireSessionDestroy() {
+    void testFireSessionDestroy() {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -435,7 +435,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void testSessionDestroyListenerCalled_whenAnotherListenerThrows() {
+    void testSessionDestroyListenerCalled_whenAnotherListenerThrows() {
         VaadinService service = createService();
 
         ThrowingSessionDestroyListener throwingListener = new ThrowingSessionDestroyListener();
@@ -459,7 +459,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows() {
+    void testSessionDestroyListenerCalled_andOtherUiDetachCalled_whenUiClosingThrows() {
         VaadinService service = createService();
 
         TestSessionDestroyListener listener = new TestSessionDestroyListener();
@@ -516,7 +516,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void testServiceDestroyListenerCalled_whenAnotherListenerThrows() {
+    void testServiceDestroyListenerCalled_whenAnotherListenerThrows() {
         VaadinService service = createService();
 
         ThrowingServiceDestroyListener throwingListener = new ThrowingServiceDestroyListener();
@@ -532,7 +532,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void captionIsSetToACriticalNotification() {
+    void captionIsSetToACriticalNotification() {
         String notification = createCriticalNotification("foobar", "message",
                 "details", "url");
 
@@ -540,7 +540,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void nullCaptionIsSetToACriticalNotification() {
+    void nullCaptionIsSetToACriticalNotification() {
         String notification = createCriticalNotification(null, "message",
                 "details", "url");
 
@@ -548,7 +548,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void messageWithDetailsIsSetToACriticalNotification() {
+    void messageWithDetailsIsSetToACriticalNotification() {
         String notification = createCriticalNotification("caption", "foo",
                 "bar", "url");
 
@@ -556,7 +556,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void nullMessageSentAsNullInACriticalNotification() {
+    void nullMessageSentAsNullInACriticalNotification() {
         String notification = createCriticalNotification("caption", null,
                 "foobar", "url");
 
@@ -564,7 +564,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void nullMessageIsSetToACriticalNotification() {
+    void nullMessageIsSetToACriticalNotification() {
         String notification = createCriticalNotification("caption", null, null,
                 "url");
 
@@ -572,7 +572,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void messageSetToACriticalNotification() {
+    void messageSetToACriticalNotification() {
         String notification = createCriticalNotification("caption", "foobar",
                 null, "url");
 
@@ -580,7 +580,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void urlIsSetToACriticalNotification() {
+    void urlIsSetToACriticalNotification() {
         String notification = createCriticalNotification("caption", "message",
                 "details", "foobar");
 
@@ -588,7 +588,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void nullUrlIsSetToACriticalNotification() {
+    void nullUrlIsSetToACriticalNotification() {
         String notification = createCriticalNotification("caption", "message",
                 "details", null);
 
@@ -596,7 +596,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void serviceContainsStreamRequestHandler()
+    void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
         Lookup lookup = Mockito.mock(Lookup.class);
@@ -620,7 +620,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void currentInstancesAfterPendingAccessTasks() {
+    void currentInstancesAfterPendingAccessTasks() {
         VaadinService service = createService();
 
         MockVaadinSession session = new MockVaadinSession(service);
@@ -636,7 +636,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
+    void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
 
         VaadinServiceInitListener initListener = event -> {
             assertNotNull(VaadinService.getCurrent(),
@@ -668,7 +668,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
+    void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
         DependencyFilter applicationFilter = (dependencies,
                 service) -> dependencies;
 
@@ -691,7 +691,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
+    void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
             throws ServiceException {
         MockVaadinServletService service = createService();
 
@@ -710,7 +710,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void loadInstantiators_twoFactoriesInLookup_throws()
+    void loadInstantiators_twoFactoriesInLookup_throws()
             throws ServiceException {
         MockVaadinServletService service = createService();
 
@@ -726,7 +726,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
+    void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
             throws ServiceException {
         TestVaadinService service = Mockito.mock(TestVaadinService.class);
         I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class);
@@ -744,7 +744,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void fireSessionDestroy_sessionStateIsSetToClosed() {
+    void fireSessionDestroy_sessionStateIsSetToClosed() {
         VaadinService service = createService();
 
         AtomicReference<VaadinSessionState> stateRef = new AtomicReference<>();
@@ -761,7 +761,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void removeFromHttpSession_setExplicitSessionCloseAttribute()
+    void removeFromHttpSession_setExplicitSessionCloseAttribute()
             throws ServiceException {
         WrappedSession httpSession = Mockito.mock(WrappedSession.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
@@ -782,7 +782,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void reinitializeSession_setVaadinSessionAttriuteWithLock() {
+    void reinitializeSession_setVaadinSessionAttriuteWithLock() {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
         VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
@@ -806,8 +806,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void getExecutor_getsDefaultVaadinExecutor()
-            throws InterruptedException {
+    void getExecutor_getsDefaultVaadinExecutor() throws InterruptedException {
         VaadinService service = createService();
         Executor executor = service.getExecutor();
         AtomicReference<String> threadName = new AtomicReference<>();
@@ -824,7 +823,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void serviceDestroy_defaultExecutor_executorStopped() {
+    void serviceDestroy_defaultExecutor_executorStopped() {
         VaadinService service = createService();
         Executor executor = service.getExecutor();
         assertTrue(executor instanceof ExecutorService,
@@ -837,7 +836,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void getExecutor_customExecutorProvided_getsCustomExecutor()
+    void getExecutor_customExecutorProvided_getsCustomExecutor()
             throws InterruptedException {
         AtomicBoolean taskSubmitted = new AtomicBoolean(false);
         Executor executor = command -> {
@@ -860,7 +859,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void serviceDestroy_customExecutorProvided_executorNotStopped() {
+    void serviceDestroy_customExecutorProvided_executorNotStopped() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         VaadinServiceInitListener initListener = event -> {
             event.setExecutor(executor);
@@ -879,7 +878,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void getExecutor_nullExecutorProvided_resetsToDefaultVaadinExecutor() {
+    void getExecutor_nullExecutorProvided_resetsToDefaultVaadinExecutor() {
         Executor executor = command -> {
         };
         VaadinServiceInitListener setExecutorInitListener = event -> {
@@ -897,7 +896,7 @@ class VaadinServiceTest {
     }
 
     @Test
-    public void init_nullExecutor_throws() {
+    void init_nullExecutor_throws() {
         RuntimeException error = assertThrows(RuntimeException.class, () -> {
             // init method is called by the mock service constructor
             new MockVaadinServletService() {

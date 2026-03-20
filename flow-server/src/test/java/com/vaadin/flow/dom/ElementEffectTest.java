@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -123,18 +124,18 @@ class ElementEffectTest {
     }
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         service = new TestService();
     }
 
     @AfterAll
-    public static void clean() {
+    static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
     }
 
     @Test
-    public void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
+    void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -153,7 +154,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void contextAwareEffect_receivesEffectContext() {
+    void contextAwareEffect_receivesEffectContext() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -176,7 +177,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void contextAwareEffect_detectsBackgroundChange() {
+    void contextAwareEffect_detectsBackgroundChange() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -210,7 +211,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindText_returnsSignalBinding() {
+    void bindText_returnsSignalBinding() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -223,7 +224,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_receivesBindingContext() {
+    void signalBinding_onChange_receivesBindingContext() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -232,17 +233,16 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // onChange is registered after bind, so the initial execution is missed
+        // onChange is registered after bind, executed once immediately
         span.bindText(signal).onChange(contexts::add);
 
-        // No callbacks yet since initial run already happened before onChange
-        assertEquals(0, contexts.size());
+        assertEquals(1, contexts.size());
 
         // Trigger a subsequent update
         signal.set("updated");
 
-        assertEquals(1, contexts.size());
-        BindingContext<String> ctx = contexts.get(0);
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
@@ -251,8 +251,8 @@ class ElementEffectTest {
         // Trigger another update and verify context tracks correctly
         signal.set("final");
 
-        assertEquals(2, contexts.size());
-        BindingContext<String> ctx2 = contexts.get(1);
+        assertEquals(3, contexts.size());
+        BindingContext<String> ctx2 = contexts.get(2);
         assertFalse(ctx2.isInitialRun());
         assertEquals("updated", ctx2.getOldValue());
         assertEquals("final", ctx2.getNewValue());
@@ -260,7 +260,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void signalBinding_onChange_bindThenAttach() {
+    void signalBinding_onChange_bindThenAttach() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
         Element span = new Element("span");
@@ -268,30 +268,110 @@ class ElementEffectTest {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<BindingContext<String>> contexts = new ArrayList<>();
 
-        // Bind before attaching to UI
+        // Bind before attaching to UI: the effect runs immediately as a probe,
+        // setting the initial text. The onChange callback fire for the initial
+        // run.
         span.bindText(signal).onChange(contexts::add);
-        assertEquals(0, contexts.size());
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
 
-        // Attach — effect runs and fires initial callback
+        // Attach with no signal change: no re-run, no onChange callback
         ui.getElement().appendChild(span);
-
-        assertEquals(1, contexts.size());
-        BindingContext<String> initialCtx = contexts.get(0);
-        assertTrue(initialCtx.isInitialRun());
-        assertEquals("initial", initialCtx.getNewValue());
+        assertEquals(1, contexts.size(),
+                "onChange should not fire on attach when nothing changed since probe");
 
         // Trigger an update after attach
         signal.set("updated");
 
         assertEquals(2, contexts.size());
-        BindingContext<String> ctx = contexts.get(1);
+        ctx = contexts.get(1);
         assertFalse(ctx.isInitialRun());
         assertEquals("initial", ctx.getOldValue());
         assertEquals("updated", ctx.getNewValue());
     }
 
     @Test
-    public void bindingContext_getComponent_returnsNearestComponent() {
+    void signalBinding_onChange_bindThenChangeAndAttach() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        span.bindText(signal).onChange(contexts::add);
+        assertEquals(1, contexts.size(),
+                "onChange should fire once immediately");
+
+        // Trigger an update after attach
+        signal.set("updated");
+
+        // Attach with signal change: run onChange callback with
+        // isInitialRun=true
+        ui.getElement().appendChild(span);
+
+        assertEquals(2, contexts.size(),
+                "onChange should fire on attach when changed since probe");
+        assertEquals(2, contexts.size());
+        BindingContext<String> ctx = contexts.get(1);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+    }
+
+    @Test
+    void signalBinding_onChange_calledImmediatelyInitially() {
+        CurrentInstance.clearAll();
+        MockUI ui = new MockUI();
+        Element span = new Element("span");
+        ui.getElement().appendChild(span);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<BindingContext<String>> contexts = new ArrayList<>();
+
+        // Bind before attaching to UI
+        // The onChange callback fire immediately for the initial run
+        var signalBinding = span.bindText(signal).onChange(contexts::add);
+        assertEquals(1, contexts.size(), "onChange should fire once initially");
+        BindingContext<String> ctx = contexts.get(0);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // The second onChange callback fire immediately for the initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(2, contexts.size(),
+                "another onChange should fire once initially");
+        ctx = contexts.get(1);
+        assertTrue(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("initial", ctx.getNewValue());
+
+        // Trigger an update
+        signal.set("updated");
+
+        // two onChange callbacks should fire for the update
+        assertEquals(4, contexts.size());
+        ctx = contexts.get(2);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+        ctx = contexts.get(3);
+        assertFalse(ctx.isInitialRun());
+        assertEquals("initial", ctx.getOldValue());
+        assertEquals("updated", ctx.getNewValue());
+
+        // The new onChange callback doesn't fire immediately for the
+        // non-initial run
+        signalBinding.onChange(contexts::add);
+        assertEquals(4, contexts.size());
+    }
+
+    @Test
+    void bindingContext_getComponent_returnsNearestComponent() {
         CurrentInstance.clearAll();
         MockUI ui = new MockUI();
 
@@ -310,7 +390,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
+    void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -338,7 +418,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
+    void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -375,7 +455,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
+    void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -399,7 +479,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
+    void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -430,7 +510,35 @@ class ElementEffectTest {
     }
 
     @Test
-    public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
+    void effect_notAttached_effectRunsImmediatelyAsProbe() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction even when not attached");
+    }
+
+    @Test
+    void effect_notAttached_noSignalRead_throwsEagerly() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+
+        assertThrows(com.vaadin.flow.signals.MissingSignalUsageException.class,
+                () -> Signal.effect(component, () -> {
+                    // no signal read
+                }),
+                "MissingSignalUsageException should be thrown eagerly at construction when no signal is read");
+    }
+
+    @Test
+    void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -440,38 +548,118 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached");
+        assertEquals(1, count.get(),
+                "Effect should be run once immediately as a probe even before component is attached");
 
         signal.set("test");
-        assertEquals(0, count.get(),
-                "Effect should not be run until component is attached even after signal value change");
+        assertEquals(1, count.get(),
+                "Effect should not be run while detached even after signal value change");
 
         MockUI ui = new MockUI();
         ui.add(component);
 
-        assertEquals(1, count.get(),
-                "Effect should be run once component is attached");
+        assertEquals(2, count.get(),
+                "Effect should re-run on attach because signal changed while detached");
 
         signal.set("test2");
-        assertEquals(2, count.get(),
-                "Effect should be run when signal value is chaged");
+        assertEquals(3, count.get(),
+                "Effect should be run when signal value is changed");
 
         ui.remove(component);
 
         signal.set("test3");
-        assertEquals(2, count.get(), "Effect should not be run after detach");
+        assertEquals(3, count.get(), "Effect should not be run after detach");
 
         ui.add(component);
-        assertEquals(3, count.get(), "Effect should be run after attach");
+        assertEquals(4, count.get(),
+                "Effect should re-run on reattach because signal changed while detached");
 
         registration.remove();
         signal.set("test4");
-        assertEquals(3, count.get(), "Effect should not be run after remove");
+        assertEquals(4, count.get(), "Effect should not be run after remove");
     }
 
     @Test
-    public void elementEffect_signalValueChanges_componentUpdated() {
+    void effect_reattachWithoutChanges_effectNotReRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        assertEquals(1, count.get(),
+                "Effect should run once immediately as a probe at construction");
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get(),
+                "Effect should not re-run on attach when nothing changed since probe");
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(1, count.get(),
+                "Effect should not re-run on reattach when nothing changed");
+
+        signal.set("changed");
+        assertEquals(2, count.get(),
+                "Effect should still respond to changes after reattach");
+    }
+
+    @Test
+    void effect_reattachWithChanges_effectReRunWithInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        signal.set("update");
+        assertEquals(List.of(true, false), initialRuns);
+
+        ui.remove(component);
+        signal.set("changed while detached");
+        ui.add(component);
+        assertEquals(List.of(true, false, true), initialRuns,
+                "Reattach with changes should run with isInitialRun=true");
+    }
+
+    @Test
+    void effect_reattachWithoutChanges_nextChangeNotInitialRun() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+        Signal.effect(component, ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns);
+
+        ui.remove(component);
+        ui.add(component);
+        assertEquals(List.of(true), initialRuns,
+                "No re-run on reattach without changes");
+
+        signal.set("changed after reattach");
+        assertEquals(List.of(true, false), initialRuns,
+                "Normal change after reattach should not be initial run");
+    }
+
+    @Test
+    void elementEffect_signalValueChanges_componentUpdated() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
@@ -507,7 +695,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_nullArguments_throws() {
+    void bindChildren_nullArguments_throws() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -520,18 +708,18 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_emptySharedListSignal_emptyParent() {
+    void bindChildren_emptySharedListSignal_emptyParent() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
         assertEquals(0, parentComponent.getComponentCount());
     }
 
     @Test
-    public void bindChildren_emptySharedListSignalWithNotInitiallyEmptyParent_throw() {
+    void bindChildren_emptySharedListSignalWithNotInitiallyEmptyParent_throw() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -550,7 +738,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_listSignalWithItem_parentUpdated() {
+    void bindChildren_listSignalWithItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -560,7 +748,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            expectedComponent.setValue(valueSignal.get());
+            expectedComponent.setValue(valueSignal.peek());
             return expectedComponent;
         });
         assertEquals(1, parentComponent.getComponentCount());
@@ -573,7 +761,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addItem_parentUpdated() {
+    void bindChildren_addItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -581,7 +769,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(1, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -605,7 +793,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_removeItem_parentUpdated() {
+    void bindChildren_removeItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -615,7 +803,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(3, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -643,7 +831,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveItem_parentUpdated() {
+    void bindChildren_moveItem_parentUpdated() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -653,7 +841,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(3, parentComponent.getComponentCount(),
                 "Parent component children count is wrong");
@@ -681,7 +869,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
+    void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -705,7 +893,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
+    void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -729,7 +917,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
+    void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -753,7 +941,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addToParentComponentAndAddItem_throw() {
+    void bindChildren_addToParentComponentAndAddItem_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -767,7 +955,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         var expectedComponent = new TestComponent("added directly");
@@ -794,7 +982,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChanges_sameChildrenSizeBeforeAfter_throw() {
+    void bindChildren_directParentComponentChanges_sameChildrenSizeBeforeAfter_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -809,7 +997,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         var directlyAddedComponent1 = new TestComponent("added directly 1");
@@ -845,7 +1033,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChangeByFactory_throw() {
+    void bindChildren_directParentComponentChangeByFactory_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -860,7 +1048,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 // doing wrong
@@ -892,7 +1080,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChangeByCustomAttach_throw() {
+    void bindChildren_directParentComponentChangeByCustomAttach_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         CurrentInstance.clearAll();
@@ -907,7 +1095,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             if ("middle".equals(value)) {
                 component.addAttachListener(event -> {
@@ -939,7 +1127,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_directParentComponentChildOrderChanges_throw() {
+    void bindChildren_directParentComponentChildOrderChanges_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         // Exception is thrown only in final validation in the end when change
@@ -957,7 +1145,7 @@ class ElementEffectTest {
         ui.add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            String value = valueSignal.get();
+            String value = valueSignal.peek();
             var component = new TestComponent(value);
             component.getElement().setText(value);
             if ("last".equals(value)) {
@@ -987,7 +1175,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_runInTransaction_effectRunOnce() {
+    void bindChildren_runInTransaction_effectRunOnce() {
         CurrentInstance.clearAll();
         var expectedMockedElements = new ArrayList<Element>();
 
@@ -997,7 +1185,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList, valueSignal -> {
-            var component = new TestComponent(valueSignal.get(),
+            var component = new TestComponent(valueSignal.peek(),
                     parentComponent.getElement(), null);
             expectedMockedElements.add(component.getElement());
             return component;
@@ -1038,7 +1226,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_withNullFromChildFactory_throws() {
+    void bindChildren_withNullFromChildFactory_throws() {
         CurrentInstance.clearAll();
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
@@ -1062,7 +1250,25 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_registrationRemove_effectRemoved() {
+    void bindChildren_signalGetInsideCallback_throws() {
+        CurrentInstance.clearAll();
+        mockLockedSessionWithErrorHandler();
+        UI ui = UI.getCurrent();
+
+        ListSignal<String> taskList = new ListSignal<>();
+        taskList.insertFirst("first");
+        TestLayout parentComponent = new TestLayout();
+        ui.add(parentComponent);
+
+        DeniedSignalUsageException ex = assertThrows(
+                DeniedSignalUsageException.class,
+                () -> parentComponent.bindChildren(taskList,
+                        valueSignal -> new TestComponent(valueSignal.get())));
+        assertTrue(ex.getMessage().contains("bindChildren"));
+    }
+
+    @Test
+    void bindChildren_registrationRemove_effectRemoved() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1073,7 +1279,7 @@ class ElementEffectTest {
 
         Registration registration = ElementEffect.bindChildren(
                 parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         assertEquals(2, parentComponent.getComponentCount(),
@@ -1103,7 +1309,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_withLocalValueSignalList_parentUpdated() {
+    void bindChildren_withLocalValueSignalList_parentUpdated() {
         CurrentInstance.clearAll();
         ValueSignal<String> first = new ValueSignal<>("first");
         ValueSignal<String> second = new ValueSignal<>("second");
@@ -1115,7 +1321,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(listSignal,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         assertEquals(1, parentComponent.getComponentCount());
         assertEquals("first",
@@ -1148,7 +1354,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_parentWithSlottedChild_succeeds() {
+    void bindChildren_parentWithSlottedChild_succeeds() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -1161,12 +1367,12 @@ class ElementEffectTest {
 
         // Should not throw
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
         assertEquals(0, parentComponent.getComponentCount());
     }
 
     @Test
-    public void bindChildren_parentWithDefaultSlotChild_throws() {
+    void bindChildren_parentWithDefaultSlotChild_throws() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         TestLayout parentComponent = new TestLayout();
@@ -1182,7 +1388,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
+    void bindChildren_addSlottedChildAfterBinding_signalUpdatePreservesIt() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1190,7 +1396,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         ElementEffect.bindChildren(parentComponent.getElement(), taskList,
-                valueSignal -> new TestComponent(valueSignal.get())
+                valueSignal -> new TestComponent(valueSignal.peek())
                         .getElement());
 
         assertEquals(1, parentComponent.getComponentCount());
@@ -1218,7 +1424,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_factoryReturnsSlottedElement_throws() {
+    void bindChildren_factoryReturnsSlottedElement_throws() {
         CurrentInstance.clearAll();
         LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
         UI ui = UI.getCurrent();
@@ -1245,7 +1451,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
+    void bindChildren_moveItemsWithSlottedChildPresent_correctOrder() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1256,7 +1462,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         // Add a slotted child via Element API
         Element slotted = new Element("span");
@@ -1280,7 +1486,7 @@ class ElementEffectTest {
     }
 
     @Test
-    public void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
+    void bindChildren_removeItemsWithSlottedChildPresent_slottedUnaffected() {
         CurrentInstance.clearAll();
         ListSignal<String> taskList = new ListSignal<>();
         taskList.insertFirst("first");
@@ -1290,7 +1496,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(taskList,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         // Add a slotted child
         Element slotted = new Element("span");
@@ -1315,7 +1521,7 @@ class ElementEffectTest {
         new MockUI().add(parentComponent);
 
         parentComponent.bindChildren(listSignal,
-                valueSignal -> new TestComponent(valueSignal.get()));
+                valueSignal -> new TestComponent(valueSignal.peek()));
 
         parentComponent.getChildren().map(TestComponent.class::cast)
                 .forEach(TestComponent::resetCounters);

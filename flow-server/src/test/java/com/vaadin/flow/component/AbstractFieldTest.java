@@ -117,14 +117,14 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void initialValue_used() {
+    void initialValue_used() {
         TestAbstractField<String> field = new TestAbstractField<>("foo");
 
         assertEquals("foo", field.getValue());
     }
 
     @Test
-    public void emptyValue_sameAsInitial() {
+    void emptyValue_sameAsInitial() {
         TestAbstractField<String> field = new TestAbstractField<>("foo");
 
         assertEquals("foo", field.getEmptyValue());
@@ -136,7 +136,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void initialValue_defaultNull() {
+    void initialValue_defaultNull() {
         TestAbstractField<String> field = new TestAbstractField<>();
 
         assertNull(field.getValue());
@@ -144,7 +144,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setValue_differentValue_firesOneEvent() {
+    void setValue_differentValue_firesOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -156,7 +156,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setValue_sameValue_firesNoEvent() {
+    void setValue_sameValue_firesNoEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -167,7 +167,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void clear_firesIfNotEmpty() {
+    void clear_firesIfNotEmpty() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -188,7 +188,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void clear_customEmptyValue_emptyValueUsed() {
+    void clear_customEmptyValue_emptyValueUsed() {
         TestAbstractField<String> field = new TestAbstractField<>();
         field.emptyValue = () -> "";
 
@@ -200,7 +200,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void updateFromClient_differentValue_updatesAndFires() {
+    void updateFromClient_differentValue_updatesAndFires() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -213,7 +213,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void customEquals() {
+    void customEquals() {
         TestAbstractField<Integer> field = new TestAbstractField<>();
         field.valueEquals = (value1, value2) -> value1 == value2;
 
@@ -239,7 +239,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void customEquals_isEmpty() {
+    void customEquals_isEmpty() {
         Integer value1 = new Integer(0);
         Integer value2 = new Integer(0);
 
@@ -259,7 +259,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void getValue_changesAfterUpdatedFromClient() {
+    void getValue_changesAfterUpdatedFromClient() {
         TestAbstractField<String> field = new TestAbstractField<>();
         assertNull(field.getValue());
 
@@ -271,7 +271,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setPresentation_setSameValue_notRunAgain() {
+    void setPresentation_setSameValue_notRunAgain() {
         TestAbstractField<String> field = new TestAbstractField<>();
         AtomicReference<String> lastWriteValue = new AtomicReference<>();
         field.setPresentationValue = value -> {
@@ -289,7 +289,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void updatePresentation_doesntCallSetPresentation() {
+    void updatePresentation_doesntCallSetPresentation() {
         TestAbstractField<String> field = new TestAbstractField<>();
         field.setPresentationValue = value -> fail(
                 "setPresentationValue should not run");
@@ -299,7 +299,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setPresentation_throws_sameException_valuePreserved() {
+    void setPresentation_throws_sameException_valuePreserved() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -320,7 +320,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setPresentation_partialUpdates_onlyOneEvent() {
+    void setPresentation_partialUpdates_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -340,7 +340,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setPresentation_changesValue_onlyOneEvent() {
+    void setPresentation_changesValue_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -359,7 +359,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setPresentation_revertsValue_noEvent() {
+    void setPresentation_revertsValue_noEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -377,7 +377,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void setValueInEventHandler() {
+    void setValueInEventHandler() {
         TestAbstractField<String> field = new TestAbstractField<>();
 
         List<ValueChangeEvent<String>> beforeEvents = new ArrayList<>();
@@ -403,7 +403,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void requiredIndicator_writtenToElement() {
+    void requiredIndicator_writtenToElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
@@ -417,7 +417,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void requiredIndicator_readFromElement() {
+    void requiredIndicator_readFromElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
@@ -431,7 +431,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void readonly_writtenToElement() {
+    void readonly_writtenToElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
@@ -445,7 +445,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void readonly_readFromElement() {
+    void readonly_readFromElement() {
         TestAbstractField<String> field = new TestAbstractField<>();
         Element element = field.getElement();
 
@@ -459,7 +459,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void readonly_setValue_accepted() {
+    void readonly_setValue_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -473,7 +473,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void readonly_presentationFromClient_reverted() {
+    void readonly_presentationFromClient_reverted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -487,7 +487,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void readonly_presentationFromServer_accepted() {
+    void readonly_presentationFromServer_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
         ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
                 field);
@@ -501,7 +501,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void noOwnPublicApi() {
+    void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
                 .findNewPublicMethods(AbstractField.class)
                 .collect(Collectors.toList());
@@ -509,7 +509,7 @@ class AbstractFieldTest {
     }
 
     @Test
-    public void serializable() {
+    void serializable() {
         TestAbstractField<String> field = new TestAbstractField<>();
         field.addValueChangeListener(ignore -> {
         });

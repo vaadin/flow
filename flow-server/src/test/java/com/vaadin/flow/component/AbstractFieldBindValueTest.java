@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class AbstractFieldBindValueTest extends SignalsUnitTest {
 
     @Test
-    public void bindValue_elementAttachedBefore_bindingActive() {
+    void bindValue_elementAttachedBefore_bindingActive() {
         TestInput input = new TestInput();
         // attach before bindValue
         UI.getCurrent().add(input);
@@ -48,7 +48,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_elementAttachedAfter_bindingActive() {
+    void bindValue_elementAttachedAfter_bindingActive() {
         TestInput input = new TestInput();
         assertEquals("", input.getValue());
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -60,7 +60,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_elementAttached_bindingActive() {
+    void bindValue_elementAttached_bindingActive() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -79,17 +79,21 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_elementNotAttached_bindingInactive() {
+    void bindValue_elementNotAttached_bindingInactive() {
         TestInput input = new TestInput();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal, signal::set);
-        signal.set("bar");
 
-        assertEquals("", input.getValue());
+        // Probe runs immediately at bind time, setting the initial value
+        assertEquals("foo", input.getValue());
+
+        // Signal change while detached is ignored (effect is passivated)
+        signal.set("bar");
+        assertEquals("foo", input.getValue());
     }
 
     @Test
-    public void bindValue_elementDetached_bindingInactive() {
+    void bindValue_elementDetached_bindingInactive() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -101,7 +105,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_elementReAttached_bindingActivate() {
+    void bindValue_elementReAttached_bindingActivate() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -114,7 +118,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_bindValueWhileBindingIsActive_throwException() {
+    void bindValue_bindValueWhileBindingIsActive_throwException() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal1 = new ValueSignal<>("foo");
@@ -127,7 +131,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_setValueWhileBindingIsActive_signalUpdated() {
+    void bindValue_setValueWhileBindingIsActive_signalUpdated() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -139,7 +143,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_nullSignal_throwsNPE() {
+    void bindValue_nullSignal_throwsNPE() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
@@ -148,7 +152,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_lazyInitSignalBindingFeature() {
+    void bindValue_lazyInitSignalBindingFeature() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         input.setValue("foo");
@@ -168,7 +172,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_addValueChangeListener_signalValueChangeTriggersEvent() {
+    void bindValue_addValueChangeListener_signalValueChangeTriggersEvent() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
@@ -185,7 +189,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_addValueChangeListener_bindValueTriggersEvent() {
+    void bindValue_addValueChangeListener_bindValueTriggersEvent() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
@@ -201,7 +205,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_setValue_countEffectExecutions() {
+    void bindValue_setValue_countEffectExecutions() {
         TestInput input = new TestInput();
 
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -213,9 +217,10 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
             counter.incrementAndGet();
         });
 
-        assertEquals(0, counter.get());
+        // Both effects probe immediately at creation time
+        assertEquals(1, counter.get());
         UI.getCurrent().add(input);
-        // effect run once on attach
+        // Nothing changed since probe, so no re-run on attach
         assertEquals(1, counter.get());
 
         input.setValue("bar");
@@ -235,7 +240,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_forElementProperty_addValueChangeListener_bindingValueChangeTriggersEvent() {
+    void bindValue_forElementProperty_addValueChangeListener_bindingValueChangeTriggersEvent() {
         TestPropertyInput input = new TestPropertyInput();
         UI.getCurrent().add(input);
 
@@ -268,7 +273,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_readOnlyBinding_setValueThrows() {
+    void bindValue_readOnlyBinding_setValueThrows() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -282,7 +287,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_readOnlyBinding_signalChangesStillWork() {
+    void bindValue_readOnlyBinding_signalChangesStillWork() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -295,7 +300,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_readOnlyBinding_detachedSetValueDoesNotThrow() {
+    void bindValue_readOnlyBinding_detachedSetValueDoesNotThrow() {
         TestInput input = new TestInput();
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal, null);
@@ -306,7 +311,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_noOpCallback_revertsToSignalValue() {
+    void bindValue_noOpCallback_revertsToSignalValue() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -321,7 +326,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_transformingCallback_componentShowsTransformed() {
+    void bindValue_transformingCallback_componentShowsTransformed() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -335,7 +340,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_normalCallback_setValueUpdatesBoth() {
+    void bindValue_normalCallback_setValueUpdatesBoth() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -347,7 +352,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_readOnlySignal_signalToComponentDirection() {
+    void bindValue_readOnlySignal_signalToComponentDirection() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> writable = new ValueSignal<>("foo");
@@ -361,7 +366,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_writeCallbackThrows() {
+    void bindValue_writeCallbackThrows() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -378,7 +383,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_normalCallback_valueChangeEventTriggered() {
+    void bindValue_normalCallback_valueChangeEventTriggered() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -397,7 +402,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_transformingCallback_valueChangeEventTriggered() {
+    void bindValue_transformingCallback_valueChangeEventTriggered() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -416,7 +421,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_noOpCallback_valueChangeEventNotTriggered() {
+    void bindValue_noOpCallback_valueChangeEventNotTriggered() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -433,7 +438,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_updaterHelper_immutableRecord() {
+    void bindValue_updaterHelper_immutableRecord() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
@@ -462,7 +467,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_modifierHelper_mutableBean() {
+    void bindValue_modifierHelper_mutableBean() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
@@ -507,7 +512,7 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_updaterHelper_valueChangeEvents() {
+    void bindValue_updaterHelper_valueChangeEvents() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 

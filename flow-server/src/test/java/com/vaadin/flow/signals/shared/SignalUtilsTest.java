@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
-public class SignalUtilsTest {
+class SignalUtilsTest {
 
     @Test
     void treeOf_returnsSignalsUnderlyingTree() {

@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ReflectionCacheTest {
 
     @Test
-    public void generateCachedValues() {
+    void generateCachedValues() {
         AtomicInteger count = new AtomicInteger();
 
         ReflectionCache<Object, Integer> cache = new ReflectionCache<>(
@@ -46,7 +46,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void cacheContains() {
+    void cacheContains() {
         ReflectionCache<Object, Object> cache = new ReflectionCache<>(
                 type -> type);
 
@@ -58,7 +58,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void cacheClear() {
+    void cacheClear() {
         ReflectionCache<Object, Object> cache = new ReflectionCache<>(
                 type -> type);
 
@@ -70,7 +70,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void cacheClearEntry() {
+    void cacheClearEntry() {
         ReflectionCache<Number, Object> cache = new ReflectionCache<>(
                 type -> type);
 
@@ -99,7 +99,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void clearAll() {
+    void clearAll() {
         ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
                 type -> type);
         ReflectionCache<Object, Object> cache2 = new ReflectionCache<>(
@@ -115,7 +115,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void clearAllForGivenType() {
+    void clearAllForGivenType() {
         ReflectionCache<Number, Object> cache1 = new ReflectionCache<>(
                 type -> type);
 
@@ -141,7 +141,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void cacheIsGarbageCollected() throws InterruptedException {
+    void cacheIsGarbageCollected() throws InterruptedException {
         ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
                 type -> type);
         WeakReference<ReflectionCache<Object, Object>> ref = new WeakReference<>(
@@ -152,7 +152,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void cacheIsClearedAfterGc() throws InterruptedException {
+    void cacheIsClearedAfterGc() throws InterruptedException {
         ReflectionCache<Object, Object> cache = new ReflectionCache<>(
                 type -> type);
         cache.get(Object.class);
@@ -166,7 +166,7 @@ class ReflectionCacheTest {
     }
 
     @Test
-    public void currentInstancesNotAvailable() {
+    void currentInstancesNotAvailable() {
         String currentString = "My string";
         CurrentInstance.set(String.class, currentString);
 
