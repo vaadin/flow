@@ -37,12 +37,15 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *            data type
+ * @param <U>
+ *            concrete type of the {@link HierarchicalTreeData} used in this
+ *            provider.
  */
-public class HierarchicalTreeDataProvider<T>
+public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
         extends AbstractHierarchicalDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
-    private final HierarchicalTreeData<T> treeData;
+    private final U treeData;
 
     private SerializablePredicate<T> filter = null;
 
@@ -51,35 +54,35 @@ public class HierarchicalTreeDataProvider<T>
     private HierarchyFormat hierarchyFormat = HierarchyFormat.NESTED;
 
     /**
-     * Constructs a new TreeDataProvider.
+     * Constructs a new HierarchicalTreeDataProvider.
      * <p>
      * The data provider should be refreshed after making changes to the
      * underlying {@link HierarchicalTreeData} instance.
      *
      * @param treeData
-     *            the backing {@link TreeData} for this provider, not
-     *            {@code null}
+     *            the backing {@link HierarchicalTreeData} for this provider,
+     *            not {@code null}
      */
-    public HierarchicalTreeDataProvider(HierarchicalTreeData<T> treeData) {
+    public HierarchicalTreeDataProvider(U treeData) {
         this.treeData = Objects.requireNonNull(treeData,
                 "treeData cannot be null");
     }
 
     /**
-     * Creates a new TreeDataProvider and configures it to return the
-     * hierarchical data in the specified format: {@link HierarchyFormat#NESTED}
-     * or {@link HierarchyFormat#FLATTENED}.
+     * Creates a new HierarchicalTreeDataProvider and configures it to return
+     * the hierarchical data in the specified format:
+     * {@link HierarchyFormat#NESTED} or {@link HierarchyFormat#FLATTENED}.
      * <p>
      * The data provider should be refreshed after making changes to the
      * underlying {@link HierarchicalTreeData} instance.
      *
      * @param treeData
-     *            the backing {@link TreeData} for this provider, not
-     *            {@code null}
+     *            the backing {@link HierarchicalTreeData} for this provider,
+     *            not {@code null}
      * @param hierarchyFormat
      *            the hierarchy format to return data in, not {@code null}
      */
-    public HierarchicalTreeDataProvider(HierarchicalTreeData<T> treeData,
+    public HierarchicalTreeDataProvider(U treeData,
             HierarchyFormat hierarchyFormat) {
         this(treeData);
         this.hierarchyFormat = Objects.requireNonNull(hierarchyFormat,
@@ -92,11 +95,11 @@ public class HierarchicalTreeDataProvider<T>
     }
 
     /**
-     * Return the underlying hierarchical data of this provider.
+     * Return the underlying {@link HierarchicalTreeData} of this provider.
      *
      * @return the underlying data of this provider
      */
-    public HierarchicalTreeData<T> getTreeData() {
+    public U getTreeData() {
         return treeData;
     }
 
@@ -154,8 +157,7 @@ public class HierarchicalTreeDataProvider<T>
 
         Optional<Comparator<T>> comparator = Stream
                 .of(query.getInMemorySorting(), sortOrder)
-                .filter(Objects::nonNull)
-                .reduce((c1, c2) -> c1.thenComparing(c2));
+                .filter(Objects::nonNull).reduce(Comparator::thenComparing);
 
         return flatten(query.getParent(), query.getExpandedItemIds(),
                 combinedFilter, comparator).stream().skip(query.getOffset())

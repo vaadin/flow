@@ -25,7 +25,8 @@ package com.vaadin.flow.data.provider.hierarchy;
  * @param <T>
  *            data type
  */
-public class TreeDataProvider<T> extends HierarchicalTreeDataProvider<T> {
+public class TreeDataProvider<T>
+        extends HierarchicalTreeDataProvider<T, TreeData<T>> {
 
     /**
      * Constructs a new TreeDataProvider.
@@ -58,10 +59,5 @@ public class TreeDataProvider<T> extends HierarchicalTreeDataProvider<T> {
     public TreeDataProvider(TreeData<T> treeData,
             HierarchyFormat hierarchyFormat) {
         super(treeData, hierarchyFormat);
-    }
-
-    @Override
-    public TreeData<T> getTreeData() {
-        return (TreeData<T>) super.getTreeData();
     }
 }
