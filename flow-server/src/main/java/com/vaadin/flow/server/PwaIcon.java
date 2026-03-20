@@ -276,7 +276,8 @@ public class PwaIcon implements Serializable {
         if (data == null) {
             // New image with wanted size
             // Store byte array and hashcode of image (GeneratedImage)
-            setImage(drawIconImage(getBaseImage()));
+            setImage(drawIconImage(getBaseImage(), this.getWidth(),
+                    this.getHeight()));
         }
         try {
             outputStream.write(data);
@@ -292,43 +293,62 @@ public class PwaIcon implements Serializable {
         return registry.getBaseImage();
     }
 
-    private BufferedImage drawIconImage(BufferedImage baseImage) {
+    /**
+     * Draws a resized version of the given base image centered on a new image
+     * of the specified dimensions. The top-left pixel of the base image is used
+     * as the background fill color. The image is scaled down to fit within the
+     * target dimensions while preserving its aspect ratio; upscaling is not
+     * performed.
+     *
+     * @param baseImage
+     *            the source image to resize
+     * @param targetWidth
+     *            the width of the resulting image in pixels
+     * @param targetHeight
+     *            the height of the resulting image in pixels
+     * @return a new {@link BufferedImage} with the resized icon drawn centered
+     */
+    public static BufferedImage drawIconImage(BufferedImage baseImage,
+            int targetWidth, int targetHeight) {
         // Pick top-left pixel as fill color if needed for image
         // resizing
         int bgColor = baseImage.getRGB(0, 0);
 
-        BufferedImage bimage = new BufferedImage(this.getWidth(),
-                this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bimage = new BufferedImage(targetWidth, targetHeight,
+                BufferedImage.TYPE_INT_ARGB);
         // Draw the image on to the buffered image
         Graphics2D graphics = bimage.createGraphics();
 
-        // fill bg with fill-color
-        graphics.setBackground(new Color(bgColor, true));
-        graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
+        try {
+            // fill bg with fill-color
+            graphics.setBackground(new Color(bgColor, true));
+            graphics.clearRect(0, 0, targetWidth, targetHeight);
 
-        // calculate ratio (bigger ratio) for resize
-        float ratio = (float) baseImage.getWidth()
-                / (float) this.getWidth() > (float) baseImage.getHeight()
-                        / (float) this.getHeight()
-                                ? (float) baseImage.getWidth()
-                                        / (float) this.getWidth()
-                                : (float) baseImage.getHeight()
-                                        / (float) this.getHeight();
+            // calculate ratio (bigger ratio) for resize
+            float ratio = (float) baseImage.getWidth()
+                    / (float) targetWidth > (float) baseImage.getHeight()
+                            / (float) targetHeight
+                                    ? (float) baseImage.getWidth()
+                                            / (float) targetWidth
+                                    : (float) baseImage.getHeight()
+                                            / (float) targetHeight;
 
-        // Forbid upscaling of image
-        ratio = ratio > 1.0f ? ratio : 1.0f;
+            // Forbid upscaling of image
+            ratio = ratio > 1.0f ? ratio : 1.0f;
 
-        // calculate sizes with ratio
-        int newWidth = Math.round(baseImage.getHeight() / ratio);
-        int newHeight = Math.round(baseImage.getWidth() / ratio);
+            // calculate sizes with ratio
+            int newWidth = Math.round(baseImage.getHeight() / ratio);
+            int newHeight = Math.round(baseImage.getWidth() / ratio);
 
-        // draw rescaled img in the center of created image
-        graphics.drawImage(
-                baseImage.getScaledInstance(newWidth, newHeight,
-                        Image.SCALE_SMOOTH),
-                (this.getWidth() - newWidth) / 2,
-                (this.getHeight() - newHeight) / 2, null);
-        graphics.dispose();
+            // draw rescaled img in the center of created image
+            graphics.drawImage(
+                    baseImage.getScaledInstance(newWidth, newHeight,
+                            Image.SCALE_SMOOTH),
+                    (targetWidth - newWidth) / 2,
+                    (targetHeight - newHeight) / 2, null);
+        } finally {
+            graphics.dispose();
+        }
         return bimage;
     }
 
