@@ -30,7 +30,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * An in-memory data provider for listing components that display hierarchical
- * data. Uses an instance of {@link HierarchicalTreeData} as its source of data.
+ * data. Uses an instance of {@link HierarchicalData} as its source of data.
  *
  * @author Vaadin Ltd
  * @since 25.2
@@ -38,14 +38,14 @@ import com.vaadin.flow.function.SerializablePredicate;
  * @param <T>
  *            data type
  * @param <U>
- *            concrete type of the {@link HierarchicalTreeData} used in this
+ *            concrete type of the {@link HierarchicalData} used in this
  *            provider.
  */
-public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
+public class InMemoryHierarchicalDataProvider<T, U extends HierarchicalData<T>>
         extends AbstractHierarchicalDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
-    private final U treeData;
+    private final U hierarchicalData;
 
     private SerializablePredicate<T> filter = null;
 
@@ -54,37 +54,37 @@ public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
     private HierarchyFormat hierarchyFormat = HierarchyFormat.NESTED;
 
     /**
-     * Constructs a new HierarchicalTreeDataProvider.
+     * Constructs a new InMemoryHierarchicalDataProvider.
      * <p>
      * The data provider should be refreshed after making changes to the
-     * underlying {@link HierarchicalTreeData} instance.
+     * underlying {@link HierarchicalData} instance.
      *
-     * @param treeData
-     *            the backing {@link HierarchicalTreeData} for this provider,
-     *            not {@code null}
+     * @param hierarchicalData
+     *            the backing {@link HierarchicalData} for this provider, not
+     *            {@code null}
      */
-    public HierarchicalTreeDataProvider(U treeData) {
-        this.treeData = Objects.requireNonNull(treeData,
-                "treeData cannot be null");
+    public InMemoryHierarchicalDataProvider(U hierarchicalData) {
+        this.hierarchicalData = Objects.requireNonNull(hierarchicalData,
+                "hierarchicalData cannot be null");
     }
 
     /**
-     * Creates a new HierarchicalTreeDataProvider and configures it to return
-     * the hierarchical data in the specified format:
+     * Creates a new InMemoryHierarchicalDataProvider and configures it to
+     * return the hierarchical data in the specified format:
      * {@link HierarchyFormat#NESTED} or {@link HierarchyFormat#FLATTENED}.
      * <p>
      * The data provider should be refreshed after making changes to the
-     * underlying {@link HierarchicalTreeData} instance.
+     * underlying {@link HierarchicalData} instance.
      *
-     * @param treeData
-     *            the backing {@link HierarchicalTreeData} for this provider,
-     *            not {@code null}
+     * @param hierarchicalData
+     *            the backing {@link HierarchicalData} for this provider, not
+     *            {@code null}
      * @param hierarchyFormat
      *            the hierarchy format to return data in, not {@code null}
      */
-    public HierarchicalTreeDataProvider(U treeData,
+    public InMemoryHierarchicalDataProvider(U hierarchicalData,
             HierarchyFormat hierarchyFormat) {
-        this(treeData);
+        this(hierarchicalData);
         this.hierarchyFormat = Objects.requireNonNull(hierarchyFormat,
                 "hierarchyFormat cannot be null");
     }
@@ -95,28 +95,39 @@ public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
     }
 
     /**
-     * Return the underlying {@link HierarchicalTreeData} of this provider.
+     * Return the underlying {@link HierarchicalData} of this provider.
      *
      * @return the underlying data of this provider
      */
+    public U getHierarchicalData() {
+        return hierarchicalData;
+    }
+
+    /**
+     * Return the underlying {@link HierarchicalData} of this provider.
+     *
+     * @return the underlying data of this provider
+     * @deprecated use {@link #getHierarchicalData()} instead.
+     */
+    @Deprecated
     public U getTreeData() {
-        return treeData;
+        return hierarchicalData;
     }
 
     @Override
     public boolean hasChildren(T item) {
-        if (!treeData.contains(item)) {
+        if (!hierarchicalData.contains(item)) {
             // The item might be dropped from the tree already
             return false;
         }
-        return !treeData.getChildren(item).isEmpty();
+        return !hierarchicalData.getChildren(item).isEmpty();
     }
 
     @Override
     public T getParent(T item) {
         Objects.requireNonNull(item, "Item cannot be null.");
         try {
-            return getTreeData().getParent(item);
+            return hierarchicalData.getParent(item);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -125,7 +136,7 @@ public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
     @Override
     public int getDepth(T item) {
         int depth = 0;
-        while ((item = treeData.getParent(item)) != null) {
+        while ((item = hierarchicalData.getParent(item)) != null) {
             depth++;
         }
         return depth;
@@ -145,10 +156,10 @@ public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
     @Override
     public Stream<T> fetchChildren(
             HierarchicalQuery<T, SerializablePredicate<T>> query) {
-        if (!treeData.contains(query.getParent())) {
+        if (!hierarchicalData.contains(query.getParent())) {
             throw new IllegalArgumentException("The queried item "
                     + query.getParent()
-                    + " could not be found in the backing HierarchicalTreeData. "
+                    + " could not be found in the backing HierarchicalData. "
                     + "Did you forget to refresh this data provider after item removal?");
         }
 
@@ -197,7 +208,7 @@ public class HierarchicalTreeDataProvider<T, U extends HierarchicalTreeData<T>>
             Optional<SerializablePredicate<T>> combinedFilter,
             Optional<Comparator<T>> comparator) {
         List<T> result = new ArrayList<>();
-        List<T> children = getTreeData().getChildren(parent);
+        List<T> children = hierarchicalData.getChildren(parent);
 
         if (comparator.isPresent()) {
             children = children.stream().sorted(comparator.get()).toList();

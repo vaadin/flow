@@ -21,7 +21,8 @@ import java.util.List;
 /**
  * Represents hierarchical data.
  * <p>
- * Typically used as a backing data source for {@link TreeDataProvider}.
+ * Typically used as a backing data source for
+ * {@link InMemoryHierarchicalDataProvider}.
  *
  * @author Vaadin Ltd
  * @since 25.2
@@ -29,7 +30,7 @@ import java.util.List;
  * @param <T>
  *            data type
  */
-public interface HierarchicalTreeData<T> extends Serializable {
+public interface HierarchicalData<T> extends Serializable {
 
     /**
      * Get the immediate child items for the given item.

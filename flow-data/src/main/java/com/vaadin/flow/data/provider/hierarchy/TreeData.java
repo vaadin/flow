@@ -40,7 +40,7 @@ import com.vaadin.flow.function.ValueProvider;
  * @param <T>
  *            data type
  */
-public class TreeData<T> implements HierarchicalTreeData<T> {
+public class TreeData<T> implements HierarchicalData<T> {
 
     private static class HierarchyWrapper<T> implements Serializable {
         private T parent;
