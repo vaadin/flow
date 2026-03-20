@@ -102,7 +102,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true) { build.listFiles()!!.isNotEmpty() }
         build.find("*.br", 4..10)
         build.find("*.js", 4..10)
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        // Read from cached copy since the task deletes the original
+        // token file so IDE runs default to development mode
+        val tokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
         expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
@@ -116,7 +118,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // vaadinBuildFrontend is self-contained in production mode
         result.expectTaskNotRan("vaadinPrepareFrontend")
 
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        // Read from cached copy since the task deletes the original
+        val tokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
         expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
