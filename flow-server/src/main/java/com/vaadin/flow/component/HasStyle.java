@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.signals.Signal;
 
 /**
  * Represents {@link Component} which has class attribute and inline styles.
@@ -159,6 +162,49 @@ public interface HasStyle extends HasElement {
                 getClassNames().add(part);
             }
         }
+    }
+
+    /**
+     * Binds the presence of the given CSS class name to a {@link Signal}. The
+     * class name is immediately added or removed based on the current signal
+     * value when the binding is created. When the signal's value is
+     * {@code true}, the class name is added; when {@code false}, the class name
+     * is removed.
+     * <p>
+     * The binding is kept synchronized with any subsequent signal value changes
+     * while the component is attached to a UI. When detached, signal value
+     * changes have no effect.
+     *
+     * @param className
+     *            the CSS class name to toggle, not {@code null} or blank
+     * @param signal
+     *            the boolean signal to bind to, not {@code null}
+     * @see ClassList#bind(String, Signal)
+     * @since 25.1
+     */
+    default SignalBinding<Boolean> bindClassName(String className,
+            Signal<Boolean> signal) {
+        return getClassNames().bind(className, signal);
+    }
+
+    /**
+     * Binds the CSS class names of this component to a {@link Signal}. The
+     * class list is immediately updated to match the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the component is attached. Only one group
+     * binding is allowed per component.
+     * <p>
+     * The group binding coexists with static values and individual toggle
+     * bindings.
+     *
+     * @param names
+     *            the signal providing the list of class names, not {@code null}
+     * @see ClassList#bind(Signal)
+     * @since 25.1
+     */
+    default SignalBinding<List<String>> bindClassNames(
+            Signal<List<String>> names) {
+        return getClassNames().bind(names);
     }
 
     /**

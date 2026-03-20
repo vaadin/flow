@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * 
  * Computes a new signal value based on the current value, enabling atomic
  * compare-and-swap updates with automatic retry on conflicts.
  * <p>
@@ -30,14 +31,14 @@ import org.jspecify.annotations.Nullable;
  *            the signal value type
  */
 @FunctionalInterface
-public interface SignalUpdater<T> extends Serializable {
+public interface SignalUpdater<T extends @Nullable Object>
+        extends Serializable {
     /**
      * Computes a new value based on the current value.
      *
      * @param currentValue
-     *            the current signal value, may be <code>null</code>
-     * @return the new value to set, may be <code>null</code>
+     *            the current signal value
+     * @return the new value to set
      */
-    @Nullable
-    T update(@Nullable T currentValue);
+    T update(T currentValue);
 }

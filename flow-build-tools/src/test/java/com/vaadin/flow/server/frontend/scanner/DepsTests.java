@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,11 +24,20 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JsModule;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DepsTests {
 
-    public static final String UI_IMPORT = "@vaadin/common-frontend/ConnectionIndicator.js";
+    public static final List<String> UI_IMPORTS;
+
+    static {
+        JsModule[] annotations = UI.class.getAnnotationsByType(JsModule.class);
+        UI_IMPORTS = Arrays.stream(annotations).map(JsModule::value).toList();
+    }
 
     public static <T> List<T> merge(Map<ChunkInfo, List<T>> values) {
         LinkedHashSet<T> result = new LinkedHashSet<>();
@@ -38,20 +48,31 @@ public class DepsTests {
     /**
      * Checks that all urls are imported in the given order and that nothing
      * else is imported.
-     *
-     * Ignores @vaadin/common-frontend/ConnectionIndicator.js unless included in
-     * the urls list
      */
     public static void assertImports(Map<ChunkInfo, List<String>> actualUrls,
             String... expectedUrls) {
         List<String> actual = merge(actualUrls);
-        Assert.assertEquals(List.of(expectedUrls), actual);
+        assertEquals(List.of(expectedUrls), actual);
+    }
+
+    /**
+     * Checks whether a given import line originates from a UI annotation.
+     * Handles both raw annotation values and resolved paths (e.g.
+     * {@code ./geolocation.js} resolving to
+     * {@code Frontend/generated/jar-resources/geolocation.js}).
+     */
+    public static boolean isUiImport(String importLine) {
+        return UI_IMPORTS.stream().anyMatch(uiImport -> {
+            String match = uiImport.startsWith("./") ? uiImport.substring(2)
+                    : uiImport;
+            return importLine.contains(match);
+        });
     }
 
     public static void assertImportsExcludingUI(
             Map<ChunkInfo, List<String>> actualUrls, String... expectedUrls) {
         for (ChunkInfo key : actualUrls.keySet()) {
-            actualUrls.get(key).removeIf(imp -> imp.equals(UI_IMPORT));
+            actualUrls.get(key).removeIf(DepsTests::isUiImport);
         }
         assertImports(actualUrls, expectedUrls);
     }
@@ -59,7 +80,7 @@ public class DepsTests {
     public static void assertImportsWithFilter(
             Map<ChunkInfo, List<String>> actualUrls, Predicate<String> filter,
             String... expectedUrls) {
-        Assert.assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
+        assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
                 .filter(filter).collect(Collectors.toList()));
     }
 
@@ -70,18 +91,18 @@ public class DepsTests {
     public static void assertHasImports(Map<ChunkInfo, List<String>> modules,
             String... urls) {
         List<String> all = merge(modules);
-        Assert.assertTrue(all.containsAll(List.of(urls)));
+        assertTrue(all.containsAll(List.of(urls)));
     }
 
     static void assertCss(Map<ChunkInfo, List<CssData>> actual,
             List<CssData> expected) {
         Collection<CssData> all = merge(actual);
-        Assert.assertEquals(expected, all);
+        assertEquals(expected, all);
     }
 
     public static <T> void assertImportCount(int expected,
             Map<ChunkInfo, List<T>> imports) {
-        Assert.assertEquals(expected, merge(imports).size());
+        assertEquals(expected, merge(imports).size());
     }
 
 }

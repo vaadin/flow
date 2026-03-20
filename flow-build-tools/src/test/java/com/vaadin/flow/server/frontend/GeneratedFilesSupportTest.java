@@ -21,87 +21,87 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class GeneratedFilesSupportTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+class GeneratedFilesSupportTest {
+
+    @TempDir
+    File temporaryFolder;
 
     @Test
-    public void writeIfChanged_newFilesTracked() throws IOException {
+    void writeIfChanged_newFilesTracked() throws IOException {
         GeneratedFilesSupport support = new GeneratedFilesSupport();
-        File file = new File(temporaryFolder.getRoot(), "test.txt");
-        Assert.assertTrue("New file should have been written",
-                support.writeIfChanged(file, "TEST"));
-        Assert.assertEquals(Files.readString(file.toPath()), "TEST");
+        File file = new File(temporaryFolder, "test.txt");
+        assertTrue(support.writeIfChanged(file, "TEST"),
+                "New file should have been written");
+        assertEquals(Files.readString(file.toPath()), "TEST");
 
-        File nested = temporaryFolder.getRoot().toPath()
+        File nested = temporaryFolder.toPath()
                 .resolve(Path.of("a", "b", "c.txt")).toFile();
-        Assert.assertTrue("New file should have been written",
-                support.writeIfChanged(nested, "TEST2"));
-        Assert.assertEquals(Files.readString(nested.toPath()), "TEST2");
+        assertTrue(support.writeIfChanged(nested, "TEST2"),
+                "New file should have been written");
+        assertEquals(Files.readString(nested.toPath()), "TEST2");
 
-        Assert.assertEquals(Set.of(file.toPath().toAbsolutePath(),
+        assertEquals(Set.of(file.toPath().toAbsolutePath(),
                 nested.toPath().toAbsolutePath()), support.getFiles());
     }
 
     @Test
-    public void writeIfChanged_unchangedFilesTracked() throws IOException {
+    void writeIfChanged_unchangedFilesTracked() throws IOException {
         GeneratedFilesSupport support = new GeneratedFilesSupport();
-        File file = new File(temporaryFolder.getRoot(), "test.txt");
+        File file = new File(temporaryFolder, "test.txt");
         Files.writeString(file.toPath(), "TEST");
-        Assert.assertFalse(
-                "Existing file with same content should not have been overwritten",
-                support.writeIfChanged(file, "TEST"));
-        Assert.assertEquals(Files.readString(file.toPath()), "TEST");
+        assertFalse(support.writeIfChanged(file, "TEST"),
+                "Existing file with same content should not have been overwritten");
+        assertEquals(Files.readString(file.toPath()), "TEST");
 
-        File nested = temporaryFolder.getRoot().toPath()
+        File nested = temporaryFolder.toPath()
                 .resolve(Path.of("a", "b", "c.txt")).toFile();
         nested.getParentFile().mkdirs();
         Files.writeString(nested.toPath(), "TEST2");
-        Assert.assertFalse(
-                "Existing file with same content should not have been overwritten",
-                support.writeIfChanged(nested, "TEST2"));
-        Assert.assertEquals(Files.readString(nested.toPath()), "TEST2");
+        assertFalse(support.writeIfChanged(nested, "TEST2"),
+                "Existing file with same content should not have been overwritten");
+        assertEquals(Files.readString(nested.toPath()), "TEST2");
 
-        Assert.assertEquals(Set.of(file.toPath().toAbsolutePath(),
+        assertEquals(Set.of(file.toPath().toAbsolutePath(),
                 nested.toPath().toAbsolutePath()), support.getFiles());
     }
 
     @Test
-    public void writeIfChanged_updatedFilesTracked() throws IOException {
+    void writeIfChanged_updatedFilesTracked() throws IOException {
         GeneratedFilesSupport support = new GeneratedFilesSupport();
-        File file = new File(temporaryFolder.getRoot(), "test.txt");
+        File file = new File(temporaryFolder, "test.txt");
         Files.writeString(file.toPath(), "OLD TEST");
-        Assert.assertTrue("Existing file should have been updated",
-                support.writeIfChanged(file, "TEST"));
-        Assert.assertEquals(Files.readString(file.toPath()), "TEST");
+        assertTrue(support.writeIfChanged(file, "TEST"),
+                "Existing file should have been updated");
+        assertEquals(Files.readString(file.toPath()), "TEST");
 
-        File nested = temporaryFolder.getRoot().toPath()
+        File nested = temporaryFolder.toPath()
                 .resolve(Path.of("a", "b", "c.txt")).toFile();
         nested.getParentFile().mkdirs();
         Files.writeString(nested.toPath(), "OLD TEST2");
-        Assert.assertTrue("Existing file should have been updated",
-                support.writeIfChanged(nested, "TEST2"));
-        Assert.assertEquals(Files.readString(nested.toPath()), "TEST2");
+        assertTrue(support.writeIfChanged(nested, "TEST2"),
+                "Existing file should have been updated");
+        assertEquals(Files.readString(nested.toPath()), "TEST2");
 
-        Assert.assertEquals(Set.of(file.toPath().toAbsolutePath(),
+        assertEquals(Set.of(file.toPath().toAbsolutePath(),
                 nested.toPath().toAbsolutePath()), support.getFiles());
     }
 
     @Test
-    public void getFile_filterByRootFolder() throws IOException {
+    void getFile_filterByRootFolder() throws IOException {
         GeneratedFilesSupport support = new GeneratedFilesSupport();
-        File file1 = new File(temporaryFolder.getRoot(), "test.txt");
-        File file2 = temporaryFolder.getRoot().toPath()
+        File file1 = new File(temporaryFolder, "test.txt");
+        File file2 = temporaryFolder.toPath()
                 .resolve(Path.of("a", "b", "c.txt")).toFile();
-        File file3 = temporaryFolder.getRoot().toPath()
+        File file3 = temporaryFolder.toPath()
                 .resolve(Path.of("a", "z", "n.txt")).toFile();
-        File file4 = temporaryFolder.getRoot().toPath()
+        File file4 = temporaryFolder.toPath()
                 .resolve(Path.of("a", "z", "y.txt")).toFile();
 
         support.writeIfChanged(file1, "TEST");
@@ -109,28 +109,26 @@ public class GeneratedFilesSupportTest {
         support.writeIfChanged(file3, "TEST");
         support.writeIfChanged(file4, "TEST");
 
-        Assert.assertEquals(Set.of(file1.toPath().toAbsolutePath(),
+        assertEquals(Set.of(file1.toPath().toAbsolutePath(),
                 file2.toPath().toAbsolutePath(),
                 file3.toPath().toAbsolutePath(), file4.toPath().toAbsolutePath()
 
         ), support.getFiles());
 
-        Assert.assertEquals(
+        assertEquals(
                 Set.of(file2.toPath().toAbsolutePath(),
                         file3.toPath().toAbsolutePath(),
                         file4.toPath().toAbsolutePath()),
-                support.getFiles(
-                        temporaryFolder.getRoot().toPath().resolve("a")));
+                support.getFiles(temporaryFolder.toPath().resolve("a")));
 
-        Assert.assertEquals(Set.of(file2.toPath().toAbsolutePath()),
-                support.getFiles(temporaryFolder.getRoot().toPath()
-                        .resolve(Path.of("a", "b"))));
+        assertEquals(Set.of(file2.toPath().toAbsolutePath()), support
+                .getFiles(temporaryFolder.toPath().resolve(Path.of("a", "b"))));
 
-        Assert.assertEquals(
+        assertEquals(
                 Set.of(file3.toPath().toAbsolutePath(),
                         file4.toPath().toAbsolutePath()),
-                support.getFiles(temporaryFolder.getRoot().toPath()
-                        .resolve(Path.of("a", "z"))));
+                support.getFiles(
+                        temporaryFolder.toPath().resolve(Path.of("a", "z"))));
 
     }
 

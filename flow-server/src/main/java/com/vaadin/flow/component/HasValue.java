@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Signal;
@@ -234,10 +235,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     boolean isRequiredIndicatorVisible();
 
     /**
-     * Binds a {@link Signal}'s value to the value state of this component and
-     * keeps the state synchronized with the signal value while the element is
-     * in attached state. When the element is in detached state, signal value
-     * changes have no effect.
+     * Binds a {@link Signal}'s value to the value state of this component. The
+     * value is set immediately with the current signal value when the binding
+     * is created, and is kept synchronized with any subsequent signal value
+     * changes while the element is in attached state. When the element is in
+     * detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to a value state, any attempt to bind a new
      * Signal while one is already bound throws
@@ -303,7 +305,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *             thrown when there is already an existing binding
      * @see #setValue(Object)
      */
-    default void bindValue(Signal<V> valueSignal,
+    default SignalBinding<V> bindValue(Signal<V> valueSignal,
             SerializableConsumer<V> writeCallback) {
         throw new UnsupportedOperationException(
                 "Binding value to a Signal is not supported by "
@@ -311,10 +313,11 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
     }
 
     /**
-     * Binds a {@link Signal}'s value to the read-only state of this component
-     * and keeps the state synchronized with the signal value while the
-     * component is in attached state. When the component is in detached state,
-     * signal value changes have no effect.
+     * Binds a {@link Signal}'s value to the read-only state of this component.
+     * The read-only state is set immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the component is in attached state. When the
+     * component is in detached state, signal value changes have no effect.
      * <p>
      * While a Signal is bound to the read-only state, any attempt to set the
      * read-only state manually with {@link #setReadOnly(boolean)} throws
@@ -337,9 +340,47 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      *             thrown when there is already an existing binding
      * @see #setReadOnly(boolean)
      */
-    default void bindReadOnly(Signal<Boolean> readOnlySignal) {
+    default SignalBinding<Boolean> bindReadOnly(
+            Signal<Boolean> readOnlySignal) {
         throw new UnsupportedOperationException(
                 "Binding read only state to a Signal is not supported by "
+                        + getClass().getSimpleName());
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the required indicator visible state of
+     * this component. The required indicator state is set immediately with the
+     * current signal value when the binding is created, and is kept
+     * synchronized with any subsequent signal value changes while the component
+     * is in attached state. When the component is in detached state, signal
+     * value changes have no effect.
+     * <p>
+     * While a Signal is bound to the required indicator visible state, any
+     * attempt to set the state manually with
+     * {@link #setRequiredIndicatorVisible(boolean)} throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Input component = new Input();
+     * add(component);
+     * component.bindRequiredIndicatorVisible(signal);
+     * signal.set(true); // The required indicator becomes visible
+     * </pre>
+     *
+     * @param requiredSignal
+     *            the signal to bind, not <code>null</code>
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setRequiredIndicatorVisible(boolean)
+     */
+    default SignalBinding<Boolean> bindRequiredIndicatorVisible(
+            Signal<Boolean> requiredSignal) {
+        throw new UnsupportedOperationException(
+                "Binding required indicator visible state to a Signal is not supported by "
                         + getClass().getSimpleName());
     }
 }

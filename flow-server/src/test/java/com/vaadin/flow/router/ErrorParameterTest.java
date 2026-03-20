@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ErrorParameterTest {
     @Test
-    public void matchingExceptionType() {
+    void matchingExceptionType() {
         NullPointerException exception = new NullPointerException();
 
         ErrorParameter<NullPointerException> errorParameter = new ErrorParameter<>(
@@ -32,7 +32,7 @@ class ErrorParameterTest {
     }
 
     @Test
-    public void superExceptionType() {
+    void superExceptionType() {
         NullPointerException exception = new NullPointerException();
 
         ErrorParameter<RuntimeException> errorParameter = new ErrorParameter<>(
@@ -43,7 +43,7 @@ class ErrorParameterTest {
     }
 
     @Test
-    public void matchingCauseType() {
+    void matchingCauseType() {
         NullPointerException cause = new NullPointerException();
         IllegalStateException exception = new IllegalStateException(cause);
 
@@ -55,7 +55,7 @@ class ErrorParameterTest {
     }
 
     @Test
-    public void superMatchingCauseType() {
+    void superMatchingCauseType() {
         NullPointerException cause = new NullPointerException() {
 
         };

@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-bom</artifactId>
-  <version>25.1-SNAPSHOT</version>
+  <version>25.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow Bill of Materials</name>
   <description>Flow Bill of Materials</description>
@@ -30,7 +30,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.4.0</version>
         <configuration>
           <skip>true</skip>
         </configuration>

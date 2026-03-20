@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.signals.shared;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
@@ -34,8 +32,8 @@ import com.vaadin.flow.signals.function.CommandValidator;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
+import com.vaadin.flow.signals.shared.impl.LocalAsynchronousSignalTree;
 import com.vaadin.flow.signals.shared.impl.SignalTree;
-import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a list of values. Supports atomic updates to the list
@@ -46,8 +44,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * @param <T>
  *            the element type
  */
-public class SharedListSignal<T>
-        extends AbstractSignal<@NonNull List<SharedValueSignal<T>>> {
+public class SharedListSignal<T extends @Nullable Object>
+        extends AbstractSharedSignal<@NonNull List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -100,7 +98,8 @@ public class SharedListSignal<T>
          *            first
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition after(@Nullable AbstractSignal<?> after) {
+        public static ListPosition after(
+                @Nullable AbstractSharedSignal<?> after) {
             return new ListPosition(idOf(after), null);
         }
 
@@ -114,7 +113,8 @@ public class SharedListSignal<T>
          *            insert last
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition before(@Nullable AbstractSignal<?> before) {
+        public static ListPosition before(
+                @Nullable AbstractSharedSignal<?> before) {
             return new ListPosition(null, idOf(before));
         }
 
@@ -134,12 +134,13 @@ public class SharedListSignal<T>
          * @return a list position between the given signals, not
          *         <code>null</code>
          */
-        public static ListPosition between(@Nullable AbstractSignal<?> after,
-                @Nullable AbstractSignal<?> before) {
+        public static ListPosition between(
+                @Nullable AbstractSharedSignal<?> after,
+                @Nullable AbstractSharedSignal<?> before) {
             return new ListPosition(idOf(after), idOf(before));
         }
 
-        private static Id idOf(@Nullable AbstractSignal<?> signal) {
+        private static Id idOf(@Nullable AbstractSharedSignal<?> signal) {
             if (signal == null) {
                 return Id.EDGE;
             } else {
@@ -158,7 +159,7 @@ public class SharedListSignal<T>
      *            the element type, not <code>null</code>
      */
     public SharedListSignal(Class<T> elementType) {
-        this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
+        this(new LocalAsynchronousSignalTree(), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
 
@@ -192,6 +193,26 @@ public class SharedListSignal<T>
     @Override
     public List<SharedValueSignal<T>> peek() {
         return Objects.requireNonNull(super.peek());
+    }
+
+    /**
+     * Gets a stream with all values in this signal. This registers a dependency
+     * for both the structure of the list and the values of all child signals.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> getValues() {
+        return get().stream().map(Signal::get);
+    }
+
+    /**
+     * Gets a stream with all values in this signal without registering any
+     * dependencies.
+     * 
+     * @return a stream of signal values, not <code>null</code>
+     */
+    public Stream<T> peekValues() {
+        return peek().stream().map(Signal::peek);
     }
 
     @Override
@@ -289,7 +310,7 @@ public class SharedListSignal<T>
      *            the position to move to, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> moveTo(AbstractSignal<T> child,
+    public SignalOperation<Void> moveTo(AbstractSharedSignal<T> child,
             ListPosition to) {
         var verifyChild = new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), new ListPosition(null, null));
@@ -339,7 +360,7 @@ public class SharedListSignal<T>
      *            the expected position of the child, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyPosition(AbstractSignal<?> child,
+    public SignalOperation<Void> verifyPosition(AbstractSharedSignal<?> child,
             ListPosition expectedPosition) {
         return submit(new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), Objects.requireNonNull(expectedPosition)));
@@ -357,7 +378,7 @@ public class SharedListSignal<T>
      *            the child to look for test, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyChild(AbstractSignal<?> child) {
+    public SignalOperation<Void> verifyChild(AbstractSharedSignal<?> child) {
         return verifyPosition(child, new ListPosition(null, null));
     }
 
@@ -423,11 +444,5 @@ public class SharedListSignal<T>
         return value.stream().map(SharedValueSignal::peek)
                 .map(Objects::toString)
                 .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        LoggerFactory.getLogger(SharedListSignal.class).warn(
-                "Serializing SharedListSignal. Sharing signals across a cluster is not yet implemented.");
-        out.defaultWriteObject();
     }
 }

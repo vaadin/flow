@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -36,13 +37,23 @@ import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSign
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class EffectTest extends SignalTestBase {
+class EffectTest extends SignalTestBase {
+
+    @Test
+    void newEffect_noSignalUsage_throws() {
+        assertThrows(MissingSignalUsageException.class, () -> {
+            Signal.unboundEffect(() -> {
+            });
+        });
+    }
 
     @Test
     void newEffect_actionIsRunOnce() {
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             count.incrementAndGet();
         });
 
@@ -51,9 +62,11 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
+        var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             count.incrementAndGet();
         }).remove();
 
@@ -116,11 +129,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -140,11 +155,13 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
+        var dependency = createDependency();
         SharedValueSignal<String> signal = new SharedValueSignal<>("");
         ArrayList<String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.unboundEffect(() -> {
+            dependency.get();
             if (read.get()) {
                 invocations.add(signal.get());
             } else {
@@ -192,24 +209,6 @@ public class EffectTest extends SignalTestBase {
         });
 
         assertEquals(List.of("", "second"), invocations);
-    }
-
-    @Test
-    void changeTracking_multipleSignalsInTransaction_effectRunOnce() {
-        SharedValueSignal<String> signal1 = new SharedValueSignal<>("");
-        SharedValueSignal<String> signal2 = new SharedValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
-
-        Signal.unboundEffect(() -> {
-            invocations.add(signal1.get() + signal2.get());
-        });
-
-        Signal.runInTransaction(() -> {
-            signal1.set("one ");
-            signal2.set("two");
-        });
-
-        assertEquals(List.of("", "one two"), invocations);
     }
 
     @Test
@@ -292,6 +291,7 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // Deliberately testing null value behavior
     void changeTracking_changeValueToNull_effectTriggered() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         ArrayList<String> invocations = new ArrayList<>();
@@ -403,8 +403,10 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
+        var dependency = createDependency();
         RuntimeException exception = new RuntimeException("Expected exception");
         Signal.unboundEffect(() -> {
+            dependency.get();
             throw exception;
         });
 
@@ -445,10 +447,10 @@ public class EffectTest extends SignalTestBase {
         Signal.unboundEffect(() -> {
             other.set(signal.get());
         });
-        assertEquals("signal", other.get());
+        assertEquals("signal", other.peek());
 
         signal.set("update");
-        assertEquals("update", other.get());
+        assertEquals("update", other.peek());
     }
 
     @Test
@@ -544,6 +546,190 @@ public class EffectTest extends SignalTestBase {
         // Runs the 1st effect which is where the loop can be detected
         dispatcher.runPendingTasks();
         assertUncaughtException(IllegalStateException.class);
+    }
+
+    @Test
+    void setDispatcher_changesDispatcherUsedForSubsequentRuns() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> dispatcherLog = new ArrayList<>();
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        }, Runnable::run);
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+
+        // Switch to a dispatcher that records calls
+        effect.setDispatcher(command -> {
+            dispatcherLog.add("dispatched");
+            command.run();
+        });
+
+        signal.set("updated");
+        effect.activate();
+        // activate() calls revalidate() directly (not via the dispatcher)
+        // when there are changes, so the dispatcher is not invoked here
+        assertEquals(List.of("initial", "updated"), invocations,
+                "Effect should re-run with new value after setDispatcher + activate");
+        assertEquals(0, dispatcherLog.size(),
+                "Dispatcher is not used by activate() directly");
+
+        // The new dispatcher IS used for subsequent signal change notifications
+        signal.set("final");
+        assertEquals(List.of("initial", "updated", "final"), invocations,
+                "Effect should continue using the new dispatcher");
+        assertEquals(1, dispatcherLog.size(),
+                "New dispatcher should have been used for signal change");
+    }
+
+    @Test
+    void passivateActivate_noChanges_callbackNotReRun() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+        signal.set("initial"); // no-op change
+        effect.activate();
+        assertEquals(List.of("initial"), invocations,
+                "Callback should not re-run when nothing changed");
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), invocations,
+                "Effect should remain active after activate");
+    }
+
+    @Test
+    void passivateActivate_withChanges_callbackReRun() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(signal.get());
+        });
+        assertEquals(List.of("initial"), invocations);
+
+        effect.passivate();
+        signal.set("changed");
+        effect.activate();
+        assertEquals(List.of("initial", "changed"), invocations,
+                "Callback should re-run when dependency changed");
+    }
+
+    @Test
+    void passivateActivate_noChanges_nextChangeIsNotInitialRun() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+        assertEquals(List.of(true), initialRuns);
+
+        effect.passivate();
+        effect.activate();
+
+        signal.set("update");
+        assertEquals(List.of(true, false), initialRuns,
+                "Change after activate without changes should not be initial run");
+    }
+
+    @Test
+    void passivateActivate_racyChangeDuringReRegister_isInitialRunTrue() {
+        AtomicBoolean injectChange = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Registration onNextChange(
+                            TransientListener listener) {
+                        if (injectChange.compareAndSet(true, false)) {
+                            set("sneaky");
+                        }
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+        assertEquals(List.of(true), initialRuns);
+
+        effect.passivate();
+        injectChange.set(true);
+        effect.activate();
+
+        assertEquals(List.of(true, true), initialRuns,
+                "Change during activation should run with isInitialRun=true");
+    }
+
+    @Test
+    void passivateActivate_asyncDispatcher_racyChange_isInitialRunTrue() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        AtomicBoolean injectChange = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Registration onNextChange(
+                            TransientListener listener) {
+                        if (injectChange.compareAndSet(true, false)) {
+                            set("sneaky");
+                        }
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        List<Boolean> initialRuns = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            initialRuns.add(ctx.isInitialRun());
+        });
+        dispatcher.runPendingTasks();
+        assertEquals(List.of(true), initialRuns);
+
+        effect.passivate();
+        injectChange.set(true);
+        effect.activate();
+        // Revalidation is dispatched asynchronously; firstRun must not
+        // be reset before the dispatcher runs.
+        dispatcher.runPendingTasks();
+
+        assertEquals(List.of(true, true), initialRuns,
+                "Racy change with async dispatcher should run with isInitialRun=true");
     }
 
     @Test

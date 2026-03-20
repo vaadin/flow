@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-multi-war</artifactId>
-    <version>25.1-SNAPSHOT</version>
+    <version>25.2-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-multi-war1</artifactId>
   <packaging>war</packaging>
@@ -29,6 +29,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <!-- Exclude duplicated dev mode flow-build-info -->
+          <packagingExcludes>META-INF/VAADIN/config/flow-build-info.json</packagingExcludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>

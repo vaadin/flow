@@ -23,24 +23,30 @@ import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
+import com.vaadin.flow.signals.BindingActiveException;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class HasTextTest {
 
     private HasText hasText = Mockito.mock(HasText.class);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Element element = ElementFactory.createDiv();
         Mockito.when(hasText.getElement()).thenReturn(element);
 
         Mockito.doCallRealMethod().when(hasText).setWhiteSpace(Mockito.any());
         Mockito.doCallRealMethod().when(hasText).getWhiteSpace();
+        Mockito.doCallRealMethod().when(hasText).setText(Mockito.any());
+        Mockito.doCallRealMethod().when(hasText).bindText(Mockito.any());
     }
 
     @Test
-    public void setWhiteSpace_styleIsSet() {
+    void setWhiteSpace_styleIsSet() {
         hasText.setWhiteSpace(WhiteSpace.NOWRAP);
 
         assertEquals("nowrap",
@@ -48,21 +54,43 @@ class HasTextTest {
     }
 
     @Test
-    public void getWhiteSpace_getStyleValue() {
+    void getWhiteSpace_getStyleValue() {
         hasText.getElement().getStyle().setWhiteSpace(Style.WhiteSpace.INHERIT);
         assertEquals(WhiteSpace.INHERIT, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_noStyleIsSet_normalIsReturned() {
+    void getWhiteSpace_noStyleIsSet_normalIsReturned() {
         assertEquals(WhiteSpace.NORMAL, hasText.getWhiteSpace());
     }
 
     @Test
-    public void getWhiteSpace_notStandardValue_nullIsReturned() {
+    void getWhiteSpace_notStandardValue_nullIsReturned() {
         hasText.getElement().getStyle().set("white-space", "foo");
 
         assertEquals(null, hasText.getWhiteSpace());
+    }
+
+    @Test
+    void setText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.setText("test"));
+    }
+
+    @Test
+    void bindText_throwsWhenChildrenBindingActive() {
+        SignalBindingFeature feature = hasText.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+        feature.setBinding(SignalBindingFeature.CHILDREN,
+                new ValueSignal<>(""));
+
+        assertThrows(BindingActiveException.class,
+                () -> hasText.bindText(new ValueSignal<>("")));
     }
 
 }

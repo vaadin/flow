@@ -113,7 +113,7 @@ class VaadinSessionTest {
     private Lock httpSessionLock;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         httpSessionLock = new ReentrantLock();
         mockService = new MockVaadinServletService();
         mockServlet = mockService.getServlet();
@@ -203,7 +203,7 @@ class VaadinSessionTest {
      * Test for issue #6349
      */
     @Test
-    public void testCurrentInstancePollution() throws InterruptedException {
+    void testCurrentInstancePollution() throws InterruptedException {
 
         // Create a sync object
         final AtomicInteger state = new AtomicInteger();
@@ -267,7 +267,7 @@ class VaadinSessionTest {
      */
     @Test
     @Tag("com.vaadin.flow.testcategory.SlowTests")
-    public void testInvalidationDeadlock() {
+    void testInvalidationDeadlock() {
 
         // this simulates servlet container's session invalidation from another
         // thread
@@ -295,7 +295,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void threadLocalsAfterUnderlyingSessionTimeout()
+    void threadLocalsAfterUnderlyingSessionTimeout()
             throws InterruptedException {
 
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
@@ -319,7 +319,7 @@ class VaadinSessionTest {
 
     @Test
     @Tag("com.vaadin.flow.testcategory.SlowTests")
-    public void threadLocalsAfterSessionDestroy() throws InterruptedException {
+    void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(e -> {
             detachCalled.set(true);
@@ -341,7 +341,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void testValueUnbound() {
+    void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
         vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
@@ -373,7 +373,7 @@ class VaadinSessionTest {
 
     @Test
     @Tag("com.vaadin.flow.testcategory.SlowTests")
-    public void threadLocalsWhenDeserializing() throws Exception {
+    void threadLocalsWhenDeserializing() throws Exception {
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
 
@@ -426,7 +426,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void setLocale_setLocaleForAllUIs() {
+    void setLocale_setLocaleForAllUIs() {
         UI anotherUI = new UI();
 
         anotherUI.getInternals().setSession(session);
@@ -455,7 +455,29 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void valueUnbound_explicitVaadinSessionClose_wrappedSessionIsNotCleanedUp() {
+    void setLocale_uiLocaleOverride_sessionAndOtherUIUnaffected() {
+        UI anotherUI = new UI();
+        anotherUI.getInternals().setSession(session);
+        anotherUI.doInit(vaadinRequest, session.getNextUIid(), "foo");
+        session.addUI(anotherUI);
+
+        // Set session locale to FRENCH, which propagates to all UIs
+        session.setLocale(Locale.FRENCH);
+        assertEquals(Locale.FRENCH, ui.getLocale());
+        assertEquals(Locale.FRENCH, anotherUI.getLocale());
+
+        // One UI overrides its locale
+        anotherUI.setLocale(Locale.GERMAN);
+
+        // The overridden UI has its own locale
+        assertEquals(Locale.GERMAN, anotherUI.getLocale());
+        // Session and other UI are unaffected
+        assertEquals(Locale.FRENCH, session.getLocale());
+        assertEquals(Locale.FRENCH, ui.getLocale());
+    }
+
+    @Test
+    void valueUnbound_explicitVaadinSessionClose_wrappedSessionIsNotCleanedUp() {
         ReentrantLock lock = Mockito.mock(ReentrantLock.class);
         Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
@@ -493,7 +515,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void valueUnbound_implicitVaadinSessionClose_wrappedSessionIsCleanedUp() {
+    void valueUnbound_implicitVaadinSessionClose_wrappedSessionIsCleanedUp() {
         ReentrantLock lock = Mockito.mock(ReentrantLock.class);
         Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
@@ -528,7 +550,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void setState_closedState_sessionFieldIsCleanedUp() {
+    void setState_closedState_sessionFieldIsCleanedUp() {
         ReentrantLock lock = Mockito.mock(ReentrantLock.class);
         Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
@@ -549,7 +571,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
+    void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
         VaadinSession session = Mockito.spy(TestVaadinSession.class);
 
         try {
@@ -579,7 +601,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void findComponent_existingComponentFound() {
+    void findComponent_existingComponentFound() {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         int uiId = testComponent.getUI().get().getUIId();
@@ -589,7 +611,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void findComponent_nonExistingNodeIdThrows() {
+    void findComponent_nonExistingNodeIdThrows() {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         int uiId = testComponent.getUI().get().getUIId();
@@ -600,7 +622,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void findComponent_nonExistingAppIdThrows() {
+    void findComponent_nonExistingAppIdThrows() {
         TestComponent testComponent = createTestComponentInSession();
         int nodeId = testComponent.getElement().getNode().getId();
         VaadinSession session = testComponent.getUI().get().getSession();
@@ -616,7 +638,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void checkHasLock_noCheckInDevMode() {
+    void checkHasLock_noCheckInDevMode() {
         assumeTrue(session.hasLock());
         assumeFalse(session.getConfiguration().isProductionMode());
         assertEquals(SessionLockCheckStrategy.ASSERT,
@@ -636,7 +658,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void checkHasLock_assert() {
+    void checkHasLock_assert() {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
@@ -657,7 +679,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void checkHasLock_throw() {
+    void checkHasLock_throw() {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
@@ -677,7 +699,7 @@ class VaadinSessionTest {
     }
 
     @Test
-    public void checkHasLock_log() {
+    void checkHasLock_log() {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);

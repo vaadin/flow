@@ -34,6 +34,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
@@ -55,7 +56,6 @@ import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -90,7 +90,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class, TextBindingFeature.class,
+            ReturnChannelMap.class, InertData.class,
             SignalBindingFeature.class };
 
     private BasicElementStateProvider() {
@@ -198,12 +198,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindAttributeSignal(Element owner, String attribute,
-            Signal<String> signal) {
+    public SignalBinding<String> bindAttributeSignal(Element owner,
+            String attribute, Signal<String> signal) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+        return getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
                 signal);
     }
 
@@ -288,6 +288,10 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         ElementPropertyMap propertyFeature = getPropertyFeature(node);
 
         if (propertyFeature.hasSignal(name)) {
+            if (propertyFeature.hasWriteCallbackForSignal(name)) {
+                propertyFeature.setPropertyWithWriteCallback(name, value);
+                return;
+            }
             throw new BindingActiveException(String.format(
                     "setProperty is not allowed while a binding for the property '%s' exists.",
                     name));
@@ -297,13 +301,13 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindPropertySignal(Element owner, String name, Signal<?> signal,
-            SerializableConsumer<?> writeCallback) {
+    public SignalBinding<?> bindPropertySignal(Element owner, String name,
+            Signal<?> signal, SerializableConsumer<?> writeCallback) {
         assert owner != null;
         assert name != null;
 
-        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal,
-                writeCallback);
+        return getPropertyFeature(owner.getNode()).bindSignal(owner, name,
+                signal, writeCallback);
     }
 
     @Override
@@ -436,10 +440,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bindVisibleSignal(Element owner,
+            Signal<Boolean> signal) {
         assert owner.getNode().hasFeature(ElementData.class);
-        owner.getNode().getFeature(ElementData.class).bindVisibleSignal(owner,
-                signal);
+        return owner.getNode().getFeature(ElementData.class)
+                .bindVisibleSignal(owner, signal);
     }
 
     @Override

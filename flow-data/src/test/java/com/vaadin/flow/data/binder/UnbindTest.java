@@ -15,16 +15,19 @@
  */
 package com.vaadin.flow.data.binder;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
-public class UnbindTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class UnbindTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         binder = new BeanValidationBinder<>(BeanToValidate.class);
         item = new BeanToValidate();
         item.setFirstname("Johannes");
@@ -32,39 +35,39 @@ public class UnbindTest
     }
 
     @Test
-    public void binding_unbind_shouldBeRemovedFromBindings() {
+    void binding_unbind_shouldBeRemovedFromBindings() {
         Binder.Binding<BeanToValidate, String> firstnameBinding = binder
                 .bind(nameField, "firstname");
-        Assert.assertEquals(1, binder.getBindings().size());
+        assertEquals(1, binder.getBindings().size());
         firstnameBinding.unbind();
-        Assert.assertTrue(binder.getBindings().isEmpty());
-        Assert.assertNull(firstnameBinding.getField());
+        assertTrue(binder.getBindings().isEmpty());
+        assertNull(firstnameBinding.getField());
     }
 
     @Test
-    public void binding_unbindDuringReadBean_shouldBeRemovedFromBindings() {
+    void binding_unbindDuringReadBean_shouldBeRemovedFromBindings() {
         Binder.Binding<BeanToValidate, String> firstnameBinding = binder
                 .bind(nameField, "firstname");
         Binder.Binding<BeanToValidate, String> ageBinding = binder
                 .bind(ageField, "age");
-        Assert.assertEquals(2, binder.getBindings().size());
+        assertEquals(2, binder.getBindings().size());
         nameField.addValueChangeListener(event -> {
             if (event.getValue().length() > 0)
                 ageBinding.unbind();
         });
         binder.readBean(item);
-        Assert.assertEquals(1, binder.getBindings().size());
-        Assert.assertNull(ageBinding.getField());
+        assertEquals(1, binder.getBindings().size());
+        assertNull(ageBinding.getField());
     }
 
     @Test
-    public void binding_unbindTwice_shouldBeRemovedFromBindings() {
+    void binding_unbindTwice_shouldBeRemovedFromBindings() {
         Binder.Binding<BeanToValidate, String> firstnameBinding = binder
                 .bind(nameField, "firstname");
-        Assert.assertEquals(1, binder.getBindings().size());
+        assertEquals(1, binder.getBindings().size());
         firstnameBinding.unbind();
         firstnameBinding.unbind();
-        Assert.assertTrue(binder.getBindings().isEmpty());
-        Assert.assertNull(firstnameBinding.getField());
+        assertTrue(binder.getBindings().isEmpty());
+        assertNull(firstnameBinding.getField());
     }
 }

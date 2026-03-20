@@ -76,7 +76,7 @@ class CompositeNestedTest {
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         layout = new TestLayout();
         componentInComposite = new TestComponent(
                 ElementFactory.createDiv("Inside composite"));
@@ -96,62 +96,62 @@ class CompositeNestedTest {
     }
 
     @Test
-    public void compositeOuterElement() {
+    void compositeOuterElement() {
         assertEquals(componentInComposite.getElement(),
                 compositeOuter.getElement());
     }
 
     @Test
-    public void compositeInnerElement() {
+    void compositeInnerElement() {
         assertEquals(componentInComposite.getElement(),
                 compositeInner.getElement());
     }
 
     @Test
-    public void getParentElement_compositeOuter() {
+    void getParentElement_compositeOuter() {
         assertEquals(layout.getElement(),
                 compositeOuter.getElement().getParent());
     }
 
     @Test
-    public void getParentElement_compositeInner() {
+    void getParentElement_compositeInner() {
         assertEquals(layout.getElement(),
                 compositeInner.getElement().getParent());
     }
 
     @Test
-    public void layoutChildElements() {
+    void layoutChildElements() {
         CompositeTest.assertElementChildren(layout.getElement(),
                 componentInComposite.getElement());
     }
 
     @Test
-    public void getParent_compositeOuter() {
+    void getParent_compositeOuter() {
         assertEquals(layout, compositeOuter.getParent().get());
     }
 
     @Test
-    public void getParent_compositeInner() {
+    void getParent_compositeInner() {
         assertEquals(compositeOuter, compositeInner.getParent().get());
     }
 
     @Test
-    public void getParent_componentInComposite() {
+    void getParent_componentInComposite() {
         assertEquals(compositeInner, componentInComposite.getParent().get());
     }
 
     @Test
-    public void getChildren_layout() {
+    void getChildren_layout() {
         ComponentTest.assertChildren(layout, compositeOuter);
     }
 
     @Test
-    public void getChildren_compositeOuter() {
+    void getChildren_compositeOuter() {
         ComponentTest.assertChildren(compositeOuter, compositeInner);
     }
 
     @Test
-    public void getChildren_compositeInner() {
+    void getChildren_compositeInner() {
         ComponentTest.assertChildren(compositeInner, componentInComposite);
     }
 

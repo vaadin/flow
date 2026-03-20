@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ApplicationConfigurationTest {
 
     @Test
-    public void get_contextHasNoLookup_iseIsThrown() {
+    void get_contextHasNoLookup_iseIsThrown() {
         assertThrows(IllegalStateException.class, () -> {
             VaadinContext context = Mockito.spy(VaadinContext.class);
             Mockito.when(context.getAttribute(Lookup.class)).thenReturn(null);

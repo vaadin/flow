@@ -69,7 +69,7 @@ class VaadinServletServiceTest {
     private VaadinServlet servlet;
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
@@ -77,12 +77,12 @@ class VaadinServletServiceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mocks.cleanup();
     }
 
     @Test
-    public void resolveNullThrows() {
+    void resolveNullThrows() {
         try {
             service.resolveResource(null);
             fail("null should not resolve");
@@ -92,14 +92,14 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void resolveResource() {
+    void resolveResource() {
         assertEquals("", service.resolveResource(""));
         assertEquals("foo", service.resolveResource("foo"));
         assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
-    public void resolveResourceNPM_production() {
+    void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
 
         assertEquals("", service.resolveResource(""));
@@ -108,7 +108,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo()
+    void getContextRootRelativePath_useVariousContextPathAndServletPathsAndPathInfo()
             throws Exception {
         String location;
 
@@ -145,8 +145,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void init_classLoaderIsSetUsingServletContext()
-            throws ServiceException {
+    void init_classLoaderIsSetUsingServletContext() throws ServiceException {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         ServletContext context = Mockito.mock(ServletContext.class);
         when(servlet.getServletContext()).thenReturn(context);
@@ -177,7 +176,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getPwaRegistry_servletInitialized_getsRegistry() {
+    void getPwaRegistry_servletInitialized_getsRegistry() {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
@@ -189,7 +188,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void getPwaRegistry_servletNotInitialized_getsNull() {
+    void getPwaRegistry_servletNotInitialized_getsNull() {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
@@ -288,7 +287,7 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    public void filtersAreCalledWhenHandlingARequest() throws Exception {
+    void filtersAreCalledWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override
             public TestVaadinServlet createVaadinServlet() {

@@ -25,7 +25,7 @@ import com.vaadin.flow.signals.Node;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SnapshotTest {
+class SnapshotTest {
 
     @Test
     void emptyConstructor_withoutMaxNode_hasOnlyZeroNode() {

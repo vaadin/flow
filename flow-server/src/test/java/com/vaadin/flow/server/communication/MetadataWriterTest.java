@@ -39,7 +39,7 @@ class MetadataWriterTest {
     private SystemMessages messages;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ui = Mockito.mock(UI.class);
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(session);
@@ -53,30 +53,30 @@ class MetadataWriterTest {
     }
 
     @Test
-    public void writeAsyncTag() throws Exception {
+    void writeAsyncTag() throws Exception {
         assertMetadataOutput(false, true, "{\"async\":true}");
     }
 
     @Test
-    public void writeRepaintTag() throws Exception {
+    void writeRepaintTag() throws Exception {
         assertMetadataOutput(true, false, "{\"repaintAll\":true}");
     }
 
     @Test
-    public void writeRepaintAndAsyncTag() throws Exception {
+    void writeRepaintAndAsyncTag() throws Exception {
         assertMetadataOutput(true, true,
                 "{\"repaintAll\":true,\"async\":true}");
     }
 
     @Test
-    public void writeRedirectWithExpiredSession() throws Exception {
+    void writeRedirectWithExpiredSession() throws Exception {
         disableSessionExpirationMessages(messages);
 
         assertMetadataOutput(false, false, "{}");
     }
 
     @Test
-    public void writeRedirectWithActiveSession() throws Exception {
+    void writeRedirectWithActiveSession() throws Exception {
         WrappedSession wrappedSession = mock(WrappedSession.class);
         when(session.getSession()).thenReturn(wrappedSession);
 
@@ -87,7 +87,7 @@ class MetadataWriterTest {
     }
 
     @Test
-    public void writeAsyncWithSystemMessages() throws IOException {
+    void writeAsyncWithSystemMessages() throws IOException {
         WrappedSession wrappedSession = mock(WrappedSession.class);
         when(session.getSession()).thenReturn(wrappedSession);
 
@@ -98,13 +98,13 @@ class MetadataWriterTest {
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsOpen() throws Exception {
+    void writeSessionExpiredTag_sessionIsOpen() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
         assertMetadataOutput(false, false, "{}");
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsClosing() throws Exception {
+    void writeSessionExpiredTag_sessionIsClosing() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
 
@@ -113,7 +113,7 @@ class MetadataWriterTest {
     }
 
     @Test
-    public void writeSessionExpiredTag_sessionIsClosed() throws Exception {
+    void writeSessionExpiredTag_sessionIsClosed() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }

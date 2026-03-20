@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ElementBindEnabledTest extends SignalsUnitTest {
 
     @Test
-    public void bindEnabled_elementAttachedBefore_bindingActive() {
+    void bindEnabled_elementAttachedBefore_bindingActive() {
         Element element = new Element("foo");
         // attach before bindEnabled
         UI.getCurrent().getElement().appendChild(element);
@@ -45,7 +45,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_elementAttachedAfter_bindingActive() {
+    void bindEnabled_elementAttachedAfter_bindingActive() {
         Element element = new Element("foo");
         assertTrue(element.isEnabled());
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -57,7 +57,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_elementAttached_bindingActive() {
+    void bindEnabled_elementAttached_bindingActive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -76,7 +76,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_elementNotAttached_bindingInactive() {
+    void bindEnabled_elementNotAttached_bindingInactive() {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
@@ -86,7 +86,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_elementDetached_bindingInactive() {
+    void bindEnabled_elementDetached_bindingInactive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -98,7 +98,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_elementReAttached_bindingActivate() {
+    void bindEnabled_elementReAttached_bindingActivate() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -111,7 +111,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_setEnabledAndBindEnabledWhileBindingIsActive_throwException() {
+    void bindEnabled_setEnabledAndBindEnabledWhileBindingIsActive_throwException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         element.bindEnabled(new ValueSignal<>(true));
@@ -124,7 +124,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_nullSignal_throwsNPE() {
+    void bindEnabled_nullSignal_throwsNPE() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -133,29 +133,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        Element element = new Element("foo");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.bindEnabled(signal);
-        assertTrue(element.isEnabled());
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = element.getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.ENABLED);
-
-        // Signal changes should no longer affect the element
-        signal.set(false);
-        assertTrue(element.isEnabled());
-
-        // Manual set should work without throwing
-        element.setEnabled(false);
-        assertFalse(element.isEnabled());
-    }
-
-    @Test
-    public void bindEnabled_lazyInitSignalBindingFeature() {
+    void bindEnabled_lazyInitSignalBindingFeature() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         element.setEnabled(false);
@@ -173,7 +151,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_implicitlyDisabledComponent_isEnabledReturnsFalse() {
+    void bindEnabled_implicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
         component.bindEnabled(new ValueSignal<>(true));
 
@@ -187,7 +165,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_implicitlyDisabledComponent_detach_componentBecomesEnabled() {
+    void bindEnabled_implicitlyDisabledComponent_detach_componentBecomesEnabled() {
         TestComponent component = new TestComponent();
         component.bindEnabled(new ValueSignal<>(true));
 
@@ -203,7 +181,7 @@ class ElementBindEnabledTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindEnabled_explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
+    void bindEnabled_explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
         TestComponent component = new TestComponent();
         component.bindEnabled(new ValueSignal<>(false));
 

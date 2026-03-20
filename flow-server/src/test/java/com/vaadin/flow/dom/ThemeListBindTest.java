@@ -23,7 +23,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -39,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ThemeListBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesTheme() {
+    void bindingMirrorsSignalWhileAttached_toggleAddsRemovesTheme() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -57,7 +56,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
+    void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -76,7 +75,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void manualAddRemoveForBoundName_throwsBindingActiveException() {
+    void manualAddRemoveForBoundName_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -102,80 +101,30 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsBindingsSilently_andClearsThemes() {
+    void clear_throwsWhenBindingsActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> a = new ValueSignal<>(true);
-        ValueSignal<Boolean> b = new ValueSignal<>(true);
-        component.bindThemeName("a", a);
-        component.bindThemeName("b", b);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        component.bindThemeName("a", signal);
 
-        assertTrue(component.hasThemeName("a"));
-        assertTrue(component.hasThemeName("b"));
-
-        component.getThemeNames().clear();
-
-        // Themes cleared
-        assertFalse(component.hasThemeName("a"));
-        assertFalse(component.hasThemeName("b"));
-
-        // Toggling signals has no effect (bindings were cleared)
-        a.set(false);
-        b.set(false);
-        a.set(true);
-        b.set(true);
-        assertFalse(component.hasThemeName("a"));
-        assertFalse(component.hasThemeName("b"));
-        assertFalse(component.getThemeNames().iterator().hasNext());
+        assertThrows(BindingActiveException.class,
+                () -> component.getThemeNames().clear());
     }
 
     @Test
-    public void setThemeName_bulkReplacement_clearsBindingsSilently() {
+    void setThemeName_throwsWhenBindingsActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
         component.bindThemeName("flag", bound);
         assertTrue(component.hasThemeName("flag"));
 
-        // Bulk replace via setThemeName.
-        // Note that setting theme attribute directly can't clear bindings due
-        // to Element API's setAttribute don't know anything about special
-        // meaning of 'theme' attribute. This could be improved in the future,
-        // but for now, setThemeName supports clearing bindings.
-        component.setThemeName("foo");
-        assertTrue(component.hasThemeName("foo"));
-        assertFalse(component.hasThemeName("flag"));
-
-        // Binding should be cleared, so toggling has no effect
-        bound.set(false);
-        bound.set(true);
-        assertFalse(component.hasThemeName("flag"));
+        assertThrows(BindingActiveException.class,
+                () -> component.setThemeName("foo"));
     }
 
     @Test
-    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        TestComponent component = new TestComponent();
-        UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        component.bindThemeName("badge", signal);
-        assertTrue(component.hasThemeName("badge"));
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = component.getElement().getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.THEMES + "badge");
-
-        // Signal changes should no longer affect the theme list
-        signal.set(false);
-        assertTrue(component.hasThemeName("badge"));
-
-        // Manual set should work without throwing
-        component.removeThemeName("badge");
-        assertFalse(component.hasThemeName("badge"));
-    }
-
-    @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -184,7 +133,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void rebinding_alreadyBound_throws() {
+    void rebinding_alreadyBound_throws() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> s1 = new ValueSignal<>(true);
@@ -199,7 +148,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void internalUpdatesDoNotThrowOrRecurse() {
+    void internalUpdatesDoNotThrowOrRecurse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -219,7 +168,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMultipleSignals() {
+    void bindMultipleSignals() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

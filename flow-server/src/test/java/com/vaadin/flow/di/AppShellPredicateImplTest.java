@@ -36,12 +36,12 @@ class AppShellPredicateImplTest {
     }
 
     @Test
-    public void isShell_isAppShellConfigurator_returnsTrue() {
+    void isShell_isAppShellConfigurator_returnsTrue() {
         assertTrue(predicate.isShell(TestAppShellPredicateConfig.class));
     }
 
     @Test
-    public void isShell_isNotAppShellConfigurator_returnsFalse() {
+    void isShell_isNotAppShellConfigurator_returnsFalse() {
         assertFalse(predicate.isShell(List.class));
     }
 }

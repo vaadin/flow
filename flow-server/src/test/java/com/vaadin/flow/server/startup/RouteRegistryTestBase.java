@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 abstract class RouteRegistryTestBase {
 
     @Test
-    public void initializedRoutes_routesCanBeAdded() {
+    void initializedRoutes_routesCanBeAdded() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("home", MyRoute.class,
@@ -75,7 +75,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
+    void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("home", MyRoute.class,
@@ -102,7 +102,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void registeredRouteWithAlias_removingClassRemovesAliases() {
+    void registeredRouteWithAlias_removingClassRemovesAliases() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("withAliases",
@@ -133,7 +133,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void registeredRouteWithAlias_removingPathLeavesAliases() {
+    void registeredRouteWithAlias_removingPathLeavesAliases() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("withAliases",
@@ -169,7 +169,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
+    void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("MyRoute",
@@ -196,7 +196,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void registeredParentLayouts_changingListDoesntChangeRegistration() {
+    void registeredParentLayouts_changingListDoesntChangeRegistration() {
         getInitializationRegistry().clean();
 
         List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
@@ -214,7 +214,7 @@ abstract class RouteRegistryTestBase {
     }
 
     @Test
-    public void registeredParentLayouts_returnedListInSameOrder() {
+    void registeredParentLayouts_returnedListInSameOrder() {
         getInitializationRegistry().clean();
 
         List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(

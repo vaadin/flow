@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SignalEnvironmentTest extends SignalTestBase {
+class SignalEnvironmentTest extends SignalTestBase {
 
     @Test
     void registerAndUnregister_environmentIsUsedUntilUnregistered() {
@@ -38,12 +38,12 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return Runnable::run;
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return Runnable::run;
             }
         };
 
@@ -76,12 +76,12 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return Runnable::run;
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return Runnable::run;
             }
         };
 

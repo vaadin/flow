@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ClassListBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesClass() {
+    void bindingMirrorsSignalWhileAttached_toggleAddsRemovesClass() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -52,7 +52,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
+    void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -71,7 +71,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void manualAddRemoveForBoundName_throwsBindingActiveException() {
+    void manualAddRemoveForBoundName_throwsBindingActiveException() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -88,77 +88,30 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_clearsBindingsSilently_andClearsClasses() {
+    void clear_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> a = new ValueSignal<>(true);
-        ValueSignal<Boolean> b = new ValueSignal<>(true);
-        element.getClassList().bind("a", a);
-        element.getClassList().bind("b", b);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.getClassList().bind("a", signal);
 
-        assertTrue(element.getClassList().contains("a"));
-        assertTrue(element.getClassList().contains("b"));
-
-        element.getClassList().clear();
-
-        // Classes cleared
-        assertFalse(element.getClassList().contains("a"));
-        assertFalse(element.getClassList().contains("b"));
-
-        // Toggling signals has no effect (bindings were cleared)
-        a.set(false);
-        b.set(false);
-        a.set(true);
-        b.set(true);
-        assertFalse(element.getClassList().contains("a"));
-        assertFalse(element.getClassList().contains("b"));
-        assertFalse(element.getClassList().iterator().hasNext());
+        assertThrows(BindingActiveException.class,
+                () -> element.getClassList().clear());
     }
 
     @Test
-    public void setAttributeClass_bulkReplacement_clearsBindingsSilently() {
+    void setAttributeClass_throwsWhenBindingsActive() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
         element.getClassList().bind("flag", bound);
         assertTrue(element.getClassList().contains("flag"));
 
-        // Bulk replace via attribute handler
-        element.setAttribute("class", "foo bar");
-        assertTrue(element.getClassList().contains("foo"));
-        assertTrue(element.getClassList().contains("bar"));
-        assertFalse(element.getClassList().contains("flag"));
-
-        // Binding should be cleared, so toggling has no effect
-        bound.set(false);
-        bound.set(true);
-        assertFalse(element.getClassList().contains("flag"));
+        assertThrows(BindingActiveException.class,
+                () -> element.setAttribute("class", "foo bar"));
     }
 
     @Test
-    public void bind_removeBindingViaFeature_stopsUpdatesAndAllowsManualSet() {
-        Element element = new Element("div");
-        UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
-        element.getClassList().bind("badge", signal);
-        assertTrue(element.getClassList().contains("badge"));
-
-        // Remove binding via the node's SignalBindingFeature
-        SignalBindingFeature feature = element.getNode()
-                .getFeature(SignalBindingFeature.class);
-        feature.removeBinding(SignalBindingFeature.CLASSES + "badge");
-
-        // Signal changes should no longer affect the class list
-        signal.set(false);
-        assertTrue(element.getClassList().contains("badge"));
-
-        // Manual set should work without throwing
-        element.getClassList().remove("badge");
-        assertFalse(element.getClassList().contains("badge"));
-    }
-
-    @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -167,7 +120,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void rebinding_alreadyBound_throws() {
+    void rebinding_alreadyBound_throws() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> s1 = new ValueSignal<>(true);
@@ -182,7 +135,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void internalUpdatesDoNotThrowOrRecurse() {
+    void internalUpdatesDoNotThrowOrRecurse() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -202,7 +155,7 @@ class ClassListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void lazyInitSignalBindingFeature() {
+    void lazyInitSignalBindingFeature() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         element.getClassList().add("spin");

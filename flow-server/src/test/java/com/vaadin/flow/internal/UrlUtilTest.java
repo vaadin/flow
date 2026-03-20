@@ -35,12 +35,12 @@ class UrlUtilTest {
     private String encodeURIComponentShouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()";
 
     @Test
-    public void isExternal_URLStartsWithTwoSlashes_returnsTrue() {
+    void isExternal_URLStartsWithTwoSlashes_returnsTrue() {
         assertTrue(UrlUtil.isExternal("//foo"));
     }
 
     @Test
-    public void isExternal_URLContainsAnySchemaAsPrefix_returnsTrue() {
+    void isExternal_URLContainsAnySchemaAsPrefix_returnsTrue() {
         assertTrue(UrlUtil.isExternal("http://foo"));
         assertTrue(UrlUtil.isExternal("https://foo"));
         assertTrue(UrlUtil.isExternal("context://foo"));
@@ -48,25 +48,25 @@ class UrlUtilTest {
     }
 
     @Test
-    public void isExternal_URLDoesnotContainSchema_returnsFalse() {
+    void isExternal_URLDoesnotContainSchema_returnsFalse() {
         assertFalse(UrlUtil.isExternal("foo"));
     }
 
     @Test
-    public void plusAndSpaceHandledCorrectly() {
+    void plusAndSpaceHandledCorrectly() {
         assertEquals("Plus+Spa%20+%20ce", UrlUtil.encodeURI("Plus+Spa + ce"));
         assertEquals("Plus%2BSpa%20%2B%20ce",
                 UrlUtil.encodeURIComponent("Plus+Spa + ce"));
     }
 
     @Test
-    public void encodeURI_shouldNotBeEscaped() {
+    void encodeURI_shouldNotBeEscaped() {
         assertEquals(encodeURIShouldNotBeEscaped,
                 UrlUtil.encodeURI(encodeURIShouldNotBeEscaped));
     }
 
     @Test
-    public void encodeURI_mustBeEscaped() {
+    void encodeURI_mustBeEscaped() {
         for (char c = 0; c < 255; c++) {
             String s = String.valueOf(c);
             if (encodeURIShouldNotBeEscaped.contains(s)) {
@@ -77,13 +77,13 @@ class UrlUtilTest {
     }
 
     @Test
-    public void encodeURIComponent_shouldNotBeEscaped() {
+    void encodeURIComponent_shouldNotBeEscaped() {
         assertEquals(encodeURIComponentShouldNotBeEscaped, UrlUtil
                 .encodeURIComponent(encodeURIComponentShouldNotBeEscaped));
     }
 
     @Test
-    public void encodeURIComponent_mustBeEscaped() {
+    void encodeURIComponent_mustBeEscaped() {
         for (char c = 0; c < 255; c++) {
             String s = String.valueOf(c);
             if (encodeURIComponentShouldNotBeEscaped.contains(s)) {
@@ -94,7 +94,7 @@ class UrlUtilTest {
     }
 
     @Test
-    public void getServletPathRelative() {
+    void getServletPathRelative() {
         assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar/",
                 createRequest("/foo", "/bar")));
         assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar",
@@ -134,13 +134,13 @@ class UrlUtilTest {
     }
 
     @Test
-    public void decodeURIComponent_percentEncodedSpace_decoded() {
+    void decodeURIComponent_percentEncodedSpace_decoded() {
         String result = UrlUtil.decodeURIComponent("test%20file.txt");
         assertEquals("test file.txt", result);
     }
 
     @Test
-    public void decodeURIComponent_plusSign_notDecodedAsSpace() {
+    void decodeURIComponent_plusSign_notDecodedAsSpace() {
         // Plus signs should remain as plus signs (RFC 3986, not HTML form
         // encoding)
         String result = UrlUtil.decodeURIComponent("test+file.txt");
@@ -148,39 +148,60 @@ class UrlUtilTest {
     }
 
     @Test
-    public void decodeURIComponent_encodedPlusSign_decoded() {
+    void decodeURIComponent_encodedPlusSign_decoded() {
         String result = UrlUtil.decodeURIComponent("test%2Bfile.txt");
         assertEquals("test+file.txt", result);
     }
 
     @Test
-    public void decodeURIComponent_unicodeCharacters_decoded() {
+    void decodeURIComponent_unicodeCharacters_decoded() {
         // åäö.txt encoded as UTF-8 percent-encoded
         String result = UrlUtil.decodeURIComponent("%C3%A5%C3%A4%C3%B6.txt");
         assertEquals("åäö.txt", result);
     }
 
     @Test
-    public void decodeURIComponent_specialCharacters_decoded() {
+    void decodeURIComponent_specialCharacters_decoded() {
         String result = UrlUtil.decodeURIComponent("special%26%3Dchars.txt");
         assertEquals("special&=chars.txt", result);
     }
 
     @Test
-    public void decodeURIComponent_nullValue_returnsNull() {
+    void decodeURIComponent_nullValue_returnsNull() {
         String result = UrlUtil.decodeURIComponent(null);
         assertNull(result);
     }
 
     @Test
-    public void decodeURIComponent_emptyValue_returnsEmpty() {
+    void decodeURIComponent_emptyValue_returnsEmpty() {
         String result = UrlUtil.decodeURIComponent("");
         assertEquals("", result);
     }
 
     @Test
-    public void decodeURIComponent_noEncodedChars_returnsSame() {
+    void decodeURIComponent_noEncodedChars_returnsSame() {
         String result = UrlUtil.decodeURIComponent("simple.txt");
         assertEquals("simple.txt", result);
+    }
+
+    @Test
+    void appendQueryParameter_noExistingParams_usesQuestionMark() {
+        String result = UrlUtil.appendQueryParameter("/styles.css", "v-c",
+                "abcd1234");
+        assertEquals("/styles.css?v-c=abcd1234", result);
+    }
+
+    @Test
+    void appendQueryParameter_existingParams_usesAmpersand() {
+        String result = UrlUtil.appendQueryParameter("/styles.css?theme=dark",
+                "v-c", "abcd1234");
+        assertEquals("/styles.css?theme=dark&v-c=abcd1234", result);
+    }
+
+    @Test
+    void appendQueryParameter_nullValue_returnsOriginalUrl() {
+        String result = UrlUtil.appendQueryParameter("/styles.css", "v-c",
+                null);
+        assertEquals("/styles.css", result);
     }
 }

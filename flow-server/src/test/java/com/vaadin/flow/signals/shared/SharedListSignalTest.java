@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -36,16 +38,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SharedListSignalTest extends SignalTestBase {
+class SharedListSignalTest extends SignalTestBase {
     @Test
     void constructor_initialValue_isEmpty() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
-        int size = signal.get().size();
+        int size = signal.peek().size();
 
         assertEquals(0, size);
     }
@@ -153,6 +156,7 @@ public class SharedListSignalTest extends SignalTestBase {
             return childInner;
         }).returnValue();
 
+        assertNotNull(child);
         assertEquals(1, signal.peekConfirmed().size());
         assertEquals("update", child.peekConfirmed());
     }
@@ -272,7 +276,7 @@ public class SharedListSignalTest extends SignalTestBase {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first");
 
-        List<SharedValueSignal<String>> value = signal.get();
+        List<SharedValueSignal<String>> value = signal.peek();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new SharedValueSignal<>("new"));
@@ -288,11 +292,12 @@ public class SharedListSignalTest extends SignalTestBase {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first");
 
-        List<SharedValueSignal<String>> value = signal.get();
+        List<SharedValueSignal<String>> value = signal.peek();
 
         signal.insertLast("last");
 
-        List<String> list = value.stream().map(SharedValueSignal::get).toList();
+        List<String> list = value.stream().map(SharedValueSignal::peek)
+                .toList();
         assertEquals(List.of("first"), list);
     }
 
@@ -324,7 +329,7 @@ public class SharedListSignalTest extends SignalTestBase {
         signal.insertLast("child");
 
         SharedListSignal<String> readonly = signal.asReadonly();
-        SharedValueSignal<String> readonlyChild = readonly.get().get(0);
+        SharedValueSignal<String> readonlyChild = readonly.peek().get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -380,7 +385,7 @@ public class SharedListSignalTest extends SignalTestBase {
                 .signal();
         SharedValueSignal<String> other = signal.insertLast("other").signal();
 
-        SharedValueSignal<String> valueChild = signal.get().get(0);
+        SharedValueSignal<String> valueChild = signal.peek().get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -397,9 +402,71 @@ public class SharedListSignalTest extends SignalTestBase {
         assertEquals("SharedListSignal[one, two]", signal.toString());
     }
 
+    @Test
+    void getValues_listWithValues_returnsValues() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = Signal.untracked(() -> {
+            return signal.getValues().toList();
+        });
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void peekValues_listWithValues_returnsValues() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+        signal.insertLast("two");
+
+        List<String> values = signal.peekValues().toList();
+
+        assertEquals(List.of("one", "two"), values);
+    }
+
+    @Test
+    void getValues_readingInEffect_anyChangeRunsEffectAgain() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.unboundEffect(() -> {
+            signal.getValues().toList();
+            count.incrementAndGet();
+        });
+        assertEquals(1, count.get());
+
+        SharedValueSignal<String> child = signal.insertLast("foo").signal();
+        assertEquals(2, count.get());
+
+        child.set("bar");
+        assertEquals(3, count.get());
+
+        signal.remove(child);
+        assertEquals(4, count.get());
+    }
+
+    @Test
+    void getValues_getWithoutTracking_throws() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+
+        assertThrows(IllegalStateException.class, () -> signal.getValues());
+    }
+
+    @Test
+    void getValues_iterateWithoutTracking_throws() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("one");
+
+        Stream<String> stream = Signal.untracked(() -> signal.getValues());
+
+        assertThrows(IllegalStateException.class, () -> stream.toList());
+    }
+
     static void assertChildren(SharedListSignal<String> signal,
             String... expectedValue) {
-        List<String> value = signal.get().stream().map(SharedValueSignal::get)
+        List<String> value = signal.peek().stream().map(SharedValueSignal::peek)
                 .toList();
 
         assertEquals(List.of(expectedValue), value);

@@ -37,7 +37,7 @@ class NpmPackageTest {
     }
 
     @Test
-    public void testDummy() {
+    void testDummy() {
         Annotation[] annotations = TestComponent.class.getAnnotations();
 
         boolean found = Arrays.stream(annotations)

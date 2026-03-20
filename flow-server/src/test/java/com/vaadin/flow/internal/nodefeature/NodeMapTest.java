@@ -124,8 +124,9 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
 
     @Test
     void testCollectChange_withSignalBinding() {
-        // Signal and Registration instances are irrelevant in this test.
-        nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value", null));
+        // Signal instance is irrelevant in this test.
+        nodeMap.put(KEY,
+                new NodeMap.InternalSignalBinding(null, "value", null));
         List<NodeChange> putChanges = collectChanges(nodeMap);
 
         assertEquals(1, putChanges.size());

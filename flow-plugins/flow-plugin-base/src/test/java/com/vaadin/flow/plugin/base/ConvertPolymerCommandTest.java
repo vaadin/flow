@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.plugin.base;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
@@ -34,9 +33,9 @@ import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
-public class ConvertPolymerCommandTest {
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+class ConvertPolymerCommandTest {
+    @TempDir
+    Path tmpDir;
 
     @Mock
     private MockedConstruction<FrontendConverter> frontendConverterMock;
@@ -52,29 +51,28 @@ public class ConvertPolymerCommandTest {
 
     private AutoCloseable closeable;
 
-    @Before
-    public void init()
-            throws IOException, URISyntaxException, IllegalAccessException {
+    @BeforeEach
+    void init() throws IOException, URISyntaxException, IllegalAccessException {
         closeable = MockitoAnnotations.openMocks(this);
-        TestUtil.stubPluginAdapterBase(adapter, tmpDir.getRoot());
+        TestUtil.stubPluginAdapterBase(adapter, tmpDir.toFile());
 
-        tmpDir.newFile("component.js");
-        tmpDir.newFolder("nested");
-        tmpDir.newFile("nested/component.js");
-        tmpDir.newFolder("node_modules");
-        tmpDir.newFile("node_modules/component.js");
-        tmpDir.newFile("Component.java");
-        tmpDir.newFile("nested/Component.java");
+        Files.createFile(tmpDir.resolve("component.js"));
+        Files.createDirectories(tmpDir.resolve("nested"));
+        Files.createFile(tmpDir.resolve("nested/component.js"));
+        Files.createDirectories(tmpDir.resolve("node_modules"));
+        Files.createFile(tmpDir.resolve("node_modules/component.js"));
+        Files.createFile(tmpDir.resolve("Component.java"));
+        Files.createFile(tmpDir.resolve("nested/Component.java"));
     }
 
-    @After
-    public void teardown() throws Exception {
+    @AfterEach
+    void teardown() throws Exception {
         closeable.close();
     }
 
     @Test
-    public void execute() throws URISyntaxException, IOException,
-            InterruptedException, CommandExecutionException {
+    void execute() throws URISyntaxException, IOException, InterruptedException,
+            CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, false, false)) {
             command.execute();
@@ -106,7 +104,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void setSpecificFrontendFile_execute() throws URISyntaxException,
+    void setSpecificFrontendFile_execute() throws URISyntaxException,
             IOException, InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 "/nested/component.js", false, false)) {
@@ -129,8 +127,8 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void setSpecificServerFile_execute() throws URISyntaxException,
-            IOException, InterruptedException, CommandExecutionException {
+    void setSpecificServerFile_execute() throws URISyntaxException, IOException,
+            InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 "/nested/Component.java", false, false)) {
             command.execute();
@@ -152,7 +150,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void useLit1_execute() throws URISyntaxException, IOException,
+    void useLit1_execute() throws URISyntaxException, IOException,
             InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, true, false)) {
@@ -168,7 +166,7 @@ public class ConvertPolymerCommandTest {
     }
 
     @Test
-    public void disableOptionalChaining_execute() throws URISyntaxException,
+    void disableOptionalChaining_execute() throws URISyntaxException,
             IOException, InterruptedException, CommandExecutionException {
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
                 null, false, true)) {
@@ -184,6 +182,6 @@ public class ConvertPolymerCommandTest {
     }
 
     private Path getTmpFilePath(String path) {
-        return new File(tmpDir.getRoot(), path).toPath();
+        return tmpDir.resolve(path);
     }
 }

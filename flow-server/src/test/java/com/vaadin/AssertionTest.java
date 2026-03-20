@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 /**
  * Test that tests are run with assertions activated
  */
-public class AssertionTest {
+class AssertionTest {
 
     @Test
-    public void testAssertionsAreEnabled() {
+    void testAssertionsAreEnabled() {
         boolean assertOn = false;
         // *assigns* true if assertions are on.
         assert assertOn = true;

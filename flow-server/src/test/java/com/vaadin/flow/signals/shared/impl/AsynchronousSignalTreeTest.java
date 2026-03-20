@@ -20,11 +20,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.StringNode;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalsUnitTest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.function.CommandValidator;
+import com.vaadin.flow.signals.shared.SharedNumberSignal;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
 import com.vaadin.flow.signals.shared.impl.SignalTree.Type;
@@ -34,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class AsynchronousSignalTreeTest {
+public class AsynchronousSignalTreeTest extends SignalsUnitTest {
 
     public static class AsyncTestTree extends AsynchronousSignalTree {
         public List<List<SignalCommand>> submitted = new ArrayList<>();
@@ -49,6 +58,32 @@ public class AsynchronousSignalTreeTest {
             submitted = new ArrayList<>();
 
             oldSubmitted.forEach(this::confirm);
+        }
+
+        /**
+         * Confirms all pending commands in reverse order on a background thread
+         * (where UI.getCurrent() returns null), simulating the virtual thread
+         * scheduling race.
+         */
+        public void confirmSubmittedInReverseOnBackgroundThread()
+                throws InterruptedException {
+            var oldSubmitted = submitted;
+            submitted = new ArrayList<>();
+
+            Thread bgThread = new Thread(() -> {
+                for (int i = oldSubmitted.size() - 1; i >= 0; i--) {
+                    confirm(oldSubmitted.get(i));
+                }
+            });
+            bgThread.start();
+            bgThread.join();
+        }
+    }
+
+    static class TestSharedNumberSignal extends SharedNumberSignal {
+        TestSharedNumberSignal(SignalTree tree, Id id,
+                CommandValidator validator) {
+            super(tree, id, validator);
         }
     }
 
@@ -148,7 +183,7 @@ public class AsynchronousSignalTreeTest {
     @Test
     void subscribeToProcessed_changesConfirmed_receives() {
         AsyncTestTree tree = new AsyncTestTree();
-        AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
+        AtomicReference<Map.@Nullable Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
 
         tree.subscribeToProcessed((event, result) -> resultContainer
                 .set(Map.entry(event, result)));
@@ -161,14 +196,16 @@ public class AsynchronousSignalTreeTest {
         // Directly confirm another command:
         tree.confirm(List.of(TestUtil.writeRootValueCommand("confirmed")));
 
+        var confirmedResult = resultContainer.get();
+        assertNotNull(confirmedResult);
         assertEquals(new StringNode("confirmed"),
-                ((SignalCommand.SetCommand) resultContainer.get().getKey())
-                        .value());
+                ((SignalCommand.SetCommand) confirmedResult.getKey()).value());
 
         tree.confirmSubmitted();
+        var submittedResult = resultContainer.get();
+        assertNotNull(submittedResult);
         assertEquals(new StringNode("submitted"),
-                ((SignalCommand.SetCommand) resultContainer.get().getKey())
-                        .value());
+                ((SignalCommand.SetCommand) submittedResult.getKey()).value());
 
         resultContainer.set(null);
 
@@ -193,5 +230,36 @@ public class AsynchronousSignalTreeTest {
         tree.confirmSubmitted();
 
         assertEquals(command, resultContainer.get().getKey());
+    }
+
+    @Test
+    void outOfOrderConfirm_effectRecoversAfterRunPendingAccessTasks()
+            throws InterruptedException {
+        AsyncTestTree tree = new AsyncTestTree();
+
+        TestSharedNumberSignal signal = new TestSharedNumberSignal(tree,
+                Id.ZERO, CommandValidator.ACCEPT_ALL);
+        signal.set(100.0);
+
+        Element element = new Element("input");
+        UI.getCurrent().getElement().appendChild(element);
+        element.bindAttribute("max", signal.map(Object::toString));
+        assertEquals("100.0", element.getAttribute("max"));
+
+        signal.set(150.5);
+        assertEquals("150.5", element.getAttribute("max"));
+
+        // Confirm in reverse order on a background thread where
+        // UI.getCurrent() is null, causing the effect's re-validation
+        // to be dispatched via ui.access().
+        tree.confirmSubmittedInReverseOnBackgroundThread();
+
+        // Drain the pending access queue so the deferred effect runs.
+        VaadinService.getCurrent()
+                .runPendingAccessTasks(VaadinSession.getCurrent());
+
+        // After draining, the effect has recovered its observer.
+        signal.set(200.0);
+        assertEquals("200.0", element.getAttribute("max"));
     }
 }

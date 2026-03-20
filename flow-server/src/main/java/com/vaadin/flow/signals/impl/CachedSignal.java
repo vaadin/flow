@@ -25,72 +25,75 @@ import tools.jackson.databind.node.POJONode;
 
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.function.SignalComputation;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
-import com.vaadin.flow.signals.shared.AbstractSignal;
+import com.vaadin.flow.signals.shared.AbstractSharedSignal;
 import com.vaadin.flow.signals.shared.SharedNodeSignal;
 import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
 
 /**
- * A signal with a value that is computed based on the value of other signals.
- * The signal value will be lazily re-computed when needed after the value has
- * changed for any of the signals that were used when computing the previous
- * value. If the computation callback throws a {@link RuntimeException}, then
- * that exception will be re-thrown when accessing the value of this signal. An
- * {@link Signal#unboundEffect(EffectAction) effect} or computed signal that
- * uses the value from a computed signal will not be invalidated if the
- * computation is run again but produces the same value as before.
+ * A signal that caches the value of an inner signal. The inner signal is
+ * typically a computed signal performing an expensive computation that should
+ * be run again only if any of its dependencies has changed.
+ * <p>
+ * If a {@link RuntimeException} is thrown when getting the value of the inner
+ * signal, then that exception will be re-thrown when accessing the value of
+ * this signal. An {@link Signal#unboundEffect(EffectAction) effect} or outer
+ * cached signal that uses the value from a cached signal will not be
+ * invalidated if the computation is run again but produces the same value as
+ * before.
  *
  * @param <T>
  *            the value type
  */
-public class ComputedSignal<T> extends AbstractSignal<T> {
+public class CachedSignal<T extends @Nullable Object>
+        extends AbstractSharedSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to
      * Hilla clients.
      */
-    private record ComputedState(@Nullable Object value,
+    private record CacheState(@Nullable Object value,
             @Nullable RuntimeException exception,
             Usage dependencies) implements Serializable {
     }
 
-    private final SignalComputation<T> computation;
+    private final Signal<T> inner;
 
     private int dependentCount = 0;
     private @Nullable Registration dependencyRegistration;
 
     /**
-     * Creates a new computed signal with the provided compute callback.
+     * Creates a new cached signal with the provided inner signal.
      *
-     * @param computation
-     *            a callback that returns the computed value, not null
+     * @param inner
+     *            a signal to wrap, not null
      */
-    public ComputedSignal(SignalComputation<T> computation) {
+    public CachedSignal(Signal<T> inner) {
         super(new SynchronousSignalTree(true), Id.ZERO, ANYTHING_GOES);
-        this.computation = Objects.requireNonNull(computation);
+        this.inner = Objects.requireNonNull(inner);
     }
 
     /**
-     * As long as nobody listens to changes to this computed signal, we can just
-     * re-compute on demand every time the value is read. But when there's at
+     * As long as nobody listens to changes to this cached signal, we can just
+     * re-validate on demand every time the value is read. But when there's at
      * least one active listener, we need to actively listen to changes in our
      * dependencies.
      * <p>
      * Whenever a dependency changes, we run {@link #getValidState(Data)}. This
-     * causes the compute callback to run again. If that leads to a new value in
+     * causes the inner signal to be read again. If that leads to a new value in
      * the tree, then the {@link Usage} from the super class will be triggered
      * which in notifies out external listeners.
      * <p>
      * We have just a single set of internal listeners on our dependencies even
-     * if there are multiple external listeners so that the compute callback is
-     * run only once. We keep track of how many active external listeners we
-     * have so that our internal listener is active if and only if there's at
-     * least one active external listener.
+     * if there are multiple external listeners so that the inner signal is read
+     * only once. We keep track of how many active external listeners we have so
+     * that our internal listener is active if and only if there's at least one
+     * active external listener.
      */
     private synchronized void revalidateAndListen() {
         // Clear listeners on old dependencies
@@ -98,8 +101,8 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             dependencyRegistration.remove();
         }
 
-        // Run compute callback to get new dependencies
-        ComputedState state = getValidState(data(Transaction.getCurrent()));
+        // Read inner value to get new dependencies
+        CacheState state = getValidState(data(Transaction.getCurrent()));
 
         // avoid lambda to allow proper deserialization
         TransientListener usageListener = new TransientListener() {
@@ -129,7 +132,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
 
         return () -> {
             if (!removed.getAndSet(true)) {
-                synchronized (ComputedSignal.this) {
+                synchronized (CachedSignal.this) {
                     /*
                      * Decrease the number of active external listeners and stop
                      * listening to our dependencies if there are no more
@@ -192,34 +195,38 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         };
     }
 
-    private ComputedState getValidState(@Nullable Data data) {
-        ComputedState state = readState(data);
+    private CacheState getValidState(@Nullable Data data) {
+        CacheState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
             @Nullable
             Object[] holder = new @Nullable Object[2];
             Usage dependencies = UsageTracker.track(() -> {
                 try {
-                    holder[0] = computation.compute();
+                    holder[0] = inner.get();
                 } catch (RuntimeException e) {
                     holder[1] = e;
                 }
             });
+            if (dependencies == UsageTracker.NO_USAGE) {
+                throw new MissingSignalUsageException(
+                        "A computing inner signal must read at least one other signal value.");
+            }
             @Nullable
             Object value = holder[0];
             @Nullable
             RuntimeException exception = (RuntimeException) holder[1];
 
-            state = new ComputedState(value, exception, dependencies);
+            state = new CacheState(value, exception, dependencies);
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
-                    new ComputedPOJONode(state)));
+                    new CachedPOJONode(state)));
         }
 
         return state;
     }
 
-    private static @Nullable ComputedState readState(@Nullable Data data) {
+    private static @Nullable CacheState readState(@Nullable Data data) {
         if (data == null) {
             return null;
         }
@@ -232,22 +239,22 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         return extractState(value);
     }
 
-    private static ComputedState extractState(JsonNode json) {
-        ComputedPOJONode pojoNode = (ComputedPOJONode) json;
-        return (ComputedState) pojoNode.getPojo();
+    private static CacheState extractState(JsonNode json) {
+        CachedPOJONode pojoNode = (CachedPOJONode) json;
+        return (CacheState) pojoNode.getPojo();
     }
 
-    private static class ComputedPOJONode extends POJONode
+    private static class CachedPOJONode extends POJONode
             implements Serializable {
 
-        public ComputedPOJONode(Object v) {
+        public CachedPOJONode(Object v) {
             super(v);
         }
     }
 
     @Override
     protected @Nullable T extractValue(@Nullable Data data) {
-        ComputedState state = getValidState(data);
+        CacheState state = getValidState(data);
 
         if (state.exception != null) {
             throw state.exception;
@@ -269,19 +276,12 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
 
     @Override
     public T peekConfirmed() {
-        throw new UnsupportedOperationException(
-                "Cannot peek a computed signal");
-    }
-
-    @Override
-    public T peek() {
-        throw new UnsupportedOperationException(
-                "Cannot peek a computed signal");
+        throw new UnsupportedOperationException("Cannot peek a cached signal");
     }
 
     @Override
     public SharedNodeSignal asNode() {
         throw new UnsupportedOperationException(
-                "Cannot use a computed signal as a node signal");
+                "Cannot use a cached signal as a node signal");
     }
 }

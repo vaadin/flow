@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -36,6 +35,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -338,19 +338,7 @@ public abstract class Component
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        // This should not ever be called for a Composite as it will return
-        // wrong results
-        assert !(this instanceof Composite);
-
-        if (!getElement().getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "You cannot use getChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
-        }
-
-        Builder<Component> childComponents = Stream.builder();
-        getElement().getChildren().forEach(childElement -> ComponentUtil
-                .findComponents(childElement, childComponents::add));
-        return childComponents.build();
+        return ComponentUtil.getChildren(this);
     }
 
     /**
@@ -468,6 +456,35 @@ public abstract class Component
     }
 
     /**
+     * Sets the {@code data-testid} attribute of the root element of this
+     * component. This attribute is used by testing frameworks such as
+     * Playwright to locate elements in the DOM.
+     *
+     * @param testId
+     *            the test id to set, or <code>null</code> to remove any
+     *            previously set test id
+     */
+    public void setTestId(String testId) {
+        if (testId == null) {
+            getElement().removeAttribute("data-testid");
+        } else {
+            getElement().setAttribute("data-testid", testId);
+        }
+    }
+
+    /**
+     * Gets the {@code data-testid} attribute of the root element of this
+     * component.
+     *
+     * @see #setTestId(String)
+     *
+     * @return the test id, or {@code null} if no test id has been set
+     */
+    public String getTestId() {
+        return getElement().getAttribute("data-testid");
+    }
+
+    /**
      * Called when the component is attached to a UI.
      * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
@@ -577,10 +594,11 @@ public abstract class Component
 
     /**
      * Binds a {@link Signal}'s value to the <code>visible</code> property of
-     * this component and keeps property synchronized with the signal value
-     * while the component is in attached state. When the element is in detached
-     * state, signal value changes have no effect. <code>null</code> signal
-     * unbinds the existing binding.
+     * this component. The visibility is set immediately with the current signal
+     * value when the binding is created, and is kept synchronized with any
+     * subsequent signal value changes while the component is in attached state.
+     * When the element is in detached state, signal value changes have no
+     * effect. <code>null</code> signal unbinds the existing binding.
      * <p>
      * While a Signal is bound to a property, any attempt to set the visibility
      * manually with {@link #setVisible(boolean)} throws
@@ -615,8 +633,8 @@ public abstract class Component
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      */
-    public void bindVisible(Signal<Boolean> visibleSignal) {
-        getElement().bindVisible(visibleSignal);
+    public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
+        return getElement().bindVisible(visibleSignal);
     }
 
     /**

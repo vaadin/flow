@@ -17,16 +17,17 @@ package com.vaadin.flow.signals.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.TransactionCommand;
+import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.impl.Transaction.Type;
@@ -49,7 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TransactionTest {
+class TransactionTest extends SignalTestBase {
+
     @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
@@ -194,6 +196,7 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertTrue(handler.result.accepted());
     }
 
@@ -212,6 +215,7 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
+        assertNotNull(handler.result);
         assertFalse(handler.result.accepted());
     }
 
@@ -259,12 +263,16 @@ public class TransactionTest {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = TestUtil.readTransactionRootValue(tree).asString();
+            String value = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.readTransactionRootValue(tree).asString();
+            String value2 = Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }
@@ -310,7 +318,9 @@ public class TransactionTest {
 
         List<String> invocations = new ArrayList<>();
         tree.observeNextChange(Id.ZERO, immediate -> {
-            invocations.add(TestUtil.readTransactionRootValue(tree).asString());
+            invocations.add(Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString());
             return true;
         });
 
@@ -343,17 +353,12 @@ public class TransactionTest {
         }, Type.WRITE_THROUGH);
     }
 
-    @AfterEach
-    void cleanupFallback() {
-        Transaction.setTransactionFallback(null);
-    }
-
     @Test
     void fallback_providesRepeatableReads() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         JsonNode firstRead = TestUtil.readTransactionRootValue(tree);
 
@@ -381,7 +386,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "Fallback should make inTransaction() return true");
@@ -404,7 +409,7 @@ public class TransactionTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         Transaction fallbackTx = Transaction.createWriteThrough();
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction());
 
@@ -425,7 +430,7 @@ public class TransactionTest {
 
         assertFalse(Transaction.inTransaction());
 
-        Transaction.setTransactionFallback(() -> fallbackTx);
+        useTransactionFallback(() -> fallbackTx);
 
         assertTrue(Transaction.inTransaction(),
                 "inTransaction should return true when fallback is active");

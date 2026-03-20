@@ -17,37 +17,38 @@ package com.vaadin.flow.data.binder;
 
 import java.util.Objects;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public class ReadOnlyHasValueTest {
+class ReadOnlyHasValueTest {
     private static final String SAY_SOMETHING = "Say something";
     private static final String SAY_SOMETHING_ELSE = "Say something else";
     private static final String NO_VALUE = "-no-value-";
     private TestLabel label;
     private ReadOnlyHasValue<String> hasValue;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         label = new TestLabel();
         hasValue = new ReadOnlyHasValue<>(label::setText);
     }
 
     @Test
-    public void testBase() {
+    void testBase() {
         hasValue.setReadOnly(true);
         hasValue.setRequiredIndicatorVisible(false);
         Registration registration = hasValue.addValueChangeListener(e -> {
@@ -61,18 +62,20 @@ public class ReadOnlyHasValueTest {
         assertEquals(SAY_SOMETHING_ELSE, label.getText());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testRO() {
-        hasValue.setReadOnly(false);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testIndicator() {
-        hasValue.setRequiredIndicatorVisible(true);
+    @Test
+    void testRO() {
+        assertThrows(IllegalArgumentException.class,
+                () -> hasValue.setReadOnly(false));
     }
 
     @Test
-    public void testBind() {
+    void testIndicator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> hasValue.setRequiredIndicatorVisible(true));
+    }
+
+    @Test
+    void testBind() {
         Binder<Bean> beanBinder = new Binder<>(Bean.class);
         TestLabel label = new TestLabel();
         ReadOnlyHasValue<Long> intHasValue = new ReadOnlyHasValue<>(
@@ -102,7 +105,7 @@ public class ReadOnlyHasValueTest {
     }
 
     @Test
-    public void testEmptyValue() {
+    void testEmptyValue() {
         Binder<Bean> beanBinder = new Binder<>(Bean.class);
         TestLabel label = new TestLabel();
         ReadOnlyHasValue<String> strHasValue = new ReadOnlyHasValue<>(

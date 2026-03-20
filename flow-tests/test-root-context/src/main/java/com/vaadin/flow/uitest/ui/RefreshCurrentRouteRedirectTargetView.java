@@ -13,14 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.i18n;
+package com.vaadin.flow.uitest.ui;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.UUID;
 
-@RunWith(Suite.class)
-@NotThreadSafe
-@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
-public class DefaultI18NProviderFactorySuite {
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+
+@Route(value = "com.vaadin.flow.uitest.ui.RefreshCurrentRouteRedirectTargetView", layout = RefreshCurrentRouteLayout.class)
+public class RefreshCurrentRouteRedirectTargetView extends Div {
+
+    static final String VIEW_ID = "forward-target-id";
+
+    public RefreshCurrentRouteRedirectTargetView() {
+        Div id = new Div(UUID.randomUUID().toString());
+        id.setId(VIEW_ID);
+        add(id);
+    }
 }

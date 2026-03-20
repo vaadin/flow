@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -8,8 +8,8 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
@@ -19,14 +19,14 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-public abstract class AbstractTemplateTest {
+abstract class AbstractTemplateTest {
 
     private VaadinService service;
 
     private UI ui;
 
-    @Before
-    public void init() throws Exception {
+    @BeforeEach
+    void init() throws Exception {
         service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -52,8 +52,8 @@ public abstract class AbstractTemplateTest {
         VaadinService.setCurrent(service);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 

@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.signals.Signal;
 
@@ -54,8 +55,10 @@ public interface HasPlaceholder extends HasElement {
     }
 
     /**
-     * Binds a signal's value to the component's placeholder so that the
-     * placeholder is updated when the signal's value is updated.
+     * Binds a signal's value to the component's placeholder. The placeholder is
+     * set immediately with the current signal value when the binding is
+     * created, and is kept synchronized with any subsequent signal value
+     * changes while the component is in attached state.
      * <p>
      * Passing {@code null} as the {@code signal} removes any existing binding
      * for the given placeholder. When unbinding, the current placeholder is
@@ -66,9 +69,8 @@ public interface HasPlaceholder extends HasElement {
      * {@link com.vaadin.flow.signals.BindingActiveException}. The same happens
      * when trying to bind a new signal while one is already bound.
      * <p>
-     * Bindings are lifecycle-aware and only active while this component is in
-     * the attached state; they are deactivated while the component is in the
-     * detached state.
+     * When the component is in the detached state, signal value changes have no
+     * effect.
      *
      * @param placeholderSignal
      *            the signal to bind, not <code>null</code>
@@ -79,7 +81,9 @@ public interface HasPlaceholder extends HasElement {
      *
      * @since 25.1
      */
-    default void bindPlaceholder(Signal<String> placeholderSignal) {
-        getElement().bindProperty("placeholder", placeholderSignal, null);
+    default SignalBinding<String> bindPlaceholder(
+            Signal<String> placeholderSignal) {
+        return getElement().bindProperty("placeholder", placeholderSignal,
+                null);
     }
 }

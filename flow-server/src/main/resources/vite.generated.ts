@@ -23,12 +23,12 @@ import {
   UserConfigFn
 } from 'vite';
 
-import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+export { default as useLocalWebComponents } from '#buildFolder#/plugins/vite-plugin-local-web-components';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
@@ -324,8 +324,8 @@ function themePlugin(opts: { devMode: boolean }): PluginOption {
       server.watcher.on('add', handleThemeFileCreateDelete);
       server.watcher.on('unlink', handleThemeFileCreateDelete);
     },
-    handleHotUpdate(context) {
-      const contextPath = path.resolve(context.file);
+    hotUpdate({ file }) {
+      const contextPath = path.resolve(file);
       const themePath = path.resolve(themeFolder);
       if (contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
@@ -396,8 +396,8 @@ const allowedFrontendFolders = [frontendFolder, nodeModulesFolder];
 function showRecompileReason(): PluginOption {
   return {
     name: 'vaadin:why-you-compile',
-    handleHotUpdate(context) {
-      console.log('Recompiling because', context.file, 'changed');
+    hotUpdate({ file }) {
+      console.log('Recompiling because', file, 'changed');
     }
   };
 }
@@ -490,7 +490,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           //   - https://github.com/vitejs/vite/issues/12209
           manualChunks: (id: string) => id.startsWith('\0commonjsHelpers.js') ? 'commonjsHelpers' : null
         },
-        onwarn: (warning: rollup.RollupLog, defaultHandler: rollup.LoggingFunction) => {
+        onwarn: (warning: any, defaultHandler: (warning: any) => void) => {
           const ignoreEvalWarning = [
             'generated/jar-resources/FlowClient.js',
             'generated/jar-resources/vaadin-spreadsheet/spreadsheet-export.js',

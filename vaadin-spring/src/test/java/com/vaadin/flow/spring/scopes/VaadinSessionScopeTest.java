@@ -18,9 +18,8 @@ package com.vaadin.flow.spring.scopes;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
@@ -28,21 +27,23 @@ import org.springframework.beans.factory.config.Scope;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class VaadinSessionScopeTest extends AbstractScopeTest {
+class VaadinSessionScopeTest extends AbstractScopeTest {
 
-    @Before
-    public void tearDown() {
+    @BeforeEach
+    void tearDown() {
         VaadinSession.setCurrent(null);
     }
 
     @Test
-    public void get_currentSessionIsSet_objectIsStored() {
+    void get_currentSessionIsSet_objectIsStored() {
         VaadinSessionScope scope = new VaadinSessionScope();
 
         mockSession();
@@ -51,7 +52,7 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
     }
 
     @Test
-    public void remove_currentSessionIsSet_objectIsStored() {
+    void remove_currentSessionIsSet_objectIsStored() {
         VaadinSessionScope scope = new VaadinSessionScope();
         mockSession();
 
@@ -59,7 +60,7 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
     }
 
     @Test
-    public void registerDestructionCallback_currentSessionIsSet_objectIsStored() {
+    void registerDestructionCallback_currentSessionIsSet_objectIsStored() {
         VaadinSessionScope scope = new VaadinSessionScope();
         mockSession();
 
@@ -68,7 +69,7 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
+    void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         VaadinSession session = mockSession();
         VaadinService service = session.getService();
 
@@ -92,12 +93,12 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
         service.fireSessionDestroy(session);
         service.runPendingAccessTasks(session);
 
-        Assert.assertEquals(1, count.get());
-        Assert.assertNull(session.getAttribute(BeanStore.class));
+        assertEquals(1, count.get());
+        assertNull(session.getAttribute(BeanStore.class));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();
-        Assert.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
         // object has been removed from the storage, so object factory is called
         // once again to create the bean

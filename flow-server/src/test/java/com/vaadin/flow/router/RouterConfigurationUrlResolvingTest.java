@@ -50,7 +50,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
             .mock(DeploymentConfiguration.class);
 
     @BeforeEach
-    public void init() throws NoSuchFieldException, IllegalAccessException {
+    void init() throws NoSuchFieldException, IllegalAccessException {
         super.init();
         ui = new RouterTestMockUI(router);
         ui.getSession().lock();
@@ -67,7 +67,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 
@@ -82,8 +82,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void basic_url_resolving()
-            throws InvalidRouteConfigurationException {
+    void basic_url_resolving() throws InvalidRouteConfigurationException {
         setNavigationTargets(RootNavigationTarget.class,
                 FooNavigationTarget.class, FooBarNavigationTarget.class);
 
@@ -95,7 +94,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void nested_layouts_url_resolving()
+    void nested_layouts_url_resolving()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteChild.class, LoneRoute.class);
 
@@ -105,7 +104,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void layout_with_url_parameter_url_resolving()
+    void layout_with_url_parameter_url_resolving()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 OtherGreetingNavigationTarget.class);
@@ -120,7 +119,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void url_resolves_correctly_for_optional_and_wild_parameters()
+    void url_resolves_correctly_for_optional_and_wild_parameters()
             throws InvalidRouteConfigurationException, NotFoundException {
         setNavigationTargets(OptionalParameter.class, WildParameter.class);
 
@@ -142,7 +141,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void getUrl_with_wildcard_parameter_requires_pre_encoded_special_chars()
+    void getUrl_with_wildcard_parameter_requires_pre_encoded_special_chars()
             throws InvalidRouteConfigurationException, NotFoundException {
         setNavigationTargets(WildParameter.class);
 
@@ -166,7 +165,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
+    void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
         WildParameter.events.clear();
         WildParameter.param = null;
         setNavigationTargets(WildParameter.class);
@@ -188,7 +187,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void root_navigation_target_with_wildcard_parameter()
+    void root_navigation_target_with_wildcard_parameter()
             throws InvalidRouteConfigurationException {
         WildRootParameter.events.clear();
         WildRootParameter.param = null;
@@ -218,7 +217,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void root_navigation_target_with_optional_parameter()
+    void root_navigation_target_with_optional_parameter()
             throws InvalidRouteConfigurationException {
         OptionalRootParameter.events.clear();
         OptionalRootParameter.param = null;
@@ -249,7 +248,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void getUrl_for_has_url_with_supported_parameters()
+    void getUrl_for_has_url_with_supported_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(IntegerParameter.class, LongParameter.class,
                 BooleanParameter.class);
@@ -265,14 +264,14 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // 3519
-    public void getUrl_throws_for_required_parameter() {
+    void getUrl_throws_for_required_parameter() {
         setNavigationTargets(RouteWithParameter.class);
         assertThrows(IllegalArgumentException.class,
                 () -> routeConfiguration.getUrl(RouteWithParameter.class));
     }
 
     @Test // 3519
-    public void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
+    void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithMultipleParameters.class,
                 OptionalParameter.class);
@@ -291,7 +290,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // 3519
-    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
+    void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
@@ -320,7 +319,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void getTemplate_returns_url_template()
+    void getTemplate_returns_url_template()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
@@ -346,7 +345,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
-    public void routerLinkInParent_updatesWhenNavigating()
+    void routerLinkInParent_updatesWhenNavigating()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(LoneRoute.class, RouteChild.class);
 
@@ -368,7 +367,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_with_same_path()
+    void navigation_targets_remove_route_with_same_path()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -386,7 +385,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_with_same_path_and_parameter()
+    void navigation_targets_remove_route_with_same_path_and_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -399,7 +398,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_remove_route_target_with_same_path_and_parameter()
+    void navigation_targets_remove_route_target_with_same_path_and_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -433,7 +432,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_with_same_route_and_one_with_parameter()
+    void navigation_targets_with_same_route_and_one_with_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
 
@@ -441,7 +440,7 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void navigation_targets_with_same_route_and_two_with_parameter()
+    void navigation_targets_with_same_route_and_two_with_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class,
                 MyPageWithWildcardParam.class);

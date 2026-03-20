@@ -168,5 +168,10 @@ Components extend `Component` and use:
 - Extensive CI/CD pipeline with multiple test configurations
 - When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
 - When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
+- When creating a PR, mark it as a draft on GitHub and remind the user about reviewing the code themselves and marking the PR ready
 - Don't add @since to javadocs
 - When adding unit tests, add only the essential ones and not more than that
+- Use test: instead of fix: when fixing only tests
+- Prefix custom DOM events with `vaadin-` (e.g. `vaadin-component-resize` instead of `component-resize`)
+- Always write even slightly complex JavaScript into a separate `.js` file rather than inlining it in Java strings. Use `@JsModule` on `UI.java` to load the file from `META-INF/frontend/`
+- Store global JavaScript state and functions on `window.Vaadin.Flow` (e.g. `window.Vaadin.Flow.componentSizeObserver`). Use annotations on the UI class for global scripts

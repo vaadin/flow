@@ -83,6 +83,7 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -812,24 +813,28 @@ public class UI extends Component
     }
 
     /**
-     * Gets a signal that holds the current locale of this UI.
+     * Gets a read-only signal that holds the current locale of this UI.
      * <p>
-     * The signal is the source of truth for the locale. Use
-     * {@link ValueSignal#get()} to read the locale reactively (creates a
+     * Use {@link Signal#get()} to read the locale reactively (creates a
      * dependency when called inside a signal effect). Use {@link #getLocale()}
-     * for non-reactive reads.
-     * <p>
-     * Note that writing directly to the signal will not notify
+     * for non-reactive reads. To change the locale, use
+     * {@link #setLocale(Locale)} which also notifies
      * {@link com.vaadin.flow.i18n.LocaleChangeObserver LocaleChangeObserver}
-     * instances. Use {@link #setLocale(Locale)} if you need observers to be
-     * notified.
+     * instances.
+     * <p>
+     * The signal can be used for two-way binding with a field component by
+     * passing {@link #setLocale(Locale)} as the write callback:
      *
-     * @return a writable signal holding the current locale, never null
+     * <pre>
+     * localeDropdown.bindValue(ui.localeSignal(), ui::setLocale);
+     * </pre>
+     *
+     * @return a read-only signal holding the current locale, never null
      * @see #setLocale(Locale)
      * @see #getLocale()
      */
-    public ValueSignal<Locale> localeSignal() {
-        return localeSignal;
+    public Signal<Locale> localeSignal() {
+        return localeSignal.asReadonly();
     }
 
     /**
@@ -1280,6 +1285,10 @@ public class UI extends Component
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
+     * <p>
+     * In development mode, local signal field values are automatically
+     * transferred from the old component instance to the new one, preserving UI
+     * state across refreshes.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1743,6 +1752,18 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
+    /**
+     * Reference to the client outlet element wrapper.
+     * <p>
+     * This field should not be set directly for any reason; assigning a new
+     * value has no effect on the application. It is maintained internally and
+     * will be removed in a future version.
+     *
+     * @deprecated Use {@link UIInternals#getWrapperElement()} through
+     *             {@code getInternals().getWrapperElement()} instead.
+     */
+    @Deprecated(forRemoval = true)
+    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 

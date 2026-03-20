@@ -19,17 +19,19 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 
@@ -50,6 +52,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     private final class ThemeListIterator implements Iterator<String> {
         private final Iterator<String> wrappedIterator = themes.iterator();
+        private String current;
 
         @Override
         public boolean hasNext() {
@@ -58,7 +61,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
         @Override
         public String next() {
-            return wrappedIterator.next();
+            current = wrappedIterator.next();
+            return current;
         }
 
         @Override
@@ -92,7 +96,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     @Override
-    public void bind(String name, Signal<Boolean> signal) {
+    public SignalBinding<Boolean> bind(String name, Signal<Boolean> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = element.getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -102,18 +106,76 @@ public class ThemeListImpl implements ThemeList, Serializable {
                     "Theme name '" + name + "' is already bound to a signal");
         }
 
-        Registration registration = ElementEffect.bind(
+        SignalBinding<Boolean> binding = ElementEffect.bind(
                 Element.get(element.getNode()), signal,
                 (element, value) -> internalSetPresence(name,
                         Boolean.TRUE.equals(value)));
-        feature.setBinding(SignalBindingFeature.THEMES + name, registration,
-                signal);
+        feature.setBinding(SignalBindingFeature.THEMES + name, signal);
+        return binding;
+    }
+
+    @Override
+    public SignalBinding<List<String>> bind(Signal<List<String>> names) {
+        Objects.requireNonNull(names, "Signal cannot be null");
+        SignalBindingFeature feature = element.getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (feature.hasBinding(SignalBindingFeature.THEME_GROUP)) {
+            throw new BindingActiveException(
+                    "A group theme name binding is already active");
+        }
+
+        SignalBinding<List<String>> binding = new SignalBinding<>();
+        Set<String> previousNames = new HashSet<>();
+        @SuppressWarnings("unchecked")
+        List<String>[] previousValue = new List[] { names.peek() };
+        Element ownerElement = Element.get(element.getNode());
+
+        ElementEffect.effect(ownerElement, ctx -> {
+            List<String> signalNames = names.get();
+            Set<String> newNames = new HashSet<>();
+            if (signalNames != null) {
+                for (String name : signalNames) {
+                    if (name != null && !name.isEmpty()) {
+                        newNames.add(name);
+                    }
+                }
+            }
+
+            // Remove names no longer in the list
+            for (String old : previousNames) {
+                if (!newNames.contains(old)) {
+                    internalSetPresence(old, false);
+                }
+            }
+            // Add new names
+            for (String name : newNames) {
+                if (!previousNames.contains(name)) {
+                    internalSetPresence(name, true);
+                }
+            }
+
+            previousNames.clear();
+            previousNames.addAll(newNames);
+
+            if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
+                        ctx.isBackgroundChange(), previousValue[0], signalNames,
+                        ownerElement);
+                binding.setInitialContext(bindingContext);
+                if (binding.hasCallbacks()) {
+                    binding.fireOnChange(bindingContext);
+                }
+            }
+            previousValue[0] = signalNames;
+        });
+        feature.setBinding(SignalBindingFeature.THEME_GROUP, names);
+        return binding;
     }
 
     private void internalSetPresence(String name, boolean set) {
-        // Constructor reads the initial themes state only once.
-        // Refresh themes from the attribute to ensure multiple ElementEffect
-        // bindings work correctly with the latest themes.
+        // Re-read themes from the attribute to stay in sync with other
+        // ThemeListImpl instances that may have modified the attribute.
         themes.clear();
         themes.addAll(readThemesFromAttribute());
 
@@ -189,7 +251,11 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     @Override
     public void clear() {
-        clearBindings();
+        getSignalBindingFeatureIfInitialized().ifPresent(feature -> {
+            if (feature.hasAnyBinding(SignalBindingFeature.THEMES)) {
+                throw new BindingActiveException();
+            }
+        });
         themes.clear();
         updateThemeAttribute();
     }
@@ -198,8 +264,8 @@ public class ThemeListImpl implements ThemeList, Serializable {
         if (themes.isEmpty()) {
             element.removeAttribute(THEME_ATTRIBUTE_NAME);
         } else {
-            element.setAttribute(THEME_ATTRIBUTE_NAME, themes.stream()
-                    .collect(Collectors.joining(THEME_NAMES_DELIMITER)));
+            String value = String.join(THEME_NAMES_DELIMITER, themes);
+            element.setAttribute(THEME_ATTRIBUTE_NAME, value);
         }
     }
 
@@ -236,14 +302,6 @@ public class ThemeListImpl implements ThemeList, Serializable {
     @Override
     public String toString() {
         return themes.toString();
-    }
-
-    /**
-     * Clears all signal bindings.
-     */
-    public void clearBindings() {
-        getSignalBindingFeatureIfInitialized().ifPresent(
-                feature -> feature.clearBindings(SignalBindingFeature.THEMES));
     }
 
     private void throwIfBound(String className) {

@@ -94,7 +94,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ElementTest extends AbstractNodeTest {
 
     @Test
-    public void createElementWithTag() {
+    void createElementWithTag() {
         Element e = ElementFactory.createDiv();
         assertEquals(Tag.DIV, e.getTag());
         assertFalse(e.hasAttribute("is"));
@@ -102,28 +102,28 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void createElementWithInvalidTag() {
+    void createElementWithInvalidTag() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Element("<div>");
         });
     }
 
     @Test
-    public void createElementWithEmptyTag() {
+    void createElementWithEmptyTag() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Element("");
         });
     }
 
     @Test
-    public void createElementWithNullTag() {
+    void createElementWithNullTag() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Element(null);
         });
     }
 
     @Test
-    public void elementsUpdateSameData() {
+    void elementsUpdateSameData() {
         Element te = new Element("testelem");
         Element e = Element.get(te.getNode());
 
@@ -138,7 +138,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getElementFromInvalidNode() {
+    void getElementFromInvalidNode() {
         assertThrows(IllegalArgumentException.class, () -> {
             StateNode node = new StateNode(ElementPropertyMap.class);
             Element.get(node);
@@ -146,7 +146,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void publicElementMethodsShouldReturnElement() {
+    void publicElementMethodsShouldReturnElement() {
         Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
@@ -180,15 +180,19 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("bindText");
         ignore.add("bindVisible");
 
+        // returns void
+        ignore.add("flashClass");
+
         assertMethodsReturnType(Element.class, ignore);
     }
 
     @Test
-    public void publicElementStyleMethodsShouldReturnElement() {
+    void publicElementStyleMethodsShouldReturnElement() {
         Set<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
+        ignore.add("bind");
 
         for (Method m : Style.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
@@ -212,21 +216,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void stringAttribute() {
+    void stringAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         assertEquals("bar", e.getAttribute("foo"));
     }
 
     @Test
-    public void setEmptyAttribute() {
+    void setEmptyAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "");
         assertEquals("", e.getAttribute("foo"));
     }
 
     @Test
-    public void setBooleanAttribute() {
+    void setBooleanAttribute() {
         Element e = ElementFactory.createDiv();
 
         e.setAttribute("foo", true);
@@ -239,7 +243,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setNullAttribute() {
+    void setNullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.setAttribute("foo", (String) null);
@@ -247,7 +251,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getNullAttribute() {
+    void getNullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.getAttribute(null);
@@ -255,7 +259,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void hasNullAttribute() {
+    void hasNullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.hasAttribute(null);
@@ -263,7 +267,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeNullAttribute() {
+    void removeNullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.removeAttribute(null);
@@ -271,7 +275,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setInvalidAttribute() {
+    void setInvalidAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.setAttribute("\"foo\"", "bar");
@@ -279,20 +283,20 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void hasDefinedAttribute() {
+    void hasDefinedAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         assertTrue(e.hasAttribute("foo"));
     }
 
     @Test
-    public void doesNotHaveUndefinedAttribute() {
+    void doesNotHaveUndefinedAttribute() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
-    public void doesNotHaveRemovedAttribute() {
+    void doesNotHaveRemovedAttribute() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         e.removeAttribute("foo");
@@ -300,7 +304,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeNonExistingAttributeIsNoOp() {
+    void removeNonExistingAttributeIsNoOp() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.hasAttribute("foo"));
         e.removeAttribute("foo");
@@ -308,13 +312,13 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attributesWhenNoneDefined() {
+    void attributesWhenNoneDefined() {
         Element e = ElementFactory.createDiv();
         assertEquals(0, e.getAttributeNames().count());
     }
 
     @Test
-    public void attributesNames() {
+    void attributesNames() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         assertArrayEquals(new String[] { "foo" },
@@ -322,7 +326,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attributesNamesAfterRemoved() {
+    void attributesNamesAfterRemoved() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         e.setAttribute("bar", "baz");
@@ -332,7 +336,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setGetAttributeValueCaseSensitive() {
+    void setGetAttributeValueCaseSensitive() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("foo", "bAr");
         assertEquals("bAr", e.getAttribute("foo"));
@@ -341,7 +345,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setGetAttributeNameCaseInsensitive() {
+    void setGetAttributeNameCaseInsensitive() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("foo", "bar");
         e.setAttribute("FOO", "baz");
@@ -351,14 +355,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void hasAttributeNamesCaseInsensitive() {
+    void hasAttributeNamesCaseInsensitive() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("fooo", "bar");
         assertTrue(e.hasAttribute("fOoO"));
     }
 
     @Test
-    public void getAttributeNamesLowerCase() {
+    void getAttributeNamesLowerCase() {
         Element e = new Element(Tag.SPAN);
         e.setAttribute("FOO", "bar");
         e.setAttribute("Baz", "bar");
@@ -372,7 +376,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeDetachedFromParent() {
+    void removeDetachedFromParent() {
         Element otherElement = new Element("other");
         assertNull(otherElement.getParent());
         otherElement.removeFromParent(); // No op
@@ -380,14 +384,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getDetachedParent() {
+    void getDetachedParent() {
         Element otherElement = new Element("other");
         assertNull(otherElement.getParent());
         assertNull(otherElement.getParentNode());
     }
 
     @Test
-    public void addNullEventListener() {
+    void addNullEventListener() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.addEventListener("foo", null);
@@ -395,7 +399,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addEventListenerForNullType() {
+    void addEventListenerForNullType() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.addEventListener(null, ignore -> {
@@ -404,25 +408,25 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void equalsSelf() {
+    void equalsSelf() {
         Element e = ElementFactory.createDiv();
         assertTrue(e.equals(e));
     }
 
     @Test
-    public void notEqualsNull() {
+    void notEqualsNull() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.equals(null));
     }
 
     @Test
-    public void notEqualsString() {
+    void notEqualsString() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.equals(Tag.DIV));
     }
 
     @Test
-    public void listenerReceivesEvents() {
+    void listenerReceivesEvents() {
         Element e = ElementFactory.createDiv();
         AtomicInteger listenerCalls = new AtomicInteger(0);
         DomEventListener myListener = event -> listenerCalls.incrementAndGet();
@@ -435,7 +439,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void listenerReceivesEventsWithAllowInert() {
+    void listenerReceivesEventsWithAllowInert() {
         Element e = ElementFactory.createDiv();
         // Inert the node, verify events no more passed through
         InertData inertData = e.getNode().getFeature(InertData.class);
@@ -462,7 +466,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getPropertyDefaults() {
+    void getPropertyDefaults() {
         Element element = ElementFactory.createDiv();
 
         element.setProperty("null", null);
@@ -489,7 +493,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getPropertyStringConversions() {
+    void getPropertyStringConversions() {
         assertPropertyString(null, null);
         assertPropertyString("foo", "foo");
         assertPropertyString("", "");
@@ -511,7 +515,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testPropertyBooleanConversions() {
+    void testPropertyBooleanConversions() {
         assertPropertyBoolean(true, Boolean.TRUE);
         assertPropertyBoolean(false, Boolean.FALSE);
 
@@ -544,7 +548,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testPropertyDoubleConversions() {
+    void testPropertyDoubleConversions() {
         assertPropertyDouble(1, Double.valueOf(1));
         assertPropertyDouble(.1, Double.valueOf(.1));
         assertPropertyDouble(Double.NaN, Double.valueOf(Double.NaN));
@@ -581,7 +585,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testPropertyIntConversions() {
+    void testPropertyIntConversions() {
         assertPropertyInt(1, Double.valueOf(1));
         assertPropertyInt(1, Double.valueOf(1.9));
         assertPropertyInt(0, Double.valueOf(Double.NaN));
@@ -659,7 +663,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void propertyRawValues() {
+    void propertyRawValues() {
         Element element = ElementFactory.createDiv();
 
         element.setProperty("p", "v");
@@ -703,7 +707,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addAndRemoveProperty() {
+    void addAndRemoveProperty() {
         Element element = ElementFactory.createDiv();
 
         assertFalse(element.hasProperty("foo"));
@@ -720,7 +724,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void propertyNames() {
+    void propertyNames() {
         Element element = ElementFactory.createDiv();
 
         assertEquals(0, element.getPropertyNames().count());
@@ -734,7 +738,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setProperty_javaTimeObject() {
+    void setProperty_javaTimeObject() {
         BeanWithTemporalFields bean = new BeanWithTemporalFields();
         Element element = ElementFactory.createDiv();
 
@@ -794,7 +798,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testGetTextContent() {
+    void testGetTextContent() {
         Element child = new Element("child");
         child.appendChild(Element.createText("bar"));
 
@@ -807,7 +811,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetTextContent() {
+    void testSetTextContent() {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
@@ -817,7 +821,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetTextContentRemovesOldContent() {
+    void testSetTextContentRemovesOldContent() {
         Element child = new Element("child");
         Element element = ElementFactory.createDiv();
         element.appendChild(child);
@@ -829,7 +833,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetTextReplacesOldTextNode() {
+    void testSetTextReplacesOldTextNode() {
         Element element = ElementFactory.createDiv();
         Element text = Element.createText("foo");
         element.appendChild(text);
@@ -841,7 +845,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetTextContentPropertyThrows() {
+    void testSetTextContentPropertyThrows() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = new Element("element");
             element.setProperty("textContent", "foo");
@@ -849,7 +853,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setOuterHtmlProperty_throws() {
+    void setOuterHtmlProperty_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = new Element("element");
             element.setProperty("outerHTML", "<br>");
@@ -857,7 +861,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setInnerHtmlProeprty_setValueAndRemoveAllChildren() {
+    void setInnerHtmlProeprty_setValueAndRemoveAllChildren() {
         Element element = new Element("element");
         element.appendChild(ElementFactory.createAnchor(),
                 ElementFactory.createDiv());
@@ -868,7 +872,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testGetTextContentProperty() {
+    void testGetTextContentProperty() {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
@@ -878,7 +882,7 @@ class ElementTest extends AbstractNodeTest {
 
     @Test
     // Because that's how it works in browsers
-    public void clearTextContentRemovesChild() {
+    void clearTextContentRemovesChild() {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
 
@@ -890,7 +894,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void newElementClasses() {
+    void newElementClasses() {
         Element element = ElementFactory.createDiv();
 
         assertFalse(element.hasAttribute("class"));
@@ -898,7 +902,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addElementClasses() {
+    void addElementClasses() {
         Element element = ElementFactory.createDiv();
 
         element.getClassList().add("foo");
@@ -917,7 +921,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetClassAttribute() {
+    void testSetClassAttribute() {
         Element element = ElementFactory.createDiv();
 
         // Get instance right away to see that changes are live
@@ -936,7 +940,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testSetEmptyClassAttribute() {
+    void testSetEmptyClassAttribute() {
         Element element = new Element(Tag.DIV);
 
         // Get instance right away to see that changes are live
@@ -948,7 +952,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAddEmptyClassname() {
+    void testAddEmptyClassname() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = new Element(Tag.DIV);
 
@@ -960,7 +964,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testRemoveClassName() {
+    void testRemoveClassName() {
         Element element = ElementFactory.createDiv();
 
         element.setAttribute("class", "foo bar");
@@ -978,7 +982,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testRemoveClassAttribute() {
+    void testRemoveClassAttribute() {
         Element element = ElementFactory.createDiv();
 
         Set<String> classList = element.getClassList();
@@ -991,7 +995,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addExistingClass_noop() {
+    void addExistingClass_noop() {
         Element element = ElementFactory.createDiv();
 
         element.setAttribute("class", "foo");
@@ -1002,14 +1006,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAddClassWithSpaces_throws() {
+    void testAddClassWithSpaces_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             ElementFactory.createDiv().getClassList().add("foo bar");
         });
     }
 
     @Test
-    public void testRemoveClassWithSpaces() {
+    void testRemoveClassWithSpaces() {
         ClassList cl = ElementFactory.createDiv().getClassList();
         cl.add("foo");
         cl.add("bar");
@@ -1018,7 +1022,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testContainsClassWithSpaces() {
+    void testContainsClassWithSpaces() {
         ClassList cl = ElementFactory.createDiv().getClassList();
         cl.add("foo");
         cl.add("bar");
@@ -1027,7 +1031,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void classListSetAdd() {
+    void classListSetAdd() {
         Element e = new Element(Tag.DIV);
         assertTrue(e.getClassList().set("foo", true));
         assertEquals("foo", e.getAttribute("class"));
@@ -1036,7 +1040,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void classListSetRemove() {
+    void classListSetRemove() {
         Element e = new Element(Tag.DIV);
         e.setAttribute("class", "foo bar");
         assertTrue(e.getClassList().set("foo", false));
@@ -1046,14 +1050,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testClassListProperty_throws() {
+    void testClassListProperty_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             ElementFactory.createDiv().setProperty("classList", "foo");
         });
     }
 
     @Test
-    public void testClassNameProperty_throws() {
+    void testClassNameProperty_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             ElementFactory.createDiv().setProperty("className", "foo");
         });
@@ -1067,14 +1071,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getUnsetStyle() {
+    void getUnsetStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         assertNull(s.get("foo"));
     }
 
     @Test
-    public void getNullStyle() {
+    void getNullStyle() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             Style s = e.getStyle();
@@ -1083,7 +1087,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void replaceStyle() {
+    void replaceStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
@@ -1092,7 +1096,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeSingleStyle() {
+    void removeSingleStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
@@ -1101,14 +1105,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void emptyStyleAsAttribute() {
+    void emptyStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         assertFalse(e.hasAttribute("style"));
         assertNull(e.getAttribute("style"));
     }
 
     @Test
-    public void semicolonInStyle() {
+    void semicolonInStyle() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             Style s = e.getStyle();
@@ -1117,7 +1121,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getSingleStyleAsAttribute() {
+    void getSingleStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.setBorder("1px solid black");
@@ -1126,7 +1130,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getMultipleStylesAsAttribute() {
+    void getMultipleStylesAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
@@ -1139,7 +1143,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setSingleStyleAsAttribute() {
+    void setSingleStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         String style = "width:12em";
         e.setAttribute("style", style);
@@ -1148,7 +1152,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setStyleAttributeMultipleTimes() {
+    void setStyleAttributeMultipleTimes() {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", "width:12em");
         e.setAttribute("style", "height:12em");
@@ -1157,7 +1161,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setMultipleStylesAsAttribute() {
+    void setMultipleStylesAsAttribute() {
         Element e = ElementFactory.createDiv();
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
@@ -1166,7 +1170,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setComplexStylesAsAttribute() {
+    void setComplexStylesAsAttribute() {
         testStyleAttribute(
                 "background:rgb(0,255,0) url(http://foo.bar/smiley.gif) no-repeat fixed center");
         testStyleAttribute("content:\"content: bar\"");
@@ -1185,7 +1189,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setInvalidStyleAsAttribute() {
+    void setInvalidStyleAsAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.setAttribute("style", "width:");
@@ -1193,7 +1197,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setInvalidStyleAsAttribute2() {
+    void setInvalidStyleAsAttribute2() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.setAttribute("style", "width");
@@ -1201,7 +1205,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setVendorSpecificStylesProperty() {
+    void setVendorSpecificStylesProperty() {
         Element e = ElementFactory.createDiv();
         String style = "-moz-user-input:inherit";
         e.setAttribute("style", style);
@@ -1210,7 +1214,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setVendorSpecificStylesValue() {
+    void setVendorSpecificStylesValue() {
         Element e = ElementFactory.createDiv();
         String style = "display:-moz-box";
         e.setAttribute("style", style);
@@ -1220,7 +1224,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setStyleAttributeTrailingSemicolon() {
+    void setStyleAttributeTrailingSemicolon() {
         Element e = ElementFactory.createDiv();
         String style = "width:12em";
         e.setAttribute("style", style + ";");
@@ -1240,7 +1244,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setEmptyStyleName() {
+    void setEmptyStyleName() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.getStyle().set("", "foo");
@@ -1248,7 +1252,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setStyleNameExtraWhitespace() {
+    void setStyleNameExtraWhitespace() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.getStyle().set("   color", "red");
@@ -1256,7 +1260,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setStyleNameColon() {
+    void setStyleNameColon() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element e = ElementFactory.createDiv();
             e.getStyle().set("color:", "red");
@@ -1264,7 +1268,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setStyleValueExtraWhitespace() {
+    void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
         e.getStyle().setColor("red   ");
         assertEquals("color:red", e.getAttribute("style"));
@@ -1272,7 +1276,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeStyles() {
+    void removeStyles() {
         Element element = ElementFactory.createDiv();
 
         element.getStyle().setZIndex(12);
@@ -1291,7 +1295,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeStyleAttribute() {
+    void removeStyleAttribute() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1304,7 +1308,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void validStyleWithSemicolon() {
+    void validStyleWithSemicolon() {
         Element element = ElementFactory.createDiv();
         String validStyle = "background: url('foo;bar')";
         Style style = element.getStyle();
@@ -1313,7 +1317,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void dashSeparatedSetStyle() {
+    void dashSeparatedSetStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1322,7 +1326,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void dashSeparatedGetStyle() {
+    void dashSeparatedGetStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1333,7 +1337,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void dashSeparatedHasStyle() {
+    void dashSeparatedHasStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1344,7 +1348,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void dashSeparatedRemoveStyle() {
+    void dashSeparatedRemoveStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1358,7 +1362,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void styleGetNamesDashAndCamelCase() {
+    void styleGetNamesDashAndCamelCase() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1372,7 +1376,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void nullStyleValue() {
+    void nullStyleValue() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1383,7 +1387,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void sendPropertyInCorrectFormatToClient() {
+    void sendPropertyInCorrectFormatToClient() {
         assertClientStyleKey("--some-variable", "--some-variable");
         assertClientStyleKey("-webkit-border", "-webkit-border");
         assertClientStyleKey("background-color", "background-color");
@@ -1409,7 +1413,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void customPropertyStyle() {
+    void customPropertyStyle() {
         Element element = ElementFactory.createDiv();
         Style style = element.getStyle();
         style.set("--some-variable", "foo");
@@ -1417,7 +1421,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void useCustomPropertyStyle() {
+    void useCustomPropertyStyle() {
         Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
@@ -1426,7 +1430,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void listenersFiredInRegisteredOrder() {
+    void listenersFiredInRegisteredOrder() {
         Element element = ElementFactory.createDiv();
         List<Integer> eventOrder = new ArrayList<>();
 
@@ -1449,7 +1453,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void eventsWhenListenerIsRegisteredManyTimes() {
+    void eventsWhenListenerIsRegisteredManyTimes() {
         AtomicInteger invocations = new AtomicInteger(0);
 
         DomEventListener listener = e -> {
@@ -1465,7 +1469,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addAsOwnChild() {
+    void addAsOwnChild() {
         assertThrows(IllegalStateException.class, () -> {
             Element element = ElementFactory.createDiv();
             element.appendChild(element);
@@ -1473,7 +1477,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void addAsChildOfChild() {
+    void addAsChildOfChild() {
         assertThrows(IllegalStateException.class, () -> {
             Element parent = ElementFactory.createDiv();
             Element child = ElementFactory.createDiv();
@@ -1491,7 +1495,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testGetOwnTextContent() {
+    void testGetOwnTextContent() {
         Element element = ElementFactory.createDiv();
         element.setText("foo");
         element.appendChild(ElementFactory.createDiv()
@@ -1505,7 +1509,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
+    void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
         UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         String resName = "resource";
@@ -1518,7 +1522,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
+    void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
         UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", "bar");
@@ -1533,7 +1537,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasAttribute() {
+    void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasAttribute() {
         UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         String resName = "resource";
@@ -1552,7 +1556,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_nullValue() {
+    void setResourceAttribute_nullValue() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
             element.setAttribute("foo", (StreamResource) null);
@@ -1560,7 +1564,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_classAttribute() {
+    void setResourceAttribute_classAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
             element.setAttribute("class", Mockito.mock(StreamResource.class));
@@ -1568,7 +1572,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_nullAttribute() {
+    void setResourceAttribute_nullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
             element.setAttribute(null, Mockito.mock(StreamResource.class));
@@ -1576,7 +1580,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsAttached_elementHasAttribute() {
+    void setResourceAttribute_elementIsAttached_elementHasAttribute() {
         UI ui = createUI();
         UI.setCurrent(ui);
         String resName = "resource";
@@ -1588,7 +1592,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsAttached_setAnotherResource()
+    void setResourceAttribute_elementIsAttached_setAnotherResource()
             throws URISyntaxException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1611,7 +1615,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsAttached_setRawAttribute()
+    void setResourceAttribute_elementIsAttached_setRawAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1639,7 +1643,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsAttached_removeAttribute()
+    void setResourceAttribute_elementIsAttached_removeAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1666,7 +1670,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_resourceIsRegistered()
+    void setResourceAttribute_attachElement_resourceIsRegistered()
             throws URISyntaxException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1686,7 +1690,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_setAnotherResource()
+    void setResourceAttribute_attachElement_setAnotherResource()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1718,7 +1722,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_setRawAttribute()
+    void setResourceAttribute_attachElement_setRawAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1741,7 +1745,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_removeAttribute()
+    void setResourceAttribute_attachElement_removeAttribute()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1765,7 +1769,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_setAnotherResourceAfterAttaching()
+    void setResourceAttribute_attachElement_setAnotherResourceAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1796,7 +1800,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_setRawAttributeAfterAttaching()
+    void setResourceAttribute_attachElement_setRawAttributeAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1822,7 +1826,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachElement_removeAttributeAfterAttaching()
+    void setResourceAttribute_attachElement_removeAttributeAfterAttaching()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1848,7 +1852,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_detachElement_resourceIsUnregistered()
+    void setResourceAttribute_detachElement_resourceIsUnregistered()
             throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1886,7 +1890,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_detachAndReattachElement_resourceReregistered()
+    void setResourceAttribute_detachAndReattachElement_resourceReregistered()
             throws URISyntaxException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1917,7 +1921,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_attachAndDetachAndReattachElement_resourceReregistered()
+    void setResourceAttribute_attachAndDetachAndReattachElement_resourceReregistered()
             throws URISyntaxException {
         UI ui = createUI();
         UI.setCurrent(ui);
@@ -1949,7 +1953,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void setResourceAttribute_elementIsText_operationIsNotSupported() {
+    void setResourceAttribute_elementIsText_operationIsNotSupported() {
         assertThrows(UnsupportedOperationException.class, () -> {
             Element.createText("").setAttribute("foo",
                     Mockito.mock(StreamResource.class));
@@ -1957,7 +1961,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAttachListener_parentAttach_childListenersTriggered() {
+    void testAttachListener_parentAttach_childListenersTriggered() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -2009,7 +2013,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testDetachListener_parentDetach_childListenersTriggered() {
+    void testDetachListener_parentDetach_childListenersTriggered() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -2050,7 +2054,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAttachListener_eventOrder_childFirst() {
+    void testAttachListener_eventOrder_childFirst() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -2075,7 +2079,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testDetachListener_eventOrder_childFirst() {
+    void testDetachListener_eventOrder_childFirst() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -2101,7 +2105,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAttachDetach_elementMoved_bothEventsTriggered() {
+    void testAttachDetach_elementMoved_bothEventsTriggered() {
         Element body = new UI().getElement();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
@@ -2128,7 +2132,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testAttachEvent_stateTreeCanFound() {
+    void testAttachEvent_stateTreeCanFound() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
 
@@ -2146,7 +2150,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testDetachEvent_stateTreeCanFound() {
+    void testDetachEvent_stateTreeCanFound() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
         body.appendChild(child);
@@ -2166,7 +2170,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testMoveFromUiToUi_doesNotThrow() {
+    void testMoveFromUiToUi_doesNotThrow() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
         body.appendChild(child);
@@ -2179,7 +2183,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testRemoveFromTree_inDetachListener_removedFromParent() {
+    void testRemoveFromTree_inDetachListener_removedFromParent() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
         body.appendChild(child);
@@ -2192,7 +2196,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void testRemoveFromTree_isVirtualChild_removedFromParent() {
+    void testRemoveFromTree_isVirtualChild_removedFromParent() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
 
@@ -2227,7 +2231,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void insertAtCurrentPositionNoOp() {
+    void insertAtCurrentPositionNoOp() {
         // Must have an UI to get attach events
         UI ui = new UI();
         Element parent = ui.getElement();
@@ -2240,25 +2244,25 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
+    void textNodeTransformsNullToEmptyAndDoesNotThrowException() {
         Element e = Element.createText(null);
         assertEquals("", e.getText());
     }
 
     @Test
-    public void textNodeOuterHtml() {
+    void textNodeOuterHtml() {
         Element e = Element.createText("foobar");
         assertEquals("foobar", e.getOuterHTML());
     }
 
     @Test
-    public void singleElementOuterHtml() {
+    void singleElementOuterHtml() {
         Element e = ElementFactory.createAnchor();
         assertEquals("<a></a>", e.getOuterHTML());
     }
 
     @Test
-    public void elementTreeOuterHtml() {
+    void elementTreeOuterHtml() {
         Element div = ElementFactory.createDiv();
         Element span = ElementFactory.createSpan();
         Element button = ElementFactory.createButton("hello");
@@ -2271,7 +2275,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void elementAttributesOuterHtml() {
+    void elementAttributesOuterHtml() {
         Element div = ElementFactory.createDiv();
         div.setAttribute("foo", "bar");
         div.getStyle().setWidth("20px");
@@ -2284,7 +2288,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void elementAttributeSpecialCharactersOuterHtml() {
+    void elementAttributeSpecialCharactersOuterHtml() {
         Element div = ElementFactory.createDiv();
         div.setAttribute("foo", "bar\"'&quot;");
 
@@ -2293,7 +2297,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void htmlComponentOuterHtml() {
+    void htmlComponentOuterHtml() {
         Html html = new Html(
                 "<div style='background:green'><span><button>hello</button></span></div>");
         assertEquals("<div style=\"background:green\">\n"
@@ -2302,7 +2306,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionBeforeAttach() {
+    void callFunctionBeforeAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callJsFunction("noArgsMethod");
@@ -2313,7 +2317,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionAfterAttach() {
+    void callFunctionAfterAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -2324,7 +2328,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionBeforeDetach() {
+    void callFunctionBeforeDetach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -2338,7 +2342,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionBeforeReAttach() {
+    void callFunctionBeforeReAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -2354,7 +2358,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionOneParam() {
+    void callFunctionOneParam() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callJsFunction("method", "foo");
@@ -2366,7 +2370,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionTwoParams() {
+    void callFunctionTwoParams() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callJsFunction("method", "foo", 123);
@@ -2377,7 +2381,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionOnProperty() {
+    void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callJsFunction("property.method");
@@ -2388,7 +2392,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunctionOnSubProperty() {
+    void callFunctionOnSubProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callJsFunction("property.other.method");
@@ -2399,7 +2403,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attachShadowRoot_shadowRootCreatedAndChildrenArePreserved() {
+    void attachShadowRoot_shadowRootCreatedAndChildrenArePreserved() {
         Element element = ElementFactory.createDiv();
         Element button = ElementFactory.createButton();
         Element emphasis = ElementFactory.createEmphasis();
@@ -2416,13 +2420,13 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getShadowRoot_shadowRootIsEmpty() {
+    void getShadowRoot_shadowRootIsEmpty() {
         Element element = ElementFactory.createDiv();
         assertFalse(element.getShadowRoot().isPresent());
     }
 
     @Test
-    public void getParentNode_parentNodeIsTheSameAsParent() {
+    void getParentNode_parentNodeIsTheSameAsParent() {
         Element element = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
 
@@ -2432,7 +2436,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void getParentNode_elementInShadowRoot_parentIsNull() {
+    void getParentNode_elementInShadowRoot_parentIsNull() {
         ShadowRoot element = ElementFactory.createDiv().attachShadow();
         Element child = ElementFactory.createDiv();
 
@@ -2443,7 +2447,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void parentIsDisabled_childIsDisabled() {
+    void parentIsDisabled_childIsDisabled() {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
 
@@ -2463,7 +2467,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void emptyElement_setDisabled_noChildFeatures() {
+    void emptyElement_setDisabled_noChildFeatures() {
         Element element = ElementFactory.createDiv();
 
         element.setEnabled(false);
@@ -2472,7 +2476,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void emptyElement_isVirtualChild_noChildFeatures() {
+    void emptyElement_isVirtualChild_noChildFeatures() {
         Element element = ElementFactory.createDiv();
 
         element.isVirtualChild();
@@ -2481,7 +2485,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void elementWithoutComponent_getComponentFeature() {
+    void elementWithoutComponent_getComponentFeature() {
         Element element = ElementFactory.createDiv();
         element.appendChild(ElementFactory.createDiv());
 
@@ -2493,7 +2497,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void readMissingProperty_noFeatureInitialized() {
+    void readMissingProperty_noFeatureInitialized() {
         Element element = ElementFactory.createDiv();
 
         element.getProperty("foo");
@@ -2507,7 +2511,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void readMissingAttribute_noFeatureInitialized() {
+    void readMissingAttribute_noFeatureInitialized() {
         Element element = ElementFactory.createDiv();
 
         element.getAttribute("foo");
@@ -2521,7 +2525,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void virtualChildren_areIdentifiedAsSuch() {
+    void virtualChildren_areIdentifiedAsSuch() {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
         Element virtualChild = ElementFactory.createDiv();
@@ -2538,7 +2542,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void domPropertyListener_registersListenerAndDomTrigger() {
+    void domPropertyListener_registersListenerAndDomTrigger() {
         Element element = ElementFactory.createDiv();
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
@@ -2569,7 +2573,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void domPropertyListener_unregisterCleansEverything() {
+    void domPropertyListener_unregisterCleansEverything() {
         Element element = ElementFactory.createDiv();
 
         DomListenerRegistration registration = element
@@ -2595,7 +2599,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removingVirtualChildrenIsPossible() {
+    void removingVirtualChildrenIsPossible() {
         Element parent = new Element("root");
         Element child1 = new Element("main");
         Element child2 = new Element("menu");
@@ -2612,7 +2616,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeVirtualChildren_notVirtualChild_fails() {
+    void removeVirtualChildren_notVirtualChild_fails() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element parent = new Element("root");
             Element child1 = new Element("main");
@@ -2624,7 +2628,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void removeFromParent_virtualChild_fails() {
+    void removeFromParent_virtualChild_fails() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element parent = new Element("root");
             Element child1 = new Element("main");
@@ -2636,7 +2640,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void executeJavaScript_delegatesToExecJs() {
+    void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
         AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
@@ -2662,7 +2666,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void givenTypeDefinedArray_ArrayStoreExceptionNotThrown() {
+    void givenTypeDefinedArray_ArrayStoreExceptionNotThrown() {
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
@@ -2683,7 +2687,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void callFunction_delegatesToCallJsFunction() {
+    void callFunction_delegatesToCallJsFunction() {
         AtomicReference<String> invokedFuction = new AtomicReference<>();
         AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 

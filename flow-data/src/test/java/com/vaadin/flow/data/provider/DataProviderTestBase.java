@@ -20,14 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.function.SerializablePredicate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class DataProviderTestBase<D extends DataProvider<StrBean, SerializablePredicate<StrBean>>> {
 
@@ -54,7 +54,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
     protected D dataProvider;
     protected List<StrBean> data = StrBean.generateRandomBeans(100);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataProvider = createDataProvider();
     }
@@ -85,11 +85,10 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
     public void testListContainsAllData() {
         List<StrBean> list = new LinkedList<>(data);
         dataProvider.fetch(new Query<>())
-                .forEach(str -> assertTrue(
-                        "Data provider contained values not in original data",
-                        list.remove(str)));
-        assertTrue("Not all values from original data were in data provider",
-                list.isEmpty());
+                .forEach(str -> assertTrue(list.remove(str),
+                        "Data provider contained values not in original data"));
+        assertTrue(list.isEmpty(),
+                "Not all values from original data were in data provider");
     }
 
     @Test
@@ -104,16 +103,15 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
                 .collect(Collectors.toList());
 
         // First value in data is { Xyz, 10, 100 } which should be last in list
-        Assert.assertNotEquals("First value should not match", data.get(0),
-                list.get(0));
+        assertNotEquals(data.get(0), list.get(0),
+                "First value should not match");
 
-        Assert.assertEquals("Sorted data and original data sizes don't match",
-                data.size(), list.size());
+        assertEquals(data.size(), list.size(),
+                "Sorted data and original data sizes don't match");
 
         data.sort(comp);
         for (int i = 0; i < data.size(); ++i) {
-            Assert.assertEquals("Sorting result differed", data.get(i),
-                    list.get(i));
+            assertEquals(data.get(i), list.get(i), "Sorting result differed");
         }
     }
 
@@ -128,24 +126,22 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
                         Comparator.comparing(StrBean::getRandomNumber)))
                 .collect(Collectors.toList());
 
-        Assert.assertEquals("Sorted data and original data sizes don't match",
-                data.size(), list.size());
+        assertEquals(data.size(), list.size(),
+                "Sorted data and original data sizes don't match");
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
             StrBean cur = list.get(i);
             // Test specific sort
-            Assert.assertTrue(
+            assertTrue(prev.getRandomNumber() <= cur.getRandomNumber(),
                     "Failure: " + prev.getRandomNumber() + " > "
-                            + cur.getRandomNumber(),
-                    prev.getRandomNumber() <= cur.getRandomNumber());
+                            + cur.getRandomNumber());
 
             if (prev.getRandomNumber() == cur.getRandomNumber()) {
                 // Test default sort
-                Assert.assertTrue(
-                        prev.getValue().compareTo(cur.getValue()) <= 0);
+                assertTrue(prev.getValue().compareTo(cur.getValue()) <= 0);
                 if (prev.getValue().equals(cur.getValue())) {
-                    Assert.assertTrue(prev.getId() > cur.getId());
+                    assertTrue(prev.getId() > cur.getId());
                 }
             }
         }
@@ -159,15 +155,15 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         List<StrBean> list = dataProvider.fetch(new Query<>())
                 .collect(Collectors.toList());
 
-        Assert.assertEquals("Sorted data and original data sizes don't match",
-                data.size(), list.size());
+        assertEquals(data.size(), list.size(),
+                "Sorted data and original data sizes don't match");
 
         for (int i = 1; i < list.size(); ++i) {
             StrBean prev = list.get(i - 1);
             StrBean cur = list.get(i);
 
             // Test default sort
-            Assert.assertTrue(prev.getValue().compareTo(cur.getValue()) <= 0);
+            assertTrue(prev.getValue().compareTo(cur.getValue()) <= 0);
         }
     }
 
@@ -176,15 +172,15 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         DataProvider<StrBean, String> strFilterDataProvider = dataProvider
                 .withConvertedFilter(
                         text -> strBean -> strBean.getValue().contains(text));
-        Assert.assertEquals("Only one item should match 'Xyz'", 1,
-                strFilterDataProvider.size(new Query<>("Xyz")));
-        Assert.assertEquals("No item should match 'Zyx'", 0,
-                strFilterDataProvider.size(new Query<>("Zyx")));
-        Assert.assertEquals("Unexpected number of matches for 'Foo'", 36,
-                strFilterDataProvider.size(new Query<>("Foo")));
+        assertEquals(1, strFilterDataProvider.size(new Query<>("Xyz")),
+                "Only one item should match 'Xyz'");
+        assertEquals(0, strFilterDataProvider.size(new Query<>("Zyx")),
+                "No item should match 'Zyx'");
+        assertEquals(36, strFilterDataProvider.size(new Query<>("Foo")),
+                "Unexpected number of matches for 'Foo'");
 
-        Assert.assertEquals("No items should've been filtered out", data.size(),
-                strFilterDataProvider.size(new Query<>()));
+        assertEquals(data.size(), strFilterDataProvider.size(new Query<>()),
+                "No items should've been filtered out");
     }
 
     @Test
@@ -195,37 +191,40 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Xyz"));
 
-        assertEquals("Only one item should match 'Xyz'", 1,
-                configurableFilterDataProvider.size(new Query<>(null)));
+        assertEquals(1, configurableFilterDataProvider.size(new Query<>(null)),
+                "Only one item should match 'Xyz'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Zyx"));
 
-        assertEquals("No item should match 'Zyx'", 0,
-                configurableFilterDataProvider.size(new Query<>(null)));
+        assertEquals(0, configurableFilterDataProvider.size(new Query<>(null)),
+                "No item should match 'Zyx'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Foo"));
 
-        assertEquals("Unexpected number of matches for 'Foo'", 36,
-                configurableFilterDataProvider.size(new Query<>(null)));
+        assertEquals(36, configurableFilterDataProvider.size(new Query<>(null)),
+                "Unexpected number of matches for 'Foo'");
 
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue() == null);
 
-        assertEquals("No items should've been filtered out", 0,
-                configurableFilterDataProvider.size(new Query<>(null)));
+        assertEquals(0, configurableFilterDataProvider.size(new Query<>(null)),
+                "No items should've been filtered out");
     }
 
     @Test
     public void filteringListDataProvider_defaultFilterType() {
-        Assert.assertEquals("Only one item should match 'Xyz'", 1,
+        assertEquals(1,
                 dataProvider.size(new Query<>(
-                        strBean -> strBean.getValue().contains("Xyz"))));
-        Assert.assertEquals("No item should match 'Zyx'", 0, dataProvider.size(
-                new Query<>(strBean -> strBean.getValue().contains("Zyx"))));
-        Assert.assertEquals("Unexpected number of matches for 'Foo'", 36,
-                dataProvider.size(new Query<>(fooFilter)));
+                        strBean -> strBean.getValue().contains("Xyz"))),
+                "Only one item should match 'Xyz'");
+        assertEquals(0,
+                dataProvider.size(new Query<>(
+                        strBean -> strBean.getValue().contains("Zyx"))),
+                "No item should match 'Zyx'");
+        assertEquals(36, dataProvider.size(new Query<>(fooFilter)),
+                "Unexpected number of matches for 'Foo'");
     }
 
     protected long sizeWithUnfilteredQuery() {
@@ -234,8 +233,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
 
     protected static <F> void assertSizeWithFilter(int expectedSize,
             DataProvider<?, F> dataProvider, F filterValue) {
-        Assert.assertEquals(expectedSize,
-                dataProvider.size(new Query<>(filterValue)));
+        assertEquals(expectedSize, dataProvider.size(new Query<>(filterValue)));
     }
 
 }
