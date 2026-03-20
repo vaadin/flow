@@ -55,6 +55,7 @@ public class InternalRedirectHandler implements NavigationHandler {
         }
 
         return router.navigate(ui, target, event.getTrigger(),
-                event.getState().orElse(null));
+                event.getState().orElse(null), event.isForceInstantiation(),
+                event.isRecreateLayoutChain());
     }
 }
