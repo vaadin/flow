@@ -67,8 +67,15 @@ import org.gradle.api.tasks.bundling.Jar
 @CacheableTask
 public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
+    internal companion object {
+        const val CACHED_BUILD_INFO_FILE = "cached-flow-build-info.json"
+    }
+
     @get:Internal
     internal abstract val adapter: Property<GradlePluginAdapter>
+
+    @get:Internal
+    internal abstract val tokenService: Property<BuildFrontendTokenService>
 
     @ServiceReference
     internal abstract fun getSvc(): Property<FrontendToolService>
@@ -99,12 +106,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     internal abstract val dependencyJarFiles: ConfigurableFileCollection
 
     /**
-     * Content hash of the `flow-build-info.json` token file. If the
-     * token file does not exist (e.g. deleted by a previous build's
-     * cleanup), [BuildFrontendUtil.propagateBuildInfo] is called to
-     * create a development-mode token. If the resulting hash differs from
-     * the production-mode hash written by [BuildFrontendUtil.updateBuildFile],
-     * this task is re-executed.
+     * Content hash of the `flow-build-info.json` token file, computed
+     * by [BuildFrontendTokenService]. If the token was deleted (e.g. by
+     * the service's post-build cleanup), the service restores it from a
+     * cached copy. If no cached copy exists (first build), the hash is
+     * empty and the task runs unconditionally.
      */
     @get:Input
     internal abstract val buildInfoFileHash: Property<String>
@@ -192,34 +198,12 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 .joinToString("\n") { "${it.name}:${it.length()}" }
         })
 
-        // Ensure the token file exists and compute its content hash.
-        // If the file was removed (e.g. by post-packaging cleanup),
-        // propagateBuildInfo + updateBuildFile recreate a production-mode
-        // token. If the hash matches the previous build, the task stays
-        // UP_TO_DATE and avoids an unnecessary rebuild.
-        // Uses adapter.flatMap so the provider is configuration-cache
-        // compatible (Gradle tracks the Property, not the resolved value).
-        val outputProps = outputProperties
-        buildInfoFileHash.set(adapter.map { adp ->
-            val tokenFile = BuildFrontendUtil.getTokenFile(adp)
-            if (!tokenFile.exists()) {
-                // Read license state persisted by the previous build
-                val markerFile = outputProps.get().getBuildFrontendMarker()
-                var licenseRequired = false
-                var commercialBannerRequired = false
-                if (markerFile.exists()) {
-                    val parts = markerFile.readText().split(",")
-                    if (parts.size == 2) {
-                        licenseRequired = parts[0].toBoolean()
-                        commercialBannerRequired = parts[1].toBoolean()
-                    }
-                }
-                BuildFrontendUtil.propagateBuildInfo(adp)
-                BuildFrontendUtil.updateBuildFile(adp, licenseRequired,
-                    commercialBannerRequired)
-            }
-            if (tokenFile.exists()) tokenFile.readText().hashCode().toString()
-            else ""
+        // Compute the token file content hash via the build service.
+        // The service restores the token from a cached copy if it was
+        // deleted by a previous build's cleanup, and deletes it when
+        // the build finishes so IDE runs default to development mode.
+        buildInfoFileHash.set(tokenService.map { svc ->
+            svc.ensureTokenAndComputeHash()
         })
     }
 
@@ -278,12 +262,17 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
 
-        // Persist license state so that the buildInfoFileHash provider
-        // can call updateBuildFile with the same parameters when
-        // regenerating a deleted token file.
-        val markerFile = outputProperties.get().getBuildFrontendMarker()
-        markerFile.parentFile.mkdirs()
-        markerFile.writeText("$licenseRequired,$commercialBannerRequired")
+        // Cache a copy of the production token file so it can be
+        // restored if the original is deleted (e.g. by post-packaging
+        // cleanup). This avoids re-running propagateBuildInfo +
+        // updateBuildFile and preserves the exact production content
+        // including license flags.
+        val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
+        val cachedTokenFile = outputProperties.get().getCachedBuildInfoFile()
+        cachedTokenFile.parentFile.mkdirs()
+        if (tokenFile.exists()) {
+            tokenFile.copyTo(cachedTokenFile, overwrite = true)
+        }
     }
 
 

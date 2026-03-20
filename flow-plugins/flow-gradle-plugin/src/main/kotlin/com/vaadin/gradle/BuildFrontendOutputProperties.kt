@@ -26,13 +26,12 @@ import org.gradle.api.tasks.OutputFile
 /**
  * Declaratively defines the outputs of the [VaadinBuildFrontendTask].
  *
- * A marker file in the Vaadin-generated directory
- * (`build/vaadin-generated/`) is used for up-to-date tracking. The
- * actual production bundle and token file are written to the shared
- * resources directory (`build/resources/main/META-INF/VAADIN/`) which
- * cannot be declared as a task output because it overlaps with other
- * Gradle tasks (e.g. processResources, Spring Boot's
- * resolveMainClassName).
+ * A cached copy of the production `flow-build-info.json` token file is
+ * stored in the project build directory (e.g. `build/`). This serves
+ * both as the Gradle up-to-date marker (its existence and content drive
+ * the up-to-date check) and as a source for restoring the token when
+ * the original in `build/resources/main/` has been deleted (e.g. by
+ * post-packaging cleanup or deleteOnExit).
  *
  * The [getFrontendIndexHtml] output tracks the `index.html` file that the
  * task creates if it is missing. Declaring it as an output means Gradle
@@ -48,8 +47,9 @@ internal class BuildFrontendOutputProperties(
     adapter: GradlePluginAdapter
 ) {
 
-    private val markerFile: File =
-        File(adapter.config.projectBuildDir.get(), "build-frontend.marker")
+    private val cachedBuildInfoFile: File =
+        File(adapter.config.projectBuildDir.get(),
+            VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE)
     private val generatedTsFolder: File =
         BuildFrontendUtil.getGeneratedFrontendDirectory(adapter)
     private val frontendIndexHtml: File =
@@ -57,7 +57,7 @@ internal class BuildFrontendOutputProperties(
             FrontendUtils.INDEX_HTML)
 
     @OutputFile
-    fun getBuildFrontendMarker(): File = markerFile
+    fun getCachedBuildInfoFile(): File = cachedBuildInfoFile
 
     @OutputFile
     @Optional

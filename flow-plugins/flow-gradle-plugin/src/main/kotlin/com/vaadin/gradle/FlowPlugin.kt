@@ -75,19 +75,6 @@ public class FlowPlugin : Plugin<Project> {
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
-                    // After packaging, delete the production token from the
-                    // build resources directory so that running the
-                    // application from an IDE does not pick up a stale
-                    // productionMode=true token from the classpath.
-                    // The token is regenerated on the next build via the
-                    // buildInfoFileHash input on vaadinBuildFrontend.
-                    task.doLast {
-                        val adapter = GradlePluginAdapter(task, config, false)
-                        val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
-                        if (tokenFile.exists()) {
-                            tokenFile.delete()
-                        }
-                    }
                 }
             } else {
                 // In development mode, processResources copies stuff from
@@ -119,12 +106,33 @@ public class FlowPlugin : Plugin<Project> {
             // In production mode, vaadinBuildFrontend performs frontend
             // preparation itself and needs dependent project jars to be
             // built for classpath scanning to work properly.
-            project.tasks.getByName("vaadinBuildFrontend").dependsOn(
+            val buildFrontendTask = project.tasks.getByName("vaadinBuildFrontend")
+            buildFrontendTask.dependsOn(
                 project.configurations.getByName(config.dependencyScope.get()).jars
             ).usesService(toolsService)
             if (config.alwaysExecuteBuildFrontend.get()) {
-                project.tasks.getByName("vaadinBuildFrontend")
+                buildFrontendTask
                     .doNotTrackState("State tracking is disabled. Use the 'alwaysExecuteBuildFrontend' plugin setting to enable the feature")
+            }
+
+            // Register a build service that restores the production token
+            // file before builds and cleans it up when the build finishes.
+            if (config.productionMode.get()) {
+                val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
+                val tokenService = project.gradle.sharedServices.registerIfAbsent(
+                    "vaadinBuildFrontendToken",
+                    BuildFrontendTokenService::class.java
+                ) {
+                    it.parameters.getTokenFilePath().set(
+                        BuildFrontendUtil.getTokenFile(buildAdapter).absolutePath
+                    )
+                    it.parameters.getCachedTokenFilePath().set(
+                        java.io.File(config.projectBuildDir.get(),
+                            VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE).absolutePath
+                    )
+                }
+                buildFrontendTask.usesService(tokenService)
+                (buildFrontendTask as VaadinBuildFrontendTask).tokenService.set(tokenService)
             }
         }
     }

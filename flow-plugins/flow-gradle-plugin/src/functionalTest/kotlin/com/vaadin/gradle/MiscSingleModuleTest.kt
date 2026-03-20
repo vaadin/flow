@@ -795,9 +795,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
 
-        // Delete the marker file so that Gradle's up-to-date check
+        // Delete the cached token file so that Gradle's up-to-date check
         // detects a missing output and re-executes vaadinBuildFrontend.
-        val markerFile = File(testProject.dir, "build/build-frontend.marker")
+        val markerFile = File(testProject.dir, "build/cached-flow-build-info.json")
         markerFile.delete()
 
         // Run vaadinBuildFrontend directly (not via build/war) so the
