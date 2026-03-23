@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests for {@link FieldSet#bindLegendText(com.vaadin.flow.signals.Signal)}
  * using {@link SignalsUnitTest} setup.
  */
-public class FieldSetBindLegendTextTest extends SignalsUnitTest {
+class FieldSetBindLegendTextTest extends SignalsUnitTest {
 
     @Test
-    public void bindLegendText_updatesLegendOnSignalChange() {
+    void bindLegendText_updatesLegendOnSignalChange() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
@@ -47,7 +47,7 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_setLegendTextWhileBindingActive_throws() {
+    void bindLegendText_setLegendTextWhileBindingActive_throws() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
@@ -59,7 +59,7 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_nullSignal_throwsNPE() {
+    void bindLegendText_nullSignal_throwsNPE() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 
@@ -68,7 +68,7 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindLegendText_attachedThenDetached_stopsUpdates() {
+    void bindLegendText_attachedThenDetached_stopsUpdates() {
         FieldSet fieldSet = new FieldSet();
         UI.getCurrent().add(fieldSet);
 

@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ThemeListBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindingMirrorsSignalWhileAttached_toggleAddsRemovesTheme() {
+    void bindingMirrorsSignalWhileAttached_toggleAddsRemovesTheme() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -56,7 +56,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
+    void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -75,7 +75,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void manualAddRemoveForBoundName_throwsBindingActiveException() {
+    void manualAddRemoveForBoundName_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -101,7 +101,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void clear_throwsWhenBindingsActive() {
+    void clear_throwsWhenBindingsActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -112,7 +112,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void setThemeName_throwsWhenBindingsActive() {
+    void setThemeName_throwsWhenBindingsActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> bound = new ValueSignal<>(true);
@@ -124,7 +124,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bind_nullSignal_throwsNPE() {
+    void bind_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -133,7 +133,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void rebinding_alreadyBound_throws() {
+    void rebinding_alreadyBound_throws() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> s1 = new ValueSignal<>(true);
@@ -148,7 +148,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void internalUpdatesDoNotThrowOrRecurse() {
+    void internalUpdatesDoNotThrowOrRecurse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<Boolean> signal = new ValueSignal<>(false);
@@ -168,7 +168,7 @@ class ThemeListBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMultipleSignals() {
+    void bindMultipleSignals() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

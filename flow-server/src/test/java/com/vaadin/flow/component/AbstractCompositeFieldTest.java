@@ -68,7 +68,7 @@ class AbstractCompositeFieldTest {
     }
 
     @Test
-    public void reverseCaseField() {
+    void reverseCaseField() {
         ReverseCaseField outerField = new ReverseCaseField();
         StringField innerField = outerField.getContent();
 
@@ -80,7 +80,7 @@ class AbstractCompositeFieldTest {
     }
 
     @Test
-    public void emptyValueEquals() {
+    void emptyValueEquals() {
         ReverseCaseField field = new ReverseCaseField();
 
         assertTrue(field.isEmpty());
@@ -134,7 +134,7 @@ class AbstractCompositeFieldTest {
     }
 
     @Test
-    public void multipleFieldsField() {
+    void multipleFieldsField() {
         MultipleFieldsField field = new MultipleFieldsField();
 
         field.setValue("Hello Cool World");
@@ -149,7 +149,7 @@ class AbstractCompositeFieldTest {
     }
 
     @Test
-    public void serializable() {
+    void serializable() {
         ReverseCaseField field = new ReverseCaseField();
         field.addValueChangeListener(ignore -> {
         });

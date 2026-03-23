@@ -43,7 +43,7 @@ class DefaultInstantiatorTest {
     }
 
     @Test
-    public void createComponent_dontDependOnGetOrCreate() {
+    void createComponent_dontDependOnGetOrCreate() {
         DefaultInstantiator instantiator = Mockito
                 .mock(DefaultInstantiator.class);
 
@@ -60,7 +60,7 @@ class DefaultInstantiatorTest {
     }
 
     @Test
-    public void getOrCreate_lookupHasObject_returnObjectFromLookup() {
+    void getOrCreate_lookupHasObject_returnObjectFromLookup() {
         VaadinService service = Mockito.mock(VaadinService.class);
         Lookup lookup = mockLookup(service);
 
@@ -73,7 +73,7 @@ class DefaultInstantiatorTest {
     }
 
     @Test
-    public void getOrCreate_lookupHasNoObject_createNewObject() {
+    void getOrCreate_lookupHasNoObject_createNewObject() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
 
@@ -84,7 +84,7 @@ class DefaultInstantiatorTest {
     }
 
     @Test
-    public void getApplicationClass_regularClass_getsSameClass() {
+    void getApplicationClass_regularClass_getsSameClass() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
 
@@ -98,7 +98,7 @@ class DefaultInstantiatorTest {
     }
 
     @Test
-    public void getApplicationClass_syntheticClass_getsApplicationClass()
+    void getApplicationClass_syntheticClass_getsApplicationClass()
             throws Exception {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);

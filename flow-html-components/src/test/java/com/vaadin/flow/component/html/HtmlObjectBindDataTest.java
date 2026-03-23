@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Tests for {@link HtmlObject#bindData(com.vaadin.flow.signals.Signal)}.
  */
-public class HtmlObjectBindDataTest extends SignalsUnitTest {
+class HtmlObjectBindDataTest extends SignalsUnitTest {
 
     @Test
-    public void bindData_updatesAttributeOnSignalChange() {
+    void bindData_updatesAttributeOnSignalChange() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
 
@@ -48,7 +48,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindData_attachedThenDetached_stopsUpdates() {
+    void bindData_attachedThenDetached_stopsUpdates() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
 
@@ -65,7 +65,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindData_nullSignal_throwsNPE() {
+    void bindData_nullSignal_throwsNPE() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
 
@@ -74,7 +74,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindData_setDataWhileBound_throwsException() {
+    void bindData_setDataWhileBound_throwsException() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
 
@@ -86,7 +86,7 @@ public class HtmlObjectBindDataTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindData_bindAgainWhileBound_throwsException() {
+    void bindData_bindAgainWhileBound_throwsException() {
         HtmlObject htmlObject = new HtmlObject();
         UI.getCurrent().add(htmlObject);
 

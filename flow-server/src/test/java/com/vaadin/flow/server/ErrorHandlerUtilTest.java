@@ -116,7 +116,7 @@ class ErrorHandlerUtilTest {
     }
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         ErrorView.setError = false;
@@ -164,13 +164,13 @@ class ErrorHandlerUtilTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    void cleanup() {
         VaadinService.setCurrent(null);
         UI.setCurrent(null);
     }
 
     @Test
-    public void nullPointerException_executesErrorView() {
+    void nullPointerException_executesErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
@@ -188,7 +188,7 @@ class ErrorHandlerUtilTest {
     }
 
     @Test
-    public void illegalArgumentException_doesNotExecuteErrorView() {
+    void illegalArgumentException_doesNotExecuteErrorView() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorView.class));
 
@@ -206,7 +206,7 @@ class ErrorHandlerUtilTest {
     }
 
     @Test
-    public void redrawnExceptionView_alsoInitializesParent() {
+    void redrawnExceptionView_alsoInitializesParent() {
         registry.setErrorNavigationTargets(
                 Collections.singleton(ErrorWithParentView.class));
 

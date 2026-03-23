@@ -167,7 +167,7 @@ class NavigationStateRendererTest {
     private Router router;
 
     @BeforeEach
-    public void init() {
+    void init() {
         RouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(new MockVaadinContext());
         router = new Router(registry);
@@ -178,7 +178,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingle() {
+    void getRouterLayoutForSingle() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(RouteParentLayout.class));
 
@@ -190,7 +190,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForSingleParent() {
+    void getRouterLayoutForSingleParent() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -206,7 +206,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouterLayoutForMulipleLayers() {
+    void getRouterLayoutForMulipleLayers() {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
         RouteConfiguration.forRegistry(router.getRegistry())
@@ -224,7 +224,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void instantiatorUse() {
+    void instantiatorUse() {
 
         MockVaadinServletService service = new MockVaadinServletService();
         service.init(new MockInstantiator() {
@@ -252,7 +252,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouteTarget_supportsProxyClasses() {
+    void getRouteTarget_supportsProxyClasses() {
         try {
             Class<? extends ProxyableView> routeProxyClass = new ByteBuddy()
                     .subclass(ProxyableView.class)
@@ -391,7 +391,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefreshAndWindowNameNotKnown_clientSideCallTriggered() {
+    void handle_preserveOnRefreshAndWindowNameNotKnown_clientSideCallTriggered() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -435,7 +435,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefreshAndWindowNameKnown_componentIsCachedRetrievedAndFlushed() {
+    void handle_preserveOnRefreshAndWindowNameKnown_componentIsCachedRetrievedAndFlushed() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -506,7 +506,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefresh_refreshIsFlaggedInEvent() {
+    void handle_preserveOnRefresh_refreshIsFlaggedInEvent() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -558,7 +558,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
+    void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -603,7 +603,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefreshView_routerLayoutIsPreserved_oldUiIsClosed() {
+    void handle_preserveOnRefreshView_routerLayoutIsPreserved_oldUiIsClosed() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -654,7 +654,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefresh_sameUI_uiIsNotClosed_childrenAreNotRemoved() {
+    void handle_preserveOnRefresh_sameUI_uiIsNotClosed_childrenAreNotRemoved() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -709,7 +709,7 @@ class NavigationStateRendererTest {
     private static String viewUUID;
 
     @Test
-    public void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
+    void handle_preserveOnRefreshView_refreshCurrentRouteRecreatesComponents() {
         layoutAttachCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -766,7 +766,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_normalView_refreshCurrentRouteRecreatesComponents() {
+    void handle_normalView_refreshCurrentRouteRecreatesComponents() {
         layoutAttachCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -887,7 +887,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_clientNavigation_withMatchingFlowRoute() {
+    void handle_clientNavigation_withMatchingFlowRoute() {
         viewAttachCount = new AtomicInteger();
         beforeEnterCount = new AtomicInteger();
 
@@ -935,7 +935,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_refreshRoute_modalComponentsDetached() {
+    void handle_refreshRoute_modalComponentsDetached() {
         beforeEnterCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -1012,7 +1012,7 @@ class NavigationStateRendererTest {
     // - the navigation location is the same as the current location (repeated
     // navigation)
     // - navigation trigger is PAGE_LOAD, HISTORY, or PROGRAMMATIC
-    public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
+    void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
         ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
@@ -1095,7 +1095,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void purgeInactiveUIPreservedChainCache_activeUI_throws() {
+    void purgeInactiveUIPreservedChainCache_activeUI_throws() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
@@ -1110,7 +1110,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
+    void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
         Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
@@ -1155,7 +1155,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void getRouteTarget_usageStatistics() {
+    void getRouteTarget_usageStatistics() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService();
@@ -1195,12 +1195,12 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
+    void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
         testClientNavigationTitle("Client", true);
     }
 
     @Test
-    public void handle_clientNavigation_doNotSetTitleFromClientRoute() {
+    void handle_clientNavigation_doNotSetTitleFromClientRoute() {
         testClientNavigationTitle(null, false);
     }
 
@@ -1323,7 +1323,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void forwardToSameViewWithDifferentParams_reusesInstance() {
+    void forwardToSameViewWithDifferentParams_reusesInstance() {
         // Issue #23232: Forward to same view with different route parameters
         // should reuse the view instance instead of creating a new one
         redirectToSameViewWithDifferentParams_reusesInstance(
@@ -1331,7 +1331,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    public void rerouteToSameViewWithDifferentParams_reusesInstance() {
+    void rerouteToSameViewWithDifferentParams_reusesInstance() {
         // Reroute to same view with different route parameters
         // should reuse the view instance instead of creating a new one
         redirectToSameViewWithDifferentParams_reusesInstance(

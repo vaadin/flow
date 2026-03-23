@@ -41,7 +41,7 @@ class VaadinServletConfigTest {
     private Map<String, String> properties;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
         servletContext = Mockito.mock(ServletContext.class);
 
@@ -69,7 +69,7 @@ class VaadinServletConfigTest {
     }
 
     @Test
-    public void getPropertyNames_returnsExpectedProperties() {
+    void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(config.getConfigParameterNames());
         assertEquals(properties.size(), list.size(),
                 "Context should return only keys defined in ServletContext");
@@ -82,7 +82,7 @@ class VaadinServletConfigTest {
     }
 
     @Test
-    public void vaadinContextThroughConfig_setAndGetAttribute() {
+    void vaadinContextThroughConfig_setAndGetAttribute() {
         String value = "my-attribute";
         config.getVaadinContext().setAttribute(value);
         String result = config.getVaadinContext().getAttribute(String.class);

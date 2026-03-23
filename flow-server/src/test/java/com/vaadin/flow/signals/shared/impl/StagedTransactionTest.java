@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StagedTransactionTest {
+class StagedTransactionTest {
     /*
      * Note that much of the logic in this test only interacts with API in
      * Transaction and in that way tests logic from StagedTransaction.
