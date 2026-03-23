@@ -48,7 +48,7 @@ class AppShellRegistryAuraAutoLoadTest {
     private VaadinServletService service;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         Map<String, Object> attributeMap = new HashMap<>();
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
@@ -78,12 +78,12 @@ class AppShellRegistryAuraAutoLoadTest {
     }
 
     @AfterEach
-    public void teardown() {
+    void teardown() {
         AppShellRegistry.getInstance(context).reset();
     }
 
     @Test
-    public void noAppShellConfigurator_auraAvailable_auraIsAutoLoaded() {
+    void noAppShellConfigurator_auraAvailable_auraIsAutoLoaded() {
         // Do not set any shell class - leave appShellClass as null
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
@@ -105,7 +105,7 @@ class AppShellRegistryAuraAutoLoadTest {
     }
 
     @Test
-    public void noAppShellConfigurator_auraNotAvailable_auraNotLoaded() {
+    void noAppShellConfigurator_auraNotAvailable_auraNotLoaded() {
         // Do not set any shell class - leave appShellClass as null
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
@@ -122,7 +122,7 @@ class AppShellRegistryAuraAutoLoadTest {
     }
 
     @Test
-    public void appShellConfiguratorExists_auraNotAutoLoaded() {
+    void appShellConfiguratorExists_auraNotAutoLoaded() {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyAppShell.class);
 

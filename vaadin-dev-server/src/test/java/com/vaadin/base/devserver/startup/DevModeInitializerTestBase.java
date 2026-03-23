@@ -57,7 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
  * Base class for DevModeInitializer tests. It is an independent class so as it
  * can be created and executed with custom classloaders.
  */
-public class DevModeInitializerTestBase extends AbstractDevModeTest {
+class DevModeInitializerTestBase extends AbstractDevModeTest {
 
     DevModeStartupListener devModeStartupListener;
 

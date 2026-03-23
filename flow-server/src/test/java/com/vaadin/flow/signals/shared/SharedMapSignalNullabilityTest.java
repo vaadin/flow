@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-public class SharedMapSignalNullabilityTest extends SignalTestBase {
+class SharedMapSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void get_returnsNonNullMap() {

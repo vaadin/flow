@@ -62,7 +62,7 @@ class FeatureFlagsTest {
     private File featureFlagsFile;
 
     @BeforeEach
-    public void before() throws IOException {
+    void before() throws IOException {
         propertiesDir = Files.createTempDirectory(temporaryFolder, "temp")
                 .toFile();
 
@@ -82,7 +82,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void propertiesLoaded() throws IOException {
+    void propertiesLoaded() throws IOException {
         assertFalse(featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE),
                 "Feature should be initially disabled");
 
@@ -98,7 +98,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void setPropertiesLocation() throws Exception {
+    void setPropertiesLocation() throws Exception {
         // Set location and ensure flags are loaded from there
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
@@ -110,8 +110,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void setPropertiesLocationWithNoFileDisablesFeatures()
-            throws Exception {
+    void setPropertiesLocationWithNoFileDisablesFeatures() throws Exception {
         // given an enabled feature
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
@@ -128,7 +127,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void enableDisableFeature() throws IOException {
+    void enableDisableFeature() throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         featureFlags.loadProperties();
@@ -153,7 +152,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void setEnabledOnlyInDevelopmentMode() throws IOException {
+    void setEnabledOnlyInDevelopmentMode() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         createFeatureFlagsFile(
@@ -166,8 +165,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
-            throws IOException {
+    void disabledFeatureFlagsNotMarkedInStatsWhenLoading() throws IOException {
         UsageStatistics.resetEntries();
         createFeatureFlagsFile("");
         featureFlags.loadProperties();
@@ -175,8 +173,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void enabledFeatureFlagsMarkedInStatsWhenLoading()
-            throws IOException {
+    void enabledFeatureFlagsMarkedInStatsWhenLoading() throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         featureFlags.loadProperties();
@@ -184,8 +181,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void disabledFeatureFlagsNotMarkedInStatsWhenToggled()
-            throws IOException {
+    void disabledFeatureFlagsNotMarkedInStatsWhenToggled() throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         UsageStatistics.resetEntries();
@@ -194,8 +190,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void enabledFeatureFlagsMarkedInStatsWhenToggled()
-            throws IOException {
+    void enabledFeatureFlagsMarkedInStatsWhenToggled() throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         UsageStatistics.resetEntries();
@@ -204,8 +199,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void featureFlagShouldBeOverridableWithSystemProperty()
-            throws IOException {
+    void featureFlagShouldBeOverridableWithSystemProperty() throws IOException {
         var feature = "exampleFeatureFlag";
         var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + feature;
@@ -232,7 +226,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void featureFlagLoadedByResourceProviderShouldBeOverridableWithSystemProperty()
+    void featureFlagLoadedByResourceProviderShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
         var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
@@ -271,7 +265,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void noFeatureFlagFile_systemPropertyProvided_featureEnabled()
+    void noFeatureFlagFile_systemPropertyProvided_featureEnabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
         var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
@@ -295,7 +289,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void noFeatureFlagFile_noSystemPropertyProvided_allFeatureDisabled()
+    void noFeatureFlagFile_noSystemPropertyProvided_allFeatureDisabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
         var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
@@ -318,8 +312,7 @@ class FeatureFlagsTest {
 
     // https://github.com/vaadin/flow/issues/17637
     @Test
-    public void get_concurrentAccess_servletContextLock_noDeadlock()
-            throws Exception {
+    void get_concurrentAccess_servletContextLock_noDeadlock() throws Exception {
         BiConsumer<Void, Throwable> errorLogger = (unused, throwable) -> {
             if (throwable != null) {
                 LoggerFactory.getLogger(FeatureFlagsTest.class)
@@ -368,8 +361,7 @@ class FeatureFlagsTest {
 
     // https://github.com/vaadin/flow/issues/13962
     @Test
-    public void get_concurrentAccess_vaadinContextLock_noDeadlock()
-            throws Exception {
+    void get_concurrentAccess_vaadinContextLock_noDeadlock() throws Exception {
         BiConsumer<Void, Throwable> errorLogger = (unused, throwable) -> {
             if (throwable != null) {
                 LoggerFactory.getLogger(FeatureFlagsTest.class)
@@ -407,8 +399,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void propertiesFileCheckedForUnsupportedFeatureFlags()
-            throws IOException {
+    void propertiesFileCheckedForUnsupportedFeatureFlags() throws IOException {
         Logger mockedLogger = Mockito.mock(Logger.class);
 
         try (MockedStatic<LoggerFactory> context = Mockito
@@ -430,7 +421,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void propertiesFileCheckForUnsupportedFeatureFlagsRanOnlyOnce()
+    void propertiesFileCheckForUnsupportedFeatureFlagsRanOnlyOnce()
             throws IOException {
         Logger mockedLogger = Mockito.mock(Logger.class);
 
@@ -451,7 +442,7 @@ class FeatureFlagsTest {
     }
 
     @Test
-    public void systemPropertiesCheckedForUnsupportedFeatureFlags() {
+    void systemPropertiesCheckedForUnsupportedFeatureFlags() {
         Logger mockedLogger = Mockito.mock(Logger.class);
         String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "exampleFeatureFlag";

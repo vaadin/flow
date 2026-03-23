@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * <p>
  * The tests also pass at runtime as basic smoke tests.
  */
-public class SharedValueSignalNullabilityTest extends SignalTestBase {
+class SharedValueSignalNullabilityTest extends SignalTestBase {
 
     @Test
     void get_returnsNullable() {

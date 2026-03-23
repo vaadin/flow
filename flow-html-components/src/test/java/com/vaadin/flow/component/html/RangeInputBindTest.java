@@ -25,10 +25,10 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RangeInputBindTest extends SignalsUnitTest {
+class RangeInputBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindMin_updatesAttributeOnSignalChange() {
+    void bindMin_updatesAttributeOnSignalChange() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -43,7 +43,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMin_setMinWhileBindingActive_throws() {
+    void bindMin_setMinWhileBindingActive_throws() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -55,7 +55,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMin_nullSignal_throwsNPE() {
+    void bindMin_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -64,7 +64,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_updatesAttributeOnSignalChange() {
+    void bindMax_updatesAttributeOnSignalChange() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -79,7 +79,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_setMaxWhileBindingActive_throws() {
+    void bindMax_setMaxWhileBindingActive_throws() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -91,7 +91,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_nullSignal_throwsNPE() {
+    void bindMax_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 

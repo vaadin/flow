@@ -25,21 +25,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class EncodeUtilTest {
 
     @Test
-    public void rfc5987Encode_withNull_nullPointerException() {
+    void rfc5987Encode_withNull_nullPointerException() {
         assertThrows(NullPointerException.class, () -> {
             EncodeUtil.rfc5987Encode(null);
         });
     }
 
     @Test
-    public void rfc2047Encode_withNull_nullPointerException() {
+    void rfc2047Encode_withNull_nullPointerException() {
         assertThrows(NullPointerException.class, () -> {
             EncodeUtil.rfc2047Encode(null);
         });
     }
 
     @Test
-    public void rfc5987Encode_asciiCharacters() {
+    void rfc5987Encode_asciiCharacters() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~";
         assertEquals(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&%27%2A+-.^_`|~",
@@ -48,7 +48,7 @@ class EncodeUtilTest {
 
     // UTF-8 Basic Latin & Controls
     @Test
-    public void rfc5987Encode_unicodeCharacters0to126() throws Exception {
+    void rfc5987Encode_unicodeCharacters0to126() throws Exception {
         StringBuilder text = new StringBuilder();
         for (int codePoint = 0; codePoint <= 126; codePoint++) {
             text.append(new String(new int[] { codePoint }, 0, 1));
@@ -60,19 +60,18 @@ class EncodeUtilTest {
 
     // UTF-8 Latin-1 Supplement
     @Test
-    public void rfc5987Encode_unicodeLatin1SupplementCharacters()
-            throws Exception {
+    void rfc5987Encode_unicodeLatin1SupplementCharacters() throws Exception {
         assertEquals("%E2%82%AC%20%C3%BF", EncodeUtil.rfc5987Encode("€ ÿ"));
     }
 
     // UTF-8 Latin Extended A
     @Test
-    public void rfc5987Encode_unicodeLatinExtendACharacters() throws Exception {
+    void rfc5987Encode_unicodeLatinExtendACharacters() throws Exception {
         assertEquals("%C4%80%C4%81", EncodeUtil.rfc5987Encode("Āā"));
     }
 
     @Test
-    public void rfc2047Encode_asciiCharacters() {
+    void rfc2047Encode_asciiCharacters() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
         assertEquals(
                 "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22?=",
@@ -80,7 +79,7 @@ class EncodeUtilTest {
     }
 
     @Test
-    public void rfc2047Encode_nonAsciiCharacters() {
+    void rfc2047Encode_nonAsciiCharacters() {
         String input = "Řřüñîçødë 1中文 € ÿĀā";
         assertEquals(
                 "=?UTF-8?Q?=C5=98=C5=99=C3=BC=C3=B1=C3=AE=C3=A7=C3=B8d=C3=AB_1=E4=B8=AD=E6=96=87_=E2=82=AC_=C3=BF=C4=80=C4=81?=",
@@ -88,13 +87,13 @@ class EncodeUtilTest {
     }
 
     @Test
-    public void isPureUSASCII_withAsciiOnly_returnTrue() {
+    void isPureUSASCII_withAsciiOnly_returnTrue() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
         assertTrue(EncodeUtil.isPureUSASCII(input));
     }
 
     @Test
-    public void isPureUSASCII_withNonAscii_returnFalse() {
+    void isPureUSASCII_withNonAscii_returnFalse() {
         String input = "Řřüñîçøë中文€ÿĀā";
         input.chars().forEach(c -> {
             assertFalse(EncodeUtil.isPureUSASCII(Character.toString((char) c)),

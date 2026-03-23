@@ -73,7 +73,7 @@ class LookupInitializerTest {
     private LookupInitializer initializer = new LookupInitializer();
 
     @Test
-    public void createLookup_instantiatorsAreProvidedAsAService_lookupThrows()
+    void createLookup_instantiatorsAreProvidedAsAService_lookupThrows()
             throws ServletException {
         assertThrows(IllegalStateException.class, () -> {
             // Java standard SPI is used to register several instantiators via
@@ -85,7 +85,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void createLookup_instantiatorsAreProvidedAsScannedClasses_multipleInstantiatorInstances_lookupThrows()
+    void createLookup_instantiatorsAreProvidedAsScannedClasses_multipleInstantiatorInstances_lookupThrows()
             throws ServletException {
         assertThrows(IllegalStateException.class, () -> {
             Lookup lookup = initializer.createLookup(null,
@@ -98,7 +98,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_noResourcePorvider_defaultResourceProviderIsCreated()
+    void initialize_noResourcePorvider_defaultResourceProviderIsCreated()
             throws ServletException, IOException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
@@ -108,7 +108,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_noStaticFileHandlerFactory_defaultStaticFileHandlerFactoryCreated()
+    void initialize_noStaticFileHandlerFactory_defaultStaticFileHandlerFactoryCreated()
             throws ServletException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
@@ -131,7 +131,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService()
+    void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService()
             throws ServletException {
         Map mock = Mockito.mock(Map.class);
         AtomicBoolean factoryIsPassed = new AtomicBoolean();
@@ -156,7 +156,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void initialize_hasOneTimeInitializerPredicate_predicateReturnsTrue()
+    void initialize_hasOneTimeInitializerPredicate_predicateReturnsTrue()
             throws ServletException, IOException {
         AtomicReference<Lookup> capture = new AtomicReference<>();
         initializer.initialize(null, new HashMap<>(), capture::set);
@@ -169,7 +169,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
+    void ensureResourceProvider_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         initializer.ensureService(map, ResourceProvider.class,
                 ResourceProviderImpl.class);
@@ -181,7 +181,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureResourceProvider_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
+    void ensureResourceProvider_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ResourceProvider.class,
                 Collections.singletonList(ResourceProviderImpl.class));
@@ -195,7 +195,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureRoutePathResolver_defaultImplClassIsStoredAsAService() {
+    void ensureRoutePathResolver_defaultImplClassIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         initializer.ensureService(map, RoutePathProvider.class,
                 DefaultRoutePathProvider.class);
@@ -207,7 +207,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureRoutePathResolver_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
+    void ensureRoutePathResolver_defaultImplClassIsProvided_defaultImplIsStoredAsAService() {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(RoutePathProvider.class,
                 Collections.singletonList(DefaultRoutePathProvider.class));
@@ -221,7 +221,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureApplicationConfigurationFactories_defaultFactoryOnly_defaultFactoryIsReturned()
+    void ensureApplicationConfigurationFactories_defaultFactoryOnly_defaultFactoryIsReturned()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ApplicationConfigurationFactory.class, Collections
@@ -237,7 +237,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureApplicationConfigurationFactories_noAvailableFactory_defaultFactoryIsReturned()
+    void ensureApplicationConfigurationFactories_noAvailableFactory_defaultFactoryIsReturned()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(ApplicationConfigurationFactory.class, Collections.emptyList());
@@ -253,7 +253,7 @@ class LookupInitializerTest {
 
     @SuppressWarnings("rawtypes")
     @Test
-    public void createLookup_createLookupIsInvoked_lookupcontainsProvidedServices()
+    void createLookup_createLookupIsInvoked_lookupcontainsProvidedServices()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(List.class, Arrays.asList(ArrayList.class, LinkedList.class));
@@ -278,7 +278,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void createLookup_instantiatorsAreProvidedAsScannedClassAndAsAService_lookupReturnsTheProviderInstance_lookupAllReturnsAllInstances()
+    void createLookup_instantiatorsAreProvidedAsScannedClassAndAsAService_lookupReturnsTheProviderInstance_lookupAllReturnsAllInstances()
             throws ServletException {
         HashMap<Class<?>, Collection<Class<?>>> map = new HashMap<>();
         map.put(InstantiatorFactory.class,
@@ -309,15 +309,13 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void resourceProviderImpl_returnsClassPathResources()
-            throws IOException {
+    void resourceProviderImpl_returnsClassPathResources() throws IOException {
         assertResourceProvider(new ResourceProviderImpl());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void initialize_callEnsureMethodsAndBootstrap()
-            throws ServletException {
+    void initialize_callEnsureMethodsAndBootstrap() throws ServletException {
         LookupInitializer initializer = Mockito.spy(LookupInitializer.class);
         Map<Class<?>, Collection<Class<?>>> services = Mockito
                 .mock(HashMap.class);
@@ -336,7 +334,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureService_noServiceProvided_defaultIsUsed() {
+    void ensureService_noServiceProvided_defaultIsUsed() {
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
         initializer.ensureService(services, List.class, ArrayList.class);
 
@@ -347,7 +345,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureService_defaultServiceProvided_defaultIsUsed() {
+    void ensureService_defaultServiceProvided_defaultIsUsed() {
         Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
         services.put(List.class, Collections.singleton(ArrayList.class));
         initializer.ensureService(services, List.class, ArrayList.class);
@@ -359,7 +357,7 @@ class LookupInitializerTest {
     }
 
     @Test
-    public void ensureService_severalServicesProvided_throws() {
+    void ensureService_severalServicesProvided_throws() {
         assertThrows(IllegalStateException.class, () -> {
             Map<Class<?>, Collection<Class<?>>> services = new HashMap<>();
             services.put(List.class,

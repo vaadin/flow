@@ -130,7 +130,7 @@ class UIInternalsTest {
     }
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
@@ -147,7 +147,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void heartbeatTimestampSet_heartbeatListenersAreCalled() {
+    void heartbeatTimestampSet_heartbeatListenersAreCalled() {
         List<Long> heartbeats = new ArrayList<>();
         Registration registration = internals.addHeartbeatListener(
                 event -> heartbeats.add(event.getHeartbeatTime()));
@@ -166,7 +166,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
+    void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
         AtomicReference<Registration> reference = new AtomicReference<>();
         AtomicInteger runCount = new AtomicInteger();
 
@@ -185,7 +185,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void showRouteTarget_clientSideBootstrap() {
+    void showRouteTarget_clientSideBootstrap() {
         PushConfiguration pushConfig = setUpInitialPush();
 
         internals.showRouteTarget(Mockito.mock(Location.class),
@@ -195,7 +195,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void showRouteTarget_navigateToAnotherViewWithinSameLayoutHierarchy_detachedRouterLayoutChildrenRemoved() {
+    void showRouteTarget_navigateToAnotherViewWithinSameLayoutHierarchy_detachedRouterLayoutChildrenRemoved() {
         MainLayout mainLayout = new MainLayout();
         SubLayout subLayout = new SubLayout();
         FirstView firstView = new FirstView();
@@ -254,7 +254,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void showRouteTarget_navigateToAnotherLayoutHierarchy_detachedLayoutHierarchyChildrenRemoved() {
+    void showRouteTarget_navigateToAnotherLayoutHierarchy_detachedLayoutHierarchyChildrenRemoved() {
         MainLayout mainLayout = new MainLayout();
         SubLayout subLayout = new SubLayout();
         FirstView firstView = new FirstView();
@@ -287,7 +287,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
+    void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -304,7 +304,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
+    void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -323,7 +323,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
+    void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         node1.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -347,7 +347,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -367,7 +367,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -388,7 +388,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -408,7 +408,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
+    void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -428,7 +428,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
+    void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
         StateNode node = Mockito.spy(new StateNode(ElementData.class));
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
@@ -454,7 +454,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void isDirty_noPendingJsInvocation_returnsFalse() {
+    void isDirty_noPendingJsInvocation_returnsFalse() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -473,7 +473,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
+    void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -496,7 +496,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
+    void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
         StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
         StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
@@ -521,7 +521,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
+    void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
         internals.setTitle("new title");
         assertEquals("new title", internals.getTitle());
 
@@ -560,7 +560,7 @@ class UIInternalsTest {
     }
 
     @Test
-    public void getDeploymentConfiguration() {
+    void getDeploymentConfiguration() {
         AlwaysLockedVaadinSession session = Mockito
                 .mock(AlwaysLockedVaadinSession.class);
         MockVaadinServletService mockVaadinServletService = Mockito

@@ -60,14 +60,14 @@ class LocationObserverTest {
     }
 
     @BeforeEach
-    public void init() throws NoSuchFieldException, SecurityException,
+    void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         ui = new MockUI();
         eventCollector.clear();
     }
 
     @Test
-    public void navigation_and_locale_change_should_fire_locale_change_observer()
+    void navigation_and_locale_change_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
         router = new Router(new TestRouteRegistry());
         ui = new MockUI(router);
@@ -95,7 +95,7 @@ class LocationObserverTest {
     }
 
     @Test
-    public void location_change_should_only_fire_if_location_actually_changed() {
+    void location_change_should_only_fire_if_location_actually_changed() {
         ui.add(new Translations());
 
         assertEquals(1, eventCollector.size(),
@@ -121,7 +121,7 @@ class LocationObserverTest {
     }
 
     @Test
-    public void location_change_should_be_fired_also_on_component_attach() {
+    void location_change_should_be_fired_also_on_component_attach() {
         RootComponent root = new RootComponent();
 
         ui.add(root);
@@ -140,7 +140,7 @@ class LocationObserverTest {
     }
 
     @Test
-    public void location_change_should_be_fired_also_on_consequent_component_attach() {
+    void location_change_should_be_fired_also_on_consequent_component_attach() {
         RootComponent root = new RootComponent();
 
         ui.add(root);

@@ -380,7 +380,7 @@ class AbstractLazyDataViewTest {
         // Verify that the refresh request causes both data provider and
         // data communicator invocation.
         Mockito.verify(dataProvider).refreshItem(item1);
-        Mockito.verify(dataCommunicator).refresh(item1, item1);
+        Mockito.verify(dataCommunicator).refresh(item1);
 
         dataView.setIdentifierProvider(Item::getId);
 
@@ -389,10 +389,9 @@ class AbstractLazyDataViewTest {
         // Verify that the refresh is made on a new object, no on an old
         // object.
         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
-        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2,
-                item2);
+        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
         Mockito.verify(dataProvider).refreshItem(updatedItem2);
-        Mockito.verify(dataCommunicator).refresh(updatedItem2, updatedItem2);
+        Mockito.verify(dataCommunicator).refresh(updatedItem2);
     }
 
     @Test
@@ -423,8 +422,6 @@ class AbstractLazyDataViewTest {
         // data communicator, because item with id=1 is not found.
         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
         Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
-        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2,
-                item2);
     }
 
     @Test

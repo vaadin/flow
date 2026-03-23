@@ -171,7 +171,7 @@ class TextTest {
     }
 
     @Test
-    public void lazyInitSignalBindingFeature() {
+    void lazyInitSignalBindingFeature() {
         Text text = new Text("text");
         text.getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)

@@ -54,7 +54,7 @@ class ClassDownloadHandlerTest {
     private UI ui;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
@@ -83,7 +83,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_listenersInvoked()
+    void transferProgressListener_addListener_listenersInvoked()
             throws URISyntaxException, IOException {
         List<String> invocations = new ArrayList<>();
         List<Long> transferredBytesRecords = new ArrayList<>();
@@ -135,7 +135,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
+    void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
@@ -186,7 +186,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void inline_setFileNameInvokedByDefault() throws IOException {
+    void inline_setFileNameInvokedByDefault() throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf");
 
@@ -207,7 +207,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void attachment_doesNotSetFileNameWhenInlined() throws IOException {
+    void attachment_doesNotSetFileNameWhenInlined() throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
 
@@ -228,7 +228,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+    void handleSetToInline_contentDispositionIsInlineWithFilename()
             throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();

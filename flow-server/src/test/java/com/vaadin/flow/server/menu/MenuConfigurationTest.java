@@ -89,7 +89,7 @@ class MenuConfigurationTest {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void init() {
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
@@ -127,13 +127,13 @@ class MenuConfigurationTest {
     }
 
     @AfterEach
-    public void cleanup() throws Exception {
+    void cleanup() throws Exception {
         closeable.close();
         CurrentInstance.clearAll();
     }
 
     @Test
-    public void testWithLoggedInUser_userHasRoles() throws IOException {
+    void testWithLoggedInUser_userHasRoles() throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
         Mockito.when(request.isUserInRole(Mockito.anyString()))
@@ -155,7 +155,7 @@ class MenuConfigurationTest {
     }
 
     @Test
-    public void getMenuItemsList_returnsCorrectPaths() throws IOException {
+    void getMenuItemsList_returnsCorrectPaths() throws IOException {
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
@@ -187,7 +187,7 @@ class MenuConfigurationTest {
     }
 
     @Test
-    public void getMenuItemsList_assertOrder() {
+    void getMenuItemsList_assertOrder() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(MenuRegistryTest.TestRouteA.class,
@@ -206,7 +206,7 @@ class MenuConfigurationTest {
     }
 
     @Test
-    public void getPageHeader_serverSideRoutes_withContentComponent_pageHeadersFromAnnotationAndName() {
+    void getPageHeader_serverSideRoutes_withContentComponent_pageHeadersFromAnnotationAndName() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(NormalRoute.class, NormalRouteWithPageTitle.class,
@@ -264,7 +264,7 @@ class MenuConfigurationTest {
     }
 
     @Test
-    public void getPageHeader_serverSideRoutes_noContentComponent_pageHeadersOnlyForMenuEntries() {
+    void getPageHeader_serverSideRoutes_noContentComponent_pageHeadersOnlyForMenuEntries() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(NormalRoute.class, NormalRouteWithPageTitle.class,
@@ -315,7 +315,7 @@ class MenuConfigurationTest {
     }
 
     @Test
-    public void testGetPageHeader_clientViews_pageHeaderFromTitle()
+    void testGetPageHeader_clientViews_pageHeaderFromTitle()
             throws IOException {
         Mockito.when(request.getUserPrincipal())
                 .thenReturn(Mockito.mock(Principal.class));
