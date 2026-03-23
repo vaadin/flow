@@ -112,10 +112,6 @@ internal class BuildFrontendInputProperties(
         config.javaResourceFolder.absolutePath
 
     @Input
-    fun getGeneratedTsFolder(): Provider<String> =
-        config.generatedTsFolder.absolutePath
-
-    @Input
     fun getPostInstallPackages(): ListProperty<String> =
         config.postinstallPackages
 

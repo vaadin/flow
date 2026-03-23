@@ -112,14 +112,14 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         testProject.newFolder("web")
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("web:vaadinPrepareFrontend")
+        b.expectTaskNotRan("web:vaadinPrepareFrontend")
         b.expectTaskSucceded("web:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
         expect(null) { b.task(":vaadinPrepareFrontend") }
         expect(null) { b.task(":vaadinBuildFrontend") }
 
-        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFile = File(testProject.dir, "web/build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("web",
             java.nio.charset.StandardCharsets.UTF_8
@@ -166,14 +166,14 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("MY_APP_ID:vaadinPrepareFrontend")
+        b.expectTaskNotRan("MY_APP_ID:vaadinPrepareFrontend")
         b.expectTaskSucceded("MY_APP_ID:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
         expect(null) { b.task(":vaadinPrepareFrontend") }
         expect(null) { b.task(":vaadinBuildFrontend") }
 
-        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFile = File(testProject.dir, "web/build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("MY_APP_ID",
             java.nio.charset.StandardCharsets.UTF_8
@@ -218,14 +218,14 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
-        b.expectTaskSucceded("web:vaadinPrepareFrontend")
+        b.expectTaskNotRan("web:vaadinPrepareFrontend")
         b.expectTaskSucceded("web:vaadinBuildFrontend")
         expect(null) { b.task(":lib:vaadinPrepareFrontend") }
         expect(null) { b.task(":lib:vaadinBuildFrontend") }
         expect(null) { b.task(":vaadinPrepareFrontend") }
         expect(null) { b.task(":vaadinBuildFrontend") }
 
-        val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFile = File(testProject.dir, "web/build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
