@@ -187,6 +187,10 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 .sortedBy { it.name }
                 .joinToString("\n") { "${it.name}:${it.length()}" }
         })
+        doFirst {
+            // Make sure the service is initialized, so its close method will be called at the end of the build.
+            getTokenService().get()
+        }
     }
 
     @TaskAction
