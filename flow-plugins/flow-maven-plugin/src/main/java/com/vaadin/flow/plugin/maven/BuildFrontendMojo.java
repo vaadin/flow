@@ -151,10 +151,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        if (!BuildFrontendUtil.getTokenFile(this).exists()) {
+        File tokenFile = BuildFrontendUtil.getTokenFile(this);
+        if (!tokenFile.exists()) {
             // if not prepare-frontend token file exists propagate build info
             // to token file
-            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+            tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
         }
 
         Options options = new Options(null, getClassFinder(), npmFolder())
@@ -217,10 +218,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         // build does not pick up a stale productionMode=true token.
         // Maven goals always re-execute so this does not affect
         // subsequent builds.
-        File tokenFile = BuildFrontendUtil.getTokenFile(this);
         if (tokenFile.exists()) {
             tokenFile.deleteOnExit();
         }
+
+        project.getProperties().setProperty(
+                FlowLifecycleParticipant.TOKEN_FILE_PATH_PROPERTY,
+                tokenFile.getAbsolutePath());
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
