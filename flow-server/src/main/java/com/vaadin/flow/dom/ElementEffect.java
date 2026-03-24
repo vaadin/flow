@@ -251,10 +251,11 @@ public final class ElementEffect implements Serializable {
             SerializableBiConsumer<Element, T> setter) {
         SignalBinding<T> binding = new SignalBinding<>();
         @SuppressWarnings("unchecked")
-        T[] previousValue = (T[]) new Object[] { signal.peek() };
+        T[] previousValue = (T[]) new Object[1];
+        boolean[] hasRun = { false };
         new ElementEffect(owner, ctx -> {
             T newValue = signal.get();
-            T oldValue = previousValue[0];
+            T oldValue = hasRun[0] ? previousValue[0] : newValue;
             setter.accept(owner, newValue);
             if (ctx.isInitialRun() || binding.hasCallbacks()) {
                 var bindingContext = new BindingContext<>(ctx.isInitialRun(),
@@ -266,6 +267,7 @@ public final class ElementEffect implements Serializable {
             }
 
             previousValue[0] = newValue;
+            hasRun[0] = true;
         });
         return binding;
     }
