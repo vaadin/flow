@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -295,6 +296,54 @@ class ReflectorTest {
                 "com.vaadin-flow-server-1.0.jar");
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
+    }
+
+    @Test
+    void close_isIdempotent() {
+        reflector.close();
+        reflector.close(); // second close should not throw
+    }
+
+    @Test
+    void getResource_jarUrlDisablesCaching() throws Exception {
+        // The reflector's isolated classloader delegates to maven.api realm
+        // which contains the test JAR
+        MavenProject project = new MavenProject();
+        project.setGroupId("com.vaadin.test");
+        project.setArtifactId("reflector-tests");
+        project.setBuild(new Build());
+        project.getBuild().setOutputDirectory(PROJECT_TARGET_FOLDER);
+        project.setArtifacts(Set.of());
+
+        MojoExecution exec = new MojoExecution(new MojoDescriptor());
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        exec.getMojoDescriptor().setPluginDescriptor(pluginDescriptor);
+        pluginDescriptor.setGroupId("com.vaadin.test");
+        pluginDescriptor.setArtifactId("test-plugin");
+        pluginDescriptor.setArtifacts(List.of());
+        ClassWorld classWorld = new ClassWorld("maven.api", null);
+        classWorld.getRealm("maven.api")
+                .addURL(Path
+                        .of("src", "test", "resources",
+                                "jar-without-frontend-resources.jar")
+                        .toUri().toURL());
+        pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
+
+        Reflector execReflector = Reflector.of(project, exec, null);
+        try {
+            URL resource = execReflector.getIsolatedClassLoader()
+                    .getResource("org/json/CookieList.class");
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
+
+            URLConnection conn = resource.openConnection();
+            assertFalse(conn.getUseCaches(),
+                    "jar: URL connections should have caching disabled "
+                            + "to prevent stale JarFileFactory entries "
+                            + "under mvnd");
+        } finally {
+            execReflector.close();
+        }
     }
 
     @Test
