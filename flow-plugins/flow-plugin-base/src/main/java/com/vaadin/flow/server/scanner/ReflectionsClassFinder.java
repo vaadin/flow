@@ -223,14 +223,23 @@ public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
 
     @Override
     public URL getResource(String name) {
-        URL url = classLoader.getResource(name);
+        return disableJarCaching(classLoader.getResource(name));
+    }
+
+    /**
+     * Wraps a {@code jar:} URL with a handler that disables JVM-level JAR
+     * caching. Prevents {@code JarFileFactory} from caching stale
+     * {@code JarFile} instances across daemon builds (Gradle daemon, mvnd).
+     *
+     * @param url
+     *            the URL to wrap, may be {@code null}
+     * @return a wrapped URL with caching disabled for {@code jar:} protocol, or
+     *         the original URL for other protocols or {@code null} input
+     */
+    public static URL disableJarCaching(URL url) {
         if (url == null || !"jar".equals(url.getProtocol())) {
             return url;
         }
-        // Wrap jar: URLs with a handler that disables JVM-level JAR caching.
-        // Without this, JarFileFactory keeps a static cache of JarFile
-        // instances that become stale when JARs are rewritten between Gradle
-        // daemon builds, causing ZipException ("invalid LOC header").
         try {
             return new URL(null, url.toExternalForm(), new URLStreamHandler() {
                 @Override
