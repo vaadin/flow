@@ -327,7 +327,8 @@ public class PublicResourcesLiveUpdaterTest {
         Mockito.when(resourceProvider.getApplicationResource(
                 "META-INF/resources/frontend/addon.styles.css"))
                 .thenReturn(getClass().getResource("/"));
-        Lookup lookup = context.getAttribute(Lookup.class);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        context.setAttribute(Lookup.class, lookup);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
