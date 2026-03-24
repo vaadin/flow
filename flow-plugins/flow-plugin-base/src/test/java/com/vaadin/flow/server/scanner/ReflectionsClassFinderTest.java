@@ -19,15 +19,20 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -245,6 +250,75 @@ class ReflectionsClassFinderTest {
                 npmPackageVersion, className), StandardCharsets.UTF_8);
         compile(sourceFile.toFile(), sources, buildDir);
         return buildDir.toURI().toURL();
+    }
+
+    // See https://github.com/vaadin/flow/issues/15458
+    @Test
+    public void getResource_jarUrlDisablesCaching() throws Exception {
+        String pkg = "com.vaadin.flow.test.jar";
+        String className = "TestComponent";
+
+        File jarFile = externalModules.resolve("test-component.jar").toFile();
+        createTestJar(jarFile, "jar-v1", pkg, className, "1.0.0");
+
+        try (ReflectionsClassFinder finder = new ReflectionsClassFinder(
+                jarFile.toURI().toURL())) {
+            URL resource = finder.getResource(
+                    pkg.replace('.', '/') + "/" + className + ".class");
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
+
+            URLConnection conn = resource.openConnection();
+            assertFalse(conn.getUseCaches(),
+                    "jar: URL connections should have caching disabled "
+                            + "to prevent stale JarFileFactory entries "
+                            + "under Gradle daemon");
+            // Verify the resource is still readable
+            try (InputStream is = conn.getInputStream()) {
+                assertTrue(is.read() != -1,
+                        "Should be able to read class bytes");
+            }
+        }
+    }
+
+    private void createTestJar(File jarFile, String moduleName, String pkg,
+            String className, String npmPackageVersion) throws IOException {
+        // Compile the class to a temp directory
+        File sources = Files
+                .createDirectories(externalModules.resolve(moduleName + "/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules
+                        .resolve(moduleName + "/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve(moduleName + "/target"))
+                .toFile();
+
+        Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
+        Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
+                npmPackageVersion, className), StandardCharsets.UTF_8);
+        compile(sourceFile.toFile(), sources, buildDir);
+
+        // Package compiled classes into a JAR
+        try (JarOutputStream jos = new JarOutputStream(
+                new FileOutputStream(jarFile))) {
+            Path classesRoot = buildDir.toPath();
+            try (var walker = Files.walk(classesRoot)) {
+                walker.filter(Files::isRegularFile).forEach(classFile -> {
+                    String entryName = classesRoot.relativize(classFile)
+                            .toString().replace(File.separatorChar, '/');
+                    try {
+                        jos.putNextEntry(new JarEntry(entryName));
+                        jos.write(Files.readAllBytes(classFile));
+                        jos.closeEntry();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
     }
 
     private void compile(File sourceFile, File sourcePath, File outputPath) {
