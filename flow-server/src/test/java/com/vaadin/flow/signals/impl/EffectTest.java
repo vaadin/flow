@@ -22,20 +22,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EffectTest extends SignalTestBase {
 
@@ -773,5 +778,92 @@ class EffectTest extends SignalTestBase {
 
         dispatcher.runPendingTasks();
         assertEquals(List.of("signal", "update"), invocations);
+    }
+
+    @Test
+    void ownerUI_sameUICurrent_notBackgroundChange() {
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effect.setOwnerUI(ui);
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0));
+
+        signal.set("update");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with same UI should not be background");
+    }
+
+    @Test
+    void ownerUI_noUICurrent_isBackgroundChange() {
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        Effect effect = new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effect.setOwnerUI(ui);
+
+        assertEquals(1, backgroundChanges.size());
+
+        UI.setCurrent(null);
+        signal.set("from background");
+
+        assertEquals(2, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(1),
+                "Change without UI should be background");
+    }
+
+    @Test
+    void ownerUI_differentUICurrent_isBackgroundChange() {
+        UI uiA = Mockito.mock(UI.class);
+        UI uiB = Mockito.mock(UI.class);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> backgroundChangesA = new ArrayList<>();
+        List<Boolean> backgroundChangesB = new ArrayList<>();
+
+        UI.setCurrent(uiA);
+        Effect effectA = new Effect(ctx -> {
+            signal.get();
+            backgroundChangesA.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effectA.setOwnerUI(uiA);
+
+        UI.setCurrent(uiB);
+        Effect effectB = new Effect(ctx -> {
+            signal.get();
+            backgroundChangesB.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+        effectB.setOwnerUI(uiB);
+
+        assertEquals(1, backgroundChangesA.size());
+        assertEquals(1, backgroundChangesB.size());
+
+        // User A modifies the signal
+        UI.setCurrent(uiA);
+        signal.set("from user A");
+
+        assertEquals(2, backgroundChangesA.size());
+        assertFalse(backgroundChangesA.get(1),
+                "Change from own UI should not be background");
+
+        assertEquals(2, backgroundChangesB.size());
+        assertTrue(backgroundChangesB.get(1),
+                "Change from another UI should be background");
     }
 }
