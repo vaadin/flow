@@ -6,8 +6,6 @@ class PreTrial extends HTMLElement {
   #trialExpired: boolean;
   #startFailed: boolean | null;
   #licenseDownloadStatus: string | null;
-  private remove: Function;
-
   constructor() {
     super();
 
@@ -355,7 +353,7 @@ class PreTrial extends HTMLElement {
     this.cleanup();
   }
 
-  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void {
     if (name === 'expired') {
       this.handleExpiredChange(newValue !== null && newValue !== 'false');
     } else if (name === 'start-failure') {
@@ -389,13 +387,14 @@ class PreTrial extends HTMLElement {
 
   private setupProtection(): void {
     const originalRemove = Element.prototype.remove;
-    this.remove = function (this: PreTrial): void {
+    const self = this;
+    this.remove = function (): void {
       console.debug('Attempt to remove vaadin-pretrial detected - restoring');
-      const currentParent = this.parentNode;
+      const currentParent = self.parentNode;
       // Let the removal happen
-      originalRemove.apply(this, arguments);
+      originalRemove.call(self);
       // Re-add the component
-      this.restoreSplashScreen(currentParent as Node);
+      self.restoreSplashScreen(currentParent as Node);
     };
 
     // Protect against style changes
