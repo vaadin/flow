@@ -258,26 +258,25 @@ class ReflectionsClassFinderTest {
         String pkg = "com.vaadin.flow.test.jar";
         String className = "TestComponent";
 
-        File jarFile = externalModules.newFile("test-component.jar");
+        File jarFile = externalModules.resolve("test-component.jar").toFile();
         createTestJar(jarFile, "jar-v1", pkg, className, "1.0.0");
 
         try (ReflectionsClassFinder finder = new ReflectionsClassFinder(
                 jarFile.toURI().toURL())) {
             URL resource = finder.getResource(
                     pkg.replace('.', '/') + "/" + className + ".class");
-            Assert.assertNotNull("Resource should be found in JAR", resource);
-            Assert.assertEquals("jar", resource.getProtocol());
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
 
             URLConnection conn = resource.openConnection();
-            Assert.assertFalse(
+            assertFalse(conn.getUseCaches(),
                     "jar: URL connections should have caching disabled "
                             + "to prevent stale JarFileFactory entries "
-                            + "under Gradle daemon",
-                    conn.getUseCaches());
+                            + "under Gradle daemon");
             // Verify the resource is still readable
             try (InputStream is = conn.getInputStream()) {
-                Assert.assertTrue("Should be able to read class bytes",
-                        is.read() != -1);
+                assertTrue(is.read() != -1,
+                        "Should be able to read class bytes");
             }
         }
     }
@@ -285,10 +284,17 @@ class ReflectionsClassFinderTest {
     private void createTestJar(File jarFile, String moduleName, String pkg,
             String className, String npmPackageVersion) throws IOException {
         // Compile the class to a temp directory
-        File sources = externalModules.newFolder(moduleName + "/src");
-        File sourcePkg = externalModules
-                .newFolder(moduleName + "/src/" + pkg.replace('.', '/'));
-        File buildDir = externalModules.newFolder(moduleName + "/target");
+        File sources = Files
+                .createDirectories(externalModules.resolve(moduleName + "/src"))
+                .toFile();
+        File sourcePkg = Files
+                .createDirectories(externalModules
+                        .resolve(moduleName + "/src/" + pkg.replace('.', '/')))
+                .toFile();
+        File buildDir = Files
+                .createDirectories(
+                        externalModules.resolve(moduleName + "/target"))
+                .toFile();
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
         Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
