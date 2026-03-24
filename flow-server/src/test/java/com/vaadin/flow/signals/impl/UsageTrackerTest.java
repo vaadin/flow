@@ -410,6 +410,11 @@ class UsageTrackerTest extends SignalTestBase {
         }
 
         @Override
+        public Object getIdentity() {
+            return this;
+        }
+
+        @Override
         public Registration onNextChange(TransientListener listener) {
             listeners.add(listener);
 

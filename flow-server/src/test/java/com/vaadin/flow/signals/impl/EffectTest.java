@@ -657,6 +657,11 @@ class EffectTest extends SignalTestBase {
                     }
 
                     @Override
+                    public Object getIdentity() {
+                        return usage.getIdentity();
+                    }
+
+                    @Override
                     public Registration onNextChange(
                             TransientListener listener) {
                         if (injectChange.compareAndSet(true, false)) {
@@ -698,6 +703,11 @@ class EffectTest extends SignalTestBase {
                     @Override
                     public boolean hasChanges() {
                         return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Object getIdentity() {
+                        return usage.getIdentity();
                     }
 
                     @Override
@@ -746,6 +756,11 @@ class EffectTest extends SignalTestBase {
                     @Override
                     public boolean hasChanges() {
                         return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Object getIdentity() {
+                        return usage.getIdentity();
                     }
 
                     @Override

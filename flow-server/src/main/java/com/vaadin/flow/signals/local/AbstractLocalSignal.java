@@ -204,6 +204,11 @@ public abstract class AbstractLocalSignal<T extends @Nullable Object>
             }
 
             @Override
+            public Object getIdentity() {
+                return AbstractLocalSignal.this;
+            }
+
+            @Override
             public Registration onNextChange(TransientListener listener) {
                 lock.lock();
                 try {

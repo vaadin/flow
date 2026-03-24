@@ -169,6 +169,11 @@ public class CachedSignal<T extends @Nullable Object>
             }
 
             @Override
+            public Object getIdentity() {
+                return superUsage.getIdentity();
+            }
+
+            @Override
             public Registration onNextChange(TransientListener listener) {
                 Registration uncount = countActiveExternalListener();
 
