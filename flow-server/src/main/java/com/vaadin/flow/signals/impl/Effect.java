@@ -178,6 +178,9 @@ public class Effect implements Serializable {
         activeEffects.get().add(this);
         try {
             boolean[] hasSignalUsage = { false };
+            // Ensure effect runs only once per change event, even if the same
+            // signal is read multiple times (each read registers a listener)
+            AtomicBoolean changeHandled = new AtomicBoolean(false);
             UsageTracker.track(action, usage -> {
                 hasSignalUsage[0] = true;
                 usages.add(usage);
@@ -185,7 +188,10 @@ public class Effect implements Serializable {
                 TransientListener usageListener = new TransientListener() {
                     @Override
                     public boolean invoke(boolean immediate) {
-                        return onDependencyChange(immediate);
+                        if (changeHandled.compareAndSet(false, true)) {
+                            return onDependencyChange(immediate);
+                        }
+                        return false;
                     }
                 };
                 registrations.add(usage.onNextChange(usageListener));
