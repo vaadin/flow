@@ -928,9 +928,9 @@ class BinderSignalTest extends SignalsUnitTest {
         assertEquals(3, validatorCalls.get());
 
         lastNameField.setValue("");
-        // value change runs revalidation for both Signal.get() calls in the
-        // validator
-        assertEquals(5, validatorCalls.get());
+        // value change runs revalidation only once even for
+        // two signal reads in the validator
+        assertEquals(4, validatorCalls.get());
     }
 
     private void testInitialStatusChangeRunEffects(
