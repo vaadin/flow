@@ -193,21 +193,23 @@ class ElementEffectTest {
         assertFalse(backgroundChanges.get(0),
                 "Initial run should not be a background change");
 
-        // Change signal with VaadinRequest present (simulates user request)
+        // Change signal with same UI current (simulates user request)
         signal.set("from request");
 
         assertEquals(2, backgroundChanges.size());
         assertFalse(backgroundChanges.get(1),
-                "Change with VaadinRequest should not be a background change");
+                "Change with same UI should not be a background change");
 
-        // Clear VaadinRequest to simulate background change
+        // Clearing only VaadinRequest while the same UI is still current
+        // is NOT a background change: the effect's owner UI matches
         CurrentInstance.set(VaadinRequest.class, null);
 
-        signal.set("from background");
+        signal.set("from same ui without request");
 
         assertEquals(3, backgroundChanges.size());
-        assertTrue(backgroundChanges.get(2),
-                "Change without VaadinRequest should be a background change");
+        assertFalse(backgroundChanges.get(2),
+                "Change from same UI should not be a background change "
+                        + "even without VaadinRequest");
     }
 
     @Test
