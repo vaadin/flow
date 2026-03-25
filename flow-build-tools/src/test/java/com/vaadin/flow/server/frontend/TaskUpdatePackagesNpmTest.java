@@ -1386,6 +1386,46 @@ class TaskUpdatePackagesNpmTest {
         }
     }
 
+    @Test
+    void npmIsInUse_emptyVaadinOverrides_removedFromPackageJson()
+            throws IOException {
+        // Setup: Create package.json with vaadin.overrides that will be removed
+        createBasicVaadinVersionsJson();
+
+        // First run to create a valid package.json with vaadin section
+        TaskUpdatePackages task = createTask(createApplicationDependencies());
+        task.execute();
+
+        // Now add a Vaadin-managed override (both in vaadin.overrides and main
+        // overrides)
+        // This simulates an override that was added by Vaadin but is no longer
+        // needed
+        ObjectNode pkgJson = getOrCreatePackageJson();
+        ObjectNode vaadinSection = (ObjectNode) pkgJson.get(VAADIN_DEP_KEY);
+        ObjectNode vaadinOverrides = JacksonUtils.createObjectNode();
+        vaadinOverrides.put("some-old-override", "value");
+        vaadinSection.set(OVERRIDES, vaadinOverrides);
+
+        // Also add to main overrides section (this makes it a "Vaadin-managed"
+        // override)
+        ObjectNode mainOverrides = JacksonUtils.createObjectNode();
+        mainOverrides.put("some-old-override", "value");
+        pkgJson.set(OVERRIDES, mainOverrides);
+
+        FileUtils.writeStringToFile(packageJson, pkgJson.toPrettyString(),
+                StandardCharsets.UTF_8);
+
+        // Execute task again (with no PWA, so no default overrides needed)
+        task = createTask(createApplicationDependencies());
+        task.execute();
+
+        // Verify vaadin.overrides is removed when empty
+        ObjectNode resultJson = getOrCreatePackageJson();
+        ObjectNode resultVaadin = (ObjectNode) resultJson.get(VAADIN_DEP_KEY);
+        assertFalse(resultVaadin.has(OVERRIDES),
+                "Empty vaadin.overrides should be removed from package.json");
+    }
+
     private TaskUpdatePackages createTaskWithPwa(
             Map<String, String> applicationDependencies, boolean enablePnpm,
             boolean pwaOfflineEnabled) {

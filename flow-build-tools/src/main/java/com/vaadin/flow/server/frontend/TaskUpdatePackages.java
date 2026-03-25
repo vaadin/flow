@@ -150,6 +150,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                 versionLockingUpdated = true;
             }
         }
+        // Clean up empty vaadin.overrides section
+        if (vaadinOverridesSection.isEmpty()) {
+            ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).remove(OVERRIDES);
+        }
 
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
