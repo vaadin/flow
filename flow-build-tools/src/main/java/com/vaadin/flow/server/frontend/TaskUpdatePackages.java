@@ -92,6 +92,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
+            // Recompute hash after lockVersionForNpm may have modified overrides
+            if (npmVersionLockingUpdated) {
+                String finalHash = generatePackageJsonHash(packageJson);
+                ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY,
+                        finalHash);
+            }
+
             if (modified || npmVersionLockingUpdated) {
                 if (!packageJson.has("type") || !packageJson.get("type")
                         .asString().equals("module")) {
@@ -113,17 +120,52 @@ public class TaskUpdatePackages extends NodeUpdater {
     boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
         boolean versionLockingUpdated = false;
 
-        ObjectNode overridesSection = getOverridesSection(packageJson);
+        final ObjectNode overridesSection = getOverridesSection(packageJson);
+        final ObjectNode vaadinOverridesSection = Objects.requireNonNullElseGet(
+                (ObjectNode) packageJson.get(VAADIN_DEP_KEY).get(OVERRIDES),
+                () -> {
+                    final ObjectNode empty = JacksonUtils.createObjectNode();
+                    ((ObjectNode) packageJson.get(VAADIN_DEP_KEY))
+                            .set(OVERRIDES, empty);
+                    return empty;
+                });
+
+        final ObjectNode defaultOverrides = getDefaultOverrides();
+        // Add default overrides that are not yet in Vaadin overrides
+        for (String key : JacksonUtils.getKeys(defaultOverrides)) {
+            final JsonNode value = defaultOverrides.get(key);
+            if (!value.equals(vaadinOverridesSection.get(key))) {
+                vaadinOverridesSection.set(key, value);
+                overridesSection.set(key, value);
+                versionLockingUpdated = true;
+            }
+        }
+        // Remove Vaadin overrides that are no longer enabled by default
+        for (String key : JacksonUtils.getKeys(vaadinOverridesSection)) {
+            final JsonNode value = vaadinOverridesSection.get(key);
+            if (!defaultOverrides.has(key)
+                    && value.equals(overridesSection.get(key))) {
+                vaadinOverridesSection.remove(key);
+                overridesSection.remove(key);
+                versionLockingUpdated = true;
+            }
+        }
+
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
         // Clean platform overrides if override version less than new version.
         for (String key : JacksonUtils.getKeys(fullPlatformDependencies)) {
-            if (overridesSection.has(key)
-                    && !overridesSection.get(key).asString().startsWith("$")
-                    && new FrontendVersion(overridesSection.get(key).asString())
-                            .isOlderThan(
-                                    new FrontendVersion(fullPlatformDependencies
-                                            .get(key).asString()))) {
+            if (!overridesSection.has(key)) {
+                continue;
+            }
+            JsonNode value = overridesSection.get(key);
+            if (!value.isString()) {
+                continue;
+            }
+            String stringValue = value.asString();
+            if (!stringValue.startsWith("$") && new FrontendVersion(stringValue)
+                    .isOlderThan(new FrontendVersion(
+                            fullPlatformDependencies.get(key).asString()))) {
                 overridesSection.remove(key);
             }
         }
@@ -139,8 +181,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .get(DEV_DEPENDENCIES);
         for (String dependency : JacksonUtils.getKeys(overridesSection)) {
             if (!dependencies.has(dependency)
-                    && !devDependencies.has(dependency) && overridesSection
-                            .get(dependency).asString().startsWith("$")) {
+                    && !devDependencies.has(dependency)
+                    && overridesSection.get(dependency).isString()
+                    && overridesSection.get(dependency).asString()
+                            .startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
             }
@@ -631,6 +675,23 @@ public class TaskUpdatePackages extends NodeUpdater {
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");
+        }
+        if (packageJson.has(OVERRIDES)) {
+            JsonNode overrides = packageJson.get(OVERRIDES);
+            // Only include overrides in hash if section has actual content
+            if (overrides.isObject() && !overrides.isEmpty()
+                    && !hashContent.isEmpty()) {
+                hashContent.append(",\n");
+                hashContent.append("\"overrides\": ");
+                final ObjectNode sortedOverrides = JacksonUtils
+                        .createObjectNode();
+                JacksonUtils.getKeys(overrides).stream()
+                        .sorted(String::compareToIgnoreCase)
+                        .forEachOrdered(key -> {
+                            sortedOverrides.set(key, overrides.get(key));
+                        });
+                hashContent.append(JacksonUtils.toFileJson(sortedOverrides));
+            }
         }
         return StringUtil.getHash(hashContent.toString());
     }

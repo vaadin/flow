@@ -86,7 +86,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         classFinder = Mockito.spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
-        packageCreator = new TaskGeneratePackageJson(options);
+        packageCreator = new TaskGeneratePackageJson(null, options);
         versions = Files.createTempFile(temporaryFolder.toPath(), "tmp", null)
                 .toFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);

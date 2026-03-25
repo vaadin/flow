@@ -222,7 +222,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCreateMissingPackageJson()) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    options);
+                    frontendDependencies, options);
             commands.add(packageCreator);
         }
 
@@ -275,7 +275,7 @@ public class NodeTasks implements FallibleCommand {
         }
         commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
         if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
-            commands.add(new TaskUpdateVite(options, webComponentTags));
+            commands.add(new TaskUpdateVite(options, webComponentTags, pwa));
         }
 
         if (options.isEnableImportsUpdate()) {

@@ -62,7 +62,7 @@ class TaskUpdateViteTest {
 
     @Test
     void generatedTemplate_correctSettingsPath() throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -81,7 +81,7 @@ class TaskUpdateViteTest {
         final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(options, null).execute();
+        new TaskUpdateVite(options, null, null).execute();
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -98,7 +98,7 @@ class TaskUpdateViteTest {
         FileUtils.write(generatedConfigFile, importString,
                 StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(options, null).execute();
+        new TaskUpdateVite(options, null, null).execute();
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -109,7 +109,7 @@ class TaskUpdateViteTest {
 
     @Test
     void usedSettings_matchThoseCreatedToSettingsFile() throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
         task.execute();
 
         File generatedConfigFile = new File(temporaryFolder,
@@ -147,7 +147,8 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null,
+                null);
         try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
                 FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
             util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
@@ -174,7 +175,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_reactDisabled_correctFileRouterImport()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options.withReact(false),
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(false), null,
                 null);
         task.execute();
 
@@ -198,7 +199,7 @@ class TaskUpdateViteTest {
             throws IOException {
         options.withFrontendExtraFileExtensions(
                 Arrays.asList(".svg", ".ico", "png"));
-        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,
@@ -219,7 +220,7 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_noEraFrontendExtension_viteConfigurationWithoutExtraSelections()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(options, null);
+        TaskUpdateVite task = new TaskUpdateVite(options, null, null);
         task.execute();
 
         File configFile = new File(temporaryFolder,

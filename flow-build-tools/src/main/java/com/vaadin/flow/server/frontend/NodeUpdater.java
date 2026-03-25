@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -324,27 +325,37 @@ public abstract class NodeUpdater implements FallibleCommand {
         return dependencies;
     }
 
-    Map<String, String> readDependencies(String id, String packageJsonKey) {
+    @Nullable
+    JsonNode readPackageJsonKey(String id, String packageJsonKey) {
+        final JsonNode packageJson;
         try {
-            Map<String, String> map = new HashMap<>();
-            JsonNode dependencies = readPackageJson(id).get(packageJsonKey);
-            if (dependencies == null) {
-                log().error("Unable to find " + packageJsonKey + " from '" + id
-                        + "'");
-                return new HashMap<>();
-            }
-            for (String key : JacksonUtils.getKeys(dependencies)) {
-                map.put(key, dependencies.get(key).asString());
-            }
-
-            return map;
+            packageJson = readPackageJson(id);
         } catch (IOException e) {
             log().error(
                     "Unable to read " + packageJsonKey + " from '" + id + "'",
                     e);
-            return new HashMap<>();
+            return null;
+        }
+        var value = packageJson.get(packageJsonKey);
+        if (value == null) {
+            log().error(
+                    "Unable to find " + packageJsonKey + " from '" + id + "'");
+        }
+        return value;
+    }
+
+    Map<String, String> readDependencies(String id, String packageJsonKey) {
+        Map<String, String> map = new HashMap<>();
+        JsonNode dependencies = readPackageJsonKey(id, packageJsonKey);
+        if (dependencies == null) {
+            return map;
         }
 
+        for (String key : JacksonUtils.getKeys(dependencies)) {
+            map.put(key, dependencies.get(key).asString());
+        }
+
+        return map;
     }
 
     JsonNode readPackageJson(String id) throws IOException {
@@ -396,11 +407,24 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Add workbox dependencies only when PWA is enabled
         if (frontDeps != null && frontDeps.getPwaConfiguration() != null
-                && frontDeps.getPwaConfiguration().isEnabled()) {
+                && frontDeps.getPwaConfiguration().isOfflineEnabled()) {
             defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
         return defaults;
+    }
+
+    ObjectNode getDefaultOverrides() {
+        var overrides = JacksonUtils.createObjectNode();
+
+        // Currently, we only have overrides for workbox uses overrides, and
+        // only when PWA is enabled
+        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
+                && frontDeps.getPwaConfiguration().isOfflineEnabled()) {
+            overrides = overrides.setAll((ObjectNode) Objects.requireNonNull(
+                    readPackageJsonKey("workbox", "overrides")));
+        }
+        return overrides;
     }
 
     /**
