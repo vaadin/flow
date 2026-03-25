@@ -155,6 +155,41 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
 
     }
 
+    @Test
+    void shouldHandleNestedObjectOverrides_withoutError() throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater();
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+
+        // Add dependency
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+
+        // Add a nested object override (like workbox-build overrides)
+        ObjectNode overridesSection = JacksonUtils.createObjectNode();
+        ObjectNode nestedOverride = JacksonUtils.createObjectNode();
+        nestedOverride.put("nested-dep", "1.0.0");
+        overridesSection.set("parent-package", nestedOverride);
+        // Also add a regular string override
+        overridesSection.put(TEST_DEPENDENCY,
+                "$" + TEST_DEPENDENCY);
+        packageJson.set(OVERRIDES, overridesSection);
+
+        packageUpdater.generateVersionsJson(packageJson);
+
+        // Should not throw and should handle nested objects correctly
+        boolean result = packageUpdater.lockVersionForNpm(packageJson);
+
+        // Verify nested object override is preserved
+        assertTrue(packageJson.get(OVERRIDES).has("parent-package"),
+                "Nested object override should be preserved");
+        assertTrue(packageJson.get(OVERRIDES).get("parent-package").isObject(),
+                "Nested override should remain an object");
+        assertEquals("1.0.0",
+                packageJson.get(OVERRIDES).get("parent-package")
+                        .get("nested-dep").textValue(),
+                "Nested override value should be preserved");
+    }
+
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
