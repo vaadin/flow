@@ -250,24 +250,28 @@ public final class ElementEffect implements Serializable {
             Element owner, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter) {
         SignalBinding<T> binding = new SignalBinding<>();
-        @SuppressWarnings("unchecked")
-        T[] previousValue = (T[]) new Object[1];
-        boolean[] hasRun = { false };
-        new ElementEffect(owner, ctx -> {
-            T newValue = signal.get();
-            T oldValue = hasRun[0] ? previousValue[0] : newValue;
-            setter.accept(owner, newValue);
-            if (ctx.isInitialRun() || binding.hasCallbacks()) {
-                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
-                        ctx.isBackgroundChange(), oldValue, newValue, owner);
-                binding.setInitialContext(bindingContext);
-                if (binding.hasCallbacks()) {
-                    binding.fireOnChange(bindingContext);
-                }
-            }
+        new ElementEffect(owner, new ContextualEffectAction() {
+            private T previousValue;
+            private boolean hasRun = false;
 
-            previousValue[0] = newValue;
-            hasRun[0] = true;
+            @Override
+            public void execute(EffectContext ctx) {
+                T newValue = signal.get();
+                T oldValue = hasRun ? previousValue : newValue;
+                setter.accept(owner, newValue);
+                if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                    var bindingContext = new BindingContext<>(
+                            ctx.isInitialRun(), ctx.isBackgroundChange(),
+                            oldValue, newValue, owner);
+                    binding.setInitialContext(bindingContext);
+                    if (binding.hasCallbacks()) {
+                        binding.fireOnChange(bindingContext);
+                    }
+                }
+
+                previousValue = newValue;
+                hasRun = true;
+            }
         });
         return binding;
     }
