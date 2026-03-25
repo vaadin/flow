@@ -87,9 +87,8 @@ public final class JacksonUtils {
 
     /**
      * Checks that the Jackson version on the classpath is compatible with this
-     * version of Vaadin. Vaadin requires Jackson 3.1+ which ships with Spring
-     * Boot 4.0.4+. Spring Boot 4.0.3 and earlier include Jackson 3.0 which is
-     * not compatible.
+     * version of Vaadin. Vaadin requires Jackson 3.1+. Jackson 3.0 is not
+     * compatible due to breaking API changes in the {@code ObjectMapper} class.
      *
      * @throws IllegalStateException
      *             if the Jackson version is not compatible
@@ -110,10 +109,10 @@ public final class JacksonUtils {
                     "The Jackson version on the classpath (" + jacksonVersion
                             + ") is not compatible with this version of Vaadin."
                             + " This version of Vaadin requires Jackson 3.1+."
-                            + " Spring Boot 4.0.3 and earlier include Jackson"
-                            + " 3.0 which is not compatible."
-                            + " To fix this, upgrade Spring Boot to 4.0.4 or"
-                            + " later.",
+                            + " Please upgrade your Jackson dependencies."
+                            + " Note that Spring Boot 4.0.3 and earlier include"
+                            + " Jackson 3.0; upgrading to Spring Boot 4.0.4 or"
+                            + " later resolves this.",
                     e);
         }
     }
