@@ -748,8 +748,12 @@ export class VaadinDevTools extends LitElement {
     const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
     links.forEach((link) => {
       let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
-      if (filePath && filePath.includes(path)) {
-        link.remove();
+      if (filePath) {
+        // Strip query string and fragment for comparison
+        const cleanPath = filePath.split(/[?#]/)[0];
+        if (cleanPath === path || cleanPath.endsWith('/' + path)) {
+          link.remove();
+        }
       }
     });
   }

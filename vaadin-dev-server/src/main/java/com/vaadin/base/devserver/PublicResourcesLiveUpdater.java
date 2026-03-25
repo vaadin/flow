@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -60,6 +62,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
     private final List<File> roots = new ArrayList<>();
     private final VaadinContext context;
     private final PublicStyleSheetBundler bundler;
+    private final ResourceProvider resourceProvider;
 
     /**
      * Starts watching the given list of source folders for CSS changes.
@@ -84,6 +87,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
             }
         }
         this.bundler = PublicStyleSheetBundler.forResourceLocations(this.roots);
+        Lookup lookup = context.getAttribute(Lookup.class);
+        this.resourceProvider = lookup != null
+                ? lookup.lookup(ResourceProvider.class)
+                : null;
         if (liveReload.isEmpty()) {
             getLogger().error(
                     "Browser live reload is not available. Unable to watch public resources for changes");
@@ -133,11 +140,16 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     String normalized = PublicStyleSheetBundler
                             .normalizeUrl(url);
                     String contextPath = getContextPath();
-                    String content = bundler.bundle(url, contextPath)
-                            .orElse(null);
+                    Optional<String> content = bundler.bundle(url, contextPath);
+                    if (content.isEmpty() && isClasspathResource(normalized)) {
+                        // Resource exists on classpath (e.g. from an addon
+                        // JAR) but not in local source roots — leave it
+                        // untouched
+                        continue;
+                    }
                     String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                             + normalized;
-                    liveReload.update(path, content);
+                    liveReload.update(path, content.orElse(null));
                     getLogger().debug("Pushed bundled stylesheet update for {}",
                             path);
 
@@ -190,6 +202,14 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }
         watchers.clear();
         roots.clear();
+    }
+
+    private boolean isClasspathResource(String normalizedPath) {
+        if (resourceProvider == null) {
+            return false;
+        }
+        return resourceProvider.getApplicationResource(
+                "META-INF/resources/" + normalizedPath) != null;
     }
 
     private boolean isTempFile(File file) {
