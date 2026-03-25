@@ -103,17 +103,6 @@ public class InMemoryHierarchicalDataProvider<T, U extends HierarchicalData<T>>
         return hierarchicalData;
     }
 
-    /**
-     * Return the underlying {@link HierarchicalData} of this provider.
-     *
-     * @return the underlying data of this provider
-     * @deprecated use {@link #getHierarchicalData()} instead.
-     */
-    @Deprecated
-    public U getTreeData() {
-        return hierarchicalData;
-    }
-
     @Override
     public boolean hasChildren(T item) {
         if (!hierarchicalData.contains(item)) {

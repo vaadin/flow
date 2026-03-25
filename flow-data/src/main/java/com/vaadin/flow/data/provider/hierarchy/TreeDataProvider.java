@@ -67,9 +67,8 @@ public class TreeDataProvider<T>
      * @return the underlying data of this provider
      * @deprecated use {@link #getHierarchicalData()} instead.
      */
-    @Deprecated
-    @Override
+    @Deprecated(forRemoval = true, since = "25.2")
     public TreeData<T> getTreeData() {
-        return super.getTreeData();
+        return getHierarchicalData();
     }
 }
