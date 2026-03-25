@@ -69,8 +69,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testWarProjectProductionMode() {
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Read from archive since the token file is deleted from the
+        // filesystem after packaging to avoid stale production tokens
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -80,8 +82,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testWarProjectProductionModeWithCustomName() {
         testProject.settingsFile.writeText("rootProject.name = 'my-test-project'")
         doTestWarProjectProductionMode()
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
@@ -209,7 +211,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -255,7 +257,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -268,7 +270,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
             testProject.build("bootJar")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -445,7 +447,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         val build: BuildResult =
                 testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
@@ -683,7 +685,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult = testProject.build("build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
@@ -779,38 +781,35 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        // First, run prepare and build to ensure everything works normally
+        // First, run build to ensure everything works normally
         val build1: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
-        build1.expectTaskSucceded("vaadinPrepareFrontend")
+        build1.expectTaskNotRan("vaadinPrepareFrontend")
         build1.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was created
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        expect(true) { tokenFile.exists() }
-        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token file was packaged in the war archive (the token
+        // is deleted from the filesystem after packaging to prevent
+        // stale production tokens when running from an IDE)
+        val tokenJson = testProject.builtWar.zipReadEntry("WEB-INF/classes/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
 
-        // Clean the token file to simulate it not existing
-        tokenFile.delete()
-        expect(false) { tokenFile.exists() }
-
-        // Also delete the build-frontend marker file so that Gradle's
-        // up-to-date check detects a missing output and re-executes
-        // vaadinBuildFrontend (which contains the token file regeneration
-        // safety net).
-        val markerFile = File(testProject.dir, "build/vaadin-generated/build-frontend.marker")
+        // Delete the cached token file so that Gradle's up-to-date check
+        // detects a missing output and re-executes vaadinBuildFrontend.
+        val markerFile = File(testProject.dir, "build/cached-flow-build-info.json")
         markerFile.delete()
 
-        // Run vaadinBuildFrontend again - it should propagate build info
-        // even though the token file doesn't exist
+        // Run vaadinBuildFrontend directly (not via build/war) so the
+        // token file persists on disk for verification
         val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         build2.expectTaskSucceded("vaadinBuildFrontend")
 
-        // Verify token file was re-created by propagation
-        expect(true) { tokenFile.exists() }
-        val newTokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        // Verify token was re-created (read from the cached copy since
+        // the build service deletes the original after the build)
+        val cachedTokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
+        expect(true) { cachedTokenFile.exists() }
+        val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }

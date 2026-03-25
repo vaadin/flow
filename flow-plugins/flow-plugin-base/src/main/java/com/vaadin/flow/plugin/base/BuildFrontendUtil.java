@@ -913,7 +913,6 @@ public class BuildFrontendUtil {
 
             FileUtils.write(tokenFile, buildInfo.toPrettyString() + "\n",
                     StandardCharsets.UTF_8.name());
-            tokenFile.deleteOnExit();
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
         }
