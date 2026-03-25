@@ -4,7 +4,7 @@
     "inlineSources": true,
     "module": "esNext",
     "target": "es2023",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
