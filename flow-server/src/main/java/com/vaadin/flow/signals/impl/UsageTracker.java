@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -33,23 +32,14 @@ import com.vaadin.flow.signals.function.ValueSupplier;
 public class UsageTracker {
     static final class CombinedUsage implements Usage {
         private final Collection<Usage> usages;
-        private final Object identity;
 
         CombinedUsage(Collection<Usage> usages) {
             this.usages = usages;
-            // Calculate combined identity from all usage identities
-            this.identity = usages.stream().map(Usage::getIdentity)
-                    .collect(Collectors.toSet());
         }
 
         @Override
         public boolean hasChanges() {
             return usages.stream().anyMatch(Usage::hasChanges);
-        }
-
-        @Override
-        public Object getIdentity() {
-            return identity;
         }
 
         @Override
@@ -143,15 +133,6 @@ public class UsageTracker {
          *         <code>null</code>
          */
         Registration onNextChange(TransientListener listener);
-
-        /**
-         * Gets an identity object for this usage. Used to identify duplicate
-         * usages of the same signal. Usually based on the corresponding signal
-         * object reference.
-         *
-         * @return the identity object, not <code>null</code>
-         */
-        Object getIdentity();
     }
 
     /**
@@ -181,11 +162,6 @@ public class UsageTracker {
         public Registration onNextChange(TransientListener listener) {
             return () -> {
             };
-        }
-
-        @Override
-        public Object getIdentity() {
-            return this;
         }
     };
 

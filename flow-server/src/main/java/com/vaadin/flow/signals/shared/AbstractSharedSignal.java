@@ -519,11 +519,6 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                 }
 
             }
-
-            @Override
-            public Object getIdentity() {
-                return AbstractSharedSignal.this;
-            }
         };
     }
 

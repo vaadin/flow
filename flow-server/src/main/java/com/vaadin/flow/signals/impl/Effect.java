@@ -17,11 +17,8 @@ package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -54,36 +51,9 @@ public class Effect implements Serializable {
     private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
-    /**
-     * Wrapper for Usage that implements equals/hashCode based on identity.
-     */
-    private static class UsageWrapper implements Serializable {
-        final UsageTracker.Usage usage;
-        private final Object identity;
-
-        UsageWrapper(UsageTracker.Usage usage) {
-            this.usage = usage;
-            this.identity = usage.getIdentity();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof UsageWrapper)) {
-                return false;
-            }
-            UsageWrapper other = (UsageWrapper) obj;
-            return Objects.equals(identity, other.identity);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(identity);
-        }
-    }
-
     private SerializableExecutor dispatcher;
     private final List<Registration> registrations = new ArrayList<>();
-    private final Set<UsageWrapper> usages = new LinkedHashSet<>();
+    private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
     private @Nullable SerializableRunnable action;
@@ -208,23 +178,23 @@ public class Effect implements Serializable {
         activeEffects.get().add(this);
         try {
             boolean[] hasSignalUsage = { false };
+            // Ensure effect runs only once per change event, even if the same
+            // signal is read multiple times (each read registers a listener)
+            AtomicBoolean changeHandled = new AtomicBoolean(false);
             UsageTracker.track(action, usage -> {
                 hasSignalUsage[0] = true;
-                UsageWrapper usageWrapper = new UsageWrapper(usage);
-                // Ensure the effect runs only once per change event, even if
-                // the same
-                // signal is read multiple times (each read registers a
-                // listener)
-                if (usages.add(usageWrapper)) {
-                    // avoid lambda to allow proper deserialization
-                    TransientListener usageListener = new TransientListener() {
-                        @Override
-                        public boolean invoke(boolean immediate) {
+                usages.add(usage);
+                // avoid lambda to allow proper deserialization
+                TransientListener usageListener = new TransientListener() {
+                    @Override
+                    public boolean invoke(boolean immediate) {
+                        if (changeHandled.compareAndSet(false, true)) {
                             return onDependencyChange(immediate);
                         }
-                    };
-                    registrations.add(usage.onNextChange(usageListener));
-                }
+                        return false;
+                    }
+                };
+                registrations.add(usage.onNextChange(usageListener));
             });
             if (!hasSignalUsage[0]) {
                 throw new MissingSignalUsageException(
@@ -321,8 +291,8 @@ public class Effect implements Serializable {
         passivated = false;
         firstRun = true;
 
-        if (usages.isEmpty() || usages.stream().map(w -> w.usage)
-                .anyMatch(UsageTracker.Usage::hasChanges)) {
+        if (usages.isEmpty()
+                || usages.stream().anyMatch(UsageTracker.Usage::hasChanges)) {
             // Something changed while passivated, do a full revalidation
             usages.clear();
             revalidate();
@@ -331,9 +301,8 @@ public class Effect implements Serializable {
             // listener may still fire immediately if a change sneaks in
             // between the hasChanges check and the onNextChange call,
             // in which case firstRun is already set to true above.
-            for (UsageWrapper wrapper : usages) {
-                registrations.add(
-                        wrapper.usage.onNextChange(this::onDependencyChange));
+            for (UsageTracker.Usage usage : usages) {
+                registrations.add(usage.onNextChange(this::onDependencyChange));
             }
             if (!invalidateScheduled.get()) {
                 // No invalidation was scheduled, so no change was
