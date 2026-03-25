@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class ReflectToolsGetFieldValueByTypeTest {
     @Test
-    public void getFieldValue() {
+    void getFieldValue() {
         class MyClass {
             @SuppressWarnings("unused")
             public Integer getField() {
@@ -57,7 +57,7 @@ class ReflectToolsGetFieldValueByTypeTest {
     }
 
     @Test
-    public void getFieldValueViaGetter() {
+    void getFieldValueViaGetter() {
         class MyClass {
             @SuppressWarnings("unused")
             public Integer field = 1;

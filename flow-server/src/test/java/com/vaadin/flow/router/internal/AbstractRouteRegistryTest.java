@@ -52,12 +52,12 @@ class AbstractRouteRegistryTest {
     private AbstractRouteRegistry registry;
 
     @BeforeEach
-    public void init() {
+    void init() {
         registry = new TestAbstractRouteRegistry();
     }
 
     @Test
-    public void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlock() {
+    void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlock() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
 
@@ -90,7 +90,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void routeChangeListener_correctChangesAreReturned() {
+    void routeChangeListener_correctChangesAreReturned() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
@@ -130,7 +130,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
+    void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
         List<RouteBaseData> added = new ArrayList<>();
@@ -172,7 +172,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+    void routeWithAliases_eventShowsCorrectlyAsRemoved() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
@@ -203,7 +203,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void changeListenerAddedDuringUpdate_eventIsFiredForListener() {
+    void changeListenerAddedDuringUpdate_eventIsFiredForListener() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
@@ -237,7 +237,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void removeChangeListener_noEventsAreFired() {
+    void removeChangeListener_noEventsAreFired() {
         List<RoutesChangedEvent> events = new ArrayList<>();
 
         Registration registration = registry
@@ -256,7 +256,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void routeChangedEvent_testRouteAddedAndRemoved() {
+    void routeChangedEvent_testRouteAddedAndRemoved() {
         registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
 
         registry.addRoutesChangeListener(event -> {
@@ -292,7 +292,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void routeChangedEvent_testPathAddedAndRemoved() {
+    void routeChangedEvent_testPathAddedAndRemoved() {
         registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
 
         registry.addRoutesChangeListener(event -> {
@@ -325,7 +325,7 @@ class AbstractRouteRegistryTest {
     /* Parameters tests */
 
     @Test
-    public void only_normal_target_works_as_expected() {
+    void only_normal_target_works_as_expected() {
         addTarget(NormalRoute.class);
 
         assertEquals(NormalRoute.class, getTarget(),
@@ -333,7 +333,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void only_has_url_target_works_as_expected() {
+    void only_has_url_target_works_as_expected() {
         addTarget(HasUrlRoute.class);
 
         assertNull(getTarget(new ArrayList<>()),
@@ -344,7 +344,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void only_optional_target_works_as_expected() {
+    void only_optional_target_works_as_expected() {
         addTarget(OptionalRoute.class);
 
         assertEquals(OptionalRoute.class, getTarget(new ArrayList<>()),
@@ -355,7 +355,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void only_wildcard_target_works_as_expected() {
+    void only_wildcard_target_works_as_expected() {
         addTarget(WildcardRoute.class);
 
         assertEquals(WildcardRoute.class, getTarget(new ArrayList<>()),
@@ -370,7 +370,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_has_url_work_together() {
+    void normal_and_has_url_work_together() {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
 
@@ -382,7 +382,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_normal_work_together() {
+    void has_url_and_normal_work_together() {
         addTarget(HasUrlRoute.class);
         addTarget(NormalRoute.class);
 
@@ -394,7 +394,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_wildcard_work_together() {
+    void normal_and_wildcard_work_together() {
         addTarget(NormalRoute.class);
         addTarget(WildcardRoute.class);
 
@@ -410,7 +410,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_normal_work_together() {
+    void wildcard_and_normal_work_together() {
         addTarget(WildcardRoute.class);
         addTarget(NormalRoute.class);
 
@@ -426,7 +426,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_has_url_and_wildcard_work_together()
+    void normal_and_has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
@@ -436,7 +436,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_wildcard_and_has_url_work_together()
+    void normal_and_wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         addTarget(WildcardRoute.class);
@@ -446,7 +446,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_normal_and_has_url_work_together()
+    void wildcard_and_normal_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
@@ -456,7 +456,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_wildcard_and_normal_work_together()
+    void has_url_and_wildcard_and_normal_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -466,7 +466,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_normal_and_wildcard_work_together()
+    void has_url_and_normal_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(NormalRoute.class);
@@ -488,7 +488,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_optional_parameter_work_together()
+    void has_url_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(OptionalRoute.class);
@@ -501,7 +501,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_wildcard_and_optional_parameter_work_together()
+    void has_url_and_wildcard_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -511,7 +511,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void optional_parameter_and_has_url_and_wildcard_work_together()
+    void optional_parameter_and_has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         addTarget(HasUrlRoute.class);
@@ -521,7 +521,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void optional_parameter_and_wildcard_and_has_url_work_together()
+    void optional_parameter_and_wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         addTarget(WildcardRoute.class);
@@ -531,7 +531,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_has_url_and_optional_parameter_work_together()
+    void wildcard_and_has_url_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
@@ -541,7 +541,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_optional_parameter_and_has_url_work_together()
+    void wildcard_and_optional_parameter_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(OptionalRoute.class);
@@ -551,7 +551,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_optional_parameter_and_wildcard_work_together()
+    void has_url_and_optional_parameter_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(OptionalRoute.class);
@@ -573,7 +573,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_wildcard_work_together()
+    void has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -582,7 +582,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_has_url_work_together()
+    void wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
@@ -606,7 +606,7 @@ class AbstractRouteRegistryTest {
 
     /* "normal" target registered first */
     @Test
-    public void multiple_normal_routes_throw_exception()
+    void multiple_normal_routes_throw_exception()
             throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -619,7 +619,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_optional_throws_exception()
+    void normal_and_optional_throws_exception()
             throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -634,7 +634,7 @@ class AbstractRouteRegistryTest {
     /* Optional target registered first */
 
     @Test
-    public void two_optionals_throw_exception()
+    void two_optionals_throw_exception()
             throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -643,7 +643,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void optional_and_normal_throws_exception()
+    void optional_and_normal_throws_exception()
             throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -657,7 +657,7 @@ class AbstractRouteRegistryTest {
 
     /* HasUrl parameter */
     @Test
-    public void two_has_route_parameters_throw_exception()
+    void two_has_route_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -667,7 +667,7 @@ class AbstractRouteRegistryTest {
 
     /* Wildcard parameters */
     @Test
-    public void two_wildcard_parameters_throw_exception()
+    void two_wildcard_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         InvalidRouteConfigurationException ex = assertThrows(
@@ -676,7 +676,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void removing_target_leaves_others() {
+    void removing_target_leaves_others() {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -696,7 +696,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void removing_all_targets_is_possible_and_returns_empty() {
+    void removing_all_targets_is_possible_and_returns_empty() {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -713,7 +713,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void check_has_parameters_returns_correctly() {
+    void check_has_parameters_returns_correctly() {
         registry.setRoute("", NormalRoute.class, null);
         registry.setRoute("url", HasUrlRoute.class, null);
         registry.setRoute("optional", OptionalRoute.class, null);
@@ -743,7 +743,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void multipleLayouts_stricterLayoutMatches_correctLayoutsReturned() {
+    void multipleLayouts_stricterLayoutMatches_correctLayoutsReturned() {
         registry.setLayout(DefaultLayout.class);
         registry.setLayout(ViewLayout.class);
 
@@ -757,7 +757,7 @@ class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void singleLayout_nonMatchingPathsReturnFalseOnHasLayout() {
+    void singleLayout_nonMatchingPathsReturnFalseOnHasLayout() {
         registry.setLayout(ViewLayout.class);
 
         assertTrue(registry.hasLayout("/view"),

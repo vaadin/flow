@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UsageStatisticsExporterTest {
 
     @Test
-    public void should_append_script_element_to_the_body() {
+    void should_append_script_element_to_the_body() {
         Document document = new Document("");
         Element html = document.appendElement("html");
         html.appendElement("body");

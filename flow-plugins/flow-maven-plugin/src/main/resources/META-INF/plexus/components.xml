@@ -1,0 +1,9 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.AbstractMavenLifecycleParticipant</role>
+      <role-hint>vaadin</role-hint>
+      <implementation>com.vaadin.flow.plugin.maven.FlowLifecycleParticipant</implementation>
+    </component>
+  </components>
+</component-set>

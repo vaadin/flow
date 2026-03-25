@@ -62,7 +62,7 @@ class ShortcutRegistrationTest {
     private Component[] listenOn = new Component[3];
 
     @BeforeEach
-    public void initTests() {
+    void initTests() {
         ui = mock(UI.class);
         lifecycleOwner = mock(Component.class);
         Arrays.setAll(listenOn, i -> mock(Component.class));
@@ -79,7 +79,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void registrationWillBeCompletedBeforeClientResponse() {
+    void registrationWillBeCompletedBeforeClientResponse() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -96,7 +96,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistrationIsDirty() {
+    void constructedRegistrationIsDirty() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -105,7 +105,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void lateUpdateOfModifiersDirtiesRegistration() {
+    void lateUpdateOfModifiersDirtiesRegistration() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -121,7 +121,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void fluentModifiersAreAddedCorrectly() {
+    void fluentModifiersAreAddedCorrectly() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -132,7 +132,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void preventDefaultAndStopPropagationValuesDefaultToTrue() {
+    void preventDefaultAndStopPropagationValuesDefaultToTrue() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -147,7 +147,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void resetFocusOnActiveElementValuesDefaultToTrue() {
+    void resetFocusOnActiveElementValuesDefaultToTrue() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -158,7 +158,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void bindLifecycleToChangesLifecycleOwner() {
+    void bindLifecycleToChangesLifecycleOwner() {
         Component newOwner = mock(Component.class);
 
         ShortcutRegistration registration = new ShortcutRegistration(
@@ -174,7 +174,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void settersAndGettersChangeValuesCorrectly() {
+    void settersAndGettersChangeValuesCorrectly() {
 
         // Component listenOn = mock(Component.class);
         ShortcutRegistration registration = new ShortcutRegistration(
@@ -209,7 +209,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnChangesTheComponentThatOwnsTheListener() {
+    void listenOnChangesTheComponentThatOwnsTheListener() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -238,7 +238,7 @@ class ShortcutRegistrationTest {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void listenOnComponentIsChanged_eventIsPopulatedForANewListenOnComponent() {
+    void listenOnComponentIsChanged_eventIsPopulatedForANewListenOnComponent() {
         UI ui = Mockito.spy(UI.class);
         Component owner = new FakeComponent();
         Component initialComponentToListenOn = new FakeComponent();
@@ -283,7 +283,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnUIIsClosing_eventIsPopulatedForANewUI() {
+    void listenOnUIIsClosing_eventIsPopulatedForANewUI() {
         UI ui = Mockito.spy(UI.class);
         Component owner = new FakeComponent();
 
@@ -316,7 +316,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void shortcutRegistrationReturnedByClickNotifierHasCorrectDefault() {
+    void shortcutRegistrationReturnedByClickNotifierHasCorrectDefault() {
         FakeComponent fakeComponent = new FakeComponent();
 
         ShortcutRegistration registration = fakeComponent
@@ -333,7 +333,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void shortcutRegistrationReturnedByFocusableHasCorrectDefaults() {
+    void shortcutRegistrationReturnedByFocusableHasCorrectDefaults() {
         FakeComponent fakeComponent = new FakeComponent();
 
         ShortcutRegistration registration = fakeComponent
@@ -350,7 +350,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnWithDuplicateShouldThrowException() {
+    void listenOnWithDuplicateShouldThrowException() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -363,7 +363,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnWithNullEntriesShouldThrowException() {
+    void listenOnWithNullEntriesShouldThrowException() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -376,7 +376,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnItemsAreChangedAfterCallingListenOnShouldNotHaveAnyEffect() {
+    void listenOnItemsAreChangedAfterCallingListenOnShouldNotHaveAnyEffect() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
@@ -392,7 +392,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
+    void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
         fixture.createNewShortcut(key);
@@ -429,7 +429,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnComponentHasElementLocatorJs_allowBrowserDefault_JsExecutionDoesNotPreventDefault() {
+    void listenOnComponentHasElementLocatorJs_allowBrowserDefault_JsExecutionDoesNotPreventDefault() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
         fixture.createNewShortcut(key).allowBrowserDefault();
@@ -446,7 +446,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void listenOnComponentHasElementLocatorJs_resetFocusOnActiveElement_JsExecutionResetFocusOnActiveElement() {
+    void listenOnComponentHasElementLocatorJs_resetFocusOnActiveElement_JsExecutionResetFocusOnActiveElement() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
         fixture.createNewShortcut(key).resetFocusOnActiveElement();
@@ -463,7 +463,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
+    void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -480,7 +480,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOnwerIsDisabled_shorcutEventIsNotFired() {
+    void constructedRegistration_lifecycleOnwerIsDisabled_shorcutEventIsNotFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -498,7 +498,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOwnerIsDisabledWithDisabledUpdateModeAlways_shortcutEventIsFired() {
+    void constructedRegistration_lifecycleOwnerIsDisabledWithDisabledUpdateModeAlways_shortcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -516,7 +516,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOnwerIsInvisible_shorcutEventIsNotFired() {
+    void constructedRegistration_lifecycleOnwerIsInvisible_shorcutEventIsNotFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -533,7 +533,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOnwerAncestorsAreVisible_shorcutEventIsFired() {
+    void constructedRegistration_lifecycleOnwerAncestorsAreVisible_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -552,7 +552,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
+    void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
         AtomicReference<ShortcutEvent> eventRef = new AtomicReference<>();
 
         Component modal = Mockito.mock(Component.class);
@@ -586,7 +586,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOnwerHasInvisibleParent_shorcutEventIsNotFired() {
+    void constructedRegistration_lifecycleOnwerHasInvisibleParent_shorcutEventIsNotFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event::set,
@@ -608,7 +608,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifecycleOwnerNulledBeforeKeyEvent_noNPE()
+    void constructedRegistration_lifecycleOwnerNulledBeforeKeyEvent_noNPE()
             throws Exception {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
@@ -634,7 +634,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
+    void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
         AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
         Mockito.doAnswer(invocaation -> {
             detachListener.set(
@@ -659,7 +659,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void reattachComponent_detachListenerIsAddedOnEveryAttach_listenOnUIIsClosing_eventIsPopulatedForANewUI() {
+    void reattachComponent_detachListenerIsAddedOnEveryAttach_listenOnUIIsClosing_eventIsPopulatedForANewUI() {
         UI ui = Mockito.spy(UI.class);
         Component owner = new FakeComponent();
 
@@ -714,7 +714,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void attachAndDetachComponent_sameRoundTrip_beforeClientResponseListenerRemoved() {
+    void attachAndDetachComponent_sameRoundTrip_beforeClientResponseListenerRemoved() {
         UI ui = Mockito.spy(UI.class);
         Component owner = new FakeComponent();
 
@@ -747,7 +747,7 @@ class ShortcutRegistrationTest {
     }
 
     @Test
-    public void toString_listenOnComponentsNotInitialized_doesNotFail() {
+    void toString_listenOnComponentsNotInitialized_doesNotFail() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);

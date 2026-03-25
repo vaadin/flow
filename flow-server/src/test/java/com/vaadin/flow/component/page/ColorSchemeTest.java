@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ColorSchemeTest {
 
     @Test
-    public void getValue_returnsCorrectValue() {
+    void getValue_returnsCorrectValue() {
         assertEquals("light", ColorScheme.Value.LIGHT.getValue());
         assertEquals("dark", ColorScheme.Value.DARK.getValue());
         assertEquals("light dark", ColorScheme.Value.LIGHT_DARK.getValue());
@@ -32,14 +32,14 @@ class ColorSchemeTest {
     }
 
     @Test
-    public void getThemeValue_singleValue_returnsUnchanged() {
+    void getThemeValue_singleValue_returnsUnchanged() {
         assertEquals("light", ColorScheme.Value.LIGHT.getThemeValue());
         assertEquals("dark", ColorScheme.Value.DARK.getThemeValue());
         assertEquals("normal", ColorScheme.Value.NORMAL.getThemeValue());
     }
 
     @Test
-    public void getThemeValue_multiValue_replacesSpaceWithHyphen() {
+    void getThemeValue_multiValue_replacesSpaceWithHyphen() {
         assertEquals("light-dark",
                 ColorScheme.Value.LIGHT_DARK.getThemeValue());
         assertEquals("dark-light",
@@ -48,7 +48,7 @@ class ColorSchemeTest {
     }
 
     @Test
-    public void fromString_validValues_returnsCorrectEnum() {
+    void fromString_validValues_returnsCorrectEnum() {
         assertEquals(ColorScheme.Value.LIGHT,
                 ColorScheme.Value.fromString("light"));
         assertEquals(ColorScheme.Value.DARK,
@@ -62,7 +62,7 @@ class ColorSchemeTest {
     }
 
     @Test
-    public void fromString_nullOrEmpty_returnsNormal() {
+    void fromString_nullOrEmpty_returnsNormal() {
         assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString(null));
         assertEquals(ColorScheme.Value.NORMAL,
@@ -70,7 +70,7 @@ class ColorSchemeTest {
     }
 
     @Test
-    public void fromString_unrecognizedValue_returnsNormal() {
+    void fromString_unrecognizedValue_returnsNormal() {
         assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString("invalid"));
         assertEquals(ColorScheme.Value.NORMAL,
@@ -78,7 +78,7 @@ class ColorSchemeTest {
     }
 
     @Test
-    public void fromString_lightDark_returnsLightDarkNotSystem() {
+    void fromString_lightDark_returnsLightDarkNotSystem() {
         // Ensure backward compatibility: parsing "light dark" returns
         // LIGHT_DARK
         assertEquals(ColorScheme.Value.LIGHT_DARK,

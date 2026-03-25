@@ -80,7 +80,7 @@ class NavigationAccessControlTest {
     NavigationAccessChecker checker3;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         checker1 = Mockito.mock(NavigationAccessChecker.class);
         checker2 = Mockito.mock(NavigationAccessChecker.class);
         checker3 = Mockito.mock(NavigationAccessChecker.class);
@@ -89,7 +89,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_principalAndRoleCheckerProvidedToCheckers() {
+    void beforeEnter_principalAndRoleCheckerProvidedToCheckers() {
         mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker3, AccessCheckDecision.ALLOW);
 
@@ -109,7 +109,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_anonymous_allCheckersAllowAccess_allowNavigation() {
+    void beforeEnter_anonymous_allCheckersAllowAccess_allowNavigation() {
         mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker3, AccessCheckDecision.ALLOW);
@@ -118,7 +118,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_anonymous_allowAndNeutralCheckers_allowNavigation() {
+    void beforeEnter_anonymous_allowAndNeutralCheckers_allowNavigation() {
         mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -127,7 +127,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_anonymous_allCheckersDenyAccess_rerouteToNotFound() {
+    void beforeEnter_anonymous_allCheckersDenyAccess_rerouteToNotFound() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -140,7 +140,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_anonymous_denyAndNeutralCheckers_allowNavigation() {
+    void beforeEnter_anonymous_denyAndNeutralCheckers_allowNavigation() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -154,7 +154,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_anonymous_allCheckersNeutral_rerouteToNotFound() {
+    void beforeEnter_anonymous_allCheckersNeutral_rerouteToNotFound() {
         mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -167,7 +167,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_developmentMode_anonymous_mixedCheckersConsensus_exceptionThrown() {
+    void beforeEnter_developmentMode_anonymous_mixedCheckersConsensus_exceptionThrown() {
         mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -201,7 +201,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_productionMode_mixedCheckersConsensus_routeNotFoundWithNoReasonsExposed() {
+    void beforeEnter_productionMode_mixedCheckersConsensus_routeNotFoundWithNoReasonsExposed() {
         mockCheckerResult(checker1, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -222,7 +222,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_productionMode_allCheckersDenyAccess_routeNotFoundWithNoReasonsExposed() {
+    void beforeEnter_productionMode_allCheckersDenyAccess_routeNotFoundWithNoReasonsExposed() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -233,7 +233,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_productionMode_allCheckersNeutral_routeNotFoundWithNoReasonsExposed() {
+    void beforeEnter_productionMode_allCheckersNeutral_routeNotFoundWithNoReasonsExposed() {
         mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -244,7 +244,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_errorHandlingViewReroute_allCheckersNeutral_allowNavigation() {
+    void beforeEnter_errorHandlingViewReroute_allCheckersNeutral_allowNavigation() {
         mockCheckerResult(checker1, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker2, AccessCheckDecision.NEUTRAL);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -256,7 +256,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void setLoginViewStringCannotBeCalledAfterSettingClass() {
+    void setLoginViewStringCannotBeCalledAfterSettingClass() {
         assertThrows(IllegalStateException.class, () -> {
             accessControl.setLoginView(TestLoginView.class);
             accessControl.setLoginView("/foo");
@@ -264,7 +264,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void setLoginViewClassCannotBeCalledAfterSettingClass() {
+    void setLoginViewClassCannotBeCalledAfterSettingClass() {
         assertThrows(IllegalStateException.class, () -> {
             accessControl.setLoginView(TestLoginView.class);
             accessControl.setLoginView(
@@ -273,7 +273,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void setLoginViewStringCannotBeCalledAfterSettingString() {
+    void setLoginViewStringCannotBeCalledAfterSettingString() {
         assertThrows(IllegalStateException.class, () -> {
             accessControl.setLoginView("/foo");
             accessControl.setLoginView("/bar");
@@ -281,7 +281,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void setLoginViewClassCannotBeCalledAfterSettingString() {
+    void setLoginViewClassCannotBeCalledAfterSettingString() {
         assertThrows(IllegalStateException.class, () -> {
             accessControl.setLoginView("/foo");
             accessControl.setLoginView(TestLoginView.class);
@@ -289,7 +289,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void setLoginViewStringShouldNotThrowWithSameString() {
+    void setLoginViewStringShouldNotThrowWithSameString() {
         accessControl.setLoginView("/foo");
         accessControl.setLoginView("/foo");
         accessControl.setLoginView(new String("/foo"));
@@ -297,7 +297,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginView_accessToLoginViewAlwaysAllowed() {
+    void beforeEnter_loginView_accessToLoginViewAlwaysAllowed() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -313,7 +313,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginUrl_accessToLoginUrlAlwaysAllowed() {
+    void beforeEnter_loginUrl_accessToLoginUrlAlwaysAllowed() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -329,7 +329,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginView_anonymousUser_accessDenied_forwardToLoginView() {
+    void beforeEnter_loginView_anonymousUser_accessDenied_forwardToLoginView() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -340,7 +340,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginUrl_anonymousUser_accessDenied_forwardToLoginUrl() {
+    void beforeEnter_loginUrl_anonymousUser_accessDenied_forwardToLoginUrl() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -351,7 +351,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginView_authenticatedUser_accessDenied() {
+    void beforeEnter_loginView_authenticatedUser_accessDenied() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -362,7 +362,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_loginUrl_authenticatedUser_accessDenied() {
+    void beforeEnter_loginUrl_authenticatedUser_accessDenied() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -373,7 +373,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_redirectUrlStoredForAnonymousUsers() {
+    void beforeEnter_redirectUrlStoredForAnonymousUsers() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -394,7 +394,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_redirectUrlNotStoredForLoggedInUsers() {
+    void beforeEnter_redirectUrlNotStoredForLoggedInUsers() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -412,7 +412,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_disabledNavigationControl_alwaysPasses_rejectsWhenEnabled() {
+    void beforeEnter_disabledNavigationControl_alwaysPasses_rejectsWhenEnabled() {
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -436,7 +436,7 @@ class NavigationAccessControlTest {
     }
 
     @Test
-    public void beforeEnter_noCheckersConfigured_alwaysPasses() {
+    void beforeEnter_noCheckersConfigured_alwaysPasses() {
         accessControl = new NavigationAccessControl(List.of());
         TestNavigationResult result = checkAccess(AnonymousAllowedView.class,
                 false, false, false);

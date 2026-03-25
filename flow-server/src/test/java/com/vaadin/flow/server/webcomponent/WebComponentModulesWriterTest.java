@@ -48,7 +48,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_canCallMethodReflectively_js() {
+    void directoryWriter_generateWebComponentsToDirectory_canCallMethodReflectively_js() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
@@ -61,7 +61,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectoryUsingFactory_canCallMethodReflectively_js() {
+    void directoryWriter_generateWebComponentsToDirectoryUsingFactory_canCallMethodReflectively_js() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
@@ -74,7 +74,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_zeroExportersCreatesZeroFiles() {
+    void directoryWriter_generateWebComponentsToDirectory_zeroExportersCreatesZeroFiles() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class, new HashSet<>(),
@@ -84,7 +84,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_nonWriterClassThrows() {
+    void directoryWriter_generateWebComponentsToDirectory_nonWriterClassThrows() {
         var ex = assertThrows(IllegalArgumentException.class, () -> {
             WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(MyComponent.class,
@@ -95,7 +95,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_nullWriterThrows() {
+    void directoryWriter_generateWebComponentsToDirectory_nullWriterThrows() {
         assertThrows(NullPointerException.class, () -> {
             WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(null, new HashSet<>(),
@@ -104,7 +104,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_nullExporterSetThrows() {
+    void directoryWriter_generateWebComponentsToDirectory_nullExporterSetThrows() {
         assertThrows(NullPointerException.class, () -> {
             WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(
@@ -114,7 +114,7 @@ class WebComponentModulesWriterTest {
     }
 
     @Test
-    public void directoryWriter_generateWebComponentsToDirectory_nullOutputDirectoryThrows() {
+    void directoryWriter_generateWebComponentsToDirectory_nullOutputDirectoryThrows() {
         assertThrows(NullPointerException.class, () -> {
             WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(

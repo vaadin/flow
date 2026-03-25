@@ -38,8 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ElementStateProviderDeserializationTest {
 
     @Test
-    public void shouldRemoveChildComponentFromDeserializedParent()
-            throws Exception {
+    void shouldRemoveChildComponentFromDeserializedParent() throws Exception {
 
         TestParentComponent parent = (TestParentComponent) deserialize(
                 serialize(new TestParentComponent(new TestChildComponent())));

@@ -64,7 +64,7 @@ class RouteConfigurationTest {
     private VaadinServletContext vaadinContext;
 
     @BeforeEach
-    public void init() {
+    void init() {
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
@@ -108,7 +108,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void routeConfigurationUpdateLock_configurationIsUpdatedOnlyAfterUnlock() {
+    void routeConfigurationUpdateLock_configurationIsUpdatedOnlyAfterUnlock() {
         CountDownLatch waitReaderThread = new CountDownLatch(1);
         CountDownLatch waitUpdaterThread = new CountDownLatch(2);
 
@@ -156,7 +156,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void isRouteRegistered_returnsCorrectly() {
+    void isRouteRegistered_returnsCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));
 
@@ -176,7 +176,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void routeConfiguration_getMethodsReturnCorrectly() {
+    void routeConfiguration_getMethodsReturnCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));
 
@@ -262,7 +262,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void routeConfiguration_routeTemplatesWorkCorrectly() {
+    void routeConfiguration_routeTemplatesWorkCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));
 
@@ -319,7 +319,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void addListenerToApplicationScoped_noEventForSessionChange() {
+    void addListenerToApplicationScoped_noEventForSessionChange() {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
         Mockito.when(vaadinService.getServlet()).thenReturn(servlet);
@@ -362,7 +362,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void addListenerToSessionScoped_alsoEventsForApplicationScope() {
+    void addListenerToSessionScoped_alsoEventsForApplicationScope() {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
         Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
         Mockito.when(vaadinService.getServlet()).thenReturn(servlet);
@@ -406,7 +406,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void configurationForSessionRegistry_buildsWithCorrectRegistry() {
+    void configurationForSessionRegistry_buildsWithCorrectRegistry() {
         SessionRouteRegistry registry = getRegistry(session);
         registry.update(() -> {
             registry.setRoute("", MyRoute.class, Collections.emptyList());
@@ -428,7 +428,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void configurationForApplicationScope_buildsWithCorrectRegistry() {
+    void configurationForApplicationScope_buildsWithCorrectRegistry() {
         registry.update(() -> {
             registry.setRoute("", MyRoute.class, Collections.emptyList());
             registry.setRoute("path", Secondary.class, Collections.emptyList());
@@ -453,7 +453,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void setRoutes_allExpectedRoutesAreSet() {
+    void setRoutes_allExpectedRoutesAreSet() {
         RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -487,7 +487,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void registeredRouteWithAlias_allPathsAreRegistered() {
+    void registeredRouteWithAlias_allPathsAreRegistered() {
         RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -504,7 +504,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void routeWithParent_parentsAreCollectedCorrectly() {
+    void routeWithParent_parentsAreCollectedCorrectly() {
         RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -521,7 +521,7 @@ class RouteConfigurationTest {
     }
 
     @Test
-    public void parentLayoutAnnotatedClass_parentsCorrecltCollected() {
+    void parentLayoutAnnotatedClass_parentsCorrecltCollected() {
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);

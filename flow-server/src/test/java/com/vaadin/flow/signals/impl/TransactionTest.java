@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TransactionTest extends SignalTestBase {
+class TransactionTest extends SignalTestBase {
 
     @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
