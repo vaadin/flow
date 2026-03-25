@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
@@ -865,5 +867,38 @@ class EffectTest extends SignalTestBase {
         assertEquals(2, backgroundChangesB.size());
         assertTrue(backgroundChangesB.get(1),
                 "Change from another UI should be background");
+    }
+
+    @Test
+    void noOwnerUI_fallsBackToVaadinRequestCheck() {
+        VaadinRequest mockRequest = Mockito.mock(VaadinRequest.class);
+        CurrentInstance.set(VaadinRequest.class, mockRequest);
+
+        ValueSignal<String> signal = new ValueSignal<>("hello");
+        List<Boolean> backgroundChanges = new ArrayList<>();
+
+        // Effect without ownerUI (like Signal.unboundEffect)
+        new Effect(ctx -> {
+            signal.get();
+            backgroundChanges.add(ctx.isBackgroundChange());
+        }, Runnable::run);
+
+        assertEquals(1, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(0));
+
+        // Change with VaadinRequest present — not background
+        signal.set("with request");
+
+        assertEquals(2, backgroundChanges.size());
+        assertFalse(backgroundChanges.get(1),
+                "Change with VaadinRequest should not be background");
+
+        // Clear VaadinRequest — background
+        CurrentInstance.set(VaadinRequest.class, null);
+        signal.set("without request");
+
+        assertEquals(3, backgroundChanges.size());
+        assertTrue(backgroundChanges.get(2),
+                "Change without VaadinRequest should be background");
     }
 }

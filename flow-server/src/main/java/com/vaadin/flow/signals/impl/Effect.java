@@ -61,7 +61,7 @@ public class Effect implements Serializable {
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
-    private transient volatile @Nullable UI ownerUI;
+    private @Nullable UI ownerUI;
 
     private boolean firstRun = true;
     private volatile boolean invalidatedFromBackground = false;
@@ -216,9 +216,7 @@ public class Effect implements Serializable {
         }
 
         if (ownerUI != null) {
-            UI currentUI = UI.getCurrent();
-            invalidatedFromBackground = currentUI == null
-                    || currentUI != ownerUI;
+            invalidatedFromBackground = UI.getCurrent() != ownerUI;
         } else {
             invalidatedFromBackground = VaadinRequest.getCurrent() == null;
         }
