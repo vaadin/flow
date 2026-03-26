@@ -113,6 +113,11 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @CssImport("./foo.css")
+    @CssImport("./bar.css")
+    public static class MultiCssImportAppShell implements AppShellConfigurator {
+    }
+
+    @CssImport("./foo.css")
     public static class CssImportExporter
             extends WebComponentExporter<FooCssImport> {
         public CssImportExporter() {
@@ -432,6 +437,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // AppShell and @Theme CSS imports are expected to be generated in
         // the dedicated file.
         List<String> expectedAppShellImports = List.of(
+                "import \\{ injectGlobalCss \\}.*",
+                "import \\{ css, unsafeCSS, registerStyles \\}.*",
                 "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';",
                 "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
 
@@ -931,6 +938,19 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> lines = updater.webComponentImports;
         assertNotNull(lines,
                 "Web component imports should have been generated");
+        assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    void generatedAppShellImports_importsAreOnTopBeforeOtherInstructions()
+            throws Exception {
+        Class<?>[] testClasses = { MultiCssImportAppShell.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.getOutput().get(updater.appShellImports);
+        assertNotNull(lines, "App shell imports should have been generated");
         assertImportsBeforeNonImportLines(lines);
     }
 
