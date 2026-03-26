@@ -305,6 +305,8 @@ public class SharedListSignal<T extends @Nullable Object>
     /**
      * Inserts all values as the last entries in this list. All inserts are
      * performed within a single transaction for atomicity.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      *
      * @param values
      *            the values to insert, not <code>null</code>
@@ -320,6 +322,8 @@ public class SharedListSignal<T extends @Nullable Object>
      * Inserts all values as the first entries in this list, preserving the
      * order of the provided collection. All inserts are performed within a
      * single transaction for atomicity.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      *
      * @param values
      *            the values to insert, not <code>null</code>
@@ -339,6 +343,8 @@ public class SharedListSignal<T extends @Nullable Object>
      * Each element is inserted immediately after the previously inserted
      * element, so the final order matches the iteration order of the provided
      * collection.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      *
      * @param values
      *            the values to insert, not <code>null</code>

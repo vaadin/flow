@@ -213,6 +213,8 @@ public class ListSignal<T extends @Nullable Object>
     /**
      * Inserts all values as the last entries in this list. All entries are
      * added with a single change notification.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      *
      * @param values
      *            the values to insert, not <code>null</code>
@@ -237,6 +239,8 @@ public class ListSignal<T extends @Nullable Object>
      * Inserts all values as the first entries in this list, preserving the
      * order of the provided collection. All entries are added with a single
      * change notification.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      *
      * @param values
      *            the values to insert, not <code>null</code>
@@ -250,6 +254,8 @@ public class ListSignal<T extends @Nullable Object>
      * Inserts all values at the given index in this list, preserving the order
      * of the provided collection. All entries are added with a single change
      * notification.
+     * <p>
+     * Individual null values are permitted if the element type allows null.
      * <p>
      * <b>Note:</b> This method should only be used in non-concurrent cases
      * where the list structure is not being modified by other threads. The
