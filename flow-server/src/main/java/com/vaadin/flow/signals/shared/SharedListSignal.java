@@ -313,18 +313,7 @@ public class SharedListSignal<T extends @Nullable Object>
      */
     public List<InsertOperation<SharedValueSignal<T>>> insertAllLast(
             Collection<? extends T> values) {
-        Objects.requireNonNull(values, "Values must not be null");
-        if (values.isEmpty()) {
-            return List.of();
-        }
-        return Objects.requireNonNull(Signal.runInTransaction(() -> {
-            List<InsertOperation<SharedValueSignal<T>>> ops = new ArrayList<>(
-                    values.size());
-            for (T value : values) {
-                ops.add(insertLast(value));
-            }
-            return Collections.unmodifiableList(ops);
-        }).returnValue());
+        return insertAllAt(values, ListPosition.last());
     }
 
     /**
@@ -339,22 +328,7 @@ public class SharedListSignal<T extends @Nullable Object>
      */
     public List<InsertOperation<SharedValueSignal<T>>> insertAllFirst(
             Collection<? extends T> values) {
-        Objects.requireNonNull(values, "Values must not be null");
-        if (values.isEmpty()) {
-            return List.of();
-        }
-        return Objects.requireNonNull(Signal.runInTransaction(() -> {
-            List<InsertOperation<SharedValueSignal<T>>> ops = new ArrayList<>(
-                    values.size());
-            List<? extends T> valueList = new ArrayList<>(values);
-            // Insert in reverse order so first value ends up first
-            for (int i = valueList.size() - 1; i >= 0; i--) {
-                ops.add(insertFirst(valueList.get(i)));
-            }
-            // Reverse ops to match input order
-            Collections.reverse(ops);
-            return Collections.unmodifiableList(ops);
-        }).returnValue());
+        return insertAllAt(values, ListPosition.first());
     }
 
     /**
