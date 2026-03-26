@@ -518,6 +518,18 @@ class SharedListSignalTest extends SignalTestBase {
     }
 
     @Test
+    void insertAllFirst_emptyCollection_noChange() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        List<InsertOperation<SharedValueSignal<String>>> ops = signal
+                .insertAllFirst(List.of());
+
+        assertTrue(ops.isEmpty());
+        assertChildren(signal, "existing");
+    }
+
+    @Test
     void insertAllFirst_multipleValues_valuesAtStart() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertLast("existing");
