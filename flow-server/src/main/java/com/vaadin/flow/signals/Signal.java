@@ -149,8 +149,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      */
-    static Registration effect(Component owner,
-            EffectAction effectFunction) {
+    static Registration effect(Component owner, EffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
 
