@@ -202,6 +202,14 @@ public class ListSignal<T extends @Nullable Object>
         return entry;
     }
 
+    private List<ValueSignal<T>> createSignals(Collection<? extends T> values) {
+        List<ValueSignal<T>> signals = new ArrayList<>(values.size());
+        for (T value : values) {
+            signals.add(new ValueSignal<>(value, equalityChecker));
+        }
+        return signals;
+    }
+
     /**
      * Inserts all values as the last entries in this list. All entries are
      * added with a single change notification.
@@ -218,18 +226,8 @@ public class ListSignal<T extends @Nullable Object>
         lock();
         try {
             checkPreconditions();
-            List<ValueSignal<T>> currentEntries = Objects
-                    .requireNonNull(getSignalValue());
-            List<ValueSignal<T>> newEntries = new ArrayList<>(currentEntries);
-            List<ValueSignal<T>> created = new ArrayList<>(values.size());
-            for (T value : values) {
-                ValueSignal<T> entry = new ValueSignal<>(value,
-                        equalityChecker);
-                newEntries.add(entry);
-                created.add(entry);
-            }
-            setSignalValue(Collections.unmodifiableList(newEntries));
-            return Collections.unmodifiableList(created);
+            return insertAllAtInternal(
+                    Objects.requireNonNull(getSignalValue()).size(), values);
         } finally {
             unlock();
         }
@@ -252,18 +250,7 @@ public class ListSignal<T extends @Nullable Object>
         lock();
         try {
             checkPreconditions();
-            List<ValueSignal<T>> currentEntries = Objects
-                    .requireNonNull(getSignalValue());
-            List<ValueSignal<T>> created = new ArrayList<>(values.size());
-            for (T value : values) {
-                created.add(new ValueSignal<>(value, equalityChecker));
-            }
-            List<ValueSignal<T>> newEntries = new ArrayList<>(
-                    created.size() + currentEntries.size());
-            newEntries.addAll(created);
-            newEntries.addAll(currentEntries);
-            setSignalValue(Collections.unmodifiableList(newEntries));
-            return Collections.unmodifiableList(created);
+            return insertAllAtInternal(0, values);
         } finally {
             unlock();
         }
@@ -303,17 +290,21 @@ public class ListSignal<T extends @Nullable Object>
                 throw new IndexOutOfBoundsException(
                         "Index: " + index + ", Size: " + currentEntries.size());
             }
-            List<ValueSignal<T>> created = new ArrayList<>(values.size());
-            for (T value : values) {
-                created.add(new ValueSignal<>(value, equalityChecker));
-            }
-            List<ValueSignal<T>> newEntries = new ArrayList<>(currentEntries);
-            newEntries.addAll(index, created);
-            setSignalValue(Collections.unmodifiableList(newEntries));
-            return Collections.unmodifiableList(created);
+            return insertAllAtInternal(index, values);
         } finally {
             unlock();
         }
+    }
+
+    private List<ValueSignal<T>> insertAllAtInternal(int index,
+            Collection<? extends T> values) {
+        assertLockHeld();
+        List<ValueSignal<T>> created = createSignals(values);
+        List<ValueSignal<T>> newEntries = new ArrayList<>(
+                Objects.requireNonNull(getSignalValue()));
+        newEntries.addAll(index, created);
+        setSignalValue(Collections.unmodifiableList(newEntries));
+        return Collections.unmodifiableList(created);
     }
 
     /**
