@@ -140,8 +140,6 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
      *
-     * @param <C>
-     *            the type of the component
      * @param owner
      *            the owner component for which the effect is applied, must not
      *            be <code>null</code>
@@ -151,7 +149,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      */
-    static <C extends Component> Registration effect(C owner,
+    static Registration effect(Component owner,
             EffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
@@ -174,8 +172,6 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * });
      * </pre>
      *
-     * @param <C>
-     *            the type of the component
      * @param owner
      *            the owner component for which the effect is applied, must not
      *            be <code>null</code>
@@ -185,7 +181,7 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      */
-    static <C extends Component> Registration effect(C owner,
+    static Registration effect(Component owner,
             ContextualEffectAction effectFunction) {
         return ElementEffect.effect(owner.getElement(), effectFunction);
     }
