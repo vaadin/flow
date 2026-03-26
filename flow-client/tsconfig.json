@@ -4,7 +4,7 @@
     "inlineSources": true,
     "module": "esNext",
     "target": "es2023",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
@@ -13,6 +13,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "experimentalDecorators": true,
+    "rootDir": "src/main/frontend",
     "outDir": "target/classes/META-INF/frontend",
     "declaration": true,
     "skipLibCheck": true
