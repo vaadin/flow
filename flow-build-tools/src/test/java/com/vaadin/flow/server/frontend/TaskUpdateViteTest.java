@@ -252,13 +252,11 @@ class TaskUpdateViteTest {
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        assertTrue(
-                template.contains(
-                        "import serviceWorkerPlugin from './build/plugins/vite-plugin-service-worker'"),
+        assertTrue(template.contains(
+                "import serviceWorkerPlugin from './build/plugins/vite-plugin-service-worker'"),
                 "serviceWorkerPlugin import should be included when PWA offline is enabled");
-        assertTrue(
-                template.contains(
-                        "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),"),
+        assertTrue(template.contains(
+                "serviceWorkerPlugin({ srcPath: settings.clientServiceWorkerSource }),"),
                 "serviceWorkerPlugin should be used when PWA offline is enabled");
     }
 

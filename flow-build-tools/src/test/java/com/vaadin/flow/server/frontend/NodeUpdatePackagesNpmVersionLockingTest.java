@@ -170,8 +170,7 @@ class NodeUpdatePackagesNpmVersionLockingTest extends NodeUpdateTestUtil {
         nestedOverride.put("nested-dep", "1.0.0");
         overridesSection.set("parent-package", nestedOverride);
         // Also add a regular string override
-        overridesSection.put(TEST_DEPENDENCY,
-                "$" + TEST_DEPENDENCY);
+        overridesSection.put(TEST_DEPENDENCY, "$" + TEST_DEPENDENCY);
         packageJson.set(OVERRIDES, overridesSection);
 
         packageUpdater.generateVersionsJson(packageJson);
