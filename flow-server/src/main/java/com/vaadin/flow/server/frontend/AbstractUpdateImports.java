@@ -340,10 +340,12 @@ abstract class AbstractUpdateImports implements Runnable {
 
     // Move all import lines to the top, before any non-import lines
     private static void moveImportsToTop(List<String> lines) {
-        List<String> imports = new ArrayList<>(lines);
-        imports.removeIf(line -> !line.startsWith("import "));
-        lines.removeIf(line -> line.startsWith("import "));
-        lines.addAll(0, imports);
+        if (!lines.isEmpty()) {
+            List<String> imports = new ArrayList<>(lines);
+            imports.removeIf(line -> !line.startsWith("import "));
+            lines.removeIf(line -> line.startsWith("import "));
+            lines.addAll(0, imports);
+        }
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -486,6 +488,7 @@ abstract class AbstractUpdateImports implements Runnable {
         cssLineOffset += appShellCssLines.size();
         if (!appShellCssLines.isEmpty()) {
             appShellLines.add(IMPORT_INJECT);
+            appShellLines.add(THEMABLE_MIXIN_IMPORT);
             appShellLines.addAll(appShellCssLines);
         }
         if (FrontendUtils.isTailwindCssEnabled(options)) {
@@ -497,6 +500,7 @@ abstract class AbstractUpdateImports implements Runnable {
                     + "/" + FrontendUtils.TAILWIND_JS;
             appShellLines.add(String.format(IMPORT_TEMPLATE, importPath));
         }
+        moveImportsToTop(appShellLines);
         files.put(appShellImports, appShellLines);
         files.put(appShellDefinitions, Collections.singletonList("export {}"));
 
