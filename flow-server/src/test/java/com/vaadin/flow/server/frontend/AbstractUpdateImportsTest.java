@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,6 +122,20 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         @Override
         public void configureInstance(WebComponent<FooCssImport> webComponent,
                 FooCssImport component) {
+        }
+    }
+
+    @CssImport(value = "./foo.css", themeFor = "something")
+    public static class ThemeForCssImportExporter
+            extends WebComponentExporter<ThemeForCssImport> {
+        public ThemeForCssImportExporter() {
+            super("themefor-css-import-exporter");
+        }
+
+        @Override
+        public void configureInstance(
+                WebComponent<ThemeForCssImport> webComponent,
+                ThemeForCssImport component) {
         }
     }
 
@@ -515,19 +531,37 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 updater.webComponentImports.stream()
                         .noneMatch(lumoGlobalsMatcher));
 
-        // Check that imports other than lumo globals are the same
-        flowImports.removeAll(updater.webComponentImports);
+        // Compare lines ignoring CSS variable index differences caused
+        // by deduplication across merged output files
+        Set<String> flowNormalized = normalizeCssIndices(flowImports);
+        Set<String> wcNormalized = normalizeCssIndices(
+                updater.webComponentImports);
 
-        // webComponent only has injectGlobalWebcomponentCss and not
-        // injectGlobalCss'
-        Predicate<String> injectGlobal = Pattern.compile("injectGlobalCss.*")
-                .asPredicate();
-        flowImports.removeIf(injectGlobal);
+        Set<String> difference = new LinkedHashSet<>(flowNormalized);
+        difference.removeAll(wcNormalized);
+        // Remove injectGlobalCss (webComponent uses
+        // injectGlobalWebcomponentCss instead)
+        difference.removeIf(Pattern.compile("injectGlobalCss.*").asPredicate());
 
+        List<String> unexpected = difference.stream()
+                .filter(lumoGlobalsMatcher.negate()).toList();
         assertTrue(
-                "Flow and web-component imports must be the same, except for lumo globals",
-                flowImports.stream().allMatch(lumoGlobalsMatcher));
+                "Flow and web-component imports must be the same, except for lumo globals. Unexpected: "
+                        + unexpected,
+                unexpected.isEmpty());
+    }
 
+    private Set<String> normalizeCssIndices(List<String> lines) {
+        Set<String> normalized = new LinkedHashSet<>();
+        for (String line : lines) {
+            if (!line.isBlank()) {
+                normalized.add(line
+                        .replaceAll("\\$cssFromFile_\\d+", "\\$cssFromFile_N")
+                        .replaceAll("\\$css_\\d+", "\\$css_N")
+                        .replaceAll("flow_css_mod_\\d+", "flow_css_mod_N"));
+            }
+        }
+        return normalized;
     }
 
     @Test
@@ -913,6 +947,52 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertNotNull("Web component imports should have been generated",
                 lines);
         assertImportsBeforeNonImportLines(lines);
+    }
+
+    @Test
+    public void duplicateCssImportInWebComponentAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { CssImportExporter.class, FooCssImport.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        Assert.assertNotNull("Web component imports should have been generated",
+                lines);
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
+    }
+
+    @Test
+    public void duplicateThemeForCssImportInWebComponentAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { ThemeForCssImportExporter.class,
+                ThemeForCssImport.class, UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        Assert.assertNotNull("Web component imports should have been generated",
+                lines);
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
+        assertOnce("registerStyles('something'", lines);
+    }
+
+    @Test
+    public void duplicateCssImportInAppShellAndEager_importedOnlyOnce()
+            throws Exception {
+        Class<?>[] testClasses = { ThemeCssImport.class, FooCssImport.class,
+                CssImportExporter.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        List<String> lines = updater.webComponentImports;
+        Assert.assertNotNull("Web component imports should have been generated",
+                lines);
+        assertOnce("from 'Frontend/foo.css?inline';", lines);
     }
 
     private void assertImportsBeforeNonImportLines(List<String> lines) {
