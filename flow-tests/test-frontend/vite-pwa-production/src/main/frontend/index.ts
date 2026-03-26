@@ -1,5 +1,5 @@
 import './home-view';
-import './about-view.ts';
+import './about-view';
 import { Router } from '@vaadin/router';
 
 const router = new Router(document.querySelector('#outlet'));
