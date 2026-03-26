@@ -358,6 +358,44 @@ public class SharedListSignal<T extends @Nullable Object>
     }
 
     /**
+     * Inserts all values at the given position in this list, preserving the
+     * order of the provided collection. All inserts are performed within a
+     * single transaction for atomicity.
+     * <p>
+     * Each element is inserted immediately after the previously inserted
+     * element, so the final order matches the iteration order of the provided
+     * collection.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @param at
+     *            the position at which to insert the first value, not
+     *            <code>null</code>
+     * @return an unmodifiable list of insert operations for the inserted
+     *         entries
+     */
+    public List<InsertOperation<SharedValueSignal<T>>> insertAllAt(
+            Collection<? extends T> values, ListPosition at) {
+        Objects.requireNonNull(values, "Values must not be null");
+        Objects.requireNonNull(at, "Position must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return Objects.requireNonNull(Signal.runInTransaction(() -> {
+            List<InsertOperation<SharedValueSignal<T>>> ops = new ArrayList<>(
+                    values.size());
+            ListPosition currentPos = at;
+            for (T value : values) {
+                InsertOperation<SharedValueSignal<T>> op = insertAt(value,
+                        currentPos);
+                ops.add(op);
+                currentPos = ListPosition.after(op.signal());
+            }
+            return Collections.unmodifiableList(ops);
+        }).returnValue());
+    }
+
+    /**
      * Moves the given child signal to the given position in this list. The
      * operation fails if the child is not a child or if this list of if
      * position is not valid at the time when the operation is processed.

@@ -505,6 +505,19 @@ class SharedListSignalTest extends SignalTestBase {
     }
 
     @Test
+    void insertAllAt_validPosition_valuesInserted() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertLast("first").signal();
+        signal.insertLast("last");
+
+        List<InsertOperation<SharedValueSignal<String>>> ops = signal
+                .insertAllAt(List.of("a", "b"), ListPosition.after(first));
+
+        assertEquals(2, ops.size());
+        assertChildren(signal, "first", "a", "b", "last");
+    }
+
+    @Test
     void insertAllFirst_multipleValues_valuesAtStart() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertLast("existing");
