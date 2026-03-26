@@ -16,6 +16,7 @@
 package com.vaadin.flow.signals.local;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -199,6 +200,120 @@ public class ListSignal<T extends @Nullable Object>
         newEntries.add(index, entry);
         setSignalValue(Collections.unmodifiableList(newEntries));
         return entry;
+    }
+
+    /**
+     * Inserts all values as the last entries in this list. All entries are
+     * added with a single change notification.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return an unmodifiable list of signals for the inserted entries
+     */
+    public List<ValueSignal<T>> insertAllLast(Collection<? extends T> values) {
+        Objects.requireNonNull(values, "Values must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> currentEntries = Objects
+                    .requireNonNull(getSignalValue());
+            List<ValueSignal<T>> newEntries = new ArrayList<>(currentEntries);
+            List<ValueSignal<T>> created = new ArrayList<>(values.size());
+            for (T value : values) {
+                ValueSignal<T> entry = new ValueSignal<>(value,
+                        equalityChecker);
+                newEntries.add(entry);
+                created.add(entry);
+            }
+            setSignalValue(Collections.unmodifiableList(newEntries));
+            return Collections.unmodifiableList(created);
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
+     * Inserts all values as the first entries in this list, preserving the
+     * order of the provided collection. All entries are added with a single
+     * change notification.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return an unmodifiable list of signals for the inserted entries
+     */
+    public List<ValueSignal<T>> insertAllFirst(Collection<? extends T> values) {
+        Objects.requireNonNull(values, "Values must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> currentEntries = Objects
+                    .requireNonNull(getSignalValue());
+            List<ValueSignal<T>> created = new ArrayList<>(values.size());
+            for (T value : values) {
+                created.add(new ValueSignal<>(value, equalityChecker));
+            }
+            List<ValueSignal<T>> newEntries = new ArrayList<>(
+                    created.size() + currentEntries.size());
+            newEntries.addAll(created);
+            newEntries.addAll(currentEntries);
+            setSignalValue(Collections.unmodifiableList(newEntries));
+            return Collections.unmodifiableList(created);
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
+     * Inserts all values at the given index in this list, preserving the order
+     * of the provided collection. All entries are added with a single change
+     * notification.
+     * <p>
+     * <b>Note:</b> This method should only be used in non-concurrent cases
+     * where the list structure is not being modified by other threads. The
+     * index is sensitive to concurrent modifications and may lead to unexpected
+     * results if the list is modified between determining the index and calling
+     * this method.
+     *
+     * @param index
+     *            the index at which to insert (0 for first, size() for last)
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return an unmodifiable list of signals for the inserted entries
+     * @throws IndexOutOfBoundsException
+     *             if index is negative or greater than size()
+     */
+    public List<ValueSignal<T>> insertAllAt(int index,
+            Collection<? extends T> values) {
+        Objects.requireNonNull(values, "Values must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        lock();
+        try {
+            checkPreconditions();
+            List<ValueSignal<T>> currentEntries = Objects
+                    .requireNonNull(getSignalValue());
+            if (index < 0 || index > currentEntries.size()) {
+                throw new IndexOutOfBoundsException(
+                        "Index: " + index + ", Size: " + currentEntries.size());
+            }
+            List<ValueSignal<T>> created = new ArrayList<>(values.size());
+            for (T value : values) {
+                created.add(new ValueSignal<>(value, equalityChecker));
+            }
+            List<ValueSignal<T>> newEntries = new ArrayList<>(currentEntries);
+            newEntries.addAll(index, created);
+            setSignalValue(Collections.unmodifiableList(newEntries));
+            return Collections.unmodifiableList(created);
+        } finally {
+            unlock();
+        }
     }
 
     /**

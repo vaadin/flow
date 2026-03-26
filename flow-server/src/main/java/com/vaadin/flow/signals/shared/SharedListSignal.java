@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.signals.shared;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -297,6 +300,61 @@ public class SharedListSignal<T extends @Nullable Object>
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
                         toJson(value), Objects.requireNonNull(at)),
                 this::child);
+    }
+
+    /**
+     * Inserts all values as the last entries in this list. All inserts are
+     * performed within a single transaction for atomicity.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return an unmodifiable list of insert operations for the inserted
+     *         entries
+     */
+    public List<InsertOperation<SharedValueSignal<T>>> insertAllLast(
+            Collection<? extends T> values) {
+        Objects.requireNonNull(values, "Values must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return Objects.requireNonNull(Signal.runInTransaction(() -> {
+            List<InsertOperation<SharedValueSignal<T>>> ops = new ArrayList<>(
+                    values.size());
+            for (T value : values) {
+                ops.add(insertLast(value));
+            }
+            return Collections.unmodifiableList(ops);
+        }).returnValue());
+    }
+
+    /**
+     * Inserts all values as the first entries in this list, preserving the
+     * order of the provided collection. All inserts are performed within a
+     * single transaction for atomicity.
+     *
+     * @param values
+     *            the values to insert, not <code>null</code>
+     * @return an unmodifiable list of insert operations for the inserted
+     *         entries
+     */
+    public List<InsertOperation<SharedValueSignal<T>>> insertAllFirst(
+            Collection<? extends T> values) {
+        Objects.requireNonNull(values, "Values must not be null");
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return Objects.requireNonNull(Signal.runInTransaction(() -> {
+            List<InsertOperation<SharedValueSignal<T>>> ops = new ArrayList<>(
+                    values.size());
+            List<? extends T> valueList = new ArrayList<>(values);
+            // Insert in reverse order so first value ends up first
+            for (int i = valueList.size() - 1; i >= 0; i--) {
+                ops.add(insertFirst(valueList.get(i)));
+            }
+            // Reverse ops to match input order
+            Collections.reverse(ops);
+            return Collections.unmodifiableList(ops);
+        }).returnValue());
     }
 
     /**

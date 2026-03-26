@@ -464,6 +464,58 @@ class SharedListSignalTest extends SignalTestBase {
         assertThrows(IllegalStateException.class, () -> stream.toList());
     }
 
+    @Test
+    void insertAllLast_multipleValues_valuesAppended() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        List<InsertOperation<SharedValueSignal<String>>> ops = signal
+                .insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(3, ops.size());
+        assertChildren(signal, "existing", "a", "b", "c");
+    }
+
+    @Test
+    void insertAllLast_emptyCollection_noChange() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        List<InsertOperation<SharedValueSignal<String>>> ops = signal
+                .insertAllLast(List.of());
+
+        assertTrue(ops.isEmpty());
+        assertChildren(signal, "existing");
+    }
+
+    @Test
+    void insertAllLast_singleNotification() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+
+        AtomicInteger changeCount = new AtomicInteger();
+        Usage usage = UsageTracker.track(signal::get);
+        usage.onNextChange(initial -> {
+            changeCount.incrementAndGet();
+            return true;
+        });
+
+        signal.insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(1, changeCount.get());
+    }
+
+    @Test
+    void insertAllFirst_multipleValues_valuesAtStart() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        List<InsertOperation<SharedValueSignal<String>>> ops = signal
+                .insertAllFirst(List.of("a", "b", "c"));
+
+        assertEquals(3, ops.size());
+        assertChildren(signal, "a", "b", "c", "existing");
+    }
+
     static void assertChildren(SharedListSignal<String> signal,
             String... expectedValue) {
         List<String> value = signal.peek().stream().map(SharedValueSignal::peek)
