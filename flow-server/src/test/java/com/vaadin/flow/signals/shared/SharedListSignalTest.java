@@ -529,6 +529,30 @@ class SharedListSignalTest extends SignalTestBase {
         assertChildren(signal, "a", "b", "c", "existing");
     }
 
+    @Test
+    void insertAllLast_insideExplicitTransaction_valuesAppended() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        Signal.runInTransaction(() -> {
+            signal.insertAllLast(List.of("a", "b"));
+        });
+
+        assertChildren(signal, "existing", "a", "b");
+    }
+
+    @Test
+    void insertAllFirst_insideExplicitTransaction_valuesAtStart() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        Signal.runInTransaction(() -> {
+            signal.insertAllFirst(List.of("a", "b"));
+        });
+
+        assertChildren(signal, "a", "b", "existing");
+    }
+
     static void assertChildren(SharedListSignal<String> signal,
             String... expectedValue) {
         List<String> value = signal.peek().stream().map(SharedValueSignal::peek)
