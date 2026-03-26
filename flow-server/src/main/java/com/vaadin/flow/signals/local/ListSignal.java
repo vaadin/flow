@@ -243,17 +243,7 @@ public class ListSignal<T extends @Nullable Object>
      * @return an unmodifiable list of signals for the inserted entries
      */
     public List<ValueSignal<T>> insertAllFirst(Collection<? extends T> values) {
-        Objects.requireNonNull(values, "Values must not be null");
-        if (values.isEmpty()) {
-            return List.of();
-        }
-        lock();
-        try {
-            checkPreconditions();
-            return insertAllAtInternal(0, values);
-        } finally {
-            unlock();
-        }
+        return insertAllAt(0, values);
     }
 
     /**
