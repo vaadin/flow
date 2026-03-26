@@ -16,13 +16,16 @@
 
 package com.vaadin.flow.plugin.maven;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +51,7 @@ import com.vaadin.flow.utils.FlowFileUtils;
 /**
  * Helper class to deal with classloading of Flow plugin mojos.
  */
-public final class Reflector {
+public final class Reflector implements Closeable {
 
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
     private static final Set<String> DEPENDENCIES_GROUP_EXCLUSIONS = Set.of(
@@ -60,6 +63,7 @@ public final class Reflector {
             "org.zeroturnaround:zt-exec:jar");
     private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
             Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
+    private static final Cleaner CLEANER = Cleaner.create();
 
     private final URLClassLoader isolatedClassLoader;
     private List<String> dependenciesIncompatibility;
@@ -73,6 +77,17 @@ public final class Reflector {
      */
     public Reflector(URLClassLoader isolatedClassLoader) {
         this.isolatedClassLoader = isolatedClassLoader;
+        // Best-effort cleanup: close classloader when Reflector is GC'd.
+        // Under mvnd, abandoned Reflectors from previous builds leak
+        // URLClassLoader handles until GC collects them.
+        URLClassLoader cl = isolatedClassLoader;
+        CLEANER.register(this, () -> {
+            try {
+                cl.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        });
     }
 
     private Reflector(URLClassLoader isolatedClassLoader, Object classFinder,
@@ -165,6 +180,19 @@ public final class Reflector {
      */
     public URL getResource(String name) {
         return isolatedClassLoader.getResource(name);
+    }
+
+    /**
+     * Closes the isolated class loader, releasing file handles on JARs.
+     * Idempotent: safe to call multiple times.
+     */
+    @Override
+    public void close() {
+        try {
+            isolatedClassLoader.close();
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     /**
@@ -396,7 +424,7 @@ public final class Reflector {
             if (url == null) {
                 url = ClassLoader.getPlatformClassLoader().getResource(name);
             }
-            return url;
+            return ReflectionsClassFinder.disableJarCaching(url);
         }
 
         @Override
@@ -409,7 +437,12 @@ public final class Reflector {
                 resources = ClassLoader.getPlatformClassLoader()
                         .getResources(name);
             }
-            return resources;
+            List<URL> allResources = new ArrayList<>();
+            while (resources.hasMoreElements()) {
+                allResources.add(ReflectionsClassFinder
+                        .disableJarCaching(resources.nextElement()));
+            }
+            return Collections.enumeration(allResources);
         }
     }
 
