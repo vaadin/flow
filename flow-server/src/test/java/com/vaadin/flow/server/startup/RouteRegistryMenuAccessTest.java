@@ -54,21 +54,21 @@ class RouteRegistryMenuAccessTest {
     private VaadinRequest vaadinRequest;
 
     @BeforeEach
-    public void init() {
+    void init() {
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(mock(ServletContext.class)));
         this.vaadinRequest = mock(VaadinRequest.class);
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withoutRequest_returnEmpty() {
+    void getRegisteredAccessibleMenuRoutes_withoutRequest_returnEmpty() {
         assertEquals(0,
                 registry.getRegisteredAccessibleMenuRoutes(null, null).size(),
                 "No accessible menu routes should be available without VaadinService.");
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withoutVaadinService_returnEmpty() {
+    void getRegisteredAccessibleMenuRoutes_withoutVaadinService_returnEmpty() {
         when(vaadinRequest.getService()).thenReturn(null);
         assertEquals(0,
                 registry.getRegisteredAccessibleMenuRoutes(vaadinRequest, null)
@@ -77,7 +77,7 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_noMenuRoutes() {
+    void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_noMenuRoutes() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("home", MyRoute.class, Collections.emptyList());
@@ -90,7 +90,7 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_noMenuRoute() {
+    void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_noMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.NEVER);
         registry.clean();
         registry.setRoute("home", MyMenuRoute.class, Collections.emptyList());
@@ -102,7 +102,7 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomatic_oneMenuRoute() {
+    void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomatic_oneMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
         registry.clean();
         registry.setRoute("home", MyMenuRoute.class, Collections.emptyList());
@@ -120,7 +120,7 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_oneMenuRoute() {
+    void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_oneMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("hasmenu", MyMenuRoute.class,
@@ -134,7 +134,7 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withNavAccessControlWithoutRequest_noAccessibleMenuRoute() {
+    void getRegisteredAccessibleMenuRoutes_withNavAccessControlWithoutRequest_noAccessibleMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("hasmenu", MyMenuRoute.class,
@@ -148,12 +148,12 @@ class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withNavAccessControl_anonymous() {
+    void getRegisteredAccessibleMenuRoutes_withNavAccessControl_anonymous() {
         testAsAnonymous(new NavigationAccessControl());
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withNavAccessControl_admin() {
+    void getRegisteredAccessibleMenuRoutes_withNavAccessControl_admin() {
         testAsAdmin(new NavigationAccessControl());
     }
 

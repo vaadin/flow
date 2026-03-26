@@ -18,8 +18,6 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.vaadin.flow.signals.BindingActiveException;
-
 /**
  * An interface for components that accept setting items in-memory and returns a
  * {@link ListDataView} that provides information and allows operations on the
@@ -40,8 +38,6 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
      * @param dataProvider
      *            ListDataProvider providing items to the component.
      * @return ListDataView providing access to the items
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     V setItems(ListDataProvider<T> dataProvider);
 
@@ -53,11 +49,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
      * @param items
      *            the items to display, not {@code null}
      * @return ListDataView providing access to the items
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     default V setItems(Collection<T> items) {
-        DataViewUtils.checkNoActiveItemsBinding(this);
         return setItems(DataProvider.ofCollection(items));
     }
 
@@ -67,11 +60,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
      * @param items
      *            the items to display, not {@code null}
      * @return ListDataView providing access to the items
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     default V setItems(T... items) {
-        DataViewUtils.checkNoActiveItemsBinding(this);
         return setItems(DataProvider.ofItems(items));
     }
 

@@ -54,7 +54,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // common property signal binding tests
 
     @Test
-    public void bindProperty_nullProperty_throwException() {
+    void bindProperty_nullProperty_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -62,7 +62,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_illegalProperty_throwException() {
+    void bindProperty_illegalProperty_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -76,7 +76,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_notComponent_doNotThrowException() {
+    void bindProperty_notComponent_doNotThrowException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -87,7 +87,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWhileReadOnlyBindingIsActive_throwException() {
+    void bindProperty_setPropertyWhileReadOnlyBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -102,7 +102,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+    void bindProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -119,7 +119,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertySignalReverts_propertyRevertedToSignalValue() {
+    void bindProperty_setPropertySignalReverts_propertyRevertedToSignalValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -137,7 +137,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWithNoopWritableBinding_propertyRevertedToSignalValue() {
+    void bindProperty_setPropertyWithNoopWritableBinding_propertyRevertedToSignalValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -155,7 +155,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWriteCallbackThrows_exceptionPropagated() {
+    void bindProperty_setPropertyWriteCallbackThrows_exceptionPropagated() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -172,7 +172,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBooleanProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+    void bindBooleanProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -186,7 +186,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindDoubleProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
+    void bindDoubleProperty_setPropertyWhileWritableBindingIsActive_updatesSignal() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -201,7 +201,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_setPropertyWhileWritableBindingIsActive_propertyChangeEventFired() {
+    void bindProperty_setPropertyWhileWritableBindingIsActive_propertyChangeEventFired() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -224,7 +224,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_nullSignal_throwsNPE() {
+    void bindProperty_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -233,7 +233,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_removePropertyWhileBindingIsActive_throwException() {
+    void bindProperty_removePropertyWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -247,7 +247,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPropertyComputedSignal_getPropertyValue_returnsCorrectValue() {
+    void bindPropertyComputedSignal_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -261,7 +261,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPropertyMappedSignal_getPropertyValue_returnsCorrectValue() {
+    void bindPropertyMappedSignal_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -274,7 +274,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPropertyJacksonNull_getPropertyValue_returnsCorrectValue() {
+    void bindPropertyJacksonNull_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -290,7 +290,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindPropertyJacksonObjectNode_getPropertyValue_returnsCorrectValue() {
+    void bindPropertyJacksonObjectNode_getPropertyValue_returnsCorrectValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -306,7 +306,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_addPropertyChangeListenerAttached_listenerReceivesValueChange() {
+    void bindProperty_addPropertyChangeListenerAttached_listenerReceivesValueChange() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -337,7 +337,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_addPropertyChangeListenerDetached_listenerReceivesValueChange() {
+    void bindProperty_addPropertyChangeListenerDetached_listenerReceivesValueChange() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -362,7 +362,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // boolean property signal binding tests
 
     @Test
-    public void bindBooleanProperty_componentNotAttached_bindingIgnored() {
+    void bindBooleanProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
@@ -378,7 +378,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBooleanProperty_componentDetached_bindingIgnored() {
+    void bindBooleanProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -395,7 +395,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBooleanProperty_componentAttached_bindingActive() {
+    void bindBooleanProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -408,7 +408,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBooleanProperty_componentReAttached_bindingSynced() {
+    void bindBooleanProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -432,7 +432,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // double property signal binding tests
 
     @Test
-    public void bindDoubleProperty_componentNotAttached_bindingIgnored() {
+    void bindDoubleProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<Double> signal = new ValueSignal<>(1.0d);
@@ -450,7 +450,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindDoubleProperty_componentDetached_bindingIgnored() {
+    void bindDoubleProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -468,7 +468,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindDoubleProperty_componentAttached_bindingActive() {
+    void bindDoubleProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -482,7 +482,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindDoubleProperty_componentReAttached_bindingSynced() {
+    void bindDoubleProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -509,7 +509,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // integer property signal binding tests
 
     @Test
-    public void bindIntegerProperty_componentNotAttached_bindingIgnored() {
+    void bindIntegerProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<Integer> signal = new ValueSignal<>(1);
@@ -525,7 +525,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindIntegerProperty_componentDetached_bindingIgnored() {
+    void bindIntegerProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -542,7 +542,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindIntegerProperty_componentAttached_bindingActive() {
+    void bindIntegerProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -555,7 +555,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindIntegerProperty_componentReAttached_bindingSynced() {
+    void bindIntegerProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -579,7 +579,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // string property signal binding tests
 
     @Test
-    public void bindStringProperty_componentNotAttached_bindingIgnored() {
+    void bindStringProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
@@ -595,7 +595,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindStringProperty_componentDetached_bindingIgnored() {
+    void bindStringProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -613,7 +613,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindStringProperty_componentAttached_bindingActive() {
+    void bindStringProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -627,7 +627,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindStringProperty_componentReAttached_bindingSynced() {
+    void bindStringProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -654,7 +654,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // bean property signal binding tests
 
     @Test
-    public void bindBeanProperty_componentNotAttached_bindingIgnored() {
+    void bindBeanProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         JacksonUtilsTest.Person john = createJohn();
@@ -672,7 +672,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBeanProperty_componentDetached_bindingIgnored() {
+    void bindBeanProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -691,7 +691,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBeanProperty_componentAttached_bindingActive() {
+    void bindBeanProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -705,7 +705,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindBeanProperty_componentReAttached_bindingSynced() {
+    void bindBeanProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -734,7 +734,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // list property signal binding tests
 
     @Test
-    public void bindListProperty_componentNotAttached_bindingIgnored() {
+    void bindListProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
@@ -754,7 +754,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindListProperty_componentDetached_bindingIgnored() {
+    void bindListProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -778,7 +778,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindListProperty_componentAttached_bindingActive() {
+    void bindListProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -794,7 +794,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindListProperty_componentReAttached_bindingSynced() {
+    void bindListProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -833,7 +833,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     // map property signal binding tests
 
     @Test
-    public void bindMapProperty_componentNotAttached_bindingIgnored() {
+    void bindMapProperty_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<Map<String, JacksonUtilsTest.Person>> signal = new ValueSignal<>(
@@ -853,7 +853,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMapProperty_componentDetached_bindingIgnored() {
+    void bindMapProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -877,7 +877,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMapProperty_componentAttached_bindingActive() {
+    void bindMapProperty_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -893,7 +893,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMapProperty_componentReAttached_bindingSynced() {
+    void bindMapProperty_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -930,7 +930,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_writeCallbackThrows() {
+    void bindProperty_writeCallbackThrows() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -950,7 +950,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_normalCallback_valueChangeEventTriggered() {
+    void bindProperty_normalCallback_valueChangeEventTriggered() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -970,7 +970,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_transformingCallback_valueChangeEventTriggered() {
+    void bindProperty_transformingCallback_valueChangeEventTriggered() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -991,7 +991,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindProperty_noOpCallback_valueChangeEventNotTriggered() {
+    void bindProperty_noOpCallback_valueChangeEventNotTriggered() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");

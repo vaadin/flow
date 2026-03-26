@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -53,8 +52,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
-    private static final List<String> POSTINSTALL_PACKAGES = Collections
-            .singletonList("esbuild");
+    private static final List<String> POSTINSTALL_PACKAGES = List
+            .of("@vaadin/vaadin-usage-statistics");
 
     @Override
     @BeforeEach
@@ -320,14 +319,16 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     void runPnpmInstall_postInstall_runOnlyForDefaultPackages()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         assertTrue(
-                new File(new File(options.getNodeModulesFolder(), "esbuild"),
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
                         "postinstall-file.txt").exists(),
-                "Postinstall for 'esbuild' was not run");
+                "Postinstall for '@vaadin/vaadin-usage-statistics' was not run");
         assertFalse(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
                         "postinstall-file.txt").exists(),
@@ -337,14 +338,16 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     void runPnpmInstall_postInstall_runForDefinedAdditionalPackages()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
-        TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
+        setupPostinstallPackages();
+        TaskRunNpmInstall task = createTask(List.of("foo"));
         task.execute();
 
         assertTrue(
-                new File(new File(options.getNodeModulesFolder(), "esbuild"),
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
                         "postinstall-file.txt").exists(),
-                "Postinstall for 'esbuild' was not run");
+                "Postinstall for '@vaadin/vaadin-usage-statistics' was not run");
         assertTrue(
                 new File(new File(options.getNodeModulesFolder(), "foo"),
                         "postinstall-file.txt").exists(),
@@ -356,7 +359,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Timeout(30)
     void runNpmInstall_postInstallWritingLotsOfOutput_processDoesNotStuck()
             throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
+        setupPostinstallPackages();
 
         File nodeModules = options.getNodeModulesFolder();
         File fooPackageJson = new File(
@@ -369,7 +372,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         FileUtils.write(fooPackageJson, fooPackageJsonContents,
                 StandardCharsets.UTF_8);
 
-        TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
+        TaskRunNpmInstall task = createTask(List.of("foo"));
         task.execute();
 
         assertTrue(
@@ -398,7 +401,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_devMode_usesNoFrozenLockfile()
+    void runPnpmInstall_devMode_usesNoFrozenLockfile()
             throws ExecutionFailedException, IOException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
@@ -414,7 +417,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_ciBuild_usesFrozenLockfile()
+    void runPnpmInstall_ciBuild_usesFrozenLockfile()
             throws ExecutionFailedException, IOException {
         TaskRunNpmInstall ciTask = createCiTask();
         getNodeUpdater().modified = true;

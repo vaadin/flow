@@ -13,6 +13,7 @@ permissions:
   contents: read
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _HEAD_REF: ${{ github.event.pull_request.head.ref }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -31,13 +32,13 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env._HEAD_SHA }}
           fetch-depth: 0  # Full history required for SonarCloud PR analysis
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'

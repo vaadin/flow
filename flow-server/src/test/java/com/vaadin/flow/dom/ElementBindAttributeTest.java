@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ElementBindAttributeTest extends SignalsUnitTest {
 
     @Test
-    public void bindAttribute_nullAttribute_throwException() {
+    void bindAttribute_nullAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -41,7 +41,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_illegalAttribute_throwException() {
+    void bindAttribute_illegalAttribute_throwException() {
         Element element = new Element("foo");
         ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
@@ -49,7 +49,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_notComponent_doNotThrowException() {
+    void bindAttribute_notComponent_doNotThrowException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
@@ -60,7 +60,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentNotAttached_bindingIgnored() {
+    void bindAttribute_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
@@ -76,7 +76,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentDetached_bindingIgnored() {
+    void bindAttribute_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -93,7 +93,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentAttached_bindingActive() {
+    void bindAttribute_componentAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -106,7 +106,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_componentReAttached_bindingSynced() {
+    void bindAttribute_componentReAttached_bindingSynced() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -128,7 +128,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -142,7 +142,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
+    void bindAttribute_removeAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -156,7 +156,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_updateSignal_attributeChanged() {
+    void bindAttribute_updateSignal_attributeChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -170,7 +170,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_nullSignal_throwsNPE() {
+    void bindAttribute_nullSignal_throwsNPE() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -179,7 +179,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
+    void bindAttribute_withTwoAttributesWithSameSignal_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -199,7 +199,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
+    void bindAttribute_withTwoAttributesAndSignals_attributesChanged() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -221,7 +221,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_simpleComputedSignal_bindingActive() {
+    void bindAttribute_simpleComputedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -235,7 +235,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_computedSignal_bindingActive() {
+    void bindAttribute_computedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
@@ -255,7 +255,7 @@ class ElementBindAttributeTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindAttribute_nullAttributeValue_attributeRemoved() {
+    void bindAttribute_nullAttributeValue_attributeRemoved() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

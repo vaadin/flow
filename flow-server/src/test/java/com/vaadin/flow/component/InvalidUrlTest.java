@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class InvalidUrlTest {
 
     @Test
-    public void invalidUrlAtInitialization_uiInitialiazesWith404ReturnCode()
+    void invalidUrlAtInitialization_uiInitialiazesWith404ReturnCode()
             throws InvalidRouteConfigurationException, ServiceException {
         UI ui = new UI();
 
@@ -58,7 +58,7 @@ class InvalidUrlTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         CurrentInstance.clearAll();
     }
 

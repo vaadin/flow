@@ -45,14 +45,14 @@ class ElementFactoryTest {
     }
 
     @Test
-    public void automatedTest() throws Exception {
+    void automatedTest() throws Exception {
         for (Method method : ElementFactory.class.getMethods()) {
             testMethod(method);
         }
     }
 
     @Test
-    public void createAnchor() {
+    void createAnchor() {
         String href = "hrefhref";
         String textContent = "textContent";
 
@@ -65,7 +65,7 @@ class ElementFactoryTest {
     }
 
     @Test
-    public void createTextInput() {
+    void createTextInput() {
         String type = "typetype";
 
         assertElement("<input type='" + type + "'></input>",

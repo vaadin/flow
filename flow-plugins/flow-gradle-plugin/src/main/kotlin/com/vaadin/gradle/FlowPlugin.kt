@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.gradle
 
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -66,16 +67,27 @@ public class FlowPlugin : Plugin<Project> {
                 config.resourceOutputDirectory
             )
 
-            // the processResources copies stuff from build/vaadin-generated
-            // (which is populated by this task) and therefore must run after vaadinPrepareFrontend task.
-            project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
-
             // auto-activate tasks: https://github.com/vaadin/vaadin-gradle-plugin/issues/48
             if (config.productionMode.get()) {
+                // In production mode, vaadinBuildFrontend is self-contained
+                // and performs its own frontend preparation, so there is no
+                // need for vaadinPrepareFrontend to run beforehand.
                 // this will also catch the War task since it extends from Jar
                 project.tasks.withType(Jar::class.java) { task: Jar ->
                     task.dependsOn("vaadinBuildFrontend")
+                    // Restore the production token before packaging in
+                    // case it was deleted by a previous build's cleanup.
+                    task.doFirst {
+                        val svc = (project.tasks.getByName("vaadinBuildFrontend")
+                            as VaadinBuildFrontendTask).getTokenService().orNull
+                        svc?.ensureToken()
+                    }
                 }
+            } else {
+                // In development mode, processResources copies stuff from
+                // build/vaadin-generated (which is populated by
+                // vaadinPrepareFrontend) and therefore must run after it.
+                project.tasks.getByPath(config.processResourcesTaskName.get()).dependsOn("vaadinPrepareFrontend")
             }
 
             val toolsService = project.gradle.sharedServices.registerIfAbsent(
@@ -96,6 +108,43 @@ public class FlowPlugin : Plugin<Project> {
             if (config.alwaysExecutePrepareFrontend.get()) {
                 project.tasks.getByName("vaadinPrepareFrontend")
                     .doNotTrackState("State tracking is disabled. Use the 'alwaysExecutePrepareFrontend' plugin setting to enable the feature")
+            }
+
+            // In production mode, vaadinBuildFrontend performs frontend
+            // preparation itself and needs dependent project jars to be
+            // built for classpath scanning to work properly.
+            val buildFrontendTask = project.tasks.getByName("vaadinBuildFrontend")
+            buildFrontendTask.dependsOn(
+                project.configurations.getByName(config.dependencyScope.get()).jars
+            ).usesService(toolsService)
+            if (config.alwaysExecuteBuildFrontend.get()) {
+                buildFrontendTask
+                    .doNotTrackState("State tracking is disabled. Use the 'alwaysExecuteBuildFrontend' plugin setting to enable the feature")
+            }
+
+            // Register a build service that restores the production token
+            // file before builds and cleans it up when the build finishes.
+            // The service is looked up by @ServiceReference on the task.
+            if (config.productionMode.get()) {
+                val buildAdapter = GradlePluginAdapter(buildFrontendTask, config, false)
+                val tokenService = project.gradle.sharedServices.registerIfAbsent(
+                    "vaadinBuildFrontendToken",
+                    BuildFrontendTokenService::class.java
+                ) {
+                    it.parameters.getTokenFilePath().set(
+                        BuildFrontendUtil.getTokenFile(buildAdapter).absolutePath
+                    )
+                    it.parameters.getCachedTokenFilePath().set(
+                        java.io.File(config.projectBuildDir.get(),
+                            VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE).absolutePath
+                    )
+                }
+                // Ensure close() fires after vaadinBuildFrontend and
+                // all Jar/War packaging tasks have completed.
+                buildFrontendTask.usesService(tokenService)
+                project.tasks.withType(Jar::class.java) { task: Jar ->
+                    task.usesService(tokenService)
+                }
             }
         }
     }

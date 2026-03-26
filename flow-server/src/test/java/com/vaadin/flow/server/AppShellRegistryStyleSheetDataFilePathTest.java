@@ -47,7 +47,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     private Document document;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mocks = new MockServletServiceSessionSetup();
         context = new VaadinServletContext(mocks.getServletContext());
         // Set current service for potential instantiation
@@ -56,14 +56,13 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
         mocks.cleanup();
     }
 
     @Test
-    public void modifyIndex_addsDataFilePathAttributes_normalized()
-            throws Exception {
+    void modifyIndex_addsDataFilePathAttributes_normalized() throws Exception {
         // Register our shell class directly in the registry
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyShell.class);
@@ -100,7 +99,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @Test
-    public void productionMode_hrefContainsHash_dataFilePathUnchanged()
+    void productionMode_hrefContainsHash_dataFilePathUnchanged()
             throws Exception {
         mocks.getDeploymentConfiguration().setProductionMode(true);
 
@@ -165,7 +164,7 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @Test
-    public void productionMode_missingResource_fallsBackToOriginalUrl()
+    void productionMode_missingResource_fallsBackToOriginalUrl()
             throws Exception {
         mocks.getDeploymentConfiguration().setProductionMode(true);
 

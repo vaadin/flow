@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LookupTest {
 
     @Test
-    public void of_nullServiceObject_throws() {
+    void of_nullServiceObject_throws() {
         assertThrows(NullPointerException.class, () -> {
             Lookup.of(null);
         });
@@ -39,7 +39,7 @@ class LookupTest {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void of_serviceNotExtendingType_throws() {
+    void of_serviceNotExtendingType_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
             String service = "";
             Class type = List.class;
@@ -48,7 +48,7 @@ class LookupTest {
     }
 
     @Test
-    public void of_serviceIsFoundByProvidedTypes_serviceIsNotFoundByNotProvidedTypes() {
+    void of_serviceIsFoundByProvidedTypes_serviceIsNotFoundByNotProvidedTypes() {
         ArrayList<String> service = new ArrayList<String>();
         Lookup lookup = Lookup.of(service, Collection.class);
         assertEquals(service, lookup.lookup(Collection.class));
@@ -60,7 +60,7 @@ class LookupTest {
     }
 
     @Test
-    public void compose_bothLookupsHasService_resultingLookupReturnsServiceFromFirstLookup() {
+    void compose_bothLookupsHasService_resultingLookupReturnsServiceFromFirstLookup() {
         ArrayList<String> service = new ArrayList<String>();
         Lookup lookup1 = Lookup.of(service, Collection.class);
         Lookup lookup2 = Lookup.of(new LinkedList<String>(), Collection.class);
@@ -70,7 +70,7 @@ class LookupTest {
     }
 
     @Test
-    public void compose_firstLookupHasNoService_resultingLookupReturnsServiceFromSecondLookup() {
+    void compose_firstLookupHasNoService_resultingLookupReturnsServiceFromSecondLookup() {
         Lookup lookup1 = Lookup.of(new LinkedList<String>(), List.class);
         ArrayList<String> service = new ArrayList<String>();
         Lookup lookup2 = Lookup.of(service, Collection.class);
@@ -80,7 +80,7 @@ class LookupTest {
     }
 
     @Test
-    public void compose_differentServicesForSameType_resultingLookupAllReturnsAllServices() {
+    void compose_differentServicesForSameType_resultingLookupAllReturnsAllServices() {
         LinkedList<String> service1 = new LinkedList<String>();
         Lookup lookup1 = Lookup.of(service1, List.class);
         ArrayList<String> service2 = new ArrayList<String>();

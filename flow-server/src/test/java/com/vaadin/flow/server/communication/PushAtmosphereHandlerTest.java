@@ -46,7 +46,7 @@ class PushAtmosphereHandlerTest {
     private PushAtmosphereHandler atmosphereHandler;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         request = Mockito.mock(AtmosphereRequest.class);
         response = Mockito.mock(AtmosphereResponse.class);
         printWriter = Mockito.mock(PrintWriter.class);
@@ -74,12 +74,12 @@ class PushAtmosphereHandlerTest {
     }
 
     @Test
-    public void writeSessionExpiredAsyncGet() throws Exception {
+    void writeSessionExpiredAsyncGet() throws Exception {
         writeSessionExpiredAsync("GET");
     }
 
     @Test
-    public void writeSessionExpiredAsyncPost() throws Exception {
+    void writeSessionExpiredAsyncPost() throws Exception {
         writeSessionExpiredAsync("POST");
     }
 

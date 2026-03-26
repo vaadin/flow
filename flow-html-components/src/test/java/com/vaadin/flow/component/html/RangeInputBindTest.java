@@ -20,19 +20,19 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.signals.BindingActiveException;
-import com.vaadin.flow.signals.shared.SharedNumberSignal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class RangeInputBindTest extends SignalsUnitTest {
+class RangeInputBindTest extends SignalsUnitTest {
 
     @Test
-    public void bindMin_updatesAttributeOnSignalChange() {
+    void bindMin_updatesAttributeOnSignalChange() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(0.0);
+        ValueSignal<Double> signal = new ValueSignal<>(0.0);
         rangeInput.bindMin(signal);
 
         signal.set(5.5);
@@ -43,11 +43,11 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMin_setMinWhileBindingActive_throws() {
+    void bindMin_setMinWhileBindingActive_throws() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(0.0);
+        ValueSignal<Double> signal = new ValueSignal<>(0.0);
         rangeInput.bindMin(signal);
 
         assertThrows(BindingActiveException.class,
@@ -55,7 +55,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMin_nullSignal_throwsNPE() {
+    void bindMin_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
@@ -64,11 +64,11 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_updatesAttributeOnSignalChange() {
+    void bindMax_updatesAttributeOnSignalChange() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(100.0);
+        ValueSignal<Double> signal = new ValueSignal<>(100.0);
         rangeInput.bindMax(signal);
 
         signal.set(150.5);
@@ -79,11 +79,11 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_setMaxWhileBindingActive_throws() {
+    void bindMax_setMaxWhileBindingActive_throws() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 
-        SharedNumberSignal signal = new SharedNumberSignal(100.0);
+        ValueSignal<Double> signal = new ValueSignal<>(100.0);
         rangeInput.bindMax(signal);
 
         assertThrows(BindingActiveException.class,
@@ -91,7 +91,7 @@ public class RangeInputBindTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindMax_nullSignal_throwsNPE() {
+    void bindMax_nullSignal_throwsNPE() {
         RangeInput rangeInput = new RangeInput();
         UI.getCurrent().add(rangeInput);
 

@@ -18,7 +18,6 @@ package com.vaadin.flow.gradle
 import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
-import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendBuildUtils
 import com.vaadin.flow.server.frontend.Options
@@ -26,11 +25,23 @@ import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.flow.internal.FrontendUtils
+import com.vaadin.flow.server.InitParameters
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
+import org.gradle.api.services.ServiceReference
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.IgnoreEmptyDirectories
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -46,20 +57,83 @@ import org.gradle.api.tasks.bundling.Jar
  * * Update the [FrontendUtils.IMPORTS_NAME] file imports with the
  * [com.vaadin.flow.component.dependency.JsModule] [com.vaadin.flow.theme.Theme] and [com.vaadin.flow.component.dependency.JavaScript] annotations defined in
  * the classpath,
- * * Update [FrontendUtils.WEBPACK_CONFIG] file.
+ * * Update [FrontendUtils.VITE_CONFIG] file.
  *
+ * Uses Gradle incremental builds feature, i.e. Gradle skips this task if
+ * all the inputs (config parameters, classpath, frontend sources) and outputs
+ * (production bundle) are up-to-date and have the same values as for previous
+ * build.
  */
+@CacheableTask
 public abstract class VaadinBuildFrontendTask : DefaultTask() {
+
+    public companion object {
+        public const val CACHED_BUILD_INFO_FILE: String = "cached-flow-build-info.json"
+    }
 
     @get:Internal
     internal abstract val adapter: Property<GradlePluginAdapter>
 
+    @ServiceReference("vaadinBuildFrontendToken")
+    internal abstract fun getTokenService(): Property<BuildFrontendTokenService>
+
+    @ServiceReference
+    internal abstract fun getSvc(): Property<FrontendToolService>
+
+    /**
+     * The project's own compiled classes. Tracked with [Classpath] for
+     * content-based change detection, since project classes are small and
+     * change frequently.
+     */
+    @get:Classpath
+    internal abstract val projectClassesDirs: ConfigurableFileCollection
+
+    /**
+     * User-written frontend source files, excluding the `generated/`
+     * subdirectory and `index.html`. The `generated/` directory is
+     * excluded because it is modified by this task's action. `index.html`
+     * is excluded because the task creates it when missing; it is tracked
+     * as an output instead so that user edits to it also invalidate the
+     * up-to-date check (Gradle tracks output file content).
+     */
+    @get:InputFiles
+    @get:Optional
+    @get:IgnoreEmptyDirectories
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    internal abstract val frontendSourceFiles: ConfigurableFileCollection
+
+    @get:Internal
+    internal abstract val dependencyJarFiles: ConfigurableFileCollection
+
+    /**
+     * A lightweight fingerprint of the dependency JARs on the classpath.
+     * Using a fingerprint (name + size) instead of
+     * [Classpath] content hashing avoids reading hundreds of JAR files
+     * into memory, which can cause OOM on large projects (e.g. Spring Boot
+     * with 200+ transitive dependencies).
+     */
+    @get:Input
+    internal abstract val dependencyJarFingerprint: Property<String>
+
+    /**
+     * Defines an object containing all the scalar/config inputs of this task.
+     */
+    @get:Nested
+    internal val inputProperties = adapter.zip(getSvc()) { adp, svc ->
+        BuildFrontendInputProperties(adp, svc)
+    }
+
+    /**
+     * Defines an object containing all the outputs of this task.
+     */
+    @get:Nested
+    internal val outputProperties =
+        adapter.map { BuildFrontendOutputProperties(it) }
+
     init {
         group = "Vaadin"
-        description = "Builds the frontend bundle with webpack"
+        description = "Builds the frontend bundle with vite"
 
-        // we need the flow-build-info.json to be created, which is what the vaadinPrepareFrontend task does
-        dependsOn("vaadinPrepareFrontend")
         // Maven's task run in the LifecyclePhase.PROCESS_CLASSES phase
 
         // We need access to the produced classes, to be able to analyze e.g.
@@ -67,7 +141,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         dependsOn("classes")
 
         // Make sure to run this task before the `war`/`jar` tasks, so that
-        // webpack bundle will end up packaged in the war/jar archive. The inclusion
+        // vite bundle will end up packaged in the war/jar archive. The inclusion
         // rule itself is configured in the VaadinPlugin class.
         project.tasks.withType(Jar::class.java) { task: Jar ->
             task.mustRunAfter("vaadinBuildFrontend")
@@ -76,66 +150,120 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
 
     internal fun configure(config: PluginEffectiveConfiguration) {
         adapter.set(GradlePluginAdapter(this, config, false))
+
+        // Track user-written frontend source files, excluding the
+        // generated/ subdirectory (modified by this task) and index.html
+        // (may be created by this task when missing; tracked as an output
+        // in BuildFrontendOutputProperties instead).
+        frontendSourceFiles.from(
+            config.effectiveFrontendDirectory.map { frontendDir ->
+                project.fileTree(frontendDir) {
+                    it.exclude("generated/**")
+                    it.exclude(FrontendUtils.INDEX_HTML)
+                }
+            }
+        )
+
+        // Set up classpath for incremental build tracking.
+        // Project classes are tracked with @Classpath (content-based) since
+        // they are small and change frequently.
+        val sourceSetName = config.sourceSetName.get()
+        projectClassesDirs.from(
+            project.getSourceSet(sourceSetName).output.classesDirs
+        )
+
+        // Dependency JARs are tracked with a lightweight fingerprint
+        // (name + size) to avoid the memory cost of content-hashing
+        // hundreds of JARs on large classpaths.
+        val dependencyConfiguration =
+            project.configurations.getByName(config.dependencyScope.get())
+        dependencyJarFiles.from(
+            dependencyConfiguration.incoming.files.filter {
+                it.name.endsWith(".jar", true)
+            }
+        )
+        dependencyJarFingerprint.set(project.provider {
+            dependencyJarFiles.files
+                .sortedBy { it.name }
+                .joinToString("\n") { "${it.name}:${it.length()}" }
+        })
+        doFirst {
+            // Make sure the service is initialized, so its close method will be called at the end of the build.
+            getTokenService().get()
+        }
     }
 
     @TaskAction
     public fun vaadinBuildFrontend() {
-        val config = adapter.get().config
-        logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
-        if (!tokenFile.exists()) {
-            // if prepare-frontend token file doesn't exist, propagate build info
-            // to token file
-            logger.info("Token file does not exist, propagating build info")
+        try {
+            val config = adapter.get().config
+            logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
+            // Propagate build info to the token file so that runNodeUpdater
+            // and the frontend build have the configuration they need.
             BuildFrontendUtil.propagateBuildInfo(adapter.get())
-        }
 
-        val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
-            .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
-            .withFrontendGeneratedFolder(config.generatedTsFolder.get())
-        val cleanTask = TaskCleanFrontendFiles(options)
 
-        val reactEnabled: Boolean = adapter.get().isReactEnabled()
-                && FrontendUtils.isReactRouterRequired(
-            BuildFrontendUtil.getFrontendDirectory(adapter.get())
-        )
-        val featureFlags: FeatureFlags = FeatureFlags(
-            adapter.get().createLookup(adapter.get().getClassFinder())
-        )
-        if (adapter.get().javaResourceFolder() != null) {
-            featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
-        }
-        val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
-            .createScanner(
-                !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
-                adapter.get().generateEmbeddableWebComponents(), featureFlags,
-                reactEnabled
+            val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
+                .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
+                .withFrontendGeneratedFolder(config.generatedTsFolder.get())
+            val cleanTask = TaskCleanFrontendFiles(options)
+
+            val reactEnabled: Boolean = adapter.get().isReactEnabled()
+                    && FrontendUtils.isReactRouterRequired(
+                BuildFrontendUtil.getFrontendDirectory(adapter.get())
             )
-
-        BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
-
-        if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
-                (adapter.get().servletResourceOutputDirectory())) {
-            BuildFrontendUtil.runFrontendBuild(adapter.get())
-            if (cleanFrontendFiles()) {
-                cleanTask.execute()
+            val featureFlags: FeatureFlags = FeatureFlags(
+                adapter.get().createLookup(adapter.get().getClassFinder())
+            )
+            if (adapter.get().javaResourceFolder() != null) {
+                featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
             }
-        }
-        LicenseChecker.setStrictOffline(true)
-        val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
-            Pair(
-                BuildFrontendUtil.validateLicenses(
-                    adapter.get(),
-                    frontendDependencies
-                ), false
-            )
-        } catch (e: MissingLicenseKeyException) {
-            logger.info(e.message)
-            Pair(true, true)
-        }
+            val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
+                .createScanner(
+                    !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
+                    adapter.get().generateEmbeddableWebComponents(), featureFlags,
+                    reactEnabled
+                )
 
-        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
-        )
+            BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
+
+            if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
+                    (adapter.get().servletResourceOutputDirectory())) {
+                BuildFrontendUtil.runFrontendBuild(adapter.get())
+                if (cleanFrontendFiles()) {
+                    cleanTask.execute()
+                }
+            }
+            LicenseChecker.setStrictOffline(true)
+            val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
+                Pair(
+                    BuildFrontendUtil.validateLicenses(
+                        adapter.get(),
+                        frontendDependencies
+                    ), false
+                )
+            } catch (e: MissingLicenseKeyException) {
+                logger.info(e.message)
+                Pair(true, true)
+            }
+
+            BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
+            )
+
+            // Cache the production token file and delete the original so
+            // that IDE runs default to development mode.  Jar/War tasks
+            // restore the token from the cached copy in their doFirst
+            // action (via BuildFrontendTokenService.ensureToken()).
+            val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
+            val cachedTokenFile = outputProperties.get().getCachedBuildInfoFile()
+            cachedTokenFile.parentFile.mkdirs()
+            if (tokenFile.exists()) {
+                tokenFile.copyTo(cachedTokenFile, overwrite = true)
+                tokenFile.delete()
+            }
+        } finally {
+            adapter.get().closeClassFinder()
+        }
     }
 
 

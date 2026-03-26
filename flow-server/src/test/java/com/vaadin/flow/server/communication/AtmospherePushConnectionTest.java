@@ -60,17 +60,17 @@ class AtmospherePushConnectionTest {
     private AtmospherePushConnection connection;
 
     @BeforeAll
-    public static void initExecutor() {
+    static void initExecutor() {
         executor = Executors.newSingleThreadExecutor();
     }
 
     @AfterAll
-    public static void stopExecutor() {
+    static void stopExecutor() {
         executor.shutdown();
     }
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         vaadinSession = new MockVaadinSession();
         vaadinSession.lock();
         UI ui = new MockUI(vaadinSession);
@@ -95,7 +95,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void testSerialization() throws Exception {
+    void testSerialization() throws Exception {
 
         UI ui = Mockito.mock(UI.class);
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
@@ -116,7 +116,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void pushWhileDisconnect_disconnectedWithoutSendingMessage()
+    void pushWhileDisconnect_disconnectedWithoutSendingMessage()
             throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
@@ -142,8 +142,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void disconnectWhilePush_messageSentAndThenDisconnected()
-            throws Exception {
+    void disconnectWhilePush_messageSentAndThenDisconnected() throws Exception {
         CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture.runAsync(() -> {
             try {
@@ -175,8 +174,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void disconnect_concurrentRequests_preventDeadlocks()
-            throws Exception {
+    void disconnect_concurrentRequests_preventDeadlocks() throws Exception {
         // A deadlock may happen when an HTTP session is invalidated in a
         // thread, causing VaadinSession and UIs to be closed and push
         // connections to be disconnected, but a push disconnection is
@@ -253,7 +251,7 @@ class AtmospherePushConnectionTest {
     }
 
     @Test
-    public void pushWhileDisconnect_preventDeadlocks() throws Exception {
+    void pushWhileDisconnect_preventDeadlocks() throws Exception {
         // Similar motivation exposed in
         // disconnect_concurrentRequests_preventDeadlocks
         // but when a Vaadin session is unlocked as a consequence of HTTP

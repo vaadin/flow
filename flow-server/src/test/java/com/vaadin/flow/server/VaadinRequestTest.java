@@ -25,7 +25,7 @@ class VaadinRequestTest {
     }
 
     @Test
-    public void getContentLengthLong_delegateToGetContentLength() {
+    void getContentLengthLong_delegateToGetContentLength() {
         TestVaadinRequest request = Mockito.spy(TestVaadinRequest.class);
         request.getContentLengthLong();
         Mockito.verify(request).getContentLength();

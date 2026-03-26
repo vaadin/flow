@@ -48,7 +48,7 @@ class StreamResourceHandlerTest {
     private VaadinServletResponse response;
 
     @BeforeEach
-    public void setUp() throws ServletException, ServiceException {
+    void setUp() throws ServletException, ServiceException {
         VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service);
@@ -59,7 +59,7 @@ class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamFactoryThrowsException_responseStatusIs500()
+    void inputStreamFactoryThrowsException_responseStatusIs500()
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (InputStreamFactory) () -> {
@@ -76,7 +76,7 @@ class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamResourceWriterThrows_responseStatusIs500()
+    void inputStreamResourceWriterThrows_responseStatusIs500()
             throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 (StreamResourceWriter) (stream, session) -> {
@@ -93,7 +93,7 @@ class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamResourceWriterIsNull_responseStatusIs500()
+    void inputStreamResourceWriterIsNull_responseStatusIs500()
             throws IOException {
         @SuppressWarnings("serial")
         StreamResource res = new StreamResource("readme.md",
@@ -113,7 +113,7 @@ class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
+    void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
             throws IOException {
         ServletOutputStream servletOutputStream = Mockito
                 .mock(ServletOutputStream.class);
@@ -135,8 +135,7 @@ class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamResourceHasHeader_headerIsWritten()
-            throws IOException {
+    void inputStreamResourceHasHeader_headerIsWritten() throws IOException {
         StreamResource res = new StreamResource("readme.md",
                 () -> new ByteArrayInputStream(new byte[0]));
 

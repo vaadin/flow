@@ -38,7 +38,7 @@ class DevToolsTokenTest {
     private String systemTempDir;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectFolder.toFile());
@@ -52,13 +52,13 @@ class DevToolsTokenTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         overwriteToken(initialToken);
         System.setProperty("java.io.tmpdir", systemTempDir);
     }
 
     @Test
-    public void init_tokenFileNotExising_createTokenFile() {
+    void init_tokenFileNotExising_createTokenFile() {
         DevToolsToken.init(service);
         assertEquals(initialToken, DevToolsToken.getToken());
 
@@ -70,7 +70,7 @@ class DevToolsTokenTest {
     }
 
     @Test
-    public void init_nullProjectFolder_useInMemoryToken() {
+    void init_nullProjectFolder_useInMemoryToken() {
         Mockito.when(configuration.getProjectFolder()).thenReturn(null);
 
         String testToken = UUID.randomUUID().toString();

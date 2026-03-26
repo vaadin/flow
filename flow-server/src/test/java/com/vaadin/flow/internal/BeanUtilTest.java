@@ -130,7 +130,7 @@ class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with regular class
     @Test
-    public void getBeanPropertyDescriptors_regularClass()
+    void getBeanPropertyDescriptors_regularClass()
             throws IntrospectionException {
         List<PropertyDescriptor> descriptors = BeanUtil
                 .getBeanPropertyDescriptors(TestBean.class);
@@ -168,8 +168,7 @@ class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with record
     @Test
-    public void getBeanPropertyDescriptors_record()
-            throws IntrospectionException {
+    void getBeanPropertyDescriptors_record() throws IntrospectionException {
         List<PropertyDescriptor> descriptors = BeanUtil
                 .getBeanPropertyDescriptors(TestRecord.class);
 
@@ -199,8 +198,7 @@ class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with interface
     @Test
-    public void getBeanPropertyDescriptors_interface()
-            throws IntrospectionException {
+    void getBeanPropertyDescriptors_interface() throws IntrospectionException {
         List<PropertyDescriptor> descriptors = BeanUtil
                 .getBeanPropertyDescriptors(TestInterface.class);
 
@@ -215,7 +213,7 @@ class BeanUtilTest {
 
     // Test for getPropertyType with simple property
     @Test
-    public void getPropertyType_simpleProperty() throws IntrospectionException {
+    void getPropertyType_simpleProperty() throws IntrospectionException {
         Class<?> nameType = BeanUtil.getPropertyType(TestBean.class, "name");
         assertEquals(String.class, nameType);
 
@@ -225,7 +223,7 @@ class BeanUtilTest {
 
     // Test for getPropertyType with nested property
     @Test
-    public void getPropertyType_nestedProperty() throws IntrospectionException {
+    void getPropertyType_nestedProperty() throws IntrospectionException {
         Class<?> nestedValueType = BeanUtil.getPropertyType(TestBean.class,
                 "nested.value");
         assertEquals(String.class, nestedValueType);
@@ -233,8 +231,7 @@ class BeanUtilTest {
 
     // Test for getPropertyType with non-existent property
     @Test
-    public void getPropertyType_nonExistentProperty()
-            throws IntrospectionException {
+    void getPropertyType_nonExistentProperty() throws IntrospectionException {
         Class<?> nonExistentType = BeanUtil.getPropertyType(TestBean.class,
                 "nonExistent");
         assertNull(nonExistentType);
@@ -242,8 +239,7 @@ class BeanUtilTest {
 
     // Test for getPropertyDescriptor with simple property
     @Test
-    public void getPropertyDescriptor_simpleProperty()
-            throws IntrospectionException {
+    void getPropertyDescriptor_simpleProperty() throws IntrospectionException {
         PropertyDescriptor nameDescriptor = BeanUtil
                 .getPropertyDescriptor(TestBean.class, "name");
         assertNotNull(nameDescriptor);
@@ -255,8 +251,7 @@ class BeanUtilTest {
 
     // Test for getPropertyDescriptor with nested property
     @Test
-    public void getPropertyDescriptor_nestedProperty()
-            throws IntrospectionException {
+    void getPropertyDescriptor_nestedProperty() throws IntrospectionException {
         PropertyDescriptor nestedValueDescriptor = BeanUtil
                 .getPropertyDescriptor(TestBean.class, "nested.value");
         assertNotNull(nestedValueDescriptor);
@@ -268,7 +263,7 @@ class BeanUtilTest {
 
     // Test for getPropertyDescriptor with non-existent property
     @Test
-    public void getPropertyDescriptor_nonExistentProperty()
+    void getPropertyDescriptor_nonExistentProperty()
             throws IntrospectionException {
         PropertyDescriptor nonExistentDescriptor = BeanUtil
                 .getPropertyDescriptor(TestBean.class, "nonExistent");
@@ -277,8 +272,7 @@ class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with null input
     @Test
-    public void getBeanPropertyDescriptors_nullInput()
-            throws IntrospectionException {
+    void getBeanPropertyDescriptors_nullInput() throws IntrospectionException {
         List<PropertyDescriptor> result = BeanUtil
                 .getBeanPropertyDescriptors(null);
         assertNotNull(result);
@@ -287,15 +281,14 @@ class BeanUtilTest {
 
     // Test empty property name
     @Test
-    public void getPropertyType_emptyPropertyName()
-            throws IntrospectionException {
+    void getPropertyType_emptyPropertyName() throws IntrospectionException {
         Class<?> result = BeanUtil.getPropertyType(TestBean.class, "");
         assertNull(result);
     }
 
     // Test empty property name for descriptor
     @Test
-    public void getPropertyDescriptor_emptyPropertyName()
+    void getPropertyDescriptor_emptyPropertyName()
             throws IntrospectionException {
         PropertyDescriptor result = BeanUtil
                 .getPropertyDescriptor(TestBean.class, "");
@@ -304,8 +297,7 @@ class BeanUtilTest {
 
     // Test property with deep nesting
     @Test
-    public void getPropertyType_deepNestedProperty()
-            throws IntrospectionException {
+    void getPropertyType_deepNestedProperty() throws IntrospectionException {
         // This would fail because our test bean doesn't have deep nesting,
         // but tests the recursive behavior
         Class<?> result = BeanUtil.getPropertyType(TestBean.class,
@@ -315,7 +307,7 @@ class BeanUtilTest {
 
     // Test getPropertyType with record
     @Test
-    public void getPropertyType_recordProperty() throws IntrospectionException {
+    void getPropertyType_recordProperty() throws IntrospectionException {
         Class<?> recordPropertyType = BeanUtil.getPropertyType(TestRecord.class,
                 "recordProperty");
         assertEquals(String.class, recordPropertyType);
@@ -327,8 +319,7 @@ class BeanUtilTest {
 
     // Test interface properties
     @Test
-    public void getPropertyType_interfaceProperty()
-            throws IntrospectionException {
+    void getPropertyType_interfaceProperty() throws IntrospectionException {
         Class<?> interfacePropertyType = BeanUtil
                 .getPropertyType(TestInterface.class, "interfaceProperty");
         assertEquals(String.class, interfacePropertyType);
@@ -336,7 +327,7 @@ class BeanUtilTest {
 
     // Test that Object methods are filtered out
     @Test
-    public void getPropertyDescriptor_objectMethodsFiltered()
+    void getPropertyDescriptor_objectMethodsFiltered()
             throws IntrospectionException {
         // The "class" property should be filtered out by BeanUtil
         PropertyDescriptor classProperty = BeanUtil
@@ -346,7 +337,7 @@ class BeanUtilTest {
 
     // Test that getBeanPropertyDescriptors includes all valid properties
     @Test
-    public void getBeanPropertyDescriptors_includesAllValidProperties()
+    void getBeanPropertyDescriptors_includesAllValidProperties()
             throws IntrospectionException {
         List<PropertyDescriptor> descriptors = BeanUtil
                 .getBeanPropertyDescriptors(TestBean.class);
@@ -363,7 +354,7 @@ class BeanUtilTest {
 
     // Test from main branch: duplicate property descriptors are removed
     @Test
-    public void duplicatesAreRemoved() throws Exception {
+    void duplicatesAreRemoved() throws Exception {
         List<PropertyDescriptor> descriptors = BeanUtil
                 .getBeanPropertyDescriptors(TestSomething.class);
         List<PropertyDescriptor> existsInAllPlacesProperties = descriptors
@@ -390,5 +381,30 @@ class BeanUtilTest {
         assertEquals(FirstInterface.class,
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
 
+    }
+
+    public interface ReadOnlyMeasurement {
+        double getValue();
+    }
+
+    public interface WritableMeasurement extends ReadOnlyMeasurement {
+        void setValue(double value);
+    }
+
+    @Test
+    void getterAndSetterFromSeparateInterfacesAreMerged()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(WritableMeasurement.class);
+
+        PropertyDescriptor valueDescriptor = descriptors.stream()
+                .filter(d -> "value".equals(d.getName())).findFirst()
+                .orElse(null);
+
+        assertNotNull(valueDescriptor, "Should find 'value' property");
+        assertNotNull(valueDescriptor.getReadMethod(),
+                "Should have read method from parent interface");
+        assertNotNull(valueDescriptor.getWriteMethod(),
+                "Should have write method from child interface");
     }
 }
