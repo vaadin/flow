@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -59,6 +60,8 @@ public class Effect implements Serializable {
     private @Nullable SerializableRunnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
+
+    private @Nullable UI ownerUI;
 
     private boolean firstRun = true;
     private volatile boolean invalidatedFromBackground = false;
@@ -212,7 +215,11 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
-        invalidatedFromBackground = VaadinRequest.getCurrent() == null;
+        if (ownerUI != null) {
+            invalidatedFromBackground = UI.getCurrent() != ownerUI;
+        } else {
+            invalidatedFromBackground = VaadinRequest.getCurrent() == null;
+        }
         scheduleInvalidate();
         return false;
     }
@@ -245,6 +252,21 @@ public class Effect implements Serializable {
     private void clearRegistrations() {
         registrations.forEach(Registration::remove);
         registrations.clear();
+    }
+
+    /**
+     * Sets the owner UI for this effect. When set, background change detection
+     * compares {@link UI#getCurrent()} against this UI instead of only checking
+     * for the presence of a {@link VaadinRequest}. This allows effects to
+     * correctly detect changes triggered by another user's session on a shared
+     * signal.
+     *
+     * @param ui
+     *            the owner UI, or {@code null} to fall back to
+     *            VaadinRequest-based detection
+     */
+    public void setOwnerUI(@Nullable UI ui) {
+        this.ownerUI = ui;
     }
 
     /**
