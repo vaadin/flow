@@ -54,9 +54,9 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String VERSION = "_version";
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
-    private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
-            "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
-            "v23.3.4-hilla", "es2020", "es2022" };
+    private static final String[] tsconfigVersions = { "latest", "v9.1",
+            "v23.3.0.1", "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi",
+            "v23.3.4", "v23.3.4-hilla", "es2020", "es2022" };
 
     static final String ERROR_MESSAGE = """
 
@@ -100,10 +100,12 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                 .getResourceAsStream(fileName)) {
             String config = StringUtil.toUTF8String(tsConfStream);
 
-            config = config.replaceAll("%FRONTEND%",
-                    options.getNpmFolder().toPath()
-                            .relativize(options.getFrontendDirectory().toPath())
-                            .toString().replaceAll("\\\\", "/"));
+            String frontendPath = options.getNpmFolder().toPath()
+                    .relativize(options.getFrontendDirectory().toPath())
+                    .toString().replaceAll("\\\\", "/");
+            config = config.replace("%FRONTEND%/",
+                    frontendPath.isEmpty() ? "" : frontendPath + "/");
+            config = config.replace("%FRONTEND%", frontendPath);
             return config;
         }
     }
@@ -159,8 +161,9 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     }
 
     private ObjectNode parseTsConfig(String tsConfig) {
-        // remove comments so parser works
-        String json = tsConfig.replaceAll("//.*", "");
+        // remove line comments so parser works (only match // at start of
+        // line, not inside string values like URLs or paths)
+        String json = tsConfig.replaceAll("(?m)^\\s*//.*", "");
         return JacksonUtils.readTree(json);
     }
 
