@@ -26,9 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -36,6 +33,9 @@ import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.NumericNode;
 
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Alias;
@@ -211,7 +211,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private @Nullable Reject updateMapChildren(Id resolvedParentId,
-                Function<Map<String, Id>, CommandResult.@Nullable Reject> mapUpdater) {
+                SerializableFunction<Map<String, Id>, CommandResult.@Nullable Reject> mapUpdater) {
             Data node = data(resolvedParentId);
             if (node == null) {
                 return fail("Node not found");
@@ -232,7 +232,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private @Nullable Reject updateListChildren(Id resolvedParentId,
-                Function<List<Id>, CommandResult.@Nullable Reject> listUpdater) {
+                SerializableFunction<List<Id>, CommandResult.@Nullable Reject> listUpdater) {
             Data node = data(resolvedParentId);
             if (node == null) {
                 return fail("Node not found");
@@ -251,7 +251,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         private @Nullable Reject attach(Id parentId, Id childId,
-                BiFunction<Id, Id, @Nullable Reject> attacher) {
+                SerializableBiFunction<Id, Id, @Nullable Reject> attacher) {
             Id resolvedParentId = resolveAlias(parentId);
             Id resolvedChildId = resolveAlias(childId);
 
@@ -493,7 +493,7 @@ public class MutableTreeRevision extends TreeRevision {
      *            ignore results
      */
     public void apply(SignalCommand command,
-            @Nullable BiConsumer<Id, CommandResult> resultCollector) {
+            @Nullable SerializableBiConsumer<Id, CommandResult> resultCollector) {
         // Custom logic for transactions that can produce multiple results
         if (command instanceof TransactionCommand transaction) {
             Map<Id, CommandResult> results = handleTransaction(transaction);
@@ -513,7 +513,8 @@ public class MutableTreeRevision extends TreeRevision {
                 result = CommandResult.fail("Node not found");
             } else {
                 @SuppressWarnings("unchecked")
-                BiFunction<MutableTreeRevision, SignalCommand, CommandResult> handler = (BiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
+                @Nullable
+                SerializableBiFunction<MutableTreeRevision, SignalCommand, CommandResult> handler = (SerializableBiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
                         .get(command.getClass());
 
                 if (handler == null) {
@@ -550,11 +551,11 @@ public class MutableTreeRevision extends TreeRevision {
         }
     }
 
-    private static Map<Class<? extends SignalCommand>, BiFunction<MutableTreeRevision, ? extends SignalCommand, CommandResult>> handlers = new HashMap<>();
+    private static Map<Class<? extends SignalCommand>, SerializableBiFunction<MutableTreeRevision, ? extends SignalCommand, CommandResult>> handlers = new HashMap<>();
 
     private static <T extends SignalCommand> void addHandler(
             Class<T> commandType,
-            BiFunction<MutableTreeRevision, T, CommandResult> handler) {
+            SerializableBiFunction<MutableTreeRevision, T, CommandResult> handler) {
         handlers.put(commandType, handler);
     }
 
