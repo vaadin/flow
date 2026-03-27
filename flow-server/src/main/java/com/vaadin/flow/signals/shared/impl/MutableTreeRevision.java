@@ -74,7 +74,7 @@ public class MutableTreeRevision extends TreeRevision {
      * overrides in a result builder.
      */
     private static abstract class NodeLookup {
-        protected abstract Node node(Id nodeId);
+        protected abstract @Nullable Node node(Id nodeId);
 
         protected boolean isChildAt(List<Id> children, int index,
                 Id expectedChild) {
@@ -87,13 +87,16 @@ public class MutableTreeRevision extends TreeRevision {
             return isSameNode(children.get(index), expectedChild);
         }
 
-        protected Data data(Id nodeId) {
+        protected @Nullable Data data(Id nodeId) {
             Node node = node(resolveAlias(nodeId));
 
             return (Data) node;
         }
 
-        protected boolean isSameNode(Id a, Id b) {
+        protected boolean isSameNode(@Nullable Id a, @Nullable Id b) {
+            if (a == null || b == null) {
+                return Objects.equals(a, b);
+            }
             return Objects.equals(resolveAlias(a), resolveAlias(b));
         }
 
@@ -107,7 +110,7 @@ public class MutableTreeRevision extends TreeRevision {
             }
         }
 
-        protected ResolvedData resolveData(Id nodeId) {
+        protected @Nullable ResolvedData resolveData(Id nodeId) {
             Id id = resolveAlias(nodeId);
 
             Node node = node(id);
@@ -121,7 +124,7 @@ public class MutableTreeRevision extends TreeRevision {
 
     private class DirectNodeLookup extends NodeLookup {
         @Override
-        protected Node node(Id nodeId) {
+        protected @Nullable Node node(Id nodeId) {
             return nodes().get(nodeId);
         }
     }
@@ -151,7 +154,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         @Override
-        protected Node node(Id nodeId) {
+        protected @Nullable Node node(Id nodeId) {
             if (detachedNodes.contains(nodeId)) {
                 return null;
             }
@@ -164,7 +167,7 @@ public class MutableTreeRevision extends TreeRevision {
             return nodes().get(nodeId);
         }
 
-        private Reject detach(Id nodeId) {
+        private @Nullable Reject detach(Id nodeId) {
             ResolvedData resolved = resolveData(nodeId);
             if (resolved == null) {
                 return fail("Node not found");
@@ -183,6 +186,9 @@ public class MutableTreeRevision extends TreeRevision {
             }
 
             Data parentData = data(parentId);
+            if (parentData == null) {
+                return fail("Parent node not found");
+            }
 
             String key = parentData.mapChildren().entrySet().stream()
                     .filter(entry -> entry.getValue().equals(id)).findAny()
@@ -204,9 +210,12 @@ public class MutableTreeRevision extends TreeRevision {
             return null;
         }
 
-        private Reject updateMapChildren(Id resolvedParentId,
-                Function<Map<String, Id>, CommandResult.Reject> mapUpdater) {
+        private @Nullable Reject updateMapChildren(Id resolvedParentId,
+                Function<Map<String, Id>, CommandResult.@Nullable Reject> mapUpdater) {
             Data node = data(resolvedParentId);
+            if (node == null) {
+                return fail("Node not found");
+            }
 
             LinkedHashMap<String, Id> map = new LinkedHashMap<>(
                     node.mapChildren());
@@ -222,9 +231,12 @@ public class MutableTreeRevision extends TreeRevision {
             return null;
         }
 
-        private Reject updateListChildren(Id resolvedParentId,
-                Function<List<Id>, CommandResult.Reject> listUpdater) {
+        private @Nullable Reject updateListChildren(Id resolvedParentId,
+                Function<List<Id>, CommandResult.@Nullable Reject> listUpdater) {
             Data node = data(resolvedParentId);
+            if (node == null) {
+                return fail("Node not found");
+            }
 
             ArrayList<Id> list = new ArrayList<>(node.listChildren());
             Reject maybeError = listUpdater.apply(list);
@@ -238,8 +250,8 @@ public class MutableTreeRevision extends TreeRevision {
             return null;
         }
 
-        private Reject attach(Id parentId, Id childId,
-                BiFunction<Id, Id, Reject> attacher) {
+        private @Nullable Reject attach(Id parentId, Id childId,
+                BiFunction<Id, Id, @Nullable Reject> attacher) {
             Id resolvedParentId = resolveAlias(parentId);
             Id resolvedChildId = resolveAlias(childId);
 
@@ -253,7 +265,11 @@ public class MutableTreeRevision extends TreeRevision {
                     return fail("Cannot attach to own descendant");
                 }
 
-                ancestor = data(ancestor).parent();
+                Data ancestorData = data(ancestor);
+                if (ancestorData == null) {
+                    return fail("Ancestor node not found");
+                }
+                ancestor = ancestorData.parent();
             }
 
             detachedNodes.remove(resolvedChildId);
@@ -265,6 +281,9 @@ public class MutableTreeRevision extends TreeRevision {
             }
 
             Data child = data(resolvedChildId);
+            if (child == null) {
+                return fail("Child node not found");
+            }
             updatedNodes.put(resolvedChildId,
                     new Data(resolvedParentId, child.lastUpdate(),
                             child.scopeOwner(), child.value(),
@@ -273,7 +292,7 @@ public class MutableTreeRevision extends TreeRevision {
             return null;
         }
 
-        private Reject attachAs(Id parentId, String key, Id childId) {
+        private @Nullable Reject attachAs(Id parentId, String key, Id childId) {
             return attach(parentId, childId, (parentNode, resolvedChildId) -> {
                 return updateMapChildren(parentNode, map -> {
                     Id previous = map.putIfAbsent(key, resolvedChildId);
@@ -288,8 +307,14 @@ public class MutableTreeRevision extends TreeRevision {
 
         private int findInsertIndex(List<Id> children,
                 ListPosition insertPosition) {
-            Id after = resolveAlias(insertPosition.after());
-            Id before = resolveAlias(insertPosition.before());
+            Id after = insertPosition.after();
+            if (after != null) {
+                after = resolveAlias(after);
+            }
+            Id before = insertPosition.before();
+            if (before != null) {
+                before = resolveAlias(before);
+            }
 
             if (after != null) {
                 int position;
@@ -330,13 +355,16 @@ public class MutableTreeRevision extends TreeRevision {
             }
         }
 
-        private Reject attachAt(Id parentId, ListPosition position,
+        private @Nullable Reject attachAt(Id parentId, ListPosition position,
                 Id childId) {
             return attach(parentId, childId,
                     (resolvedParentId, resolvedChildId) -> {
+                        Data parentData = data(resolvedParentId);
+                        if (parentData == null) {
+                            return fail("Parent node not found");
+                        }
                         int insertIndex = findInsertIndex(
-                                data(resolvedParentId).listChildren(),
-                                position);
+                                parentData.listChildren(), position);
                         if (insertIndex == -1) {
                             return fail("Insert position not matched");
                         }
@@ -348,7 +376,8 @@ public class MutableTreeRevision extends TreeRevision {
                     });
         }
 
-        private Reject createNode(Id nodeId, JsonNode value, Id scopeOwner) {
+        private @Nullable Reject createNode(Id nodeId, @Nullable JsonNode value,
+                @Nullable Id scopeOwner) {
             if (node(nodeId) != null) {
                 return fail("Node already exists");
             }
@@ -464,12 +493,16 @@ public class MutableTreeRevision extends TreeRevision {
      *            ignore results
      */
     public void apply(SignalCommand command,
-            BiConsumer<Id, CommandResult> resultCollector) {
+            @Nullable BiConsumer<Id, CommandResult> resultCollector) {
         // Custom logic for transactions that can produce multiple results
         if (command instanceof TransactionCommand transaction) {
             Map<Id, CommandResult> results = handleTransaction(transaction);
 
-            applyResult(results.get(transaction.commandId()));
+            CommandResult transactionResult = results
+                    .get(transaction.commandId());
+            if (transactionResult != null) {
+                applyResult(transactionResult);
+            }
 
             if (resultCollector != null) {
                 results.forEach(resultCollector);
@@ -480,10 +513,14 @@ public class MutableTreeRevision extends TreeRevision {
                 result = CommandResult.fail("Node not found");
             } else {
                 @SuppressWarnings("unchecked")
-                var handler = (BiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
+                BiFunction<MutableTreeRevision, SignalCommand, CommandResult> handler = (BiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
                         .get(command.getClass());
 
-                result = handler.apply(this, command);
+                if (handler == null) {
+                    result = CommandResult.fail("Unknown command type");
+                } else {
+                    result = handler.apply(this, command);
+                }
             }
 
             applyResult(result);
@@ -624,9 +661,9 @@ public class MutableTreeRevision extends TreeRevision {
         } else {
             DirectNodeLookup nodeLookup = new DirectNodeLookup();
 
-            return CommandResult.conditional(
-                    nodeLookup.isSameNode(actualChildId, expectedChild),
-                    "Unexpected child");
+            boolean isSame = actualChildId != null
+                    && nodeLookup.isSameNode(actualChildId, expectedChild);
+            return CommandResult.conditional(isSame, "Unexpected child");
         }
     }
 
@@ -684,10 +721,13 @@ public class MutableTreeRevision extends TreeRevision {
 
         ResolvedData resolved = nodeLookup
                 .resolveData(increment.targetNodeId());
+        if (resolved == null) {
+            return CommandResult.fail("Node not found");
+        }
 
         double delta = increment.delta();
 
-        JsonNode oldValue = data(increment.targetNodeId()).get().value();
+        JsonNode oldValue = resolved.data().value();
 
         double newValue;
         if (oldValue instanceof NumericNode value) {
@@ -705,6 +745,9 @@ public class MutableTreeRevision extends TreeRevision {
         var builder = new ResultBuilder(clear);
 
         ResolvedData resolved = builder.resolveData(clear.targetNodeId());
+        if (resolved == null) {
+            return CommandResult.fail("Node not found");
+        }
 
         Data node = resolved.data;
 
@@ -729,7 +772,11 @@ public class MutableTreeRevision extends TreeRevision {
 
         DirectNodeLookup nodeLookup = new DirectNodeLookup();
 
-        Id childId = nodeLookup.data(nodeId).mapChildren().get(key);
+        Data nodeData = nodeLookup.data(nodeId);
+        if (nodeData == null) {
+            return CommandResult.fail("Node not found");
+        }
+        Id childId = nodeData.mapChildren().get(key);
 
         if (childId == null) {
             return CommandResult.fail("Key not present");
@@ -752,8 +799,11 @@ public class MutableTreeRevision extends TreeRevision {
         Id childId = data(nodeId).get().mapChildren().get(key);
         if (childId != null) {
             DirectNodeLookup nodeLookup = new DirectNodeLookup();
-            return createValueChange(put, nodeLookup.resolveData(childId),
-                    value);
+            ResolvedData resolved = nodeLookup.resolveData(childId);
+            if (resolved == null) {
+                return CommandResult.fail("Child node not found");
+            }
+            return createValueChange(put, resolved, value);
         } else {
             var builder = new ResultBuilder(put);
 
@@ -778,7 +828,11 @@ public class MutableTreeRevision extends TreeRevision {
 
         var builder = new ResultBuilder(putIfAbsent);
 
-        Id childId = builder.data(nodeId).mapChildren().get(key);
+        Data nodeData = builder.data(nodeId);
+        if (nodeData == null) {
+            return CommandResult.fail("Node not found");
+        }
+        Id childId = nodeData.mapChildren().get(key);
         if (childId != null) {
             if (builder.node(commandId) != null) {
                 return CommandResult.fail("Node already exists");
@@ -825,6 +879,9 @@ public class MutableTreeRevision extends TreeRevision {
         DirectNodeLookup nodeLookup = new DirectNodeLookup();
 
         ResolvedData resolved = nodeLookup.resolveData(set.targetNodeId());
+        if (resolved == null) {
+            return CommandResult.fail("Node not found");
+        }
 
         return createValueChange(set, resolved, set.value());
     }
@@ -836,7 +893,11 @@ public class MutableTreeRevision extends TreeRevision {
         if (expectedParentId != null) {
             DirectNodeLookup nodeLookup = new DirectNodeLookup();
 
-            Id actualParentId = nodeLookup.data(nodeId).parent();
+            Data nodeData = nodeLookup.data(nodeId);
+            if (nodeData == null) {
+                return CommandResult.fail("Node not found");
+            }
+            Id actualParentId = nodeData.parent();
 
             if (!nodeLookup.isSameNode(expectedParentId, actualParentId)) {
                 return CommandResult.fail("Not a child");
@@ -894,7 +955,10 @@ public class MutableTreeRevision extends TreeRevision {
 
             // Iterate the command list to preserve order
             for (SignalCommand command : commands) {
-                Accept op = (Accept) results.get(command.commandId());
+                CommandResult commandResult = results.get(command.commandId());
+                if (!(commandResult instanceof Accept op)) {
+                    continue;
+                }
                 op.updates().forEach((nodeId, modification) -> {
                     NodeModification previous = updates.get(nodeId);
                     if (previous != null) {
@@ -933,7 +997,7 @@ public class MutableTreeRevision extends TreeRevision {
     }
 
     private static CommandResult createValueChange(SignalCommand command,
-            ResolvedData resolved, JsonNode value) {
+            ResolvedData resolved, @Nullable JsonNode value) {
         Data oldNode = resolved.data();
         Data newNode = new Node.Data(oldNode.parent(), command.commandId(),
                 oldNode.scopeOwner(), value, oldNode.listChildren(),
