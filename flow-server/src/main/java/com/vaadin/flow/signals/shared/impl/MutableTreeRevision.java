@@ -835,11 +835,13 @@ public class MutableTreeRevision extends TreeRevision {
         }
         Id childId = nodeData.mapChildren().get(key);
         if (childId != null) {
-            if (builder.node(commandId) != null) {
-                return CommandResult.fail("Node already exists");
+            // Key already exists - mark parent as accessed but don't create
+            // alias
+            Id resolvedNodeId = builder.resolveAlias(nodeId);
+            Data resolvedNodeData = builder.data(resolvedNodeId);
+            if (resolvedNodeData != null) {
+                builder.updatedNodes.put(resolvedNodeId, resolvedNodeData);
             }
-
-            builder.updatedNodes.put(commandId, new Alias(childId));
         } else {
             Reject maybeError = builder.createNode(commandId,
                     putIfAbsent.value(), putIfAbsent.scopeOwner());
