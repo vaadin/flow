@@ -259,6 +259,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Prepare teardown
             listeners.push(stateNode.addUnregisterListener(
                     e -> remove(listeners, context, computationsCollection)));
+        } else {
+            applyStructuralAttributes(stateNode, htmlNode);
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
@@ -664,6 +666,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 element, HIDDEN_ATTRIBUTE, Boolean.TRUE);
         if (PolymerUtils.isInShadowRoot(element)) {
             element.getStyle().setDisplay("none");
+        }
+    }
+
+    /**
+     * Applies structural attributes (like "slot") to the element even when it
+     * is initially invisible. This preserves CSS selectors that depend on these
+     * attributes without exposing backend data.
+     */
+    private void applyStructuralAttributes(StateNode stateNode,
+            Element element) {
+        if (stateNode.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
+            NodeMap attributeMap = stateNode
+                    .getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+            String attr = NodeProperties.SLOT_ATTRIBUTE;
+            if (attributeMap.hasPropertyValue(attr)) {
+                MapProperty property = attributeMap.getProperty(attr);
+                updateAttribute(property, element);
+            }
         }
     }
 
