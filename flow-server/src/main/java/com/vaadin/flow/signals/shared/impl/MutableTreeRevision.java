@@ -103,8 +103,8 @@ public class MutableTreeRevision extends TreeRevision {
         protected Id resolveAlias(Id id) {
             Node node = node(id);
 
-            if (node instanceof Alias alias) {
-                return alias.target();
+            if (node instanceof Alias(Id target)) {
+                return target;
             } else {
                 return id;
             }
@@ -412,9 +412,9 @@ public class MutableTreeRevision extends TreeRevision {
             if (!detachedNodes.isEmpty()) {
                 Map<Id, List<Id>> reverseAliases = new HashMap<>();
                 nodes().forEach((signalId, nodeOrAlias) -> {
-                    if (nodeOrAlias instanceof Alias alias) {
+                    if (nodeOrAlias instanceof Alias(Id target)) {
                         reverseAliases
-                                .computeIfAbsent(alias.target(),
+                                .computeIfAbsent(target,
                                         ignore -> new ArrayList<>())
                                 .add(signalId);
                     }
@@ -429,9 +429,10 @@ public class MutableTreeRevision extends TreeRevision {
                             .forEach(aliasToRemove -> updates.put(aliasToRemove,
                                     createModification(aliasToRemove, null)));
 
-                    Data node = MutableTreeRevision.this.data(removed).get();
-                    toDetach.addAll(node.listChildren());
-                    toDetach.addAll(node.mapChildren().values());
+                    MutableTreeRevision.this.data(removed).ifPresent(node -> {
+                        toDetach.addAll(node.listChildren());
+                        toDetach.addAll(node.mapChildren().values());
+                    });
                 }
             }
 
@@ -513,7 +514,6 @@ public class MutableTreeRevision extends TreeRevision {
                 result = CommandResult.fail("Node not found");
             } else {
                 @SuppressWarnings("unchecked")
-                @Nullable
                 SerializableBiFunction<MutableTreeRevision, SignalCommand, CommandResult> handler = (SerializableBiFunction<MutableTreeRevision, SignalCommand, CommandResult>) handlers
                         .get(command.getClass());
 
@@ -535,8 +535,8 @@ public class MutableTreeRevision extends TreeRevision {
     }
 
     private void applyResult(CommandResult result) {
-        if (result instanceof Accept accept) {
-            accept.updates().forEach((nodeId, update) -> {
+        if (result instanceof Accept(Map<Id, NodeModification> updates, Map<Id, ScopeOwnerCommand> originalInserts)) {
+            updates.forEach((nodeId, update) -> {
                 Node newNode = update.newNode();
 
                 if (newNode == null) {
@@ -547,11 +547,11 @@ public class MutableTreeRevision extends TreeRevision {
                 }
             });
 
-            originalInserts().putAll(accept.originalInserts());
+            originalInserts().putAll(originalInserts);
         }
     }
 
-    private static Map<Class<? extends SignalCommand>, SerializableBiFunction<MutableTreeRevision, ? extends SignalCommand, CommandResult>> handlers = new HashMap<>();
+    private static final Map<Class<? extends SignalCommand>, SerializableBiFunction<MutableTreeRevision, ? extends SignalCommand, CommandResult>> handlers = new HashMap<>();
 
     private static <T extends SignalCommand> void addHandler(
             Class<T> commandType,
@@ -605,7 +605,11 @@ public class MutableTreeRevision extends TreeRevision {
     private CommandResult handlePositionCondition(PositionCondition test) {
         DirectNodeLookup nodeLookup = new DirectNodeLookup();
 
-        List<Id> listChildren = data(test.targetNodeId()).get().listChildren();
+        Data nodeData = data(test.targetNodeId()).orElse(null);
+        if (nodeData == null) {
+            return CommandResult.fail("Node not found");
+        }
+        List<Id> listChildren = nodeData.listChildren();
 
         Id resolvedChild = nodeLookup.resolveAlias(test.childId());
         int indexOf = listChildren.indexOf(resolvedChild);
@@ -651,7 +655,11 @@ public class MutableTreeRevision extends TreeRevision {
         String key = keyTest.key();
         Id expectedChild = keyTest.expectedChild();
 
-        Id actualChildId = data(nodeId).get().mapChildren().get(key);
+        Data data = data(nodeId).orElse(null);
+        if (data == null) {
+            return CommandResult.fail("Node not found");
+        }
+        Id actualChildId = data.mapChildren().get(key);
 
         if (expectedChild == null) {
             return CommandResult.conditional(actualChildId != null,
@@ -670,7 +678,12 @@ public class MutableTreeRevision extends TreeRevision {
 
     private CommandResult handleLastUpdateCondition(
             LastUpdateCondition lastUpdateTest) {
-        Id lastUpdate = data(lastUpdateTest.targetNodeId()).get().lastUpdate();
+
+        Data data = data(lastUpdateTest.targetNodeId()).orElse(null);
+        if (data == null) {
+            return CommandResult.fail("Node not found");
+        }
+        Id lastUpdate = data.lastUpdate();
 
         return CommandResult.conditional(
                 Objects.equals(lastUpdate, lastUpdateTest.expectedLastUpdate()),
@@ -797,7 +810,11 @@ public class MutableTreeRevision extends TreeRevision {
         String key = put.key();
         JsonNode value = put.value();
 
-        Id childId = data(nodeId).get().mapChildren().get(key);
+        Data data = data(nodeId).orElse(null);
+        if (data == null) {
+            return CommandResult.fail("Node not found");
+        }
+        Id childId = data.mapChildren().get(key);
         if (childId != null) {
             DirectNodeLookup nodeLookup = new DirectNodeLookup();
             ResolvedData resolved = nodeLookup.resolveData(childId);
@@ -959,10 +976,10 @@ public class MutableTreeRevision extends TreeRevision {
             // Iterate the command list to preserve order
             for (SignalCommand command : commands) {
                 CommandResult commandResult = results.get(command.commandId());
-                if (!(commandResult instanceof Accept op)) {
+                if (!(commandResult instanceof Accept(Map<Id, NodeModification> updates1, Map<Id, ScopeOwnerCommand> inserts))) {
                     continue;
                 }
-                op.updates().forEach((nodeId, modification) -> {
+                updates1.forEach((nodeId, modification) -> {
                     NodeModification previous = updates.get(nodeId);
                     if (previous != null) {
                         updates.put(nodeId, new NodeModification(
@@ -972,7 +989,7 @@ public class MutableTreeRevision extends TreeRevision {
                     }
                 });
 
-                originalInserts.putAll(op.originalInserts());
+                originalInserts.putAll(inserts);
             }
 
             results.put(transaction.commandId(),
