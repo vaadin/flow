@@ -90,7 +90,10 @@ public class MutableTreeRevision extends TreeRevision {
         protected @Nullable Data data(Id nodeId) {
             Node node = node(resolveAlias(nodeId));
 
-            return (Data) node;
+            if (node instanceof Data data) {
+                return data;
+            }
+            return null;
         }
 
         protected boolean isSameNode(@Nullable Id a, @Nullable Id b) {
@@ -259,6 +262,12 @@ public class MutableTreeRevision extends TreeRevision {
                 return fail("Node is not detached");
             }
 
+            // Validate child exists before modifying state
+            Data child = data(resolvedChildId);
+            if (child == null) {
+                return fail("Child node not found");
+            }
+
             Id ancestor = resolvedParentId;
             while (ancestor != null) {
                 if (ancestor.equals(resolvedChildId)) {
@@ -280,10 +289,6 @@ public class MutableTreeRevision extends TreeRevision {
                 return maybeError;
             }
 
-            Data child = data(resolvedChildId);
-            if (child == null) {
-                return fail("Child node not found");
-            }
             updatedNodes.put(resolvedChildId,
                     new Data(resolvedParentId, child.lastUpdate(),
                             child.scopeOwner(), child.value(),
